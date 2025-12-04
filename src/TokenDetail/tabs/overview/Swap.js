@@ -2089,132 +2089,112 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Settings Modal */}
           {showSettingsModal && (
-            <div style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backdropFilter: 'blur(8px)'
-            }} onClick={() => setShowSettingsModal(false)}>
-              <div onClick={e => e.stopPropagation()} style={{
-                backgroundColor: isDark ? '#1c1c1e' : '#fff',
-                borderRadius: 24, padding: 24, width: 320,
-                border: isDark ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                boxShadow: '0 25px 50px rgba(0,0,0,0.4)'
-              }}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-                  <Typography variant="h6" isDark={isDark} sx={{ fontSize: '15px', fontWeight: 600 }}>Settings</Typography>
-                  <button onClick={() => setShowSettingsModal(false)} style={{
-                    background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 20
-                  }}>
-                    <X size={16} color={isDark ? 'rgba(255,255,255,0.4)' : '#999'} />
+            <div
+              className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowSettingsModal(false)}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                className={`w-[320px] rounded-xl border-[1.5px] p-5 ${isDark ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'}`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Settings</span>
+                  <button onClick={() => setShowSettingsModal(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                    <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </button>
-                </Stack>
+                </div>
 
-                <div style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f8f9fa',
-                  borderRadius: 16, padding: 16, marginBottom: 16
-                }}>
-                  <Typography isDark={isDark} sx={{ fontSize: '11px', fontWeight: 500, mb: 1.5, color: isDark ? 'rgba(255,255,255,0.5)' : '#666' }}>
-                    Max Slippage
-                  </Typography>
-                  <Stack direction="row" spacing={1}>
+                {/* Max Slippage Section */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Max Slippage</span>
+                    <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                  </div>
+                  <div className="flex gap-2">
                     {[1, 2, 3, 5].map((preset) => (
-                      <Button key={preset} size="small"
-                        onClick={() => setSlippage(preset)} isDark={isDark}
-                        sx={{
-                          flex: 1, height: 40, fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
-                          color: slippage === preset ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : '#666'),
-                          backgroundColor: slippage === preset ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : '#fff'),
-                          boxShadow: slippage === preset ? '0 4px 12px rgba(66,133,244,0.3)' : (isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'),
-                          '&:hover': { backgroundColor: slippage === preset ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6') }
-                        }}>
+                      <button
+                        key={preset}
+                        onClick={() => setSlippage(preset)}
+                        className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                          slippage === preset
+                            ? 'bg-primary text-white border-primary'
+                            : isDark ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                        }`}
+                      >
                         {preset}%
-                      </Button>
+                      </button>
                     ))}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      height: 40, padding: '0 12px', minWidth: 56,
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff', borderRadius: 12,
-                      boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'
-                    }}>
-                      <input type="text" inputMode="decimal" value={slippage} onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9.]/g, '');
-                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
-                          setSlippage(val === '' ? '' : parseFloat(val) || val);
-                        }
-                      }} style={{
-                        width: 20, background: 'transparent', border: 'none', outline: 'none',
-                        fontSize: 13, fontWeight: 600, textAlign: 'center', color: isDark ? '#fff' : '#111'
-                      }} />
-                      <span style={{ fontSize: 12, color: isDark ? 'rgba(255,255,255,0.4)' : '#999' }}>%</span>
+                    <div className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={slippage}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
+                            setSlippage(val === '' ? '' : parseFloat(val) || val);
+                          }
+                        }}
+                        className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
+                      />
+                      <span className={`text-[12px] ${isDark ? 'text-white/40' : 'text-gray-400'}`}>%</span>
                     </div>
-                  </Stack>
+                  </div>
                   {Number(slippage) >= 4 && (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 12,
-                      padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(245,158,11,0.1)'
-                    }}>
-                      <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#f59e0b' }} />
-                      <span style={{ fontSize: 11, color: '#f59e0b' }}>High slippage may cause front-running</span>
+                    <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="text-[11px] text-amber-500">High slippage may cause front-running</span>
                     </div>
                   )}
                 </div>
 
-                <div style={{
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f8f9fa',
-                  borderRadius: 16, padding: 16
-                }}>
-                  <Typography isDark={isDark} sx={{ fontSize: '11px', fontWeight: 500, mb: 1.5, color: isDark ? 'rgba(255,255,255,0.5)' : '#666' }}>
-                    Network Fee <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#999' }}>(drops)</span>
-                  </Typography>
-                  <Stack direction="row" spacing={1}>
+                {/* Network Fee Section */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Network Fee</span>
+                    <span className={`text-[10px] ${isDark ? 'text-white/25' : 'text-gray-400'}`}>(drops)</span>
+                    <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                  </div>
+                  <div className="flex gap-2">
                     {[12, 15, 20, 50].map((val) => (
-                      <Button key={val} size="small"
-                        onClick={() => setTxFee(String(val))} isDark={isDark}
-                        sx={{
-                          flex: 1, height: 40, fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
-                          color: txFee === String(val) ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : '#666'),
-                          backgroundColor: txFee === String(val) ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : '#fff'),
-                          boxShadow: txFee === String(val) ? '0 4px 12px rgba(66,133,244,0.3)' : (isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'),
-                          '&:hover': { backgroundColor: txFee === String(val) ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6') }
-                        }}>
+                      <button
+                        key={val}
+                        onClick={() => setTxFee(String(val))}
+                        className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                          txFee === String(val)
+                            ? 'bg-primary text-white border-primary'
+                            : isDark ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                        }`}
+                      >
                         {val}
-                      </Button>
+                      </button>
                     ))}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', padding: '0 12px', minWidth: 60,
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff', borderRadius: 12,
-                      boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'
-                    }}>
-                      <input type="text" inputMode="numeric" value={txFee} onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9]/g, '');
-                        setTxFee(val);
-                      }} style={{
-                        width: 32, background: 'transparent', border: 'none', outline: 'none',
-                        fontSize: 13, fontWeight: 600, textAlign: 'center', color: isDark ? '#fff' : '#111'
-                      }} />
+                    <div className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={txFee}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setTxFee(val);
+                        }}
+                        className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
+                      />
                     </div>
-                  </Stack>
-                  <Typography sx={{ fontSize: '10px', mt: 1.5, color: isDark ? 'rgba(255,255,255,0.3)' : '#999' }}>
-                    Higher fees = priority during congestion
-                  </Typography>
+                  </div>
+                  <p className={`text-[10px] mt-2 ${isDark ? 'text-white/30' : 'text-gray-400'}`}>Higher fees = priority during congestion</p>
                   {parseInt(txFee) >= 50 && (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 8,
-                      padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(245,158,11,0.1)'
-                    }}>
-                      <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#f59e0b' }} />
-                      <span style={{ fontSize: 11, color: '#f59e0b' }}>Only needed during extreme congestion</span>
+                    <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="text-[11px] text-amber-500">Only needed during extreme congestion</span>
                     </div>
                   )}
                 </div>
 
-                <button onClick={() => setShowSettingsModal(false)} style={{
-                  width: '100%', marginTop: 20, padding: '14px 0', borderRadius: 16,
-                  backgroundColor: '#4285f4', color: '#fff', border: 'none',
-                  fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(66,133,244,0.25)'
-                }}>
+                <button
+                  onClick={() => setShowSettingsModal(false)}
+                  className="w-full py-3 rounded-lg bg-primary text-white text-[14px] font-medium border-none cursor-pointer hover:bg-primary/90 transition-colors"
+                >
                   Save Settings
                 </button>
               </div>

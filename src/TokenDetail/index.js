@@ -4,21 +4,16 @@ import { useContext, useState, useEffect, useCallback, memo } from 'react';
 import { AppContext } from 'src/AppContext';
 import Overview from './tabs/overview';
 import TokenTabs from './components/TokenTabs';
-import CreatorTransactionsDialog from './dialogs/CreatorTransactionsDialog';
 import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
-import { cn } from 'src/utils/cn';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 const TokenDetail = memo(
   ({
     token,
-    onCreatorPanelToggle,
-    creatorPanelOpen,
     onTransactionPanelToggle,
     transactionPanelOpen,
     onOrderBookToggle,
-    orderBookOpen,
-    notificationPanelOpen
+    orderBookOpen
   }) => {
     const { themeName } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
@@ -30,8 +25,6 @@ const TokenDetail = memo(
         addTokenToTabs(token);
       }
     }, [token?.md5, token?.slug]);
-    const [creatorTxOpen, setCreatorTxOpen] = useState(creatorPanelOpen || false);
-    const [latestCreatorTx, setLatestCreatorTx] = useState(null);
     const [selectedTxHash, setSelectedTxHash] = useState(null);
     const [selectedTradeAccount, setSelectedTradeAccount] = useState(null);
     const [txDetailsOpen, setTxDetailsOpen] = useState(transactionPanelOpen || false);
@@ -48,10 +41,6 @@ const TokenDetail = memo(
 
     // Sync internal state with parent
     useEffect(() => {
-      setCreatorTxOpen(creatorPanelOpen || false);
-    }, [creatorPanelOpen]);
-
-    useEffect(() => {
       setTxDetailsOpen(transactionPanelOpen || false);
     }, [transactionPanelOpen]);
 
@@ -61,19 +50,6 @@ const TokenDetail = memo(
         setTxDetailsOpen(!!orderBookOpen);
       }
     }, [orderBookOpen]);
-
-    // Memoize callback functions to prevent re-renders - batched updates
-    const handleCreatorTxToggle = useCallback(() => {
-      const newState = !creatorTxOpen;
-
-      // Batch state updates
-      requestAnimationFrame(() => {
-        setCreatorTxOpen(newState);
-        if (onCreatorPanelToggle) {
-          onCreatorPanelToggle(newState);
-        }
-      });
-    }, [creatorTxOpen, onCreatorPanelToggle]);
 
     // Handle transaction selection
     const handleSelectTransaction = useCallback((hash, tradeAccount = null) => {
@@ -129,19 +105,6 @@ const TokenDetail = memo(
         {!isMobile && <TokenTabs currentMd5={token?.md5} />}
 
         <div className="flex flex-row">
-          {/* Creator Transactions Panel - Only render when open to save memory */}
-          {!isMobile && token?.creator && creatorTxOpen && (
-            <CreatorTransactionsDialog
-              open={creatorTxOpen}
-              onClose={handleCreatorTxToggle}
-              creatorAddress={token?.creator}
-              tokenName={token?.name}
-              onLatestTransaction={setLatestCreatorTx}
-              onSelectTransaction={handleSelectTransaction}
-              isDark={isDark}
-            />
-          )}
-
           {/* Main Content Area */}
           <div className="flex-1 min-w-0">
             <div id="back-to-top-tab-anchor" />
@@ -152,10 +115,6 @@ const TokenDetail = memo(
             onOrderBookToggle={handleOrderBookToggle}
             orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
             onOrderBookData={handleOrderBookData}
-            onCreatorTxToggle={handleCreatorTxToggle}
-            creatorTxOpen={creatorTxOpen}
-            latestCreatorTx={latestCreatorTx}
-            setLatestCreatorTx={setLatestCreatorTx}
           />
         </div>
 

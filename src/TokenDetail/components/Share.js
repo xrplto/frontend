@@ -15,7 +15,6 @@ import {
   RedditIcon,
   EmailIcon
 } from '../../components/ShareButtons';
-import styled from '@emotion/styled';
 import { Share as ShareIcon, X, Copy } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
@@ -29,179 +28,6 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-
-const ShareButton = styled.button`
-  border-radius: 8px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'};
-  background: transparent;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  &:hover {
-    border-color: rgba(66,133,244,0.3);
-    color: #4285f4;
-  }
-`;
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1300;
-`;
-
-const DialogBox = styled.div`
-  background: ${props => props.isDark ? '#0a0a0a' : '#fff'};
-  border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'};
-  max-width: 400px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const DialogHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-`;
-
-const DialogTitle = styled.div`
-  font-size: 15px;
-  font-weight: 500;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
-`;
-
-const CloseBtn = styled.button`
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 4px;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
-  &:hover {
-    color: ${props => props.isDark ? '#fff' : '#000'};
-  }
-`;
-
-const DialogContent = styled.div`
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-`;
-
-const TokenAvatar = styled.img`
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  border: 2px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-`;
-
-const TokenName = styled.div`
-  font-size: 16px;
-  font-weight: 500;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
-  text-align: center;
-`;
-
-const PriceCard = styled.div`
-  width: 100%;
-  padding: 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  border-radius: 10px;
-  text-align: center;
-`;
-
-const PriceLabel = styled.div`
-  font-size: 11px;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  margin-bottom: 4px;
-`;
-
-const PriceValue = styled.div`
-  font-size: 18px;
-  font-weight: 500;
-  color: #4285f4;
-`;
-
-const SectionTitle = styled.div`
-  font-size: 11px;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  width: 100%;
-  text-align: center;
-`;
-
-const SocialGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-`;
-
-const SocialIconWrapper = styled.div`
-  border-radius: 10px;
-  overflow: hidden;
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const UrlBox = styled.div`
-  width: 100%;
-  padding: 10px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const UrlText = styled.div`
-  flex: 1;
-  font-size: 12px;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const CopyBtn = styled.button`
-  border: 1.5px solid rgba(66,133,244,0.2);
-  background: rgba(66,133,244,0.08);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  color: #4285f4;
-  display: flex;
-  align-items: center;
-  &:hover {
-    background: rgba(66,133,244,0.15);
-  }
-`;
-
-const Divider = styled.div`
-  width: 100%;
-  height: 1px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-`;
 
 export default function Share({ token }) {
   const { openSnackbar, themeName } = useContext(AppContext);
@@ -242,58 +68,117 @@ export default function Share({ token }) {
 
   return (
     <>
-      <ShareButton isDark={isDark} onClick={() => setOpen(true)}>
-        <ShareIcon size={12} style={{ marginRight: 4 }} />
+      <button
+        onClick={() => setOpen(true)}
+        className={`flex items-center gap-1 px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors ${
+          isDark
+            ? 'border-white/10 text-white/50 hover:border-primary/30 hover:text-primary'
+            : 'border-gray-200 text-gray-500 hover:border-primary/30 hover:text-primary'
+        }`}
+      >
+        <ShareIcon size={12} />
         Share
-      </ShareButton>
+      </button>
 
       {open && (
-        <Overlay isDark={isDark} onClick={() => setOpen(false)}>
-          <DialogBox isDark={isDark} onClick={e => e.stopPropagation()}>
-            <DialogHeader isDark={isDark}>
-              <DialogTitle isDark={isDark}>Share {user}</DialogTitle>
-              <CloseBtn isDark={isDark} onClick={() => setOpen(false)}>
-                <X size={18} />
-              </CloseBtn>
-            </DialogHeader>
+        <div
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className={`w-[90%] max-w-[400px] rounded-xl border-[1.5px] overflow-hidden ${
+              isDark ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'
+            }`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Share {user}
+              </span>
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+              </button>
+            </div>
 
-            <DialogContent>
-              <TokenAvatar src={imgUrl} alt={name} isDark={isDark} />
-              <TokenName isDark={isDark}>{user} {name}</TokenName>
+            {/* Content */}
+            <div className="px-4 pb-4 flex flex-col items-center gap-4">
+              <img
+                src={imgUrl}
+                alt={name}
+                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-white/10' : 'border-gray-200'}`}
+              />
+              <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {user} {name}
+              </span>
 
-              <PriceCard isDark={isDark}>
-                <PriceLabel isDark={isDark}>Current Price</PriceLabel>
-                <PriceValue>
+              {/* Price Card */}
+              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+              }`}>
+                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Current Price</p>
+                <p className="text-[18px] font-medium text-primary">
                   {currencySymbols[activeFiatCurrency]}
                   {fNumber(exch / (metrics[activeFiatCurrency] || 1))}
-                </PriceValue>
-              </PriceCard>
+                </p>
+              </div>
 
-              <Divider isDark={isDark} />
+              {/* Share On Section */}
+              <div className="w-full">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                    Share on
+                  </span>
+                  <div
+                    className="flex-1 h-px"
+                    style={{
+                      backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                      backgroundSize: '6px 1px'
+                    }}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2.5 justify-center">
+                  {socialPlatforms.map(({ Component, Icon, props }, i) => (
+                    <div key={i} className="rounded-lg overflow-hidden hover:opacity-80 transition-opacity">
+                      <Component {...props}>
+                        <Icon size={36} round isDark={isDark} />
+                      </Component>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-              <SectionTitle isDark={isDark}>Share on</SectionTitle>
-              <SocialGrid>
-                {socialPlatforms.map(({ Component, Icon, props }, i) => (
-                  <SocialIconWrapper key={i}>
-                    <Component {...props}>
-                      <Icon size={36} round isDark={isDark} />
-                    </Component>
-                  </SocialIconWrapper>
-                ))}
-              </SocialGrid>
-
-              <Divider isDark={isDark} />
-
-              <SectionTitle isDark={isDark}>Copy Link</SectionTitle>
-              <UrlBox isDark={isDark}>
-                <UrlText isDark={isDark}>{url}</UrlText>
-                <CopyBtn onClick={handleCopy}>
-                  <Copy size={14} />
-                </CopyBtn>
-              </UrlBox>
-            </DialogContent>
-          </DialogBox>
-        </Overlay>
+              {/* Copy Link Section */}
+              <div className="w-full">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                    Copy Link
+                  </span>
+                  <div
+                    className="flex-1 h-px"
+                    style={{
+                      backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                      backgroundSize: '6px 1px'
+                    }}
+                  />
+                </div>
+                <div className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
+                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                    {url}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="p-1.5 rounded-lg border-[1.5px] border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

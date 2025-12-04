@@ -449,7 +449,7 @@ const DrawerBackdrop = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
 `;
 
@@ -459,10 +459,11 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? '#0a0a0f' : '#fff'};
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  border-top: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
+  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#fff'};
+  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-top: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -474,38 +475,31 @@ const DrawerHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)'};
 `;
 
 const DrawerTitle = styled.h2`
   font-weight: 500;
-  font-size: 16px;
+  font-size: 15px;
   margin: 0;
   color: ${props => props.isDark ? '#fff' : '#212B36'};
 `;
 
 const DrawerClose = styled.button`
-  width: 36px;
-  height: 36px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)'};
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? '#fff' : '#333'};
-  font-size: 20px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  transition: border-color 0.15s, color 0.15s;
 
   &:hover {
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
-    border-color: ${props => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    color: #3b82f6;
-  }
-
-  &:active {
-    transform: scale(0.97);
+    border-color: ${props => props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)'};
+    color: #4285f4;
   }
 `;
 
@@ -519,12 +513,11 @@ const Menu = styled.div`
 
 const MenuPaper = styled.div`
   min-width: 130px;
-  border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
-  background: ${props => props.isDark ? 'rgba(10, 10, 15, 0.98)' : '#ffffff'};
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#ffffff'};
   overflow: hidden;
-  backdrop-filter: blur(8px);
+  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
   padding: 4px;
 `;
 
@@ -1194,7 +1187,9 @@ const SearchToolbar = memo(function SearchToolbar({
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 1299
+              zIndex: 1299,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(4px)'
             }}
             onClick={() => setGainersMenuAnchor(null)}
           />

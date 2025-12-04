@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback, memo } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
@@ -8,8 +8,6 @@ import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2 } from '
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
-import { formatDistanceToNow } from 'date-fns';
-import { parseAmount, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import Share from './Share';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
@@ -61,7 +59,7 @@ const OriginIcon = ({ origin, isDark }) => {
   }
 };
 
-const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCreatorTx: propLatestCreatorTx, setLatestCreatorTx }) => {
+const TokenSummary = memo(({ token }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } = useContext(AppContext);
@@ -81,8 +79,6 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const [isRemove, setIsRemove] = useState(false);
   const [editToken, setEditToken] = useState(null);
   const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
-  const [fetchedCreatorTx, setFetchedCreatorTx] = useState(null);
-  const fetchedCreatorRef = useRef(null);
   const [debugInfo, setDebugInfo] = useState(null);
 
   // Debug info loader
@@ -258,56 +254,6 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
     }).catch(() => {});
   }, [accountProfile, sync, issuer, currency]);
 
-  // Creator tx
-  useEffect(() => {
-    if (!creator || propLatestCreatorTx || fetchedCreatorRef.current === creator) return;
-    fetchedCreatorRef.current = creator;
-    (async () => {
-      try {
-        const response = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=10`);
-        const data = await response.json();
-        if (data.result === 'success' && data.transactions?.length > 0) {
-          for (const txData of data.transactions) {
-            const tx = txData.tx;
-            if (!tx) continue;
-            if (tx.TransactionType === 'Payment' && typeof tx.Amount === 'string' && parseInt(tx.Amount) / 1e6 < 1) continue;
-            setFetchedCreatorTx({ tx, meta: txData.meta, validated: txData.validated });
-            break;
-          }
-        }
-      } catch (err) { console.error('[TokenSummary] Error fetching creator tx:', err); }
-    })();
-  }, [creator, propLatestCreatorTx]);
-
-  const latestCreatorTx = propLatestCreatorTx || fetchedCreatorTx;
-
-  const formatCreatorTx = useMemo(() => {
-    if (!latestCreatorTx?.tx) return null;
-    const { tx, meta } = latestCreatorTx;
-    const txType = tx.TransactionType;
-    if (txType === 'Payment' && typeof tx.Amount === 'string' && parseInt(tx.Amount) / 1e6 < 1) return null;
-
-    let label = txType, amount = '', color = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
-    if (txType === 'Payment') {
-      const isSelfPayment = tx.Account === tx.Destination;
-      const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount || tx.Amount;
-      const parsed = parseAmount(deliveredAmount);
-      if (parsed && typeof parsed === 'object') {
-        const val = parseFloat(parsed.value);
-        if ((parsed.currency === 'XRP' && val < 1) || (parsed.currency !== 'XRP' && val < 0.0001)) return null;
-        const curr = parsed.currency === 'XRP' ? 'XRP' : normalizeCurrencyCode(parsed.currency);
-        amount = `${fNumber(parsed.value)} ${curr}`;
-        if (isSelfPayment && tx.SendMax) { label = 'Swap'; color = '#3b82f6'; }
-        else if (tx.Destination === creator) { label = 'Received'; color = '#22c55e'; }
-        else { label = 'Sent'; color = '#ef4444'; }
-      }
-    } else if (txType === 'OfferCreate') { label = 'Offer'; color = '#3b82f6'; }
-    else if (txType === 'TrustSet') { label = 'Trust'; color = '#147DFE'; }
-
-    const timeAgo = tx.date ? formatDistanceToNow(new Date((tx.date + 946684800) * 1000), { addSuffix: true }).replace(' ago', '') : '';
-    return { label, amount, color, timeAgo };
-  }, [latestCreatorTx, creator, isDark]);
-
   const getPriceDisplay = () => {
     const symbol = currencySymbols[activeFiatCurrency];
     const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -428,17 +374,6 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
             {trustStatus === 'loading' ? <Loader2 size={12} className="animate-spin" /> : null}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
-          {creator && (
-            <button
-              onClick={onCreatorTxToggle}
-              className={cn(
-                "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all",
-                creatorTxOpen ? "border-primary bg-primary/10 text-primary" : isDark ? "border-white/[0.08] text-white/50 hover:border-primary/30" : "border-gray-200 text-gray-500 hover:border-primary/30"
-              )}
-            >
-              Activity
-            </button>
-          )}
         </div>
         <div className="flex items-center gap-1.5">
           <Share token={token} />

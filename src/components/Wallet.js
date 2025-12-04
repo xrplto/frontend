@@ -168,17 +168,17 @@ const DialogContent = ({ children, sx }) => (
   <div style={{ padding: sx?.p === 0 ? 0 : 16 }}>{children}</div>
 );
 
-// StyledPopoverPaper component - Enhanced with subtle gradient border
+// StyledPopoverPaper component - Glass effect styling
 const StyledPopoverPaper = ({ children, isDark, isFullScreen }) => (
   <div className={cn(
     "overflow-hidden",
     isFullScreen
-      ? "rounded-none shadow-none bg-transparent"
+      ? "rounded-none bg-transparent"
       : cn(
-          "rounded-2xl shadow-2xl",
+          "rounded-xl border-[1.5px]",
           isDark
-            ? "bg-[#0a0a0a] shadow-black/80 ring-1 ring-white/[0.08]"
-            : "bg-white shadow-gray-200/50 ring-1 ring-gray-200/80"
+            ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20"
+            : "bg-white border-gray-200"
         )
   )}>
     {children}
@@ -1125,25 +1125,27 @@ const WalletContent = ({
       )}
 
       {/* Accounts Section - Enhanced */}
-      <div className={cn("border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+      <div className="px-4 pt-4">
         <button
           onClick={() => setShowAllAccounts(!showAllAccounts)}
-          className={cn(
-            "w-full px-4 py-3 flex items-center justify-between transition-colors",
-            isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
-          )}
+          className="w-full flex items-center gap-3 mb-3"
         >
-          <div className="flex items-center gap-2">
-            <span className={cn("text-xs font-medium", isDark ? "text-white/80" : "text-gray-700")}>
-              Accounts
-            </span>
-            <span className={cn(
-              "px-1.5 py-0.5 rounded text-[10px] font-medium",
-              isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500"
-            )}>
-              {profiles.length}
-            </span>
-          </div>
+          <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>
+            Accounts
+          </span>
+          <span className={cn(
+            "px-1.5 py-0.5 rounded text-[10px] font-medium",
+            isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500"
+          )}>
+            {profiles.length}
+          </span>
+          <div
+            className="flex-1 h-px"
+            style={{
+              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+              backgroundSize: '6px 1px'
+            }}
+          />
           <ChevronDown
             size={14}
             className={cn(
@@ -3847,10 +3849,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={handleGoogleConnect}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
+                            "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
+                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
+                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
                           )}
                         >
                           <svg className="h-[18px] w-[18px] flex-shrink-0" viewBox="0 0 24 24">
@@ -3866,13 +3868,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={handleEmailConnect}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
+                            "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
+                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
+                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
                           )}
                         >
-                          <Mail size={18} className={isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600"} />
+                          <Mail size={18} className={isDark ? "text-white/50" : "text-gray-400"} />
                           <span>Email</span>
                         </button>
 
@@ -3880,13 +3882,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={handleXConnect}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
+                            "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
+                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
+                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
                           )}
                         >
-                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600")} viewBox="0 0 24 24" fill="currentColor">
+                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50" : "text-gray-400")} viewBox="0 0 24 24" fill="currentColor">
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                           </svg>
                           <span>Twitter</span>
@@ -3896,13 +3898,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={handleDiscordConnect}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
+                            "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
+                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
+                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
                           )}
                         >
-                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600")} viewBox="0 0 24 24" fill="currentColor">
+                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50" : "text-gray-400")} viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                           </svg>
                           <span>Discord</span>
@@ -3910,25 +3912,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       </div>
 
                       {/* Divider */}
-                      <div className="relative my-4">
-                        <div className={cn("absolute inset-0 flex items-center", isDark ? "text-white/20" : "text-gray-200")}>
-                          <div className="w-full border-t border-current" />
-                        </div>
-                        <div className="relative flex justify-center">
-                          <span className={cn("px-3 text-[11px] uppercase tracking-wider", isDark ? "bg-[#0a0a0a] text-white/30" : "bg-white text-gray-400")}>
-                            or
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-3 my-4">
+                        <div
+                          className="flex-1 h-px"
+                          style={{
+                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                            backgroundSize: '6px 1px'
+                          }}
+                        />
+                        <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
+                          or
+                        </span>
+                        <div
+                          className="flex-1 h-px"
+                          style={{
+                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                            backgroundSize: '6px 1px'
+                          }}
+                        />
                       </div>
 
                       {/* Passkeys - Most secure - Enhanced */}
                       <button
                         onClick={() => setShowDeviceLogin(true)}
-                        className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-4 py-3.5 text-[14px] font-medium text-white transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:from-primary/90 hover:to-primary/70 active:scale-[0.99]"
+                        className="w-full flex items-center justify-center gap-2.5 rounded-lg border-[1.5px] border-primary bg-primary px-4 py-3 text-[14px] font-medium text-white transition-colors hover:bg-primary/90"
                       >
                         <FingerprintIcon size={18} />
                         <span>Continue with Passkey</span>
-                        <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-white/20">SECURE</span>
+                        <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/20">SECURE</span>
                       </button>
 
                       {/* Email Verification UI - Enhanced */}
@@ -4174,16 +4185,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <button
                             onClick={handleGoBack}
                             className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-[1.5px] text-xs font-normal transition-all",
                               isDark
-                                ? "text-primary hover:bg-primary/10"
-                                : "text-primary hover:bg-primary/5"
+                                ? "border-white/10 text-white/60 hover:border-primary/50 hover:text-primary"
+                                : "border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary"
                             )}
                           >
                             <ArrowLeft size={14} />
                             Back
                           </button>
-                          <span className="text-sm font-medium text-primary">Passkey Authentication</span>
+                          <div
+                            className="flex-1 h-px"
+                            style={{
+                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                              backgroundSize: '6px 1px'
+                            }}
+                          />
+                          <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Passkey</span>
                         </div>
 
                         {/* Error Alert */}

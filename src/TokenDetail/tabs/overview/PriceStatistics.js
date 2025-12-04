@@ -171,6 +171,9 @@ export default function PriceStatistics({ token, isDark = false }) {
   const [isMobile, setIsMobile] = useState(false);
   const [creations, setCreations] = useState(0);
   const [openScamWarning, setOpenScamWarning] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTx, setLoadingTx] = useState(false);
   const fetchedCreatorRef = useRef(null);
 
   useEffect(() => {
@@ -219,6 +222,25 @@ export default function PriceStatistics({ token, isDark = false }) {
         .catch((err) => console.error('Failed to fetch account creations:', err));
     }
   }, [creator]);
+
+  // Fetch creator activity when expanded
+  useEffect(() => {
+    if (!activityOpen || !creator || transactions.length > 0) return;
+    setLoadingTx(true);
+    fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=10`)
+      .then(res => res.json())
+      .then(data => {
+        if (data?.result === 'success' && data?.transactions) {
+          const validTxs = data.transactions
+            .map(t => t.tx_json && !t.tx ? { ...t, tx: t.tx_json } : t)
+            .filter(t => t?.tx?.TransactionType)
+            .slice(0, 6);
+          setTransactions(validTxs);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingTx(false));
+  }, [activityOpen, creator, transactions.length]);
 
   const voldivmarket =
     marketcap > 0 && vol24hxrp != null
@@ -357,30 +379,34 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell>
                 <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} style={{ minWidth: 0, flex: 1, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
-                  <Chip
-                    size="small"
-                    style={{
-                      paddingLeft: '6px',
-                      paddingRight: '6px',
-                      borderRadius: '8px',
-                      height: '26px',
-                      background: alpha('rgba(156,39,176,1)', 0.08),
-                      border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
-                      color: '#9C27B0',
-                      fontWeight: 400,
-                      minWidth: 0,
-                      maxWidth: isMobile ? '100px' : '200px',
-                      overflow: 'hidden',
-                      flexShrink: 1
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      style={{ fontWeight: 400, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  <Tooltip title="Click to view activity">
+                    <Chip
+                      size="small"
+                      onClick={() => setActivityOpen(!activityOpen)}
+                      style={{
+                        paddingLeft: '6px',
+                        paddingRight: '6px',
+                        borderRadius: '8px',
+                        height: '26px',
+                        background: activityOpen ? alpha('rgba(156,39,176,1)', 0.15) : alpha('rgba(156,39,176,1)', 0.08),
+                        border: `1.5px solid ${activityOpen ? 'rgba(156,39,176,0.4)' : alpha('rgba(156,39,176,1)', 0.15)}`,
+                        color: '#9C27B0',
+                        fontWeight: 400,
+                        minWidth: 0,
+                        maxWidth: isMobile ? '100px' : '200px',
+                        overflow: 'hidden',
+                        flexShrink: 1,
+                        cursor: 'pointer'
+                      }}
                     >
-                      {creator}
-                    </Typography>
-                  </Chip>
+                      <Typography
+                        variant="caption"
+                        style={{ fontWeight: 400, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      >
+                        {creator}
+                      </Typography>
+                    </Chip>
+                  </Tooltip>
                   <Tooltip title="Copy creator address">
                     <IconButton
                       onClick={() => {
@@ -424,6 +450,70 @@ export default function PriceStatistics({ token, isDark = false }) {
                     </Tooltip>
                   ) : null}
                 </Stack>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Creator Activity - Inline */}
+          {creator && activityOpen && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '8px' }}>
+                <Box style={{
+                  background: isDark ? 'rgba(156,39,176,0.05)' : 'rgba(156,39,176,0.03)',
+                  borderRadius: '8px',
+                  padding: '8px'
+                }}>
+                  {loadingTx ? (
+                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
+                      Loading...
+                    </Typography>
+                  ) : transactions.length === 0 ? (
+                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
+                      No recent activity
+                    </Typography>
+                  ) : (
+                    <Stack spacing={0.5}>
+                      {transactions.map((txData, i) => {
+                        const tx = txData.tx;
+                        const meta = txData.meta;
+                        const type = tx.TransactionType;
+                        const isIn = tx.Destination === creator;
+                        const isSelf = tx.Account === tx.Destination;
+                        const label = type === 'Payment' ? (isSelf && tx.SendMax ? 'Swap' : isIn ? 'In' : 'Out') : type === 'OfferCreate' ? 'Offer' : type === 'TrustSet' ? 'Trust' : type?.slice(0,5);
+                        const color = type === 'Payment' ? (isSelf ? '#3b82f6' : isIn ? '#22c55e' : '#ef4444') : type === 'OfferCreate' ? '#3b82f6' : '#9C27B0';
+
+                        // Time ago
+                        const diffMs = tx.date ? Date.now() - new Date((tx.date + 946684800) * 1000) : 0;
+                        const mins = Math.floor(diffMs / 60000);
+                        const hours = Math.floor(diffMs / 3600000);
+                        const days = Math.floor(diffMs / 86400000);
+                        const timeAgo = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${mins}m`;
+
+                        // Amount
+                        let amountStr = '';
+                        if (type === 'Payment') {
+                          const amt = meta?.delivered_amount || meta?.DeliveredAmount || tx.Amount;
+                          if (typeof amt === 'string') {
+                            amountStr = `${fNumber(parseInt(amt) / 1e6)} XRP`;
+                          } else if (amt?.value) {
+                            const curr = amt.currency?.length > 3 ? Buffer.from(amt.currency, 'hex').toString().replace(/\0/g, '') : amt.currency;
+                            amountStr = `${fNumber(amt.value)} ${curr}`;
+                          }
+                        }
+
+                        return (
+                          <Stack key={tx.hash || i} direction="row" alignItems="center" style={{ gap: '6px', justifyContent: 'space-between' }}>
+                            <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
+                              <Typography variant="caption" style={{ color, fontSize: '10px', fontWeight: 500, minWidth: '32px' }}>{label}</Typography>
+                              {amountStr && <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontSize: '10px' }}>{amountStr}</Typography>}
+                            </Stack>
+                            <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '9px' }}>{timeAgo}</Typography>
+                          </Stack>
+                        );
+                      })}
+                    </Stack>
+                  )}
+                </Box>
               </ModernTableCell>
             </TableRow>
           )}

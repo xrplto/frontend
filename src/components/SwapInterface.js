@@ -469,33 +469,7 @@ const TokenCard = styled(Box)(({ theme }) => ({
   }
 }));
 
-const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '12px',
-  fontWeight: 400,
-  fontSize: '10px',
-  height: 24,
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  '&:hover': {
-    borderColor: alpha(theme.palette.primary.main, 0.4),
-    backgroundColor: alpha(theme.palette.primary.main, 0.04)
-  },
-  '& .MuiChip-label': {
-    paddingLeft: '8px',
-    paddingRight: '8px'
-  }
-}));
 
-const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 400,
-  fontSize: '10px',
-  textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(0.5),
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.25)
-}));
 
 function truncate(str, n) {
   if (!str) return '';
@@ -2207,70 +2181,45 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       key={token.md5}
       onClick={() => handleSelectToken(token, isToken1)}
       className={cn(
-        "flex items-center px-2 py-2.5 cursor-pointer border-b last:border-b-0 transition-colors",
-        darkMode
-          ? "border-white/5 hover:bg-white/[0.03]"
-          : "border-gray-100 hover:bg-gray-50"
+        "flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150",
+        darkMode ? "hover:bg-white/[0.03]" : "hover:bg-gray-50"
       )}
     >
-      {/* Token Icon */}
-      <div className="relative w-8 h-8 mr-2.5 flex-shrink-0">
-        <img
-          src={`https://s1.xrpl.to/token/${token.md5}`}
-          alt={token.name}
-          className={cn(
-            "w-8 h-8 rounded-full object-cover",
-            darkMode ? "bg-white/5" : "bg-gray-100"
-          )}
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
-        />
-      </div>
-
-      {/* Token Name & Price - stacked on mobile */}
-      <div className="flex-1 min-w-0 mr-2">
-        <p className={cn("text-[13px] font-medium leading-tight truncate", darkMode ? "text-white" : "text-gray-900")}>
-          {token.name || token.currency}
-        </p>
-        <p className={cn("text-[11px] tabular-nums", darkMode ? "text-white/50" : "text-gray-500")}>
-          {(() => {
-            if (token.currency === 'XRP') return '1.0000';
-            if (!token.exch && token.exch !== 0) return '0';
-            let price = Number(token.exch);
-            if (isNaN(price) || price === 0) return '0';
-            if (price >= 1) return price.toFixed(4);
-            if (price >= 0.0001) return price.toFixed(6);
-            return price.toFixed(8);
-          })()}
+      <img
+        src={`https://s1.xrpl.to/token/${token.md5}`}
+        alt={token.name}
+        className="w-9 h-9 rounded-full object-cover"
+        onError={(e) => { e.target.src = '/static/alt.webp'; }}
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className={cn("text-[14px] font-medium", darkMode ? "text-white" : "text-gray-900")}>
+            {token.user || token.name || token.currency}
+          </span>
+          <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>•</span>
+          <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
+            ({token.name || token.currency})
+          </span>
+        </div>
+        <p className={cn("text-[11px] font-mono truncate mt-0.5", darkMode ? "text-white/25" : "text-gray-400")}>
+          {token.issuer || 'XRPL'}
         </p>
       </div>
-
-      {/* Volume - hidden on very small screens */}
-      <div className="hidden xs:block w-12 text-right flex-shrink-0 mr-2">
-        <span className={cn("text-[11px] tabular-nums", darkMode ? "text-white/40" : "text-gray-400")}>
-          {(() => {
-            if (!token.vol24hxrp) return '-';
-            const vol = parseFloat(token.vol24hxrp);
-            if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
-            if (vol >= 1000) return `${(vol / 1000).toFixed(0)}K`;
-            return vol.toFixed(0);
-          })()}
+      <div className="flex items-center gap-2">
+        <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", darkMode ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>
+          Token
         </span>
-      </div>
-
-      {/* Market Cap */}
-      <div className="w-14 text-right flex-shrink-0">
-        <span className={cn("text-[12px] font-medium tabular-nums", darkMode ? "text-white/70" : "text-gray-600")}>
-          {(() => {
-            if (!token.marketcap) return '-';
-            const mcap = parseFloat(token.marketcap);
-            if (mcap >= 1000000000) return `${(mcap / 1000000000).toFixed(1)}B`;
-            if (mcap >= 1000000) return `${(mcap / 1000000).toFixed(1)}M`;
-            if (mcap >= 1000) return `${(mcap / 1000).toFixed(0)}K`;
-            return mcap.toFixed(0);
-          })()}
-        </span>
+        {(token.kyc || token.isOMCF === 'yes') && (
+          <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">
+            ✓ Verified
+          </span>
+        )}
+        <div className="text-right min-w-[50px]">
+          <span className={cn("text-[13px] font-medium tabular-nums", darkMode ? "text-white/70" : "text-gray-600")}>
+            {token.holders?.toLocaleString() || '-'}
+          </span>
+          <p className={cn("text-[9px] uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Holders</p>
+        </div>
       </div>
     </div>
   );
@@ -2322,140 +2271,100 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
     <>
       {/* Backdrop overlay */}
-      <div
-        onClick={onClose}
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1200]"
-      />
+      <div onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1200]" />
 
       {/* Modal Panel */}
-      <div
-        className={cn(
-          "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-[720px] h-[90vh] max-h-[750px] rounded-xl border-[1.5px] flex flex-col z-[1201]",
-          darkMode ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
-        )}
-      >
-        {/* Header */}
-        <div className={cn("p-2 border-b flex items-center justify-between", darkMode ? "border-white/[0.08]" : "border-gray-200")}>
-          <span className={cn("text-[13px] font-normal", darkMode ? "text-white" : "text-gray-900")}>{title}</span>
-          <button onClick={onClose} className={cn("p-1 rounded-lg hover:bg-white/5", darkMode ? "text-white/60" : "text-gray-500")}>
-            <X size={18} />
+      <div className={cn(
+        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-xl border overflow-hidden max-h-[80vh] flex flex-col z-[1201]",
+        darkMode
+          ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10"
+          : "bg-blue-50/95 backdrop-blur-xl border-primary/20 shadow-xl shadow-primary/10"
+      )}>
+        {/* Search Header */}
+        <div className={cn(
+          "flex items-center gap-3 px-4 h-[52px] border-b",
+          darkMode ? "border-primary/10" : "border-primary/10"
+        )}>
+          <Search size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
+          <input
+            ref={searchInputRef}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search tokens..."
+            className={cn(
+              "flex-1 bg-transparent text-[14px] outline-none",
+              darkMode ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400"
+            )}
+          />
+          <button onClick={onClose} className={cn("p-1.5 rounded-lg transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+            <X size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
           </button>
         </div>
 
-        {/* Search and Filters */}
-        <div className={cn("p-2 border-b", darkMode ? "border-white/[0.08]" : "border-gray-200")}>
-          <div className="relative">
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search tokens..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+        {/* Category Filters */}
+        <div className={cn("flex flex-wrap gap-1.5 px-4 py-2 border-b", darkMode ? "border-primary/10" : "border-primary/10")}>
+          {categories.slice(0, 6).map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
               className={cn(
-                "w-full px-3 py-2 text-[13px] rounded-xl border-[1.5px] bg-transparent outline-none transition-colors",
-                darkMode
-                  ? "border-white/[0.08] text-white placeholder:text-white/40 focus:border-primary"
-                  : "border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                "px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors",
+                selectedCategory === cat.value
+                  ? "bg-primary text-white"
+                  : darkMode
+                    ? "text-white/50 hover:text-white hover:bg-white/[0.05]"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
               )}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className={cn(
-                  "absolute right-3 top-1/2 -translate-y-1/2 text-[16px] hover:opacity-80",
-                  darkMode ? "text-white/50" : "text-gray-400"
-                )}
-              >
-                ×
-              </button>
-            )}
-          </div>
-
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {categories.slice(0, 6).map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => setSelectedCategory(cat.value)}
-                className={cn(
-                  "px-2 py-1 text-[10px] rounded-lg border-[1.5px] transition-colors",
-                  selectedCategory === cat.value
-                    ? "bg-primary/10 text-primary border-primary/30"
-                    : darkMode
-                      ? "text-white/50 border-white/[0.08] hover:border-primary/30 hover:bg-primary/5"
-                      : "text-gray-500 border-gray-200 hover:border-primary/30 hover:bg-primary/5"
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'none' }}>
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
-            <div className="mb-2">
-              <div className="flex justify-between items-center mb-1">
-                <SectionTitle>Recent</SectionTitle>
-                <button
-                  onClick={handleClearRecent}
-                  className="text-[10px] text-red-500 hover:underline"
-                >
+            <div className="p-2">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Recent</span>
+                <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                <button onClick={handleClearRecent} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors">
                   Clear
                 </button>
               </div>
-              <div className={cn("rounded-lg border", darkMode ? "border-white/5" : "border-gray-100")}>
-                {recentTokens.map((token) => renderTokenItem(token, isToken1))}
-              </div>
+              {recentTokens.map((token) => renderTokenItem(token, isToken1))}
             </div>
           )}
 
           {/* Token List */}
-          <div>
-            <SectionTitle>
-              {searchQuery ? (
-                <>Search Results ({filteredTokens.length})</>
-              ) : selectedCategory === 'all' ? (
-                <>All Available Tokens</>
-              ) : (
-                <>{categories.find((c) => c.value === selectedCategory)?.label}</>
-              )}
-            </SectionTitle>
+          <div className="p-2">
+            <div className="flex items-center gap-3 px-2 py-2">
+              <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">
+                {searchQuery ? `Results (${filteredTokens.length})` : selectedCategory === 'all' ? 'Tokens' : categories.find((c) => c.value === selectedCategory)?.label}
+              </span>
+              <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+            </div>
 
             {loadingTokens ? (
-              <div>
-                {[...Array(12)].map((_, i) => (
-                  <div key={`skeleton-${i}`} className="flex items-center px-2 py-1 mb-1 rounded-lg opacity-60 animate-pulse">
-                    <div className={cn("w-7 h-7 rounded-full mr-2", darkMode ? "bg-white/10" : "bg-gray-200")} />
+              <div className="space-y-1">
+                {[...Array(8)].map((_, i) => (
+                  <div key={`skeleton-${i}`} className="flex items-center gap-3 px-2 py-3 animate-pulse">
+                    <div className={cn("w-9 h-9 rounded-full", darkMode ? "bg-white/10" : "bg-gray-200")} />
                     <div className="flex-1">
-                      <div className={cn("h-2 w-[40%] rounded mb-1", darkMode ? "bg-white/10" : "bg-gray-200")} />
-                      <div className={cn("h-1.5 w-[25%] rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                      <div className={cn("h-3 w-[40%] rounded mb-1.5", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                      <div className={cn("h-2 w-[60%] rounded", darkMode ? "bg-white/5" : "bg-gray-100")} />
                     </div>
-                    <div className={cn("h-2 w-[90px] rounded mr-3", darkMode ? "bg-white/10" : "bg-gray-200")} />
-                    <div className={cn("h-1.5 w-[55px] rounded mr-3", darkMode ? "bg-white/10" : "bg-gray-200")} />
-                    <div className={cn("h-1.5 w-[45px] rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    <div className={cn("h-6 w-12 rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
                   </div>
                 ))}
               </div>
             ) : filteredTokens.length > 0 ? (
-              <div>
-                {/* Column Headers */}
-                <div className={cn("flex items-center px-2 py-1.5 mb-1 border-b", darkMode ? "border-white/[0.06]" : "border-gray-200")}>
-                  <div className="w-8 mr-2.5 flex-shrink-0" />
-                  <span className={cn("flex-1 text-[10px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Token</span>
-                  <span className={cn("hidden xs:block w-12 text-right mr-2 text-[10px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Vol</span>
-                  <span className={cn("w-14 text-right text-[10px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>MCap</span>
-                </div>
-                {/* Token list */}
-                {filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))}
-              </div>
+              filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))
             ) : (
-              <div className={cn("p-6 text-center rounded-lg", darkMode ? "bg-white/5" : "bg-gray-50")}>
-                <p className={cn("text-[15px] mb-1", darkMode ? "text-white/60" : "text-gray-500")}>No tokens found</p>
+              <div className="py-6 text-center">
                 <p className={cn("text-[13px]", darkMode ? "text-white/40" : "text-gray-400")}>
-                  {searchQuery ? `No results for "${searchQuery}"` : 'No tokens available in this category'}
+                  {searchQuery ? `No results for "${searchQuery}"` : 'No tokens available'}
                 </p>
               </div>
             )}
@@ -2751,77 +2660,112 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               )}>
             {/* Settings Modal */}
             {showSettingsModal && (
-              <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-md" onClick={() => setShowSettingsModal(false)}>
-                <div onClick={e => e.stopPropagation()} className={cn(
-                  "rounded-3xl p-6 w-80 shadow-2xl",
-                  darkMode ? "bg-[#1c1c1e] border border-white/10" : "bg-white"
-                )}>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className={cn("text-[15px] font-semibold", darkMode ? "text-white" : "text-gray-900")}>Settings</span>
-                    <button onClick={() => setShowSettingsModal(false)} className={cn("p-1.5 rounded-full transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-gray-100")}>
-                      <X size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
+              <div
+                className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                onClick={() => setShowSettingsModal(false)}
+              >
+                <div
+                  onClick={e => e.stopPropagation()}
+                  className={`w-[320px] rounded-xl border-[1.5px] p-5 ${darkMode ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'}`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-[15px] font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Settings</span>
+                    <button onClick={() => setShowSettingsModal(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                      <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
                     </button>
                   </div>
 
-                  <div className={cn("rounded-2xl p-4 mb-4", darkMode ? "bg-white/[0.04]" : "bg-[#f8f9fa]")}>
-                    <p className={cn("text-[11px] font-medium mb-3", darkMode ? "text-white/50" : "text-gray-500")}>Max Slippage</p>
+                  {/* Max Slippage Section */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}>Max Slippage</span>
+                      <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                    </div>
                     <div className="flex gap-2">
                       {[1, 2, 3, 5].map((val) => (
-                        <button key={val} onClick={() => setSlippage(val)} className={cn(
-                          "flex-1 h-10 rounded-xl text-[13px] font-semibold transition-all",
-                          slippage === val
-                            ? "bg-primary text-white shadow-lg shadow-primary/30"
-                            : darkMode ? "bg-white/[0.08] text-white/60 hover:bg-white/[0.12]" : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
-                        )}>{val}%</button>
+                        <button
+                          key={val}
+                          onClick={() => setSlippage(val)}
+                          className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                            slippage === val
+                              ? 'bg-primary text-white border-primary'
+                              : darkMode ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                          }`}
+                        >
+                          {val}%
+                        </button>
                       ))}
-                      <div className={cn("flex items-center justify-center h-10 px-3 rounded-xl min-w-[56px]", darkMode ? "bg-white/[0.08]" : "bg-white shadow-sm")}>
-                        <input type="text" inputMode="decimal" value={slippage} onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9.]/g, '');
-                          if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
-                            setSlippage(val === '' ? '' : parseFloat(val) || val);
-                          }
-                        }} className={cn("w-5 bg-transparent text-[13px] text-center outline-none font-semibold", darkMode ? "text-white" : "text-gray-900")} />
-                        <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-400")}>%</span>
+                      <div className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={slippage}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
+                              setSlippage(val === '' ? '' : parseFloat(val) || val);
+                            }
+                          }}
+                          className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                        />
+                        <span className={`text-[12px] ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>%</span>
                       </div>
                     </div>
                     {slippage >= 4 && (
                       <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        <p className="text-[11px] text-amber-500">High slippage may cause front-running</p>
+                        <span className="text-[11px] text-amber-500">High slippage may cause front-running</span>
                       </div>
                     )}
                   </div>
 
-                  <div className={cn("rounded-2xl p-4", darkMode ? "bg-white/[0.04]" : "bg-[#f8f9fa]")}>
-                    <p className={cn("text-[11px] font-medium mb-3", darkMode ? "text-white/50" : "text-gray-500")}>Network Fee <span className={darkMode ? "text-white/30" : "text-gray-400"}>(drops)</span></p>
+                  {/* Network Fee Section */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}>Network Fee</span>
+                      <span className={`text-[10px] ${darkMode ? 'text-white/25' : 'text-gray-400'}`}>(drops)</span>
+                      <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                    </div>
                     <div className="flex gap-2">
                       {[12, 15, 20, 50].map((val) => (
-                        <button key={val} onClick={() => setTxFee(String(val))} className={cn(
-                          "flex-1 h-10 rounded-xl text-[13px] font-semibold transition-all",
-                          txFee === String(val)
-                            ? "bg-primary text-white shadow-lg shadow-primary/30"
-                            : darkMode ? "bg-white/[0.08] text-white/60 hover:bg-white/[0.12]" : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
-                        )}>{val}</button>
+                        <button
+                          key={val}
+                          onClick={() => setTxFee(String(val))}
+                          className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                            txFee === String(val)
+                              ? 'bg-primary text-white border-primary'
+                              : darkMode ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                          }`}
+                        >
+                          {val}
+                        </button>
                       ))}
-                      <div className={cn("flex items-center px-3 rounded-xl min-w-[60px]", darkMode ? "bg-white/[0.08]" : "bg-white shadow-sm")}>
-                        <input type="text" inputMode="numeric" value={txFee} onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9]/g, '');
-                          setTxFee(val);
-                        }} className={cn("w-8 bg-transparent text-[13px] text-center outline-none font-semibold", darkMode ? "text-white" : "text-gray-900")} />
+                      <div className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={txFee}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9]/g, '');
+                            setTxFee(val);
+                          }}
+                          className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                        />
                       </div>
                     </div>
-                    <p className={cn("text-[10px] mt-3", darkMode ? "text-white/30" : "text-gray-400")}>
-                      Higher fees = priority during congestion
-                    </p>
+                    <p className={`text-[10px] mt-2 ${darkMode ? 'text-white/30' : 'text-gray-400'}`}>Higher fees = priority during congestion</p>
                     {parseInt(txFee) >= 50 && (
                       <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        <p className="text-[11px] text-amber-500">Only needed during extreme congestion</p>
+                        <span className="text-[11px] text-amber-500">Only needed during extreme congestion</span>
                       </div>
                     )}
                   </div>
 
-                  <button onClick={() => setShowSettingsModal(false)} className="w-full mt-5 py-3.5 rounded-2xl bg-primary text-white text-[14px] font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                  <button
+                    onClick={() => setShowSettingsModal(false)}
+                    className="w-full py-3 rounded-lg bg-primary text-white text-[14px] font-medium border-none cursor-pointer hover:bg-primary/90 transition-colors"
+                  >
                     Save Settings
                   </button>
                 </div>

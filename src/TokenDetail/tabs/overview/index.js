@@ -29,7 +29,7 @@ import Swap from './Swap';
 import TokenSummary from '../../components/TokenSummary';
 
 const Overview = memo(
-  ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData, onCreatorTxToggle, creatorTxOpen, latestCreatorTx, setLatestCreatorTx }) => {
+  ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
     const isTablet = typeof window !== 'undefined' && window.innerWidth < 960;
     const BASE_URL = 'https://api.xrpl.to/api';
@@ -159,13 +159,7 @@ const Overview = memo(
 
           {/* Right sidebar: TokenSummary, Swap, Stats, Trending - fills remaining space */}
           <aside className="w-full md:w-[520px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
-            <TokenSummary
-              token={token}
-              onCreatorTxToggle={onCreatorTxToggle}
-              creatorTxOpen={creatorTxOpen}
-              latestCreatorTx={latestCreatorTx}
-              setLatestCreatorTx={setLatestCreatorTx}
-            />
+            <TokenSummary token={token} />
             <h2 className="sr-only">Swap</h2>
             <Swap
               token={token}

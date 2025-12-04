@@ -515,7 +515,8 @@ const Dialog = styled.div`
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: ${props => props.isDark ? '#000000' : 'rgba(0,0,0,0.5)'};
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
   display: ${props => props.open ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
@@ -525,29 +526,28 @@ const Dialog = styled.div`
 `;
 
 const DialogPaper = styled.div`
-  background: ${props => props.isDark ? '#0c0c12' : '#ffffff'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 16px;
+  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#ffffff'};
+  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 12px;
   max-width: 420px;
   width: 100%;
   max-height: calc(100vh - 32px);
   overflow: auto;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9);
 `;
 
 const DialogTitle = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  padding: 16px 20px;
   font-size: 15px;
   font-weight: 500;
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
 `;
 
 const DialogContent = styled.div`
-  padding: 20px;
+  padding: 0 20px 20px;
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
 `;
 
@@ -555,12 +555,12 @@ const TextField = styled.input`
   width: 100%;
   padding: 12px 14px;
   font-size: 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.12)'};
-  border-radius: 10px;
-  background: ${props => props.isDark ? '#1a1a1a' : '#f5f5f5'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb'};
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
-  &:focus { outline: none; border-color: #3b82f6; background: ${props => props.isDark ? '#1f1f1f' : '#f0f7ff'}; }
-  &::placeholder { color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}; }
+  &:focus { outline: none; border-color: rgba(66,133,244,0.5); }
+  &::placeholder { color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)'}; }
 `;
 
 const FormControl = styled.div`
@@ -2142,9 +2142,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     alignItems: 'center',
                     gap: '10px',
                     padding: '12px 14px',
-                    background: isDark ? '#1a1a1a' : '#f5f5f5',
-                    borderRadius: '10px',
-                    border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+                    background: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
                   }}>
                     <div style={{ display: 'flex' }}>
                       <img src={getTokenImageUrl(addLiquidityDialog.pool.asset1.issuer, addLiquidityDialog.pool.asset1.currency)} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />
@@ -2156,30 +2156,34 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   </div>
 
                   {/* Deposit Mode */}
-                  <FormControl>
-                    <label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '10px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>Deposit Mode</label>
-                    <RadioGroup style={{ gap: '8px' }}>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'double' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'double' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
-                        <Radio type="radio" value="double" checked={depositMode === 'double'} onChange={(e) => setDepositMode(e.target.value)} />
-                        <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Double-asset (both tokens, no fee)</span>
-                      </FormControlLabel>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single1' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single1' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
-                        <Radio type="radio" value="single1" checked={depositMode === 'single1'} onChange={(e) => setDepositMode(e.target.value)} />
-                        <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
-                      </FormControlLabel>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single2' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single2' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
-                        <Radio type="radio" value="single2" checked={depositMode === 'single2'} onChange={(e) => setDepositMode(e.target.value)} />
-                        <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
-                      </FormControlLabel>
-                    </RadioGroup>
-                  </FormControl>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)' }}>Deposit Mode</span>
+                      <div style={{ flex: 1, height: '1px', backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', border: `1.5px solid ${depositMode === 'double' ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`, background: depositMode === 'double' ? (isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)') : 'transparent' }}>
+                        <input type="radio" value="double" checked={depositMode === 'double'} onChange={(e) => setDepositMode(e.target.value)} style={{ accentColor: '#4285f4' }} />
+                        <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Double-asset (both tokens, no fee)</span>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', border: `1.5px solid ${depositMode === 'single1' ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`, background: depositMode === 'single1' ? (isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)') : 'transparent' }}>
+                        <input type="radio" value="single1" checked={depositMode === 'single1'} onChange={(e) => setDepositMode(e.target.value)} style={{ accentColor: '#4285f4' }} />
+                        <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', border: `1.5px solid ${depositMode === 'single2' ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`, background: depositMode === 'single2' ? (isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)') : 'transparent' }}>
+                        <input type="radio" value="single2" checked={depositMode === 'single2'} onChange={(e) => setDepositMode(e.target.value)} style={{ accentColor: '#4285f4' }} />
+                        <span style={{ fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
+                      </label>
+                    </div>
+                  </div>
 
                   {/* Asset 1 Input */}
                   {(depositMode === 'double' || depositMode === 'single1') && (
                     <div>
-                      <label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '8px', display: 'block', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
-                        {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
-                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)' }}>{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</span>
+                        <div style={{ flex: 1, height: '1px', backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                      </div>
                       <div style={{ position: 'relative' }}>
                         <TextField
                           value={depositAmount1}
@@ -2189,7 +2193,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                           isDark={isDark}
                           style={{ paddingRight: '70px' }}
                         />
-                        <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                        <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                           {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
                         </span>
                       </div>
@@ -2199,9 +2203,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   {/* Asset 2 Input */}
                   {(depositMode === 'double' || depositMode === 'single2') && (
                     <div>
-                      <label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '8px', display: 'block', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
-                        {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
-                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)' }}>{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</span>
+                        <div style={{ flex: 1, height: '1px', backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
+                      </div>
                       <div style={{ position: 'relative' }}>
                         <TextField
                           value={depositAmount2}
@@ -2211,7 +2216,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                           isDark={isDark}
                           style={{ paddingRight: '70px' }}
                         />
-                        <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                        <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                           {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
                         </span>
                       </div>
@@ -2222,20 +2227,20 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   <button
                     onClick={handleSubmitDeposit}
                     style={{
-                      padding: '14px 24px',
+                      padding: '12px 24px',
                       fontSize: '14px',
                       fontWeight: 500,
                       width: '100%',
-                      background: '#3b82f6',
+                      background: '#4285f4',
                       color: '#fff',
-                      border: 'none',
-                      borderRadius: '10px',
+                      border: '1.5px solid #4285f4',
+                      borderRadius: '8px',
                       cursor: 'pointer',
-                      marginTop: '8px',
-                      transition: 'background 0.15s'
+                      marginTop: '4px',
+                      transition: 'background 0.15s, opacity 0.15s'
                     }}
-                    onMouseOver={(e) => e.target.style.background = '#2563eb'}
-                    onMouseOut={(e) => e.target.style.background = '#3b82f6'}
+                    onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                    onMouseOut={(e) => e.target.style.opacity = '1'}
                   >
                     Add Liquidity
                   </button>
