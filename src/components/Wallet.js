@@ -39,7 +39,8 @@ import {
   ExternalLink,
   RefreshCw,
   Maximize2,
-  Minimize2
+  Minimize2,
+  ChevronRight
 } from 'lucide-react';
 
 // Context
@@ -4082,25 +4083,69 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <p className={cn("text-[10px] mb-2", isDark ? "text-white/50" : "text-gray-500")}>
                               Slide to delete permanently
                             </p>
-                            <div className="relative">
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={clearSliderValue}
-                                onChange={(e) => {
-                                  const val = parseInt(e.target.value);
+                            <div
+                              className={cn(
+                                "relative h-10 rounded-lg overflow-hidden cursor-pointer select-none",
+                                isDark ? "bg-white/10" : "bg-gray-200"
+                              )}
+                              onMouseDown={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const handleMove = (moveEvent) => {
+                                  const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
+                                  const val = Math.round((x / rect.width) * 100);
                                   setClearSliderValue(val);
-                                  if (val >= 100) handleClearAllWallets();
-                                }}
-                                className="w-full h-8 appearance-none rounded-lg cursor-pointer"
-                                style={{
-                                  background: `linear-gradient(to right, ${isDark ? 'rgb(239 68 68 / 0.4)' : 'rgb(239 68 68 / 0.3)'} ${clearSliderValue}%, ${isDark ? 'rgb(255 255 255 / 0.1)' : 'rgb(229 231 235)'} ${clearSliderValue}%)`
-                                }}
+                                  if (val >= 95) handleClearAllWallets();
+                                };
+                                const handleUp = () => {
+                                  document.removeEventListener('mousemove', handleMove);
+                                  document.removeEventListener('mouseup', handleUp);
+                                  if (clearSliderValue < 95) setClearSliderValue(0);
+                                };
+                                handleMove(e);
+                                document.addEventListener('mousemove', handleMove);
+                                document.addEventListener('mouseup', handleUp);
+                              }}
+                              onTouchStart={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const handleMove = (moveEvent) => {
+                                  const touch = moveEvent.touches[0];
+                                  const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
+                                  const val = Math.round((x / rect.width) * 100);
+                                  setClearSliderValue(val);
+                                  if (val >= 95) handleClearAllWallets();
+                                };
+                                const handleEnd = () => {
+                                  document.removeEventListener('touchmove', handleMove);
+                                  document.removeEventListener('touchend', handleEnd);
+                                  if (clearSliderValue < 95) setClearSliderValue(0);
+                                };
+                                handleMove(e);
+                                document.addEventListener('touchmove', handleMove);
+                                document.addEventListener('touchend', handleEnd);
+                              }}
+                            >
+                              {/* Progress fill */}
+                              <div
+                                className="absolute inset-y-0 left-0 bg-red-500/80 transition-all duration-75"
+                                style={{ width: `${clearSliderValue}%` }}
                               />
+                              {/* Thumb */}
+                              <div
+                                className={cn(
+                                  "absolute top-1 bottom-1 w-10 rounded-md flex items-center justify-center transition-all duration-75",
+                                  clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/20" : "bg-gray-300"
+                                )}
+                                style={{ left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.4}px)` }}
+                              >
+                                <ChevronRight size={16} className="text-white" />
+                              </div>
+                              {/* Text */}
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className={cn("text-[11px]", clearSliderValue > 50 ? "text-white" : isDark ? "text-white/40" : "text-gray-400")}>
-                                  {clearSliderValue < 100 ? '→ Slide to delete →' : 'Deleting...'}
+                                <span className={cn(
+                                  "text-[11px] font-medium ml-8 transition-opacity",
+                                  clearSliderValue > 30 ? "opacity-0" : isDark ? "text-white/50" : "text-gray-500"
+                                )}>
+                                  {clearSliderValue < 95 ? 'Slide to delete →' : 'Deleting...'}
                                 </span>
                               </div>
                             </div>

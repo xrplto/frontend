@@ -793,23 +793,21 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   const notConnectedState = (
     <Box
       style={{
-        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '40px 24px',
         backgroundColor: 'transparent',
         borderRadius: '12px',
         border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
       }}
     >
-      <div style={{ marginBottom: '12px' }}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-      </div>
-      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px', fontSize: '14px' }}>
+      <Wallet size={40} strokeWidth={1.5} style={{ marginBottom: '12px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }} />
+      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>
         Connect Wallet to View Activity
       </Typography>
-      <Typography variant="body2" color="text.secondary" isDark={isDark} style={{ fontSize: '12px', opacity: 0.7 }}>
+      <Typography variant="body2" color="text.secondary" isDark={isDark} style={{ fontSize: '12px', opacity: 0.7, textAlign: 'center' }}>
         Your trading history and open offers will appear here
       </Typography>
     </Box>
