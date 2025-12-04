@@ -3346,10 +3346,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       </button>
 
       <Dialog
-          open={open || (openWalletModal && !accountProfile)}
+          open={open || openWalletModal}
           onClose={() => {
             setOpen(false);
-            if (!accountProfile) setOpenWalletModal(false);
+            setOpenWalletModal(false);
             setShowDeviceLogin(false);
             setStatus('idle');
             setError('');

@@ -49,6 +49,11 @@ const TransactionAlert = dynamic(() => import('src/components/TransactionAlert')
   loading: () => null
 });
 
+const Wallet = dynamic(() => import('src/components/Wallet'), {
+  ssr: false,
+  loading: () => null
+});
+
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
   '@context': 'http://schema.org/',
@@ -305,6 +310,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             </AppPageLayout>
             <Toaster position="bottom-right" richColors closeButton duration={4000} />
             <TransactionAlert />
+            <Wallet />
           </ThemeProvider>
         </ContextProvider>
       </div>
