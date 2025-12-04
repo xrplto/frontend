@@ -1549,21 +1549,36 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </span>
 
               <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <img src={getTokenImageUrl(amountData.issuer, amountData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={getTokenImageUrl(amountData.issuer, amountData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                </div>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5 }}>{decodeCurrency(amountData.currency)}</span>
                 </span>
               </Box>
 
               <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <img src={getTokenImageUrl(totalData.issuer, totalData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={getTokenImageUrl(totalData.issuer, totalData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                </div>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5 }}>{decodeCurrency(totalData.currency)}</span>
                 </span>
                 {(() => {
                   const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                   const { Icon } = getTradeSizeInfo(val);
-                  return <Icon size={14} style={{ marginLeft: '4px' }} />;
+                  return (
+                    <div style={{
+                      marginLeft: '6px',
+                      padding: '3px 6px',
+                      borderRadius: '6px',
+                      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      <Icon size={12} />
+                    </div>
+                  );
                 })()}
               </Box>
 
