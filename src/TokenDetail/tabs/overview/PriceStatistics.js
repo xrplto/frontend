@@ -146,10 +146,11 @@ const ModernTableCell = styled(TableCell)`
   border-bottom: none;
   vertical-align: middle;
   &:first-of-type {
-    width: 45%;
+    width: 50%;
   }
   &:last-of-type {
-    width: 55%;
+    width: 50%;
+    text-align: right;
   }
 `;
 
@@ -340,10 +341,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Creator Row */}
           {creator && (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -354,8 +355,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Creator
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} style={{ minWidth: 0, flex: 1, flexWrap: 'nowrap' }}>
+              <ModernTableCell>
+                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} style={{ minWidth: 0, flex: 1, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
                   <Chip
                     size="small"
                     style={{
@@ -429,7 +430,7 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* Volume/Market Cap Row */}
           <TableRow>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -443,7 +444,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                 Volume / Market Cap
               </Typography>
             </ModernTableCell>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -460,7 +461,7 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* Market Dominance Row */}
           <TableRow>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -474,7 +475,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                 Market Dominance
               </Typography>
             </ModernTableCell>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -491,7 +492,7 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* Diluted Market Cap Row */}
           <TableRow>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -505,7 +506,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                 Fully Diluted Market Cap
               </Typography>
             </ModernTableCell>
-            <ModernTableCell align="left">
+            <ModernTableCell>
               <Typography
                 isDark={isDark}
                 variant="body2"
@@ -524,10 +525,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Supply Row */}
           {amount ? (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -538,10 +539,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Supply
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
@@ -557,10 +558,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Trustlines Row */}
           {trustlines ? (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -571,10 +572,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Trustlines
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#3b82f6',
@@ -590,10 +591,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Unique Traders (24h) Row */}
           {uniqueTraders24h ? (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -604,10 +605,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Unique Traders (24h)
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
@@ -623,10 +624,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Trades (24h) Row */}
           {vol24htx ? (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -637,10 +638,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Trades (24h)
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#F57C00',
@@ -656,10 +657,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Created Date Row */}
           {date || dateon ? (
             <TableRow>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
@@ -670,10 +671,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                   Created
                 </Typography>
               </ModernTableCell>
-              <ModernTableCell align="left">
+              <ModernTableCell>
                 <Typography
                   isDark={isDark}
-                variant="body2"
+                  variant="body2"
                   style={{
                     fontWeight: 400,
                     color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
