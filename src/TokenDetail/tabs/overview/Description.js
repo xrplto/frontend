@@ -7,26 +7,26 @@ import { AppContext } from 'src/AppContext';
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
 const Card = styled.div`
-  border-radius: 10px;
-  background: transparent;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-radius: 12px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px 4px;
+  padding: 12px 14px 8px;
 `;
 
 const Title = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)'};
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 `;
 
 const Actions = styled.div`
@@ -35,34 +35,36 @@ const Actions = styled.div`
 `;
 
 const IconButton = styled.button`
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 6px;
-  padding: 4px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  padding: 5px;
   background: transparent;
   cursor: pointer;
   color: ${props => props.isError ? '#ef4444' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   display: flex;
   align-items: center;
+  transition: all 0.15s;
   &:hover {
     border-color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
+    background: ${props => props.isError ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)'};
     color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
   }
 `;
 
 const Content = styled.div`
-  padding: 6px 12px 12px;
+  padding: 8px 14px 14px;
   position: relative;
 `;
 
 const Typography = styled.div`
   font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'subtitle1' ? '12px' : props.variant === 'subtitle2' ? '12px' : '13px'};
   font-weight: 400;
-  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') : (props.isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)')};
-  margin-bottom: ${props => props.paragraph ? '8px' : props.gutterBottom ? '8px' : 0};
+  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)') : (props.isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)')};
+  margin-bottom: ${props => props.paragraph ? '10px' : props.gutterBottom ? '10px' : 0};
   margin-top: ${props => props.gutterBottom ? '4px' : 0};
-  line-height: 1.6;
+  line-height: 1.7;
   font-style: ${props => props.fontStyle || 'normal'};
-  letter-spacing: 0.01em;
+  letter-spacing: 0.015em;
 `;
 
 const Tooltip = ({ title, children }) => {

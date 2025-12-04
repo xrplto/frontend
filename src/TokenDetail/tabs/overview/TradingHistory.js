@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef, memo, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo, Suspense, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
+import axios from 'axios';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet } from 'lucide-react';
+import { AppContext } from 'src/AppContext';
+import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 // Custom styled components
 const Box = styled.div``;
@@ -330,22 +332,28 @@ const Pagination = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 6px;
 `;
 
 const PaginationButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: ${props => props.selected ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   background: ${props => props.selected ? '#3b82f6' : 'transparent'};
-  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 6px;
+  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)')};
+  border-radius: 10px;
   font-size: 12px;
-  font-weight: 400;
-  min-width: 28px;
-  height: 28px;
+  font-weight: 500;
+  min-width: 32px;
+  height: 32px;
   cursor: pointer;
-  transition: border-color 0.15s;
-  &:hover { border-color: #3b82f6; }
-  &:disabled { opacity: 0.4; cursor: default; }
+  transition: all 0.15s;
+  &:hover:not(:disabled) {
+    border-color: #3b82f6;
+    background: rgba(59,130,246,0.08);
+  }
+  &:disabled { opacity: 0.3; cursor: default; }
 `;
 
 const Table = styled.table`
@@ -677,10 +685,15 @@ const parseValue = (value) => {
 
 // My Activity Tab Component - Shows user's trading history and open offers
 const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
+  const { accountProfile } = useContext(AppContext);
   const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', or 'offers'
   const [loading, setLoading] = useState(false);
+  const [openOffers, setOpenOffers] = useState([]);
+  const [offersTotal, setOffersTotal] = useState(0);
+  const [offersPage, setOffersPage] = useState(0);
+  const offersLimit = 10;
 
-  // Mock data for user's token assets
+  // Mock data for user's token assets (TODO: implement assets API)
   const mockAssets = {
     balance: 125000,
     avgBuyPrice: 0.00221,
@@ -693,83 +706,40 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     limitAmount: 1000000000
   };
 
-  // Mock data for user's trading history
-  const mockMyTrades = [
-    {
-      _id: 'my1',
-      type: 'BUY',
-      amount: 15000,
-      price: 0.00234,
-      total: 35.1,
-      time: Date.now() - 3600000,
-      hash: 'ABC123DEF456...',
-      status: 'completed'
-    },
-    {
-      _id: 'my2',
-      type: 'SELL',
-      amount: 8500,
-      price: 0.00256,
-      total: 21.76,
-      time: Date.now() - 86400000,
-      hash: 'GHI789JKL012...',
-      status: 'completed'
-    },
-    {
-      _id: 'my3',
-      type: 'BUY',
-      amount: 25000,
-      price: 0.00198,
-      total: 49.5,
-      time: Date.now() - 172800000,
-      hash: 'MNO345PQR678...',
-      status: 'completed'
-    },
-    {
-      _id: 'my4',
-      type: 'SELL',
-      amount: 5000,
-      price: 0.00289,
-      total: 14.45,
-      time: Date.now() - 259200000,
-      hash: 'STU901VWX234...',
-      status: 'completed'
-    }
-  ];
+  // Mock data for user's trading history (TODO: implement trades API)
+  const mockMyTrades = [];
 
-  // Mock data for user's open offers
-  const mockOpenOffers = [
-    {
-      _id: 'offer1',
-      type: 'BUY',
-      amount: 10000,
-      price: 0.00215,
-      total: 21.5,
-      createdAt: Date.now() - 7200000,
-      sequence: 12345678,
-      expiration: null
-    },
-    {
-      _id: 'offer2',
-      type: 'SELL',
-      amount: 20000,
-      price: 0.00310,
-      total: 62.0,
-      createdAt: Date.now() - 14400000,
-      sequence: 12345679,
-      expiration: Date.now() + 86400000
-    },
-    {
-      _id: 'offer3',
-      type: 'BUY',
-      amount: 5000,
-      price: 0.00195,
-      total: 9.75,
-      createdAt: Date.now() - 28800000,
-      sequence: 12345680,
-      expiration: null
+  // Fetch open offers from API
+  const fetchOpenOffers = useCallback(async () => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account || !token?.md5) return;
+
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        pair: token.md5,
+        page: offersPage.toString(),
+        limit: offersLimit.toString()
+      });
+      const res = await axios.get(
+        `https://api.xrpl.to/api/account/offers/${account}?${params}`
+      );
+      if (res.data?.result === 'success') {
+        setOpenOffers(res.data.offers || []);
+        setOffersTotal(res.data.total || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch offers:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, [accountProfile, token?.md5, offersPage]);
+
+  useEffect(() => {
+    if (activeSubTab === 'offers') {
+      fetchOpenOffers();
+    }
+  }, [activeSubTab, fetchOpenOffers]);
 
   const handleCancelOffer = (offerId) => {
     // TODO: Implement offer cancellation
@@ -845,8 +815,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     </Box>
   );
 
-  // For now, show mock data (replace with actual wallet connection check later)
-  const isConnected = true; // TODO: Check actual wallet connection
+  const isConnected = !!(accountProfile?.account || accountProfile?.address);
 
   if (!isConnected) {
     return notConnectedState;
@@ -883,7 +852,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
           onClick={() => setActiveSubTab('offers')}
           isDark={isDark}
         >
-          Open Offers ({mockOpenOffers.length})
+          Open Offers ({offersTotal})
         </SubTab>
       </Box>
 
@@ -1037,7 +1006,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {/* Open Offers */}
       {activeSubTab === 'offers' && (
         <>
-          {mockOpenOffers.length === 0 ? (
+          {loading ? (
+            <Box style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+              <Spinner size={24} />
+            </Box>
+          ) : openOffers.length === 0 ? (
             <Box
               style={{
                 textAlign: 'center',
@@ -1052,58 +1025,112 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
             </Box>
           ) : (
             <Stack spacing={1}>
-              {mockOpenOffers.map((offer) => (
-                <OfferCard key={offer._id} isDark={isDark}>
-                  <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                    {/* Left side - Offer details */}
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                      <TradeTypeChip tradetype={offer.type} style={{ fontSize: '12px', fontWeight: 600 }}>
-                        {offer.type}
-                      </TradeTypeChip>
+              {openOffers.map((offer) => {
+                const isBuy = offer.takerGets?.currency === 'XRP' || offer.takerGets?.value;
+                const type = isBuy ? 'BUY' : 'SELL';
+                const tokenAmount = isBuy
+                  ? parseFloat(offer.takerPays?.value || offer.takerPays || 0)
+                  : parseFloat(offer.takerGets?.value || offer.takerGets || 0);
+                const xrpAmount = isBuy
+                  ? parseFloat(offer.takerGets?.value || offer.takerGets || 0) / 1000000
+                  : parseFloat(offer.takerPays?.value || offer.takerPays || 0) / 1000000;
+                const price = tokenAmount > 0 ? xrpAmount / tokenAmount : 0;
+                const total = xrpAmount;
 
-                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {formatTradeValue(offer.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
-                        </span>
-                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                          @ {formatPrice(offer.price)} XRP
-                        </span>
-                      </Box>
+                return (
+                  <OfferCard key={offer.seq || offer._id} isDark={isDark}>
+                    <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                      {/* Left side - Offer details */}
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                        <TradeTypeChip tradetype={type} style={{ fontSize: '12px', fontWeight: 600 }}>
+                          {type}
+                        </TradeTypeChip>
 
-                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
-                        <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {offer.total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
-                        </span>
-                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                          Total value
-                        </span>
-                      </Box>
-                    </Box>
-
-                    {/* Right side - Time and actions */}
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <Box style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block' }}>
-                          Created {formatRelativeTime(offer.createdAt)} ago
-                        </span>
-                        {offer.expiration && (
-                          <span style={{ fontSize: '10px', color: '#f59e0b' }}>
-                            Expires {formatRelativeTime(offer.expiration)}
+                        <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                            {formatTradeValue(tokenAmount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
                           </span>
-                        )}
+                          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                            @ {formatPrice(price)} XRP
+                          </span>
+                        </Box>
+
+                        <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
+                          <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                            {total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
+                          </span>
+                          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                            Total value
+                          </span>
+                        </Box>
                       </Box>
 
-                      <CancelButton
-                        onClick={() => handleCancelOffer(offer._id)}
-                        isDark={isDark}
-                      >
-                        Cancel
-                      </CancelButton>
+                      {/* Right side - Sequence and actions */}
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <Box style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block' }}>
+                            Seq #{offer.seq}
+                          </span>
+                          {offer.expiration && (
+                            <span style={{ fontSize: '10px', color: '#f59e0b' }}>
+                              Expires {formatRelativeTime(offer.expiration * 1000)}
+                            </span>
+                          )}
+                        </Box>
+
+                        <CancelButton
+                          onClick={() => handleCancelOffer(offer.seq)}
+                          isDark={isDark}
+                        >
+                          Cancel
+                        </CancelButton>
+                      </Box>
                     </Box>
-                  </Box>
-                </OfferCard>
-              ))}
+                  </OfferCard>
+                );
+              })}
             </Stack>
+          )}
+
+          {/* Pagination */}
+          {offersTotal > offersLimit && (
+            <Box style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
+              <button
+                onClick={() => setOffersPage(p => Math.max(0, p - 1))}
+                disabled={offersPage === 0}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  background: 'transparent',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                  borderRadius: '6px',
+                  color: isDark ? '#fff' : '#1a1a1a',
+                  cursor: offersPage === 0 ? 'not-allowed' : 'pointer',
+                  opacity: offersPage === 0 ? 0.5 : 1
+                }}
+              >
+                Previous
+              </button>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', padding: '6px 8px' }}>
+                Page {offersPage + 1} of {Math.ceil(offersTotal / offersLimit)}
+              </span>
+              <button
+                onClick={() => setOffersPage(p => p + 1)}
+                disabled={(offersPage + 1) * offersLimit >= offersTotal}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  background: 'transparent',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                  borderRadius: '6px',
+                  color: isDark ? '#fff' : '#1a1a1a',
+                  cursor: (offersPage + 1) * offersLimit >= offersTotal ? 'not-allowed' : 'pointer',
+                  opacity: (offersPage + 1) * offersLimit >= offersTotal ? 0.5 : 1
+                }}
+              >
+                Next
+              </button>
+            </Box>
           )}
 
           {/* Info note */}
@@ -1832,8 +1859,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           {(totalRecords > limit || currentPage > 1) && (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
               <Pagination isDark={isDark}>
-                <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark}>≪</PaginationButton>
-                <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark}>‹</PaginationButton>
+                <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark}><ChevronsLeft size={16} /></PaginationButton>
+                <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark}><ChevronLeft size={16} /></PaginationButton>
 
                 {/* Page number buttons */}
                 {(() => {
@@ -1921,10 +1948,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   return buttons;
                 })()}
 
-                <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark}>›</PaginationButton>
-                <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark}>≫</PaginationButton>
+                <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark}><ChevronRight size={16} /></PaginationButton>
+                <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark}><ChevronsRight size={16} /></PaginationButton>
               </Pagination>
-              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 500,
+                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+              }}>
                 {totalRecords > 0 ? `${totalRecords.toLocaleString()} records` : ''}
               </span>
             </div>
@@ -1960,7 +1995,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, background: isMainPool ? (isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)') : 'transparent' }}>
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: isMainPool ? '10px 8px' : '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', borderRadius: isMainPool ? '6px' : '0', marginBottom: isMainPool ? '4px' : '0' }}>
                     {/* Pool pair */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
                       <div style={{ display: 'flex', flexShrink: 0 }}>
@@ -1968,7 +2003,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                         <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
                       </div>
                       <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset1}/{asset2}</span>
-                      {isMainPool && <span style={{ fontSize: '8px', fontWeight: 500, padding: '2px 5px', borderRadius: '4px', background: '#3b82f6', color: '#fff', flexShrink: 0 }}>MAIN</span>}
+                      {isMainPool && <span style={{ fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', flexShrink: 0, letterSpacing: '0.5px', boxShadow: '0 1px 3px rgba(59,130,246,0.3)' }}>MAIN</span>}
                     </div>
                     {/* APY */}
                     <span style={{ fontSize: '12px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), textAlign: 'right' }}>
@@ -2009,7 +2044,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)') : 'transparent', borderRadius: isMainPool ? '6px' : '0', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', paddingLeft: isMainPool ? '4px' : '0', paddingRight: isMainPool ? '4px' : '0' }}>
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: isMainPool ? '12px 10px 12px 12px' : '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderRadius: isMainPool ? '8px' : '0', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', marginBottom: isMainPool ? '6px' : '0' }}>
                     {/* Pool pair */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'flex' }}>
@@ -2018,7 +2053,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                       </div>
                       <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{asset1}/{asset2}</span>
                       {isMainPool && (
-                        <span style={{ fontSize: '9px', fontWeight: 500, padding: '2px 5px', borderRadius: '4px', background: '#3b82f6', color: '#fff' }}>MAIN</span>
+                        <span style={{ fontSize: '9px', fontWeight: 600, padding: '3px 8px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', letterSpacing: '0.5px', boxShadow: '0 1px 3px rgba(59,130,246,0.3)' }}>MAIN</span>
                       )}
                     </div>
                     {/* Fee */}

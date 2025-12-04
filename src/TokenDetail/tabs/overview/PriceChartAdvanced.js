@@ -153,6 +153,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const scaleFactorRef = useRef(1);
   const loadMoreDataRef = useRef(null);
   const isLoadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(true);
 
   const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -171,6 +172,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     isUserZoomedRef.current = isUserZoomed;
   }, [isUserZoomed]);
 
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
 
   // Helper functions
   const convertScientific = useCallback((value) => {
@@ -204,15 +208,14 @@ const PriceChartAdvanced = memo(({ token }) => {
     isLoadingMoreRef.current = true;
     setIsLoadingMore(true);
     try {
-      // Get resolution from timeRange preset
-      const presetResolutions = { '1d': '1', '5d': '5', '1m': '60', '3m': '240', '1y': 'D', '5y': 'W' };
+      // Get resolution from timeRange preset (match main presets)
+      const presetResolutions = { '1d': '15', '5d': '15', '1m': '60', '3m': '240', '1y': 'D', '5y': 'W' };
       const resolution = presetResolutions[timeRange] || '15';
-      const intervalSeconds = { '1': 60, '5': 300, '15': 900, '30': 1800, '60': 3600, '240': 14400, 'D': 86400, 'W': 604800 };
-      const to = dataRef.current[0].time; // Oldest candle
-      const barsToLoad = 300;
-      const from = to - (barsToLoad * (intervalSeconds[resolution] || 900));
+      const oldestTime = dataRef.current[0].time * 1000; // Convert to ms for abn cursor
+      const barsToLoad = 200; // Stream 200 bars per scroll
 
-      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?from=${from}&to=${to}&resolution=${resolution}&vs_currency=${activeFiatCurrency}`;
+      // Use abn cursor for pagination (DexScreener style)
+      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${resolution}&cb=${barsToLoad}&abn=${oldestTime}&vs_currency=${activeFiatCurrency}`;
       const response = await axios.get(endpoint);
 
       if (response.data?.ohlc && response.data.ohlc.length > 0) {
@@ -265,47 +268,34 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
 
     let mounted = true;
-    let currentRequest = null;
-    let isRequestInProgress = false;
+    const controller = new AbortController();
 
     const fetchData = async (isUpdate = false) => {
-      if (!mounted || isRequestInProgress) {
+      if (!mounted) {
         return;
       }
 
-      if (currentRequest && !currentRequest.signal.aborted) {
-        currentRequest.abort();
-      }
-
-      const requestController = new AbortController();
-      currentRequest = requestController;
-      isRequestInProgress = true;
-
       try {
-        if (mounted) {
-          if (isUpdate) {
-            setIsUpdating(true);
-          } else {
-            setLoading(true);
-            // Reset infinite scroll state on fresh load
-            setHasMore(true);
-          }
+        if (isUpdate) {
+          setIsUpdating(true);
+        } else {
+          setLoading(true);
+          setHasMore(true);
         }
 
-        // Presets with optimal resolution for each time range
-        const to = Math.floor(Date.now() / 1000);
+        // Presets with bar count (cb) - load ~1 month+ of data initially
         const presets = {
-          '1d':  { from: to - 86400,     resolution: '1'   },
-          '5d':  { from: to - 432000,    resolution: '5'   },
-          '1m':  { from: to - 2592000,   resolution: '60'  },
-          '3m':  { from: to - 7776000,   resolution: '240' },
-          '1y':  { from: to - 31536000,  resolution: 'D'   },
-          '5y':  { from: to - 157680000, resolution: 'W'   }
+          '1d':  { resolution: '15',  cb: 3000 },  // 15min bars, ~31 days
+          '5d':  { resolution: '15',  cb: 3000 },  // 15min bars, ~31 days
+          '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
+          '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
+          '1y':  { resolution: 'D',   cb: 400  },  // daily, ~13 months
+          '5y':  { resolution: 'W',   cb: 300  }   // weekly, ~6 years
         };
         const preset = presets[timeRange] || presets['1d'];
-        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?from=${preset.from}&to=${to}&resolution=${preset.resolution}&vs_currency=${activeFiatCurrency}`;
+        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${preset.resolution}&cb=${preset.cb}&vs_currency=${activeFiatCurrency}`;
 
-        const response = await axios.get(endpoint, { signal: requestController.signal });
+        const response = await axios.get(endpoint, { signal: controller.signal });
 
         if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
@@ -374,24 +364,20 @@ const PriceChartAdvanced = memo(({ token }) => {
           setLoading(false);
           setIsUpdating(false);
         }
-      } finally {
-        isRequestInProgress = false;
       }
     };
 
     fetchData();
 
     const updateInterval = setInterval(() => {
-      if (!isUserZoomedRef.current && mounted) {
+      if (!isUserZoomedRef.current && mounted && !controller.signal.aborted) {
         fetchData(true);
       }
     }, 10000);
 
     return () => {
       mounted = false;
-      if (currentRequest) {
-        currentRequest.abort();
-      }
+      controller.abort();
       clearInterval(updateInterval);
     };
   }, [token.md5, timeRange, BASE_URL, activeFiatCurrency, convertScientific]);
@@ -603,8 +589,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         rightOffset: 5,
         barSpacing: 8,
         minBarSpacing: 1,
-        fixLeftEdge: true,
-        fixRightEdge: false,
+        fixLeftEdge: false,  // Allow scrolling left to load more data
+        fixRightEdge: false, // Handled manually based on hasMore state
         rightBarStaysOnScroll: true,
         lockVisibleTimeRangeOnResize: true,
         shiftVisibleRangeOnNewBar: true,
@@ -656,14 +642,39 @@ const PriceChartAdvanced = memo(({ token }) => {
           }
 
 
-          // Infinite scroll: load more when near left edge
-          if (chartType !== 'holders' && logicalRange.from < 50 && !isLoadingMoreRef.current) {
+          // Infinite scroll: load more when near left edge (trigger early for smooth streaming)
+          if (chartType !== 'holders' && logicalRange.from < 30 && !isLoadingMoreRef.current) {
             clearTimeout(loadMoreTimeout);
             loadMoreTimeout = setTimeout(() => {
               if (loadMoreDataRef.current) {
                 loadMoreDataRef.current();
               }
             }, 300);
+          }
+
+          // When no more data available, lock chart within data bounds
+          if (!hasMoreRef.current) {
+            const visibleBars = logicalRange.to - logicalRange.from;
+            let needsAdjust = false;
+            let newFrom = logicalRange.from;
+            let newTo = logicalRange.to;
+
+            // Prevent scrolling past left edge
+            if (logicalRange.from < 0) {
+              newFrom = 0;
+              newTo = Math.min(visibleBars, dataLength);
+              needsAdjust = true;
+            }
+            // Prevent scrolling past right edge
+            if (logicalRange.to > dataLength) {
+              newTo = dataLength;
+              newFrom = Math.max(0, dataLength - visibleBars);
+              needsAdjust = true;
+            }
+
+            if (needsAdjust) {
+              chart.timeScale().setVisibleLogicalRange({ from: newFrom, to: newTo });
+            }
           }
         }, 100);
       }
@@ -944,31 +955,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
     }
 
-    const isIntervalChange = lastChartTypeRef.current !== `${chartType}-${timeRange}`;
-    const isCurrencyChange = activeFiatCurrencyRef.current !== activeFiatCurrency;
+    const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
+    const isNewDataSet = lastChartTypeRef.current !== currentKey;
 
-    // Check if data length changed significantly (more data loaded via infinite scroll)
-    const prevDataLength = dataRef.current?.length || 0;
-    const dataLengthChanged = Math.abs(chartData.length - prevDataLength) > 5;
-
-    // Only use update() for real-time updates (same data length, just last bar updated)
-    const isRealTimeUpdate = !isIntervalChange && !isCurrencyChange && !dataLengthChanged && prevDataLength > 0;
-
-    // Helper to safely update or setData - update() only works if time >= last bar time
-    const safeUpdateOrSet = (series, newData, lastItem) => {
-      if (!series || !newData || newData.length === 0) return;
-
-      if (isRealTimeUpdate) {
-        try {
-          series.update(lastItem);
-        } catch (e) {
-          // If update fails (e.g., time mismatch after loading more data), use setData
-          series.setData(newData);
-        }
-      } else {
-        series.setData(newData);
-      }
-    };
+    // Always use setData() for timeframe/currency changes (per TradingView best practices)
+    // Only use update() for real-time streaming updates within same timeframe
+    const useSetData = isNewDataSet || !lastChartTypeRef.current;
 
     if (chartType === 'candles' && candleSeriesRef.current) {
       const scaleFactor = getScaleFactor(chartData);
@@ -986,8 +978,15 @@ const PriceChartAdvanced = memo(({ token }) => {
               volume: d.volume
             }));
 
-      const lastBar = scaledData[scaledData.length - 1];
-      safeUpdateOrSet(candleSeriesRef.current, scaledData, lastBar);
+      if (useSetData) {
+        candleSeriesRef.current.setData(scaledData);
+      } else {
+        try {
+          candleSeriesRef.current.update(scaledData[scaledData.length - 1]);
+        } catch (e) {
+          candleSeriesRef.current.setData(scaledData);
+        }
+      }
     } else if (chartType === 'line' && lineSeriesRef.current) {
       const scaleFactor = getScaleFactor(chartData);
       scaleFactorRef.current = scaleFactor;
@@ -997,12 +996,26 @@ const PriceChartAdvanced = memo(({ token }) => {
         value: (d.close || d.value) * scaleFactor
       }));
 
-      const lastPoint = lineData[lineData.length - 1];
-      safeUpdateOrSet(lineSeriesRef.current, lineData, lastPoint);
+      if (useSetData) {
+        lineSeriesRef.current.setData(lineData);
+      } else {
+        try {
+          lineSeriesRef.current.update(lineData[lineData.length - 1]);
+        } catch (e) {
+          lineSeriesRef.current.setData(lineData);
+        }
+      }
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map((d) => ({ time: d.time, value: d.value || d.holders }));
-      const lastPoint = holdersLineData[holdersLineData.length - 1];
-      safeUpdateOrSet(lineSeriesRef.current, holdersLineData, lastPoint);
+      if (useSetData) {
+        lineSeriesRef.current.setData(holdersLineData);
+      } else {
+        try {
+          lineSeriesRef.current.update(holdersLineData[holdersLineData.length - 1]);
+        } catch (e) {
+          lineSeriesRef.current.setData(holdersLineData);
+        }
+      }
     }
 
     if (chartType !== 'holders' && volumeSeriesRef.current && data) {
@@ -1011,21 +1024,27 @@ const PriceChartAdvanced = memo(({ token }) => {
         value: d.volume || 0,
         color: d.close >= d.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
       }));
-      const lastVolume = volumeData[volumeData.length - 1];
-      safeUpdateOrSet(volumeSeriesRef.current, volumeData, lastVolume);
+      if (useSetData) {
+        volumeSeriesRef.current.setData(volumeData);
+      } else {
+        try {
+          volumeSeriesRef.current.update(volumeData[volumeData.length - 1]);
+        } catch (e) {
+          volumeSeriesRef.current.setData(volumeData);
+        }
+      }
     }
 
-    if (isIntervalChange || isCurrencyChange) {
-      // Show last ~80 candles zoomed in, keeping right side in place
+    // Reset view on timeframe/currency change
+    if (isNewDataSet) {
       const dataLength = chartData.length;
-      const visibleBars = isMobile ? 200 : 400;
+      const visibleBars = isMobile ? 50 : 80; // Show fewer bars for fuller candles
       const from = Math.max(0, dataLength - visibleBars);
-      chartRef.current.timeScale().setVisibleLogicalRange({ from, to: dataLength + 3 });
-      lastChartTypeRef.current = `${chartType}-${timeRange}`;
-      activeFiatCurrencyRef.current = activeFiatCurrency;
+      chartRef.current.timeScale().setVisibleLogicalRange({ from, to: dataLength + 5 });
+      lastChartTypeRef.current = currentKey;
     }
     // Don't restore zoom state on every update - it causes flickering
-  }, [data, holderData, chartType, timeRange]);
+  }, [data, holderData, chartType, timeRange, activeFiatCurrency, isMobile]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => {
