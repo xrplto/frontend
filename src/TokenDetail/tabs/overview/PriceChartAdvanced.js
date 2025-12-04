@@ -1035,10 +1035,19 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     }
 
-    // Reset view on timeframe/currency change
+    // Reset view on timeframe/currency change - show correct range per timeframe
     if (isNewDataSet) {
       const dataLength = chartData.length;
-      const visibleBars = isMobile ? 50 : 80; // Show fewer bars for fuller candles
+      // Visible bars based on timeframe (matching the time period)
+      const visibleBarsMap = {
+        '1d': isMobile ? 48 : 96,    // 24h of 15-min bars
+        '5d': isMobile ? 240 : 480,  // 5 days of 15-min bars
+        '1m': isMobile ? 360 : 720,  // 30 days of 1h bars
+        '3m': isMobile ? 270 : 540,  // 90 days of 4h bars
+        '1y': isMobile ? 180 : 365,  // 1 year of daily bars
+        '5y': isMobile ? 130 : 260   // 5 years of weekly bars
+      };
+      const visibleBars = visibleBarsMap[timeRange] || 96;
       const from = Math.max(0, dataLength - visibleBars);
       chartRef.current.timeScale().setVisibleLogicalRange({ from, to: dataLength + 5 });
       lastChartTypeRef.current = currentKey;
