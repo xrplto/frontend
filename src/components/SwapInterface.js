@@ -256,7 +256,6 @@ import { processOrderbookOffers } from 'src/utils/parseUtils';
 
 // Components
 import { ConnectWallet } from 'src/components/Wallet';
-import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Constants
 const currencySymbols = {

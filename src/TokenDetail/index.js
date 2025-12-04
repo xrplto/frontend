@@ -4,7 +4,6 @@ import { useContext, useState, useEffect, useCallback, memo } from 'react';
 import { AppContext } from 'src/AppContext';
 import Overview from './tabs/overview';
 import TokenTabs from './components/TokenTabs';
-import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 const TokenDetail = memo(
@@ -97,8 +96,6 @@ const TokenDetail = memo(
       });
     }, [txDetailsOpen, panelMode, onOrderBookToggle, onTransactionPanelToggle]);
 
-    // No separate OrderBook panel anymore; handled inside TransactionDetailsPanel
-
     return (
       <div className="relative">
         {/* Token Tabs - Full Width */}
@@ -118,26 +115,6 @@ const TokenDetail = memo(
           />
         </div>
 
-        {/* Transaction Details Panel - Right Sidebar (Closest to content) */}
-        {!isMobile && (
-          <TransactionDetailsPanel
-            open={txDetailsOpen}
-            onClose={handleTxDetailsClose}
-            transactionHash={selectedTxHash}
-            tradeAccount={selectedTradeAccount}
-            onSelectTransaction={handleSelectTransaction}
-            mode={panelMode}
-            pair={orderBookData.pair}
-            asks={orderBookData.asks}
-            bids={orderBookData.bids}
-            limitPrice={orderBookData.limitPrice}
-            isBuyOrder={orderBookData.isBuyOrder}
-            onAskClick={orderBookData.onAskClick}
-            onBidClick={orderBookData.onBidClick}
-          />
-        )}
-
-        {/* OrderBook now renders inside TransactionDetailsPanel (mode === 'orderbook') */}
         </div>
       </div>
     );

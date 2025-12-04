@@ -27,7 +27,6 @@ import { fNumber } from 'src/utils/formatters';
 import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
-import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Lazy load XRPL dependencies for device authentication
 let Wallet, CryptoJS;
@@ -2592,33 +2591,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       </Stack>
 
 
-      {!onOrderBookToggle && (
-        <TransactionDetailsPanel
-          open={showOrderbook && orderType === 'limit'}
-          onClose={() => setShowOrderbook(false)}
-          mode="orderbook"
-          pair={{
-            curr1: { ...curr1, name: curr1.name || curr1.currency },
-            curr2: { ...curr2, name: curr2.name || curr2.currency }
-          }}
-          asks={asks}
-          bids={bids}
-          limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-          isBuyOrder={!!revert}
-          onAskClick={(e, idx) => {
-            if (asks && asks[idx]) {
-              setLimitPrice(asks[idx].price.toString());
-              setOrderType('limit');
-            }
-          }}
-          onBidClick={(e, idx) => {
-            if (bids && bids[idx]) {
-              setLimitPrice(bids[idx].price.toString());
-              setOrderType('limit');
-            }
-          }}
-        />
-      )}
 
     </Stack>
   );
