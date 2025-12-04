@@ -106,6 +106,17 @@ export const clearTransactionCache = (hash) => {
   }
 };
 
+// Parse date from either ISO string (xrpscan) or ripple epoch (raw XRPL)
+const parseTransactionDate = (date) => {
+  if (!date) return null;
+  if (typeof date === 'string') return new Date(date);
+  if (typeof date === 'number') {
+    const iso = rippleTimeToISO8601(date);
+    return iso ? new Date(iso) : null;
+  }
+  return null;
+};
+
 const ipfsToGateway = (uri) => {
   if (!uri || !uri.startsWith('ipfs://')) {
     return uri;
@@ -204,13 +215,19 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
   );
 };
 
-const DetailRow = ({ label, children }) => {
-  const theme = useTheme();
+const DetailRow = ({ label, children, index = 0 }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const isOdd = index % 2 === 1;
+
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-      <Typography sx={{ color: alpha(theme.palette.text.primary, 0.5), minWidth: '100px', fontSize: '13px', pt: 0.3 }}>{label}</Typography>
-      <Box sx={{ flex: 1 }}>{children}</Box>
-    </Box>
+    <div className={cn(
+      "flex items-center justify-between px-4 py-3",
+      isOdd && (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
+    )}>
+      <span className={cn("text-[13px] min-w-[140px]", isDark ? "text-white/50" : "text-gray-500")}>{label}</span>
+      <div className={cn("flex-1 text-right text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>{children}</div>
+    </div>
   );
 };
 
@@ -1780,71 +1797,136 @@ const getTransactionDescription = (txData) => {
   }
 };
 
-const TransactionSummaryCard = ({ txData }) => {
+const TransactionSummaryCard = ({ txData, onCopyForAI, activeTab, setActiveTab }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const { hash, TransactionType, Account, meta, date, ledger_index, Fee } = txData;
+  const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
+  const [copied, setCopied] = useState(false);
 
   const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
   const description = getTransactionDescription(txData);
-  const timeAgo = formatDistanceToNow(new Date(rippleTimeToISO8601(date)));
+  const parsedDate = parseTransactionDate(date);
+  const timeAgo = parsedDate && !isNaN(parsedDate.getTime()) ? formatDistanceToNow(parsedDate) : null;
+  const dateStr = parsedDate && !isNaN(parsedDate.getTime())
+    ? parsedDate.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' })
+    : null;
+
+  const copyHash = () => {
+    navigator.clipboard.writeText(hash);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const tabs = [
+    { id: 'summary', label: 'SUMMARY' },
+    { id: 'balances', label: 'BALANCES' },
+    { id: 'technical', label: 'TECHNICAL' },
+    { id: 'raw', label: 'RAW' }
+  ];
 
   return (
     <div className={cn(
-      "rounded-xl border-[1.5px] p-6 mb-6",
-      isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+      "rounded-xl border-[1.5px] mb-4 overflow-hidden",
+      isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
     )}>
-      {/* Header with status */}
-      <div className="flex items-center gap-3 mb-4">
-        <span className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium",
-          isSuccess
-            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-            : "bg-red-500/10 text-red-500 border border-red-500/20"
-        )}>
-          {isSuccess ? '✓' : '✗'} {isSuccess ? 'Confirmed' : 'Failed'}
-        </span>
-        <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
-          {timeAgo} ago · Ledger #{ledger_index.toLocaleString()}
+      {/* Header bar */}
+      <div className={cn(
+        "flex items-center justify-between px-4 py-3 border-b",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
+        <div className="flex items-center gap-3">
+          <span className={cn(
+            "w-7 h-7 rounded-md flex items-center justify-center text-sm",
+            isSuccess ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+          )}>
+            {isSuccess ? '✓' : '✗'}
+          </span>
+          <span className={cn(
+            "px-2.5 py-1 rounded text-[11px] font-medium uppercase tracking-wide",
+            isDark ? "bg-white/10 text-white/80" : "bg-gray-100 text-gray-600"
+          )}>
+            Transaction
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onCopyForAI}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg bg-[#e84142] text-white hover:bg-[#d63a3b] transition-colors"
+          >
+            Explain with AI
+          </button>
+        </div>
+      </div>
+
+      {/* Transaction type */}
+      <div className={cn(
+        "px-4 py-4 text-center border-b",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
+        <span className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-500")}>
+          {description.title}
         </span>
       </div>
 
-      {/* Main story */}
-      <h2 className={cn("text-2xl font-normal mb-3", isDark ? "text-white" : "text-gray-900")}>
-        {description.title}
-      </h2>
-      <p className={cn("text-[15px] leading-relaxed mb-5", isDark ? "text-white/70" : "text-gray-600")}>
-        {description.description}
-      </p>
-
-      {/* Key details as pills */}
-      {description.details && (
-        <div className="flex flex-wrap gap-2 mb-5">
-          {description.details.map((detail, i) => (
-            <span key={i} className={cn(
-              "px-3 py-1.5 rounded-lg text-[13px]",
-              isDark ? "bg-white/5 text-white/80" : "bg-gray-100 text-gray-700"
-            )}>
-              {detail}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Hash */}
+      {/* Tabs */}
       <div className={cn(
-        "flex items-center gap-2 pt-4 border-t",
+        "flex items-center gap-1 px-4 py-2 border-b",
         isDark ? "border-white/10" : "border-gray-200"
       )}>
-        <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
-          TX
-        </span>
-        <code className={cn(
-          "text-[12px] font-mono break-all",
-          isDark ? "text-white/60" : "text-gray-500"
-        )}>
-          {hash}
-        </code>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide rounded-md transition-colors",
+              activeTab === tab.id
+                ? isDark
+                  ? "text-[#e84142] bg-[#e84142]/10"
+                  : "text-[#e84142] bg-[#e84142]/10"
+                : isDark
+                  ? "text-white/50 hover:text-white/80 hover:bg-white/5"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Info grid */}
+      <div className={cn(
+        "grid grid-cols-3 divide-x",
+        isDark ? "divide-white/10" : "divide-gray-200"
+      )}>
+        <div className="px-4 py-3">
+          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+            Signature
+          </div>
+          <div className="flex items-center gap-1.5">
+            <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
+              {hash.slice(0, 4)}...{hash.slice(-4)}
+            </code>
+            <button onClick={copyHash} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-white/40" : "text-gray-400")}>
+              <Copy size={12} />
+            </button>
+          </div>
+        </div>
+        <div className="px-4 py-3">
+          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+            Time
+          </div>
+          <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
+            {timeAgo ? <><span className="text-primary">{timeAgo} ago</span> {dateStr && <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span>}</> : 'Unknown'}
+          </div>
+        </div>
+        <div className="px-4 py-3">
+          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+            Ledger
+          </div>
+          <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
+            #{ledger_index?.toLocaleString()}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1927,10 +2009,11 @@ const TransactionDetails = ({ txData }) => {
 
   const copyForLLM = () => {
     // Copy the complete raw transaction data from rippled
+    const parsedDate = parseTransactionDate(date);
     const rawTxData = {
       ...txData,
       // Add human-readable timestamp
-      date_human: rippleTimeToISO8601(date),
+      date_human: parsedDate ? parsedDate.toISOString() : date,
       // Ensure meta is included
       meta: meta
     };
@@ -2428,78 +2511,51 @@ const TransactionDetails = ({ txData }) => {
 
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const [activeTab, setActiveTab] = useState('summary');
 
   return (
     <div>
-      <TransactionSummaryCard txData={txData} />
+      <TransactionSummaryCard txData={txData} onCopyForAI={copyForLLM} activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Technical Details Section */}
-      <div className={cn(
-        "rounded-xl border-[1.5px] p-5",
-        isDark ? "border-white/10" : "border-gray-200"
-      )}>
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h3 className={cn("text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
-            Technical Details
-          </h3>
-          <button
-            onClick={copyForLLM}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg border transition-all",
-              isDark
-                ? "border-white/15 text-primary hover:bg-primary/5 hover:border-primary"
-                : "border-gray-300 text-primary hover:bg-primary/5 hover:border-primary"
-            )}
-          >
-            <Copy size={12} />
-            Copy for AI
-          </button>
-        </div>
-
-        <Grid container spacing={2}>
-          {/* Main Transaction Details */}
-          <Grid size={{ xs: 12 }}>
-            <div className={cn(
-              "p-4 rounded-lg border",
-              isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
+      {/* SUMMARY Tab */}
+      {activeTab === 'summary' && (
+        <div className={cn(
+          "rounded-xl border-[1.5px] overflow-hidden",
+          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
+        )}>
+          <div className={cn(
+            "px-4 py-3 border-b",
+            isDark ? "border-white/10" : "border-gray-200"
+          )}>
+            <span className={cn(
+              "text-[11px] font-medium uppercase tracking-wider",
+              isDark ? "text-white/40" : "text-gray-400"
             )}>
-              <div className={cn(
-                "text-[13px] font-medium mb-3 pb-3 border-b",
-                isDark ? "text-white/60 border-white/10" : "text-gray-500 border-gray-200"
-              )}>
-                Transaction Data
-              </div>
-              <Stack spacing={1.5}>
-                <DetailRow label="Type">
-                  <Chip
-                    label={
-                      TransactionType === 'OfferCreate'
-                        ? `${Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
-                        : TransactionType === 'NFTokenCreateOffer'
-                          ? `NFT ${Flags & 1 ? 'Sell' : 'Buy'} Offer`
-                          : TransactionType === 'OfferCancel' && cancelledOffer
-                            ? `Cancel ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
-                            : isConversion
-                              ? 'Swap'
-                              : TransactionType
-                    }
-                    size="small"
-                    sx={{
-                      fontSize: '10px',
-                      height: '18px',
-                      px: 0.5,
-                      backgroundColor: alpha('#4285f4', 0.06),
-                      color: '#4285f4',
-                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                      fontWeight: 400
-                    }}
-                  />
+              Details
+            </span>
+          </div>
+
+          <div>
+            {/* Main Transaction Details */}
+            <DetailRow label="Type" index={0}>
+              <span className="px-2 py-0.5 rounded text-[12px] bg-primary/10 text-primary border border-primary/20">
+                {TransactionType === 'OfferCreate'
+                  ? `${Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+                  : TransactionType === 'NFTokenCreateOffer'
+                    ? `NFT ${Flags & 1 ? 'Sell' : 'Buy'} Offer`
+                        : TransactionType === 'OfferCancel' && cancelledOffer
+                          ? `Cancel ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+                          : isConversion ? 'Swap' : TransactionType}
+                  </span>
                 </DetailRow>
 
-                <DetailRow label="Timestamp">
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
-                    {new Date(rippleTimeToISO8601(date)).toLocaleString()}
-                  </Typography>
+                <DetailRow label="Timestamp" index={1}>
+                  <span className="font-mono">
+                    {(() => {
+                      const d = parseTransactionDate(date);
+                      return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
+                    })()}
+                  </span>
                 </DetailRow>
 
                 {/* Account Information */}
@@ -3520,17 +3576,17 @@ const TransactionDetails = ({ txData }) => {
                 {/* Escrow Transactions */}
                 {(TransactionType === 'EscrowCreate' || TransactionType === 'EscrowFinish' || TransactionType === 'EscrowCancel') && (
                   <>
-                    {txData.FinishAfter && (
+                    {txData.FinishAfter && parseTransactionDate(txData.FinishAfter) && (
                       <DetailRow label="Can Finish After">
                         <Typography variant="body1">
-                          {new Date(rippleTimeToISO8601(txData.FinishAfter)).toLocaleString()}
+                          {parseTransactionDate(txData.FinishAfter).toLocaleString()}
                         </Typography>
                       </DetailRow>
                     )}
-                    {txData.CancelAfter && (
+                    {txData.CancelAfter && parseTransactionDate(txData.CancelAfter) && (
                       <DetailRow label="Expires After">
                         <Typography variant="body1">
-                          {new Date(rippleTimeToISO8601(txData.CancelAfter)).toLocaleString()}
+                          {parseTransactionDate(txData.CancelAfter).toLocaleString()}
                         </Typography>
                       </DetailRow>
                     )}
@@ -3815,26 +3871,41 @@ const TransactionDetails = ({ txData }) => {
                 {Memos && Memos.length > 0 && (
                   <DetailRow label="Memo">
                     <Stack spacing={0.5}>
-                      {Memos.map((memo) => {
-                        const decodeMemoHex = (hexString) => {
+                      {Memos.map((memo, idx) => {
+                        // Check if string is valid hex (only 0-9, a-f, A-F and even length)
+                        const isHex = (str) => /^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0;
+
+                        // Decode hex to UTF-8, return null if invalid
+                        const decodeHex = (hexString) => {
                           if (!hexString) return null;
                           try {
                             const bytes = [];
                             for (let i = 0; i < hexString.length; i += 2) {
                               bytes.push(parseInt(hexString.substr(i, 2), 16));
                             }
-                            return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
-                          } catch (err) {
+                            const decoded = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+                            // Check if result has replacement chars (invalid UTF-8)
+                            if (decoded.includes('\uFFFD')) return hexString;
+                            return decoded;
+                          } catch {
                             return hexString;
                           }
                         };
 
-                        const memoType = memo.Memo.MemoType && decodeMemoHex(memo.Memo.MemoType);
-                        const memoData = memo.Memo.MemoData && decodeMemoHex(memo.Memo.MemoData);
-                        const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
+                        // Smart decode: only decode if it looks like hex
+                        const decodeMemo = (value) => {
+                          if (!value) return null;
+                          // If it's already readable text (from xrpscan), use as-is
+                          if (!isHex(value)) return value;
+                          // Otherwise decode from hex
+                          return decodeHex(value);
+                        };
+
+                        const memoType = decodeMemo(memo.Memo.MemoType);
+                        const memoData = decodeMemo(memo.Memo.MemoData);
 
                         return (
-                          <Typography key={memoKey} variant="body2" sx={{ fontSize: '13px', wordBreak: 'break-all' }}>
+                          <Typography key={idx} variant="body2" sx={{ fontSize: '13px', wordBreak: 'break-all' }}>
                             {[memoType, memoData].filter(Boolean).join(': ')}
                           </Typography>
                         );
@@ -3842,224 +3913,189 @@ const TransactionDetails = ({ txData }) => {
                     </Stack>
                   </DetailRow>
                 )}
-              </Stack>
-            </div>
-          </Grid>
-
-          {/* Affected Accounts */}
-          {balanceChanges.length > 0 && isSuccess && (
-            <Grid size={{ xs: 12 }}>
-              <Box
-                sx={{
-                  p: 2,
-                  background: alpha(theme.palette.divider, 0.04),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  borderRadius: '8px'
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                  Balance Changes ({balanceChanges.length})
-                </Typography>
-                <Stack spacing={1.5}>
-                  {balanceChanges.map(({ account, changes }) => (
-                    <Box
-                      key={account}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 2,
-                        flexWrap: 'wrap'
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: '300px', flex: 1 }}>
-                        <AccountAvatar account={account} />
-                        <Link href={`/profile/${account}`} passHref>
-                          <Typography
-                            component="a"
-                            variant="body2"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              fontFamily: 'monospace',
-                              fontSize: '13px',
-                              wordBreak: 'break-all',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {account}
-                          </Typography>
-                        </Link>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                        {changes.map((change) => {
-                          const isPositive = new Decimal(change.value).isPositive();
-                          const sign = isPositive ? '+' : '';
-                          const color = isPositive ? '#10b981' : '#ef4444';
-                          const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
-
-                          return (
-                            <Box
-                              key={changeKey}
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.5,
-                                px: 1,
-                                py: 0.5,
-                                backgroundColor: alpha(color, 0.08),
-                                border: `1px solid ${alpha(color, 0.15)}`,
-                                borderRadius: '6px'
-                              }}
-                            >
-                              <Typography variant="body2" sx={{ color, fontWeight: 500, fontSize: '13px' }}>
-                                {sign}{formatDecimal(new Decimal(change.value))}
-                              </Typography>
-                              {change.currency === 'XRP' ? (
-                                <XrpDisplay variant="body2" showText={true} />
-                              ) : (
-                                <TokenDisplay
-                                  slug={`${change.issuer}-${change.rawCurrency}`}
-                                  currency={change.currency}
-                                  rawCurrency={change.rawCurrency}
-                                  variant="body2"
-                                />
-                              )}
-                            </Box>
-                          );
-                        })}
-                      </Box>
-                    </Box>
-                  ))}
-                </Stack>
-              </Box>
-            </Grid>
-          )}
-
+          </div>
 
           {/* Transaction Link */}
-          <Grid size={{ xs: 12 }}>
-            <Box
-              sx={{
-                p: 2,
-                background: 'transparent',
-                backdropFilter: 'none',
-                WebkitBackdropFilter: 'none',
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                borderRadius: 2
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="body2" color="text.secondary">
-                  Transaction Link:
-                </Typography>
-                <Link href={`/tx/${hash}`} passHref>
-                  <Typography
-                    component="a"
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' },
-                      wordBreak: 'break-all',
-                      fontFamily: 'monospace'
-                    }}
-                  >
-                    {txUrl}
-                  </Typography>
-                </Link>
-                <Tooltip title={urlCopied ? 'Copied!' : 'Copy Link'}>
-                  <IconButton onClick={copyUrlToClipboard} size="small" aria-label="Copy URL">
-                    <FileCopyOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Box>
-          </Grid>
-        </Grid>
+        <div className={cn(
+          "mt-4 px-4 py-3 rounded-lg border",
+          isDark ? "border-white/10" : "border-gray-200"
+        )}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>
+              Transaction Link:
+            </span>
+            <Link href={`/tx/${hash}`} passHref>
+              <span className="text-primary text-[13px] font-mono hover:underline break-all">
+                {txUrl}
+              </span>
+            </Link>
+            <button onClick={copyUrlToClipboard} className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40" : "text-gray-400")}>
+              <Copy size={14} />
+            </button>
+          </div>
+        </div>
+        </div>
+      )}
 
-        {/* Technical Details */}
-        <Box
-          sx={{
-            mt: 2,
-            p: 2,
-            background: alpha(theme.palette.divider, 0.04),
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            borderRadius: '8px'
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-            Technical Details
-          </Typography>
-          <Stack spacing={1.5}>
-            <DetailRow label="Flags">
-              <Chip
-                label={Flags}
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#4285f4', 0.06),
-                  color: '#4285f4',
-                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
+      {/* BALANCES Tab */}
+      {activeTab === 'balances' && (
+        <div className={cn(
+          "rounded-xl border-[1.5px] overflow-hidden",
+          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
+        )}>
+          <div className={cn(
+            "px-4 py-3 border-b",
+            isDark ? "border-white/10" : "border-gray-200"
+          )}>
+            <span className={cn(
+              "text-[11px] font-medium uppercase tracking-wider",
+              isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              Balance Changes ({balanceChanges.length})
+            </span>
+          </div>
+          {balanceChanges.length > 0 && isSuccess ? (
+            <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+              {balanceChanges.map(({ account, changes }, idx) => (
+                <div
+                  key={account}
+                  className={cn(
+                    "px-4 py-3 flex items-start gap-4 flex-wrap",
+                    idx % 2 === 1 && (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
+                  )}
+                >
+                  <div className="flex items-center gap-2 min-w-[280px] flex-1">
+                    <AccountAvatar account={account} />
+                    <Link href={`/profile/${account}`} passHref>
+                      <span className="text-primary text-[13px] font-mono hover:underline break-all">
+                        {account}
+                      </span>
+                    </Link>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {changes.map((change) => {
+                      const isPositive = new Decimal(change.value).isPositive();
+                      const sign = isPositive ? '+' : '';
+                      const color = isPositive ? '#10b981' : '#ef4444';
+                      const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
+                      return (
+                        <span
+                          key={changeKey}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                          style={{
+                            backgroundColor: `${color}15`,
+                            border: `1px solid ${color}30`,
+                            color
+                          }}
+                        >
+                          {sign}{formatDecimal(new Decimal(change.value))}
+                          {change.currency === 'XRP' ? (
+                            <XrpDisplay variant="body2" showText={true} />
+                          ) : (
+                            <TokenDisplay
+                              slug={`${change.issuer}-${change.rawCurrency}`}
+                              currency={change.currency}
+                              rawCurrency={change.rawCurrency}
+                              variant="body2"
+                            />
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+              No balance changes
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TECHNICAL Tab */}
+      {activeTab === 'technical' && (
+        <div className={cn(
+          "rounded-xl border-[1.5px] overflow-hidden",
+          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
+        )}>
+          <div className={cn(
+            "px-4 py-3 border-b",
+            isDark ? "border-white/10" : "border-gray-200"
+          )}>
+            <span className={cn(
+              "text-[11px] font-medium uppercase tracking-wider",
+              isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              Technical Details
+            </span>
+          </div>
+          <div>
+            <DetailRow label="Flags" index={0}>
+              <span className="px-2 py-0.5 rounded text-[12px] bg-primary/10 text-primary border border-primary/20">
+                {Flags}
+              </span>
             </DetailRow>
-            <DetailRow label="Sequence">
-              <Typography variant="body2" sx={{ fontSize: '13px' }}>#{Sequence}</Typography>
+            <DetailRow label="Sequence" index={1}>
+              <span className="text-[13px]">#{Sequence?.toLocaleString()}</span>
             </DetailRow>
-            {TransactionType === 'OfferCreate' && (
-              <DetailRow label="CTID">
-                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
-                  {ctid}
-                </Typography>
+            {ctid && (
+              <DetailRow label="CTID" index={2}>
+                <code className="text-[13px] font-mono">{ctid}</code>
               </DetailRow>
             )}
-            <DetailRow label="Last Ledger">
-              <Typography variant="body2" sx={{ fontSize: '13px' }}>
-                #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
-              </Typography>
+            <DetailRow label="Last Ledger" index={3}>
+              <span className="text-[13px]">
+                #{LastLedgerSequence?.toLocaleString()} ({LastLedgerSequence - ledger_index} ledgers)
+              </span>
             </DetailRow>
             {SourceTag && (
-              <DetailRow label="Source Tag">
-                <Typography variant="body2" sx={{ fontSize: '13px' }}>{SourceTag}</Typography>
+              <DetailRow label="Source Tag" index={4}>
+                <span className="text-[13px]">{SourceTag}</span>
               </DetailRow>
             )}
-          </Stack>
-        </Box>
+          </div>
+        </div>
+      )}
 
-        {/* Raw JSON Data - Collapsible */}
-        <details className={cn(
-          "mt-4 rounded-lg border",
-          isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
+      {/* RAW Tab */}
+      {activeTab === 'raw' && (
+        <div className={cn(
+          "rounded-xl border-[1.5px] overflow-hidden",
+          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
         )}>
-          <summary className={cn(
-            "px-4 py-3 cursor-pointer text-[13px] font-medium select-none",
-            isDark ? "text-white/60 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+          <div className={cn(
+            "px-4 py-3 border-b",
+            isDark ? "border-white/10" : "border-gray-200"
           )}>
-            Raw Transaction JSON
-          </summary>
-          <div className="px-4 pb-4">
+            <span className={cn(
+              "text-[11px] font-medium uppercase tracking-wider",
+              isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              Raw Transaction JSON
+            </span>
+          </div>
+          <div className="p-4">
             <JsonViewer data={rawData} isDark={isDark} />
           </div>
-        </details>
 
-        <details className={cn(
-          "mt-3 rounded-lg border",
-          isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
-        )}>
-          <summary className={cn(
-            "px-4 py-3 cursor-pointer text-[13px] font-medium select-none",
-            isDark ? "text-white/60 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+          <div className={cn(
+            "px-4 py-3 border-t",
+            isDark ? "border-white/10" : "border-gray-200"
           )}>
-            Transaction Metadata
-          </summary>
-          <div className="px-4 pb-4">
+            <span className={cn(
+              "text-[11px] font-medium uppercase tracking-wider",
+              isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              Transaction Metadata
+            </span>
+          </div>
+          <div className="p-4">
             <JsonViewer data={meta} isDark={isDark} />
           </div>
-        </details>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

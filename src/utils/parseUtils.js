@@ -213,7 +213,15 @@ function unixToRippleTimestamp(timestamp) {
 }
 
 function rippleTimeToISO8601(rippleTime) {
-  return new Date(rippleToUnixTimestamp(rippleTime)).toISOString();
+  if (rippleTime == null || typeof rippleTime !== 'number' || isNaN(rippleTime)) {
+    return null;
+  }
+  const timestamp = rippleToUnixTimestamp(rippleTime);
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
 }
 
 /**

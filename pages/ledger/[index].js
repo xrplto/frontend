@@ -39,7 +39,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
 
   const ledgerIndex = parseInt(ledger_index, 10);
   const closeTimeISO = rippleTimeToISO8601(close_time);
-  const closeTimeLocale = new Date(closeTimeISO).toLocaleString();
+  const closeTimeLocale = closeTimeISO ? new Date(closeTimeISO).toLocaleString() : 'Unknown';
 
   const shortenAddress = (address) => {
     if (!address) return '';
