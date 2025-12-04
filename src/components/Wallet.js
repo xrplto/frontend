@@ -3288,63 +3288,69 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
 
   // Default button mode with popover
+  // When no style prop is passed (global usage in _app.js), only render the Dialog
+  // The button should only appear when explicitly placed somewhere with styling
+  const showButton = style !== undefined;
+
   return (
     <div style={style}>
-      <button
-        onClick={() => {
-          if (accountProfile) {
-            setOpen(!open);
-          } else {
-            setOpenWalletModal(true);
+      {showButton && (
+        <button
+          onClick={() => {
+            if (accountProfile) {
+              setOpen(!open);
+            } else {
+              setOpenWalletModal(true);
+            }
+          }}
+          ref={anchorRef}
+          aria-label={
+            accountProfile
+              ? `Wallet menu for ${truncateAccount(accountProfile.account)}`
+              : 'Connect wallet'
           }
-        }}
-        ref={anchorRef}
-        aria-label={
-          accountProfile
-            ? `Wallet menu for ${truncateAccount(accountProfile.account)}`
-            : 'Connect wallet'
-        }
-        className={cn(
-          'group flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
-          accountProfile
-            ? 'h-9 min-w-[130px] px-4'
-            : 'h-9 px-5',
-          isDark
-            ? accountProfile
-              ? 'bg-white/[0.05] text-white hover:bg-white/[0.08] ring-1 ring-white/[0.06]'
-              : 'bg-primary/10 text-primary hover:bg-primary/15 ring-1 ring-primary/20'
-            : accountProfile
-              ? 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
-              : 'bg-primary/5 text-primary hover:bg-primary/10 ring-1 ring-primary/20'
-        )}
-        title={accountProfile ? 'Account Details' : 'Connect Wallet'}
-      >
-        {accountProfile ? (
-          <>
-            <div className="relative">
-              <div className={cn(
-                'h-2 w-2 rounded-full',
-                accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
+          className={cn(
+            'group flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
+            accountProfile
+              ? 'h-9 min-w-[130px] px-4'
+              : 'h-9 px-5',
+            isDark
+              ? accountProfile
+                ? 'bg-white/[0.05] text-white hover:bg-white/[0.08] ring-1 ring-white/[0.06]'
+                : 'bg-primary/10 text-primary hover:bg-primary/15 ring-1 ring-primary/20'
+              : accountProfile
+                ? 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
+                : 'bg-primary/5 text-primary hover:bg-primary/10 ring-1 ring-primary/20'
+          )}
+          title={accountProfile ? 'Account Details' : 'Connect Wallet'}
+        >
+          {accountProfile ? (
+            <>
+              <div className="relative">
+                <div className={cn(
+                  'h-2 w-2 rounded-full',
+                  accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
+                )} />
+                {accountsActivation[accountLogin] !== false && (
+                  <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
+                )}
+              </div>
+              <span className="font-mono text-[13px] tracking-tight">
+                {truncateAccount(accountLogin, 6)}
+              </span>
+              <ChevronDown size={12} className={cn(
+                "transition-transform duration-200",
+                open ? "rotate-180" : "",
+                isDark ? "text-white/40" : "text-gray-400"
               )} />
-              {accountsActivation[accountLogin] !== false && (
-                <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
-              )}
-            </div>
-            <span className="font-mono text-[13px] tracking-tight">
-              {truncateAccount(accountLogin, 6)}
-            </span>
-            <ChevronDown size={12} className={cn(
-              "transition-transform duration-200",
-              open ? "rotate-180" : "",
-              isDark ? "text-white/40" : "text-gray-400"
-            )} />
-          </>
-        ) : (
-          <>
-            <span className="text-[13px] font-medium">Connect</span>
-          </>
-        )}
-      </button>
+            </>
+          ) : (
+            <>
+              <span className="text-[13px] font-medium">Connect</span>
+            </>
+          )}
+        </button>
+      )}
 
       <Dialog
           open={open || openWalletModal}
