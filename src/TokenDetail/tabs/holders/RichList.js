@@ -153,13 +153,19 @@ const RichList = ({ token, amm }) => {
       )}
 
       {/* Table */}
-      <div>
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-gray-200')}>
+            <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-200')}>
               <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
               <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
+              {!isMobile && (
+                <>
+                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h %</th>
+                  <th className={cn('py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Status</th>
+                </>
+              )}
               <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Share</th>
             </tr>
           </thead>
@@ -167,16 +173,20 @@ const RichList = ({ token, amm }) => {
             {richList.map((holder, index) => {
               const rank = holder.id || (page - 1) * rowsPerPage + index + 1;
               const percentOfSupply = holder.holding || 0;
+              const isAMM = ammAccount && holder.account === ammAccount;
+              const isIssuer = token.issuer && holder.account === token.issuer;
+              const isFrozen = holder.freeze;
+              const change24h = holder.balance24h ? ((holder.balance - holder.balance24h) / holder.balance24h) * 100 : null;
 
               return (
                 <tr
                   key={holder.account || index}
                   className={cn(
                     'border-b',
-                    isDark ? 'border-[rgba(59,130,246,0.06)]' : 'border-gray-100'
+                    isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50'
                   )}
                 >
-                  <td className="py-2 pr-2">
+                  <td className="py-2.5 pr-2">
                     <span className={cn(
                       'inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-medium',
                       getRankStyle(rank)
@@ -184,35 +194,56 @@ const RichList = ({ token, amm }) => {
                       {rank}
                     </span>
                   </td>
-                  <td className="py-2 px-2">
-                    <div className="flex items-center gap-1.5">
-                      <Link
-                        href={`/profile/${holder.account}`}
-                        className={cn(
-                          'text-[11px] font-mono hover:text-primary',
-                          isDark ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
-                      </Link>
-                      {ammAccount && holder.account === ammAccount && (
-                        <span className="rounded bg-primary/20 px-1 py-0.5 text-[8px] font-medium text-primary">AMM</span>
+                  <td className="py-2.5 px-2">
+                    <Link
+                      href={`/profile/${holder.account}`}
+                      className={cn(
+                        'text-[12px] font-mono hover:text-primary transition-colors',
+                        isDark ? 'text-white/80' : 'text-gray-700'
                       )}
-                      {token.issuer && holder.account === token.issuer && (
-                        <span className="rounded bg-purple-500/15 px-1 py-0.5 text-[8px] font-medium text-purple-400">Issuer</span>
-                      )}
-                    </div>
+                    >
+                      {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
+                    </Link>
                   </td>
-                  <td className={cn('py-2 px-2 text-right text-[11px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                  <td className={cn('py-2.5 px-2 text-right text-[12px] font-medium tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                     {formatNumber(holder.balance)}
                   </td>
-                  <td className="py-2 pl-2 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <div className={cn('h-1 w-8 overflow-hidden rounded-full', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-gray-200')}>
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(percentOfSupply * 10, 100)}%` }} />
+                  {!isMobile && (
+                    <>
+                      <td className="py-2.5 px-2 text-right">
+                        {change24h !== null ? (
+                          <span className={cn('text-[12px] tabular-nums', change24h >= 0 ? 'text-green-500' : 'text-red-500')}>
+                            {change24h >= 0 ? '+' : ''}{change24h.toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {isAMM && (
+                          <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>
+                        )}
+                        {isIssuer && (
+                          <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Issuer</span>
+                        )}
+                        {isFrozen && (
+                          <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>
+                        )}
+                        {!isAMM && !isIssuer && !isFrozen && (
+                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                        )}
+                      </div>
+                    </td>
+                    </>
+                  )}
+                  <td className="py-2.5 pl-2 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <div className={cn('h-1.5 w-12 overflow-hidden rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(percentOfSupply * 2, 100)}%` }} />
                       </div>
                       <span className={cn(
-                        'text-[11px] font-medium tabular-nums',
+                        'text-[12px] font-medium tabular-nums min-w-[40px]',
                         percentOfSupply > 5 ? 'text-yellow-500' : isDark ? 'text-white/70' : 'text-gray-600'
                       )}>
                         {percentOfSupply}%

@@ -211,13 +211,21 @@ export default function TopTraders({ token }) {
           </div>
 
           {/* Table */}
-          <div>
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
                   <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
                   <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>P&L</th>
+                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
+                  {!isMobile && (
+                    <>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
+                    </>
+                  )}
                   <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
                 </tr>
               </thead>
@@ -225,29 +233,53 @@ export default function TopTraders({ token }) {
                 {processedTraders.map((trader, index) => {
                   const rank = (page - 1) * rowsPerPage + index + 1;
                   const isTopTrader = rank <= 3;
+                  const pnl = trader.totalProfit ?? trader.profit ?? 0;
+                  const roi = trader.roi ?? 0;
+                  const bought = trader.buyVolume ?? 0;
+                  const sold = trader.sellVolume ?? 0;
+                  const volume = trader.totalVolume ?? 0;
+                  const trades = trader.totalTrades ?? trader.trades ?? 0;
                   return (
-                    <tr key={trader.address + '-' + index} className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
-                      <td className="py-2 pr-2">
+                    <tr key={trader.address + '-' + index} className={cn('border-b', isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50')}>
+                      <td className="py-2.5 pr-2">
                         <span className={cn(
-                          'text-[10px] font-medium',
+                          'text-[11px] font-medium',
                           isTopTrader ? rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : 'text-amber-600' : isDark ? 'text-white/30' : 'text-gray-400'
                         )}>{rank}</span>
                       </td>
-                      <td className="py-2 px-2">
-                        <Link href={`/profile/${trader.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/80' : 'text-gray-700')}>
+                      <td className="py-2.5 px-2">
+                        <Link href={`/profile/${trader.address}`} className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
                           {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>
-                      <td className="py-2 px-2 text-right">
+                      <td className="py-2.5 px-2 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {trader.profit >= 0 ? <TrendingUp size={10} className="text-green-500" /> : <TrendingDown size={10} className="text-red-500" />}
-                          <span className={cn('text-[11px] font-medium tabular-nums', trader.profit >= 0 ? 'text-green-500' : 'text-red-500')}>
-                            {trader.profit >= 0 ? '+' : ''}{formatCompactNumber(trader.profit)}
+                          {pnl >= 0 ? <TrendingUp size={10} className="text-green-500" /> : <TrendingDown size={10} className="text-red-500" />}
+                          <span className={cn('text-[12px] font-medium tabular-nums', pnl >= 0 ? 'text-green-500' : 'text-red-500')}>
+                            {pnl >= 0 ? '+' : ''}{formatCompactNumber(pnl)}
                           </span>
                         </div>
                       </td>
-                      <td className={cn('py-2 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                        {fNumber(trader.totalTrades || trader.trades)}
+                      {!isMobile && (
+                        <>
+                          <td className="py-2.5 px-2 text-right">
+                            <span className={cn('text-[12px] tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                              {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-2 text-right">
+                            <span className="text-[12px] tabular-nums text-green-500">{formatCompactNumber(bought)}</span>
+                          </td>
+                          <td className="py-2.5 px-2 text-right">
+                            <span className="text-[12px] tabular-nums text-red-500">{formatCompactNumber(sold)}</span>
+                          </td>
+                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            {formatCompactNumber(volume)}
+                          </td>
+                        </>
+                      )}
+                      <td className={cn('py-2.5 pl-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                        {fNumber(trades)}
                       </td>
                     </tr>
                   );
