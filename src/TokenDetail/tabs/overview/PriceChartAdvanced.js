@@ -588,9 +588,9 @@ const PriceChartAdvanced = memo(({ token }) => {
         secondsVisible: false,
         rightOffset: 5,
         barSpacing: 8,
-        minBarSpacing: 1,
-        fixLeftEdge: false,  // Allow scrolling left to load more data
-        fixRightEdge: false, // Handled manually based on hasMore state
+        minBarSpacing: 0.1,  // Allow more bars on smaller viewports
+        fixLeftEdge: true,   // Prevent scrolling past oldest data
+        fixRightEdge: true,  // Prevent scrolling past newest data
         rightBarStaysOnScroll: true,
         lockVisibleTimeRangeOnResize: true,
         shiftVisibleRangeOnNewBar: true,
@@ -627,14 +627,19 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     let zoomCheckTimeout;
     let loadMoreTimeout;
-    chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
-      if (logicalRange && dataRef.current && dataRef.current.length > 0) {
-        clearTimeout(zoomCheckTimeout);
-        zoomCheckTimeout = setTimeout(() => {
-          const dataLength = dataRef.current.length;
-          const isScrolledAway = logicalRange.to < dataLength - 2;
 
-          const shouldPauseUpdates = isScrolledAway;
+    chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
+      if (!logicalRange || !dataRef.current || dataRef.current.length === 0) {
+        return;
+      }
+
+      clearTimeout(zoomCheckTimeout);
+      zoomCheckTimeout = setTimeout(() => {
+        const dataLength = dataRef.current.length;
+          const isScrolledRight = logicalRange.to < dataLength - 2;
+          const isScrolledLeft = logicalRange.from < dataLength - 200; // User scrolled to see older data
+
+          const shouldPauseUpdates = isScrolledRight || isScrolledLeft;
 
           if (shouldPauseUpdates !== isUserZoomedRef.current) {
             setIsUserZoomed(shouldPauseUpdates);
@@ -652,32 +657,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             }, 300);
           }
 
-          // When no more data available, lock chart within data bounds
-          if (!hasMoreRef.current) {
-            const visibleBars = logicalRange.to - logicalRange.from;
-            let needsAdjust = false;
-            let newFrom = logicalRange.from;
-            let newTo = logicalRange.to;
-
-            // Prevent scrolling past left edge
-            if (logicalRange.from < 0) {
-              newFrom = 0;
-              newTo = Math.min(visibleBars, dataLength);
-              needsAdjust = true;
-            }
-            // Prevent scrolling past right edge
-            if (logicalRange.to > dataLength) {
-              newTo = dataLength;
-              newFrom = Math.max(0, dataLength - visibleBars);
-              needsAdjust = true;
-            }
-
-            if (needsAdjust) {
-              chart.timeScale().setVisibleLogicalRange({ from: newFrom, to: newTo });
-            }
-          }
         }, 100);
-      }
     });
 
     const toolTip = document.createElement('div');
