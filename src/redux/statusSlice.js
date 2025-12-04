@@ -76,12 +76,4 @@ export const selectMetrics = (state) => state.status.metrics;
 export const selectFilteredCount = (state) => state.status.filteredCount;
 export const selectActiveFiatCurrency = (state) => state.status.activeFiatCurrency;
 export const selectTokenCreation = (state) => state.status.metrics.tokenCreation;
-export const selectGlobalMetrics = (state) => state.status.metrics.global;
-
-// Simple function for exchange rate lookup
-export const selectExchangeRate = (state, currency) => {
-  const metrics = selectMetrics(state);
-  return metrics[currency] || 1;
-};
-
 export default statusSlice.reducer;

@@ -8,7 +8,7 @@ import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2 } from '
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
-import Share from './Share';
+import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 

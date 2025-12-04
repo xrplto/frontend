@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Transaction processing states
-export const TX_STATE = {
+// Transaction processing states (internal use)
+const TX_STATE = {
   INITIAL: 0,
   SIGNING: 1,
   SUCCESS: 2,

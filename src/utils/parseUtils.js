@@ -724,24 +724,6 @@ export function normalizeAmount(Amount) {
 
 // ==== ORDERBOOK SERVICE (from orderbookService.js) ====
 
-export const formatOrderbookData = (bookData, orderType = 'bids') => {
-  if (!bookData || !bookData.asks || !bookData.bids) {
-    return [];
-  }
-
-  const orders = orderType === 'bids' ? bookData.bids : bookData.asks;
-
-  return orders.map((order, index) => ({
-    price: parseFloat(order.rate),
-    amount: parseFloat(order.amount),
-    total: parseFloat(order.total || order.amount * order.rate),
-    sumAmount: order.sumAmount || 0,
-    sumValue: order.sumValue || 0,
-    avgPrice: order.avgPrice || order.rate,
-    isNew: false
-  }));
-};
-
 export const calculateSpread = (bids, asks) => {
   if (!bids || !asks || bids.length === 0 || asks.length === 0) {
     return {
