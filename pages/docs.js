@@ -418,7 +418,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 <Server size={16} className="text-primary" />
                 <h3 className="text-[15px] font-medium">Base URL</h3>
               </div>
-              <div className={cn("p-3 rounded-lg font-mono text-[13px]", isDark ? "bg-black/40" : "bg-white border border-gray-200")}>
+              <div className={cn("p-3 rounded-lg font-mono text-[13px]", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 https://api.xrpl.to
               </div>
             </div>
@@ -439,7 +439,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                     key={card.title}
                     className={cn(
                       "rounded-xl border-[1.5px] p-5 cursor-pointer transition-colors",
-                      isDark ? "border-white/10 hover:border-white/20 bg-white/[0.02]" : "border-gray-200 hover:border-gray-300 bg-gray-50/50"
+                      isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)]"
                     )}
                     onClick={() => card.title === 'API Reference' && setCurrentSection('tokens')}
                   >
@@ -452,12 +452,12 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Quick Start Example */}
-            <div id="quick-start" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="quick-start" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <h3 className="text-[15px] font-medium mb-3">Quick Start Example</h3>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get top tokens by 24h volume:
               </p>
-              <div className={cn("p-3 rounded-lg font-mono text-[13px] overflow-x-auto", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("p-3 rounded-lg font-mono text-[13px] overflow-x-auto", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <span className="text-primary">curl</span> -X GET "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp"
               </div>
               <button onClick={() => handleTryApi('/api/tokens?limit=5&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
@@ -478,7 +478,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Trading Fees */}
-            <div id="trading-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="trading-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
                 Trading Fees
               </div>
@@ -504,7 +504,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Token Launch Fees */}
-            <div id="token-launch-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="token-launch-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
                 Token Launch Fees
               </div>
@@ -512,7 +512,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 Launch your token on the XRP Ledger with our streamlined token creation service.
               </p>
 
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[13px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -522,17 +522,17 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                       <td className="px-4 py-3 font-medium">Platform Fee</td>
                       <td className="px-4 py-3 text-primary">5 - 30 XRP</td>
                       <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>Scales with developer allocation %</td>
                     </tr>
-                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                       <td className="px-4 py-3 font-medium">Base Reserve</td>
                       <td className="px-4 py-3 text-primary">1 XRP</td>
                       <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>XRPL account reserve requirement</td>
                     </tr>
-                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                       <td className="px-4 py-3 font-medium">AMM Pool</td>
                       <td className="px-4 py-3 text-primary">Min 1 XRP</td>
                       <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>Initial liquidity for AMM pool</td>
@@ -573,7 +573,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* GET /tokens */}
-            <div id="get-tokens" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="get-tokens" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/tokens</code>
@@ -581,7 +581,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
                 List all tokens with filtering and sorting
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -605,7 +605,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['showDate', 'bool - Include date fields'],
                       ['skipMetrics', 'bool - Skip global metrics for faster response']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -613,7 +613,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span> /api/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
                 </pre>
@@ -624,7 +624,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* GET /token/{slug} */}
-            <div id="get-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="get-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/token/{'{slug}'}</code>
@@ -632,7 +632,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get single token by slug, md5, or issuer_currency format
               </p>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span> /api/token/SOLO
                 </pre>
@@ -643,7 +643,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* POST /search */}
-            <div id="post-search" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="post-search" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
                 <code className="text-[15px] font-mono">/api/search</code>
@@ -651,7 +651,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Search tokens by name/symbol/issuer
               </p>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
 {`Body: { "search": "solo", "page": 0, "limit": 20 }`}
                 </pre>
@@ -659,7 +659,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Other endpoints */}
-            <div id="other-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="other-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Other Endpoints
               </div>
@@ -690,7 +690,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* OHLC */}
-            <div id="ohlc" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="ohlc" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/graph-ohlc-v2/{'{md5}'}</code>
@@ -698,7 +698,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get OHLC candlestick chart data
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -713,7 +713,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['interval', '1m | 5m | 15m | 30m | 1h | 4h | 1d | 1w'],
                       ['vs_currency', 'XRP | USD | EUR | JPY | CNH (default: XRP)']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -721,7 +721,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span> /api/graph-ohlc-v2/0413ca7cfc258dfaf698c02fe304e607?range=1D
                 </pre>
@@ -729,7 +729,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Other market endpoints */}
-            <div id="other-market" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="other-market" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Other Endpoints
               </div>
@@ -765,7 +765,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* GET /history */}
-            <div id="history" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="history" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/history</code>
@@ -773,7 +773,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get trade history for a token
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -792,7 +792,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['xrpOnly', 'bool - Only XRP trades'],
                       ['xrpAmount', 'Minimum XRP amount filter']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -800,7 +800,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span> /api/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
                 </pre>
@@ -808,7 +808,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Other trading endpoints */}
-            <div id="other-trading" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="other-trading" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Other Endpoints
               </div>
@@ -838,7 +838,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Account endpoints list */}
-            <div id="account-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="account-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/api/account/balance/{account}', 'Detailed XRP balance with reserves'],
@@ -862,7 +862,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* account_tx detail */}
-            <div id="account-tx" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="account-tx" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/account_tx/{'{account}'}</code>
@@ -870,7 +870,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get paginated transaction history (rippled: account_tx)
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px]", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -887,7 +887,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['tx_type', 'Filter by transaction type'],
                       ['forward', 'bool - Chronological order']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -908,7 +908,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* NFT endpoints */}
-            <div id="single-nft" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="single-nft" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Single NFT
               </div>
@@ -927,7 +927,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
             </div>
 
-            <div id="collections" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="collections" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Collections
               </div>
@@ -952,7 +952,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
             </div>
 
-            <div id="activity" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="activity" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Activity & Traders
               </div>
@@ -989,7 +989,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Orderbook detail */}
-            <div id="orderbook" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="orderbook" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
                 <code className="text-[15px] font-mono">/api/orderbook</code>
@@ -997,7 +997,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get live orderbook (rippled: book_offers)
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -1013,7 +1013,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['quote_issuer', 'Quote issuer (if not XRP)'],
                       ['limit', 'int (default: 20, max: 400)']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -1021,7 +1021,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-black/40" : "bg-gray-50 border border-gray-200")}>
+              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
                   <span className="text-emerald-500">GET</span> /api/orderbook?base_currency=XRP&quote_currency=534F4C4F&quote_issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
                 </pre>
@@ -1029,7 +1029,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Other XRPL endpoints */}
-            <div id="other-xrpl" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="other-xrpl" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Other Endpoints
               </div>
@@ -1058,7 +1058,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.analytics} id="llm-analytics-section" />
             </div>
 
-            <div id="analytics-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="analytics-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/api/analytics/token/{tokenId}', 'Token analytics (OMCF)'],
@@ -1091,7 +1091,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* POST /launch-token */}
-            <div id="launch-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="launch-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
                 <code className="text-[15px] font-mono">/api/launch-token</code>
@@ -1099,7 +1099,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Initialize token launch with optional anti-snipe mode
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -1124,7 +1124,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       ['twitter', 'Twitter handle'],
                       ['imageData', 'Base64 token image']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
@@ -1165,7 +1165,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Other launch endpoints */}
-            <div id="other-launch" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="other-launch" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Other Endpoints
               </div>
@@ -1199,7 +1199,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.tools} id="llm-tools-section" />
             </div>
 
-            <div id="tools-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="tools-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/api/health', 'API health check (returns "success")'],
@@ -1227,7 +1227,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Token Identifiers */}
-            <div id="token-ids" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="token-ids" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Token Identifiers
               </div>
@@ -1239,7 +1239,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* MD5 Generation */}
-            <div id="md5-gen" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="md5-gen" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 MD5 Generation
               </div>
@@ -1252,7 +1252,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Currency Hex */}
-            <div id="currency-hex" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="currency-hex" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Currency Hex (codes {'>'}3 chars)
               </div>
@@ -1265,7 +1265,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Patterns */}
-            <div id="patterns" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="patterns" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Regex Patterns
               </div>
@@ -1278,7 +1278,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Caching */}
-            <div id="caching" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="caching" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Caching
               </div>
@@ -1291,7 +1291,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             </div>
 
             {/* Rate Limits */}
-            <div id="rate-limits" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-white/10" : "border-gray-200")}>
+            <div id="rate-limits" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
                 Rate Limits
               </div>
@@ -1331,8 +1331,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
                 Create a free API key to get started. Requires JWT authentication.
               </p>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-gray-100")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
+                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /api/api-keys</span>
                   <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/api/api-keys', {
   method: 'POST',
@@ -1365,15 +1365,15 @@ const { apiKey, keyPrefix } = await response.json();
             <div id="use-key" className="space-y-4">
               <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Using API Keys</h3>
               <div className="grid gap-4">
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                   <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>Header (Recommended)</div>
                   <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>X-API-Key: xrpl_abc123...</code>
                 </div>
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                   <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>Query Parameter</div>
                   <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>?apiKey=xrpl_abc123...</code>
                 </div>
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                   <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>WebSocket</div>
                   <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>wss://api.xrpl.to/ws/sync?apiKey=xrpl_abc123...</code>
                 </div>
@@ -1382,7 +1382,7 @@ const { apiKey, keyPrefix } = await response.json();
 
             <div id="rate-limits-keys" className="space-y-4">
               <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Rate Limits</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[13px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -1399,7 +1399,7 @@ const { apiKey, keyPrefix } = await response.json();
                       { tier: 'Pro', rpm: '400', rpd: '120,000' },
                       { tier: 'Enterprise', rpm: '1,000', rpd: '300,000' }
                     ].map((row) => (
-                      <tr key={row.tier} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={row.tier} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.tier}</td>
                         <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpm}</td>
                         <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpd}</td>
@@ -1437,7 +1437,7 @@ const { apiKey, keyPrefix } = await response.json();
 
             <div id="pricing" className="space-y-4">
               <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pricing Tiers</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[13px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
@@ -1455,7 +1455,7 @@ const { apiKey, keyPrefix } = await response.json();
                       { tier: 'Pro', eur: '100', xrp: '200', rpm: '400', rpd: '120K' },
                       { tier: 'Enterprise', eur: '250', xrp: '500', rpm: '1,000', rpd: '300K' }
                     ].map((row, i) => (
-                      <tr key={row.tier} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <tr key={row.tier} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.tier}</td>
                         <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.eur}</td>
                         <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.xrp}</td>
@@ -1470,8 +1470,8 @@ const { apiKey, keyPrefix } = await response.json();
 
             <div id="subscribe" className="space-y-4">
               <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Subscribe via XRPL Payment</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-gray-100")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
+                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>3-Step Payment Flow</span>
                   <button onClick={() => copyToClipboard(`// Step 1: Get payment details
 const subRes = await fetch('https://api.xrpl.to/api/api-keys/subscribe', {
@@ -1531,8 +1531,8 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
 
             <div id="check-usage" className="space-y-4">
               <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Check Usage</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-gray-100")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
+                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /api/api-keys/usage</span>
                   <button onClick={() => copyToClipboard(`const usage = await fetch('https://api.xrpl.to/api/api-keys/usage', {
   headers: { 'Authorization': \`Bearer \${jwt}\` }
@@ -1562,7 +1562,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
             <h2 className="text-2xl font-normal text-primary">Error Codes</h2>
             <div id="error-codes" className={cn(
               "rounded-xl border-[1.5px] overflow-hidden",
-              isDark ? "border-white/10" : "border-gray-200"
+              isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
             )}>
               <table className="w-full text-[13px]">
                 <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
@@ -1579,7 +1579,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
                     { code: '429', desc: 'Too Many Requests', color: 'text-amber-500' },
                     { code: '500', desc: 'Internal Server Error', color: 'text-red-500' }
                   ].map((err) => (
-                    <tr key={err.code} className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                    <tr key={err.code} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                       <td className="px-4 py-3"><code className={cn("font-mono", err.color)}>{err.code}</code></td>
                       <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{err.desc}</td>
                     </tr>
@@ -1614,7 +1614,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
               "md:hidden fixed top-20 right-4 z-50 p-2 rounded-lg",
-              isDark ? "bg-gray-900 border border-white/10" : "bg-white border border-gray-200"
+              isDark ? "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.1)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]"
             )}
           >
             {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
@@ -1625,7 +1625,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
             className={cn(
               "w-[240px] border-r overflow-y-auto transition-all duration-300 pt-16",
               "fixed md:sticky top-0 h-screen z-40",
-              isDark ? "bg-black border-white/[0.08]" : "bg-gray-50/50 border-gray-200",
+              isDark ? "bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]",
               isSidebarOpen ? "block" : "hidden md:block"
             )}
           >
@@ -1640,7 +1640,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={cn(
                     "w-full pl-9 pr-3 py-2 rounded-lg border-[1.5px] text-[13px]",
-                    isDark ? "bg-white/[0.02] border-white/10 placeholder:text-white/30" : "bg-white border-gray-200"
+                    isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)] placeholder:text-white/30" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]"
                   )}
                 />
               </div>
@@ -1727,7 +1727,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
               </nav>
 
               {/* Support Section */}
-              <div className={cn("mt-6 pt-6 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("mt-6 pt-6 border-t", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3 px-1", isDark ? "text-white/40" : "text-gray-500")}>
                   Support
                 </div>
@@ -1836,7 +1836,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
             >
               <div className={cn(
                 "flex justify-between items-center px-4 py-3 border-b",
-                isDark ? "border-white/10" : "border-gray-200"
+                isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
               )}>
                 <h3 className="text-[15px] font-medium">API Response</h3>
                 <div className="flex items-center gap-1">

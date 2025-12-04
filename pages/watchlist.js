@@ -49,8 +49,8 @@ function Overview({ data }) {
           </div>
           {account && (
             <div className={cn(
-              'flex rounded-lg p-1',
-              isDark ? 'bg-white/5' : 'bg-gray-100'
+              'flex rounded-lg p-1 border-[1.5px]',
+              isDark ? 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)]' : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]'
             )}>
               <button
                 onClick={() => setActiveTab('tokens')}
@@ -83,8 +83,8 @@ function Overview({ data }) {
         {/* Content */}
         {!account ? (
           <div className={cn(
-            'rounded-xl border-[1.5px] p-12 text-center',
-            isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+            'rounded-xl border-[1.5px] p-12 text-center transition-all duration-200 hover:border-[rgba(59,130,246,0.3)]',
+            isDark ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]' : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
           )}>
             <Star size={32} className={cn('mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
             <p className={cn('text-[15px] mb-1', isDark ? 'text-white/60' : 'text-gray-600')}>

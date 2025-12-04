@@ -4,7 +4,7 @@ import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { ExternalLink, X, Plus, Fish, Anchor, Ship, Loader2, Activity, Droplets, Users, PieChart, Wallet } from 'lucide-react';
+import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet } from 'lucide-react';
 
 // Custom styled components
 const Box = styled.div``;
@@ -73,6 +73,191 @@ const decodeCurrency = (currency) => {
   // Already plain text (e.g., "DROP", "GDROP", "BTC")
   return currency;
 };
+
+// Wallet tier animal icons (SVG components)
+const ShrimpIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 824 796" width={size} height={size * 0.97} style={style}>
+    <g transform="translate(-808 -85)" fill="none" stroke="#0b77b0" strokeLinecap="round" strokeWidth="30">
+      <line x2="247" y2="100" transform="translate(1012 105)"/><line x1="144" y2="34" transform="translate(868 105)"/>
+      <line y1="88" x2="13" transform="translate(855 139)"/><line x2="157" y2="125" transform="translate(855 227)"/>
+      <line x2="170" y2="106" transform="translate(830 280)"/><line y1="75" x2="96" transform="translate(830 205)"/>
+      <line x1="270" y1="19" transform="translate(926 205)"/><line x1="98" y1="11" transform="translate(1289 287)"/>
+      <line y1="55" x2="204" transform="translate(1085 287)"/><line x1="43" y2="38" transform="translate(1042 342)"/>
+      <line x1="48" y1="42" transform="translate(1042 380)"/><line y1="47" x2="236" transform="translate(1090 375)"/>
+      <line x2="72" y2="154" transform="translate(1289 293)"/><line x2="271" y2="25" transform="translate(1090 422)"/>
+      <line x1="30" y2="146" transform="translate(1361 301)"/><line x2="153" y2="90" transform="translate(1391 301)"/>
+      <line x1="69" y1="174" transform="translate(1544 391)"/><line x1="45" y2="164" transform="translate(1568 565)"/>
+      <line y1="76" x2="82" transform="translate(1486 729)"/><line x1="113" y2="55" transform="translate(1373 805)"/>
+      <line x2="76" y2="75" transform="translate(1297 785)"/><line x2="110" y2="13" transform="translate(1297 785)"/>
+      <line x1="37" y2="26" transform="translate(1407 772)"/><line y1="38" x2="35" transform="translate(1444 734)"/>
+      <line x1="24" y2="102" transform="translate(1479 632)"/><line x1="48" y1="130" transform="translate(1455 502)"/>
+      <line x2="99" y2="62" transform="translate(1356 440)"/><line y1="49" x2="178" transform="translate(1356 391)"/>
+      <line y1="114" x2="75" transform="translate(1459 391)"/><line x2="148" y2="60" transform="translate(1459 505)"/>
+      <line y1="65" x2="101" transform="translate(1506 565)"/><line x2="55" y2="88" transform="translate(1506 630)"/>
+      <line x2="79" y2="2" transform="translate(1482 729)"/><line x2="43" y2="16" transform="translate(1412 801)"/>
+      <line x1="14" y2="36" transform="translate(1412 694)"/><line y1="18" x2="27" transform="translate(1426 676)"/>
+      <line y1="3" x2="38" transform="translate(1410 617)"/><line y1="4" x2="53" transform="translate(1376 551)"/>
+      <line x2="47" transform="translate(1332 502)"/><line x1="27" y2="61" transform="translate(1305 502)"/>
+      <line x1="27" y2="58" transform="translate(1349 555)"/><line x1="36" y2="54" transform="translate(1374 620)"/>
+      <line x1="47" y2="55" transform="translate(1217 474)"/><line x2="158" y2="60" transform="translate(1059 469)"/>
+      <line x1="44" y2="71" transform="translate(1015 469)"/>
+    </g>
+  </svg>
+);
+
+const FishIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 999 735" width={size} height={size * 0.74} style={style}>
+    <g transform="translate(-650 -155)" fill="none" stroke="#05a0f3" strokeLinecap="round" strokeWidth="38">
+      <line x2="189" y2="44" transform="translate(1074 228)"/><line x1="139" y1="42" transform="translate(1267 263)"/>
+      <line y1="123" x2="161" transform="translate(1406 182)"/><line x2="384" transform="translate(1183 182)"/>
+      <line x1="109" y2="46" transform="translate(1074 182)"/><line x1="306" y2="64" transform="translate(1222 196)"/>
+      <line y1="27" x2="190" transform="translate(884 228)"/><line x2="60" y2="216" transform="translate(884 260)"/>
+      <line x1="119" y2="74" transform="translate(765 255)"/><line y1="168" x2="89" transform="translate(676 329)"/>
+      <line x2="80" y2="166" transform="translate(676 497)"/><line x1="123" y1="68" transform="translate(756 663)"/>
+      <line x2="75" y2="93" transform="translate(857 723)"/><line x1="116" y1="48" transform="translate(932 816)"/>
+      <line x1="92" y1="118" transform="translate(956 746)"/><line x1="683" y1="71" transform="translate(884 734)"/>
+      <line y1="49" x2="54" transform="translate(1002 756)"/><line x1="144" y2="192" transform="translate(1106 564)"/>
+      <line x1="132" y2="8" transform="translate(1118 564)"/><line x2="3" y2="79" transform="translate(1115 493)"/>
+      <line x1="171" y1="13" transform="translate(944 480)"/><line y1="95" x2="40" transform="translate(899 480)"/>
+      <line x1="81" y2="45" transform="translate(818 575)"/><line y1="40" x2="28" transform="translate(783 623)"/>
+      <line x1="249" y2="39" transform="translate(690 464)"/><line x1="152" y2="42" transform="translate(932 386)"/>
+      <line y1="102" x2="149" transform="translate(1092 284)"/><line x1="178" y1="114" transform="translate(914 272)"/>
+      <line x2="170" y2="172" transform="translate(1080 386)"/><line y1="43" transform="translate(1118 572)"/>
+      <line x1="84" y2="65" transform="translate(1034 615)"/><line x2="131" y2="108" transform="translate(903 572)"/>
+      <line x2="179" y2="86" transform="translate(927 523)"/><line y1="67" x2="119" transform="translate(871 656)"/>
+      <line x2="156" y2="41" transform="translate(1250 568)"/><line y1="94" x2="123" transform="translate(1267 609)"/>
+      <line x1="111" y2="43" transform="translate(1156 703)"/><line x1="41" y2="32" transform="translate(1398 572)"/>
+      <line x1="49" y2="91" transform="translate(1390 572)"/><line x1="177" y1="142" transform="translate(1390 663)"/>
+      <line x1="251" y1="74" transform="translate(1276 707)"/><line x2="27" y2="123" transform="translate(1406 305)"/>
+      <line x1="193" y2="45" transform="translate(1433 383)"/><line x1="41" y2="137" transform="translate(1585 383)"/>
+      <line x1="33" y1="89" transform="translate(1585 520)"/><line x1="175" y1="37" transform="translate(1443 572)"/>
+      <line x2="28" y2="57" transform="translate(1411 515)"/><line x1="140" y2="43" transform="translate(1271 515)"/>
+      <line y1="87" x2="22" transform="translate(1411 428)"/><line x2="315" y2="41" transform="translate(1118 394)"/>
+      <line x2="176" y2="148" transform="translate(1257 272)"/><line x1="182" y2="96" transform="translate(1430 407)"/>
+      <line x1="149" y1="17" transform="translate(1430 503)"/>
+    </g>
+  </svg>
+);
+
+const SwordfishIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322 488" width={size} height={size * 0.37} style={style}>
+    <g transform="translate(-269 -234)" fill="none" stroke="#04d1f3" strokeLinecap="round" strokeWidth="34">
+      <line x2="806" y2="98" transform="translate(653 417)"/><line x1="122" y2="74" transform="translate(531 417)"/>
+      <line y1="24" x2="243" transform="translate(288 492)"/><line x2="175" y2="49" transform="translate(404 505)"/>
+      <line y1="23" x2="69" transform="translate(438 541)"/><line x2="247" y2="63" transform="translate(438 564)"/>
+      <line x1="132" y1="8" transform="translate(685 627)"/><line y1="20" x2="239" transform="translate(817 615)"/>
+      <line x1="339" y2="86" transform="translate(1056 529)"/><line x1="126" y1="45" transform="translate(1056 615)"/>
+      <line x1="14" y1="29" transform="translate(1168 631)"/><line x1="48" y2="49" transform="translate(1168 582)"/>
+      <line x2="62" y2="10" transform="translate(1216 582)"/><line x1="68" y2="45" transform="translate(1278 547)"/>
+      <line y1="48" x2="141" transform="translate(1318 516)"/><line x1="104" y1="182" transform="translate(1464 516)"/>
+      <line x1="196" y1="151" transform="translate(1372 547)"/><line x1="104" y2="204" transform="translate(1464 312)"/>
+      <line x1="81" y2="45" transform="translate(1487 312)"/><line y1="133" x2="119" transform="translate(1368 357)"/>
+      <line y1="81" x2="140" transform="translate(1376 409)"/><line x1="73" y1="11" transform="translate(1303 467)"/>
+      <line x2="37" y2="26" transform="translate(1266 441)"/><line x1="50" y2="32" transform="translate(1216 441)"/>
+      <line x2="395" y2="76" transform="translate(841 381)"/><line x1="51" y1="48" transform="translate(790 333)"/>
+      <line x1="4" y2="75" transform="translate(790 258)"/><line x1="82" y2="58" transform="translate(712 258)"/>
+      <line y1="93" x2="54" transform="translate(658 316)"/><line y1="73" x2="117" transform="translate(670 336)"/>
+      <line y1="37" x2="144" transform="translate(717 387)"/><line x2="71" y2="106" transform="translate(658 424)"/>
+      <line x1="49" y2="9" transform="translate(729 521)"/><line y1="80" x2="14" transform="translate(778 441)"/>
+      <line x1="180" y1="106" transform="translate(792 441)"/><line y1="26" x2="378" transform="translate(972 521)"/>
+      <line y1="53" x2="204" transform="translate(957 481)"/><line x2="143" y2="67" transform="translate(913 540)"/>
+      <line x1="142" y1="19" transform="translate(771 521)"/><line x1="135" y2="45" transform="translate(778 547)"/>
+      <line x2="77" transform="translate(701 592)"/><line y1="83" x2="39" transform="translate(685 540)"/>
+    </g>
+  </svg>
+);
+
+const SharkIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1484 621" width={size} height={size * 0.42} style={style}>
+    <g transform="translate(-180 -155)" fill="none" stroke="#0dfbf6" strokeLinecap="round" strokeWidth="36">
+      <line x2="366" y2="69" transform="translate(903 330)"/><line x1="39" y1="37" transform="translate(887 293)"/>
+      <line x2="24" y2="113" transform="translate(863 180)"/><line x1="54" y2="35" transform="translate(809 180)"/>
+      <line y1="91" x2="72" transform="translate(737 215)"/><line x2="166" y2="24" transform="translate(737 306)"/>
+      <line x1="342" y2="42" transform="translate(395 306)"/><line y1="51" x2="189" transform="translate(206 348)"/>
+      <line x2="56" y2="72" transform="translate(206 399)"/><line x1="579" y1="85" transform="translate(262 471)"/>
+      <line y1="75" x2="600" transform="translate(841 481)"/><line x1="116" y2="66" transform="translate(1441 415)"/>
+      <line y1="217" x2="71" transform="translate(1557 198)"/><line y1="68" x2="105" transform="translate(1523 198)"/>
+      <line x1="114" y2="140" transform="translate(1409 266)"/><line x2="140" y2="7" transform="translate(1269 399)"/>
+      <line x1="153" y1="69" transform="translate(1409 406)"/><line x2="78" y2="113" transform="translate(1562 475)"/>
+      <line x2="136" y2="43" transform="translate(1504 545)"/><line x1="83" y1="59" transform="translate(1421 486)"/>
+      <line y1="111" x2="335" transform="translate(1086 486)"/><line x1="334" y2="20" transform="translate(752 597)"/>
+      <line x2="10" y2="185" transform="translate(747 552)"/><line x1="141" y1="61" transform="translate(650 691)"/>
+      <line x2="67" y2="161" transform="translate(583 530)"/><line x1="316" y1="93" transform="translate(301 524)"/>
+      <line x1="30" y2="33" transform="translate(301 491)"/><line y1="44" x2="164" transform="translate(331 447)"/>
+      <line x1="122" y2="18" transform="translate(495 429)"/><line x2="163" y2="6" transform="translate(617 429)"/>
+      <line x1="340" y1="73" transform="translate(780 435)"/><line y1="98" x2="149" transform="translate(1120 410)"/>
+      <line x2="64" y2="111" transform="translate(785 617)"/><line x2="92" y2="16" transform="translate(757 712)"/>
+      <line x1="83" y2="81" transform="translate(836 471)"/><line x1="12" y1="123" transform="translate(907 348)"/>
+      <line x1="201" y1="151" transform="translate(919 344)"/><line y1="115" x2="51" transform="translate(1096 376)"/>
+      <line y1="40" x2="354" transform="translate(1096 441)"/><line y2="169" transform="translate(1523 266)"/>
+      <line x2="5" y2="51" transform="translate(1557 420)"/><line x1="218" y2="172" transform="translate(674 344)"/>
+      <line x1="94" y2="77" transform="translate(534 429)"/><line x1="72" y1="99" transform="translate(556 330)"/>
+      <line x1="72" y1="99" transform="translate(701 326)"/><line x1="132" y1="143" transform="translate(402 348)"/>
+      <line x1="154" y1="78" transform="translate(241 394)"/><line x2="79" y2="32" transform="translate(1075 601)"/>
+      <line y2="53" transform="translate(1154 580)"/><line x2="22" y2="49" transform="translate(1132 584)"/>
+    </g>
+  </svg>
+);
+
+const OrcaIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1186 605" width={size} height={size * 0.51} style={style}>
+    <g transform="translate(-432 -170)" fill="none" stroke="#0dfac5" strokeLinecap="round" strokeWidth="34">
+      <line y1="69" x2="301" transform="translate(499 401)"/><line x1="43" y2="51" transform="translate(456 470)"/>
+      <line x1="15" y1="39" transform="translate(456 521)"/><line x2="183" y2="72" transform="translate(471 560)"/>
+      <line x2="20" y2="88" transform="translate(647 578)"/><line x1="42" y1="41" transform="translate(605 537)"/>
+      <line y1="4" x2="134" transform="translate(471 537)"/><line x1="126" y2="53" transform="translate(605 484)"/>
+      <line y1="66" x2="22" transform="translate(731 418)"/><line x2="398" y2="37" transform="translate(740 470)"/>
+      <line x2="51" y2="86" transform="translate(731 481)"/><line y1="8" x2="125" transform="translate(657 567)"/>
+      <line x1="59" y1="44" transform="translate(782 567)"/><line x2="11" y2="101" transform="translate(841 611)"/>
+      <line y1="40" x2="35" transform="translate(817 712)"/><line x1="72" transform="translate(745 752)"/>
+      <line x2="74" y2="77" transform="translate(671 675)"/><line x1="139" y2="19" transform="translate(800 382)"/>
+      <line y1="95" x2="97" transform="translate(939 287)"/><line x2="8" y2="92" transform="translate(1028 195)"/>
+      <line x1="60" y2="57" transform="translate(968 195)"/><line y1="117" x2="40" transform="translate(928 252)"/>
+      <line x2="164" y2="16" transform="translate(915 385)"/><line x2="43" y2="117" transform="translate(1036 284)"/>
+      <line x1="237" y1="88" transform="translate(1079 401)"/><line x2="154" y2="87" transform="translate(1316 489)"/>
+      <line x1="59" y1="79" transform="translate(1470 576)"/><line x2="79" y2="5" transform="translate(1519 642)"/>
+      <line y1="106" x2="21" transform="translate(1577 647)"/><line x1="113" y1="68" transform="translate(1464 685)"/>
+      <line x1="51" y2="38" transform="translate(1464 647)"/><line x1="94" y1="7" transform="translate(1490 666)"/>
+      <line x1="365" y1="148" transform="translate(1141 507)"/><line y1="36" x2="55" transform="translate(1415 576)"/>
+      <line x2="14" y2="69" transform="translate(1407 612)"/><line x1="49" y1="4" transform="translate(1421 681)"/>
+      <line x2="17" y2="80" transform="translate(1307 489)"/><line y1="61" x2="59" transform="translate(1265 581)"/>
+      <line x1="62" y1="103" transform="translate(1079 401)"/><line x1="11" y2="62" transform="translate(1130 511)"/>
+      <line x1="40" y2="105" transform="translate(979 507)"/><line x1="207" y1="95" transform="translate(812 403)"/>
+      <line x1="119" y2="111" transform="translate(838 489)"/><line x2="233" y2="98" transform="translate(1132 573)"/>
+      <line x1="56" y1="10" transform="translate(1365 671)"/><line x1="285" y2="20" transform="translate(1012 647)"/>
+      <line x1="97" y1="24" transform="translate(1268 647)"/><line x2="160" y2="8" transform="translate(852 659)"/>
+      <line y1="3" x2="120" transform="translate(859 612)"/><line x1="157" y2="45" transform="translate(979 567)"/>
+    </g>
+  </svg>
+);
+
+const WhaleIcon = ({ size = 16, style }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1330 628" width={size} height={size * 0.47} style={style}>
+    <g transform="translate(-313 -144)" fill="none" stroke="#00c382" strokeLinecap="round" strokeWidth="32">
+      <line x2="512" y2="100" transform="translate(571 372)"/><line x1="230" y2="44" transform="translate(1083 428)"/>
+      <line y1="93" x2="95" transform="translate(1304 329)"/><line x2="15" y2="67" transform="translate(1384 262)"/>
+      <line x1="86" y1="95" transform="translate(1298 167)"/><line x1="43" y1="205" transform="translate(1298 167)"/>
+      <line x1="101" y1="18" transform="translate(1399 329)"/><line x2="19" transform="translate(1500 347)"/>
+      <line x1="103" y1="44" transform="translate(1519 347)"/><line x1="240" y2="51" transform="translate(1382 391)"/>
+      <line x2="94" y2="5" transform="translate(1298 433)"/><line y1="74" x2="83" transform="translate(1313 442)"/>
+      <line x1="167" y1="46" transform="translate(1155 462)"/><line x1="389" y2="204" transform="translate(924 516)"/>
+      <line x1="428" y2="136" transform="translate(885 516)"/><line x1="17" y1="54" transform="translate(879 652)"/>
+      <line x2="62" y2="44" transform="translate(896 706)"/><line y1="3" x2="131" transform="translate(827 750)"/>
+      <line x2="128" transform="translate(695 746)"/><line x2="110" y2="108" transform="translate(713 638)"/>
+      <line x1="104" y1="137" transform="translate(609 501)"/><line x1="197" y2="61" transform="translate(896 629)"/>
+      <line y1="114" x2="15" transform="translate(1068 475)"/><line x1="248" y1="3" transform="translate(820 586)"/>
+      <line x1="54" y1="60" transform="translate(820 586)"/><line x2="207" y2="85" transform="translate(613 501)"/>
+      <line y1="61" x2="283" transform="translate(613 440)"/><line x1="115" y2="7" transform="translate(498 501)"/>
+      <line x2="163" y2="74" transform="translate(335 434)"/><line y1="56" x2="107" transform="translate(335 378)"/>
+      <line x1="129" y2="6" transform="translate(442 372)"/><line x2="21" y2="67" transform="translate(335 434)"/>
+      <line x1="147" y1="165" transform="translate(356 501)"/><line x2="192" y2="80" transform="translate(503 666)"/>
+      <line x2="192" y2="8" transform="translate(589 698)"/><line x1="206" y1="235" transform="translate(389 463)"/>
+      <line x1="130" y1="138" transform="translate(492 508)"/><line x2="102" y2="14" transform="translate(622 646)"/>
+      <line x2="53" y2="6" transform="translate(613 575)"/><line x1="50" y1="56" transform="translate(563 519)"/>
+      <line x1="43" y1="49" transform="translate(606 508)"/>
+    </g>
+  </svg>
+);
 
 // Define the highlight animation with softer colors
 const highlightAnimation = (isDark) => `
@@ -410,15 +595,15 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-// Trade size indicator - returns icon and opacity based on XRP value
+// Wallet tier indicator - returns animal icon based on XRP value
 const getTradeSizeInfo = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return { Icon: Fish, opacity: 0.3 };
-  if (xrpValue < 1000) return { Icon: Fish, opacity: 0.5 };
-  if (xrpValue < 2500) return { Icon: Fish, opacity: 0.7 };
-  if (xrpValue < 5000) return { Icon: Anchor, opacity: 0.8 };
-  if (xrpValue < 10000) return { Icon: Ship, opacity: 0.9 };
-  return { Icon: Ship, opacity: 1 };
+  if (xrpValue < 100) return { Icon: ShrimpIcon, opacity: 1 };       // 0 - 100 XRP
+  if (xrpValue < 500) return { Icon: FishIcon, opacity: 1 };         // 100 - 500 XRP
+  if (xrpValue < 2000) return { Icon: SwordfishIcon, opacity: 1 };   // 500 - 2K XRP
+  if (xrpValue < 5000) return { Icon: SharkIcon, opacity: 1 };       // 2K - 5K XRP
+  if (xrpValue < 20000) return { Icon: OrcaIcon, opacity: 1 };       // 5K - 20K XRP
+  return { Icon: WhaleIcon, opacity: 1 };                            // 20K+ XRP
 };
 
 const formatTradeValue = (value) => {
@@ -1377,8 +1562,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 </span>
                 {(() => {
                   const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
-                  const { Icon, opacity } = getTradeSizeInfo(val);
-                  return <Icon size={13} style={{ opacity, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginLeft: '4px' }} />;
+                  const { Icon } = getTradeSizeInfo(val);
+                  return <Icon size={14} style={{ marginLeft: '4px' }} />;
                 })()}
               </Box>
 

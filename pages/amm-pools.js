@@ -37,10 +37,15 @@ const Controls = styled.div`
   gap: 16px;
   margin-bottom: 20px;
   padding: 20px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
   width: 100%;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.25)'};
+  }
 `;
 
 const ControlRow = styled.div`
@@ -147,9 +152,15 @@ const SummaryGrid = styled.div`
 
 const SummaryCard = styled.div`
   padding: 16px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.35)'};
+    background: ${p => p.darkMode ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.04)'};
+  }
 `;
 
 const SummaryLabel = styled.div`
@@ -169,8 +180,8 @@ const SummaryValue = styled.div`
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   width: 100%;
 `;
 

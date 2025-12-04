@@ -25,10 +25,15 @@ const Controls = styled.div`
   gap: 14px;
   margin-bottom: 16px;
   padding: 16px 20px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
   width: 100%;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.25)'};
+  }
 `;
 
 const ControlRow = styled.div`
@@ -219,12 +224,17 @@ const Label = styled.span`
 const HeatMap = styled.div`
   width: 100%;
   height: 320px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.3)'};
+  }
 `;
 
 const Canvas = styled.canvas`
@@ -251,8 +261,8 @@ const CustomTooltip = styled.div`
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
   width: 100%;
 `;
 
