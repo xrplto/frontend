@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, TrendingDown, Activity, Target, Zap } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, TrendingDown, Activity, Target, Zap, Search, X } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
@@ -44,7 +44,18 @@ export default function TopTraders({ token }) {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [mobileChecked, setMobileChecked] = useState(false);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const rowsPerPage = isMobile ? 10 : 20;
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchAddress);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchAddress]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -87,8 +98,9 @@ export default function TopTraders({ token }) {
           // Token-specific traders
           const sortOption = SORT_OPTIONS.find(o => o.key === sortType);
           const sortBy = sortOption?.timeBased ? `${sortType}${timePeriod}` : sortType;
+          const addressParam = debouncedSearch ? `&address=${encodeURIComponent(debouncedSearch)}` : '';
           response = await axios.get(
-            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${limit}&sortBy=${sortBy}`
+            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${limit}&sortBy=${sortBy}${addressParam}`
           );
           if (response.status === 200) {
             // API returns { traders, total, page, limit, totalPages }
@@ -106,7 +118,7 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, page, isMobile, mobileChecked]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, page, isMobile, mobileChecked, debouncedSearch]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
@@ -150,13 +162,27 @@ export default function TopTraders({ token }) {
           'text-center py-12 rounded-xl border-[1.5px] border-dashed',
           isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
         )}>
-          <Activity className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
-          <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
-            No Traders Found
-          </h3>
-          <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-            Trading data will appear here when available
-          </p>
+          {debouncedSearch ? (
+            <>
+              <Search className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
+              <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
+                No Results
+              </h3>
+              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                No traders found for "{debouncedSearch}"
+              </p>
+            </>
+          ) : (
+            <>
+              <Activity className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
+              <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
+                No Traders Found
+              </h3>
+              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                Trading data will appear here when available
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <>
@@ -184,29 +210,59 @@ export default function TopTraders({ token }) {
               </div>
             )}
 
-            {/* Sort Options */}
-            <div className="flex items-center gap-1">
-              {SORT_OPTIONS.map((option) => {
-                const Icon = option.icon;
-                const isActive = sortType === option.key;
-                return (
-                  <button
-                    key={option.key}
-                    onClick={() => handleSortChange(option.key)}
+            {/* Right side: Sort Options + Search */}
+            <div className="flex items-center gap-3 ml-auto">
+              {/* Sort Options */}
+              <div className="flex items-center gap-1">
+                {SORT_OPTIONS.map((option) => {
+                  const Icon = option.icon;
+                  const isActive = sortType === option.key;
+                  return (
+                    <button
+                      key={option.key}
+                      onClick={() => handleSortChange(option.key)}
+                      className={cn(
+                        'flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md transition-all',
+                        isActive
+                          ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
+                          : isDark
+                            ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                      )}
+                    >
+                      <Icon size={12} />
+                      <span className="hidden sm:inline">{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Search by address */}
+              {!isXRPToken && (
+                <div className="relative">
+                  <Search size={14} className={cn('absolute left-2.5 top-1/2 -translate-y-1/2', isDark ? 'text-white/40' : 'text-gray-400')} />
+                  <input
+                    type="text"
+                    placeholder="Search address..."
+                    value={searchAddress}
+                    onChange={(e) => setSearchAddress(e.target.value)}
                     className={cn(
-                      'flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md transition-all',
-                      isActive
-                        ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
-                        : isDark
-                          ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                      'h-7 w-36 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+                      isDark
+                        ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
+                        : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
                     )}
-                  >
-                    <Icon size={12} />
-                    <span className="hidden sm:inline">{option.label}</span>
-                  </button>
-                );
-              })}
+                  />
+                  {searchAddress && (
+                    <button
+                      onClick={() => setSearchAddress('')}
+                      className={cn('absolute right-2 top-1/2 -translate-y-1/2', isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600')}
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

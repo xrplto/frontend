@@ -556,6 +556,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [showDepthPanel, setShowDepthPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+
   const amount1Ref = useRef(null);
 
   // Persist slippage
@@ -1079,6 +1080,96 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     };
     setPair(pair);
   }, [revert, token1, token2]);
+
+  // Swap quote from API
+  const [swapQuoteApi, setSwapQuoteApi] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const quoteAbortRef = useRef(null);
+
+  // Fetch swap quote from API (works with or without login)
+  useEffect(() => {
+    if (orderType !== 'market') return;
+    if (!amount2 || parseFloat(amount2) <= 0 || !token2?.currency) {
+      setSwapQuoteApi(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      if (quoteAbortRef.current) quoteAbortRef.current.abort();
+      quoteAbortRef.current = new AbortController();
+
+      setQuoteLoading(true);
+      try {
+        const destAmount = token2.currency === 'XRP'
+          ? { currency: 'XRP', value: amount2 }
+          : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
+
+        // Use logged-in account or default quote account
+        const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
+
+        const res = await axios.post(`${BASE_URL}/dex/quote`, {
+          source_account: quoteAccount,
+          destination_amount: destAmount,
+          source_currencies: token1?.currency === 'XRP'
+            ? [{ currency: 'XRP' }]
+            : [{ currency: token1.currency, issuer: token1.issuer }],
+          slippage: slippage / 100
+        }, { signal: quoteAbortRef.current.signal });
+
+        if (res.data?.status === 'success' && res.data.quote) {
+          setSwapQuoteApi(res.data.quote);
+        } else {
+          setSwapQuoteApi(null);
+        }
+      } catch (err) {
+        if (err.name !== 'CanceledError') setSwapQuoteApi(null);
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [amount2, token2, accountProfile?.account, slippage, orderType]);
+
+  // Client-side fallback calculation from orderbook
+  const swapQuoteFallback = useMemo(() => {
+    if (!amount1 || !amount2 || parseFloat(amount1) <= 0 || parseFloat(amount2) <= 0) return null;
+    if (!asks.length && !bids.length) return null;
+
+    const inputAmt = parseFloat(amount1);
+    const outputAmt = parseFloat(amount2);
+    const minReceived = outputAmt * (1 - slippage / 100);
+
+    const relevantOrders = revert ? bids : asks;
+    let orderbookFill = 0;
+    let remaining = outputAmt;
+
+    for (const order of relevantOrders) {
+      if (remaining <= 0) break;
+      const filled = Math.min(parseFloat(order.amount) || 0, remaining);
+      orderbookFill += filled;
+      remaining -= filled;
+    }
+
+    const ammFill = remaining > 0 ? remaining : 0;
+    const bestPrice = revert ? (bids[0]?.price || 0) : (asks[0]?.price || 0);
+    const effectivePrice = outputAmt > 0 ? inputAmt / outputAmt : 0;
+    const impactPct = bestPrice > 0 ? ((effectivePrice - bestPrice) / bestPrice) * 100 : 0;
+    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? (ammFill * bestPrice * 0.006) : 0;
+
+    return {
+      slippage_tolerance: `${slippage}%`,
+      minimum_received: minReceived.toFixed(6),
+      from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : null,
+      from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : null,
+      price_impact: Math.abs(impactPct) > 0.01 ? `${impactPct > 0 ? '+' : ''}${impactPct.toFixed(2)}%` : null,
+      amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
+      execution_rate: (outputAmt / inputAmt).toFixed(6)
+    };
+  }, [amount1, amount2, asks, bids, slippage, revert]);
+
+  // Show fallback immediately, API quote when ready (no blocking)
+  const swapQuoteCalc = swapQuoteApi || swapQuoteFallback;
 
 
   const onSwap = async () => {
@@ -2631,19 +2722,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
           </div>
 
-          {/* Exchange Rate Display */}
-          {tokenExch1 > 0 || tokenExch2 > 0 ? (
-            <div className={cn("text-center text-[13px] font-mono", darkMode ? "text-white/50" : "text-gray-500")}>
-              1 {token1?.name || token1?.currency} = {(() => {
-                const t1IsXRP = token1?.currency === 'XRP';
-                const t2IsXRP = token2?.currency === 'XRP';
-                if (t1IsXRP && !t2IsXRP) return tokenExch2 > 0 ? (1 / tokenExch2).toFixed(4) : '0';
-                if (!t1IsXRP && t2IsXRP) return tokenExch1 > 0 ? tokenExch1.toFixed(4) : '0';
-                return tokenExch1 > 0 && tokenExch2 > 0 ? (tokenExch1 / tokenExch2).toFixed(4) : '0';
-              })()} {token2?.name || token2?.currency}
-            </div>
-          ) : null}
-
           {/* Bottom Controls Container - Side by side on desktop for limit orders */}
           <div className={cn(
             "w-full rounded-xl relative",
@@ -2658,31 +2736,149 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 "flex-1 flex flex-col",
                 darkMode ? "bg-transparent" : "bg-transparent"
               )}>
-            {/* Market Order UI - Slippage */}
+            {/* Market Order UI - Slippage & Quote Summary */}
             {orderType === 'market' && (
-              <div className="flex items-center justify-between mb-4">
-                <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-white/40" : "text-gray-500")}>
-                  Slippage
-                </span>
-                <div className="flex gap-1">
-                  {[1, 3, 5].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => setSlippage(val)}
-                      className={cn(
-                        "px-3 py-1 rounded-lg text-[11px] font-mono transition-colors border",
-                        slippage === val
-                          ? "bg-primary text-white border-primary"
-                          : darkMode
-                            ? "text-white/50 border-white/[0.06] hover:border-white/20"
-                            : "text-gray-500 border-gray-200 hover:border-gray-400"
-                      )}
-                    >
-                      {val}%
-                    </button>
-                  ))}
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-white/40" : "text-gray-500")}>
+                    Slippage
+                  </span>
+                  <div className="flex gap-1">
+                    {[1, 3, 5].map((val) => (
+                      <button
+                        key={val}
+                        onClick={() => setSlippage(val)}
+                        className={cn(
+                          "px-3 py-1 rounded-lg text-[11px] font-mono transition-colors border",
+                          slippage === val
+                            ? "bg-primary text-white border-primary"
+                            : darkMode
+                              ? "text-white/50 border-white/[0.06] hover:border-white/20"
+                              : "text-gray-500 border-gray-200 hover:border-gray-400"
+                        )}
+                      >
+                        {val}%
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                {/* Swap Quote Summary - shows immediately from orderbook, updates with API */}
+                {swapQuoteCalc && amount1 && amount2 && (
+                  <div className={cn(
+                    "mb-4 rounded-lg p-3 space-y-2 relative",
+                    darkMode ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-200"
+                  )}>
+                    {/* Small loading indicator in corner while API fetches */}
+                    {quoteLoading && (
+                      <div className="absolute top-2 right-2">
+                        <ClipLoader size={10} color="#4285f4" />
+                      </div>
+                    )}
+                    {swapQuoteCalc && (
+                      <>
+                        {/* Slippage Tolerance */}
+                        <div className="flex items-center justify-between">
+                          <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                            Slippage tolerance
+                          </span>
+                          <span className={cn("text-[11px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                            {swapQuoteCalc.slippage_tolerance}
+                          </span>
+                        </div>
+
+                        {/* Minimum Received */}
+                        <div className="flex items-center justify-between">
+                          <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                            Minimum received
+                          </span>
+                          <span className={cn("text-[11px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                            {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
+                          </span>
+                        </div>
+
+                        {/* Order Book Amount */}
+                        {swapQuoteCalc.from_orderbook && (
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              From order book
+                            </span>
+                            <span className="text-[11px] font-mono text-blue-400">
+                              {fNumber(swapQuoteCalc.from_orderbook)} {token2?.name || token2?.currency}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* AMM Pool Amount */}
+                        {swapQuoteCalc.from_amm && (
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              From AMM pool
+                            </span>
+                            <span className="text-[11px] font-mono text-purple-400">
+                              {fNumber(swapQuoteCalc.from_amm)} {token2?.name || token2?.currency}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Price Impact */}
+                        {swapQuoteCalc.price_impact && (
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              Price impact
+                            </span>
+                            <span
+                              className="text-[11px] font-mono"
+                              style={{ color: getPriceImpactColor(Math.abs(parseFloat(swapQuoteCalc.price_impact) || 0)) }}
+                            >
+                              {swapQuoteCalc.price_impact}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* AMM Pool Fee */}
+                        {swapQuoteCalc.amm_pool_fee && (
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              AMM pool fee
+                            </span>
+                            <span className="text-[11px] font-mono text-orange-400">
+                              {swapQuoteCalc.amm_pool_fee}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Paths Count (from API) */}
+                        {swapQuoteCalc.paths_count > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              Paths found
+                            </span>
+                            <span className={cn("text-[11px] font-mono", darkMode ? "text-white/60" : "text-gray-600")}>
+                              {swapQuoteCalc.paths_count}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Execution Rate */}
+                        {swapQuoteCalc.execution_rate && (
+                          <div className={cn(
+                            "pt-2 mt-2 flex items-center justify-between border-t",
+                            darkMode ? "border-white/[0.06]" : "border-gray-200"
+                          )}>
+                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                              Rate
+                            </span>
+                            <span className={cn("text-[11px] font-mono", darkMode ? "text-white" : "text-gray-900")}>
+                              1 {token1?.name || token1?.currency} = {swapQuoteCalc.execution_rate} {token2?.name || token2?.currency}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Limit Order UI - Futuristic */}
@@ -2823,8 +3019,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </div>
             )}
 
-            {/* Price Impact - Futuristic */}
-            {amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
+            {/* Price Impact for Limit Orders (market orders show it in quote summary) */}
+            {orderType === 'limit' && amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
               <div className={cn(
                 "flex items-center justify-between mb-4 px-3 py-2 rounded-lg",
                 darkMode ? "bg-white/5" : "bg-gray-100"
