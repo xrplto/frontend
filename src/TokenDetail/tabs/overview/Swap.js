@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
-import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -688,14 +688,40 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [hasTrustline2, setHasTrustline2] = useState(true);
   const [transactionType, setTransactionType] = useState('Payment');
 
-  const [slippage, setSlippage] = useState(5);
+  const [slippage, setSlippage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('swap_slippage');
+      return saved ? parseFloat(saved) : 2;
+    }
+    return 2;
+  });
   const [orderType, setOrderType] = useState('market');
   const [limitPrice, setLimitPrice] = useState('');
   const [orderExpiry, setOrderExpiry] = useState('never');
   const [expiryHours, setExpiryHours] = useState(24);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [txFee, setTxFee] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('swap_txfee') || '12';
+    }
+    return '12';
+  });
 
   const [showOrderbook, setShowOrderbook] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+
+  // Swap quote state
+  const [swapQuoteApi, setSwapQuoteApi] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const quoteAbortRef = useRef(null);
+
+  // Persist slippage & txFee
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('swap_slippage', slippage.toString());
+  }, [slippage]);
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('swap_txfee', txFee);
+  }, [txFee]);
 
   // Debug info loader
   useEffect(() => {
@@ -860,6 +886,90 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
+
+  // Fetch swap quote from API (works with or without login)
+  useEffect(() => {
+    if (orderType !== 'market') return;
+    if (!amount2 || parseFloat(amount2) <= 0 || !token2?.currency) {
+      setSwapQuoteApi(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      if (quoteAbortRef.current) quoteAbortRef.current.abort();
+      quoteAbortRef.current = new AbortController();
+
+      setQuoteLoading(true);
+      try {
+        const destAmount = token2.currency === 'XRP'
+          ? { currency: 'XRP', value: amount2 }
+          : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
+
+        const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
+
+        const res = await axios.post(`${BASE_URL}/dex/quote`, {
+          source_account: quoteAccount,
+          destination_amount: destAmount,
+          source_currencies: token1?.currency === 'XRP'
+            ? [{ currency: 'XRP' }]
+            : [{ currency: token1.currency, issuer: token1.issuer }],
+          slippage: slippage / 100
+        }, { signal: quoteAbortRef.current.signal });
+
+        if (res.data?.status === 'success' && res.data.quote) {
+          setSwapQuoteApi(res.data.quote);
+        } else {
+          setSwapQuoteApi(null);
+        }
+      } catch (err) {
+        if (err.name !== 'CanceledError') setSwapQuoteApi(null);
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [amount2, token1, token2, accountProfile?.account, slippage, orderType]);
+
+  // Client-side fallback quote calculation from orderbook
+  const swapQuoteFallback = useMemo(() => {
+    if (!amount1 || !amount2 || parseFloat(amount1) <= 0 || parseFloat(amount2) <= 0) return null;
+    if (!asks.length && !bids.length) return null;
+
+    const inputAmt = parseFloat(amount1);
+    const outputAmt = parseFloat(amount2);
+    const minReceived = outputAmt * (1 - slippage / 100);
+
+    const relevantOrders = revert ? bids : asks;
+    let orderbookFill = 0;
+    let remaining = outputAmt;
+
+    for (const order of relevantOrders) {
+      if (remaining <= 0) break;
+      const filled = Math.min(parseFloat(order.amount) || 0, remaining);
+      orderbookFill += filled;
+      remaining -= filled;
+    }
+
+    const ammFill = remaining > 0 ? remaining : 0;
+    const bestPrice = revert ? (bids[0]?.price || 0) : (asks[0]?.price || 0);
+    const effectivePrice = outputAmt > 0 ? inputAmt / outputAmt : 0;
+    const impactPct = bestPrice > 0 ? ((effectivePrice - bestPrice) / bestPrice) * 100 : 0;
+    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? (ammFill * bestPrice * 0.006) : 0;
+
+    return {
+      slippage_tolerance: `${slippage}%`,
+      minimum_received: minReceived.toFixed(6),
+      from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : null,
+      from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : null,
+      price_impact: Math.abs(impactPct) > 0.01 ? `${impactPct > 0 ? '+' : ''}${impactPct.toFixed(2)}%` : null,
+      amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
+      execution_rate: (outputAmt / inputAmt).toFixed(6)
+    };
+  }, [amount1, amount2, asks, bids, slippage, revert]);
+
+  // Show fallback immediately, API quote when ready (non-blocking)
+  const swapQuoteCalc = swapQuoteApi || swapQuoteFallback;
 
   // Fetch RLUSD token info when viewing XRP page
   useEffect(() => {
@@ -1977,65 +2087,207 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </ToggleContent>
           </AmountRows>
 
+          {/* Settings Modal */}
+          {showSettingsModal && (
+            <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(8px)'
+            }} onClick={() => setShowSettingsModal(false)}>
+              <div onClick={e => e.stopPropagation()} style={{
+                backgroundColor: isDark ? '#1c1c1e' : '#fff',
+                borderRadius: 24, padding: 24, width: 320,
+                border: isDark ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                boxShadow: '0 25px 50px rgba(0,0,0,0.4)'
+              }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+                  <Typography variant="h6" isDark={isDark} sx={{ fontSize: '15px', fontWeight: 600 }}>Settings</Typography>
+                  <button onClick={() => setShowSettingsModal(false)} style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 20
+                  }}>
+                    <X size={16} color={isDark ? 'rgba(255,255,255,0.4)' : '#999'} />
+                  </button>
+                </Stack>
+
+                <div style={{
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f8f9fa',
+                  borderRadius: 16, padding: 16, marginBottom: 16
+                }}>
+                  <Typography isDark={isDark} sx={{ fontSize: '11px', fontWeight: 500, mb: 1.5, color: isDark ? 'rgba(255,255,255,0.5)' : '#666' }}>
+                    Max Slippage
+                  </Typography>
+                  <Stack direction="row" spacing={1}>
+                    {[1, 2, 3, 5].map((preset) => (
+                      <Button key={preset} size="small"
+                        onClick={() => setSlippage(preset)} isDark={isDark}
+                        sx={{
+                          flex: 1, height: 40, fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
+                          color: slippage === preset ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : '#666'),
+                          backgroundColor: slippage === preset ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : '#fff'),
+                          boxShadow: slippage === preset ? '0 4px 12px rgba(66,133,244,0.3)' : (isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'),
+                          '&:hover': { backgroundColor: slippage === preset ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6') }
+                        }}>
+                        {preset}%
+                      </Button>
+                    ))}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      height: 40, padding: '0 12px', minWidth: 56,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff', borderRadius: 12,
+                      boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'
+                    }}>
+                      <input type="text" inputMode="decimal" value={slippage} onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
+                          setSlippage(val === '' ? '' : parseFloat(val) || val);
+                        }
+                      }} style={{
+                        width: 20, background: 'transparent', border: 'none', outline: 'none',
+                        fontSize: 13, fontWeight: 600, textAlign: 'center', color: isDark ? '#fff' : '#111'
+                      }} />
+                      <span style={{ fontSize: 12, color: isDark ? 'rgba(255,255,255,0.4)' : '#999' }}>%</span>
+                    </div>
+                  </Stack>
+                  {Number(slippage) >= 4 && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 12,
+                      padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(245,158,11,0.1)'
+                    }}>
+                      <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#f59e0b' }} />
+                      <span style={{ fontSize: 11, color: '#f59e0b' }}>High slippage may cause front-running</span>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#f8f9fa',
+                  borderRadius: 16, padding: 16
+                }}>
+                  <Typography isDark={isDark} sx={{ fontSize: '11px', fontWeight: 500, mb: 1.5, color: isDark ? 'rgba(255,255,255,0.5)' : '#666' }}>
+                    Network Fee <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#999' }}>(drops)</span>
+                  </Typography>
+                  <Stack direction="row" spacing={1}>
+                    {[12, 15, 20, 50].map((val) => (
+                      <Button key={val} size="small"
+                        onClick={() => setTxFee(String(val))} isDark={isDark}
+                        sx={{
+                          flex: 1, height: 40, fontSize: '13px', fontWeight: 600, borderRadius: '12px', border: 'none',
+                          color: txFee === String(val) ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : '#666'),
+                          backgroundColor: txFee === String(val) ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : '#fff'),
+                          boxShadow: txFee === String(val) ? '0 4px 12px rgba(66,133,244,0.3)' : (isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'),
+                          '&:hover': { backgroundColor: txFee === String(val) ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6') }
+                        }}>
+                        {val}
+                      </Button>
+                    ))}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', padding: '0 12px', minWidth: 60,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#fff', borderRadius: 12,
+                      boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.08)'
+                    }}>
+                      <input type="text" inputMode="numeric" value={txFee} onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        setTxFee(val);
+                      }} style={{
+                        width: 32, background: 'transparent', border: 'none', outline: 'none',
+                        fontSize: 13, fontWeight: 600, textAlign: 'center', color: isDark ? '#fff' : '#111'
+                      }} />
+                    </div>
+                  </Stack>
+                  <Typography sx={{ fontSize: '10px', mt: 1.5, color: isDark ? 'rgba(255,255,255,0.3)' : '#999' }}>
+                    Higher fees = priority during congestion
+                  </Typography>
+                  {parseInt(txFee) >= 50 && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 8,
+                      padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(245,158,11,0.1)'
+                    }}>
+                      <div style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#f59e0b' }} />
+                      <span style={{ fontSize: 11, color: '#f59e0b' }}>Only needed during extreme congestion</span>
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={() => setShowSettingsModal(false)} style={{
+                  width: '100%', marginTop: 20, padding: '14px 0', borderRadius: 16,
+                  backgroundColor: '#4285f4', color: '#fff', border: 'none',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(66,133,244,0.25)'
+                }}>
+                  Save Settings
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Slippage control - Only for market orders */}
           {orderType === 'market' && (
             <Box sx={{ px: 1.5, py: 1 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '12px' }}>
-                  Slippage
+                <button onClick={() => setShowSettingsModal(true)} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
+                  cursor: 'pointer', padding: 0, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+                }}>
+                  <Settings size={14} />
+                  <span style={{ fontSize: 12 }}>Slippage {slippage}%</span>
+                </button>
+                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', color: 'text.secondary' }}>
+                  Impact {priceImpact}%
                 </Typography>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  {[1, 3, 5].map((preset) => (
-                    <Button
-                      key={preset}
-                      size="small"
-                      variant={slippage === preset ? 'outlined' : 'text'}
-                      onClick={() => setSlippage(preset)}
-                      isDark={isDark}
-                      sx={{
-                        minWidth: '28px',
-                        height: '24px',
-                        fontSize: '12px',
-                        px: 0.75,
-                        py: 0,
-                        color: slippage === preset ? '#4285f4' : 'text.secondary',
-                        borderColor: '#4285f4',
-                        backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent'
-                      }}
-                    >
-                      {preset}%
-                    </Button>
-                  ))}
-                  <Input
-                    value={slippage}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)) {
-                        setSlippage(val === '' ? 0 : parseFloat(val));
-                      }
-                    }}
-                    isDark={isDark}
-                    sx={{
-                      width: '32px',
-                      input: {
-                        fontSize: '12px',
-                        textAlign: 'center',
-                        padding: '2px',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
-                        borderRadius: '4px',
-                        height: '18px'
-                      }
-                    }}
-                  />
-                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', color: 'text.secondary' }}>
-                    % · Impact {priceImpact}%
-                  </Typography>
-                </Stack>
               </Stack>
-              {Number(slippage) > 5 && (
-                <Typography variant="caption" color="warning.main" isDark={isDark} sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
-                  High slippage = higher risk
-                </Typography>
+
+              {/* Quote Summary */}
+              {swapQuoteCalc && (
+                <Box sx={{ mt: 1 }}>
+                  <Stack spacing={0.5}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        Slippage tolerance
+                      </Typography>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        {swapQuoteCalc.slippage_tolerance || `${slippage}%`}
+                        {quoteLoading && <span style={{ marginLeft: 4, opacity: 0.5 }}>...</span>}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        Minimum received
+                      </Typography>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        {swapQuoteCalc.minimum_received} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
+                      </Typography>
+                    </Stack>
+                    {swapQuoteCalc.from_orderbook && (
+                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                          From order book
+                        </Typography>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: '#3b82f6' }}>
+                          {swapQuoteCalc.from_orderbook} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
+                        </Typography>
+                      </Stack>
+                    )}
+                    {swapQuoteCalc.price_impact && (
+                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                          Price impact
+                        </Typography>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: swapQuoteCalc.price_impact.startsWith('-') ? '#22c55e' : '#ef4444' }}>
+                          {swapQuoteCalc.price_impact}
+                        </Typography>
+                      </Stack>
+                    )}
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        Rate
+                      </Typography>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
+                        1 {token1?.currency === 'XRP' ? 'XRP' : token1?.name || token1?.currency} = {swapQuoteCalc.execution_rate} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Box>
               )}
             </Box>
           )}

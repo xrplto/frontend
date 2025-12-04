@@ -23,7 +23,8 @@ import {
   TrendingUp,
   ToggleLeft,
   ToggleRight,
-  List
+  List,
+  Settings
 } from 'lucide-react';
 
 // Utils
@@ -543,9 +544,16 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [slippage, setSlippage] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('swap_slippage');
-      return saved ? parseFloat(saved) : 3;
+      return saved ? parseFloat(saved) : 2;
     }
-    return 3;
+    return 2;
+  });
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [txFee, setTxFee] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('swap_txfee') || '12';
+    }
+    return '12';
   });
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
@@ -559,12 +567,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const amount1Ref = useRef(null);
 
-  // Persist slippage
+  // Persist slippage & txFee
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('swap_slippage', slippage.toString());
     }
   }, [slippage]);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('swap_txfee', txFee);
+    }
+  }, [txFee]);
 
   // Debug info for wallet
   useEffect(() => {
@@ -2736,31 +2749,96 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 "flex-1 flex flex-col",
                 darkMode ? "bg-transparent" : "bg-transparent"
               )}>
+            {/* Settings Modal */}
+            {showSettingsModal && (
+              <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-md" onClick={() => setShowSettingsModal(false)}>
+                <div onClick={e => e.stopPropagation()} className={cn(
+                  "rounded-3xl p-6 w-80 shadow-2xl",
+                  darkMode ? "bg-[#1c1c1e] border border-white/10" : "bg-white"
+                )}>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className={cn("text-[15px] font-semibold", darkMode ? "text-white" : "text-gray-900")}>Settings</span>
+                    <button onClick={() => setShowSettingsModal(false)} className={cn("p-1.5 rounded-full transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                      <X size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
+                    </button>
+                  </div>
+
+                  <div className={cn("rounded-2xl p-4 mb-4", darkMode ? "bg-white/[0.04]" : "bg-[#f8f9fa]")}>
+                    <p className={cn("text-[11px] font-medium mb-3", darkMode ? "text-white/50" : "text-gray-500")}>Max Slippage</p>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 5].map((val) => (
+                        <button key={val} onClick={() => setSlippage(val)} className={cn(
+                          "flex-1 h-10 rounded-xl text-[13px] font-semibold transition-all",
+                          slippage === val
+                            ? "bg-primary text-white shadow-lg shadow-primary/30"
+                            : darkMode ? "bg-white/[0.08] text-white/60 hover:bg-white/[0.12]" : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
+                        )}>{val}%</button>
+                      ))}
+                      <div className={cn("flex items-center justify-center h-10 px-3 rounded-xl min-w-[56px]", darkMode ? "bg-white/[0.08]" : "bg-white shadow-sm")}>
+                        <input type="text" inputMode="decimal" value={slippage} onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '');
+                          if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
+                            setSlippage(val === '' ? '' : parseFloat(val) || val);
+                          }
+                        }} className={cn("w-5 bg-transparent text-[13px] text-center outline-none font-semibold", darkMode ? "text-white" : "text-gray-900")} />
+                        <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-400")}>%</span>
+                      </div>
+                    </div>
+                    {slippage >= 4 && (
+                      <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <p className="text-[11px] text-amber-500">High slippage may cause front-running</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={cn("rounded-2xl p-4", darkMode ? "bg-white/[0.04]" : "bg-[#f8f9fa]")}>
+                    <p className={cn("text-[11px] font-medium mb-3", darkMode ? "text-white/50" : "text-gray-500")}>Network Fee <span className={darkMode ? "text-white/30" : "text-gray-400"}>(drops)</span></p>
+                    <div className="flex gap-2">
+                      {[12, 15, 20, 50].map((val) => (
+                        <button key={val} onClick={() => setTxFee(String(val))} className={cn(
+                          "flex-1 h-10 rounded-xl text-[13px] font-semibold transition-all",
+                          txFee === String(val)
+                            ? "bg-primary text-white shadow-lg shadow-primary/30"
+                            : darkMode ? "bg-white/[0.08] text-white/60 hover:bg-white/[0.12]" : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
+                        )}>{val}</button>
+                      ))}
+                      <div className={cn("flex items-center px-3 rounded-xl min-w-[60px]", darkMode ? "bg-white/[0.08]" : "bg-white shadow-sm")}>
+                        <input type="text" inputMode="numeric" value={txFee} onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setTxFee(val);
+                        }} className={cn("w-8 bg-transparent text-[13px] text-center outline-none font-semibold", darkMode ? "text-white" : "text-gray-900")} />
+                      </div>
+                    </div>
+                    <p className={cn("text-[10px] mt-3", darkMode ? "text-white/30" : "text-gray-400")}>
+                      Higher fees = priority during congestion
+                    </p>
+                    {parseInt(txFee) >= 50 && (
+                      <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <p className="text-[11px] text-amber-500">Only needed during extreme congestion</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <button onClick={() => setShowSettingsModal(false)} className="w-full mt-5 py-3.5 rounded-2xl bg-primary text-white text-[14px] font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25">
+                    Save Settings
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Market Order UI - Slippage & Quote Summary */}
             {orderType === 'market' && (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-white/40" : "text-gray-500")}>
-                    Slippage
-                  </span>
-                  <div className="flex gap-1">
-                    {[1, 3, 5].map((val) => (
-                      <button
-                        key={val}
-                        onClick={() => setSlippage(val)}
-                        className={cn(
-                          "px-3 py-1 rounded-lg text-[11px] font-mono transition-colors border",
-                          slippage === val
-                            ? "bg-primary text-white border-primary"
-                            : darkMode
-                              ? "text-white/50 border-white/[0.06] hover:border-white/20"
-                              : "text-gray-500 border-gray-200 hover:border-gray-400"
-                        )}
-                      >
-                        {val}%
-                      </button>
-                    ))}
-                  </div>
+                  <button onClick={() => setShowSettingsModal(true)} className={cn(
+                    "flex items-center gap-1.5 text-[11px]",
+                    darkMode ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                  )}>
+                    <Settings size={14} />
+                    <span>Slippage {slippage}%</span>
+                  </button>
                 </div>
 
                 {/* Swap Quote Summary - shows immediately from orderbook, updates with API */}
