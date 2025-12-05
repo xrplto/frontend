@@ -13,7 +13,7 @@ const formatPrice = (price) => {
   if (absPrice >= 0.000001) return price.toFixed(10);
   return price.toFixed(14);
 };
-import { BookOpen } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -145,7 +145,53 @@ const SpreadBar = styled.div`
   flex-shrink: 0;
 `;
 
-const OrderBook = ({ token, onPriceClick }) => {
+const CollapseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover {
+    background: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'};
+    color: #3b82f6;
+  }
+`;
+
+const CollapsedBar = styled.div`
+  width: 36px;
+  height: 100%;
+  border-radius: 10px;
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.02)' : 'rgba(0,0,0,0.02)'};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover {
+    border-color: #3b82f6;
+    background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.05)'};
+  }
+`;
+
+const VerticalText = styled.span`
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  letter-spacing: 1px;
+`;
+
+const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -254,9 +300,40 @@ const OrderBook = ({ token, onPriceClick }) => {
     }
   }, [asks]);
 
-  if (!bids.length && !asks.length) return null;
+  if (!bids.length && !asks.length) {
+    // Show collapsed bar even with no data if collapse is enabled
+    if (collapsed && onToggleCollapse) {
+      return (
+        <CollapsedBar isDark={isDark} onClick={onToggleCollapse} title="Expand Order Book">
+          <ChevronRight size={16} style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
+          <BookOpen size={14} style={{ opacity: 0.7, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }} />
+          <VerticalText isDark={isDark}>ORDER BOOK</VerticalText>
+        </CollapsedBar>
+      );
+    }
+    return null;
+  }
 
   const displayToken = effectiveToken || token;
+
+  // Collapsed view - vertical bar
+  if (collapsed) {
+    return (
+      <CollapsedBar isDark={isDark} onClick={onToggleCollapse} title="Expand Order Book">
+        <ChevronRight size={16} style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
+        <BookOpen size={14} style={{ opacity: 0.7, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }} />
+        <VerticalText isDark={isDark}>ORDER BOOK</VerticalText>
+        <span style={{
+          writingMode: 'vertical-rl',
+          fontSize: '9px',
+          color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+          marginTop: '8px'
+        }}>
+          {bids.length}B · {asks.length}A
+        </span>
+      </CollapsedBar>
+    );
+  }
 
   return (
     <Container isDark={isDark}>
@@ -265,9 +342,16 @@ const OrderBook = ({ token, onPriceClick }) => {
           <BookOpen size={14} style={{ opacity: 0.7 }} />
           {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
         </Title>
-        <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-          {bids.length} bids · {asks.length} asks
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+            {bids.length} bids · {asks.length} asks
+          </span>
+          {onToggleCollapse && (
+            <CollapseButton isDark={isDark} onClick={onToggleCollapse} title="Collapse Order Book">
+              <ChevronLeft size={14} />
+            </CollapseButton>
+          )}
+        </div>
       </Header>
 
       <Content>

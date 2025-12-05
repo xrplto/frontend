@@ -37,6 +37,17 @@ const Overview = memo(
     const isDark = themeName === 'XrplToDarkTheme';
 
     const [showEditor, setShowEditor] = useState(false);
+    const [orderBookCollapsed, setOrderBookCollapsed] = useState(() => {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem('orderBookCollapsed') === 'true';
+      }
+      return false;
+    });
+
+    // Persist collapse state
+    useEffect(() => {
+      localStorage.setItem('orderBookCollapsed', orderBookCollapsed);
+    }, [orderBookCollapsed]);
     const [description, setDescription] = useState(token.description || '');
     const [pairs, setPairs] = useState([]);
     const pairsCache = useRef(new Map());
@@ -161,11 +172,22 @@ const Overview = memo(
             </section>
           </div>
 
-          {/* Middle: OrderBook - fixed width, stretch height */}
+          {/* Middle: OrderBook - collapsible */}
           {!isTablet && (
-            <aside className="w-[280px] flex-shrink-0 self-start" style={{ height: '1300px' }} aria-label="Order Book">
+            <aside
+              className={cn(
+                "flex-shrink-0 self-start transition-all duration-300 ease-in-out",
+                orderBookCollapsed ? "w-[36px]" : "w-[280px]"
+              )}
+              style={{ height: '1300px' }}
+              aria-label="Order Book"
+            >
               <h2 className="sr-only">Order Book</h2>
-              <OrderBook token={token} />
+              <OrderBook
+                token={token}
+                collapsed={orderBookCollapsed}
+                onToggleCollapse={() => setOrderBookCollapsed(!orderBookCollapsed)}
+              />
             </aside>
           )}
 
