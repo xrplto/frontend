@@ -292,18 +292,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   // Load trending when search opens
   useEffect(() => {
-    if (!searchOpen) return;
+    if (!searchOpen && !fullSearch) return;
     axios.post(`${BASE_URL}/search`, { search: '' })
       .then(res => {
         setSuggestedTokens(res.data?.tokens?.slice(0, 4) || []);
         setSuggestedCollections(res.data?.collections?.slice(0, 3) || []);
       })
       .catch(() => {});
-  }, [searchOpen]);
+  }, [searchOpen, fullSearch]);
 
   // Search effect
   useEffect(() => {
-    if (!searchQuery || !searchOpen) {
+    if (!searchQuery || (!searchOpen && !fullSearch)) {
       setSearchResults({ tokens: [], collections: [] });
       return;
     }
@@ -320,7 +320,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       setSearchLoading(false);
     }, 150);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [searchQuery, searchOpen]);
+  }, [searchQuery, searchOpen, fullSearch]);
 
   const handleSearchSelect = useCallback((item, type) => {
     // Save to recent searches
@@ -335,6 +335,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
 
     setSearchOpen(false);
+    setFullSearch(false);
     setSearchQuery('');
     window.location.href = type === 'token' ? `/token/${item.slug}` : `/collection/${item.slug}`;
   }, [recentSearches]);
@@ -469,7 +470,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <header
       className={cn(
         'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark ? 'bg-black border-b border-blue-500/20' : 'bg-white/95 backdrop-blur-md border-b border-blue-200/50'
+        isDark ? 'bg-black border-b border-blue-500/20' : 'bg-white border-b border-blue-200/50',
+        !openDrawer && !isDark && 'bg-white/95 backdrop-blur-md'
       )}
     >
       <div className="mx-auto flex w-full max-w-full items-center px-4 sm:px-6">
@@ -891,21 +893,145 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
         {/* Mobile Full Search */}
         {fullSearch && isTabletOrMobile && (
-          <div className="flex-1 px-2">
-            <div className={cn("flex items-center gap-2 rounded-xl px-3 h-9 border transition-all", isDark ? "bg-white/[0.04] border-blue-500/20" : "bg-blue-50/50 border-blue-200/40")}>
-              <Search size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+          <>
+          <div className="fixed inset-0 z-[9998] bg-black/50" onClick={() => { setFullSearch(false); setSearchQuery(''); }} />
+          <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-2" ref={searchRef}>
+            <div className={cn("flex items-center gap-2 rounded-xl px-4 h-11 border transition-all", isDark ? "bg-[#0a0f1a] border-blue-500/20" : "bg-white border-blue-200/50 shadow-sm")}>
+              <Search size={18} className={isDark ? "text-white/40" : "text-gray-400"} />
               <input
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className={cn("flex-1 bg-transparent text-[14px] outline-none", isDark ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400")}
+                className={cn("flex-1 bg-transparent text-[15px] outline-none", isDark ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400")}
               />
-              <button onClick={() => { setFullSearch(false); setSearchQuery(''); }} className={cn("p-1 rounded", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
-                <X size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+              <button onClick={() => { setFullSearch(false); setSearchQuery(''); }} className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                <X size={18} className={isDark ? "text-white/50" : "text-gray-500"} />
               </button>
             </div>
+
+            {/* Mobile Search Results */}
+            <div className={cn(
+              "mt-2 rounded-xl border overflow-hidden max-h-[calc(100vh-70px)] overflow-y-auto",
+              isDark
+                ? "bg-[#0a0f1a] border-primary/20 shadow-2xl"
+                : "bg-white border-blue-200/50 shadow-xl"
+            )}>
+              {!searchQuery && suggestedTokens.length > 0 && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  {suggestedTokens.map((token, i) => (
+                    <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                          <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
+                        </div>
+                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {token.verified && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        <div className="text-right">
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!searchQuery && suggestedCollections.length > 0 && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  {suggestedCollections.map((col, i) => (
+                    <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {col.verified === 'yes' && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        <div className="text-right">
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchQuery && searchResults.tokens.length > 0 && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  {searchResults.tokens.map((token, i) => (
+                    <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                          <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
+                        </div>
+                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {token.verified && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        <div className="text-right">
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchQuery && searchResults.collections.length > 0 && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  {searchResults.collections.map((col, i) => (
+                    <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {col.verified === 'yes' && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        <div className="text-right">
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchQuery && !searchLoading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+                <div className="py-6 text-center">
+                  <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
+                </div>
+              )}
+              {!searchQuery && suggestedTokens.length === 0 && suggestedCollections.length === 0 && (
+                <div className="py-6 text-center">
+                  <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>Loading...</p>
+                </div>
+              )}
+            </div>
           </div>
+          </>
         )}
 
         {/* Mobile spacer */}
