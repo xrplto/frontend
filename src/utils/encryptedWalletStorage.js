@@ -416,7 +416,6 @@ export class UnifiedWalletStorage {
         if (store.indexNames.contains('active')) {
           store.deleteIndex('active');
         }
-
       };
     });
   }

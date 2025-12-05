@@ -1,14 +1,16 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import { withdrawalStorage } from 'src/utils/withdrawalStorage';
 import {
   Send, ArrowDownLeft, ArrowUpRight, Copy, Check, QrCode,
   Wallet, Image, RotateCcw, TrendingUp, Building2,
-  ChevronRight, ExternalLink, ArrowRightLeft, ChevronDown
+  ChevronRight, ExternalLink, ArrowRightLeft, ChevronDown,
+  Search, SlidersHorizontal, Eye, EyeOff, Plus, Trash2, X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,10 +35,6 @@ const MOCK_NFT_OFFERS = [
   { id: 3, type: 'sell', nft: 'xSpectar Land #88', collection: 'xSpectar', price: '200 XRP', image: 'https://placehold.co/60x60/1e3a5f/white?text=xS', created: '1d ago' },
 ];
 
-const MOCK_WITHDRAWALS = [
-  { id: 1, name: 'Binance', address: 'rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh', tag: '12345678' },
-  { id: 2, name: 'Coinbase', address: 'rw2ciyaNshpHe7bCHo4bRWq6pqqynnWKQg', tag: '87654321' },
-];
 
 const MOCK_TRADES = [
   { id: 1, type: 'buy', pair: 'SOLO/XRP', amount: '500 SOLO', price: '0.049 XRP', total: '24.5 XRP', time: '10m ago' },
@@ -59,8 +57,9 @@ const MOCK_NFTS = [
 export default function WalletPage() {
   const router = useRouter();
   const { tab: initialTab } = router.query;
-  const { themeName, accountProfile, accountLogin } = useContext(AppContext);
+  const { themeName, accountProfile, accountLogin, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const address = accountLogin;
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
@@ -78,16 +77,79 @@ export default function WalletPage() {
   const [showPanel, setShowPanel] = useState(null); // 'send' | 'receive' | null
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
+  const [tokenSearch, setTokenSearch] = useState('');
+  const [tokenSort, setTokenSort] = useState('value'); // value, name, change, balance
+  const [hideZeroBalance, setHideZeroBalance] = useState(false);
+  const [nftToTransfer, setNftToTransfer] = useState(null);
+  const [nftRecipient, setNftRecipient] = useState('');
+  const [nftToSell, setNftToSell] = useState(null);
+  const [nftSellPrice, setNftSellPrice] = useState('');
+
+  // Withdrawal addresses state
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [showAddWithdrawal, setShowAddWithdrawal] = useState(false);
+  const [newWithdrawal, setNewWithdrawal] = useState({ name: '', address: '', tag: '' });
+  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
+  const [withdrawalError, setWithdrawalError] = useState('');
+
+  // Load withdrawals from IndexedDB
+  useEffect(() => {
+    const loadWithdrawals = async () => {
+      if (!address) return;
+      try {
+        const saved = await withdrawalStorage.getAll(address);
+        setWithdrawals(saved);
+      } catch (e) {
+        console.error('Failed to load withdrawals:', e);
+      }
+    };
+    loadWithdrawals();
+  }, [address]);
+
+  // Add withdrawal handler
+  const handleAddWithdrawal = async () => {
+    if (!newWithdrawal.name.trim() || !newWithdrawal.address.trim()) {
+      setWithdrawalError('Name and address are required');
+      return;
+    }
+    // Basic XRPL address validation
+    if (!newWithdrawal.address.startsWith('r') || newWithdrawal.address.length < 25) {
+      setWithdrawalError('Invalid XRPL address');
+      return;
+    }
+    setWithdrawalLoading(true);
+    setWithdrawalError('');
+    try {
+      const added = await withdrawalStorage.add(address, newWithdrawal);
+      setWithdrawals(prev => [added, ...prev]);
+      setNewWithdrawal({ name: '', address: '', tag: '' });
+      setShowAddWithdrawal(false);
+    } catch (e) {
+      console.error('Withdrawal save error:', e);
+      setWithdrawalError(e.message || 'Failed to save withdrawal address');
+    } finally {
+      setWithdrawalLoading(false);
+    }
+  };
+
+  // Delete withdrawal handler
+  const handleDeleteWithdrawal = async (id) => {
+    try {
+      await withdrawalStorage.remove(id);
+      setWithdrawals(prev => prev.filter(w => w.id !== id));
+    } catch (e) {
+      console.error('Failed to delete withdrawal:', e);
+    }
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Wallet },
+    { id: 'tokens', label: 'Tokens', icon: () => <span className="text-xs">◎</span> },
     { id: 'offers', label: 'Offers', icon: RotateCcw },
     { id: 'trades', label: 'Trades', icon: TrendingUp },
     { id: 'withdrawals', label: 'Withdrawals', icon: Building2 },
     { id: 'nfts', label: 'NFTs', icon: Image },
   ];
-
-  const address = accountLogin || 'rEym11CoJ5RkbiLGP7gCEdE9P2pMF3Nt8N';
 
   return (
     <>
@@ -97,6 +159,25 @@ export default function WalletPage() {
 
       <Header />
 
+      {!accountLogin ? (
+        <div className={cn("min-h-[calc(100vh-64px)] flex items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
+          <div className={cn("text-center p-10 rounded-3xl max-w-md", isDark ? "bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10" : "bg-white border border-gray-200 shadow-sm")}>
+            <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6", isDark ? "bg-primary/10" : "bg-primary/5")}>
+              <Wallet size={36} className="text-primary" />
+            </div>
+            <h2 className={cn("text-2xl font-semibold mb-3", isDark ? "text-white" : "text-gray-900")}>Connect Wallet</h2>
+            <p className={cn("text-sm mb-8 leading-relaxed", isDark ? "text-white/50" : "text-gray-500")}>
+              Manage your tokens, NFTs, offers, and transaction history all in one place
+            </p>
+            <button onClick={() => setOpenWalletModal(true)} className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors">
+              Connect Wallet
+            </button>
+            <p className={cn("text-xs mt-4", isDark ? "text-white/30" : "text-gray-400")}>
+              Secure • Non-custodial • Encrypted locally
+            </p>
+          </div>
+        </div>
+      ) : (
       <div className={cn("min-h-screen", isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900")}>
         <div className="max-w-6xl mx-auto px-4 py-6">
           {/* Header */}
@@ -109,7 +190,7 @@ export default function WalletPage() {
                 copied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/5 text-white/60 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               )}
             >
-              {address.slice(0, 8)}...{address.slice(-6)}
+              {address?.slice(0, 8)}...{address?.slice(-6)}
               {copied ? <Check size={12} /> : <Copy size={12} />}
             </button>
           </div>
@@ -182,25 +263,28 @@ export default function WalletPage() {
                             <ChevronDown size={16} className={cn("transition-transform", tokenDropdownOpen && "rotate-180", isDark ? "text-white/40" : "text-gray-400")} />
                           </button>
                           {tokenDropdownOpen && (
-                            <div className={cn("absolute z-50 w-full mt-2 rounded-xl overflow-hidden shadow-xl", isDark ? "bg-[#1a1a1a] border border-white/10" : "bg-white border border-gray-200")}>
-                              <div className="max-h-[200px] overflow-y-auto">
-                                {MOCK_TOKENS.map((t) => (
-                                  <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-4 py-3 flex items-center gap-3 text-left transition-colors", selectedToken === t.symbol ? (isDark ? "bg-white/10" : "bg-primary/5") : "", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: t.color }}>
-                                      {t.icon || t.symbol[0]}
-                                    </div>
-                                    <div className="flex-1">
-                                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</p>
-                                      <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{t.name}</p>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className={cn("text-sm tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>{t.amount}</p>
-                                      <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{t.value}</p>
-                                    </div>
-                                  </button>
-                                ))}
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setTokenDropdownOpen(false)} />
+                              <div className={cn("absolute z-50 w-full mt-2 rounded-xl overflow-hidden", isDark ? "bg-[#0d0d0d] border border-white/15 shadow-2xl shadow-black/50" : "bg-white border border-gray-200 shadow-xl")}>
+                                <div className={cn("max-h-[240px] overflow-y-auto", isDark ? "scrollbar-thin scrollbar-thumb-white/10" : "")}>
+                                  {MOCK_TOKENS.map((t) => (
+                                    <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-4 py-3 flex items-center gap-3 text-left transition-colors", selectedToken === t.symbol ? (isDark ? "bg-white/10" : "bg-primary/5") : (isDark ? "bg-[#0d0d0d]" : "bg-white"), isDark ? "hover:bg-white/[0.08]" : "hover:bg-gray-50")}>
+                                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: t.color }}>
+                                        {t.icon || t.symbol[0]}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</p>
+                                        <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{t.name}</p>
+                                      </div>
+                                      <div className="text-right shrink-0">
+                                        <p className={cn("text-sm tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>{t.amount}</p>
+                                        <p className={cn("text-xs tabular-nums", isDark ? "text-white/40" : "text-gray-400")}>{t.value}</p>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            </>
                           )}
                         </div>
                         <div>
@@ -242,57 +326,46 @@ export default function WalletPage() {
                 {/* Token Holdings - Takes 2 columns */}
                 <div className={cn("lg:col-span-2 rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
                   <div className="flex items-center justify-between p-4 border-b border-white/5">
-                    <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Assets</p>
-                    <span className={cn("text-xs px-2 py-1 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length}</span>
+                    <div className="flex items-center gap-3">
+                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Top Assets</p>
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length} total</span>
+                    </div>
+                    <button onClick={() => setActiveTab('tokens')} className="text-xs text-primary font-medium hover:underline">View All →</button>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>
-                          <th className="text-left py-3 px-4 font-medium">Asset</th>
-                          <th className="text-right py-3 px-4 font-medium">Balance</th>
-                          <th className="text-right py-3 px-4 font-medium">Price</th>
-                          <th className="text-right py-3 px-4 font-medium">24h</th>
-                          <th className="text-right py-3 px-4 font-medium w-20"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {MOCK_TOKENS.map((token) => (
-                          <tr key={token.symbol} className={cn("border-t transition-colors", isDark ? "border-white/5 hover:bg-white/[0.02]" : "border-gray-100 hover:bg-gray-50")}>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: token.color }}>
-                                  {token.icon || token.symbol[0]}
-                                </div>
-                                <div>
-                                  <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
-                                  <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{token.name}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className={cn("py-3 px-4 text-right tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>
-                              <p className="text-sm">{token.amount}</p>
-                              <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{token.value}</p>
-                            </td>
-                            <td className={cn("py-3 px-4 text-right text-sm tabular-nums", isDark ? "text-white" : "text-gray-900")}>{token.value}</td>
-                            <td className={cn("py-3 px-4 text-right text-sm tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</td>
-                            <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                {token.slug && (
-                                  <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
-                                    <ArrowRightLeft size={14} />
-                                  </Link>
-                                )}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
-                                  <Send size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="divide-y divide-white/5">
+                    {MOCK_TOKENS.slice(0, 5).map((token) => (
+                      <div key={token.symbol} className={cn("flex items-center gap-4 p-4 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: token.color }}>
+                          {token.icon || token.symbol[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
+                          <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{token.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
+                          <p className={cn("text-xs tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {token.slug && (
+                            <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                              <ArrowRightLeft size={14} />
+                            </Link>
+                          )}
+                          <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                            <Send size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                  {MOCK_TOKENS.length > 5 && (
+                    <div className={cn("p-3 text-center border-t", isDark ? "border-white/5" : "border-gray-100")}>
+                      <button onClick={() => setActiveTab('tokens')} className={cn("text-xs py-2 px-4 rounded-lg transition-colors", isDark ? "text-white/60 hover:bg-white/5 hover:text-white" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700")}>
+                        +{MOCK_TOKENS.length - 5} more tokens
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Sidebar */}
@@ -344,6 +417,117 @@ export default function WalletPage() {
               </div>
             </div>
           )}
+
+          {/* Tokens Tab - Full Token Management */}
+          {activeTab === 'tokens' && (() => {
+            const filteredTokens = MOCK_TOKENS
+              .filter(t => {
+                if (tokenSearch && !t.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) && !t.name.toLowerCase().includes(tokenSearch.toLowerCase())) return false;
+                if (hideZeroBalance && t.amount === '0') return false;
+                return true;
+              })
+              .sort((a, b) => {
+                if (tokenSort === 'name') return a.symbol.localeCompare(b.symbol);
+                if (tokenSort === 'change') return parseFloat(b.change) - parseFloat(a.change);
+                return parseFloat(b.value.replace(/[$,]/g, '')) - parseFloat(a.value.replace(/[$,]/g, ''));
+              });
+
+            return (
+              <div className="space-y-4">
+                {/* Search & Filter Bar */}
+                <div className={cn("rounded-2xl p-4", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {/* Search */}
+                    <div className="flex-1 relative">
+                      <Search size={16} className={cn("absolute left-3 top-1/2 -translate-y-1/2", isDark ? "text-white/30" : "text-gray-400")} />
+                      <input
+                        type="text"
+                        value={tokenSearch}
+                        onChange={(e) => setTokenSearch(e.target.value)}
+                        placeholder="Search tokens..."
+                        className={cn("w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")}
+                      />
+                    </div>
+                    {/* Sort */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={tokenSort}
+                        onChange={(e) => setTokenSort(e.target.value)}
+                        className={cn("px-3 py-2.5 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10" : "bg-gray-50 border border-gray-200")}
+                      >
+                        <option value="value">Sort by Value</option>
+                        <option value="name">Sort by Name</option>
+                        <option value="change">Sort by 24h Change</option>
+                      </select>
+                      <button
+                        onClick={() => setHideZeroBalance(!hideZeroBalance)}
+                        className={cn("p-2.5 rounded-xl transition-colors", hideZeroBalance ? "bg-primary text-white" : isDark ? "bg-white/5 text-white/60 hover:bg-white/10" : "bg-gray-50 text-gray-500 hover:bg-gray-100")}
+                        title={hideZeroBalance ? "Show zero balances" : "Hide zero balances"}
+                      >
+                        {hideZeroBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mt-3">
+                    <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>
+                      {filteredTokens.length} of {MOCK_TOKENS.length} tokens
+                    </span>
+                    {tokenSearch && (
+                      <button onClick={() => setTokenSearch('')} className="text-xs text-primary hover:underline">Clear search</button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Token List */}
+                <div className={cn("rounded-2xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
+                  {/* Table Header */}
+                  <div className={cn("grid grid-cols-12 gap-4 px-4 py-3 text-[10px] uppercase tracking-wider font-medium border-b", isDark ? "text-white/30 border-white/5 bg-white/[0.02]" : "text-gray-400 border-gray-100 bg-gray-50")}>
+                    <div className="col-span-4">Asset</div>
+                    <div className="col-span-2 text-right">Balance</div>
+                    <div className="col-span-2 text-right">Value</div>
+                    <div className="col-span-2 text-right">24h</div>
+                    <div className="col-span-2 text-right">Actions</div>
+                  </div>
+
+                  {/* Token Rows */}
+                  <div className="max-h-[500px] overflow-y-auto">
+                    {filteredTokens.length === 0 ? (
+                      <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>
+                        <p>No tokens found</p>
+                      </div>
+                    ) : (
+                      filteredTokens.map((token) => (
+                        <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-colors", isDark ? "border-white/5 hover:bg-white/[0.03]" : "border-gray-50 hover:bg-gray-50")}>
+                          <div className="col-span-4 flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
+                              {token.icon || token.symbol[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <p className={cn("text-sm font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
+                              <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{token.name}</p>
+                            </div>
+                          </div>
+                          <div className={cn("col-span-2 text-right text-sm tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>{token.amount}</div>
+                          <div className={cn("col-span-2 text-right text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{token.value}</div>
+                          <div className={cn("col-span-2 text-right text-sm tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</div>
+                          <div className="col-span-2 flex items-center justify-end gap-1">
+                            {token.slug && (
+                              <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors text-xs font-medium flex items-center gap-1", isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700")}>
+                                <ArrowRightLeft size={14} />
+                              </Link>
+                            )}
+                            <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700")}>
+                              <Send size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Offers Tab */}
           {activeTab === 'offers' && (
@@ -434,28 +618,77 @@ export default function WalletPage() {
           {/* Withdrawals Tab */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
-              <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
-                <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                  <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Saved Withdrawal Addresses</p>
-                  <button className="text-xs text-primary font-medium">+ Add New</button>
-                </div>
-                <div className="divide-y divide-white/5">
-                  {MOCK_WITHDRAWALS.map((wallet) => (
-                    <div key={wallet.id} className="flex items-center gap-4 p-4">
-                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-100")}>
-                        <Building2 size={18} className={isDark ? "text-white/60" : "text-gray-500"} />
+              {/* Add Withdrawal Modal */}
+              {showAddWithdrawal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAddWithdrawal(false)}>
+                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Add Withdrawal Address</h3>
+                      <button onClick={() => setShowAddWithdrawal(false)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}><X size={18} /></button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Name</label>
+                        <input type="text" value={newWithdrawal.name} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, name: e.target.value }))} placeholder="e.g. Binance, Coinbase" className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{wallet.name}</p>
-                        <p className={cn("text-xs font-mono truncate", isDark ? "text-white/40" : "text-gray-400")}>{wallet.address}</p>
-                        {wallet.tag && <p className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>Tag: {wallet.tag}</p>}
+                      <div>
+                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>XRPL Address</label>
+                        <input type="text" value={newWithdrawal.address} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, address: e.target.value }))} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
                       </div>
-                      <button onClick={() => handleCopy(wallet.address)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
-                        <Copy size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                      <div>
+                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Destination Tag (optional)</label>
+                        <input type="text" value={newWithdrawal.tag} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, tag: e.target.value.replace(/\D/g, '') }))} placeholder="e.g. 12345678" className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                      </div>
+                      {withdrawalError && <p className="text-xs text-red-400">{withdrawalError}</p>}
+                      <button onClick={handleAddWithdrawal} disabled={withdrawalLoading} className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2">
+                        {withdrawalLoading ? 'Saving...' : <><Plus size={16} /> Save Address</>}
                       </button>
                     </div>
-                  ))}
+                  </div>
                 </div>
+              )}
+
+              <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Saved Withdrawal Addresses</p>
+                    <span className={cn("text-[10px] px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{withdrawals.length}</span>
+                  </div>
+                  <button onClick={() => setShowAddWithdrawal(true)} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline"><Plus size={12} /> Add New</button>
+                </div>
+                {withdrawals.length === 0 ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>
+                    <Building2 size={32} className="mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">No saved addresses yet</p>
+                    <p className="text-xs mt-1">Add exchange or wallet addresses for quick withdrawals</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {withdrawals.map((wallet) => (
+                      <div key={wallet.id} className={cn("flex items-center gap-4 p-4 group", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-white/5" : "bg-gray-100")}>
+                          <Building2 size={18} className={isDark ? "text-white/60" : "text-gray-500"} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{wallet.name}</p>
+                          <p className={cn("text-xs font-mono truncate", isDark ? "text-white/40" : "text-gray-400")}>{wallet.address}</p>
+                          {wallet.tag && <p className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>Tag: {wallet.tag}</p>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => handleCopy(wallet.address)} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                            <Copy size={14} />
+                          </button>
+                          <button onClick={() => { setSelectedToken('XRP'); setSendTo(wallet.address); setSendTag(wallet.tag || ''); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                            <Send size={14} />
+                          </button>
+                          <button onClick={() => handleDeleteWithdrawal(wallet.id)} className={cn("p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100", isDark ? "hover:bg-red-500/10 text-white/40 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500")}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -463,6 +696,80 @@ export default function WalletPage() {
           {/* NFTs Tab */}
           {activeTab === 'nfts' && (
             <div>
+              {/* NFT Transfer Modal */}
+              {nftToTransfer && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setNftToTransfer(null)}>
+                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Transfer NFT</h3>
+                      <button onClick={() => setNftToTransfer(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                    </div>
+                    <div className={cn("flex items-center gap-4 p-3 rounded-xl mb-4", isDark ? "bg-white/5" : "bg-gray-50")}>
+                      <img src={nftToTransfer.image} alt={nftToTransfer.name} className="w-16 h-16 rounded-lg object-cover" />
+                      <div>
+                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{nftToTransfer.name}</p>
+                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{nftToTransfer.collection}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Recipient Address</label>
+                        <input type="text" value={nftRecipient} onChange={(e) => setNftRecipient(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                      </div>
+                      <div className={cn("p-3 rounded-xl text-xs", isDark ? "bg-yellow-500/10 text-yellow-400" : "bg-yellow-50 text-yellow-700")}>
+                        ⚠️ This will transfer ownership. This action cannot be undone.
+                      </div>
+                      <button className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2">
+                        <Send size={16} /> Transfer NFT
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NFT Sell Modal */}
+              {nftToSell && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setNftToSell(null)}>
+                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>List NFT for Sale</h3>
+                      <button onClick={() => setNftToSell(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                    </div>
+                    <div className={cn("flex items-center gap-4 p-3 rounded-xl mb-4", isDark ? "bg-white/5" : "bg-gray-50")}>
+                      <img src={nftToSell.image} alt={nftToSell.name} className="w-16 h-16 rounded-lg object-cover" />
+                      <div className="flex-1">
+                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{nftToSell.name}</p>
+                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{nftToSell.collection}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={cn("text-[10px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>Floor</p>
+                        <p className={cn("text-sm font-medium", isDark ? "text-white/60" : "text-gray-500")}>{nftToSell.floor}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Sale Price</label>
+                        <div className={cn("flex items-center rounded-xl overflow-hidden", isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200")}>
+                          <input type="text" inputMode="decimal" value={nftSellPrice} onChange={(e) => setNftSellPrice(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="0.00" className={cn("flex-1 px-4 py-3 text-lg font-light bg-transparent outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")} />
+                          <span className={cn("px-4 py-3 text-sm font-medium", isDark ? "text-white/60 bg-white/5" : "text-gray-500 bg-gray-100")}>XRP</span>
+                        </div>
+                      </div>
+                      <div className={cn("flex items-center justify-between p-3 rounded-xl text-xs", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <span className={isDark ? "text-white/40" : "text-gray-400"}>Marketplace fee (2.5%)</span>
+                        <span className={isDark ? "text-white/60" : "text-gray-500"}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.025).toFixed(2) : '0.00'} XRP</span>
+                      </div>
+                      <div className={cn("flex items-center justify-between p-3 rounded-xl", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <span className={cn("text-sm", isDark ? "text-white/60" : "text-gray-500")}>You receive</span>
+                        <span className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.975).toFixed(2) : '0.00'} XRP</span>
+                      </div>
+                      <button className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2">
+                        <ArrowUpRight size={16} /> List for Sale
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {selectedCollection && (
                 <div className="flex items-center gap-2 mb-4">
                   <button onClick={() => setSelectedCollection(null)} className={cn("text-xs", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}>All NFTs</button>
@@ -480,7 +787,10 @@ export default function WalletPage() {
                         <Link href={`/nft/${nft.nftId}`} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-xs font-medium flex items-center gap-1">
                           <ExternalLink size={12} /> View
                         </Link>
-                        <button className="p-2 rounded-lg bg-primary text-white hover:bg-primary/80 text-xs font-medium flex items-center gap-1">
+                        <button onClick={() => setNftToTransfer(nft)} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-xs font-medium flex items-center gap-1">
+                          <Send size={12} /> Send
+                        </button>
+                        <button onClick={() => setNftToSell(nft)} className="p-2 rounded-lg bg-primary text-white hover:bg-primary/80 text-xs font-medium flex items-center gap-1">
                           <ArrowUpRight size={12} /> Sell
                         </button>
                       </div>
@@ -497,6 +807,7 @@ export default function WalletPage() {
           )}
         </div>
       </div>
+      )}
 
       <Footer />
     </>

@@ -1297,6 +1297,32 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Check stored wallet count on mount for delete button visibility
+  useEffect(() => {
+    const checkWallets = async () => {
+      try {
+        // Open without version to get current version, avoiding version mismatch errors
+        const request = indexedDB.open('XRPLWalletDB');
+        request.onsuccess = () => {
+          const db = request.result;
+          if (db.objectStoreNames.contains('wallets')) {
+            const tx = db.transaction(['wallets'], 'readonly');
+            const store = tx.objectStore('wallets');
+            const allReq = store.getAll();
+            allReq.onsuccess = () => {
+              const wallets = allReq.result.filter(r => !r.id?.startsWith?.('__pwd__'));
+              setStoredWalletCount(wallets.length);
+            };
+          }
+          db.close();
+        };
+      } catch (e) {
+        // Ignore errors
+      }
+    };
+    checkWallets();
+  }, []);
+
   // Device Password handlers
   const handleDevicePasswordSubmit = async () => {
     if (devicePasswordMode === 'create') {
@@ -2550,7 +2576,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Get wallet count, oldest date, and addresses from IndexedDB
   const checkStoredWalletCount = async () => {
     try {
-      const request = indexedDB.open('XRPLWalletDB', 1);
+      // Open without version to get current version, avoiding version mismatch errors
+      const request = indexedDB.open('XRPLWalletDB');
       request.onsuccess = () => {
         const db = request.result;
         if (db.objectStoreNames.contains('wallets')) {
@@ -2580,8 +2607,29 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               }
             }
           };
+        } else {
+          // No wallets store, but check localStorage profiles
+          const storedProfiles = localStorage.getItem('profiles');
+          if (storedProfiles) {
+            const parsed = JSON.parse(storedProfiles);
+            if (parsed.length > 0) {
+              setStoredWalletCount(parsed.length);
+              setStoredWalletAddresses(parsed.map(p => {
+                const addr = p.account || p.address;
+                return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
+              }).filter(Boolean));
+            }
+          }
         }
         db.close();
+      };
+      request.onerror = () => {
+        // Database error - still check localStorage
+        const storedProfiles = localStorage.getItem('profiles');
+        if (storedProfiles) {
+          const parsed = JSON.parse(storedProfiles);
+          setStoredWalletCount(parsed.length);
+        }
       };
     } catch (e) {
       setStoredWalletCount(0);
