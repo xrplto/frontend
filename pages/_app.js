@@ -181,20 +181,22 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
 
   // Sonner toast wrapper for backward compatibility
+  // Uses message as ID to prevent duplicate toasts
   const openSnackbar = (msg, variant) => {
+    const id = msg;
     switch (variant) {
       case 'success':
-        toast.success(msg);
+        toast.success(msg, { id });
         break;
       case 'error':
-        toast.error(msg);
+        toast.error(msg, { id });
         break;
       case 'warning':
-        toast.warning(msg);
+        toast.warning(msg, { id });
         break;
       case 'info':
       default:
-        toast.info(msg);
+        toast.info(msg, { id });
         break;
     }
   };

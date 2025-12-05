@@ -1310,7 +1310,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             const store = tx.objectStore('wallets');
             const allReq = store.getAll();
             allReq.onsuccess = () => {
-              const wallets = allReq.result.filter(r => !r.id?.startsWith?.('__pwd__'));
+              // Only count actual wallets (have address field, exclude passwords and lookup hashes)
+              const wallets = allReq.result.filter(r =>
+                r.address && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__lookup__')
+              );
               setStoredWalletCount(wallets.length);
             };
           }
