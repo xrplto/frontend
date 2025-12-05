@@ -16,7 +16,10 @@ import { getHashIcon } from 'src/utils/formatters';
 
 function formatDecimal(decimal, decimalPlaces = null) {
   let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
-  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  // Only add commas to integer part, not decimal part
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
 }
 
 // Minimal MUI shims for legacy compatibility
@@ -1797,7 +1800,7 @@ const getTransactionDescription = (txData) => {
   }
 };
 
-const TransactionSummaryCard = ({ txData, onCopyForAI, activeTab, setActiveTab }) => {
+const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation, aiLoading, onExplainWithAI, onCloseAI, swapInfo }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
@@ -1824,79 +1827,235 @@ const TransactionSummaryCard = ({ txData, onCopyForAI, activeTab, setActiveTab }
     { id: 'raw', label: 'RAW' }
   ];
 
+  const isSwap = swapInfo && swapInfo.paid && swapInfo.got;
+
   return (
     <div className={cn(
-      "rounded-xl border-[1.5px] mb-4 overflow-hidden",
-      isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
-    )}>
+      "rounded-xl mb-4 overflow-hidden",
+      isDark ? "bg-transparent" : "bg-white"
+    )} style={{
+      border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+    }}>
       {/* Header bar */}
       <div className={cn(
-        "flex items-center justify-between px-4 py-3 border-b",
-        isDark ? "border-white/10" : "border-gray-200"
+        "flex items-center justify-between px-4 py-3",
+        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
       )}>
         <div className="flex items-center gap-3">
           <span className={cn(
-            "w-7 h-7 rounded-md flex items-center justify-center text-sm",
-            isSuccess ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+            "w-7 h-7 rounded-md flex items-center justify-center text-sm font-medium",
+            isSuccess ? "bg-[#22c55e] text-white" : "bg-[#ef4444] text-white"
           )}>
             {isSuccess ? '✓' : '✗'}
           </span>
           <span className={cn(
-            "px-2.5 py-1 rounded text-[11px] font-medium uppercase tracking-wide",
-            isDark ? "bg-white/10 text-white/80" : "bg-gray-100 text-gray-600"
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium uppercase tracking-wide",
+            isDark ? "bg-[rgba(59,130,246,0.08)] text-white/80 border border-[rgba(59,130,246,0.15)]" : "bg-gray-50 text-gray-600 border border-gray-200"
           )}>
-            Transaction
+            <ArrowLeftRight size={12} />
+            {isSwap ? 'Swap' : 'Transaction'}
           </span>
+          {/* Swap Summary Inline */}
+          {isSwap && isSuccess && (
+            <div className="flex items-center gap-2 ml-2">
+              <span className={cn("text-[13px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>
+                {Account.slice(0, 4)}..{Account.slice(-3)}
+              </span>
+              <span className={isDark ? "text-white/30" : "text-gray-400"}>→</span>
+              <span className="text-[#ef4444] text-[14px] font-medium font-mono">
+                -{formatDecimal(new Decimal(swapInfo.paid.value))}
+              </span>
+              <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
+                {swapInfo.paid.currency}
+              </span>
+              <span className={isDark ? "text-white/30" : "text-gray-400"}>→</span>
+              <span className="text-[#22c55e] text-[14px] font-medium font-mono">
+                +{formatDecimal(new Decimal(swapInfo.got.value))}
+              </span>
+              <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
+                {swapInfo.got.currency}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={onCopyForAI}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg bg-[#e84142] text-white hover:bg-[#d63a3b] transition-colors"
-          >
-            Explain with AI
-          </button>
+          {(aiExplanation || aiLoading) ? (
+            <button
+              onClick={onCloseAI}
+              className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-md transition-colors",
+                isDark ? "bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.15)] border border-[rgba(59,130,246,0.15)]" : "bg-gray-100 hover:bg-gray-200 border border-gray-200"
+              )}
+            >
+              <span className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-500")}>✕</span>
+            </button>
+          ) : (
+            <button
+              onClick={onExplainWithAI}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-md bg-[#3b82f6] text-white hover:bg-[#2563eb] transition-colors border border-[#3b82f6]"
+            >
+              Explain with AI
+            </button>
+          )}
         </div>
       </div>
 
+      {/* AI Loading State */}
+      {aiLoading && (
+        <div className={cn(
+          "px-6 py-5 relative overflow-hidden",
+          isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+        )}>
+          <style jsx>{`
+            @keyframes scanline {
+              0% { transform: translateX(-100%); }
+              100% { transform: translateX(200%); }
+            }
+            @keyframes glow {
+              0%, 100% { opacity: 0.3; }
+              50% { opacity: 0.8; }
+            }
+            @keyframes pulse-bar {
+              0%, 100% { opacity: 0.15; }
+              50% { opacity: 0.4; }
+            }
+          `}</style>
+          <div className="space-y-2.5">
+            {[92, 78, 95, 65, 82, 100, 55, 70].map((width, i) => (
+              <div
+                key={i}
+                className="h-[6px] rounded-sm overflow-hidden relative"
+                style={{ width: `${width}%` }}
+              >
+                <div
+                  className="absolute inset-0 rounded-sm"
+                  style={{
+                    background: i === 5 ? 'rgba(59,130,246,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                    animation: `pulse-bar 2s ease-in-out infinite`,
+                    animationDelay: `${i * 0.15}s`
+                  }}
+                />
+                <div
+                  className="absolute inset-0 rounded-sm"
+                  style={{
+                    background: i === 5
+                      ? 'linear-gradient(90deg, transparent, #3b82f6, transparent)'
+                      : `linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}, transparent)`,
+                    animation: `scanline 1.5s ease-in-out infinite`,
+                    animationDelay: `${i * 0.1}s`
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className={cn("mt-5 text-[13px] font-mono flex items-center gap-2", isDark ? "text-white/40" : "text-gray-400")}>
+            <span
+              className="inline-block w-2 h-2 rounded-full bg-[#3b82f6]"
+              style={{ animation: 'glow 1s ease-in-out infinite' }}
+            />
+            Analyzing
+            <span className="inline-flex tracking-widest">
+              {[0, 1, 2].map(i => (
+                <span
+                  key={i}
+                  style={{
+                    animation: 'glow 1s ease-in-out infinite',
+                    animationDelay: `${i * 0.2}s`
+                  }}
+                >.</span>
+              ))}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* AI Explanation Panel */}
+      {aiExplanation && !aiLoading && (
+        <div className={cn(
+          "px-6 py-5",
+          isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+        )}>
+          {/* Title with summary */}
+          <h3 className="text-[15px] mb-5">
+            <span className="text-[#3b82f6] font-medium">{aiExplanation.extracted?.type || 'Transaction'}:</span>{' '}
+            <span className={isDark ? "text-white" : "text-gray-900"}>
+              {aiExplanation.summary?.summary || aiExplanation.summary}
+            </span>
+          </h3>
+
+          {/* Key Points */}
+          {aiExplanation.summary?.keyPoints && aiExplanation.summary.keyPoints.length > 0 && (
+            <div className="mb-5">
+              <h4 className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-white/60" : "text-gray-500")}>
+                Key Points
+              </h4>
+              <ul className="space-y-2">
+                {aiExplanation.summary.keyPoints.map((point, idx) => (
+                  <li key={idx} className={cn("flex items-start gap-2 text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
+                    <span className="text-[#3b82f6]">•</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Additional Information */}
+          {aiExplanation.extracted?.platform && (
+            <div>
+              <h4 className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-white/60" : "text-gray-500")}>
+                Additional Information
+              </h4>
+              <p className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
+                Transaction via <span className="text-[#3b82f6]">{aiExplanation.extracted.platform}</span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Transaction type */}
       <div className={cn(
-        "px-4 py-4 text-center border-b",
-        isDark ? "border-white/10" : "border-gray-200"
+        "px-4 py-4 text-center",
+        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
       )}>
         <span className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-500")}>
           {description.title}
         </span>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Connected button group style */}
       <div className={cn(
-        "flex items-center gap-1 px-4 py-2 border-b",
-        isDark ? "border-white/10" : "border-gray-200"
+        "flex items-center px-4 py-3",
+        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
       )}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide rounded-md transition-colors",
-              activeTab === tab.id
-                ? isDark
-                  ? "text-[#e84142] bg-[#e84142]/10"
-                  : "text-[#e84142] bg-[#e84142]/10"
-                : isDark
-                  ? "text-white/50 hover:text-white/80 hover:bg-white/5"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <div className="inline-flex">
+          {tabs.map((tab, index) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "px-3 py-1.5 text-[12px] font-medium transition-colors",
+                index === 0 && "rounded-l-md",
+                index === tabs.length - 1 && "rounded-r-md",
+                index !== 0 && "-ml-[1px]",
+                activeTab === tab.id
+                  ? "bg-[#3b82f6] text-white border-[1.5px] border-[#3b82f6] relative z-10"
+                  : isDark
+                    ? "text-white/70 border-[1.5px] border-[rgba(255,255,255,0.12)] hover:border-[#3b82f6]"
+                    : "text-gray-600 border-[1.5px] border-[rgba(0,0,0,0.1)] hover:border-[#3b82f6]"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Info grid */}
       <div className={cn(
-        "grid grid-cols-3 divide-x",
-        isDark ? "divide-white/10" : "divide-gray-200"
+        "grid grid-cols-3",
+        isDark ? "divide-x divide-[rgba(59,130,246,0.12)]" : "divide-x divide-[rgba(0,0,0,0.08)]"
       )}>
         <div className="px-4 py-3">
           <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
@@ -1906,7 +2065,7 @@ const TransactionSummaryCard = ({ txData, onCopyForAI, activeTab, setActiveTab }
             <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
               {hash.slice(0, 4)}...{hash.slice(-4)}
             </code>
-            <button onClick={copyHash} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-white/40" : "text-gray-400")}>
+            <button onClick={copyHash} className={cn("p-0.5 rounded transition-colors", isDark ? "text-white/40 hover:text-[#3b82f6]" : "text-gray-400 hover:text-[#3b82f6]")}>
               <Copy size={12} />
             </button>
           </div>
@@ -1916,14 +2075,14 @@ const TransactionSummaryCard = ({ txData, onCopyForAI, activeTab, setActiveTab }
             Time
           </div>
           <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
-            {timeAgo ? <><span className="text-primary">{timeAgo} ago</span> {dateStr && <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span>}</> : 'Unknown'}
+            {timeAgo ? <><span className="text-[#3b82f6]">{timeAgo} ago</span> {dateStr && <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span>}</> : 'Unknown'}
           </div>
         </div>
         <div className="px-4 py-3">
           <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
             Ledger
           </div>
-          <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
+          <div className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
             #{ledger_index?.toLocaleString()}
           </div>
         </div>
@@ -1936,6 +2095,8 @@ const TransactionDetails = ({ txData }) => {
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const {
     hash,
@@ -1987,6 +2148,29 @@ const TransactionDetails = ({ txData }) => {
     navigator.clipboard.writeText(txUrl);
     setUrlCopied(true);
     setTimeout(() => setUrlCopied(false), 2000);
+  };
+
+  const explainWithAI = async () => {
+    if (aiLoading || aiExplanation) return;
+    setAiLoading(true);
+    try {
+      const response = await axios.get(`https://api.xrpl.to/api/ai/${hash}`);
+      if (response.data) {
+        setAiExplanation(response.data);
+      }
+    } catch (err) {
+      console.error('AI explanation failed:', err);
+      setAiExplanation({
+        summary: { summary: 'Unable to generate AI explanation at this time.', keyPoints: [] }
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const closeAI = () => {
+    setAiExplanation(null);
+    setAiLoading(false);
   };
 
   const txResult = meta?.TransactionResult;
@@ -2310,18 +2494,42 @@ const TransactionDetails = ({ txData }) => {
 
   let conversionExchange;
   if (isConversion && exchanges.length === 0 && deliveredAmount && SendMax) {
-    // For self-conversion, the user sent SendMax and received DeliveredAmount
+    // For self-conversion, get actual amounts from balance changes when available
+    // Balance changes already have XRP values converted (not in drops)
+    const paidFromChanges = initiatorChanges?.changes?.find(c => {
+      const val = new Decimal(c.value);
+      if (typeof SendMax === 'string') {
+        return c.currency === 'XRP' && val.isNegative();
+      }
+      return c.currency === normalizeCurrencyCode(SendMax.currency) && val.isNegative();
+    });
+
+    const gotFromChanges = initiatorChanges?.changes?.find(c => {
+      const val = new Decimal(c.value);
+      if (typeof deliveredAmount === 'string') {
+        return c.currency === 'XRP' && val.isPositive();
+      }
+      return c.currency === normalizeCurrencyCode(deliveredAmount.currency) && val.isPositive();
+    });
+
     if (typeof deliveredAmount === 'string') {
-      // User sent SendMax (token) and received XRP
+      // User sent token and received XRP
+      const actualPaidValue = paidFromChanges
+        ? new Decimal(paidFromChanges.value).abs().toString()
+        : SendMax.value;
+      // Use balance change for XRP (already in XRP, not drops)
+      const actualGotValue = gotFromChanges
+        ? new Decimal(gotFromChanges.value).toString()
+        : dropsToXrp(deliveredAmount);
       conversionExchange = {
         paid: {
-          value: SendMax.value,
+          value: actualPaidValue,
           currency: normalizeCurrencyCode(SendMax.currency),
           rawCurrency: SendMax.currency,
           issuer: SendMax.issuer
         },
         got: {
-          value: dropsToXrp(deliveredAmount),
+          value: actualGotValue,
           currency: 'XRP'
         }
       };
@@ -2329,13 +2537,19 @@ const TransactionDetails = ({ txData }) => {
       // User sent SendMax (could be XRP or token) and received token
       if (typeof SendMax === 'string') {
         // User sent XRP and received token
+        const actualPaidValue = paidFromChanges
+          ? new Decimal(paidFromChanges.value).abs().toString()
+          : dropsToXrp(SendMax);
+        const actualGotValue = gotFromChanges
+          ? new Decimal(gotFromChanges.value).toString()
+          : deliveredAmount.value;
         conversionExchange = {
           paid: {
-            value: dropsToXrp(SendMax),
+            value: actualPaidValue,
             currency: 'XRP'
           },
           got: {
-            value: deliveredAmount.value,
+            value: actualGotValue,
             currency: normalizeCurrencyCode(deliveredAmount.currency),
             rawCurrency: deliveredAmount.currency,
             issuer: deliveredAmount.issuer
@@ -2343,15 +2557,21 @@ const TransactionDetails = ({ txData }) => {
         };
       } else {
         // User sent token and received different token
+        const actualPaidValue = paidFromChanges
+          ? new Decimal(paidFromChanges.value).abs().toString()
+          : SendMax.value;
+        const actualGotValue = gotFromChanges
+          ? new Decimal(gotFromChanges.value).toString()
+          : deliveredAmount.value;
         conversionExchange = {
           paid: {
-            value: SendMax.value,
+            value: actualPaidValue,
             currency: normalizeCurrencyCode(SendMax.currency),
             rawCurrency: SendMax.currency,
             issuer: SendMax.issuer
           },
           got: {
-            value: deliveredAmount.value,
+            value: actualGotValue,
             currency: normalizeCurrencyCode(deliveredAmount.currency),
             rawCurrency: deliveredAmount.currency,
             issuer: deliveredAmount.issuer
@@ -2515,17 +2735,28 @@ const TransactionDetails = ({ txData }) => {
 
   return (
     <div>
-      <TransactionSummaryCard txData={txData} onCopyForAI={copyForLLM} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <TransactionSummaryCard
+        txData={txData}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        aiExplanation={aiExplanation}
+        aiLoading={aiLoading}
+        onExplainWithAI={explainWithAI}
+        onCloseAI={closeAI}
+        swapInfo={displayExchange}
+      />
 
       {/* SUMMARY Tab */}
       {activeTab === 'summary' && (
         <div className={cn(
-          "rounded-xl border-[1.5px] overflow-hidden",
-          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
-        )}>
+          "rounded-xl overflow-hidden",
+          isDark ? "bg-transparent" : "bg-white"
+        )} style={{
+          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+        }}>
           <div className={cn(
-            "px-4 py-3 border-b",
-            isDark ? "border-white/10" : "border-gray-200"
+            "px-4 py-3",
+            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -3940,12 +4171,14 @@ const TransactionDetails = ({ txData }) => {
       {/* BALANCES Tab */}
       {activeTab === 'balances' && (
         <div className={cn(
-          "rounded-xl border-[1.5px] overflow-hidden",
-          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
-        )}>
+          "rounded-xl overflow-hidden",
+          isDark ? "bg-transparent" : "bg-white"
+        )} style={{
+          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+        }}>
           <div className={cn(
-            "px-4 py-3 border-b",
-            isDark ? "border-white/10" : "border-gray-200"
+            "px-4 py-3",
+            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -4017,12 +4250,14 @@ const TransactionDetails = ({ txData }) => {
       {/* TECHNICAL Tab */}
       {activeTab === 'technical' && (
         <div className={cn(
-          "rounded-xl border-[1.5px] overflow-hidden",
-          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
-        )}>
+          "rounded-xl overflow-hidden",
+          isDark ? "bg-transparent" : "bg-white"
+        )} style={{
+          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+        }}>
           <div className={cn(
-            "px-4 py-3 border-b",
-            isDark ? "border-white/10" : "border-gray-200"
+            "px-4 py-3",
+            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -4062,12 +4297,14 @@ const TransactionDetails = ({ txData }) => {
       {/* RAW Tab */}
       {activeTab === 'raw' && (
         <div className={cn(
-          "rounded-xl border-[1.5px] overflow-hidden",
-          isDark ? "border-white/10 bg-[#0a0a0a]" : "border-gray-200 bg-white"
-        )}>
+          "rounded-xl overflow-hidden",
+          isDark ? "bg-transparent" : "bg-white"
+        )} style={{
+          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+        }}>
           <div className={cn(
-            "px-4 py-3 border-b",
-            isDark ? "border-white/10" : "border-gray-200"
+            "px-4 py-3",
+            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",

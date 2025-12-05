@@ -140,7 +140,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const router = useRouter();
   const isProcessing = useSelector(selectProcess);
   const metrics = useSelector(selectMetrics);
-  const { darkMode, setDarkMode, accountProfile, accountLogin, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme, setOpenWalletModal } = useContext(AppContext);
+  const { darkMode, setDarkMode, accountProfile, accountLogin, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme, setOpenWalletModal, profiles } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   // Check if current path matches for active state
@@ -1041,7 +1041,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <button
                 onClick={() => setOpenWalletModal(true)}
                 className={cn(
-                  'flex h-8 items-center gap-2 rounded-lg px-4 text-[13px] font-medium transition-all duration-200 border',
+                  'flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
                   accountProfile
                     ? isDark
                       ? 'bg-white/[0.04] text-white border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/5'
@@ -1057,7 +1057,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
-                    <span className="font-mono">{truncateAccount(accountLogin, 4)}</span>
+                    <span className="font-medium">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
+                    {profiles?.length > 1 && (
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-500')}>{profiles.length}</span>
+                    )}
                     <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </>
                 ) : (
@@ -1305,7 +1308,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                       </span>
-                      <span className="font-mono">{truncateAccount(accountLogin, 4)}</span>
+                      <span className="font-medium">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
+                      {profiles?.length > 1 && (
+                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-500')}>{profiles.length}</span>
+                      )}
                     </>
                   ) : (
                     <>

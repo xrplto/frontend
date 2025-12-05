@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { Eye, EyeOff, Loader2, Plus, X } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plus, X, Copy, Check } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
@@ -41,6 +41,11 @@ const WalletSetupPage = () => {
   const [importFileData, setImportFileData] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showFundScreen, setShowFundScreen] = useState(false);
+  const [agreedToExport, setAgreedToExport] = useState(false);
+  const [createdWallet, setCreatedWallet] = useState(null);
+  const [copied, setCopied] = useState(false);
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
 
   // OAuth data from session
@@ -220,23 +225,45 @@ const WalletSetupPage = () => {
 
       setProfiles(allProfiles);
 
-      // Login with first wallet
-      doLogIn(wallets[0], allProfiles);
-
-      if (importMethod === 'new') {
-        openSnackbar('Wallet created successfully!', 'success');
-      }
-
-      // Redirect to home
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
+      // Store wallet info and show success screen
+      setCreatedWallet({ wallet: wallets[0], allProfiles });
+      setShowSuccess(true);
+      setIsCreating(false);
 
     } catch (err) {
       setError(err.message || 'Failed to create wallet');
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const handleContinue = () => {
+    setShowSuccess(false);
+    setShowFundScreen(true);
+  };
+
+  const handleStartTrading = () => {
+    if (createdWallet) {
+      doLogIn(createdWallet.wallet, createdWallet.allProfiles);
+      openSnackbar('Wallet ready!', 'success');
+      window.location.href = '/';
+    }
+  };
+
+  const copyAddress = () => {
+    if (createdWallet?.wallet?.address) {
+      navigator.clipboard.writeText(createdWallet.wallet.address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem('oauth_temp_token');
+    sessionStorage.removeItem('oauth_temp_provider');
+    sessionStorage.removeItem('oauth_temp_user');
+    sessionStorage.removeItem('oauth_action');
+    window.location.href = '/';
   };
 
   if (!oauthData) {
@@ -250,21 +277,168 @@ const WalletSetupPage = () => {
     );
   }
 
+  // Success screen after wallet creation
+  if (showSuccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md text-center">
+          <h1 className="mb-8 text-[22px] font-normal text-[#22c55e]">
+            Password ready
+          </h1>
+
+          <div className={cn(
+            "mb-8 rounded-[10px] border p-4 text-left",
+            "border-[rgba(255,152,0,0.3)] bg-transparent"
+          )}>
+            <div className="flex gap-3">
+              <span className="text-[20px]">⚠️</span>
+              <div className="text-[12px] leading-relaxed">
+                <p className={isDark ? "text-white" : "text-[#212B36]"}>
+                  This password is the only way to use your wallets via the xrpl.to app. If you lose your password, it cannot be recovered.
+                </p>
+                <p className={cn("mt-3", isDark ? "text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.6)]")}>
+                  We recommend exporting your private keys to mitigate the risk of permanently losing access to your funds.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <label className={cn(
+            "mb-8 flex cursor-pointer items-start gap-3 text-left",
+            isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]"
+          )}>
+            <input
+              type="checkbox"
+              checked={agreedToExport}
+              onChange={(e) => setAgreedToExport(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-[rgba(255,255,255,0.2)] bg-transparent"
+            />
+            <span className="text-[12px]">
+              I will export and safely store my private keys before depositing funds
+            </span>
+          </label>
+
+          <button
+            onClick={handleContinue}
+            disabled={!agreedToExport}
+            className={cn(
+              "w-full rounded-full px-6 py-3 text-[13px] font-normal transition-colors",
+              agreedToExport
+                ? isDark
+                  ? "bg-[rgba(255,255,255,0.15)] text-white hover:bg-[rgba(255,255,255,0.2)]"
+                  : "bg-[#22c55e] text-white hover:bg-[#1ea34b]"
+                : isDark
+                ? "cursor-not-allowed bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.3)]"
+                : "cursor-not-allowed bg-gray-200 text-gray-400"
+            )}
+          >
+            Continue
+          </button>
+
+          <p className="mt-6">
+            <span className={cn("text-[12px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]")}>or </span>
+            <button
+              onClick={handleSignOut}
+              className="text-[12px] text-[#3b82f6] hover:underline"
+            >
+              Sign out
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fund wallet screen
+  if (showFundScreen && createdWallet) {
+    const walletAddress = createdWallet.wallet.address || createdWallet.wallet.account;
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md text-center">
+          <h1 className="mb-8 text-[22px] font-normal text-[#22c55e]">
+            Wallet ready. Fund to activate
+          </h1>
+
+          {/* Chain selector (XRPL only) */}
+          <div className={cn(
+            "mb-6 flex items-center gap-3 rounded-[10px] border px-4 py-3",
+            isDark ? "border-[rgba(255,255,255,0.12)] bg-transparent" : "border-[rgba(0,0,0,0.08)] bg-white"
+          )}>
+            <img src="/xrp.webp" alt="XRP" className="h-5 w-5" />
+            <span className={cn("text-[13px]", isDark ? "text-white" : "text-[#212B36]")}>
+              XRP Ledger
+            </span>
+          </div>
+
+          {/* QR Code section */}
+          <div className={cn(
+            "mb-6 rounded-[10px] border p-6",
+            isDark ? "border-[rgba(255,255,255,0.12)]" : "border-[rgba(0,0,0,0.08)]"
+          )}>
+            <p className={cn("mb-4 text-[12px]", isDark ? "text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.6)]")}>
+              Top up your wallet
+            </p>
+            <div className="mx-auto w-fit rounded-lg bg-white p-3">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${walletAddress}`}
+                alt="Wallet QR Code"
+                width={140}
+                height={140}
+              />
+            </div>
+          </div>
+
+          {/* Address with copy */}
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <span className={cn("font-mono text-[12px]", isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]")}>
+              {walletAddress}
+            </span>
+            <button onClick={copyAddress} className="text-[rgba(255,255,255,0.5)] hover:text-white">
+              {copied ? <Check size={14} className="text-[#22c55e]" /> : <Copy size={14} />}
+            </button>
+          </div>
+
+          <p className={cn("mb-8 text-[11px]", "text-[#FF9800]")}>
+            Send at least 1 XRP to activate this wallet
+          </p>
+
+          {/* Start trading button */}
+          <button
+            onClick={handleStartTrading}
+            className="w-full rounded-full bg-[#22c55e] px-6 py-3 text-[13px] font-normal text-black transition-colors hover:bg-[#1ea34b]"
+          >
+            Start trading
+          </button>
+
+          <p className="mt-6">
+            <span className={cn("text-[12px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]")}>or </span>
+            <button
+              onClick={() => { setShowFundScreen(false); setShowSuccess(false); }}
+              className="text-[12px] text-[#3b82f6] hover:underline"
+            >
+              Import wallet
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className={cn(
-        "w-full max-w-md rounded-xl border-[1.5px] p-8",
-        isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white"
+        "w-full max-w-md rounded-[10px] border p-8",
+        isDark ? "border-[rgba(59,130,246,0.1)] bg-transparent" : "border-[rgba(0,0,0,0.08)] bg-white"
       )}>
         <h1 className={cn(
-          "mb-2 text-xl font-normal",
-          isDark ? "text-white" : "text-gray-900"
+          "mb-2 text-[15px] font-normal",
+          isDark ? "text-white" : "text-[#212B36]"
         )}>
           Setup Your Wallet
         </h1>
         <p className={cn(
-          "mb-6 text-[13px]",
-          isDark ? "text-white/60" : "text-gray-600"
+          "mb-6 text-[11px]",
+          isDark ? "text-[rgba(255,255,255,0.5)]" : "text-[rgba(33,43,54,0.5)]"
         )}>
           Signed in with {oauthData.provider}. Create a password to secure your wallet.
         </p>
@@ -274,12 +448,12 @@ const WalletSetupPage = () => {
           <button
             onClick={() => setImportMethod('new')}
             className={cn(
-              "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+              "flex-1 rounded-[8px] border-[1.5px] px-3 py-2 text-[11px] font-normal transition-colors",
               importMethod === 'new'
-                ? "border-primary bg-primary text-white"
+                ? "border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.15)] text-[#3b82f6]"
                 : isDark
-                ? "border-white/15 text-white hover:border-primary/50"
-                : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                ? "border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] hover:border-[rgba(59,130,246,0.3)]"
+                : "border-[rgba(0,0,0,0.12)] text-[rgba(33,43,54,0.5)] hover:bg-gray-50"
             )}
           >
             New
@@ -287,12 +461,12 @@ const WalletSetupPage = () => {
           <button
             onClick={() => setImportMethod('seed')}
             className={cn(
-              "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+              "flex-1 rounded-[8px] border-[1.5px] px-3 py-2 text-[11px] font-normal transition-colors",
               importMethod === 'seed'
-                ? "border-primary bg-primary text-white"
+                ? "border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.15)] text-[#3b82f6]"
                 : isDark
-                ? "border-white/15 text-white hover:border-primary/50"
-                : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                ? "border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] hover:border-[rgba(59,130,246,0.3)]"
+                : "border-[rgba(0,0,0,0.12)] text-[rgba(33,43,54,0.5)] hover:bg-gray-50"
             )}
           >
             Seed
@@ -300,12 +474,12 @@ const WalletSetupPage = () => {
           <button
             onClick={() => setImportMethod('import')}
             className={cn(
-              "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+              "flex-1 rounded-[8px] border-[1.5px] px-3 py-2 text-[11px] font-normal transition-colors",
               importMethod === 'import'
-                ? "border-primary bg-primary text-white"
+                ? "border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.15)] text-[#3b82f6]"
                 : isDark
-                ? "border-white/15 text-white hover:border-primary/50"
-                : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                ? "border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] hover:border-[rgba(59,130,246,0.3)]"
+                : "border-[rgba(0,0,0,0.12)] text-[rgba(33,43,54,0.5)] hover:bg-gray-50"
             )}
           >
             File
@@ -316,8 +490,8 @@ const WalletSetupPage = () => {
         <div className="mb-6 flex flex-col gap-4">
           <div className="relative">
             <label className={cn(
-              "mb-2 block text-[11px] font-medium uppercase tracking-wide",
-              isDark ? "text-white/60" : "text-gray-600"
+              "mb-2 block text-[10px] font-medium uppercase tracking-[0.5px]",
+              isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]"
             )}>
               {importMethod === 'new' ? 'Password' : 'Wallet Password'}
             </label>
@@ -327,24 +501,24 @@ const WalletSetupPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder={importMethod === 'new' ? 'Create password' : 'Enter password'}
               className={cn(
-                "w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal outline-none transition-colors",
+                "w-full rounded-[8px] border-[1.5px] px-4 py-2 text-[12px] font-normal outline-none transition-colors",
                 isDark
-                  ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
-                  : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                  ? "border-[rgba(255,255,255,0.12)] bg-transparent text-white placeholder:text-[rgba(255,255,255,0.3)] focus:border-[rgba(59,130,246,0.4)]"
+                  : "border-[rgba(0,0,0,0.12)] bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#3b82f6]"
               )}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className={cn(
-                "absolute right-3 top-[38px] text-gray-400 hover:text-gray-600",
-                isDark && "hover:text-white/80"
+                "absolute right-3 top-[38px]",
+                isDark ? "text-[rgba(255,255,255,0.3)] hover:text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.3)] hover:text-[rgba(33,43,54,0.6)]"
               )}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
             {importMethod === 'new' && (
-              <p className={cn("mt-1 text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+              <p className={cn("mt-1 text-[10px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-[rgba(33,43,54,0.4)]")}>
                 8+ chars, mix letters/numbers/symbols
               </p>
             )}
@@ -353,8 +527,8 @@ const WalletSetupPage = () => {
           {importMethod === 'new' && (
             <div>
               <label className={cn(
-                "mb-2 block text-[11px] font-medium uppercase tracking-wide",
-                isDark ? "text-white/60" : "text-gray-600"
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.5px]",
+                isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]"
               )}>
                 Confirm Password
               </label>
@@ -364,10 +538,10 @@ const WalletSetupPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm password"
                 className={cn(
-                  "w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal outline-none transition-colors",
+                  "w-full rounded-[8px] border-[1.5px] px-4 py-2 text-[12px] font-normal outline-none transition-colors",
                   isDark
-                    ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
-                    : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                    ? "border-[rgba(255,255,255,0.12)] bg-transparent text-white placeholder:text-[rgba(255,255,255,0.3)] focus:border-[rgba(59,130,246,0.4)]"
+                    : "border-[rgba(0,0,0,0.12)] bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#3b82f6]"
                 )}
               />
             </div>
@@ -377,8 +551,8 @@ const WalletSetupPage = () => {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className={cn(
-                  "text-[11px] font-medium uppercase tracking-wide",
-                  isDark ? "text-white/60" : "text-gray-600"
+                  "text-[10px] font-medium uppercase tracking-[0.5px]",
+                  isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]"
                 )}>
                   Seed{importSeeds.length > 1 ? 's' : ''} ({importSeeds.length})
                 </label>
@@ -387,8 +561,8 @@ const WalletSetupPage = () => {
                     type="button"
                     onClick={() => setImportSeeds([...importSeeds, ''])}
                     className={cn(
-                      "flex items-center gap-1 rounded px-2 py-0.5 text-[11px] transition-colors",
-                      isDark ? "text-primary hover:bg-primary/10" : "text-primary hover:bg-primary/10"
+                      "flex items-center gap-1 rounded-[8px] px-2 py-0.5 text-[10px] transition-colors",
+                      "text-[#3b82f6] hover:bg-[rgba(59,130,246,0.08)]"
                     )}
                   >
                     <Plus size={12} /> Add
@@ -412,14 +586,14 @@ const WalletSetupPage = () => {
                           }}
                           placeholder={`Seed ${idx + 1} (starts with "s")`}
                           className={cn(
-                            "w-full rounded-lg border-[1.5px] px-4 py-2 pr-8 text-[13px] font-mono outline-none transition-colors",
+                            "w-full rounded-[8px] border-[1.5px] px-4 py-2 pr-8 text-[11px] font-mono outline-none transition-colors",
                             hasInput && !validation.valid
-                              ? "border-red-500/50 focus:border-red-500"
+                              ? "border-[rgba(244,67,54,0.3)] focus:border-[#f44336]"
                               : hasInput && validation.valid
-                              ? "border-green-500/50 focus:border-green-500"
+                              ? "border-[rgba(34,197,94,0.3)] focus:border-[#22c55e]"
                               : isDark
-                              ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
-                              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary",
+                              ? "border-[rgba(255,255,255,0.12)] bg-transparent text-white placeholder:text-[rgba(255,255,255,0.3)] focus:border-[rgba(59,130,246,0.4)]"
+                              : "border-[rgba(0,0,0,0.12)] bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#3b82f6]",
                             isDark ? "bg-transparent text-white" : "bg-white text-gray-900"
                           )}
                         />
@@ -429,7 +603,7 @@ const WalletSetupPage = () => {
                             onClick={() => setImportSeeds(importSeeds.filter((_, i) => i !== idx))}
                             className={cn(
                               "absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 transition-colors",
-                              isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500"
+                              isDark ? "text-[rgba(255,255,255,0.3)] hover:text-[#f44336]" : "text-[rgba(33,43,54,0.3)] hover:text-[#f44336]"
                             )}
                           >
                             <X size={14} />
@@ -437,13 +611,13 @@ const WalletSetupPage = () => {
                         )}
                       </div>
                       {hasInput && validation.error && (
-                        <p className="mt-1 text-[11px] text-red-500">{validation.error}</p>
+                        <p className="mt-1 text-[10px] text-[#f44336]">{validation.error}</p>
                       )}
                     </div>
                   );
                 })}
               </div>
-              <p className={cn("mt-1.5 text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+              <p className={cn("mt-1.5 text-[10px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-[rgba(33,43,54,0.4)]")}>
                 Add multiple seeds to import several wallets at once
               </p>
             </div>
@@ -452,10 +626,10 @@ const WalletSetupPage = () => {
           {importMethod === 'import' && (
             <div>
               <label className={cn(
-                "flex w-full cursor-pointer items-center justify-center rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+                "flex w-full cursor-pointer items-center justify-center rounded-[8px] border-[1.5px] px-4 py-2 text-[11px] font-normal transition-colors",
                 isDark
-                  ? "border-white/15 text-white hover:border-primary/50"
-                  : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                  ? "border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] hover:border-[rgba(59,130,246,0.3)]"
+                  : "border-[rgba(0,0,0,0.12)] text-[rgba(33,43,54,0.5)] hover:bg-gray-50"
               )}>
                 {importFile ? importFile.name : 'Choose Backup File'}
                 <input
@@ -488,11 +662,11 @@ const WalletSetupPage = () => {
                 />
               </label>
               {importFileData && (
-                <p className={cn("mt-2 text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
+                <p className={cn("mt-2 text-[10px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.5)]")}>
                   {importFileData.wallets?.length || 0} wallet(s) • Exported {new Date(importFileData.exported).toLocaleDateString()}
                 </p>
               )}
-              <p className={cn("mt-1 text-[11px]", isDark ? "text-amber-400/80" : "text-amber-600")}>
+              <p className={cn("mt-1 text-[10px]", isDark ? "text-[#FF9800]" : "text-[#FF9800]")}>
                 Enter the original password used when creating this backup
               </p>
             </div>
@@ -501,14 +675,10 @@ const WalletSetupPage = () => {
 
         {error && (
           <div className={cn(
-            "mb-4 rounded-lg border-[1.5px] p-3 text-[13px]",
+            "mb-4 rounded-[8px] border p-3 text-[11px]",
             (error.startsWith('Creating') || error.startsWith('Decrypting') || error.startsWith('Restoring') || error.startsWith('Importing'))
-              ? isDark
-                ? "border-blue-500/20 bg-blue-500/10 text-blue-400"
-                : "border-blue-500/20 bg-blue-50 text-blue-700"
-              : isDark
-              ? "border-red-500/20 bg-red-500/10 text-red-400"
-              : "border-red-500/20 bg-red-50 text-red-700"
+              ? "border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.08)] text-[#3b82f6]"
+              : "border-[rgba(244,67,54,0.2)] bg-[rgba(244,67,54,0.08)] text-[#f44336]"
           )}>
             {error}
           </div>
@@ -526,12 +696,12 @@ const WalletSetupPage = () => {
             }}
             disabled={isCreating}
             className={cn(
-              "flex-1 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+              "flex-1 rounded-[8px] border-[1.5px] px-4 py-2 text-[11px] font-normal transition-colors",
               isCreating
                 ? "cursor-not-allowed opacity-50"
                 : isDark
-                ? "border-white/15 text-white hover:border-primary/50"
-                : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                ? "border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] hover:border-[rgba(59,130,246,0.3)]"
+                : "border-[rgba(0,0,0,0.12)] text-[rgba(33,43,54,0.5)] hover:bg-gray-50"
             )}
           >
             Cancel
@@ -543,13 +713,13 @@ const WalletSetupPage = () => {
               (importMethod === 'seed' && (!importSeeds.some(s => s.trim()) || !importSeeds.filter(s => s.trim()).every(s => validateSeed(s).valid))) ||
               (importMethod === 'import' && !importFileData)}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+              "flex flex-1 items-center justify-center gap-2 rounded-[8px] border-[1.5px] px-4 py-2 text-[11px] font-normal transition-colors",
               isCreating || !password ||
               (importMethod === 'new' && !confirmPassword) ||
               (importMethod === 'seed' && (!importSeeds.some(s => s.trim()) || !importSeeds.filter(s => s.trim()).every(s => validateSeed(s).valid))) ||
               (importMethod === 'import' && !importFileData)
-                ? "cursor-not-allowed border-gray-400 bg-gray-400 text-white opacity-50"
-                : "border-primary bg-primary text-white hover:bg-primary/90"
+                ? "cursor-not-allowed border-[rgba(0,0,0,0.12)] bg-[rgba(0,0,0,0.08)] text-[rgba(255,255,255,0.3)] opacity-50"
+                : "border-[rgba(59,130,246,0.4)] bg-[rgba(59,130,246,0.15)] text-[#3b82f6] hover:bg-[rgba(59,130,246,0.25)]"
             )}
           >
             {isCreating ? (
@@ -566,10 +736,8 @@ const WalletSetupPage = () => {
         </div>
 
         <div className={cn(
-          "mt-6 rounded-lg border-[1.5px] p-3 text-[11px]",
-          isDark
-            ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
-            : "border-amber-500/20 bg-amber-50 text-amber-700"
+          "mt-6 rounded-[8px] border p-3 text-[10px]",
+          "border-[rgba(255,152,0,0.2)] bg-[rgba(255,152,0,0.08)] text-[#FF9800]"
         )}>
           <strong>Important:</strong> Back up your wallet after creation. XRPL.to cannot recover lost wallets or passwords.
         </div>
