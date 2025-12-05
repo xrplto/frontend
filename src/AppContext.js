@@ -133,18 +133,27 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   // Listen for storage changes (e.g., from OAuth callback updating profiles)
   useEffect(() => {
     const handleStorageChange = () => {
+      // Update profiles
       const storedProfiles = localStorage.getItem('profiles');
       if (storedProfiles) {
         const newProfiles = JSON.parse(storedProfiles);
-        if (newProfiles.length > profiles.length) {
-          setProfiles(newProfiles);
-        }
+        setProfiles(newProfiles);
+      }
+      // Also update accountProfile (critical for OAuth redirects)
+      const storedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE);
+      if (storedProfile) {
+        try {
+          const profile = JSON.parse(storedProfile);
+          if (profile && profile.account && (!accountProfile || accountProfile.account !== profile.account)) {
+            setAccountProfile(profile);
+          }
+        } catch (e) { /* ignore parse errors */ }
       }
     };
 
     window.addEventListener('storage-updated', handleStorageChange);
     return () => window.removeEventListener('storage-updated', handleStorageChange);
-  }, [profiles]);
+  }, [accountProfile]);
 
   useEffect(() => {
     const loadStoredData = async () => {

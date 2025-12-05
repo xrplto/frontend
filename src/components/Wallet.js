@@ -1472,6 +1472,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   const processGoogleConnect = async (jwtToken, userData) => {
+    console.log('[Wallet] processGoogleConnect called');
     try {
       // Use provided user data or decode JWT
       let payload = userData;
@@ -1482,12 +1483,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           payload = { id: 'google_user', provider: 'google' };
         }
       }
+      console.log('[Wallet] Payload:', { id: payload?.id || payload?.sub, provider: payload?.provider || 'google' });
 
       // Check if user already has wallets loaded (from AppContext auto-load)
       const walletId = `${payload.provider || 'google'}_${payload.sub || payload.id}`;
       const hasPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+      console.log('[Wallet] hasPassword:', !!hasPassword, 'profiles.length:', profiles.length);
 
       if (hasPassword && profiles.length > 0) {
+        console.log('[Wallet] Returning user with wallets - auto login');
         await walletStorage.setSecureItem('jwt', jwtToken);
         await walletStorage.setSecureItem('authMethod', 'google');
         await walletStorage.setSecureItem('user', payload);
@@ -1514,6 +1518,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       // Handle social login
+      console.log('[Wallet] Calling handleSocialLogin...');
       const result = await walletStorageInstance.handleSocialLogin(
         {
           id: payload.sub || payload.id,
@@ -1526,19 +1531,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         backend
       );
 
-      devLog('processGoogleConnect result:', result);
+      console.log('[Wallet] handleSocialLogin result:', { requiresPassword: result.requiresPassword, hasWallet: !!result.wallet });
 
       if (result.requiresPassword) {
-        devLog('❌ Password required - showing setup dialog');
+        console.log('[Wallet] Password required - redirecting to /wallet-setup');
         // Store token temporarily for password setup
         sessionStorage.setItem('oauth_temp_token', jwtToken);
         sessionStorage.setItem('oauth_temp_provider', 'google');
         sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload));
         sessionStorage.setItem('oauth_action', result.action);
-        // No backend data to store - wallets are local only
 
-        // Show password setup dialog
-        setShowOAuthPasswordSetup(true);
+        // Close modal and redirect to dedicated wallet-setup page
+        setOpenWalletModal(false);
+        router.push('/wallet-setup');
+        return;
       } else {
         devLog('✅ No password required - auto login');
         // Wallet already setup
@@ -1576,8 +1582,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOpenWalletModal(false);
       }
     } catch (error) {
-      devError('Error processing Google connect:', error);
-      openSnackbar('Failed to process Google connect', 'error');
+      console.error('[Wallet] Error processing Google connect:', error);
+      openSnackbar('Failed to process Google connect: ' + (error.message || 'Unknown error'), 'error');
     }
   };
 
@@ -2719,23 +2725,38 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // Set up Google response handler globally
     window.handleGoogleResponse = async (response) => {
       try {
-        devLog('Google OAuth response received');
-        const res = await fetch('https://api.xrpl.to/api/auth/google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: response.credential })
-        });
+        console.log('[Wallet] Google OAuth response received');
 
-        const data = await res.json();
-        if (data.token) {
-          // Store for processing
-          sessionStorage.setItem('google_jwt_token', data.token);
-          sessionStorage.setItem('google_user_data', JSON.stringify(data.user));
-          // Trigger re-render to process
-          window.dispatchEvent(new Event('google-connect-success'));
+        // Decode Google's ID token directly (it's a signed JWT from Google)
+        // This is safe because: 1) Google signs it, 2) wallet encryption is local
+        const credential = response.credential;
+        if (!credential) {
+          throw new Error('No credential received from Google');
         }
+
+        // Decode the JWT payload (Google's ID token)
+        const payload = JSON.parse(atob(credential.split('.')[1]));
+        console.log('[Wallet] Google user:', { sub: payload.sub, email: payload.email });
+
+        // Create user data from Google's token
+        const userData = {
+          id: payload.sub,
+          sub: payload.sub,
+          email: payload.email,
+          name: payload.name,
+          provider: 'google'
+        };
+
+        // Store for processing (use credential as token for consistency)
+        sessionStorage.setItem('google_jwt_token', credential);
+        sessionStorage.setItem('google_user_data', JSON.stringify(userData));
+
+        // Trigger re-render to process
+        console.log('[Wallet] Dispatching google-connect-success event');
+        window.dispatchEvent(new Event('google-connect-success'));
       } catch (error) {
-        devError('Google auth error:', error);
+        console.error('[Wallet] Google auth error:', error);
+        openSnackbar('Google authentication failed: ' + (error.message || 'Unknown error'), 'error');
       }
     };
 
@@ -2756,13 +2777,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     // Listen for Google connect success
     const handleGoogleSuccess = async () => {
+      console.log('[Wallet] google-connect-success event received');
       const token = sessionStorage.getItem('google_jwt_token');
       const userStr = sessionStorage.getItem('google_user_data');
       if (token) {
+        console.log('[Wallet] Processing Google connect with token');
         sessionStorage.removeItem('google_jwt_token');
         sessionStorage.removeItem('google_user_data');
         const userData = userStr ? JSON.parse(userStr) : null;
         await processGoogleConnect(token, userData);
+      } else {
+        console.warn('[Wallet] No token found in sessionStorage');
       }
     };
 

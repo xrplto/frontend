@@ -510,12 +510,11 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('auth_return_url');
           console.log('[Callback] Login complete - redirecting to:', returnUrl);
 
-          // For Twitter/X, force a page reload to ensure wallets are loaded
-          if (provider === 'twitter') {
-            window.location.href = returnUrl;
-          } else {
-            router.push(returnUrl);
-          }
+          // Always use window.location.href to ensure a full page reload
+          // This guarantees AppContext reads fresh state from localStorage
+          // router.push() would cause a race condition where navigation
+          // happens before React applies the async state update
+          window.location.href = returnUrl;
         }
       } catch (error) {
         console.error('[Callback] Error processing OAuth callback:', error);
