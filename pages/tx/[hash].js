@@ -1970,7 +1970,28 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
       )}
 
       {/* AI Explanation Panel */}
-      {aiExplanation && !aiLoading && (
+      {aiExplanation && !aiLoading && (() => {
+        // Parse summary - handle both parsed object and raw/malformed JSON formats
+        let summaryText = 'AI analysis complete.';
+        let keyPoints = [];
+
+        const raw = aiExplanation.summary?.raw || aiExplanation.summary;
+        if (typeof raw === 'string') {
+          // Extract summary from potentially malformed JSON
+          const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
+          if (summaryMatch) summaryText = summaryMatch[1];
+          // Extract keyPoints array
+          const keyPointsMatch = raw.match(/"keyPoints"\s*:\s*\[([^\]]*)/);
+          if (keyPointsMatch) {
+            const points = keyPointsMatch[1].match(/"([^"]+)"/g);
+            if (points) keyPoints = points.map(p => p.replace(/"/g, ''));
+          }
+        } else if (typeof raw === 'object' && raw?.summary) {
+          summaryText = raw.summary;
+          keyPoints = raw.keyPoints || [];
+        }
+
+        return (
         <div className={cn(
           "px-6 py-5",
           isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
@@ -1979,21 +2000,21 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
           <h3 className="text-[15px] mb-5">
             <span className="text-[#3b82f6] font-medium">{aiExplanation.extracted?.type || 'Transaction'}:</span>{' '}
             <span className={isDark ? "text-white" : "text-gray-900"}>
-              {aiExplanation.summary?.summary || aiExplanation.summary}
+              {summaryText}
             </span>
           </h3>
 
           {/* Key Points */}
-          {aiExplanation.summary?.keyPoints && aiExplanation.summary.keyPoints.length > 0 && (
+          {keyPoints.length > 0 && (
             <div className="mb-5">
               <h4 className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-white/60" : "text-gray-500")}>
                 Key Points
               </h4>
               <ul className="space-y-2">
-                {aiExplanation.summary.keyPoints.map((point, idx) => (
+                {keyPoints.map((point, idx) => (
                   <li key={idx} className={cn("flex items-start gap-2 text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
                     <span className="text-[#3b82f6]">•</span>
-                    <span>{point}</span>
+                    <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
                   </li>
                 ))}
               </ul>
@@ -2012,7 +2033,8 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {/* Transaction type */}
       <div className={cn(
@@ -4330,6 +4352,19 @@ const TransactionDetails = ({ txData }) => {
           </div>
           <div className="p-4">
             <JsonViewer data={meta} isDark={isDark} />
+          </div>
+        </div>
+      )}
+
+      {/* Copy notification toast */}
+      {urlCopied && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className={cn(
+            "px-4 py-2.5 rounded-lg text-[13px] font-medium shadow-lg flex items-center gap-2",
+            isDark ? "bg-[#1a1a1a] text-white border border-white/10" : "bg-white text-gray-800 border border-gray-200"
+          )}>
+            <span className="text-[#22c55e]">✓</span>
+            Link copied to clipboard
           </div>
         </div>
       )}

@@ -48,6 +48,9 @@ import {
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
+// Validate XRPL transaction hash (64 hex characters)
+const isValidTxHash = (str) => /^[A-Fa-f0-9]{64}$/.test(str?.trim());
+
 const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
@@ -223,7 +226,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
+  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], txHash: null });
   const [suggestedTokens, setSuggestedTokens] = useState([]);
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -358,9 +361,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search effect
   useEffect(() => {
     if (!searchQuery || (!searchOpen && !fullSearch)) {
-      setSearchResults({ tokens: [], collections: [] });
+      setSearchResults({ tokens: [], collections: [], txHash: null });
       return;
     }
+    const trimmedQuery = searchQuery.trim();
+    const detectedHash = isValidTxHash(trimmedQuery) ? trimmedQuery.toUpperCase() : null;
+
+    if (detectedHash) {
+      setSearchResults({ tokens: [], collections: [], txHash: detectedHash });
+      return;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setSearchLoading(true);
@@ -368,7 +379,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
         setSearchResults({
           tokens: res.data?.tokens?.slice(0, 5) || [],
-          collections: res.data?.collections?.slice(0, 3) || []
+          collections: res.data?.collections?.slice(0, 3) || [],
+          txHash: null
         });
       } catch {}
       setSearchLoading(false);
@@ -377,6 +389,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, [searchQuery, searchOpen, fullSearch]);
 
   const handleSearchSelect = useCallback((item, type) => {
+    // Transaction hash navigation
+    if (type === 'tx') {
+      setSearchOpen(false);
+      setFullSearch(false);
+      setSearchQuery('');
+      window.location.href = `/tx/${item}`;
+      return;
+    }
+
     // Save to recent searches
     const newRecent = { ...item, type, timestamp: Date.now() };
     const updated = [newRecent, ...recentSearches.filter(r => r.slug !== item.slug)].slice(0, 5);
@@ -867,6 +888,24 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   </>
                 )}
+                {searchQuery && searchResults.txHash && (
+                  <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Transaction</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    </div>
+                    <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
+                        <ArrowRight size={18} className="text-blue-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Transaction</span>
+                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.txHash}</p>
+                      </div>
+                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>TX</span>
+                    </div>
+                  </div>
+                )}
                 {searchQuery && searchResults.tokens.length > 0 && (
                   <div className="p-2">
                     <div className="flex items-center gap-3 px-2 py-2">
@@ -935,7 +974,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     ))}
                   </div>
                 )}
-                {searchQuery && !searchLoading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+                {searchQuery && !searchLoading && !searchResults.txHash && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                   <div className="py-6 text-center">
                     <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                   </div>
@@ -1022,6 +1061,24 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ))}
                 </div>
               )}
+              {searchQuery && searchResults.txHash && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Transaction</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
+                      <ArrowRight size={18} className="text-blue-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Transaction</span>
+                      <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.txHash}</p>
+                    </div>
+                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>TX</span>
+                  </div>
+                </div>
+              )}
               {searchQuery && searchResults.tokens.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
@@ -1073,7 +1130,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ))}
                 </div>
               )}
-              {searchQuery && !searchLoading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+              {searchQuery && !searchLoading && !searchResults.txHash && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                 <div className="py-6 text-center">
                   <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                 </div>
