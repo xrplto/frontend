@@ -27,17 +27,10 @@ const validateSeed = (seed) => {
 // Detect algorithm from seed prefix: "sEd" = ed25519, otherwise secp256k1
 const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
-// Debug render counter
-let renderCount = 0;
-
 const WalletSetupPage = () => {
-  renderCount++;
-  console.log(`[WalletSetup] RENDER #${renderCount} at ${Date.now()}`);
-
   const router = useRouter();
   const { themeName, doLogIn, setProfiles, profiles, openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  console.log(`[WalletSetup] Context loaded - themeName: ${themeName}, profilesCount: ${profiles?.length || 0}`);
 
   const [importMethod, setImportMethod] = useState('new'); // 'new', 'seed', or 'import'
   const [password, setPassword] = useState('');
@@ -58,12 +51,8 @@ const WalletSetupPage = () => {
   // OAuth data - start as undefined to indicate "not yet loaded"
   const [oauthData, setOauthData] = useState(undefined);
 
-  console.log(`[WalletSetup] Current state - oauthData: ${oauthData === undefined ? 'LOADING' : oauthData ? 'EXISTS' : 'NULL'}, showSuccess: ${showSuccess}`);
-
   // Load OAuth data only on client side (single useEffect to prevent flicker)
   useEffect(() => {
-    console.log('[WalletSetup] useEffect[] - Loading OAuth data from sessionStorage...');
-
     // Prevent Wallet modal from appearing
     sessionStorage.removeItem('wallet_modal_open');
 
@@ -72,25 +61,14 @@ const WalletSetupPage = () => {
     const userStr = sessionStorage.getItem('oauth_temp_user');
     const action = sessionStorage.getItem('oauth_action');
 
-    console.log('[WalletSetup] sessionStorage check:', {
-      hasToken: !!token,
-      provider,
-      hasUser: !!userStr,
-      action
-    });
-
     if (!token || !provider || !userStr) {
-      console.log('[WalletSetup] Missing OAuth data - redirecting to home...');
       window.location.href = '/';
       return;
     }
 
     try {
-      const data = { token, provider, user: JSON.parse(userStr), action };
-      console.log('[WalletSetup] OAuth data parsed successfully:', { provider, userId: data.user?.id });
-      setOauthData(data);
-    } catch (e) {
-      console.error('[WalletSetup] Failed to parse OAuth data:', e);
+      setOauthData({ token, provider, user: JSON.parse(userStr), action });
+    } catch {
       window.location.href = '/';
     }
   }, []);
@@ -132,6 +110,7 @@ const WalletSetupPage = () => {
       // Use same ID format as callback.js: id || sub || 'unknown'
       const userId = user.id || user.sub || 'unknown';
       const walletId = `${provider}_${userId}`;
+      const isPasskey = provider === 'passkey';
       let wallets = [];
 
       // Handle file import - MUST decrypt with original password first
@@ -157,7 +136,12 @@ const WalletSetupPage = () => {
         // Re-store decrypted wallets with SAME password (security: no password change)
         setError('Restoring wallets...');
         for (const wallet of decryptedWallets) {
-          const walletData = {
+          const walletData = isPasskey ? {
+            ...wallet,
+            deviceKeyId: token,
+            wallet_type: 'device',
+            restoredAt: Date.now()
+          } : {
             ...wallet,
             provider,
             provider_id: userId,
@@ -181,7 +165,17 @@ const WalletSetupPage = () => {
             const seedTrimmed = validSeeds[i].trim();
             const algorithm = getAlgorithmFromSeed(seedTrimmed);
             const wallet = XRPLWallet.fromSeed(seedTrimmed, { algorithm });
-            const walletData = {
+            const walletData = isPasskey ? {
+              deviceKeyId: token,
+              accountIndex: i,
+              account: wallet.address,
+              address: wallet.address,
+              publicKey: wallet.publicKey,
+              seed: wallet.seed,
+              wallet_type: 'device',
+              xrp: '0',
+              importedAt: Date.now()
+            } : {
               provider,
               provider_id: userId,
               walletKeyId: walletId,
@@ -206,7 +200,19 @@ const WalletSetupPage = () => {
       else {
         setError('Creating wallet...');
         const wallet = generateRandomWallet();
-        const walletData = {
+        const walletData = isPasskey ? {
+          // Passkey wallet uses deviceKeyId
+          deviceKeyId: token, // token is the passkey credential ID
+          accountIndex: 0,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'device',
+          xrp: '0',
+          createdAt: Date.now()
+        } : {
+          // OAuth wallet uses provider_id
           provider,
           provider_id: userId,
           walletKeyId: walletId,
@@ -231,13 +237,19 @@ const WalletSetupPage = () => {
       sessionStorage.removeItem('oauth_temp_user');
       sessionStorage.removeItem('oauth_action');
 
-      // Store permanent auth data
-      await walletStorage.setSecureItem('jwt', token);
-      await walletStorage.setSecureItem('authMethod', provider);
-      await walletStorage.setSecureItem('user', user);
+      // Store permanent auth data (skip for passkey - no JWT needed)
+      if (!isPasskey) {
+        await walletStorage.setSecureItem('jwt', token);
+        await walletStorage.setSecureItem('authMethod', provider);
+        await walletStorage.setSecureItem('user', user);
+      }
 
-      // Store password for provider
-      await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
+      // Store password for provider (different method for passkey)
+      if (isPasskey) {
+        await walletStorage.storeWalletCredential(token, password);
+      } else {
+        await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
+      }
 
       // Backup entropy to IndexedDB for recovery if localStorage is cleared
       const currentEntropy = localStorage.getItem('__wk_entropy__');
@@ -301,16 +313,13 @@ const WalletSetupPage = () => {
     window.location.href = '/';
   };
 
-  // Show loading while OAuth data is being loaded (undefined = loading, null = missing)
+  // Show loading while OAuth data is being loaded
   if (oauthData === undefined || oauthData === null) {
-    console.log(`[WalletSetup] RENDERING: Loading screen (oauthData: ${oauthData === undefined ? 'LOADING' : 'NULL'})`);
     return (
       <div className="flex min-h-screen items-center justify-center py-16">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 animate-spin" size={40} />
-          <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>
-            {oauthData === undefined ? 'Loading...' : 'Redirecting...'}
-          </p>
+          <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
         </div>
       </div>
     );
@@ -318,7 +327,6 @@ const WalletSetupPage = () => {
 
   // Success screen after wallet creation
   if (showSuccess) {
-    console.log('[WalletSetup] RENDERING: Success screen');
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
         <div className="w-full max-w-md text-center">
@@ -464,7 +472,6 @@ const WalletSetupPage = () => {
     );
   }
 
-  console.log('[WalletSetup] RENDERING: Main setup form');
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className={cn(

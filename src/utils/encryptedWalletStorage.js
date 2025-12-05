@@ -953,6 +953,29 @@ export class UnifiedWalletStorage {
     }
   }
 
+  /**
+   * Get ALL wallets for a specific device/passkey
+   */
+  async getAllWalletsForDevice(deviceKeyId, password) {
+    try {
+      console.log('[WalletStorage] getAllWalletsForDevice - deviceKeyId:', deviceKeyId);
+
+      // Get ALL wallets with this password
+      const allWallets = await this.getAllWallets(password);
+
+      // Filter by deviceKeyId
+      const deviceWallets = allWallets.filter(w =>
+        w.deviceKeyId === deviceKeyId || w.passkeyId === deviceKeyId
+      );
+
+      console.log('[WalletStorage] Found', deviceWallets.length, 'wallets for device');
+      return deviceWallets;
+    } catch (error) {
+      console.error('[WalletStorage] Error getting device wallets:', error);
+      return [];
+    }
+  }
+
   // ============ OAuth/Social Authentication Methods ============
 
   /**

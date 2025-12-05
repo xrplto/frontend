@@ -1354,27 +1354,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const completeDeviceRegistration = async (deviceId, password) => {
     try {
+      console.log('[Passkey] completeDeviceRegistration - deviceId:', deviceId);
+
       // Store the password for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 1 wallet
-      setStatus('creating');
-      const wallet = generateRandomWallet();
+      // Check if wallets already exist for this device
+      setStatus('discovering');
+      const existingWallets = await walletStorage.getAllWalletsForDevice(deviceId, password);
+      console.log('[Passkey] Existing wallets found:', existingWallets?.length || 0);
 
-      const walletData = {
-        deviceKeyId: deviceId,
-        accountIndex: 0,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now(),
-        seed: wallet.seed
-      };
+      let wallets;
+      if (existingWallets && existingWallets.length > 0) {
+        // Use existing wallets
+        console.log('[Passkey] Using existing wallets');
+        wallets = existingWallets;
+      } else {
+        // Generate 1 new wallet
+        console.log('[Passkey] Creating new wallet');
+        setStatus('creating');
+        const wallet = generateRandomWallet();
 
-      await walletStorage.storeWallet(walletData, password);
-      const wallets = [walletData];
+        const walletData = {
+          deviceKeyId: deviceId,
+          accountIndex: 0,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0',
+          createdAt: Date.now(),
+          seed: wallet.seed
+        };
+
+        await walletStorage.storeWallet(walletData, password);
+        wallets = [walletData];
+
+        // Mark new wallets as needing backup
+        wallets.forEach(w => {
+          localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
+        });
+      }
 
       setError(''); // Clear progress message
 
@@ -1385,7 +1405,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const exists = allProfiles.find(p => p.account === profile.account);
         if (!exists) {
           allProfiles.push(profile);
-        } else {
         }
       });
 
@@ -1400,11 +1419,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         totalWallets: wallets.length
       });
 
-      // Mark all wallets as needing backup
-      wallets.forEach(w => {
-        localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
-      });
-
       // Login with first wallet
       doLogIn(wallets[0], allProfiles);
       setStatus('success');
@@ -1412,16 +1426,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
-        setOpen(false);  // Close the main modal
+        setOpen(false);
         setStatus('idle');
         setShowDeviceLogin(false);
         setError('');
-        // Show backup reminder
-        setTimeout(() => {
-          openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
-        }, 1000);
+        if (existingWallets && existingWallets.length > 0) {
+          openSnackbar('Wallet restored successfully!', 'success');
+        } else {
+          setTimeout(() => {
+            openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
+          }, 1000);
+        }
       }, 800);
     } catch (err) {
+      console.error('[Passkey] Registration error:', err);
       setError('Failed to complete registration: ' + err.message);
       setStatus('idle');
     }
@@ -2275,36 +2293,52 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const completeDeviceAuthentication = async (deviceId, password) => {
     try {
+      console.log('[Passkey] completeDeviceAuthentication - deviceId:', deviceId);
       setStatus('discovering');
 
       // Store for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 1 wallet
-      setStatus('creating');
-      const wallet = generateRandomWallet();
+      // Check if wallets already exist for this device
+      const existingWallets = await walletStorage.getAllWalletsForDevice(deviceId, password);
+      console.log('[Passkey] Existing wallets found:', existingWallets?.length || 0);
 
-      const walletData = {
-        deviceKeyId: deviceId,
-        accountIndex: 0,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now(),
-        seed: wallet.seed
-      };
+      let wallets;
+      let isReturningUser = false;
 
-      await walletStorage.storeWallet(walletData, password);
-      const wallets = [walletData];
+      if (existingWallets && existingWallets.length > 0) {
+        // Use existing wallets - returning user
+        console.log('[Passkey] Returning user - restoring wallets');
+        wallets = existingWallets;
+        isReturningUser = true;
+      } else {
+        // Generate 1 new wallet - new user
+        console.log('[Passkey] New user - creating wallet');
+        setStatus('creating');
+        const wallet = generateRandomWallet();
+
+        const walletData = {
+          deviceKeyId: deviceId,
+          accountIndex: 0,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0',
+          createdAt: Date.now(),
+          seed: wallet.seed
+        };
+
+        await walletStorage.storeWallet(walletData, password);
+        wallets = [walletData];
+
+        // Mark new wallets as needing backup
+        wallets.forEach(w => {
+          localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
+        });
+      }
 
       setError(''); // Clear progress message
-
-      // Check if any of these wallets already exist in profiles
-      const existingWallet = profiles.find(p =>
-        wallets.some(w => w.account === p.account)
-      );
 
       // Update profiles state
       const allProfiles = [...profiles];
@@ -2324,7 +2358,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         address: wallets[0].address,
         publicKey: wallets[0].publicKey,
         deviceKeyId: deviceId,
-        isAdditional: existingWallet !== undefined,
         totalWallets: wallets.length
       });
 
@@ -2335,13 +2368,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
-        setOpen(false);  // Close the main modal
+        setOpen(false);
         setStatus('idle');
         setShowDeviceLogin(false);
         setError('');
-        openSnackbar('Wallet created successfully!', 'success');
+        if (isReturningUser) {
+          openSnackbar('Wallet restored successfully!', 'success');
+        } else {
+          openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
+        }
       }, 800);
     } catch (err) {
+      console.error('[Passkey] Authentication error:', err);
       setError('Failed to complete authentication: ' + err.message);
       setStatus('idle');
     }
@@ -2985,11 +3023,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (registrationResponse.id) {
-        // Show password input for wallet creation
-        setPendingDeviceId(registrationResponse.id);
-        setDevicePasswordMode('create');
-        setShowDevicePasswordInput(true);
+        // Redirect to wallet-setup like OAuth flows
+        console.log('[Passkey] Registration successful, redirecting to wallet-setup');
+        sessionStorage.setItem('oauth_temp_token', registrationResponse.id);
+        sessionStorage.setItem('oauth_temp_provider', 'passkey');
+        sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: registrationResponse.id, provider: 'passkey' }));
+        sessionStorage.setItem('oauth_action', 'create');
+        setOpenWalletModal(false);
         setStatus('idle');
+        window.location.href = '/wallet-setup';
         return;
       }
     } catch (err) {
@@ -3051,11 +3093,45 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (authResponse.id) {
-        // Always ask for password on authentication for security
-        setPendingDeviceId(authResponse.id);
-        setDevicePasswordMode('verify');
-        setShowDevicePasswordInput(true);
+        console.log('[Passkey] Authentication successful, checking for existing wallets');
+
+        // Check if password exists for this passkey
+        const storedPassword = await walletStorage.getWalletCredential(authResponse.id);
+
+        if (storedPassword) {
+          // Returning user - try to restore wallets
+          console.log('[Passkey] Found stored password, restoring wallets');
+          const existingWallets = await walletStorage.getAllWalletsForDevice(authResponse.id, storedPassword);
+
+          if (existingWallets && existingWallets.length > 0) {
+            // Auto-login with existing wallets
+            console.log('[Passkey] Restoring', existingWallets.length, 'wallets');
+            const allProfiles = [...profiles];
+            existingWallets.forEach(w => {
+              const profile = { ...w, tokenCreatedAt: Date.now() };
+              if (!allProfiles.find(p => p.account === profile.account)) {
+                allProfiles.push(profile);
+              }
+            });
+            setProfiles(allProfiles);
+            await syncProfilesToIndexedDB(allProfiles);
+            doLogIn(existingWallets[0], allProfiles);
+            setOpenWalletModal(false);
+            setStatus('idle');
+            openSnackbar('Wallet restored successfully!', 'success');
+            return;
+          }
+        }
+
+        // New user or no wallets found - redirect to wallet-setup
+        console.log('[Passkey] No existing wallets, redirecting to wallet-setup');
+        sessionStorage.setItem('oauth_temp_token', authResponse.id);
+        sessionStorage.setItem('oauth_temp_provider', 'passkey');
+        sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: authResponse.id, provider: 'passkey' }));
+        sessionStorage.setItem('oauth_action', 'create');
+        setOpenWalletModal(false);
         setStatus('idle');
+        window.location.href = '/wallet-setup';
         return;
       }
     } catch (err) {
