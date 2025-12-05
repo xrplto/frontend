@@ -6,7 +6,6 @@ import { cn } from 'src/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
 import { getHashIcon } from 'src/utils/formatters';
 
 const AccountAvatar = ({ account }) => {
@@ -26,7 +25,7 @@ const AccountAvatar = ({ account }) => {
   );
 };
 
-const LedgerDetails = ({ ledgerData, error }) => {
+const LedgerDetails = ({ ledgerData, transactions, error }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -34,12 +33,12 @@ const LedgerDetails = ({ ledgerData, error }) => {
     return <p className="text-red-500">{error}</p>;
   }
 
-  const { ledger } = ledgerData;
-  const { ledger_index, close_time, transactions } = ledger;
-
+  const { ledger_index, close_time, close_time_human, ledger_hash, parent_hash, tx_count, total_coins, parent_close_time } = ledgerData;
   const ledgerIndex = parseInt(ledger_index, 10);
-  const closeTimeISO = rippleTimeToISO8601(close_time);
-  const closeTimeLocale = closeTimeISO ? new Date(closeTimeISO).toLocaleString() : 'Unknown';
+  const closeTimeLocale = close_time_human ? new Date(close_time_human).toLocaleString() : 'Unknown';
+  const totalXrp = total_coins ? (total_coins / 1000000).toLocaleString() : 'Unknown';
+  const xrpBurned = total_coins ? ((100000000000000000 - total_coins) / 1000000).toLocaleString() : 'Unknown';
+  const closeTime = close_time && parent_close_time ? close_time - parent_close_time : null;
 
   const shortenAddress = (address) => {
     if (!address) return '';
@@ -54,7 +53,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
   };
 
   const sortedTransactions = [...transactions].sort(
-    (a, b) => a.metaData.TransactionIndex - b.metaData.TransactionIndex
+    (a, b) => a.meta.TransactionIndex - b.meta.TransactionIndex
   );
 
   return (
@@ -111,7 +110,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 className={cn('border-b transition-colors', isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50')}
               >
                 <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
-                  {tx.metaData.TransactionIndex}
+                  {tx.meta.TransactionIndex}
                 </td>
                 <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
                   {tx.TransactionType}
@@ -130,9 +129,9 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 <td className="px-4 py-3">
                   <span className={cn(
                     'text-[13px]',
-                    tx.metaData.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
+                    tx.meta.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
                   )}>
-                    {tx.metaData.TransactionResult}
+                    {tx.meta.TransactionResult}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -149,19 +148,40 @@ const LedgerDetails = ({ ledgerData, error }) => {
         </table>
       </div>
 
-      <div className={cn('mt-6 border-t pt-6', isDark ? 'border-white/10' : 'border-gray-200')}>
-        <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-          Ledger Unix close time: {close_time}
+      <div className={cn('mt-6 border-t pt-6 space-y-3', isDark ? 'border-white/10' : 'border-gray-200')}>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Closed:</span> {closeTimeLocale}
+          </p>
+          {closeTime && (
+            <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+              <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Interval:</span> {closeTime}s
+            </p>
+          )}
+          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span> {tx_count}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Total XRP:</span> {totalXrp}
+          </p>
+          <p className={cn('text-[13px]', isDark ? 'text-orange-400/80' : 'text-orange-600')}>
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>XRP Burned:</span> {xrpBurned}
+          </p>
+        </div>
+        <p className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/60' : 'text-gray-500')}>
+          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>Ledger hash:</span> {ledger_hash}
         </p>
-        <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-          Ledger UTC close time: {closeTimeISO}
+        <p className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/60' : 'text-gray-500')}>
+          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>Parent hash:</span> {parent_hash}
         </p>
       </div>
     </div>
   );
 };
 
-const LedgerPage = ({ ledgerData, error }) => {
+const LedgerPage = ({ ledgerData, transactions, error }) => {
   const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -182,7 +202,7 @@ const LedgerPage = ({ ledgerData, error }) => {
         {error ? (
           <p className="text-red-500">{error}</p>
         ) : (
-          <LedgerDetails ledgerData={ledgerData} />
+          <LedgerDetails ledgerData={ledgerData} transactions={transactions} />
         )}
       </div>
       <Footer />
@@ -195,28 +215,22 @@ export async function getServerSideProps(context) {
 
   if (!/^\d+$/.test(index)) {
     return {
-      props: {
-        ledgerData: null,
-        error: 'Invalid ledger index format.'
-      }
+      props: { ledgerData: null, transactions: [], error: 'Invalid ledger index format.' }
     };
   }
 
   try {
-    const response = await axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}`);
+    const [ledgerRes, txRes] = await Promise.all([
+      axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}`),
+      axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}/transactions`)
+    ]);
     return {
-      props: {
-        ledgerData: response.data,
-        error: null
-      }
+      props: { ledgerData: ledgerRes.data, transactions: txRes.data || [], error: null }
     };
   } catch (error) {
     console.error(error);
     return {
-      props: {
-        ledgerData: null,
-        error: 'Failed to fetch ledger data.'
-      }
+      props: { ledgerData: null, transactions: [], error: 'Failed to fetch ledger data.' }
     };
   }
 }

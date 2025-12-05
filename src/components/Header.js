@@ -43,7 +43,8 @@ import {
   Fingerprint,
   Mail,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  Layers
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -63,6 +64,13 @@ const getNftImage = (nft) => {
 
 // Validate XRPL address (starts with r, 25-35 base58 characters)
 const isValidXrpAddress = (str) => /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(str?.trim());
+
+// Validate ledger index (numeric, >= 32570 which is first available ledger)
+const isValidLedgerIndex = (str) => {
+  if (!/^\d+$/.test(str?.trim())) return false;
+  const num = parseInt(str, 10);
+  return num >= 32570 && num <= 9999999999;
+};
 
 const currencySymbols = {
   USD: '$ ',
@@ -239,7 +247,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], txHash: null, nft: null, address: null });
+  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], txHash: null, nft: null, address: null, ledger: null });
   const [suggestedTokens, setSuggestedTokens] = useState([]);
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -374,15 +382,21 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search effect
   useEffect(() => {
     if (!searchQuery || (!searchOpen && !fullSearch)) {
-      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: null });
+      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: null, ledger: null });
       return;
     }
     const trimmedQuery = searchQuery.trim();
     const detectedHexId = isValidHexId(trimmedQuery) ? trimmedQuery.slice(0, 64).toUpperCase() : null;
     const detectedAddress = isValidXrpAddress(trimmedQuery) ? trimmedQuery : null;
+    const detectedLedger = isValidLedgerIndex(trimmedQuery) ? trimmedQuery : null;
+
+    if (detectedLedger) {
+      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: null, ledger: detectedLedger });
+      return;
+    }
 
     if (detectedAddress) {
-      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: detectedAddress });
+      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: detectedAddress, ledger: null });
       return;
     }
 
@@ -395,11 +409,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             tokens: [], collections: [],
             txHash: nftData ? null : detectedHexId,
             nft: nftData || null,
-            address: null
+            address: null, ledger: null
           });
         })
         .catch(() => {
-          setSearchResults({ tokens: [], collections: [], txHash: detectedHexId, nft: null, address: null });
+          setSearchResults({ tokens: [], collections: [], txHash: detectedHexId, nft: null, address: null, ledger: null });
         });
       return () => controller.abort();
     }
@@ -414,7 +428,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           collections: res.data?.collections?.slice(0, 3) || [],
           txHash: null,
           nft: null,
-          address: null
+          address: null,
+          ledger: null
         });
       } catch {}
       setSearchLoading(false);
@@ -445,6 +460,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       setFullSearch(false);
       setSearchQuery('');
       window.location.href = `/nft/${item._id || item}`;
+      return;
+    }
+    // Ledger navigation
+    if (type === 'ledger') {
+      setSearchOpen(false);
+      setFullSearch(false);
+      setSearchQuery('');
+      window.location.href = `/ledger/${item}`;
       return;
     }
 
@@ -996,6 +1019,24 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     </div>
                   </div>
                 )}
+                {searchQuery && searchResults.ledger && (
+                  <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Ledger</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    </div>
+                    <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-cyan-500/20" : "bg-cyan-100")}>
+                        <Layers size={18} className="text-cyan-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Ledger</span>
+                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>#{searchResults.ledger}</p>
+                      </div>
+                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-cyan-500/20 text-cyan-400" : "bg-cyan-100 text-cyan-600")}>Ledger</span>
+                    </div>
+                  </div>
+                )}
                 {searchQuery && searchResults.tokens.length > 0 && (
                   <div className="p-2">
                     <div className="flex items-center gap-3 px-2 py-2">
@@ -1064,7 +1105,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     ))}
                   </div>
                 )}
-                {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+                {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && !searchResults.ledger && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                   <div className="py-6 text-center">
                     <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                   </div>
@@ -1209,6 +1250,24 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   </div>
                 </div>
               )}
+              {searchQuery && searchResults.ledger && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Ledger</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-cyan-500/20" : "bg-cyan-100")}>
+                      <Layers size={18} className="text-cyan-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Ledger</span>
+                      <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>#{searchResults.ledger}</p>
+                    </div>
+                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-cyan-500/20 text-cyan-400" : "bg-cyan-100 text-cyan-600")}>Ledger</span>
+                  </div>
+                </div>
+              )}
               {searchQuery && searchResults.tokens.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
@@ -1260,7 +1319,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ))}
                 </div>
               )}
-              {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+              {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && !searchResults.ledger && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                 <div className="py-6 text-center">
                   <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                 </div>
