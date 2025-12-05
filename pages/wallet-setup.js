@@ -108,15 +108,6 @@ const WalletSetupPage = () => {
       // Use same ID format as callback.js: id || sub || 'unknown'
       const userId = user.id || user.sub || 'unknown';
       const walletId = `${provider}_${userId}`;
-
-      // DEBUG: Log the ID being used for wallet creation
-      console.log('=== WALLET SETUP DEBUG ===');
-      console.log('user.id:', user.id);
-      console.log('user.sub:', user.sub);
-      console.log('userId (normalized):', userId);
-      console.log('walletId:', walletId);
-      console.log('Password will be stored as: wallet_pwd_' + walletId);
-
       let wallets = [];
 
       // Handle file import - MUST decrypt with original password first

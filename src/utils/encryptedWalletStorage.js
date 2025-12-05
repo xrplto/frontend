@@ -11,44 +11,8 @@ if (typeof window !== 'undefined') {
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
-const devLog = (...args) => console.log('[WalletStorage]', ...args);
-const devError = (...args) => console.error('[WalletStorage]', ...args);
-
-// DEBUG: Global function to list all IndexedDB records
-if (typeof window !== 'undefined') {
-  window.debugListWalletDB = async () => {
-    const dbName = 'XRPLWalletDB';
-    const storeName = 'wallets';
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(dbName);
-      request.onsuccess = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(storeName)) {
-          console.log('No wallets store found');
-          db.close();
-          resolve([]);
-          return;
-        }
-        const tx = db.transaction([storeName], 'readonly');
-        const store = tx.objectStore(storeName);
-        const getAllRequest = store.getAll();
-        getAllRequest.onsuccess = () => {
-          const records = getAllRequest.result;
-          console.log('=== ALL INDEXEDDB RECORDS ===');
-          records.forEach((r, i) => {
-            console.log(`Record ${i}:`, { id: r.id, lookupHash: r.lookupHash, maskedAddress: r.maskedAddress, timestamp: r.timestamp });
-          });
-          console.log('Total records:', records.length);
-          db.close();
-          resolve(records);
-        };
-        getAllRequest.onerror = () => reject(getAllRequest.error);
-      };
-      request.onerror = () => reject(request.error);
-    });
-  };
-  console.log('DEBUG: Run window.debugListWalletDB() to list all IndexedDB records');
-}
+const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
+const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
 // Security utilities
 const securityUtils = {
@@ -146,7 +110,35 @@ export class UnifiedWalletStorage {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'wallets';
     this.version = 1;
+    this.dbPromise = null; // Singleton promise for DB initialization
     this.localStorageKey = this.generateLocalStorageKey();
+  }
+
+  // Backup entropy to IndexedDB (prevents lockout if localStorage cleared)
+  async backupEntropyToIndexedDB(entropy) {
+    try {
+      const db = await this.initDB();
+      const tx = db.transaction([this.walletsStore], 'readwrite');
+      tx.objectStore(this.walletsStore).put({
+        id: '__entropy_backup__',
+        lookupHash: '__entropy_backup__',
+        data: entropy,
+        timestamp: Date.now()
+      });
+    } catch (e) { /* silent */ }
+  }
+
+  // Restore entropy from IndexedDB backup
+  async getEntropyFromIndexedDB() {
+    try {
+      const db = await this.initDB();
+      return new Promise((resolve) => {
+        const req = db.transaction([this.walletsStore], 'readonly')
+          .objectStore(this.walletsStore).get('__entropy_backup__');
+        req.onsuccess = () => resolve(req.result?.data || null);
+        req.onerror = () => resolve(null);
+      });
+    } catch (e) { return null; }
   }
 
   // Generate a device-specific key for localStorage encryption
@@ -159,6 +151,8 @@ export class UnifiedWalletStorage {
       const randomBytes = crypto.getRandomValues(new Uint8Array(16));
       storedEntropy = btoa(String.fromCharCode(...randomBytes));
       localStorage.setItem('__wk_entropy__', storedEntropy);
+      // Backup to IndexedDB for recovery if localStorage is cleared
+      this.backupEntropyToIndexedDB(storedEntropy);
     }
 
     // Use browser fingerprinting + random entropy for key generation
@@ -331,24 +325,20 @@ export class UnifiedWalletStorage {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
         const pwdKey = `__pwd__${providerId}`;
-        console.log('Looking for password record with ID:', pwdKey);
         const request = store.get(pwdKey);
 
         request.onsuccess = async () => {
-          console.log('Password record found:', !!request.result);
           if (request.result && request.result.data) {
             try {
               const decrypted = await this.decryptFromLocalStorage(request.result.data);
               devLog('Password retrieved from IndexedDB for provider:', providerId);
-              console.log('Password decrypted successfully');
               resolve(decrypted);
             } catch (decryptError) {
-              console.log('Password decryption failed:', decryptError.message);
+              devLog('Password decryption failed:', decryptError.message);
               resolve(null);
             }
           } else {
             devLog('No password found in IndexedDB for provider:', providerId);
-            console.log('No password record found for:', pwdKey);
             resolve(null);
           }
         };
@@ -402,6 +392,16 @@ export class UnifiedWalletStorage {
   }
 
   async initDB() {
+    // Singleton pattern: reuse existing DB promise to prevent race conditions
+    if (this.dbPromise) {
+      return this.dbPromise;
+    }
+
+    this.dbPromise = this._initDBInternal();
+    return this.dbPromise;
+  }
+
+  async _initDBInternal() {
     // First, detect existing database version and check if store exists
     const { existingVersion, hasStore } = await new Promise((resolve) => {
       const detectRequest = indexedDB.open(this.dbName);
@@ -923,21 +923,22 @@ export class UnifiedWalletStorage {
     devLog('=== handleSocialLogin START ===');
     devLog('Profile:', profile);
 
-    // DEBUG: Log all ID fields from profile
-    console.log('=== OAUTH DEBUG ===');
-    console.log('profile.id:', profile.id);
-    console.log('profile.sub:', profile.sub);
-    console.log('profile.provider:', profile.provider);
-    console.log('Full profile:', JSON.stringify(profile, null, 2));
+    // Try to restore entropy from IndexedDB if localStorage was cleared
+    if (!localStorage.getItem('__wk_entropy__')) {
+      const backupEntropy = await this.getEntropyFromIndexedDB();
+      if (backupEntropy) {
+        localStorage.setItem('__wk_entropy__', backupEntropy);
+        this.localStorageKey = this.generateLocalStorageKey(); // Regenerate key with restored entropy
+        devLog('Restored entropy from IndexedDB backup');
+      }
+    }
 
     try {
       const walletId = `${profile.provider}_${profile.id}`;
-      console.log('Looking for password with key: wallet_pwd_' + walletId);
       devLog('Looking for wallets with provider ID:', walletId);
 
       // Check if password exists (means wallets were created)
       const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
-      console.log('Password found:', !!storedPassword);
       devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
       if (storedPassword) {

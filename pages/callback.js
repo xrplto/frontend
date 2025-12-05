@@ -401,13 +401,12 @@ const OAuthCallback = () => {
           await walletStorage.setSecureItem('authMethod', provider);
           await walletStorage.setSecureItem('user', payload || {});
 
-          // Store ALL wallets in profiles
+          // Store ALL wallets in profiles (NO seeds - seeds only in encrypted IndexedDB)
           if (result.allWallets && result.allWallets.length > 0) {
             const allProfiles = result.allWallets.map((w, index) => ({
               account: w.address,
               address: w.address,
               publicKey: w.publicKey,
-              seed: w.seed,
               wallet_type: 'oauth',
               provider: provider,
               provider_id: payload?.id || payload?.sub,
