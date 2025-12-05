@@ -27,10 +27,17 @@ const validateSeed = (seed) => {
 // Detect algorithm from seed prefix: "sEd" = ed25519, otherwise secp256k1
 const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
+// Debug render counter
+let renderCount = 0;
+
 const WalletSetupPage = () => {
+  renderCount++;
+  console.log(`[WalletSetup] RENDER #${renderCount} at ${Date.now()}`);
+
   const router = useRouter();
   const { themeName, doLogIn, setProfiles, profiles, openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  console.log(`[WalletSetup] Context loaded - themeName: ${themeName}, profilesCount: ${profiles?.length || 0}`);
 
   const [importMethod, setImportMethod] = useState('new'); // 'new', 'seed', or 'import'
   const [password, setPassword] = useState('');
@@ -48,27 +55,44 @@ const WalletSetupPage = () => {
   const [copied, setCopied] = useState(false);
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
 
-  // OAuth data from session
-  const [oauthData, setOauthData] = useState(null);
+  // OAuth data - start as undefined to indicate "not yet loaded"
+  const [oauthData, setOauthData] = useState(undefined);
 
+  console.log(`[WalletSetup] Current state - oauthData: ${oauthData === undefined ? 'LOADING' : oauthData ? 'EXISTS' : 'NULL'}, showSuccess: ${showSuccess}`);
+
+  // Load OAuth data only on client side (single useEffect to prevent flicker)
   useEffect(() => {
+    console.log('[WalletSetup] useEffect[] - Loading OAuth data from sessionStorage...');
+
     // Prevent Wallet modal from appearing
     sessionStorage.removeItem('wallet_modal_open');
 
-    // Get OAuth data from sessionStorage
     const token = sessionStorage.getItem('oauth_temp_token');
     const provider = sessionStorage.getItem('oauth_temp_provider');
     const userStr = sessionStorage.getItem('oauth_temp_user');
     const action = sessionStorage.getItem('oauth_action');
 
+    console.log('[WalletSetup] sessionStorage check:', {
+      hasToken: !!token,
+      provider,
+      hasUser: !!userStr,
+      action
+    });
+
     if (!token || !provider || !userStr) {
-      openSnackbar('No OAuth session found. Please sign in again.', 'error');
-      router.push('/');
+      console.log('[WalletSetup] Missing OAuth data - redirecting to home...');
+      window.location.href = '/';
       return;
     }
 
-    const user = JSON.parse(userStr);
-    setOauthData({ token, provider, user, action });
+    try {
+      const data = { token, provider, user: JSON.parse(userStr), action };
+      console.log('[WalletSetup] OAuth data parsed successfully:', { provider, userId: data.user?.id });
+      setOauthData(data);
+    } catch (e) {
+      console.error('[WalletSetup] Failed to parse OAuth data:', e);
+      window.location.href = '/';
+    }
   }, []);
 
   const handleCreateWallet = async () => {
@@ -277,12 +301,16 @@ const WalletSetupPage = () => {
     window.location.href = '/';
   };
 
-  if (!oauthData) {
+  // Show loading while OAuth data is being loaded (undefined = loading, null = missing)
+  if (oauthData === undefined || oauthData === null) {
+    console.log(`[WalletSetup] RENDERING: Loading screen (oauthData: ${oauthData === undefined ? 'LOADING' : 'NULL'})`);
     return (
       <div className="flex min-h-screen items-center justify-center py-16">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 animate-spin" size={40} />
-          <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
+          <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>
+            {oauthData === undefined ? 'Loading...' : 'Redirecting...'}
+          </p>
         </div>
       </div>
     );
@@ -290,6 +318,7 @@ const WalletSetupPage = () => {
 
   // Success screen after wallet creation
   if (showSuccess) {
+    console.log('[WalletSetup] RENDERING: Success screen');
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
         <div className="w-full max-w-md text-center">
@@ -435,6 +464,7 @@ const WalletSetupPage = () => {
     );
   }
 
+  console.log('[WalletSetup] RENDERING: Main setup form');
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className={cn(

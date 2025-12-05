@@ -1543,7 +1543,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         // Close modal and redirect to dedicated wallet-setup page
         setOpenWalletModal(false);
-        router.push('/wallet-setup');
+        window.location.href = '/wallet-setup';
         return;
       } else {
         devLog('✅ No password required - auto login');
@@ -1563,8 +1563,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 publicKey: w.publicKey,
                 seed: w.seed,
                 wallet_type: 'oauth',
-                provider: profile.provider,
-                provider_id: profile.id,
+                provider: payload.provider || 'google',
+                provider_id: payload.sub || payload.id,
                 createdAt: w.createdAt || Date.now(),
                 tokenCreatedAt: Date.now()
               };
@@ -1720,15 +1720,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setShowEmailVerification(false);
 
       if (result.requiresPassword) {
-        setShowOAuthPasswordSetup(true);
+        // Redirect to dedicated wallet-setup page (like Google flow)
+        setOpenWalletModal(false);
+        window.location.href = '/wallet-setup';
+        return;
       } else if (result.wallet) {
         localStorage.setItem('jwt', data.token);
         localStorage.setItem('authMethod', 'email');
         await doLogIn(result.wallet.account, result.wallet.publicKey, result.wallet.seed, 'oauth');
-        setOpen(false);
+        setOpenWalletModal(false);
       }
     } catch (error) {
-      devError('Verify code error:', error);
+      console.error('Verify code error:', error);
       setError('Email authentication failed. Please try again.');
     }
   };
@@ -2687,20 +2690,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // Check if we need to show OAuth password setup
     const oauthToken = sessionStorage.getItem('oauth_temp_token');
     const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
+    const isOnSetupPage = window.location.pathname === '/wallet-setup';
 
     if (oauthToken && oauthProvider) {
       // User came from OAuth and needs password setup
-      // BUT: Only show if user is not already logged in
-      if (!accountProfile) {
+      // BUT: Only redirect if user is not already logged in AND not already on setup page
+      if (!accountProfile && !isOnSetupPage) {
         // Redirect to dedicated setup page instead of showing modal
         window.location.href = '/wallet-setup';
         return;
-      } else {
+      } else if (accountProfile) {
+        // User is logged in - clear stale OAuth data
         sessionStorage.removeItem('oauth_temp_token');
         sessionStorage.removeItem('oauth_temp_provider');
         sessionStorage.removeItem('oauth_temp_user');
         sessionStorage.removeItem('oauth_action');
       }
+      // If on setup page, let wallet-setup.js handle the OAuth data
     } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
       // Just reopening wallet modal after OAuth redirect
       // BUT: Only if user is NOT already logged in AND not on auth pages

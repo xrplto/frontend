@@ -470,8 +470,8 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('wallet_modal_open');
           sessionStorage.removeItem('auth_return_url');
 
-          // Redirect to dedicated wallet-setup page
-          router.push('/wallet-setup');
+          // Redirect to dedicated wallet-setup page (full reload to ensure fresh state)
+          window.location.href = '/wallet-setup';
         } else {
           // Wallet already setup
           console.log('[Callback] Wallet already setup - storing credentials...');
@@ -532,11 +532,11 @@ const OAuthCallback = () => {
 
   const handleRetry = () => {
     sessionStorage.setItem('wallet_modal_open', 'true');
-    router.push('/');
+    window.location.href = '/';
   };
 
   const handleGoHome = () => {
-    router.push('/');
+    window.location.href = '/';
   };
 
   if (errorState) {
