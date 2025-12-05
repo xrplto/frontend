@@ -157,24 +157,48 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  const chartTypeIcons = {
+  // Memoize icons to prevent recreation
+  const chartTypeIcons = useMemo(() => ({
     candles: <CandlestickChart />,
     line: <TrendingUp />,
     holders: <Users />
-  };
+  }), []);
 
-  // Update refs when values change
+  // Refs for cleanup and performance
+  const toolTipRef = useRef(null);
+  const chartTypeRef = useRef(chartType);
+  const loadMoreAbortRef = useRef(null);
+  const crosshairRafRef = useRef(null);
+  const dataMapRef = useRef(new Map());
+
+  // Update refs when values change (combined for efficiency)
   useEffect(() => {
     activeFiatCurrencyRef.current = activeFiatCurrency;
-  }, [activeFiatCurrency]);
-
-  useEffect(() => {
     isUserZoomedRef.current = isUserZoomed;
-  }, [isUserZoomed]);
-
-  useEffect(() => {
     hasMoreRef.current = hasMore;
-  }, [hasMore]);
+    chartTypeRef.current = chartType;
+  }, [activeFiatCurrency, isUserZoomed, hasMore, chartType]);
+
+  // Build data map for O(1) tooltip lookup
+  useEffect(() => {
+    const currentData = chartType === 'holders' ? holderData : data;
+    if (currentData) {
+      const map = new Map();
+      currentData.forEach(d => map.set(d.time, d));
+      dataMapRef.current = map;
+    }
+  }, [data, holderData, chartType]);
+
+  // Memoize scale factor calculation
+  const scaleFactor = useMemo(() => {
+    const chartData = chartType === 'holders' ? holderData : data;
+    if (!chartData || chartData.length === 0) return 1;
+    const prices = chartData.flatMap(d => [d.high, d.low, d.close, d.open, d.value].filter(Boolean));
+    if (prices.length === 0) return 1;
+    const avgPrice = (Math.max(...prices) + Math.min(...prices)) / 2;
+    if (avgPrice >= 1) return 1;
+    return Math.pow(10, Math.ceil(-Math.log10(avgPrice) + 2));
+  }, [data, holderData, chartType]);
 
   // Helper functions
   const convertScientific = useCallback((value) => {
@@ -205,18 +229,20 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
 
+    // Cancel previous request
+    if (loadMoreAbortRef.current) loadMoreAbortRef.current.abort();
+    loadMoreAbortRef.current = new AbortController();
+
     isLoadingMoreRef.current = true;
     setIsLoadingMore(true);
     try {
-      // Get resolution from timeRange preset (match main presets)
       const presetResolutions = { '1d': '15', '5d': '15', '1m': '60', '3m': '240', '1y': 'D', '5y': 'W' };
       const resolution = presetResolutions[timeRange] || '15';
-      const oldestTime = dataRef.current[0].time * 1000; // Convert to ms for abn cursor
-      const barsToLoad = 200; // Stream 200 bars per scroll
+      const oldestTime = dataRef.current[0].time * 1000;
+      const barsToLoad = 200;
 
-      // Use abn cursor for pagination (DexScreener style)
       const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${resolution}&cb=${barsToLoad}&abn=${oldestTime}&vs_currency=${activeFiatCurrency}`;
-      const response = await axios.get(endpoint);
+      const response = await axios.get(endpoint, { signal: loadMoreAbortRef.current.signal });
 
       if (response.data?.ohlc && response.data.ohlc.length > 0) {
         const olderData = response.data.ohlc
@@ -233,15 +259,13 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         setData(prev => {
           const combined = [...olderData, ...(prev || [])];
-          // Remove duplicates by time
-          const unique = combined.filter((item, index, self) =>
-            index === self.findIndex(t => t.time === item.time)
-          ).sort((a, b) => a.time - b.time);
+          // O(n) deduplication using Map
+          const unique = [...new Map(combined.map(d => [d.time, d])).values()]
+            .sort((a, b) => a.time - b.time);
           dataRef.current = unique;
           return unique;
         });
 
-        // Check if we got fewer bars than requested = no more data
         setHasMore(response.data.ohlc.length >= barsToLoad * 0.5);
       } else {
         setHasMore(false);
@@ -254,7 +278,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       isLoadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [token?.md5, timeRange, activeFiatCurrency, hasMore, convertScientific, BASE_URL]);
+  }, [token?.md5, timeRange, activeFiatCurrency, hasMore, convertScientific]);
 
   // Keep ref updated
   useEffect(() => {
@@ -628,117 +652,116 @@ const PriceChartAdvanced = memo(({ token }) => {
     let zoomCheckTimeout;
     let loadMoreTimeout;
 
-    chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
+    // Subscribe and store for cleanup
+    const rangeUnsubscribe = chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
       if (!logicalRange || !dataRef.current || dataRef.current.length === 0) {
         return;
       }
 
+      // Save zoom state for restoration
+      zoomStateRef.current = logicalRange;
+
       clearTimeout(zoomCheckTimeout);
       zoomCheckTimeout = setTimeout(() => {
         const dataLength = dataRef.current.length;
-          const isScrolledRight = logicalRange.to < dataLength - 2;
-          const isScrolledLeft = logicalRange.from < dataLength - 200; // User scrolled to see older data
+        const isScrolledRight = logicalRange.to < dataLength - 2;
+        const isScrolledLeft = logicalRange.from < dataLength - 200;
 
-          const shouldPauseUpdates = isScrolledRight || isScrolledLeft;
+        const shouldPauseUpdates = isScrolledRight || isScrolledLeft;
 
-          if (shouldPauseUpdates !== isUserZoomedRef.current) {
-            setIsUserZoomed(shouldPauseUpdates);
-            isUserZoomedRef.current = shouldPauseUpdates;
-          }
+        if (shouldPauseUpdates !== isUserZoomedRef.current) {
+          setIsUserZoomed(shouldPauseUpdates);
+          isUserZoomedRef.current = shouldPauseUpdates;
+        }
 
-
-          // Infinite scroll: load more when near left edge (trigger early for smooth streaming)
-          if (chartType !== 'holders' && logicalRange.from < 30 && !isLoadingMoreRef.current) {
-            clearTimeout(loadMoreTimeout);
-            loadMoreTimeout = setTimeout(() => {
-              if (loadMoreDataRef.current) {
-                loadMoreDataRef.current();
-              }
-            }, 300);
-          }
-
-        }, 100);
+        // Use ref to avoid stale closure
+        if (chartTypeRef.current !== 'holders' && logicalRange.from < 30 && !isLoadingMoreRef.current) {
+          clearTimeout(loadMoreTimeout);
+          loadMoreTimeout = setTimeout(() => {
+            if (loadMoreDataRef.current) {
+              loadMoreDataRef.current();
+            }
+          }, 300);
+        }
+      }, 100);
     });
 
     const toolTip = document.createElement('div');
     toolTip.style = `width: 130px; position: absolute; display: none; padding: 8px; font-size: 11px; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#010815' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
+    toolTipRef.current = toolTip;
 
-    chart.subscribeCrosshairMove((param) => {
-      if (
-        !param.time ||
-        param.point.x < 0 ||
-        param.point.x > chartContainerRef.current.clientWidth ||
-        param.point.y < 0 ||
-        param.point.y > chartContainerRef.current.clientHeight
-      ) {
-        toolTip.style.display = 'none';
-        return;
-      }
+    // Debounced crosshair handler with rAF
+    const crosshairUnsubscribe = chart.subscribeCrosshairMove((param) => {
+      if (crosshairRafRef.current) cancelAnimationFrame(crosshairRafRef.current);
 
-      const date = new Date(param.time * 1000);
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-      const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
-      toolTip.style.display = 'block';
+      crosshairRafRef.current = requestAnimationFrame(() => {
+        if (!param.time || !param.point || param.point.x < 0 || param.point.y < 0 ||
+            param.point.x > chartContainerRef.current?.clientWidth ||
+            param.point.y > chartContainerRef.current?.clientHeight) {
+          toolTip.style.display = 'none';
+          return;
+        }
 
-      let ohlcData = '';
-      const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
-      const currentData = chartType === 'holders' ? holderDataRef.current : dataRef.current;
-      const candle = currentData ? currentData.find((d) => d.time === param.time) : null;
+        // O(1) lookup using Map
+        const candle = dataMapRef.current.get(param.time);
+        if (!candle) {
+          toolTip.style.display = 'none';
+          return;
+        }
 
-      if (candle) {
+        const date = new Date(param.time * 1000);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+        const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
+        const isXRP = activeFiatCurrencyRef.current === 'XRP';
+        const currentChartType = chartTypeRef.current;
+
         const formatPrice = (p) => {
-          const actualPrice = p;
-          const isXRP = activeFiatCurrencyRef.current === 'XRP';
-
-          if (actualPrice && actualPrice < 0.001) {
-            const str = actualPrice.toFixed(20);
+          if (p && p < 0.001) {
+            const str = p.toFixed(20);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
             if (zeros >= 3) {
               const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              const sigDigits = isXRP ? 6 : 4;
-              return '0.0(' + zeros + ')' + significant.slice(0, sigDigits);
+              return '0.0(' + zeros + ')' + significant.slice(0, isXRP ? 6 : 4);
             }
           }
-
-          if (actualPrice < 0.00001) return actualPrice.toFixed(isXRP ? 10 : 8);
-          if (actualPrice < 0.001) return actualPrice.toFixed(isXRP ? 8 : 6);
-          if (actualPrice < 0.01) return actualPrice.toFixed(isXRP ? 8 : 6);
-          if (actualPrice < 1) return actualPrice.toFixed(isXRP ? 6 : 4);
-          if (actualPrice < 100) return actualPrice.toFixed(3);
-          if (actualPrice < 1000) return actualPrice.toFixed(2);
-          return actualPrice.toLocaleString();
+          if (p < 0.00001) return p.toFixed(isXRP ? 10 : 8);
+          if (p < 0.001) return p.toFixed(isXRP ? 8 : 6);
+          if (p < 0.01) return p.toFixed(isXRP ? 8 : 6);
+          if (p < 1) return p.toFixed(isXRP ? 6 : 4);
+          if (p < 100) return p.toFixed(3);
+          if (p < 1000) return p.toFixed(2);
+          return p.toLocaleString();
         };
 
         const row = (l, v, c) => `<div style="display:flex;justify-content:space-between;${c ? `color:${c}` : ''}"><span style="opacity:0.6">${l}</span><span>${v}</span></div>`;
         const sep = `<div style="height:1px;background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};margin:4px 0"></div>`;
 
-        if (chartType === 'candles') {
+        let ohlcData = '';
+        if (currentChartType === 'candles') {
           const change = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
           const color = candle.close >= candle.open ? '#22c55e' : '#ef4444';
           ohlcData = `<div style="opacity:0.6;margin-bottom:4px;font-size:10px">${dateStr} ${timeStr}</div>
-            ${row('O', symbol + formatPrice(candle.open))}
-            ${row('H', symbol + formatPrice(candle.high))}
-            ${row('L', symbol + formatPrice(candle.low))}
-            ${row('C', symbol + formatPrice(candle.close), color)}
-            ${sep}${row('Vol', candle.volume.toLocaleString())}
-            ${row('Chg', change + '%', color)}`;
-        } else if (chartType === 'line') {
+            ${row('O', symbol + formatPrice(candle.open))}${row('H', symbol + formatPrice(candle.high))}
+            ${row('L', symbol + formatPrice(candle.low))}${row('C', symbol + formatPrice(candle.close), color)}
+            ${sep}${row('Vol', candle.volume.toLocaleString())}${row('Chg', change + '%', color)}`;
+        } else if (currentChartType === 'line') {
           ohlcData = `<div style="opacity:0.6;margin-bottom:4px;font-size:10px">${dateStr} ${timeStr}</div>
-            ${row('Price', symbol + formatPrice(candle.close || candle.value))}
-            ${row('Vol', (candle.volume || 0).toLocaleString())}`;
-        } else if (chartType === 'holders') {
+            ${row('Price', symbol + formatPrice(candle.close || candle.value))}${row('Vol', (candle.volume || 0).toLocaleString())}`;
+        } else if (currentChartType === 'holders') {
           ohlcData = `<div style="opacity:0.6;margin-bottom:4px;font-size:10px">${dateStr}</div>
             ${row('Holders', (candle.holders || candle.value).toLocaleString())}
             ${candle.top10 !== undefined ? sep + row('Top 10', candle.top10.toFixed(1) + '%') + row('Top 20', candle.top20.toFixed(1) + '%') + row('Top 50', candle.top50.toFixed(1) + '%') : ''}`;
         }
-      }
 
-      if (ohlcData) {
         toolTip.innerHTML = ohlcData;
+        toolTip.style.display = 'block';
         toolTip.style.left = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 140, param.point.x - 50)) + 'px';
-        toolTip.style.top = '8px';
-      }
+        // Dynamic vertical positioning
+        const yPos = param.point.y > chartContainerRef.current.clientHeight / 2 ? 8 : param.point.y + 20;
+        toolTip.style.top = yPos + 'px';
+      });
     });
 
     if (chartType === 'candles') {
@@ -790,33 +813,40 @@ const PriceChartAdvanced = memo(({ token }) => {
       chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
     }
 
-    const handleResize = () => {
-      if (chartContainerRef.current && chart) {
-        const container = chartContainerRef.current;
-        const containerHeight = container.clientHeight || (isMobile ? 360 : 600);
+    // Debounced resize with ResizeObserver
+    let resizeTimeout;
+    const resizeObserver = new ResizeObserver((entries) => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (!chartRef.current || !entries[0]) return;
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          chartRef.current.applyOptions({ width, height });
+        }
+      }, 100);
+    });
 
-        chart.applyOptions({
-          width: container.clientWidth,
-          height: containerHeight
-        });
-
-        chart.resize(container.clientWidth, containerHeight);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current);
+    }
 
     return () => {
-      window.removeEventListener('resize', handleResize);
       clearTimeout(zoomCheckTimeout);
       clearTimeout(loadMoreTimeout);
+      clearTimeout(resizeTimeout);
+      resizeObserver.disconnect();
 
-      if (chartContainerRef.current) {
-        const tooltips = chartContainerRef.current.querySelectorAll(
-          'div[style*="position: absolute"]'
-        );
-        tooltips.forEach((tooltip) => tooltip.remove());
+      // Unsubscribe from chart events
+      if (rangeUnsubscribe) rangeUnsubscribe();
+      if (crosshairUnsubscribe) crosshairUnsubscribe();
+      if (crosshairRafRef.current) cancelAnimationFrame(crosshairRafRef.current);
+
+      // Remove tooltip explicitly
+      if (toolTipRef.current) {
+        toolTipRef.current.remove();
+        toolTipRef.current = null;
       }
+
       if (chartRef.current) {
         try {
           chartRef.current.remove();
@@ -833,150 +863,82 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Handle fullscreen resize
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!chartContainerRef.current || !chartRef.current) return;
 
-    const resizeOrRecreateChart = () => {
-      const container = chartContainerRef.current;
-      if (!container) return;
+    const container = chartContainerRef.current;
+    const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 620;
+    const newWidth = container.clientWidth;
 
-      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 620;
-      const rect = container.getBoundingClientRect();
-      const newWidth = rect.width || container.clientWidth;
-
-      if (chartRef.current) {
-        try {
-          chartRef.current.resize(newWidth, newHeight);
-
-          chartRef.current.applyOptions({
-            width: newWidth,
-            height: newHeight
-          });
-
-          const timeScale = chartRef.current.timeScale();
-          if (zoomStateRef.current) {
-            timeScale.setVisibleRange(zoomStateRef.current);
-          }
-          // Don't fitContent - keep user's zoom level
-
-        } catch (error) {
-          console.error('Resize failed, forcing recreation:', error);
-          if (chartRef.current) {
-            try {
-              chartRef.current.remove();
-            } catch (e) {}
-            chartRef.current = null;
-          }
-          chartCreatedRef.current = false;
-          lastChartTypeRef.current = null;
-        }
+    // Use only applyOptions (resize is redundant)
+    const timeoutId = setTimeout(() => {
+      if (chartRef.current && newWidth > 0) {
+        chartRef.current.applyOptions({ width: newWidth, height: newHeight });
       }
-    };
-
-    const timeoutId = setTimeout(resizeOrRecreateChart, 100);
+    }, 50);
 
     return () => clearTimeout(timeoutId);
   }, [isFullscreen, isMobile]);
 
   // Update data on chart series
   useEffect(() => {
-    if (!chartRef.current) {
-      return;
-    }
+    if (!chartRef.current) return;
 
     const chartData = chartType === 'holders' ? holderData : data;
-    if (!chartData || chartData.length === 0) {
-      return;
-    }
+    if (!chartData || chartData.length === 0) return;
 
-    const getScaleFactor = (chartData) => {
-      if (!chartData || chartData.length === 0) return 1;
-      const prices = chartData.flatMap((d) => [d.high, d.low, d.close, d.open, d.value].filter(Boolean));
-      if (prices.length === 0) return 1;
-      const avgPrice = (Math.max(...prices) + Math.min(...prices)) / 2;
-      if (avgPrice >= 1) return 1;
-      return Math.pow(10, Math.ceil(-Math.log10(avgPrice) + 2));
-    };
-
+    // Create series if needed
     if (chartType === 'candles' && !candleSeriesRef.current) {
-      const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
-        upColor: '#22c55e',
-        downColor: '#ef4444',
-        borderUpColor: '#22c55e',
-        borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e',
-        wickDownColor: '#ef4444'
+      candleSeriesRef.current = chartRef.current.addSeries(CandlestickSeries, {
+        upColor: '#22c55e', downColor: '#ef4444',
+        borderUpColor: '#22c55e', borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e', wickDownColor: '#ef4444'
       });
-      candleSeriesRef.current = candleSeries;
     }
 
     if ((chartType === 'line' || chartType === 'holders') && !lineSeriesRef.current) {
       const isHolders = chartType === 'holders';
-      const areaSeries = chartRef.current.addSeries(AreaSeries, {
+      lineSeriesRef.current = chartRef.current.addSeries(AreaSeries, {
         lineColor: isHolders ? '#a855f7' : '#3b82f6',
         topColor: isHolders ? 'rgba(168, 85, 247, 0.25)' : 'rgba(59, 130, 246, 0.25)',
         bottomColor: isHolders ? 'rgba(168, 85, 247, 0.02)' : 'rgba(59, 130, 246, 0.02)',
-        lineWidth: 2,
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 3
+        lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3
       });
-      lineSeriesRef.current = areaSeries;
     }
 
     if (chartType !== 'holders' && !volumeSeriesRef.current) {
-      const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
-        color: 'rgba(34, 197, 94, 0.4)',
-        priceFormat: { type: 'volume' },
-        priceScaleId: 'volume',
-        scaleMargins: { top: 0.85, bottom: 0 },
-        priceLineVisible: false,
-        lastValueVisible: false
+      volumeSeriesRef.current = chartRef.current.addSeries(HistogramSeries, {
+        color: 'rgba(34, 197, 94, 0.4)', priceFormat: { type: 'volume' },
+        priceScaleId: 'volume', scaleMargins: { top: 0.85, bottom: 0 },
+        priceLineVisible: false, lastValueVisible: false
       });
-      volumeSeriesRef.current = volumeSeries;
       chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
     }
 
     const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
     const isNewDataSet = lastChartTypeRef.current !== currentKey;
 
+    // Update scale factor ref
+    scaleFactorRef.current = scaleFactor;
+
     if (chartType === 'candles' && candleSeriesRef.current) {
-      const scaleFactor = getScaleFactor(chartData);
-      scaleFactorRef.current = scaleFactor;
-
-      const scaledData =
-        scaleFactor === 1
-          ? chartData
-          : chartData.map((d) => ({
-              time: d.time,
-              open: d.open * scaleFactor,
-              high: d.high * scaleFactor,
-              low: d.low * scaleFactor,
-              close: d.close * scaleFactor,
-              volume: d.volume
-            }));
-
+      const scaledData = scaleFactor === 1 ? chartData : chartData.map(d => ({
+        time: d.time, open: d.open * scaleFactor, high: d.high * scaleFactor,
+        low: d.low * scaleFactor, close: d.close * scaleFactor, volume: d.volume
+      }));
       candleSeriesRef.current.setData(scaledData);
     } else if (chartType === 'line' && lineSeriesRef.current) {
-      const scaleFactor = getScaleFactor(chartData);
-      scaleFactorRef.current = scaleFactor;
-
-      const lineData = chartData.map((d) => ({
-        time: d.time,
-        value: (d.close || d.value) * scaleFactor
-      }));
-
-      lineSeriesRef.current.setData(lineData);
+      lineSeriesRef.current.setData(chartData.map(d => ({
+        time: d.time, value: (d.close || d.value) * scaleFactor
+      })));
     } else if (chartType === 'holders' && lineSeriesRef.current) {
-      const holdersLineData = chartData.map((d) => ({ time: d.time, value: d.value || d.holders }));
-      lineSeriesRef.current.setData(holdersLineData);
+      lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
     }
 
     if (chartType !== 'holders' && volumeSeriesRef.current && data) {
-      const volumeData = data.map((d) => ({
-        time: d.time,
-        value: d.volume || 0,
+      volumeSeriesRef.current.setData(data.map(d => ({
+        time: d.time, value: d.volume || 0,
         color: d.close >= d.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
-      }));
-      volumeSeriesRef.current.setData(volumeData);
+      })));
     }
 
     // Reset view on timeframe/currency change - show correct range per timeframe
@@ -997,7 +959,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       lastChartTypeRef.current = currentKey;
     }
     // Don't restore zoom state on every update - it causes flickering
-  }, [data, holderData, chartType, timeRange, activeFiatCurrency, isMobile]);
+  }, [data, holderData, chartType, timeRange, activeFiatCurrency, isMobile, scaleFactor]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => {
