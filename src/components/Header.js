@@ -48,8 +48,21 @@ import {
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-// Validate XRPL transaction hash (64 hex characters)
-const isValidTxHash = (str) => /^[A-Fa-f0-9]{64}$/.test(str?.trim());
+// Validate XRPL 64-65 char hex (tx hash, NFTokenID, or NFTokenID with extra char)
+const isValidHexId = (str) => /^[A-Fa-f0-9]{64,65}$/.test(str?.trim());
+
+// Get NFT image: thumbnail first, IPFS fallback
+const getNftImage = (nft) => {
+  const thumb = nft?.files?.[0]?.thumbnail?.small;
+  if (thumb) return `https://s1.xrpl.to/nft/${thumb}`;
+  const ipfs = nft?.meta?.image;
+  if (ipfs?.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${ipfs.slice(7)}`;
+  if (ipfs?.startsWith('http')) return ipfs;
+  return null;
+};
+
+// Validate XRPL address (starts with r, 25-35 base58 characters)
+const isValidXrpAddress = (str) => /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(str?.trim());
 
 const currencySymbols = {
   USD: '$ ',
@@ -226,7 +239,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], txHash: null });
+  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], txHash: null, nft: null, address: null });
   const [suggestedTokens, setSuggestedTokens] = useState([]);
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -361,15 +374,34 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Search effect
   useEffect(() => {
     if (!searchQuery || (!searchOpen && !fullSearch)) {
-      setSearchResults({ tokens: [], collections: [], txHash: null });
+      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: null });
       return;
     }
     const trimmedQuery = searchQuery.trim();
-    const detectedHash = isValidTxHash(trimmedQuery) ? trimmedQuery.toUpperCase() : null;
+    const detectedHexId = isValidHexId(trimmedQuery) ? trimmedQuery.slice(0, 64).toUpperCase() : null;
+    const detectedAddress = isValidXrpAddress(trimmedQuery) ? trimmedQuery : null;
 
-    if (detectedHash) {
-      setSearchResults({ tokens: [], collections: [], txHash: detectedHash });
+    if (detectedAddress) {
+      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: detectedAddress });
       return;
+    }
+
+    if (detectedHexId) {
+      const controller = new AbortController();
+      axios.post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
+        .then(res => {
+          const nftData = res.data?.nfts?.[0];
+          setSearchResults({
+            tokens: [], collections: [],
+            txHash: nftData ? null : detectedHexId,
+            nft: nftData || null,
+            address: null
+          });
+        })
+        .catch(() => {
+          setSearchResults({ tokens: [], collections: [], txHash: detectedHexId, nft: null, address: null });
+        });
+      return () => controller.abort();
     }
 
     const controller = new AbortController();
@@ -380,7 +412,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         setSearchResults({
           tokens: res.data?.tokens?.slice(0, 5) || [],
           collections: res.data?.collections?.slice(0, 3) || [],
-          txHash: null
+          txHash: null,
+          nft: null,
+          address: null
         });
       } catch {}
       setSearchLoading(false);
@@ -395,6 +429,22 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       setFullSearch(false);
       setSearchQuery('');
       window.location.href = `/tx/${item}`;
+      return;
+    }
+    // Address navigation
+    if (type === 'address') {
+      setSearchOpen(false);
+      setFullSearch(false);
+      setSearchQuery('');
+      window.location.href = `/profile/${item}`;
+      return;
+    }
+    // NFT navigation
+    if (type === 'nft') {
+      setSearchOpen(false);
+      setFullSearch(false);
+      setSearchQuery('');
+      window.location.href = `/nft/${item._id || item}`;
       return;
     }
 
@@ -896,13 +946,53 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     </div>
                     <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
                       <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
-                        <ArrowRight size={18} className="text-blue-500" />
+                        <ArrowLeftRight size={18} className="text-blue-500" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Transaction</span>
                         <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.txHash}</p>
                       </div>
                       <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>TX</span>
+                    </div>
+                  </div>
+                )}
+                {searchQuery && searchResults.nft && (
+                  <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFT</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    </div>
+                    <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      {getNftImage(searchResults.nft) ? (
+                        <img src={getNftImage(searchResults.nft)} alt="" className="w-9 h-9 rounded-lg object-cover" />
+                      ) : (
+                        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", isDark ? "bg-pink-500/20" : "bg-pink-100")}>
+                          <Sparkles size={18} className="text-pink-500" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
+                        <p className={cn("text-[11px] truncate mt-0.5", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.nft.collection || searchResults.nft._id}</p>
+                      </div>
+                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-pink-500/20 text-pink-400" : "bg-pink-100 text-pink-600")}>NFT</span>
+                    </div>
+                  </div>
+                )}
+                {searchQuery && searchResults.address && (
+                  <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Account</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    </div>
+                    <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-purple-500/20" : "bg-purple-100")}>
+                        <Wallet size={18} className="text-purple-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Profile</span>
+                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address}</p>
+                      </div>
+                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600")}>Account</span>
                     </div>
                   </div>
                 )}
@@ -974,7 +1064,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     ))}
                   </div>
                 )}
-                {searchQuery && !searchLoading && !searchResults.txHash && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+                {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                   <div className="py-6 text-center">
                     <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                   </div>
@@ -1069,13 +1159,53 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   </div>
                   <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
                     <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
-                      <ArrowRight size={18} className="text-blue-500" />
+                      <ArrowLeftRight size={18} className="text-blue-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Transaction</span>
                       <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.txHash}</p>
                     </div>
                     <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>TX</span>
+                  </div>
+                </div>
+              )}
+              {searchQuery && searchResults.nft && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFT</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                    {getNftImage(searchResults.nft) ? (
+                      <img src={getNftImage(searchResults.nft)} alt="" className="w-9 h-9 rounded-lg object-cover" />
+                    ) : (
+                      <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", isDark ? "bg-pink-500/20" : "bg-pink-100")}>
+                        <Sparkles size={18} className="text-pink-500" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
+                      <p className={cn("text-[11px] truncate", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.nft.collection || searchResults.nft._id}</p>
+                    </div>
+                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-pink-500/20 text-pink-400" : "bg-pink-100 text-pink-600")}>NFT</span>
+                  </div>
+                </div>
+              )}
+              {searchQuery && searchResults.address && (
+                <div className="p-2">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Account</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  </div>
+                  <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-purple-500/20" : "bg-purple-100")}>
+                      <Wallet size={18} className="text-purple-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Profile</span>
+                      <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address}</p>
+                    </div>
+                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600")}>Account</span>
                   </div>
                 </div>
               )}
@@ -1130,7 +1260,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ))}
                 </div>
               )}
-              {searchQuery && !searchLoading && !searchResults.txHash && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+              {searchQuery && !searchLoading && !searchResults.txHash && !searchResults.nft && !searchResults.address && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                 <div className="py-6 text-center">
                   <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
                 </div>
