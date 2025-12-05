@@ -10,11 +10,29 @@ const OAuthCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Prevent double-submission
-      if (sessionStorage.getItem('callback_processing') === 'true') {
-        return;
+      console.log('[Callback] === START handleCallback ===');
+      console.log('[Callback] URL:', window.location.href);
+
+      // Prevent double-submission (with 10s timeout to prevent permanent lockout)
+      const processingStart = sessionStorage.getItem('callback_processing_start');
+      const isProcessingFlag = sessionStorage.getItem('callback_processing');
+      console.log('[Callback] Processing flag:', isProcessingFlag, 'Start time:', processingStart);
+
+      if (isProcessingFlag === 'true') {
+        const elapsed = processingStart ? Date.now() - parseInt(processingStart) : 0;
+        console.log('[Callback] Already processing, elapsed:', elapsed, 'ms');
+        // If stuck for more than 10 seconds, clear and retry
+        if (processingStart && elapsed > 10000) {
+          console.warn('[Callback] Processing stuck >10s - clearing flag and retrying');
+          sessionStorage.removeItem('callback_processing');
+          sessionStorage.removeItem('callback_processing_start');
+        } else {
+          console.log('[Callback] Exiting - already processing (wait or clear sessionStorage)');
+          return;
+        }
       }
       sessionStorage.setItem('callback_processing', 'true');
+      sessionStorage.setItem('callback_processing_start', Date.now().toString());
 
       // Get params from URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -28,10 +46,21 @@ const OAuthCallback = () => {
       const oauth_token = urlParams.get('oauth_token');
       const oauth_verifier = urlParams.get('oauth_verifier');
 
+      console.log('[Callback] URL Params:', {
+        token: token ? `${token.substring(0, 20)}...` : null,
+        provider,
+        code: code ? `${code.substring(0, 20)}...` : null,
+        state: state ? `${state.substring(0, 20)}...` : null,
+        error,
+        oauth_token: oauth_token ? `${oauth_token.substring(0, 20)}...` : null,
+        oauth_verifier: oauth_verifier ? `${oauth_verifier.substring(0, 20)}...` : null
+      });
+
       if (error) {
         // Handle auth error
         console.error('OAuth authentication failed:', error);
         sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
         setErrorState({
           title: 'Authentication Cancelled',
           message: 'You cancelled the login process',
@@ -42,7 +71,9 @@ const OAuthCallback = () => {
       }
 
       // Handle Discord OAuth callback
+      console.log('[Callback] Checking Discord condition:', { code: !!code, oauth_token: !!oauth_token, token: !!token });
       if (code && !oauth_token && !token) {
+        console.log('[Callback] → DISCORD flow');
         try {
           const response = await fetch('https://api.xrpl.to/api/oauth/discord/exchange', {
             method: 'POST',
@@ -67,12 +98,14 @@ const OAuthCallback = () => {
           }
 
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
 
           // Process login with the JWT token
           await processOAuthLogin(data.token, 'discord', data.user);
         } catch (error) {
           console.error('Discord OAuth error:', error);
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
           setErrorState({
             title: 'Discord Authentication Failed',
             message: error.message || 'Unable to complete Discord login',
@@ -84,21 +117,41 @@ const OAuthCallback = () => {
       }
 
       // Handle Twitter OAuth 1.0a callback
+      console.log('[Callback] Checking Twitter 1.0a condition:', { oauth_token: !!oauth_token, oauth_verifier: !!oauth_verifier });
       if (oauth_token && oauth_verifier) {
+        console.log('[Callback] → TWITTER OAuth 1.0a flow');
         try {
           // Get stored OAuth token secret from session
           const storedToken = sessionStorage.getItem('oauth1_token');
           const storedTokenSecret = sessionStorage.getItem('oauth1_token_secret');
+          console.log('[Callback] Session tokens:', {
+            storedToken: storedToken ? `${storedToken.substring(0, 15)}...` : null,
+            storedTokenSecret: storedTokenSecret ? 'EXISTS' : null,
+            urlToken: oauth_token ? `${oauth_token.substring(0, 15)}...` : null,
+            tokensMatch: oauth_token === storedToken
+          });
 
-          if (oauth_token !== storedToken) {
-            throw new Error('OAuth token mismatch - possible security issue');
-          }
+          // Handle stale/mismatched session gracefully
+          if (!storedToken || !storedTokenSecret || oauth_token !== storedToken) {
+            console.log('[Callback] Session expired/mismatch - showing error');
+            // Session expired or page was refreshed - clean up and show friendly error
+            sessionStorage.removeItem('oauth1_token');
+            sessionStorage.removeItem('oauth1_token_secret');
+            sessionStorage.removeItem('oauth1_auth_start');
+            sessionStorage.removeItem('callback_processing');
+            sessionStorage.removeItem('callback_processing_start');
 
-          if (!storedTokenSecret) {
-            throw new Error('OAuth token secret not found in session');
+            setErrorState({
+              title: 'Session Expired',
+              message: 'Your login session expired. Please try again.',
+              provider: 'twitter'
+            });
+            setIsProcessing(false);
+            return;
           }
 
           // Step 2: Exchange for access token
+          console.log('[Callback] Calling Twitter OAuth 1.0a access endpoint...');
           const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/access', {
             method: 'POST',
             headers: {
@@ -111,23 +164,27 @@ const OAuthCallback = () => {
             })
           });
 
+          console.log('[Callback] Twitter API response status:', response.status);
           if (!response.ok) {
             const error = await response.json().catch(() => ({ error: 'Exchange failed' }));
-            console.error('OAuth 1.0a token exchange failed:', error);
+            console.error('[Callback] OAuth 1.0a token exchange failed:', error);
             throw new Error(error.message || error.error || 'Token exchange failed');
           }
 
           const data = await response.json();
+          console.log('[Callback] Twitter API response:', { hasToken: !!data.token, hasUser: !!data.user });
 
           if (!data.token) {
             throw new Error('No JWT token received from server');
           }
 
+          console.log('[Callback] Got JWT, cleaning up session and calling processOAuthLogin...');
           // Clean up stored OAuth 1.0a values
           sessionStorage.removeItem('oauth1_token');
           sessionStorage.removeItem('oauth1_token_secret');
           sessionStorage.removeItem('oauth1_auth_start');
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
 
           // Process login with the JWT token
           await processOAuthLogin(data.token, 'twitter', data.user);
@@ -139,6 +196,7 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('oauth1_token_secret');
           sessionStorage.removeItem('oauth1_auth_start');
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
 
           setErrorState({
             title: 'X Authentication Failed',
@@ -151,7 +209,9 @@ const OAuthCallback = () => {
       }
 
       // Handle Twitter OAuth 2.0 code exchange (fallback for old flow)
+      console.log('[Callback] Checking Twitter 2.0 condition:', { code: !!code, state: !!state });
       if (code && state) {
+        console.log('[Callback] → TWITTER OAuth 2.0 flow');
         try {
           // Check if code already used
           const usedCode = sessionStorage.getItem('code_used');
@@ -282,6 +342,7 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('twitter_verifier');
           sessionStorage.removeItem('twitter_redirect_uri');
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
 
           // Process Twitter login with the JWT token
           await processOAuthLogin(data.token, 'twitter', data.user);
@@ -293,6 +354,7 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('twitter_verifier');
           sessionStorage.removeItem('twitter_redirect_uri');
           sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
 
           let errorMessage = 'X (Twitter) authentication is currently unavailable. Please try Passkeys or Google instead.';
           let errorTitle = 'X Authentication Failed';
@@ -323,14 +385,18 @@ const OAuthCallback = () => {
       }
 
       // Handle Google OAuth (token directly in URL)
+      console.log('[Callback] Checking Google condition:', { token: !!token, provider });
       if (token && provider) {
+        console.log('[Callback] → GOOGLE flow');
         await processOAuthLogin(token, provider);
       } else {
         // No token or code, redirect to login
+        console.log('[Callback] No OAuth params matched - showing error');
         sessionStorage.removeItem('callback_processing');
+        sessionStorage.removeItem('callback_processing_start');
         setErrorState({
           title: 'Authentication Failed',
-          message: 'Missing authentication data',
+          message: 'Missing authentication data. Please try again.',
           provider: 'unknown'
         });
         setIsProcessing(false);
@@ -338,6 +404,7 @@ const OAuthCallback = () => {
     };
 
     const processOAuthLogin = async (jwtToken, provider, userData = null) => {
+      console.log('[Callback] processOAuthLogin called:', { provider, hasToken: !!jwtToken, hasUserData: !!userData });
       try {
         // Use provided user data or decode JWT
         let payload = userData;
@@ -351,8 +418,10 @@ const OAuthCallback = () => {
         }
 
         // Import unified wallet storage
+        console.log('[Callback] Importing EncryptedWalletStorage...');
         const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
         const walletStorage = new EncryptedWalletStorage();
+        console.log('[Callback] WalletStorage created');
 
         // Create backend object with proper API URL
         const backend = {
@@ -370,6 +439,7 @@ const OAuthCallback = () => {
         };
 
         // Handle social login
+        console.log('[Callback] Calling walletStorage.handleSocialLogin...');
         const result = await walletStorage.handleSocialLogin(
           {
             id: payload?.id || payload?.sub || 'unknown',
@@ -381,8 +451,15 @@ const OAuthCallback = () => {
           jwtToken,
           backend
         );
+        console.log('[Callback] handleSocialLogin result:', {
+          success: result.success,
+          requiresPassword: result.requiresPassword,
+          hasWallet: !!result.wallet,
+          walletsCount: result.allWallets?.length || 0
+        });
 
         if (result.requiresPassword) {
+          console.log('[Callback] Password required - redirecting to /wallet-setup');
           // Store token temporarily for password setup
           sessionStorage.setItem('oauth_temp_token', jwtToken);
           sessionStorage.setItem('oauth_temp_provider', provider);
@@ -397,12 +474,14 @@ const OAuthCallback = () => {
           router.push('/wallet-setup');
         } else {
           // Wallet already setup
+          console.log('[Callback] Wallet already setup - storing credentials...');
           await walletStorage.setSecureItem('jwt', jwtToken);
           await walletStorage.setSecureItem('authMethod', provider);
           await walletStorage.setSecureItem('user', payload || {});
 
           // Store ALL wallets in profiles (NO seeds - seeds only in encrypted IndexedDB)
           if (result.allWallets && result.allWallets.length > 0) {
+            console.log('[Callback] Storing', result.allWallets.length, 'wallets to profiles...');
             const allProfiles = result.allWallets.map((w, index) => ({
               account: w.address,
               address: w.address,
@@ -429,6 +508,7 @@ const OAuthCallback = () => {
           // Redirect to return URL or main page
           const returnUrl = sessionStorage.getItem('auth_return_url') || '/';
           sessionStorage.removeItem('auth_return_url');
+          console.log('[Callback] Login complete - redirecting to:', returnUrl);
 
           // For Twitter/X, force a page reload to ensure wallets are loaded
           if (provider === 'twitter') {
@@ -438,7 +518,7 @@ const OAuthCallback = () => {
           }
         }
       } catch (error) {
-        console.error('Error processing OAuth callback:', error);
+        console.error('[Callback] Error processing OAuth callback:', error);
         setErrorState({
           title: 'Processing Failed',
           message: error.message || 'Failed to process authentication',

@@ -52,6 +52,7 @@ async function ultra() {
   } else {
     mainWallet = xrpl.Wallet.generate();
     console.log(`🔑 NEW SEED: ${mainWallet.seed}`);
+    console.log(`⚠️  Save this seed to .env as MAIN_WALLET_SEED`);
   }
 
   console.log(`🎯 Target: ${mainWallet.address}`);

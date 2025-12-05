@@ -131,55 +131,47 @@ export class UnifiedWalletStorage {
 
   // Restore entropy from IndexedDB backup
   async getEntropyFromIndexedDB() {
+    console.log('[getEntropyFromIndexedDB] Starting...');
     try {
       const db = await this.initDB();
+      console.log('[getEntropyFromIndexedDB] DB initialized, querying...');
       return new Promise((resolve) => {
         const req = db.transaction([this.walletsStore], 'readonly')
           .objectStore(this.walletsStore).get('__entropy_backup__');
-        req.onsuccess = () => resolve(req.result?.data || null);
-        req.onerror = () => resolve(null);
+        req.onsuccess = () => {
+          console.log('[getEntropyFromIndexedDB] Success:', req.result?.data ? 'EXISTS' : 'NULL');
+          resolve(req.result?.data || null);
+        };
+        req.onerror = () => {
+          console.log('[getEntropyFromIndexedDB] Error');
+          resolve(null);
+        };
       });
-    } catch (e) { return null; }
+    } catch (e) {
+      console.log('[getEntropyFromIndexedDB] Exception:', e.message);
+      return null;
+    }
   }
 
   // Generate a device-specific key for localStorage encryption
+  // Uses ONLY random entropy (stable) - no browser fingerprinting (unstable)
   generateLocalStorageKey() {
     if (typeof window === 'undefined') return 'server-side-key';
 
-    // Check for stored random component (adds entropy)
+    // Check for stored random entropy (128 bits of cryptographic randomness)
     let storedEntropy = localStorage.getItem('__wk_entropy__');
-    devLog('[KEY-GEN] Existing entropy in localStorage:', !!storedEntropy);
     if (!storedEntropy) {
-      devLog('[KEY-GEN] No entropy found - generating new and marking for IndexedDB check');
       const randomBytes = crypto.getRandomValues(new Uint8Array(16));
       storedEntropy = btoa(String.fromCharCode(...randomBytes));
       localStorage.setItem('__wk_entropy__', storedEntropy);
       // DON'T backup yet - mark for IndexedDB check first
       // IndexedDB may have existing backup that we should restore instead
       this._entropyNeedsCheck = true;
-      devLog('[KEY-GEN] _entropyNeedsCheck set to TRUE');
     }
 
-    // Use browser fingerprinting + random entropy for key generation
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      navigator.hardwareConcurrency,
-      new Date().getTimezoneOffset(),
-      window.screen?.colorDepth,
-      window.screen?.width,
-      window.screen?.height,
-      storedEntropy, // Random component unique to this browser
-      'xrpl-wallet-storage-v2'
-    ].join('|');
-
-    // Better hash function (FNV-1a)
-    let hash = 2166136261;
-    for (let i = 0; i < fingerprint.length; i++) {
-      hash ^= fingerprint.charCodeAt(i);
-      hash = (hash * 16777619) >>> 0;
-    }
-    return 'wallet-key-' + hash.toString(36);
+    // Key derivation: entropy + version (no unstable browser fingerprinting)
+    // The entropy provides 128 bits of randomness, PBKDF2 provides the stretching
+    return 'xrpl-wallet-v3-' + storedEntropy;
   }
 
   // Check if Web Crypto API is available (secure context required)
@@ -399,25 +391,47 @@ export class UnifiedWalletStorage {
   async initDB() {
     // Singleton pattern: reuse existing DB promise to prevent race conditions
     if (this.dbPromise) {
+      console.log('[initDB] Returning cached DB promise');
       return this.dbPromise;
     }
 
+    console.log('[initDB] Creating new DB connection...');
     this.dbPromise = this._initDBInternal();
     return this.dbPromise;
   }
 
   async _initDBInternal() {
+    console.log('[_initDBInternal] Starting...');
     // First, detect existing database version and check if store exists
     const { existingVersion, hasStore } = await new Promise((resolve) => {
+      console.log('[_initDBInternal] Opening DB to detect version...');
       const detectRequest = indexedDB.open(this.dbName);
+
+      // Timeout to prevent hanging forever
+      const timeout = setTimeout(() => {
+        console.error('[_initDBInternal] DB open TIMEOUT - using defaults');
+        resolve({ existingVersion: 1, hasStore: false });
+      }, 5000);
+
+      detectRequest.onblocked = () => {
+        console.error('[_initDBInternal] DB BLOCKED - close other tabs using this site');
+        clearTimeout(timeout);
+        resolve({ existingVersion: 1, hasStore: false });
+      };
       detectRequest.onsuccess = () => {
+        clearTimeout(timeout);
         const db = detectRequest.result;
         const version = db.version;
         const hasStore = db.objectStoreNames.contains(this.walletsStore);
         db.close();
+        console.log('[_initDBInternal] Detected version:', version, 'hasStore:', hasStore);
         resolve({ existingVersion: version, hasStore });
       };
-      detectRequest.onerror = () => resolve({ existingVersion: 1, hasStore: false });
+      detectRequest.onerror = () => {
+        clearTimeout(timeout);
+        console.log('[_initDBInternal] Detection error');
+        resolve({ existingVersion: 1, hasStore: false });
+      };
     });
 
     // If store doesn't exist, we need to bump version to trigger onupgradeneeded
@@ -426,12 +440,32 @@ export class UnifiedWalletStorage {
       targetVersion = existingVersion + 1;
     }
     this.version = targetVersion;
+    console.log('[_initDBInternal] Opening DB with version:', targetVersion);
 
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, targetVersion);
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
+      // Timeout to prevent hanging
+      const timeout = setTimeout(() => {
+        console.error('[_initDBInternal] Final DB open TIMEOUT');
+        reject(new Error('IndexedDB open timeout'));
+      }, 5000);
+
+      request.onblocked = () => {
+        console.error('[_initDBInternal] Final DB BLOCKED - close other tabs');
+        clearTimeout(timeout);
+        reject(new Error('IndexedDB blocked - close other tabs'));
+      };
+      request.onerror = () => {
+        clearTimeout(timeout);
+        console.log('[_initDBInternal] DB open error:', request.error);
+        reject(request.error);
+      };
+      request.onsuccess = () => {
+        clearTimeout(timeout);
+        console.log('[_initDBInternal] DB opened successfully');
+        resolve(request.result);
+      };
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -925,39 +959,38 @@ export class UnifiedWalletStorage {
    * Handle OAuth login and setup wallet - LOADS ALL WALLETS FOR THIS PROVIDER
    */
   async handleSocialLogin(profile, accessToken, backend) {
-    devLog('=== handleSocialLogin START ===');
-    devLog('Profile:', profile);
+    devLog('handleSocialLogin:', profile.provider);
+    console.log('[handleSocialLogin] Step 1: Checking entropy...');
 
     // CRITICAL: ALWAYS check IndexedDB backup and compare with localStorage
     // This handles the case where AppContext creates an instance before callback.js
     const currentEntropy = localStorage.getItem('__wk_entropy__');
-    const backupEntropy = await this.getEntropyFromIndexedDB();
+    console.log('[handleSocialLogin] Current entropy:', currentEntropy ? 'EXISTS' : 'NULL');
 
-    devLog('[ENTROPY] localStorage entropy:', currentEntropy?.substring(0, 10) + '...');
-    devLog('[ENTROPY] IndexedDB backup:', backupEntropy?.substring(0, 10) + '...');
+    console.log('[handleSocialLogin] Step 2: Getting entropy from IndexedDB...');
+    const backupEntropy = await this.getEntropyFromIndexedDB();
+    console.log('[handleSocialLogin] Backup entropy:', backupEntropy ? 'EXISTS' : 'NULL');
 
     if (backupEntropy && currentEntropy !== backupEntropy) {
       // IndexedDB has DIFFERENT entropy - it's the correct one, restore it
-      devLog('[ENTROPY] ⚠️ Entropy mismatch! Restoring from IndexedDB backup');
+      console.log('[handleSocialLogin] Entropy mismatch - restoring from IndexedDB backup');
       localStorage.setItem('__wk_entropy__', backupEntropy);
       this.localStorageKey = this.generateLocalStorageKey();
-      devLog('[ENTROPY] ✅ Key regenerated with correct entropy');
     } else if (!backupEntropy && currentEntropy) {
       // No backup exists - this is a NEW user, backup current entropy
+      console.log('[handleSocialLogin] No backup - backing up current entropy');
       await this.backupEntropyToIndexedDB(currentEntropy);
-      devLog('[ENTROPY] 📦 First time user - backed up entropy to IndexedDB');
     }
 
     try {
       const walletId = `${profile.provider}_${profile.id}`;
-      devLog('Looking for wallets with provider ID:', walletId);
+      console.log('[handleSocialLogin] Step 3: Checking password for walletId:', walletId);
 
       // Check if password exists (means wallets were created)
       const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
-      devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
+      console.log('[handleSocialLogin] Stored password:', storedPassword ? 'EXISTS' : 'NULL');
 
       if (storedPassword) {
-        devLog('✅ Password found - wallets exist, loading from localStorage');
 
         // First check localStorage for profiles
         const storedProfiles = typeof window !== 'undefined' ? localStorage.getItem('profiles') : null;
