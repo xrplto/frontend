@@ -111,6 +111,7 @@ export class UnifiedWalletStorage {
     this.walletsStore = 'wallets';
     this.version = 1;
     this.dbPromise = null; // Singleton promise for DB initialization
+    this._entropyNeedsCheck = false; // Flag to check IndexedDB for existing backup
     this.localStorageKey = this.generateLocalStorageKey();
   }
 
@@ -147,12 +148,16 @@ export class UnifiedWalletStorage {
 
     // Check for stored random component (adds entropy)
     let storedEntropy = localStorage.getItem('__wk_entropy__');
+    devLog('[KEY-GEN] Existing entropy in localStorage:', !!storedEntropy);
     if (!storedEntropy) {
+      devLog('[KEY-GEN] No entropy found - generating new and marking for IndexedDB check');
       const randomBytes = crypto.getRandomValues(new Uint8Array(16));
       storedEntropy = btoa(String.fromCharCode(...randomBytes));
       localStorage.setItem('__wk_entropy__', storedEntropy);
-      // Backup to IndexedDB for recovery if localStorage is cleared
-      this.backupEntropyToIndexedDB(storedEntropy);
+      // DON'T backup yet - mark for IndexedDB check first
+      // IndexedDB may have existing backup that we should restore instead
+      this._entropyNeedsCheck = true;
+      devLog('[KEY-GEN] _entropyNeedsCheck set to TRUE');
     }
 
     // Use browser fingerprinting + random entropy for key generation
@@ -923,14 +928,24 @@ export class UnifiedWalletStorage {
     devLog('=== handleSocialLogin START ===');
     devLog('Profile:', profile);
 
-    // Try to restore entropy from IndexedDB if localStorage was cleared
-    if (!localStorage.getItem('__wk_entropy__')) {
-      const backupEntropy = await this.getEntropyFromIndexedDB();
-      if (backupEntropy) {
-        localStorage.setItem('__wk_entropy__', backupEntropy);
-        this.localStorageKey = this.generateLocalStorageKey(); // Regenerate key with restored entropy
-        devLog('Restored entropy from IndexedDB backup');
-      }
+    // CRITICAL: ALWAYS check IndexedDB backup and compare with localStorage
+    // This handles the case where AppContext creates an instance before callback.js
+    const currentEntropy = localStorage.getItem('__wk_entropy__');
+    const backupEntropy = await this.getEntropyFromIndexedDB();
+
+    devLog('[ENTROPY] localStorage entropy:', currentEntropy?.substring(0, 10) + '...');
+    devLog('[ENTROPY] IndexedDB backup:', backupEntropy?.substring(0, 10) + '...');
+
+    if (backupEntropy && currentEntropy !== backupEntropy) {
+      // IndexedDB has DIFFERENT entropy - it's the correct one, restore it
+      devLog('[ENTROPY] ⚠️ Entropy mismatch! Restoring from IndexedDB backup');
+      localStorage.setItem('__wk_entropy__', backupEntropy);
+      this.localStorageKey = this.generateLocalStorageKey();
+      devLog('[ENTROPY] ✅ Key regenerated with correct entropy');
+    } else if (!backupEntropy && currentEntropy) {
+      // No backup exists - this is a NEW user, backup current entropy
+      await this.backupEntropyToIndexedDB(currentEntropy);
+      devLog('[ENTROPY] 📦 First time user - backed up entropy to IndexedDB');
     }
 
     try {

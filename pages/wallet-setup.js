@@ -215,6 +215,12 @@ const WalletSetupPage = () => {
       // Store password for provider
       await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
 
+      // Backup entropy to IndexedDB for recovery if localStorage is cleared
+      const currentEntropy = localStorage.getItem('__wk_entropy__');
+      if (currentEntropy) {
+        await walletStorage.backupEntropyToIndexedDB(currentEntropy);
+      }
+
       // Mark wallet as needing backup (only for new wallets)
       if (importMethod === 'new' && action === 'create') {
         localStorage.setItem(`wallet_needs_backup_${wallets[0].address}`, 'true');

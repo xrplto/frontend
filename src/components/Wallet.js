@@ -4081,6 +4081,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </button>
                           </div>
                         ) : null}
+
+                        {/* Debug: Test entropy backup recovery */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <button
+                            onClick={() => {
+                              localStorage.removeItem('__wk_entropy__');
+                              alert('Deleted __wk_entropy__ from localStorage.\n\nNow log out and log back in with OAuth.\nIf IndexedDB backup works, you should auto-login without entering password.');
+                            }}
+                            className={cn("text-[10px] mt-2 block", isDark ? "text-orange-400/50 hover:text-orange-400" : "text-orange-400/60 hover:text-orange-500")}
+                          >
+                            [Debug] Delete entropy key
+                          </button>
+                        )}
                       </div>
                     </>
                   ) : (
