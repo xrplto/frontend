@@ -1940,7 +1940,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       return (
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
-            <Box style={{ display: 'grid', gridTemplateColumns: '70px 50px 90px 1fr 1fr 70px 40px', gap: '8px', alignItems: 'center' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: '70px 50px 90px 1fr 1fr 75px 70px 40px', gap: '8px', alignItems: 'center' }}>
               {/* Time */}
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                 {formatRelativeTime(trade.time, true)}
@@ -1975,6 +1975,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   {formatTradeValue(xrpAmount)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
                 </span>
               </BarCell>
+
+              {/* Trader Address */}
+              <a
+                href={`/profile/${addressToShow}`}
+                style={{ fontSize: '11px', fontFamily: 'monospace', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }}
+                title={addressToShow}
+              >
+                {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
+              </a>
 
               {/* Source */}
               <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2194,7 +2203,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           {!isMobile && (
             <Box style={{
               display: 'grid',
-              gridTemplateColumns: '70px 50px 90px 1fr 1fr 70px 40px',
+              gridTemplateColumns: '70px 50px 90px 1fr 1fr 75px 70px 40px',
               gap: '8px',
               alignItems: 'center',
               padding: '8px 0',
@@ -2210,7 +2219,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Price</div>
               <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', paddingLeft: '8px' }}>Amount</div>
               <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', paddingLeft: '8px' }}>Value</div>
-              <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center' }}>Source<TierHelpIcon isDark={isDark} /></div>
+              <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Trader</div>
+              <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Source</div>
               <div></div>
             </Box>
           )}
