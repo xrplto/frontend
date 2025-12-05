@@ -122,13 +122,25 @@ const Overview = memo(
     let user = token.user;
     if (!user) user = token.name;
 
+    // Mobile layout: Summary > Swap > Chart > Stats > History > Trending > Description
+    if (isMobile) {
+      return (
+        <div className="flex flex-col gap-3">
+          <TokenSummary token={token} />
+          <Swap token={token} onOrderBookToggle={onOrderBookToggle} orderBookOpen={orderBookOpen} onOrderBookData={onOrderBookData} />
+          <PriceChart token={token} />
+          <PriceStatistics token={token} isDark={isDark} />
+          <TradingHistory tokenId={token.md5} amm={token.AMM} token={token} pairs={pairs} onTransactionClick={onTransactionClick} isDark={isDark} isMobile={true} />
+          <TrendingTokens />
+          <Description token={token} showEditor={showEditor} setShowEditor={setShowEditor} description={description} onApplyDescription={onApplyDescription} isDark={isDark} mdEditor={showEditor ? <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={cn("w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary", isDark ? "border-white/20 bg-white/5 text-white placeholder-white/40" : "border-gray-300 bg-white text-gray-900 placeholder-gray-400")} placeholder="Enter description..." /> : null} />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col gap-2">
         {/* Main row: Chart+TradingHistory | OrderBook | Swap sidebar */}
-        <div className={cn(
-          "flex flex-col md:flex-row items-stretch",
-          isMobile ? "gap-3" : "gap-2"
-        )}>
+        <div className="flex flex-col md:flex-row items-stretch gap-2">
           {/* Left: Chart + TradingHistory stacked */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
             <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
@@ -144,13 +156,13 @@ const Overview = memo(
                 pairs={pairs}
                 onTransactionClick={onTransactionClick}
                 isDark={isDark}
-                isMobile={isMobile || isTablet}
+                isMobile={isTablet}
               />
             </section>
           </div>
 
           {/* Middle: OrderBook - fixed width, stretch height */}
-          {!isMobile && !isTablet && (
+          {!isTablet && (
             <aside className="w-[280px] flex-shrink-0 self-start" style={{ height: '1300px' }} aria-label="Order Book">
               <h2 className="sr-only">Order Book</h2>
               <OrderBook token={token} />
