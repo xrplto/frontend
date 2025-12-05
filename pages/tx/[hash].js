@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useContext } from 'react';
 import { LRUCache } from 'lru-cache';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy, ArrowLeftRight, Wallet, TrendingUp } from 'lucide-react';
+import { Copy, ArrowLeftRight, Wallet, TrendingUp, AlertCircle, Home, Search } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
@@ -4407,7 +4407,54 @@ const TxPage = ({ txData, error }) => {
           </h1>
         </div>
         {error ? (
-          <p className="text-red-500">{error}</p>
+          <div className={cn(
+            "rounded-xl border-[1.5px] p-8 text-center max-w-md mx-auto mt-8",
+            isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50/50"
+          )}>
+            <div className={cn(
+              "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5",
+              isDark ? "bg-red-500/10" : "bg-red-50"
+            )}>
+              <AlertCircle size={32} className="text-red-500" />
+            </div>
+            <h2 className={cn(
+              "text-xl font-medium mb-2",
+              isDark ? "text-white" : "text-gray-900"
+            )}>
+              Transaction Not Found
+            </h2>
+            <p className={cn(
+              "text-[14px] mb-6",
+              isDark ? "text-white/60" : "text-gray-500"
+            )}>
+              {error}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Link href="/">
+                <button className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
+                  isDark
+                    ? "border-white/15 text-white/80 hover:border-primary hover:bg-primary/5"
+                    : "border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5"
+                )}>
+                  <Home size={14} />
+                  Go Home
+                </button>
+              </Link>
+              <button
+                onClick={() => router.back()}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
+                  isDark
+                    ? "border-white/15 text-white/80 hover:border-primary hover:bg-primary/5"
+                    : "border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5"
+                )}
+              >
+                <Search size={14} />
+                Try Again
+              </button>
+            </div>
+          </div>
         ) : (
           <TransactionDetails txData={txData} />
         )}
@@ -4447,7 +4494,12 @@ export async function getServerSideProps(context) {
     .catch(() => null);
 
   if (!response) {
-    throw new Error('Failed to fetch transaction');
+    return {
+      props: {
+        txData: null,
+        error: 'Transaction not found. Please check the hash and try again.'
+      }
+    };
   }
 
   try {
@@ -4474,7 +4526,7 @@ export async function getServerSideProps(context) {
     //   }
     // }
 
-    const txData = { ...rest, meta };
+    const txData = { ...rest, meta: meta ?? null };
 
     // Cache the successful response
     txCache.set(hash, txData);
