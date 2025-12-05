@@ -253,6 +253,9 @@ const Pagination = styled.div`
   align-items: center;
   justify-content: center;
   gap: 6px;
+  @media (max-width: 640px) {
+    gap: 3px;
+  }
 `;
 
 const PaginationButton = styled.button`
@@ -274,6 +277,30 @@ const PaginationButton = styled.button`
     background: rgba(59,130,246,0.08);
   }
   &:disabled { opacity: 0.3; cursor: default; }
+  @media (max-width: 640px) {
+    min-width: 28px;
+    height: 28px;
+    font-size: 11px;
+    border-radius: 8px;
+    & svg { width: 14px; height: 14px; }
+  }
+`;
+
+const RecordsCount = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  @media (max-width: 640px) {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  @media (max-width: 480px) {
+    display: none;
+  }
 `;
 
 const Table = styled.table`
@@ -389,6 +416,13 @@ const Tabs = styled.div`
   border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.1)'};
   border-radius: 12px;
   margin-bottom: 12px;
+  @media (max-width: 640px) {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
 `;
 
 const Tab = styled.button`
@@ -406,8 +440,17 @@ const Tab = styled.button`
   transition: all 0.15s;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
   &:hover {
     color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
+  }
+  @media (max-width: 640px) {
+    padding: 5px 6px;
+    font-size: 9px;
+    gap: 2px;
+    letter-spacing: 0;
+    & svg { width: 12px; height: 12px; }
   }
 `;
 
@@ -1669,11 +1712,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     <Stack spacing={1} style={{ width: '100%', position: 'relative', zIndex: 0 }}>
       <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
-          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}><Activity size={14} />Trades</Tab>
-          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}><Droplets size={14} />Pools</Tab>
-          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}><Users size={14} />Traders</Tab>
-          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}><PieChart size={14} />Holders</Tab>
-          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}><Wallet size={14} />My Activity</Tab>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}><Activity size={14} /><span>Trades</span></Tab>
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}><Droplets size={14} /><span>Pools</span></Tab>
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}><Users size={14} /><span>Traders</span></Tab>
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}><PieChart size={14} /><span>Holders</span></Tab>
+          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}><Wallet size={14} /><span>My Activity</span></Tab>
         </Tabs>
         {tabValue === 0 && !isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -1871,7 +1914,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
           {/* Cursor-based pagination */}
           {(totalRecords > limit || currentPage > 1) && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '16px', gap: '8px', flexWrap: 'wrap' }}>
               <Pagination isDark={isDark}>
                 <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark}><ChevronsLeft size={16} /></PaginationButton>
                 <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark}><ChevronLeft size={16} /></PaginationButton>
@@ -1965,17 +2008,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark}><ChevronRight size={16} /></PaginationButton>
                 <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark}><ChevronsRight size={16} /></PaginationButton>
               </Pagination>
-              <span style={{
-                fontSize: '12px',
-                fontWeight: 500,
-                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
-              }}>
+              <RecordsCount isDark={isDark}>
                 {totalRecords > 0 ? `${totalRecords.toLocaleString()} records` : ''}
-              </span>
+              </RecordsCount>
             </div>
           )}
         </>

@@ -3932,14 +3932,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         />
                       </div>
 
-                      {/* Passkeys - Most secure - Enhanced */}
+                      {/* Passkeys - Most secure */}
                       <button
                         onClick={() => setShowDeviceLogin(true)}
-                        className="w-full flex items-center justify-center gap-2.5 rounded-lg border-[1.5px] border-primary bg-primary px-4 py-3 text-[14px] font-medium text-white transition-colors hover:bg-primary/90"
+                        className="w-full flex items-center justify-center gap-2 rounded-lg border-[1.5px] border-primary bg-primary px-4 py-2.5 text-[13px] font-normal text-white transition-colors hover:bg-primary/90"
                       >
-                        <FingerprintIcon size={18} />
-                        <span>Continue with Passkey</span>
-                        <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/20">SECURE</span>
+                        <FingerprintIcon size={16} />
+                        <span>Passkey</span>
                       </button>
 
                       {/* Email Verification UI - Enhanced */}
@@ -4074,14 +4073,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Encrypted and stored locally
                           </span>
                         </div>
-                        {!showClearConfirm ? (
+                        {(profiles.length > 0 || storedWalletCount > 0) && !showClearConfirm ? (
                           <button
                             onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); }}
                             className={cn("text-[10px] mt-2", isDark ? "text-red-400/50 hover:text-red-400" : "text-red-400/60 hover:text-red-500")}
                           >
                             Clear all wallets
                           </button>
-                        ) : (
+                        ) : showClearConfirm ? (
                           <div className={cn("mt-3 p-3 rounded-lg border text-left", isDark ? "bg-red-500/5 border-red-500/20" : "bg-red-50 border-red-200")}>
                             <p className={cn("text-[11px] font-medium mb-1", isDark ? "text-red-400" : "text-red-600")}>
                               Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}?
@@ -4173,7 +4172,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               Cancel
                             </button>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </>
                   ) : (
