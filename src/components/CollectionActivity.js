@@ -112,7 +112,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
 
   if (!collectionSlug) {
     return (
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-0">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-0">
         <div className={cn(
           "rounded-xl border-[1.5px] p-8 mb-6 text-center",
           isDark ? "bg-black/20 border-white/[0.08]" : "bg-white border-gray-200"
@@ -124,7 +124,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   }
 
   return (
-    <div className="max-w-[2000px] mx-auto px-4 sm:px-0">
+    <div className="max-w-[1920px] mx-auto px-4 sm:px-0">
       <div className="mb-6">
         {/* Filter Chips */}
         <div className="mb-4 px-4">

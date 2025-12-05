@@ -711,6 +711,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   // Swap quote state
   const [swapQuoteApi, setSwapQuoteApi] = useState(null);
+  const [quoteRequiresTrustline, setQuoteRequiresTrustline] = useState(null); // null or { currency, issuer, limit }
   const [quoteLoading, setQuoteLoading] = useState(false);
   const quoteAbortRef = useRef(null);
 
@@ -891,6 +892,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (orderType !== 'market') return;
     if (!amount2 || parseFloat(amount2) <= 0 || !token2?.currency) {
       setSwapQuoteApi(null);
+      setQuoteRequiresTrustline(null);
       return;
     }
 
@@ -917,11 +919,16 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         if (res.data?.status === 'success' && res.data.quote) {
           setSwapQuoteApi(res.data.quote);
+          setQuoteRequiresTrustline(res.data.requiresTrustline || null);
         } else {
           setSwapQuoteApi(null);
+          setQuoteRequiresTrustline(null);
         }
       } catch (err) {
-        if (err.name !== 'CanceledError') setSwapQuoteApi(null);
+        if (err.name !== 'CanceledError') {
+          setSwapQuoteApi(null);
+          setQuoteRequiresTrustline(null);
+        }
       } finally {
         setQuoteLoading(false);
       }
@@ -2216,56 +2223,67 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 </Typography>
               </Stack>
 
-              {/* Quote Summary */}
+              {/* Quote Summary - Concise */}
               {swapQuoteCalc && (
-                <Box sx={{ mt: 1 }}>
-                  <Stack spacing={0.5}>
+                <Box sx={{ mt: 1, p: 1, borderRadius: '6px', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+                  <Stack spacing={0.25}>
+                    {/* Rate */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        Slippage tolerance
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                        Rate {quoteLoading && <span style={{ opacity: 0.5 }}>•••</span>}
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        {swapQuoteCalc.slippage_tolerance || `${slippage}%`}
-                        {quoteLoading && <span style={{ marginLeft: 4, opacity: 0.5 }}>...</span>}
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                        1 {token1?.name || token1?.currency} = {(() => {
+                          let rate = parseFloat(swapQuoteCalc.execution_rate);
+                          // If rate is 0 or missing, calculate from source/dest amounts
+                          if (!rate || rate === 0) {
+                            const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
+                            const dstVal = parseFloat(swapQuoteCalc.minimum_received || amount2);
+                            if (srcVal > 0 && dstVal > 0) rate = dstVal / srcVal;
+                          }
+                          if (!rate || rate === 0) return '—';
+                          if (rate >= 1000000) return fNumber(rate);
+                          if (rate >= 1) return rate.toFixed(4);
+                          if (rate >= 0.0001) return rate.toFixed(8);
+                          return rate.toExponential(4);
+                        })()} {token2?.name || token2?.currency}
                       </Typography>
                     </Stack>
+                    {/* Min Received */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        Minimum received
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                        Min received
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        {swapQuoteCalc.minimum_received} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                        {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
                       </Typography>
                     </Stack>
-                    {swapQuoteCalc.from_orderbook && (
+                    {/* AMM Fee - only show if present */}
+                    {swapQuoteCalc.amm_pool_fee && (
                       <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                          From order book
+                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                          AMM fee {swapQuoteCalc.amm_trading_fee_bps ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)` : ''}
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: '#3b82f6' }}>
-                          {swapQuoteCalc.from_orderbook} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace', color: '#f59e0b' }}>
+                          {swapQuoteCalc.amm_pool_fee}
                         </Typography>
                       </Stack>
                     )}
-                    {swapQuoteCalc.price_impact && (
-                      <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                          Price impact
-                        </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: swapQuoteCalc.price_impact.startsWith('-') ? '#22c55e' : '#ef4444' }}>
-                          {swapQuoteCalc.price_impact}
-                        </Typography>
-                      </Stack>
+                    {/* Paths count if > 1 */}
+                    {swapQuoteCalc.paths_count > 1 && (
+                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '9px', textAlign: 'right' }}>
+                        via {swapQuoteCalc.paths_count} paths
+                      </Typography>
                     )}
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        Rate
-                      </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                        1 {token1?.currency === 'XRP' ? 'XRP' : token1?.name || token1?.currency} = {swapQuoteCalc.execution_rate} {token2?.currency === 'XRP' ? 'XRP' : token2?.name || token2?.currency}
-                      </Typography>
-                    </Stack>
                   </Stack>
+                  {/* Trustline Warning */}
+                  {quoteRequiresTrustline && (
+                    <Box sx={{ mt: 0.75, p: 0.75, borderRadius: '4px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#f59e0b' }}>
+                        ⚠ Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               )}
             </Box>

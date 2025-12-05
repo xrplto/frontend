@@ -50,13 +50,13 @@ function SpotlightPage({ data }) {
         Spotlight XRPL Tokens
       </h1>
 
-      <div className={notificationPanelOpen ? "mx-auto w-full px-4" : "mx-auto max-w-7xl px-4"}>
+      <div className={notificationPanelOpen ? "mx-auto w-full px-4" : "mx-auto max-w-[1920px] px-4"}>
         <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-px">
           <Summary />
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-[1920px] px-4">
         <div>
           {data && data.tags ? (
             <>

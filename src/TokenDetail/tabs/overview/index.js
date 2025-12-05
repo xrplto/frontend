@@ -39,9 +39,10 @@ const Overview = memo(
     const [showEditor, setShowEditor] = useState(false);
     const [orderBookCollapsed, setOrderBookCollapsed] = useState(() => {
       if (typeof window !== 'undefined') {
-        return localStorage.getItem('orderBookCollapsed') === 'true';
+        const stored = localStorage.getItem('orderBookCollapsed');
+        return stored === null ? true : stored === 'true';
       }
-      return false;
+      return true;
     });
 
     // Persist collapse state

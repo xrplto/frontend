@@ -1069,6 +1069,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   // Swap quote from API
   const [swapQuoteApi, setSwapQuoteApi] = useState(null);
+  const [quoteRequiresTrustline, setQuoteRequiresTrustline] = useState(null); // null or { currency, issuer, limit }
   const [quoteLoading, setQuoteLoading] = useState(false);
   const quoteAbortRef = useRef(null);
 
@@ -1077,6 +1078,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     if (orderType !== 'market') return;
     if (!amount2 || parseFloat(amount2) <= 0 || !token2?.currency) {
       setSwapQuoteApi(null);
+      setQuoteRequiresTrustline(null);
       return;
     }
 
@@ -1104,18 +1106,23 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
         if (res.data?.status === 'success' && res.data.quote) {
           setSwapQuoteApi(res.data.quote);
+          setQuoteRequiresTrustline(res.data.requiresTrustline || null);
         } else {
           setSwapQuoteApi(null);
+          setQuoteRequiresTrustline(null);
         }
       } catch (err) {
-        if (err.name !== 'CanceledError') setSwapQuoteApi(null);
+        if (err.name !== 'CanceledError') {
+          setSwapQuoteApi(null);
+          setQuoteRequiresTrustline(null);
+        }
       } finally {
         setQuoteLoading(false);
       }
     }, 400);
 
     return () => clearTimeout(timeoutId);
-  }, [amount2, token2, accountProfile?.account, slippage, orderType]);
+  }, [amount2, token1, token2, accountProfile?.account, slippage, orderType]);
 
   // Client-side fallback calculation from orderbook
   const swapQuoteFallback = useMemo(() => {
@@ -2784,118 +2791,70 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   </button>
                 </div>
 
-                {/* Swap Quote Summary - shows immediately from orderbook, updates with API */}
+                {/* Swap Quote Summary - Concise */}
                 {swapQuoteCalc && amount1 && amount2 && (
                   <div className={cn(
-                    "mb-4 rounded-lg p-3 space-y-2 relative",
-                    darkMode ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-200"
+                    "mb-4 rounded-lg p-2.5 space-y-1 relative",
+                    darkMode ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-200"
                   )}>
-                    {/* Small loading indicator in corner while API fetches */}
-                    {quoteLoading && (
-                      <div className="absolute top-2 right-2">
-                        <ClipLoader size={10} color="#4285f4" />
+                    {/* Rate */}
+                    <div className="flex items-center justify-between">
+                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                        Rate {quoteLoading && <span className="opacity-50">•••</span>}
+                      </span>
+                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                        1 {token1?.name || token1?.currency} = {(() => {
+                          let rate = parseFloat(swapQuoteCalc.execution_rate);
+                          if (!rate || rate === 0) {
+                            const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
+                            const dstVal = parseFloat(swapQuoteCalc.minimum_received || amount2);
+                            if (srcVal > 0 && dstVal > 0) rate = dstVal / srcVal;
+                          }
+                          if (!rate || rate === 0) return '—';
+                          if (rate >= 1000000) return fNumber(rate);
+                          if (rate >= 1) return rate.toFixed(4);
+                          if (rate >= 0.0001) return rate.toFixed(8);
+                          return rate.toExponential(4);
+                        })()} {token2?.name || token2?.currency}
+                      </span>
+                    </div>
+
+                    {/* Min Received */}
+                    <div className="flex items-center justify-between">
+                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                        Min received
+                      </span>
+                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                        {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
+                      </span>
+                    </div>
+
+                    {/* AMM Fee - only show if present */}
+                    {swapQuoteCalc.amm_pool_fee && (
+                      <div className="flex items-center justify-between">
+                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                          AMM fee {swapQuoteCalc.amm_trading_fee_bps ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)` : ''}
+                        </span>
+                        <span className="text-[10px] font-mono text-orange-400">
+                          {swapQuoteCalc.amm_pool_fee}
+                        </span>
                       </div>
                     )}
-                    {swapQuoteCalc && (
-                      <>
-                        {/* Slippage Tolerance */}
-                        <div className="flex items-center justify-between">
-                          <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                            Slippage tolerance
-                          </span>
-                          <span className={cn("text-[11px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                            {swapQuoteCalc.slippage_tolerance}
-                          </span>
-                        </div>
 
-                        {/* Minimum Received */}
-                        <div className="flex items-center justify-between">
-                          <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                            Minimum received
-                          </span>
-                          <span className={cn("text-[11px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                            {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
-                          </span>
-                        </div>
+                    {/* Paths count if > 1 */}
+                    {swapQuoteCalc.paths_count > 1 && (
+                      <div className={cn("text-[9px] text-right", darkMode ? "text-white/40" : "text-gray-400")}>
+                        via {swapQuoteCalc.paths_count} paths
+                      </div>
+                    )}
 
-                        {/* Order Book Amount */}
-                        {swapQuoteCalc.from_orderbook && (
-                          <div className="flex items-center justify-between">
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              From order book
-                            </span>
-                            <span className="text-[11px] font-mono text-blue-400">
-                              {fNumber(swapQuoteCalc.from_orderbook)} {token2?.name || token2?.currency}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* AMM Pool Amount */}
-                        {swapQuoteCalc.from_amm && (
-                          <div className="flex items-center justify-between">
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              From AMM pool
-                            </span>
-                            <span className="text-[11px] font-mono text-purple-400">
-                              {fNumber(swapQuoteCalc.from_amm)} {token2?.name || token2?.currency}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Price Impact */}
-                        {swapQuoteCalc.price_impact && (
-                          <div className="flex items-center justify-between">
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              Price impact
-                            </span>
-                            <span
-                              className="text-[11px] font-mono"
-                              style={{ color: getPriceImpactColor(Math.abs(parseFloat(swapQuoteCalc.price_impact) || 0)) }}
-                            >
-                              {swapQuoteCalc.price_impact}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* AMM Pool Fee */}
-                        {swapQuoteCalc.amm_pool_fee && (
-                          <div className="flex items-center justify-between">
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              AMM pool fee
-                            </span>
-                            <span className="text-[11px] font-mono text-orange-400">
-                              {swapQuoteCalc.amm_pool_fee}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Paths Count (from API) */}
-                        {swapQuoteCalc.paths_count > 0 && (
-                          <div className="flex items-center justify-between">
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              Paths found
-                            </span>
-                            <span className={cn("text-[11px] font-mono", darkMode ? "text-white/60" : "text-gray-600")}>
-                              {swapQuoteCalc.paths_count}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Execution Rate */}
-                        {swapQuoteCalc.execution_rate && (
-                          <div className={cn(
-                            "pt-2 mt-2 flex items-center justify-between border-t",
-                            darkMode ? "border-white/[0.06]" : "border-gray-200"
-                          )}>
-                            <span className={cn("text-[11px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                              Rate
-                            </span>
-                            <span className={cn("text-[11px] font-mono", darkMode ? "text-white" : "text-gray-900")}>
-                              1 {token1?.name || token1?.currency} = {swapQuoteCalc.execution_rate} {token2?.name || token2?.currency}
-                            </span>
-                          </div>
-                        )}
-                      </>
+                    {/* Trustline Warning */}
+                    {quoteRequiresTrustline && (
+                      <div className="mt-1.5 p-1.5 rounded bg-orange-500/10 border border-orange-500/20">
+                        <span className="text-[10px] text-orange-400">
+                          ⚠ Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
+                        </span>
+                      </div>
                     )}
                   </div>
                 )}
