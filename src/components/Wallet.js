@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed, Client, xrpToDrops, dropsToXrp, isValidAddress } from 'xrpl';
 
@@ -115,10 +116,19 @@ const alpha = (color, opacity) => {
   return color;
 };
 
-// Dialog component - Enhanced with smooth animations
+// Dialog component - Enhanced with smooth animations and mobile support
 const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if mobile on mount and resize
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -129,15 +139,46 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
           setIsVisible(true);
         });
       });
+      // Prevent body scroll on mobile when open
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
     } else {
       setIsVisible(false);
       const timer = setTimeout(() => setShouldRender(false), 200);
+      document.body.style.overflow = '';
       return () => clearTimeout(timer);
     }
-  }, [open]);
+  }, [open, isMobile]);
 
   if (!shouldRender) return null;
 
+  // Mobile: Centered modal with symmetric margins
+  if (isMobile) {
+    return (
+      <div
+        className={cn(
+          "fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200",
+          isVisible ? "opacity-100 bg-black/50" : "opacity-0"
+        )}
+        onClick={onClose}
+      >
+        <div
+          className={cn(
+            "relative w-full max-w-[360px] max-h-[80vh] overflow-hidden transition-all duration-200 ease-out",
+            isVisible
+              ? "translate-y-0 opacity-100 scale-100"
+              : "-translate-y-4 opacity-0 scale-95"
+          )}
+          onClick={e => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: Top-right dropdown style
   return (
     <div
       className={cn(
@@ -168,16 +209,16 @@ const DialogContent = ({ children, sx }) => (
   <div style={{ padding: sx?.p === 0 ? 0 : 16 }}>{children}</div>
 );
 
-// StyledPopoverPaper component - Glass effect styling
-const StyledPopoverPaper = ({ children, isDark, isFullScreen }) => (
+// StyledPopoverPaper component - Glass effect styling with mobile support
+const StyledPopoverPaper = ({ children, isDark, isFullScreen, isMobile }) => (
   <div className={cn(
-    "overflow-hidden",
+    "overflow-hidden max-h-[80vh] overflow-y-auto",
     isFullScreen
       ? "rounded-none bg-transparent"
       : cn(
-          "rounded-xl border-[1.5px]",
+          "rounded-2xl border-[1.5px]",
           isDark
-            ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20"
+            ? "bg-[#0a0f1a] border-white/10"
             : "bg-white border-gray-200"
         )
   )}>
@@ -768,42 +809,39 @@ const WalletContent = ({
   if (isFullScreen) {
     return (
       <div className={cn("min-h-screen", isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900")}>
-        {/* Header */}
+        {/* Compact Header */}
         <div className={cn(
           "sticky top-0 z-10 border-b backdrop-blur-xl",
           isDark ? "border-white/10 bg-black/90" : "border-gray-200 bg-white/90"
         )}>
-          <div className="max-w-lg mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
+          <div className="px-3 py-2">
+            {/* Top row: close, balance, address */}
+            <div className="flex items-center justify-between gap-2">
               <button
                 onClick={() => setIsFullScreen(false)}
-                className={cn("p-2 -ml-2 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}
+                className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}
               >
-                <Minimize2 size={18} className={isDark ? "text-white/60" : "text-gray-500"} />
+                <Minimize2 size={16} className={isDark ? "text-white/60" : "text-gray-500"} />
               </button>
+              <div className="flex-1 text-center">
+                <span className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  {Number(availableBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </span>
+                <span className={cn("text-xs ml-1", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+              </div>
               <button
                 onClick={handleCopyAddress}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-colors",
-                  addressCopied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-colors",
+                  addressCopied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/5 text-white/60" : "bg-gray-100 text-gray-500"
                 )}
               >
                 {truncAddr(accountLogin)}
-                {addressCopied ? <Check size={12} /> : <Copy size={12} />}
+                {addressCopied ? <Check size={10} /> : <Copy size={10} />}
               </button>
             </div>
-
-            {/* Balance */}
-            <div className="mt-3 mb-4 text-center">
-              <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Available</p>
-              <p className={cn("text-3xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>
-                {Number(availableBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                <span className={cn("text-sm ml-1", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
-              </p>
-            </div>
-
             {/* Tabs */}
-            <div className={cn("flex rounded-lg p-0.5 gap-0.5", isDark ? "bg-white/5" : "bg-gray-100")}>
+            <div className={cn("flex rounded-lg p-0.5 gap-0.5 mt-2", isDark ? "bg-white/5" : "bg-gray-100")}>
               {[
                 { id: 'send', label: 'Send', icon: ArrowUpRight },
                 { id: 'receive', label: 'Receive', icon: ArrowDownLeft },
@@ -813,13 +851,13 @@ const WalletContent = ({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-[12px] font-medium transition-all",
+                    "flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[11px] font-medium transition-all",
                     activeTab === tab.id
                       ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
-                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                      : isDark ? "text-white/50" : "text-gray-500"
                   )}
                 >
-                  <tab.icon size={14} />
+                  <tab.icon size={12} />
                   {tab.label}
                 </button>
               ))}
@@ -828,7 +866,7 @@ const WalletContent = ({
         </div>
 
         {/* Content */}
-        <div className="max-w-lg mx-auto px-4 py-5">
+        <div className="px-3 py-3 flex-1 overflow-y-auto">
           {/* Send Tab */}
           {activeTab === 'send' && (
             <div className="space-y-3">
@@ -849,58 +887,57 @@ const WalletContent = ({
                 </div>
               ) : (
                 <>
-                  {/* Amount */}
-                  <div className={cn("rounded-2xl p-5 text-center", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
-                    <p className={cn("text-[11px] uppercase tracking-wider mb-3", isDark ? "text-white/40" : "text-gray-400")}>Amount</p>
-                    <div className="relative inline-flex items-baseline">
+                  {/* Amount - Compact */}
+                  <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-center gap-2">
                       <input
                         type="text" inputMode="decimal" value={amount}
                         onChange={(e) => { const val = e.target.value.replace(/[^0-9.]/g, ''); if (val === '' || /^\d*\.?\d*$/.test(val)) { setAmount(val); setSendError(''); } }}
                         placeholder="0"
-                        className={cn("text-5xl font-light text-center bg-transparent outline-none w-full max-w-[200px]", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                        className={cn("text-3xl font-light text-center bg-transparent outline-none w-32", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
                       />
-                      <span className={cn("text-xl ml-2", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                      <span className={cn("text-base", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
                     </div>
-                    <div className="mt-3 flex items-center justify-center gap-3">
-                      <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>Max: {maxSendable.toFixed(2)}</span>
-                      <button onClick={() => setAmount(maxSendable.toFixed(6))} className="text-xs text-primary font-medium hover:text-primary/80">Send all</button>
+                    <div className="mt-1 flex items-center justify-center gap-2 text-[11px]">
+                      <span className={isDark ? "text-white/40" : "text-gray-400"}>Max: {maxSendable.toFixed(2)}</span>
+                      <button onClick={() => setAmount(maxSendable.toFixed(6))} className="text-primary font-medium">Send all</button>
                     </div>
                   </div>
                   {/* Recipient */}
-                  <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
-                    <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>To</label>
+                  <div className={cn("rounded-xl p-3", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                    <label className={cn("block text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>To</label>
                     <input type="text" value={recipient} onChange={(e) => { setRecipient(e.target.value.trim()); setSendError(''); }} placeholder="Enter XRPL address"
-                      className={cn("w-full text-sm bg-transparent outline-none font-mono", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                      className={cn("w-full text-[13px] bg-transparent outline-none font-mono", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
                   </div>
                   {/* Destination Tag */}
-                  <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
-                    <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Destination Tag <span className="normal-case">(optional)</span></label>
+                  <div className={cn("rounded-xl p-3", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                    <label className={cn("block text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Destination Tag (optional)</label>
                     <input type="number" value={destinationTag} onChange={(e) => setDestinationTag(e.target.value)} placeholder="Optional"
-                      className={cn("w-full text-sm bg-transparent outline-none", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                      className={cn("w-full text-[13px] bg-transparent outline-none", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
                   </div>
                   {/* Password */}
                   {!isUnlocked && (
-                    <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
-                      <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Password</label>
+                    <div className={cn("rounded-xl p-3", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                      <label className={cn("block text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Password</label>
                       <div className="relative">
                         <input type={showSendPassword ? 'text' : 'password'} value={sendPassword} onChange={(e) => { setSendPassword(e.target.value); setSendError(''); }} placeholder="Enter to confirm"
-                          className={cn("w-full text-sm bg-transparent outline-none pr-10", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                          className={cn("w-full text-[13px] bg-transparent outline-none pr-8", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
                         <button type="button" onClick={() => setShowSendPassword(!showSendPassword)} className={cn("absolute right-0 top-0", isDark ? "text-white/30" : "text-gray-400")}>
-                          {showSendPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          {showSendPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                         </button>
                       </div>
                     </div>
                   )}
                   {/* Error */}
                   {sendError && (
-                    <div className={cn("flex items-center gap-2 px-4 py-3 rounded-xl text-sm", isDark ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-600")}>
-                      <AlertTriangle size={16} /> {sendError}
+                    <div className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-[12px]", isDark ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-600")}>
+                      <AlertTriangle size={14} /> {sendError}
                     </div>
                   )}
                   {/* Send Button */}
                   <button onClick={handleSend} disabled={isSending}
-                    className={cn("w-full py-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2", isSending ? "bg-primary/50 text-white/70 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98]")}>
-                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <><Send size={18} /> Send</>}
+                    className={cn("w-full py-3 rounded-xl text-[13px] font-medium transition-all flex items-center justify-center gap-2", isSending ? "bg-primary/50 text-white/70 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90")}>
+                    {isSending ? <Loader2 size={16} className="animate-spin" /> : <><Send size={16} /> Send</>}
                   </button>
                 </>
               )}
@@ -909,24 +946,24 @@ const WalletContent = ({
 
           {/* Receive Tab */}
           {activeTab === 'receive' && (
-            <div className="space-y-4">
-              <div className={cn("rounded-2xl p-6 text-center", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
-                <div className="inline-block p-3 bg-white rounded-2xl mb-4 shadow-sm">
-                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[200px] h-[200px]" />
+            <div className="space-y-3">
+              <div className={cn("rounded-xl p-4 text-center", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                <div className="inline-block p-2 bg-white rounded-xl mb-3">
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[140px] h-[140px]" />
                 </div>
-                <p className={cn("text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Your Address</p>
-                <p className={cn("font-mono text-[13px] break-all leading-relaxed", isDark ? "text-white/80" : "text-gray-700")}>{accountLogin}</p>
+                <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Your Address</p>
+                <p className={cn("font-mono text-[11px] break-all leading-relaxed", isDark ? "text-white/70" : "text-gray-600")}>{accountLogin}</p>
                 <button onClick={handleCopyAddress}
-                  className={cn("mt-4 w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all", addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98]")}>
-                  {addressCopied ? <Check size={16} /> : <Copy size={16} />} {addressCopied ? 'Copied' : 'Copy Address'}
+                  className={cn("mt-3 w-full py-2.5 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 transition-all", addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90")}>
+                  {addressCopied ? <Check size={14} /> : <Copy size={14} />} {addressCopied ? 'Copied' : 'Copy Address'}
                 </button>
               </div>
               {availableBalance === 0 && (
-                <div className={cn("flex items-start gap-3 p-4 rounded-xl", isDark ? "bg-amber-500/5" : "bg-amber-50")}>
-                  <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className={cn("flex items-start gap-2 p-3 rounded-lg text-[12px]", isDark ? "bg-amber-500/5" : "bg-amber-50")}>
+                  <AlertTriangle size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className={cn("text-sm font-medium", isDark ? "text-amber-400" : "text-amber-700")}>Activate your account</p>
-                    <p className={cn("text-xs mt-0.5", isDark ? "text-white/50" : "text-gray-600")}>Receive at least 10 XRP to activate.</p>
+                    <p className={cn("font-medium", isDark ? "text-amber-400" : "text-amber-700")}>Activate your account</p>
+                    <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/50" : "text-gray-600")}>Receive at least 10 XRP to activate.</p>
                   </div>
                 </div>
               )}
@@ -935,18 +972,18 @@ const WalletContent = ({
 
           {/* History Tab */}
           {activeTab === 'history' && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between mb-3">
-                <p className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Recent Activity</p>
-                <button onClick={loadTransactionHistory} disabled={loadingHistory} className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
-                  <RefreshCw size={14} className={cn(loadingHistory && "animate-spin", isDark ? "text-white/40" : "text-gray-400")} />
+            <div className="space-y-1">
+              <div className="flex items-center justify-between mb-2">
+                <p className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Recent Activity</p>
+                <button onClick={loadTransactionHistory} disabled={loadingHistory} className={cn("p-1 rounded", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
+                  <RefreshCw size={12} className={cn(loadingHistory && "animate-spin", isDark ? "text-white/40" : "text-gray-400")} />
                 </button>
               </div>
               {loadingHistory && transactions.length === 0 ? (
-                <div className="flex items-center justify-center py-16"><Loader2 className={cn("animate-spin", isDark ? "text-white/30" : "text-gray-300")} size={24} /></div>
+                <div className="flex items-center justify-center py-10"><Loader2 className={cn("animate-spin", isDark ? "text-white/30" : "text-gray-300")} size={20} /></div>
               ) : transactions.length === 0 ? (
-                <div className={cn("text-center py-16", isDark ? "text-white/30" : "text-gray-400")}>
-                  <History size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">No activity yet</p>
+                <div className={cn("text-center py-10", isDark ? "text-white/30" : "text-gray-400")}>
+                  <History size={28} className="mx-auto mb-2 opacity-40" /><p className="text-[12px]">No activity yet</p>
                 </div>
               ) : (
                 <>
@@ -956,23 +993,23 @@ const WalletContent = ({
                     const otherParty = isReceived ? tx.Account : tx.Destination;
                     return (
                       <a key={tx.hash || i} href={`https://xrpl.to/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer"
-                        className={cn("flex items-center gap-3 p-3 rounded-xl transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isReceived ? "bg-emerald-500/10" : isDark ? "bg-white/5" : "bg-gray-100")}>
-                          {isReceived ? <ArrowDownLeft size={18} className="text-emerald-500" /> : <ArrowUpRight size={18} className={isDark ? "text-white/60" : "text-gray-500"} />}
+                        className={cn("flex items-center gap-2 p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", isReceived ? "bg-emerald-500/10" : isDark ? "bg-white/5" : "bg-gray-100")}>
+                          {isReceived ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className={isDark ? "text-white/60" : "text-gray-500"} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{isReceived ? 'Received' : 'Sent'}</p>
-                          <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{isReceived ? 'From' : 'To'} {truncAddr(otherParty)}</p>
+                          <p className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>{isReceived ? 'Received' : 'Sent'}</p>
+                          <p className={cn("text-[10px] truncate", isDark ? "text-white/40" : "text-gray-400")}>{isReceived ? 'From' : 'To'} {truncAddr(otherParty)}</p>
                         </div>
                         <div className="text-right">
-                          <p className={cn("text-sm font-medium tabular-nums", isReceived ? "text-emerald-500" : isDark ? "text-white" : "text-gray-900")}>{isReceived ? '+' : '-'}{Number(txAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-                          <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>{formatDate(tx.date)}</p>
+                          <p className={cn("text-[12px] font-medium tabular-nums", isReceived ? "text-emerald-500" : isDark ? "text-white" : "text-gray-900")}>{isReceived ? '+' : '-'}{Number(txAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                          <p className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>{formatDate(tx.date)}</p>
                         </div>
                       </a>
                     );
                   })}
-                  <a href={`https://xrpl.to/account/${accountLogin}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 py-4 text-sm font-medium text-primary hover:text-primary/80">
-                    View all <ExternalLink size={14} />
+                  <a href={`https://xrpl.to/account/${accountLogin}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 py-3 text-[12px] font-medium text-primary hover:text-primary/80">
+                    View all <ExternalLink size={12} />
                   </a>
                 </>
               )}
@@ -1342,8 +1379,12 @@ export const ConnectWallet = ({
 };
 
 export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
+  const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+
+  // Prevent wallet modal from rendering on auth pages
+  const isAuthPage = router.pathname === '/callback' || router.pathname === '/wallet-setup';
 
   // Create a simple theme object to replace MUI's useTheme
   const theme = {
@@ -1454,7 +1495,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [storedWalletDate, setStoredWalletDate] = useState(null);
   const [storedWalletAddresses, setStoredWalletAddresses] = useState([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
 
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobileView(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Device Password handlers
   const handleDevicePasswordSubmit = async () => {
@@ -2480,6 +2529,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     darkMode,
     setOpenWalletModal,
     openWalletModal,
+    pendingWalletAuth,
+    setPendingWalletAuth,
     open,
     setOpen,
     accountBalance,
@@ -2806,9 +2857,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
     } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
       // Just reopening wallet modal after OAuth redirect
-      // BUT: Only if user is NOT already logged in
+      // BUT: Only if user is NOT already logged in AND not on auth pages
       sessionStorage.removeItem('wallet_modal_open');
-      if (!accountProfile) {
+      const isAuthPage = window.location.pathname === '/callback' || window.location.pathname === '/wallet-setup';
+      if (!accountProfile && !isAuthPage) {
         setOpenWalletModal(true);
       }
     }
@@ -2880,6 +2932,43 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       window.removeEventListener('google-connect-success', handleGoogleSuccess);
     };
   }, [accountProfile]); // Re-run when accountProfile changes to clean up OAuth data
+
+  // Handle pending wallet auth from mobile menu
+  useEffect(() => {
+    if (openWalletModal && pendingWalletAuth) {
+      const timer = setTimeout(() => {
+        switch (pendingWalletAuth) {
+          case 'google':
+            handleGoogleConnect();
+            break;
+          case 'email':
+            handleEmailConnect();
+            break;
+          case 'email_code': {
+            const pendingEmail = sessionStorage.getItem('pending_email');
+            if (pendingEmail) {
+              setVerificationEmail(pendingEmail);
+              setShowEmailVerification(true);
+              setEmailStep('code');
+              sessionStorage.removeItem('pending_email');
+            }
+            break;
+          }
+          case 'twitter':
+            handleXConnect();
+            break;
+          case 'discord':
+            handleDiscordConnect();
+            break;
+          case 'passkey':
+            setShowDeviceLogin(true);
+            break;
+        }
+        setPendingWalletAuth(null);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [openWalletModal, pendingWalletAuth]);
 
   // Don't load profiles here - AppContext handles it
   // This was overwriting the auto-loaded profiles from IndexedDB
@@ -3355,7 +3444,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       )}
 
       <Dialog
-          open={open || openWalletModal}
+          open={!isAuthPage && (open || openWalletModal)}
           onClose={() => {
             setOpen(false);
             setOpenWalletModal(false);
@@ -3408,7 +3497,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }}
         >
           <DialogContent sx={{ p: 0, height: isFullScreen ? '100%' : 'auto', overflow: isFullScreen ? 'auto' : 'visible' }}>
-            <StyledPopoverPaper isDark={isDark} isFullScreen={isFullScreen}>
+            <StyledPopoverPaper isDark={isDark} isFullScreen={isFullScreen} isMobile={isMobileView}>
             {accountProfile ? (
               <>
 
@@ -4409,7 +4498,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         {/* OAuth Password Setup Dialog */}
         <Dialog
-          open={showOAuthPasswordSetup}
+          open={!isAuthPage && showOAuthPasswordSetup}
           onClose={() => {
             if (!isCreatingWallet) {
               setShowOAuthPasswordSetup(false);

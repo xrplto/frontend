@@ -52,6 +52,9 @@ const WalletSetupPage = () => {
   const [oauthData, setOauthData] = useState(null);
 
   useEffect(() => {
+    // Prevent Wallet modal from appearing
+    sessionStorage.removeItem('wallet_modal_open');
+
     // Get OAuth data from sessionStorage
     const token = sessionStorage.getItem('oauth_temp_token');
     const provider = sessionStorage.getItem('oauth_temp_provider');

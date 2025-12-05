@@ -254,6 +254,28 @@ export class UnifiedWalletStorage {
   // Store provider password in IndexedDB alongside wallets
   async storeProviderPassword(providerId, password) {
     const db = await this.initDB();
+
+    // Check if store exists, if not we need to trigger upgrade
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      db.close();
+      // Bump version to trigger onupgradeneeded
+      const newDb = await new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.dbName, this.version + 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+          const upgradeDb = event.target.result;
+          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
+            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('lookupHash', 'lookupHash', { unique: false });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+      });
+      this.version = this.version + 1;
+      return this.storeProviderPassword(providerId, password);
+    }
+
     const encrypted = await this.encryptForLocalStorage(password);
 
     return new Promise((resolve, reject) => {
@@ -277,6 +299,12 @@ export class UnifiedWalletStorage {
   async getProviderPassword(providerId) {
     try {
       const db = await this.initDB();
+
+      // Check if store exists
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        devLog('Wallets store does not exist yet');
+        return null;
+      }
 
       return new Promise(async (resolve) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
@@ -491,6 +519,26 @@ export class UnifiedWalletStorage {
   async storeWallet(walletData, pin) {
     const db = await this.initDB();
 
+    // Check if store exists, if not trigger upgrade
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      db.close();
+      const newDb = await new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.dbName, this.version + 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+          const upgradeDb = event.target.result;
+          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
+            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('lookupHash', 'lookupHash', { unique: false });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+      });
+      this.version = this.version + 1;
+      return this.storeWallet(walletData, pin);
+    }
+
     // Generate unique ID for this wallet
     const walletId = crypto.randomUUID();
 
@@ -539,6 +587,10 @@ export class UnifiedWalletStorage {
   async getWallet(address, pin) {
     const db = await this.initDB();
 
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      return null;
+    }
+
     // Generate lookup hash from address
     const encoder = new TextEncoder();
     const addressHash = await crypto.subtle.digest(
@@ -573,6 +625,10 @@ export class UnifiedWalletStorage {
   async getAllWallets(pin) {
     const db = await this.initDB();
 
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      return [];
+    }
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
       const store = transaction.objectStore(this.walletsStore);
@@ -598,6 +654,10 @@ export class UnifiedWalletStorage {
   async hasWallet() {
     try {
       const db = await this.initDB();
+
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return false;
+      }
 
       return new Promise((resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
@@ -652,6 +712,10 @@ export class UnifiedWalletStorage {
   async deleteWallet(address) {
     const db = await this.initDB();
 
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      return null;
+    }
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
@@ -676,6 +740,25 @@ export class UnifiedWalletStorage {
   // Store passkey-wallet mapping
   async storePasskeyWallet(passkeyId, walletData, pin) {
     const db = await this.initDB();
+
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      db.close();
+      await new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.dbName, this.version + 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+          const upgradeDb = event.target.result;
+          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
+            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('lookupHash', 'lookupHash', { unique: false });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+      });
+      this.version = this.version + 1;
+      return this.storePasskeyWallet(passkeyId, walletData, pin);
+    }
 
     // Include passkey ID in wallet data
     const fullWalletData = {
@@ -712,6 +795,10 @@ export class UnifiedWalletStorage {
   // Get wallet by passkey ID
   async getWalletByPasskey(passkeyId) {
     const db = await this.initDB();
+
+    if (!db.objectStoreNames.contains(this.walletsStore)) {
+      return null;
+    }
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
@@ -928,6 +1015,10 @@ export class UnifiedWalletStorage {
     try {
       const db = await this.initDB();
 
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return null;
+      }
+
       // Create lookup hash for the social ID
       const encoder = new TextEncoder();
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
@@ -1027,6 +1118,10 @@ export class UnifiedWalletStorage {
     try {
       const db = await this.initDB();
 
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return null;
+      }
+
       // Generate lookup hash from address
       const encoder = new TextEncoder();
       const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
@@ -1095,6 +1190,10 @@ export class UnifiedWalletStorage {
   async getEncryptedWalletBlob(address) {
     try {
       const db = await this.initDB();
+
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return null;
+      }
 
       // Generate lookup hash
       const encoder = new TextEncoder();

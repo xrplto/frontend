@@ -60,6 +60,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const [open, setOpen] = useState(false);
   const [openWalletModal, setOpenWalletModal] = useState(false);
+  const [pendingWalletAuth, setPendingWalletAuth] = useState(null);
   const [accountBalance, setAccountBalance] = useState(null);
   const [watchList, setWatchList] = useState([]);
 
@@ -448,6 +449,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       setOpen,
       openWalletModal,
       setOpenWalletModal,
+      pendingWalletAuth,
+      setPendingWalletAuth,
       accountBalance,
       setAccountBalance,
       handleOpen,

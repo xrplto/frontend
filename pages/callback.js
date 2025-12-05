@@ -389,8 +389,11 @@ const OAuthCallback = () => {
           sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload || {}));
           sessionStorage.setItem('oauth_action', result.action);
 
-          // Redirect to dedicated wallet-setup page
+          // Clear wallet modal flag to prevent it showing on setup page
+          sessionStorage.removeItem('wallet_modal_open');
           sessionStorage.removeItem('auth_return_url');
+
+          // Redirect to dedicated wallet-setup page
           router.push('/wallet-setup');
         } else {
           // Wallet already setup
