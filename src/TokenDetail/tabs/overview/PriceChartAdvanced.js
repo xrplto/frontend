@@ -938,10 +938,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
     const isNewDataSet = lastChartTypeRef.current !== currentKey;
 
-    // Always use setData() for timeframe/currency changes (per TradingView best practices)
-    // Only use update() for real-time streaming updates within same timeframe
-    const useSetData = isNewDataSet || !lastChartTypeRef.current;
-
     if (chartType === 'candles' && candleSeriesRef.current) {
       const scaleFactor = getScaleFactor(chartData);
       scaleFactorRef.current = scaleFactor;
@@ -958,15 +954,7 @@ const PriceChartAdvanced = memo(({ token }) => {
               volume: d.volume
             }));
 
-      if (useSetData) {
-        candleSeriesRef.current.setData(scaledData);
-      } else {
-        try {
-          candleSeriesRef.current.update(scaledData[scaledData.length - 1]);
-        } catch (e) {
-          candleSeriesRef.current.setData(scaledData);
-        }
-      }
+      candleSeriesRef.current.setData(scaledData);
     } else if (chartType === 'line' && lineSeriesRef.current) {
       const scaleFactor = getScaleFactor(chartData);
       scaleFactorRef.current = scaleFactor;
@@ -976,26 +964,10 @@ const PriceChartAdvanced = memo(({ token }) => {
         value: (d.close || d.value) * scaleFactor
       }));
 
-      if (useSetData) {
-        lineSeriesRef.current.setData(lineData);
-      } else {
-        try {
-          lineSeriesRef.current.update(lineData[lineData.length - 1]);
-        } catch (e) {
-          lineSeriesRef.current.setData(lineData);
-        }
-      }
+      lineSeriesRef.current.setData(lineData);
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map((d) => ({ time: d.time, value: d.value || d.holders }));
-      if (useSetData) {
-        lineSeriesRef.current.setData(holdersLineData);
-      } else {
-        try {
-          lineSeriesRef.current.update(holdersLineData[holdersLineData.length - 1]);
-        } catch (e) {
-          lineSeriesRef.current.setData(holdersLineData);
-        }
-      }
+      lineSeriesRef.current.setData(holdersLineData);
     }
 
     if (chartType !== 'holders' && volumeSeriesRef.current && data) {
@@ -1004,15 +976,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         value: d.volume || 0,
         color: d.close >= d.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
       }));
-      if (useSetData) {
-        volumeSeriesRef.current.setData(volumeData);
-      } else {
-        try {
-          volumeSeriesRef.current.update(volumeData[volumeData.length - 1]);
-        } catch (e) {
-          volumeSeriesRef.current.setData(volumeData);
-        }
-      }
+      volumeSeriesRef.current.setData(volumeData);
     }
 
     // Reset view on timeframe/currency change - show correct range per timeframe
