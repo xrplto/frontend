@@ -403,8 +403,7 @@ const OAuthCallback = () => {
 
           // Store ALL wallets in profiles
           if (result.allWallets && result.allWallets.length > 0) {
-
-            const allProfiles = result.allWallets.map(w => ({
+            const allProfiles = result.allWallets.map((w, index) => ({
               account: w.address,
               address: w.address,
               publicKey: w.publicKey,
@@ -412,6 +411,7 @@ const OAuthCallback = () => {
               wallet_type: 'oauth',
               provider: provider,
               provider_id: payload?.id || payload?.sub,
+              accountIndex: w.accountIndex ?? index,
               createdAt: w.createdAt || Date.now(),
               tokenCreatedAt: Date.now()
             }));
@@ -419,9 +419,9 @@ const OAuthCallback = () => {
             await walletStorage.setSecureItem('account_profile_2', allProfiles[0]);
             await walletStorage.setSecureItem('account_profiles_2', allProfiles);
 
-            // Store password for provider (enables auto-loading)
-            const walletId = `${provider}_${payload?.id || payload?.sub}`;
-            await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+            // Store in localStorage for AppContext to read on page load
+            localStorage.setItem('account_profile_2', JSON.stringify(allProfiles[0]));
+            localStorage.setItem('profiles', JSON.stringify(allProfiles));
 
             // Notify AppContext that profiles were updated
             window.dispatchEvent(new Event('storage-updated'));

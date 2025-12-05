@@ -261,9 +261,19 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
+    // CRITICAL: Preserve encryption entropy before clearing localStorage
+    // Without this, encrypted data in IndexedDB becomes unrecoverable
+    const entropy = localStorage.getItem('__wk_entropy__');
+
     // Clear everything - wallets + passwords in IndexedDB are safe
     localStorage.clear();
     sessionStorage.clear();
+
+    // Restore encryption entropy so IndexedDB data can still be decrypted
+    if (entropy) {
+      localStorage.setItem('__wk_entropy__', entropy);
+    }
+
     // Clear React state
     setAccountProfile(null);
     setProfiles([]);

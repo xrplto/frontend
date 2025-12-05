@@ -11,8 +11,44 @@ if (typeof window !== 'undefined') {
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
-const devLog = () => {};
-const devError = () => {};
+const devLog = (...args) => console.log('[WalletStorage]', ...args);
+const devError = (...args) => console.error('[WalletStorage]', ...args);
+
+// DEBUG: Global function to list all IndexedDB records
+if (typeof window !== 'undefined') {
+  window.debugListWalletDB = async () => {
+    const dbName = 'XRPLWalletDB';
+    const storeName = 'wallets';
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(dbName);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(storeName)) {
+          console.log('No wallets store found');
+          db.close();
+          resolve([]);
+          return;
+        }
+        const tx = db.transaction([storeName], 'readonly');
+        const store = tx.objectStore(storeName);
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          const records = getAllRequest.result;
+          console.log('=== ALL INDEXEDDB RECORDS ===');
+          records.forEach((r, i) => {
+            console.log(`Record ${i}:`, { id: r.id, lookupHash: r.lookupHash, maskedAddress: r.maskedAddress, timestamp: r.timestamp });
+          });
+          console.log('Total records:', records.length);
+          db.close();
+          resolve(records);
+        };
+        getAllRequest.onerror = () => reject(getAllRequest.error);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  };
+  console.log('DEBUG: Run window.debugListWalletDB() to list all IndexedDB records');
+}
 
 // Security utilities
 const securityUtils = {
@@ -255,25 +291,10 @@ export class UnifiedWalletStorage {
   async storeProviderPassword(providerId, password) {
     const db = await this.initDB();
 
-    // Check if store exists, if not we need to trigger upgrade
+    // initDB now handles store creation, this should always exist
     if (!db.objectStoreNames.contains(this.walletsStore)) {
       db.close();
-      // Bump version to trigger onupgradeneeded
-      const newDb = await new Promise((resolve, reject) => {
-        const request = indexedDB.open(this.dbName, this.version + 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-          const upgradeDb = event.target.result;
-          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
-            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
-            store.createIndex('lookupHash', 'lookupHash', { unique: false });
-            store.createIndex('timestamp', 'timestamp', { unique: false });
-          }
-        };
-      });
-      this.version = this.version + 1;
-      return this.storeProviderPassword(providerId, password);
+      throw new Error('Wallet store not initialized');
     }
 
     const encrypted = await this.encryptForLocalStorage(password);
@@ -309,19 +330,25 @@ export class UnifiedWalletStorage {
       return new Promise(async (resolve) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
-        const request = store.get(`__pwd__${providerId}`);
+        const pwdKey = `__pwd__${providerId}`;
+        console.log('Looking for password record with ID:', pwdKey);
+        const request = store.get(pwdKey);
 
         request.onsuccess = async () => {
+          console.log('Password record found:', !!request.result);
           if (request.result && request.result.data) {
             try {
               const decrypted = await this.decryptFromLocalStorage(request.result.data);
               devLog('Password retrieved from IndexedDB for provider:', providerId);
+              console.log('Password decrypted successfully');
               resolve(decrypted);
             } catch (decryptError) {
+              console.log('Password decryption failed:', decryptError.message);
               resolve(null);
             }
           } else {
             devLog('No password found in IndexedDB for provider:', providerId);
+            console.log('No password record found for:', pwdKey);
             resolve(null);
           }
         };
@@ -375,8 +402,28 @@ export class UnifiedWalletStorage {
   }
 
   async initDB() {
+    // First, detect existing database version and check if store exists
+    const { existingVersion, hasStore } = await new Promise((resolve) => {
+      const detectRequest = indexedDB.open(this.dbName);
+      detectRequest.onsuccess = () => {
+        const db = detectRequest.result;
+        const version = db.version;
+        const hasStore = db.objectStoreNames.contains(this.walletsStore);
+        db.close();
+        resolve({ existingVersion: version, hasStore });
+      };
+      detectRequest.onerror = () => resolve({ existingVersion: 1, hasStore: false });
+    });
+
+    // If store doesn't exist, we need to bump version to trigger onupgradeneeded
+    let targetVersion = Math.max(existingVersion, this.version);
+    if (!hasStore) {
+      targetVersion = existingVersion + 1;
+    }
+    this.version = targetVersion;
+
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.version);
+      const request = indexedDB.open(this.dbName, targetVersion);
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
@@ -518,24 +565,10 @@ export class UnifiedWalletStorage {
   async storeWallet(walletData, pin) {
     const db = await this.initDB();
 
-    // Check if store exists, if not trigger upgrade
+    // initDB now handles store creation, this should always exist
     if (!db.objectStoreNames.contains(this.walletsStore)) {
       db.close();
-      const newDb = await new Promise((resolve, reject) => {
-        const request = indexedDB.open(this.dbName, this.version + 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-          const upgradeDb = event.target.result;
-          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
-            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
-            store.createIndex('lookupHash', 'lookupHash', { unique: false });
-            store.createIndex('timestamp', 'timestamp', { unique: false });
-          }
-        };
-      });
-      this.version = this.version + 1;
-      return this.storeWallet(walletData, pin);
+      throw new Error('Wallet store not initialized');
     }
 
     // Generate unique ID for this wallet
@@ -601,15 +634,15 @@ export class UnifiedWalletStorage {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
       const store = transaction.objectStore(this.walletsStore);
-      const index = store.index('address');
+      const index = store.index('lookupHash');
 
-      const request = index.get(address);
+      const request = index.getAll(lookupHash);
 
       request.onerror = () => reject(request.error);
       request.onsuccess = async () => {
-        if (request.result) {
+        if (request.result && request.result.length > 0) {
           try {
-            const walletData = await this.decryptData(request.result.data, pin);
+            const walletData = await this.decryptData(request.result[0].data, pin);
             resolve(walletData);
           } catch (error) {
             reject(new Error('Invalid PIN'));
@@ -638,6 +671,10 @@ export class UnifiedWalletStorage {
       request.onsuccess = async () => {
         const wallets = [];
         for (const record of request.result) {
+          // Skip password records (stored with __pwd__ prefix)
+          if (record.id && typeof record.id === 'string' && record.id.startsWith('__pwd__')) {
+            continue;
+          }
           try {
             const walletData = await this.decryptData(record.data, pin);
             wallets.push(walletData);
@@ -715,16 +752,21 @@ export class UnifiedWalletStorage {
       return null;
     }
 
+    // Generate lookup hash from address
+    const encoder = new TextEncoder();
+    const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
+    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
-      const index = store.index('address');
+      const index = store.index('lookupHash');
 
-      const getRequest = index.getKey(address);
+      const getRequest = index.getAllKeys(lookupHash);
 
       getRequest.onsuccess = () => {
-        if (getRequest.result) {
-          const deleteRequest = store.delete(getRequest.result);
+        if (getRequest.result && getRequest.result.length > 0) {
+          const deleteRequest = store.delete(getRequest.result[0]);
           deleteRequest.onsuccess = () => resolve(deleteRequest.result);
           deleteRequest.onerror = () => reject(deleteRequest.error);
         } else {
@@ -740,23 +782,10 @@ export class UnifiedWalletStorage {
   async storePasskeyWallet(passkeyId, walletData, pin) {
     const db = await this.initDB();
 
+    // initDB now handles store creation, this should always exist
     if (!db.objectStoreNames.contains(this.walletsStore)) {
       db.close();
-      await new Promise((resolve, reject) => {
-        const request = indexedDB.open(this.dbName, this.version + 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-          const upgradeDb = event.target.result;
-          if (!upgradeDb.objectStoreNames.contains(this.walletsStore)) {
-            const store = upgradeDb.createObjectStore(this.walletsStore, { keyPath: 'id', autoIncrement: true });
-            store.createIndex('lookupHash', 'lookupHash', { unique: false });
-            store.createIndex('timestamp', 'timestamp', { unique: false });
-          }
-        };
-      });
-      this.version = this.version + 1;
-      return this.storePasskeyWallet(passkeyId, walletData, pin);
+      throw new Error('Wallet store not initialized');
     }
 
     // Include passkey ID in wallet data
@@ -894,12 +923,21 @@ export class UnifiedWalletStorage {
     devLog('=== handleSocialLogin START ===');
     devLog('Profile:', profile);
 
+    // DEBUG: Log all ID fields from profile
+    console.log('=== OAUTH DEBUG ===');
+    console.log('profile.id:', profile.id);
+    console.log('profile.sub:', profile.sub);
+    console.log('profile.provider:', profile.provider);
+    console.log('Full profile:', JSON.stringify(profile, null, 2));
+
     try {
       const walletId = `${profile.provider}_${profile.id}`;
+      console.log('Looking for password with key: wallet_pwd_' + walletId);
       devLog('Looking for wallets with provider ID:', walletId);
 
       // Check if password exists (means wallets were created)
       const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
+      console.log('Password found:', !!storedPassword);
       devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
       if (storedPassword) {
@@ -940,8 +978,8 @@ export class UnifiedWalletStorage {
               const existingProfiles = localStorage.getItem('profiles');
               const currentProfiles = existingProfiles ? JSON.parse(existingProfiles) : [];
 
-              // Add these wallets to profiles
-              allWallets.forEach(w => {
+              // Add these wallets to profiles (include accountIndex!)
+              allWallets.forEach((w, index) => {
                 if (!currentProfiles.find(p => p.account === w.address)) {
                   currentProfiles.push({
                     account: w.address,
@@ -950,6 +988,7 @@ export class UnifiedWalletStorage {
                     wallet_type: 'oauth',
                     provider: profile.provider,
                     provider_id: profile.id,
+                    accountIndex: w.accountIndex ?? index,
                     createdAt: w.createdAt || Date.now(),
                     tokenCreatedAt: Date.now()
                   });
@@ -966,10 +1005,22 @@ export class UnifiedWalletStorage {
               requiresPassword: false
             };
           }
+
+          // Password exists but no wallets found - wallets may have been deleted
+          devLog('⚠️ Password exists but no wallets found in IndexedDB');
         } catch (error) {
           devError('[STORAGE] Failed to decrypt wallets with stored password:', error);
-          // Password might be wrong or wallets corrupted - need new password
         }
+
+        // Password exists but wallets missing/corrupted - still return success with stored password
+        // so callback.js can use it for auto-login attempt
+        return {
+          success: false,
+          requiresPassword: true,
+          walletExists: true,
+          storedPassword: storedPassword,
+          action: 'recover'
+        };
       }
 
       devLog('❌ No wallet found locally - new user');

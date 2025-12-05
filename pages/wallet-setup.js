@@ -105,7 +105,18 @@ const WalletSetupPage = () => {
       }
 
       const { token, provider, user, action } = oauthData;
-      const walletId = `${provider}_${user.id}`;
+      // Use same ID format as callback.js: id || sub || 'unknown'
+      const userId = user.id || user.sub || 'unknown';
+      const walletId = `${provider}_${userId}`;
+
+      // DEBUG: Log the ID being used for wallet creation
+      console.log('=== WALLET SETUP DEBUG ===');
+      console.log('user.id:', user.id);
+      console.log('user.sub:', user.sub);
+      console.log('userId (normalized):', userId);
+      console.log('walletId:', walletId);
+      console.log('Password will be stored as: wallet_pwd_' + walletId);
+
       let wallets = [];
 
       // Handle file import - MUST decrypt with original password first
@@ -134,7 +145,7 @@ const WalletSetupPage = () => {
           const walletData = {
             ...wallet,
             provider,
-            provider_id: user.id,
+            provider_id: userId,
             walletKeyId: walletId,
             wallet_type: 'oauth',
             restoredAt: Date.now()
@@ -157,7 +168,7 @@ const WalletSetupPage = () => {
             const wallet = XRPLWallet.fromSeed(seedTrimmed, { algorithm });
             const walletData = {
               provider,
-              provider_id: user.id,
+              provider_id: userId,
               walletKeyId: walletId,
               accountIndex: i,
               account: wallet.address,
@@ -182,7 +193,7 @@ const WalletSetupPage = () => {
         const wallet = generateRandomWallet();
         const walletData = {
           provider,
-          provider_id: user.id,
+          provider_id: userId,
           walletKeyId: walletId,
           accountIndex: 0,
           account: wallet.address,
