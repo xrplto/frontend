@@ -4,7 +4,6 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
 import { getHashIcon } from 'src/utils/formatters';
 
 const AccountAvatar = ({ account }) => {
@@ -24,16 +23,12 @@ const AccountAvatar = ({ account }) => {
   );
 };
 
-const LedgerDetails = ({ ledgerData, error, isDark }) => {
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
-
-  const { ledger } = ledgerData;
-  const { ledger_index, close_time, transactions } = ledger;
-
-  const closeTimeISO = rippleTimeToISO8601(close_time);
-  const closeTimeLocale = closeTimeISO ? new Date(closeTimeISO).toLocaleString() : 'Unknown';
+const LedgerDetails = ({ ledgerData, transactions, isDark }) => {
+  const { ledger_index, close_time_human, ledger_hash, parent_hash, tx_count, total_coins, close_time, parent_close_time } = ledgerData;
+  const closeTimeLocale = close_time_human ? new Date(close_time_human).toLocaleString() : 'Unknown';
+  const totalXrp = total_coins ? (total_coins / 1000000).toLocaleString() : 'Unknown';
+  const xrpBurned = total_coins ? ((100000000000000000 - total_coins) / 1000000).toLocaleString() : 'Unknown';
+  const interval = close_time && parent_close_time ? close_time - parent_close_time : null;
 
   const shortenAddress = (address) => {
     if (!address) return '';
@@ -48,70 +43,52 @@ const LedgerDetails = ({ ledgerData, error, isDark }) => {
   };
 
   const sortedTransactions = [...transactions].sort(
-    (a, b) => a.metaData.TransactionIndex - b.metaData.TransactionIndex
+    (a, b) => a.meta.TransactionIndex - b.meta.TransactionIndex
   );
 
   return (
     <div className={cn(
       "p-4 sm:p-6 md:p-8 rounded-xl border-[1.5px]",
-      isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+      isDark ? "border-white/10" : "border-gray-200"
     )}>
-      <h2 className="text-xl font-normal mb-2">
-        Ledger transactions #{ledger_index}
+      <h2 className={cn("text-xl font-medium mb-2", isDark ? "text-white" : "text-gray-900")}>
+        Ledger #{ledger_index}
       </h2>
-      <p className={cn(
-        "text-[15px] mb-4",
-        isDark ? "text-white/60" : "text-gray-600"
-      )}>
+      <p className={cn("text-[13px] mb-4", isDark ? "text-white/60" : "text-gray-500")}>
         {closeTimeLocale}
       </p>
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn(
-              "border-b-[1.5px]",
-              isDark ? "border-white/10" : "border-gray-200"
-            )}>
-              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Index</th>
-              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Type</th>
-              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Address</th>
-              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Status</th>
-              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Hash</th>
+            <tr className={cn("border-b", isDark ? "border-white/10" : "border-gray-200")}>
+              <th className={cn("text-left py-3 px-2 text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-500")}>Index</th>
+              <th className={cn("text-left py-3 px-2 text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-500")}>Type</th>
+              <th className={cn("text-left py-3 px-2 text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-500")}>Address</th>
+              <th className={cn("text-left py-3 px-2 text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-500")}>Status</th>
+              <th className={cn("text-left py-3 px-2 text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-500")}>Hash</th>
             </tr>
           </thead>
           <tbody>
             {sortedTransactions.map((tx) => (
-              <tr key={tx.hash} className={cn(
-                "border-b-[1.5px]",
-                isDark ? "border-white/5" : "border-gray-100"
-              )}>
-                <td className="py-3 px-2 text-[13px]">{tx.metaData.TransactionIndex}</td>
-                <td className="py-3 px-2 text-[13px]">{tx.TransactionType}</td>
+              <tr key={tx.hash} className={cn("border-b transition-colors", isDark ? "border-white/5 hover:bg-primary/5" : "border-gray-100 hover:bg-gray-50")}>
+                <td className={cn("py-3 px-2 text-[13px]", isDark ? "text-white" : "text-gray-900")}>{tx.meta.TransactionIndex}</td>
+                <td className={cn("py-3 px-2 text-[13px]", isDark ? "text-white" : "text-gray-900")}>{tx.TransactionType}</td>
                 <td className="py-3 px-2">
                   <div className="flex items-center">
                     <AccountAvatar account={tx.Account} />
-                    <span
-                      onClick={() => (window.location.href = `/profile/${tx.Account}`)}
-                      className="text-primary cursor-pointer hover:underline text-[13px]"
-                    >
+                    <span onClick={() => (window.location.href = `/profile/${tx.Account}`)} className="text-primary cursor-pointer hover:underline text-[13px]">
                       {shortenAddress(tx.Account)}
                     </span>
                   </div>
                 </td>
                 <td className="py-3 px-2">
-                  <span className={cn(
-                    "text-[13px]",
-                    tx.metaData.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
-                  )}>
-                    {tx.metaData.TransactionResult}
+                  <span className={cn("text-[13px]", tx.meta.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500')}>
+                    {tx.meta.TransactionResult}
                   </span>
                 </td>
                 <td className="py-3 px-2">
-                  <span
-                    onClick={() => (window.location.href = `/tx/${tx.hash}`)}
-                    className="text-primary cursor-pointer hover:underline text-[13px]"
-                  >
+                  <span onClick={() => (window.location.href = `/tx/${tx.hash}`)} className="text-primary cursor-pointer hover:underline text-[13px]">
                     {shortenHash(tx.hash)}
                   </span>
                 </td>
@@ -121,44 +98,56 @@ const LedgerDetails = ({ ledgerData, error, isDark }) => {
         </table>
       </div>
 
-      <div className={cn(
-        "pt-4 mt-4 border-t-[1.5px]",
-        isDark ? "border-white/10" : "border-gray-200"
-      )}>
-        <p className={cn(
-          "text-[13px] mb-1",
-          isDark ? "text-white/60" : "text-gray-600"
-        )}>
-          Ledger Unix close time: {close_time}
+      <div className={cn("mt-6 border-t pt-6 space-y-3", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-500")}>
+            <span className={isDark ? "text-white/40" : "text-gray-400"}>Closed:</span> {closeTimeLocale}
+          </p>
+          {interval && (
+            <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-500")}>
+              <span className={isDark ? "text-white/40" : "text-gray-400"}>Interval:</span> {interval}s
+            </p>
+          )}
+          <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-500")}>
+            <span className={isDark ? "text-white/40" : "text-gray-400"}>Transactions:</span> {tx_count}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-500")}>
+            <span className={isDark ? "text-white/40" : "text-gray-400"}>Total XRP:</span> {totalXrp}
+          </p>
+          <p className={cn("text-[13px]", isDark ? "text-orange-400/80" : "text-orange-600")}>
+            <span className={isDark ? "text-white/40" : "text-gray-400"}>XRP Burned:</span> {xrpBurned}
+          </p>
+        </div>
+        <p className={cn("text-[13px] font-mono break-all", isDark ? "text-white/60" : "text-gray-500")}>
+          <span className={cn("font-sans", isDark ? "text-white/40" : "text-gray-400")}>Ledger hash:</span> {ledger_hash}
         </p>
-        <p className={cn(
-          "text-[13px]",
-          isDark ? "text-white/60" : "text-gray-600"
-        )}>
-          Ledger UTC close time: {closeTimeISO}
+        <p className={cn("text-[13px] font-mono break-all", isDark ? "text-white/60" : "text-gray-500")}>
+          <span className={cn("font-sans", isDark ? "text-white/40" : "text-gray-400")}>Parent hash:</span> {parent_hash}
         </p>
       </div>
     </div>
   );
 };
 
-const LatestLedgerPage = ({ ledgerData, error }) => {
+const LatestLedgerPage = ({ ledgerData, transactions, error }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-1 py-8 max-w-screen-lg mx-auto w-full px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-normal mb-2">
+      <div className="flex-1 py-8 max-w-6xl mx-auto w-full px-4">
+        <div className="mb-6">
+          <h1 className={cn("text-2xl font-medium", isDark ? "text-white" : "text-gray-900")}>
             Latest Ledger
           </h1>
         </div>
         {error ? (
-          <div className="text-red-500">{error}</div>
+          <p className="text-red-500">{error}</p>
         ) : (
-          <LedgerDetails ledgerData={ledgerData} isDark={isDark} />
+          <LedgerDetails ledgerData={ledgerData} transactions={transactions} isDark={isDark} />
         )}
       </div>
       <Footer />
@@ -168,20 +157,19 @@ const LatestLedgerPage = ({ ledgerData, error }) => {
 
 export async function getServerSideProps() {
   try {
-    const response = await axios.get('https://api.xrpscan.com/api/v1/ledger');
+    const listRes = await axios.get('https://api.xrpscan.com/api/v1/ledger');
+    const ledgerIndex = listRes.data.current_ledger;
+    const [ledgerRes, txRes] = await Promise.all([
+      axios.get(`https://api.xrpscan.com/api/v1/ledger/${ledgerIndex}`),
+      axios.get(`https://api.xrpscan.com/api/v1/ledger/${ledgerIndex}/transactions`)
+    ]);
     return {
-      props: {
-        ledgerData: response.data,
-        error: null
-      }
+      props: { ledgerData: ledgerRes.data, transactions: txRes.data || [], error: null }
     };
   } catch (error) {
     console.error(error);
     return {
-      props: {
-        ledgerData: null,
-        error: 'Failed to fetch ledger data.'
-      }
+      props: { ledgerData: null, transactions: [], error: 'Failed to fetch ledger data.' }
     };
   }
 }
