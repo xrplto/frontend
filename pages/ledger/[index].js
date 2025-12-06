@@ -193,7 +193,7 @@ const LedgerPage = ({ ledgerData, transactions, error }) => {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+      <div className="mx-auto w-full max-w-[1920px] flex-1 px-4 py-8">
         <div className="mb-6">
           <h1 className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
             Ledger Details

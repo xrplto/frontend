@@ -138,7 +138,7 @@ const LatestLedgerPage = ({ ledgerData, transactions, error }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-1 py-8 max-w-6xl mx-auto w-full px-4">
+      <div className="flex-1 py-8 max-w-[1920px] mx-auto w-full px-4">
         <div className="mb-6">
           <h1 className={cn("text-2xl font-medium", isDark ? "text-white" : "text-gray-900")}>
             Latest Ledger

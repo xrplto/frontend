@@ -138,6 +138,16 @@ const getNftImage = (nft) => {
   return null;
 };
 
+// Safe hex to UTF-8 decode with error handling
+const safeHexDecode = (hex) => {
+  if (!hex) return null;
+  try {
+    return CryptoJS.enc.Hex.parse(hex).toString(CryptoJS.enc.Utf8);
+  } catch {
+    return null;
+  }
+};
+
 const KNOWN_SOURCE_TAGS = {
   74920348: { name: 'First Ledger', url: 'https://firstledger.net' },
   10011010: { name: 'Magnetic', url: 'https://magnetic.com' },
@@ -3473,26 +3483,16 @@ const TransactionDetails = ({ txData }) => {
                               <Typography variant="body1">{NFTokenTaxon}</Typography>
                             </DetailRow>
                           )}
-                          {URI && (
+                          {URI && safeHexDecode(URI) && (
                             <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Link
-                                href={CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                                href={safeHexDecode(URI)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                passHref
                               >
-                                <Typography
-                                  component="span"
-                                  variant="body1"
-                                  sx={{
-                                    color: theme.palette.primary.main,
-                                    textDecoration: 'none',
-                                    '&:hover': { textDecoration: 'underline' },
-                                    wordBreak: 'break-all'
-                                  }}
-                                >
-                                  {CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
-                                </Typography>
+                                <span className="text-[#4285f4] hover:underline break-all text-[13px]">
+                                  {safeHexDecode(URI)}
+                                </span>
                               </Link>
                             </DetailRow>
                           )}
@@ -3523,10 +3523,10 @@ const TransactionDetails = ({ txData }) => {
                               <Typography variant="body1">{OracleDocumentID}</Typography>
                             </DetailRow>
                           )}
-                          {Provider && (
+                          {Provider && safeHexDecode(Provider) && (
                             <DetailRow label="Provider" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Typography variant="body1">
-                                {CryptoJS.enc.Hex.parse(Provider).toString(CryptoJS.enc.Utf8)}
+                                {safeHexDecode(Provider)}
                               </Typography>
                             </DetailRow>
                           )}
@@ -3541,26 +3541,16 @@ const TransactionDetails = ({ txData }) => {
                               </Typography>
                             </DetailRow>
                           )}
-                          {URI && (
+                          {URI && safeHexDecode(URI) && (
                             <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Link
-                                href={CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
+                                href={safeHexDecode(URI)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                passHref
                               >
-                                <Typography
-                                  component="span"
-                                  variant="body1"
-                                  sx={{
-                                    color: theme.palette.primary.main,
-                                    textDecoration: 'none',
-                                    '&:hover': { textDecoration: 'underline' },
-                                    wordBreak: 'break-all'
-                                  }}
-                                >
-                                  {CryptoJS.enc.Hex.parse(URI).toString(CryptoJS.enc.Utf8)}
-                                </Typography>
+                                <span className="text-[#4285f4] hover:underline break-all text-[13px]">
+                                  {safeHexDecode(URI)}
+                                </span>
                               </Link>
                             </DetailRow>
                           )}
@@ -3634,10 +3624,10 @@ const TransactionDetails = ({ txData }) => {
                 {/* AccountSet Details */}
                 {TransactionType === 'AccountSet' && (
                   <>
-                    {txData.Domain && (
+                    {txData.Domain && safeHexDecode(txData.Domain) && (
                       <DetailRow label="Domain">
                         <Typography variant="body1">
-                          {CryptoJS.enc.Hex.parse(txData.Domain).toString(CryptoJS.enc.Utf8)}
+                          {safeHexDecode(txData.Domain)}
                         </Typography>
                       </DetailRow>
                     )}
@@ -4181,11 +4171,13 @@ const TransactionDetails = ({ txData }) => {
                 <code className="text-[13px] font-mono">{ctid}</code>
               </DetailRow>
             )}
-            <DetailRow label="Last Ledger" index={3}>
-              <span className="text-[13px]">
-                #{LastLedgerSequence?.toLocaleString()} ({LastLedgerSequence - ledger_index} ledgers)
-              </span>
-            </DetailRow>
+            {LastLedgerSequence && (
+              <DetailRow label="Last Ledger" index={3}>
+                <span className="text-[13px]">
+                  #{LastLedgerSequence.toLocaleString()} ({LastLedgerSequence - ledger_index} ledgers)
+                </span>
+              </DetailRow>
+            )}
             {SourceTag && (
               <DetailRow label="Source Tag" index={4}>
                 <span className="text-[13px]">{SourceTag}</span>
@@ -4263,7 +4255,7 @@ const TxPage = ({ txData, error }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-1 py-8 max-w-screen-lg mx-auto w-full px-4">
+      <div className="flex-1 py-8 max-w-[1920px] mx-auto w-full px-4">
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
             The imports have been updated, but the component JSX still uses many MUI components like:
             Box, Typography, Paper, Card, CardContent, Stack, Grid, Chip, Avatar, Tooltip, etc.
