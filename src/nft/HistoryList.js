@@ -162,14 +162,12 @@ export default function HistoryList({ nft }) {
                     </span>
 
                     {item.hash && (
-                      <a
-                        href={`https://xrpscan.com/tx/${item.hash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        href={`/tx/${item.hash}`}
                         className={cn('p-1 rounded hover:bg-white/5', isDark ? 'text-gray-600 hover:text-gray-400' : 'text-gray-400 hover:text-gray-600')}
                       >
                         <ExternalLink size={12} />
-                      </a>
+                      </Link>
                     )}
                   </div>
                 </div>

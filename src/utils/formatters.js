@@ -66,6 +66,7 @@ export function fIntNumber(number) {
 }
 
 export function fVolume(vol) {
+  if (vol === undefined || vol === null) return '0';
   const volume = typeof vol === 'string' ? parseFloat(vol) || 0 : vol;
   if (volume >= 1e9) return (volume / 1e9).toFixed(2) + 'B';
   if (volume >= 1e6) return (volume / 1e6).toFixed(2) + 'M';
