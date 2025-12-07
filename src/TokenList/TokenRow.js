@@ -113,39 +113,40 @@ const OptimizedChart = memo(
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(66, 133, 244, 0.05)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 14px 8px;
+  padding: 18px 12px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.isDark ? '#FFFFFF' : '#000000')};
+  color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isTokenColumn ? '220px' : 'auto')};
+  letter-spacing: 0.01em;
 `;
 
 // Mobile-specific flexbox components
 const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 10px 4px;
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(0,0,0,0.04)'};
+  padding: 14px 8px;
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)'};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(66, 133, 244, 0.015)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
   }
 `;
 
@@ -153,7 +154,7 @@ const MobileTokenInfo = styled.div`
   flex: 2;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   padding: 0 4px;
   min-width: 0;
 `;
@@ -161,30 +162,32 @@ const MobileTokenInfo = styled.div`
 const MobilePriceCell = styled.div`
   flex: 1.2;
   text-align: right;
-  padding: 0 4px;
+  padding: 0 6px;
   font-weight: 500;
-  font-size: 12px;
-  color: ${(props) => props.isDark ? '#FFFFFF' : '#000000'};
+  font-size: 13px;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000'};
   min-width: 0;
+  letter-spacing: 0.01em;
 `;
 
 const MobilePercentCell = styled.div`
-  flex: 0.7;
+  flex: 0.8;
   text-align: right;
-  padding: 0 4px;
+  padding: 0 6px;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 13px;
   min-width: 0;
+  letter-spacing: 0.01em;
 `;
 
 // Shared components with mobile/desktop variations
 const TokenImage = styled.div`
-  width: ${(props) => (props.isMobile ? '20px' : '24px')};
-  height: ${(props) => (props.isMobile ? '20px' : '24px')};
+  width: ${(props) => (props.isMobile ? '28px' : '36px')};
+  height: ${(props) => (props.isMobile ? '28px' : '36px')};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'};
 `;
 
 const TokenDetails = styled.div`
@@ -192,42 +195,46 @@ const TokenDetails = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 2px;
 `;
 
 const TokenName = styled.span`
-  font-weight: 500;
-  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
+  font-weight: 600;
+  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
   color: ${(props) => props.isDark ? '#FFFFFF' : '#000000'};
-  max-width: ${(props) => (props.isMobile ? '100px' : '140px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: 1.2;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
 `;
 
 const UserName = styled.span`
-  font-size: ${(props) => (props.isMobile ? '9px' : '10px')};
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   opacity: 1;
   font-weight: 400;
   display: block;
-  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.2;
-  margin-top: 0;
+  line-height: 1.3;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 `;
 
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (
   <span
     style={{
       fontWeight: 500,
-      fontSize: isMobile ? '11px' : '12px',
-      color: flashColor || (isDark ? '#FFFFFF' : '#000000'),
-      transition: 'color 1s ease-out'
+      fontSize: isMobile ? '13px' : '14px',
+      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000'),
+      transition: 'color 1s ease-out',
+      letterSpacing: '0.01em'
     }}
   >
     {children}
@@ -237,7 +244,8 @@ const PriceText = ({ flashColor, isDark, isMobile, children }) => (
 const PercentText = styled.span`
   font-weight: 500;
   color: ${(props) => props.color};
-  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
+  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
+  letter-spacing: 0.01em;
 `;
 
 const truncate = (str, n) => {
@@ -453,20 +461,20 @@ const MobileTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#10b981' : '#059669';
+      return darkMode ? '#22c55e' : '#16a34a';
     return value < 0
-      ? darkMode ? '#ef4444' : '#dc2626'
-      : darkMode ? '#10b981' : '#059669';
+      ? '#ef4444'
+      : '#22c55e';
   };
 
   const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
-    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    return darkMode ? '#EF5350' : '#C62828';
+    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#000000';
+    if (mcap >= 5e6) return '#22c55e';
+    if (mcap >= 1e6) return '#22c55e';
+    if (mcap >= 1e5) return '#3b82f6';
+    if (mcap >= 1e4) return '#eab308';
+    if (mcap >= 1e3) return '#f97316';
+    return '#ef4444';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -482,7 +490,7 @@ const MobileTokenRow = ({
       const val = columnId === 'pro30d' ? pro24h * 30 : token[columnId];
       const color = getPercentColor(val);
       return (
-        <span style={{ color, fontWeight: '400' }}>
+        <span style={{ color, fontWeight: '500' }}>
           {val !== undefined && val !== null && !isNaN(val)
             ? `${val > 0 ? '+' : ''}${val.toFixed(1)}%`
             : '0.0%'}
@@ -543,7 +551,7 @@ const MobileTokenRow = ({
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt={name || 'Token'}
-            size={20}
+            size={28}
             onError={() => setImgError(true)}
             priority={false}
             md5={md5}
@@ -614,20 +622,20 @@ const DesktopTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#10b981' : '#059669';
+      return darkMode ? '#22c55e' : '#16a34a';
     return value < 0
-      ? darkMode ? '#ef4444' : '#dc2626'
-      : darkMode ? '#10b981' : '#059669';
+      ? '#ef4444'
+      : '#22c55e';
   };
 
   const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
-    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    return darkMode ? '#EF5350' : '#C62828';
+    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#000000';
+    if (mcap >= 5e6) return '#22c55e';
+    if (mcap >= 1e6) return '#22c55e';
+    if (mcap >= 1e5) return '#3b82f6';
+    if (mcap >= 1e4) return '#eab308';
+    if (mcap >= 1e3) return '#f97316';
+    return '#ef4444';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -645,12 +653,12 @@ const DesktopTokenRow = ({
           maxWidth: '220px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TokenImage isDark={darkMode}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
-              size={24}
+              size={36}
               onError={() => setImgError(true)}
               priority={false}
               md5={md5}
@@ -1408,19 +1416,19 @@ export const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => props.isDark ? '#010815' : '#FFFFFF'};
+  background: ${(props) => props.isDark ? '#0a0a0a' : '#FFFFFF'};
 `;
 
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
-  padding: 8px 4px;
-  background: ${(props) => props.isDark ? '#010815' : '#FFFFFF'};
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0,0,0,0.1)'};
-  font-size: 10px;
+  padding: 12px 8px;
+  background: ${(props) => props.isDark ? '#0a0a0a' : '#FFFFFF'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.08)'};
+  font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
   color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   position: sticky;
   top: 0;
@@ -1431,11 +1439,12 @@ export const MobileHeader = styled.div`
 export const HeaderCell = styled.div`
   flex: ${(props) => props.flex || 1};
   text-align: ${(props) => props.align || 'left'};
-  padding: 0 4px;
+  padding: 0 6px;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
+  transition: color 0.15s ease;
 
   &:hover {
-    color: ${(props) => props.sortable && (props.isDark ? '#FFFFFF' : '#000000')};
+    color: ${(props) => props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
   }
 `;
 

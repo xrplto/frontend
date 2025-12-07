@@ -270,16 +270,15 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
   const isVideo = nft?.meta?.video;
   const isLiked = likedNfts?.includes(NFTokenID);
 
-  const isIpfsImage = imgUrl?.includes('ipfs.io');
-
   let videoUrl = null;
   if (isVideo) {
     const videoFiles = getNftFilesUrls(nft, 'video');
     videoUrl = videoFiles?.[0]?.cachedUrl || null;
   }
 
-  // Format price
-  const price = cost?.amount ? (cost.currency === 'XRP' ? cost.amount : null) : (amount || null);
+  // Format prices
+  const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
+  const bestOffer = costb?.amount && costb.currency === 'XRP' ? costb.amount : null;
 
   const handleImageLoad = () => setLoadingImg(false);
   const handleImageError = () => { setLoadingImg(false); setImageError(true); };
@@ -304,16 +303,13 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
   return (
     <Link href={`/nft/${NFTokenID}`} className="block group">
       <div
-        className={cn(
-          'rounded-lg overflow-hidden transition-all',
-          isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
-        )}
+        className="rounded-xl overflow-hidden transition-all"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-square overflow-hidden rounded-xl">
           {loadingImg && !imageError && (
-            <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
+            <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/10' : 'bg-gray-200')} />
           )}
           {!imageError ? (
             isVideo && videoUrl && isHovered ? (
@@ -324,63 +320,60 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
                 className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
             )
           ) : (
-            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-200')}>
+            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/10' : 'bg-gray-200')}>
               <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
             </div>
           )}
 
-          {/* IPFS indicator */}
-          {isIpfsImage && loadingImg && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className={cn('text-[10px] px-2 py-1 rounded', isDark ? 'bg-black/70 text-white/70' : 'bg-white/90 text-gray-600')}>
-                Loading from IPFS...
-              </span>
-            </div>
-          )}
-
-          {/* Rarity badge */}
+          {/* Rarity badge - top left */}
           {rarity_rank > 0 && (
-            <div className={cn(
-              'absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium',
-              isDark ? 'bg-black/70 text-white/80' : 'bg-white/90 text-gray-700'
-            )}>
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white backdrop-blur-sm">
               #{fIntNumber(rarity_rank)}
             </div>
           )}
 
-          {/* Like button */}
+          {/* Price badges - bottom left */}
+          {(listPrice || bestOffer) && (
+            <div className="absolute bottom-2 left-2 flex flex-col gap-1">
+              {listPrice && (
+                <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-primary/90 text-white backdrop-blur-sm">
+                  {fNumber(listPrice)} XRP
+                </div>
+              )}
+              {bestOffer && (
+                <div className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-black/70 text-green-400 backdrop-blur-sm">
+                  Offer: {fNumber(bestOffer)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Like button - top right */}
           <button onClick={handleLike} disabled={liking} className={cn(
-            'absolute top-1.5 right-1.5 p-1 rounded-md transition-all',
-            isLiked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-            isDark ? 'bg-black/70 hover:bg-black/90' : 'bg-white/90 hover:bg-white'
+            'absolute top-2 right-2 p-1.5 rounded-md transition-all backdrop-blur-sm',
+            isLiked ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover:opacity-100 bg-black/40 hover:bg-black/60'
           )}>
             {liking ? (
-              <Loader2 size={12} className="animate-spin text-red-500" />
+              <Loader2 size={14} className="animate-spin text-white" />
             ) : (
-              <Heart size={12} className={cn(isLiked ? 'fill-red-500 text-red-500' : isDark ? 'text-white/70' : 'text-gray-500')} />
+              <Heart size={14} className={cn(isLiked ? 'fill-red-500 text-red-500' : 'text-white')} />
             )}
           </button>
 
           {/* Admin remove button */}
           {isAdmin && (
             <button onClick={handleRemoveNft} className={cn(
-              'absolute bottom-1.5 right-1.5 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all',
-              isDark ? 'bg-black/70 hover:bg-red-500' : 'bg-white/90 hover:bg-red-500 hover:text-white',
-              'text-white/70 hover:text-white'
+              'absolute bottom-2 right-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all',
+              'bg-black/60 hover:bg-red-500 text-white backdrop-blur-sm'
             )}>
-              <X size={12} />
+              <X size={14} />
             </button>
           )}
         </div>
-        <div className="px-2 py-1.5">
-          <p className={cn('text-[11px] font-normal truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+        <div className="px-1 pt-2 pb-1">
+          <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-800')}>
             {name}
           </p>
-          {price && (
-            <p className={cn('text-[10px] font-medium', 'text-primary')}>
-              {fNumber(price)} XRP
-            </p>
-          )}
         </div>
       </div>
     </Link>
@@ -743,7 +736,7 @@ const NFTGrid = React.memo(({ collection }) => {
           )
         }
       >
-        <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
           {loading && nfts.length === 0
             ? Array.from({ length: 24 }).map((_, i) => <NFTSkeleton key={`skeleton-${i}`} isDark={isDark} />)
             : nfts.map((nft) => (
@@ -1128,7 +1121,7 @@ export default function CollectionView({ collection }) {
       </div>
 
       {/* NFTs and Activity Tabs */}
-      <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+      <div className={cn('rounded-xl border-[1.5px] p-2 sm:p-3', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
         <TabContext value={value}>
           <div className={cn('flex justify-between items-center mb-4 pb-2 border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
             <div className="flex gap-1">

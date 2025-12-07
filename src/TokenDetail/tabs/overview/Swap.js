@@ -966,9 +966,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     return {
       slippage_tolerance: `${slippage}%`,
       minimum_received: minReceived.toFixed(6),
-      from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : null,
-      from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : null,
-      price_impact: Math.abs(impactPct) > 0.01 ? `${impactPct > 0 ? '+' : ''}${impactPct.toFixed(2)}%` : null,
+      from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : '0',
+      from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : '0',
+      price_impact: Math.abs(impactPct) > 0.01 ? {
+        percent: `${impactPct.toFixed(2)}%`,
+        xrp: `${(inputAmt * Math.abs(impactPct) / 100).toFixed(4)} XRP`
+      } : null,
       amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
       execution_rate: (outputAmt / inputAmt).toFixed(6)
     };
@@ -2219,34 +2222,31 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   <span style={{ fontSize: 12 }}>Slippage {slippage}%</span>
                 </button>
                 <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', color: 'text.secondary' }}>
-                  Impact {priceImpact}%
+                  Impact {swapQuoteCalc?.price_impact?.percent ? parseFloat(swapQuoteCalc.price_impact.percent.replace('%', '')).toFixed(2) : '—'}%
                 </Typography>
               </Stack>
 
-              {/* Quote Summary - Concise */}
+              {/* Quote Summary */}
               {swapQuoteCalc && (
                 <Box sx={{ mt: 1, p: 1, borderRadius: '6px', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
                   <Stack spacing={0.25}>
                     {/* Rate */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                       <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
-                        Rate {quoteLoading && <span style={{ opacity: 0.5 }}>•••</span>}
+                        Rate{swapQuoteCalc.ammFallback && <span style={{ color: '#f59e0b' }}> ~est</span>}{quoteLoading && <span style={{ opacity: 0.5 }}> •••</span>}
                       </Typography>
                       <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
-                        1 {token1?.name || token1?.currency} = {(() => {
-                          let rate = parseFloat(swapQuoteCalc.execution_rate);
-                          // If rate is 0 or missing, calculate from source/dest amounts
-                          if (!rate || rate === 0) {
-                            const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
-                            const dstVal = parseFloat(swapQuoteCalc.minimum_received || amount2);
-                            if (srcVal > 0 && dstVal > 0) rate = dstVal / srcVal;
-                          }
+                        1 {token2?.name || token2?.currency} = {(() => {
+                          // Calculate rate as source/destination (XRP per token)
+                          const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
+                          const dstVal = parseFloat(swapQuoteCalc.destination_amount?.value || amount2);
+                          const rate = dstVal > 0 && srcVal > 0 ? srcVal / dstVal : 0;
                           if (!rate || rate === 0) return '—';
                           if (rate >= 1000000) return fNumber(rate);
                           if (rate >= 1) return rate.toFixed(4);
                           if (rate >= 0.0001) return rate.toFixed(8);
                           return rate.toExponential(4);
-                        })()} {token2?.name || token2?.currency}
+                        })()} {token1?.name || token1?.currency}
                       </Typography>
                     </Stack>
                     {/* Min Received */}
@@ -2258,31 +2258,38 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
                       </Typography>
                     </Stack>
-                    {/* AMM Fee - only show if present */}
-                    {swapQuoteCalc.amm_pool_fee && (
-                      <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
-                          AMM fee {swapQuoteCalc.amm_trading_fee_bps ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)` : ''}
-                        </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace', color: '#f59e0b' }}>
-                          {swapQuoteCalc.amm_pool_fee}
-                        </Typography>
-                      </Stack>
-                    )}
-                    {/* Paths count if > 1 */}
-                    {swapQuoteCalc.paths_count > 1 && (
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '9px', textAlign: 'right' }}>
-                        via {swapQuoteCalc.paths_count} paths
-                      </Typography>
-                    )}
+                    {/* Route & Fee combined */}
+                    {(() => {
+                      const obVal = parseFloat(swapQuoteCalc.from_orderbook) || 0;
+                      const ammVal = parseFloat(swapQuoteCalc.from_amm) || 0;
+                      const feeStr = swapQuoteCalc.amm_pool_fee;
+                      const feePct = swapQuoteCalc.amm_trading_fee_bps ? (swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2) : null;
+                      if (obVal === 0 && ammVal === 0 && !feeStr) return null;
+
+                      return (
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                          <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                            Route
+                          </Typography>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                            {obVal > 0 && ammVal > 0 ? (
+                              <span style={{ color: '#22c55e' }}>DEX+AMM</span>
+                            ) : obVal > 0 ? (
+                              <span style={{ color: '#22c55e' }}>DEX</span>
+                            ) : ammVal > 0 ? (
+                              <span style={{ color: '#3b82f6' }}>AMM</span>
+                            ) : null}
+                            {feeStr && <span style={{ opacity: 0.6 }}> · {feePct}% fee</span>}
+                          </Typography>
+                        </Stack>
+                      );
+                    })()}
                   </Stack>
                   {/* Trustline Warning */}
                   {quoteRequiresTrustline && (
-                    <Box sx={{ mt: 0.75, p: 0.75, borderRadius: '4px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#f59e0b' }}>
-                        ⚠ Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
-                      </Typography>
-                    </Box>
+                    <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#f59e0b', mt: 0.5, display: 'block' }}>
+                      Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
+                    </Typography>
                   )}
                 </Box>
               )}

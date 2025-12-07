@@ -255,48 +255,50 @@ const StyledTableBody = styled.tbody`
     padding: 0;
 
     &:hover {
-      background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+      background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)')};
     }
   }
 
   td {
-    padding: 12px 10px;
+    padding: 18px 12px;
   }
 `;
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
+  transition: background 0.2s ease;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 12px 10px;
+  padding: 18px 12px;
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.darkMode ? '#ffffff' : '#212B36')};
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#212B36')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isCollectionColumn ? '250px' : 'auto')};
+  letter-spacing: 0.01em;
 `;
 
 // Mobile components
 const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 10px 8px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
+  padding: 14px 8px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)')};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   }
 `;
 
@@ -304,30 +306,31 @@ const MobileCollectionInfo = styled.div`
   flex: 2;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 2px;
+  gap: 10px;
+  padding: 0 4px;
   min-width: 0;
 `;
 
 const MobileCell = styled.div`
   flex: ${(props) => props.flex || 1};
   text-align: ${(props) => props.align || 'right'};
-  padding: 0 2px;
+  padding: 0 6px;
   font-weight: ${(props) => props.fontWeight || 500};
-  font-size: 11px;
-  color: ${(props) => props.color || (props.darkMode ? '#ffffff' : '#212B36')};
+  font-size: 13px;
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#212B36')};
   min-width: ${(props) => props.minWidth || 'auto'};
+  letter-spacing: 0.01em;
   ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
   ${(props) => props.lineHeight && `line-height: ${props.lineHeight};`}
 `;
 
 const CollectionImage = styled.div`
-  width: ${(props) => (props.isMobile ? '20px' : '28px')};
-  height: ${(props) => (props.isMobile ? '20px' : '28px')};
+  width: ${(props) => (props.isMobile ? '28px' : '36px')};
+  height: ${(props) => (props.isMobile ? '28px' : '36px')};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
 `;
 
 const CollectionDetails = styled.div`
@@ -335,33 +338,36 @@ const CollectionDetails = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 2px;
 `;
 
 const CollectionName = styled.span`
-  font-weight: 500;
-  font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
+  font-weight: 600;
+  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
   color: ${(props) => (props.darkMode ? '#ffffff' : '#212B36')};
-  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: 1.2;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
 `;
 
 const CollectionSubtext = styled.span`
-  font-size: ${(props) => (props.isMobile ? '9px' : '10px')};
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
+  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   opacity: 1;
   font-weight: 400;
   display: block;
-  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.2;
-  margin-top: 0;
+  line-height: 1.3;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 `;
 
 // Toolbar styled components
@@ -573,18 +579,18 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
-  backdrop-filter: blur(10px);
+  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+  backdrop-filter: blur(12px);
 `;
 
 const StyledTableCell = styled.th`
   font-weight: 500;
-  font-size: 0.65rem;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)')};
-  padding: 10px 8px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
+  padding: 16px 12px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -592,21 +598,23 @@ const StyledTableCell = styled.th`
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   font-family: inherit;
+  transition: color 0.15s ease;
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)') : 'inherit'};
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
   }
 `;
 
 const SortIndicator = styled.span`
   display: inline-block;
-  margin-left: 4px;
-  font-size: 0.6rem;
+  margin-left: 6px;
+  font-size: 8px;
   color: ${(props) =>
-    props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'};
+    props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'};
   transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
-  opacity: ${(props) => (props.active ? 1 : 0.6)};
+  opacity: ${(props) => (props.active ? 1 : 0.5)};
+  transition: transform 0.15s ease, color 0.15s ease;
 `;
 
 const MobileContainer = styled.div`
@@ -616,7 +624,7 @@ const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => (props.darkMode ? '#000000' : '#ffffff')};
+  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
 `;
 
 // Table Head Configuration
@@ -732,9 +740,9 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const floorChangePercent = floor1dPercent || 0;
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return darkMode ? '#4CAF50' : '#2E7D32';
-    if (percent < 0) return darkMode ? '#EF5350' : '#C62828';
-    return darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)';
+    if (percent > 0) return '#22c55e';
+    if (percent < 0) return '#ef4444';
+    return darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)';
   };
 
   const formatFloorChange = (percent) => {
@@ -747,7 +755,7 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
     <MobileCollectionCard onClick={handleRowClick} darkMode={darkMode}>
       <MobileCollectionInfo>
         <CollectionImage isMobile={true} darkMode={darkMode}>
-          <OptimizedImage src={logoImageUrl} alt={collectionName} size={20} />
+          <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
         </CollectionImage>
         <CollectionDetails>
           <CollectionName isMobile={true} darkMode={darkMode}>{collectionName}</CollectionName>
@@ -801,9 +809,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   const strDateTime = formatMonthYearDate(created);
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return darkMode ? '#4CAF50' : '#2E7D32';
-    if (percent < 0) return darkMode ? '#EF5350' : '#C62828';
-    return darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)';
+    if (percent > 0) return '#22c55e';
+    if (percent < 0) return '#ef4444';
+    return darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)';
   };
 
   const formatFloorChange = (percent) => {
@@ -813,19 +821,13 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   };
 
   const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? '#ffffff' : '#212B36';
-    // Elite: $5M+ (3% - dark green)
-    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    // Established: $1M-$5M (8% - green)
-    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    // Mid-tier: $100K-$1M (24% - blue)
-    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    // Small: $10K-$100K (32% - yellow)
-    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    // Micro: $1K-$10K (orange)
-    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    // Nano: <$1K (red)
-    return darkMode ? '#EF5350' : '#C62828';
+    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#212B36';
+    if (mcap >= 5e6) return '#22c55e';
+    if (mcap >= 1e6) return '#22c55e';
+    if (mcap >= 1e5) return '#3b82f6';
+    if (mcap >= 1e4) return '#eab308';
+    if (mcap >= 1e3) return '#f97316';
+    return '#ef4444';
   };
 
   // Process chart data
@@ -857,9 +859,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         isCollectionColumn={true}
         style={{ width: '250px', minWidth: '250px', maxWidth: '250px' }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <CollectionImage darkMode={darkMode}>
-            <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
+            <OptimizedImage src={logoImageUrl} alt={collectionName} size={36} />
           </CollectionImage>
           <div style={{ minWidth: 0, flex: 1 }}>
             <CollectionName title={collectionName} darkMode={darkMode}>{collectionName}</CollectionName>

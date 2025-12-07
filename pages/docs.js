@@ -88,9 +88,11 @@ const ApiDocsPage = () => {
       { id: 'rate-limits-keys', label: 'Rate Limits' }
     ],
     subscriptions: [
-      { id: 'pricing', label: 'Pricing Tiers' },
-      { id: 'subscribe', label: 'Subscribe via XRPL' },
-      { id: 'check-usage', label: 'Check Usage' }
+      { id: 'pricing', label: 'Pricing' },
+      { id: 'credits', label: 'Credit Packs' },
+      { id: 'xrp-payment', label: 'Pay with XRP' },
+      { id: 'stripe-payment', label: 'Pay with Card' },
+      { id: 'billing-cycle', label: 'Billing Cycle' }
     ],
     tokens: [
       { id: 'get-tokens', label: 'GET /tokens' },
@@ -1312,7 +1314,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 Authenticate your requests with API keys for higher rate limits and usage tracking.
               </p>
               <a
-                href="/api-keys"
+                href="/dashboard"
                 className={cn(
                   "inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors",
                   isDark
@@ -1416,12 +1418,12 @@ const { apiKey, keyPrefix } = await response.json();
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-normal text-primary mb-2">Subscriptions</h2>
+              <h2 className="text-2xl font-normal text-primary mb-2">Subscriptions & Credits</h2>
               <p className={cn("text-[14px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
-                Upgrade to a paid tier for higher limits. Pay with XRP directly on the XRPL.
+                Pay with XRP or credit card. Yearly billing saves 2 months (16.7% off).
               </p>
               <a
-                href="/api-keys"
+                href="/dashboard"
                 className={cn(
                   "inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors",
                   isDark
@@ -1430,37 +1432,37 @@ const { apiKey, keyPrefix } = await response.json();
                 )}
               >
                 <CreditCard size={14} />
-                Upgrade Subscription
+                Manage Subscription
                 <ExternalLink size={12} className="opacity-60" />
               </a>
             </div>
 
             <div id="pricing" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pricing Tiers</h3>
+              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Subscription Tiers</h3>
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[13px]">
                   <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
                     <tr>
                       <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Tier</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>EUR/mo</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>XRP</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Req/min</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Req/day</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Monthly</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Yearly</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Credits/mo</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Req/sec</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { tier: 'Free', eur: '0', xrp: '0', rpm: '10', rpd: '2K' },
-                      { tier: 'Basic', eur: '30', xrp: '60', rpm: '100', rpd: '30K' },
-                      { tier: 'Pro', eur: '100', xrp: '200', rpm: '400', rpd: '120K' },
-                      { tier: 'Enterprise', eur: '250', xrp: '500', rpm: '1,000', rpd: '300K' }
-                    ].map((row, i) => (
+                      { tier: 'Free', monthly: '$0', yearly: '$0', credits: '1M', rps: '10' },
+                      { tier: 'Developer', monthly: '$49', yearly: '$490', credits: '10M', rps: '50' },
+                      { tier: 'Business', monthly: '$499', yearly: '$4,990', credits: '100M', rps: '200' },
+                      { tier: 'Professional', monthly: '$999', yearly: '$9,990', credits: '200M', rps: '500' }
+                    ].map((row) => (
                       <tr key={row.tier} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
                         <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.tier}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.eur}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.xrp}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpm}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpd}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.monthly}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.yearly}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.credits}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rps}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1468,88 +1470,220 @@ const { apiKey, keyPrefix } = await response.json();
               </div>
             </div>
 
-            <div id="subscribe" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Subscribe via XRPL Payment</h3>
+            <div id="credits" className="space-y-4">
+              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Credit Packs (One-time, Never Expire)</h3>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+                <table className="w-full text-[13px]">
+                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                    <tr>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Pack</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Price</th>
+                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Credits</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { pack: 'starter', price: '$5', credits: '1M' },
+                      { pack: 'standard', price: '$20', credits: '5M' },
+                      { pack: 'bulk', price: '$75', credits: '25M' },
+                      { pack: 'mega', price: '$250', credits: '100M' }
+                    ].map((row) => (
+                      <tr key={row.pack} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                        <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.pack}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.price}</td>
+                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.credits}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="xrp-payment" className="space-y-4">
+              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pay with XRP</h3>
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>3-Step Payment Flow</span>
-                  <button onClick={() => copyToClipboard(`// Step 1: Get payment details
-const subRes = await fetch('https://api.xrpl.to/api/api-keys/subscribe', {
+                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>XRP Payment Flow</span>
+                  <button onClick={() => copyToClipboard(`// 1. Get payment details
+const res = await fetch('https://api.xrpl.to/api/api-keys/purchase', {
   method: 'POST',
-  headers: { 'Authorization': \`Bearer \${jwt}\`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ tier: 'basic' })
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    wallet: 'rYourWallet...',
+    type: 'credits',      // or 'tier'
+    package: 'starter'    // or tier: 'developer', billing: 'monthly'
+  })
 }).then(r => r.json());
-// subRes.xrplPayment = { destination, amount, destinationTag }
+// res.payment = { destination, amount, destinationTag }
 
-// Step 2: Send XRP payment
+// 2. Send XRP payment
 const payment = {
   TransactionType: 'Payment',
   Account: wallet.address,
-  Destination: subRes.xrplPayment.destination,
-  Amount: xrpl.xrpToDrops(subRes.xrplPayment.amount),
-  DestinationTag: subRes.xrplPayment.destinationTag
+  Destination: res.payment.destination,
+  DestinationTag: res.payment.destinationTag,
+  Amount: xrpl.xrpToDrops(res.payment.amount)
 };
-const result = await client.submitAndWait(payment, { wallet });
+const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
-// Step 3: Verify payment
+// 3. Verify (auto-polls for 30s)
 await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
   method: 'POST',
-  headers: { 'Authorization': \`Bearer \${jwt}\`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ txHash: result.result.hash, tier: 'basic' })
-});`, 'subscribe-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'subscribe-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ txHash: result.result.hash })
+});`, 'xrp-code')} className="p-1.5 rounded hover:bg-white/10">
+                    {copiedBlock === 'xrp-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`// Step 1: Get payment details
-const subRes = await fetch('https://api.xrpl.to/api/api-keys/subscribe', {
+{`// 1. Get payment details
+const res = await fetch('https://api.xrpl.to/api/api-keys/purchase', {
   method: 'POST',
-  headers: { 'Authorization': \`Bearer \${jwt}\`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ tier: 'basic' })
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    wallet: 'rYourWallet...',
+    type: 'credits',      // or 'tier'
+    package: 'starter'    // or tier: 'developer', billing: 'monthly'
+  })
 }).then(r => r.json());
-// subRes.xrplPayment = { destination, amount, destinationTag }
+// res.payment = { destination, amount, destinationTag }
 
-// Step 2: Send XRP payment
+// 2. Send XRP payment
 const payment = {
   TransactionType: 'Payment',
   Account: wallet.address,
-  Destination: subRes.xrplPayment.destination,
-  Amount: xrpl.xrpToDrops(subRes.xrplPayment.amount),
-  DestinationTag: subRes.xrplPayment.destinationTag
+  Destination: res.payment.destination,
+  DestinationTag: res.payment.destinationTag,
+  Amount: xrpl.xrpToDrops(res.payment.amount)
 };
-const result = await client.submitAndWait(payment, { wallet });
+const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
-// Step 3: Verify payment
+// 3. Verify (auto-polls for 30s)
 await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
   method: 'POST',
-  headers: { 'Authorization': \`Bearer \${jwt}\`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ txHash: result.result.hash, tier: 'basic' })
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ txHash: result.result.hash })
 });`}
                 </pre>
               </div>
             </div>
 
-            <div id="check-usage" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Check Usage</h3>
+            <div id="stripe-payment" className="space-y-4">
+              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pay with Card (Stripe)</h3>
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /api/api-keys/usage</span>
-                  <button onClick={() => copyToClipboard(`const usage = await fetch('https://api.xrpl.to/api/api-keys/usage', {
-  headers: { 'Authorization': \`Bearer \${jwt}\` }
+                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Stripe Checkout</span>
+                  <button onClick={() => copyToClipboard(`// 1. Create checkout session
+const res = await fetch('https://api.xrpl.to/api/api-keys/stripe/checkout', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    wallet: 'rYourWallet...',
+    type: 'tier',
+    tier: 'developer',
+    billing: 'yearly'  // or 'monthly'
+  })
 }).then(r => r.json());
 
-// Response:
-// usage.usage[0].today = { used: 500, limit: 30000, remaining: 29500 }`, 'usage-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'usage-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+// 2. Redirect to Stripe
+window.location.href = res.checkoutUrl;
+
+// 3. Check status (after redirect back)
+const status = await fetch(
+  \`https://api.xrpl.to/api/api-keys/stripe/status/\${sessionId}\`
+).then(r => r.json());
+// status: 'unpaid' | 'paid' | 'completed'`, 'stripe-code')} className="p-1.5 rounded hover:bg-white/10">
+                    {copiedBlock === 'stripe-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`const usage = await fetch('https://api.xrpl.to/api/api-keys/usage', {
-  headers: { 'Authorization': \`Bearer \${jwt}\` }
+{`// 1. Create checkout session
+const res = await fetch('https://api.xrpl.to/api/api-keys/stripe/checkout', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    wallet: 'rYourWallet...',
+    type: 'tier',
+    tier: 'developer',
+    billing: 'yearly'  // or 'monthly'
+  })
 }).then(r => r.json());
 
-// Response:
-// usage.usage[0].today = { used: 500, limit: 30000, remaining: 29500 }`}
+// 2. Redirect to Stripe
+window.location.href = res.checkoutUrl;
+
+// 3. Check status (after redirect back)
+const status = await fetch(
+  \`https://api.xrpl.to/api/api-keys/stripe/status/\${sessionId}\`
+).then(r => r.json());
+// status: 'unpaid' | 'paid' | 'completed'`}
+                </pre>
+              </div>
+            </div>
+
+            <div id="billing-cycle" className="space-y-4">
+              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Billing Cycle</h3>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
+                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
+                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /:wallet/credits & /:wallet/subscription</span>
+                  <button onClick={() => copyToClipboard(`// Get credits with billing cycle
+GET /api/api-keys/:wallet/credits
+{
+  "balance": 1000000,
+  "billingCycle": {
+    "start": "2025-12-07",
+    "end": "2026-01-06",
+    "daysRemaining": 30,
+    "cycleProgress": 0,
+    "billing": "monthly"
+  }
+}
+
+// Get subscription details
+GET /api/api-keys/:wallet/subscription
+{
+  "subscription": {
+    "tier": "developer",
+    "billing": "yearly",
+    "billingCycle": {
+      "start": "2025-12-07",
+      "end": "2026-12-07",
+      "daysRemaining": 365,
+      "renewalDate": "2026-12-07"
+    }
+  }
+}`, 'billing-code')} className="p-1.5 rounded hover:bg-white/10">
+                    {copiedBlock === 'billing-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+                  </button>
+                </div>
+                <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
+{`// Get credits with billing cycle
+GET /api/api-keys/:wallet/credits
+{
+  "balance": 1000000,
+  "billingCycle": {
+    "start": "2025-12-07",
+    "end": "2026-01-06",
+    "daysRemaining": 30,
+    "cycleProgress": 0,
+    "billing": "monthly"
+  }
+}
+
+// Get subscription details
+GET /api/api-keys/:wallet/subscription
+{
+  "subscription": {
+    "tier": "developer",
+    "billing": "yearly",
+    "billingCycle": {
+      "start": "2025-12-07",
+      "end": "2026-12-07",
+      "daysRemaining": 365,
+      "renewalDate": "2026-12-07"
+    }
+  }
+}`}
                 </pre>
               </div>
             </div>

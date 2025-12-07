@@ -503,23 +503,34 @@ const LiveCircle = styled.div`
 
 const Card = styled.div`
   background: transparent;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   position: relative;
   animation: ${props => props.isNew ? 'highlight 0.8s ease-out' : 'none'};
   transition: background 0.15s ease;
   &:hover { background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}; }
   ${props => props.isNew && highlightAnimation(props.isDark)}
+  @media (max-width: 640px) {
+    padding: 0 4px;
+  }
 `;
 
 const CardContent = styled.div`
   padding: 8px 0;
+  @media (max-width: 640px) {
+    padding: 12px 0;
+  }
 `;
 
 const TradeTypeChip = styled.div`
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: ${props => props.tradetype === 'BUY' ? '#22c55e' : '#ef4444'};
-  width: 32px;
+  width: 36px;
+  @media (max-width: 640px) {
+    font-size: 13px;
+    font-weight: 600;
+    width: 42px;
+  }
 `;
 
 const VolumeIndicator = styled.div`
@@ -734,47 +745,49 @@ const FormControlLabel = styled.label`
 
 const Tabs = styled.div`
   display: inline-flex;
-  gap: 2px;
-  padding: 4px;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.05)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.1)'};
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   border-radius: 12px;
   margin-bottom: 12px;
+  overflow: hidden;
   @media (max-width: 640px) {
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+    display: flex;
   }
 `;
 
 const Tab = styled.button`
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 8px 14px;
-  background: transparent;
-  border: 1.5px solid ${props => props.selected ? 'rgba(59,130,246,0.5)' : 'transparent'};
-  border-radius: 8px;
-  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  padding: 10px 16px;
+  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent'};
+  border: none;
+  border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   cursor: pointer;
   transition: all 0.15s;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   flex-shrink: 0;
+  &:last-child { border-right: none; }
   &:hover {
-    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   }
   @media (max-width: 640px) {
-    padding: 5px 6px;
-    font-size: 9px;
-    gap: 2px;
-    letter-spacing: 0;
-    & svg { width: 12px; height: 12px; }
+    flex: 1;
+    padding: 14px 8px;
+    font-size: 11px;
+    gap: 6px;
+    & svg { width: 24px; height: 24px; }
+    & > span { display: ${props => props.selected ? 'inline' : 'none'}; }
   }
 `;
 
@@ -1035,18 +1048,26 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   };
 
   const SubTab = styled.button`
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
-    padding: 6px 14px;
-    background: transparent;
-    border: 1.5px solid ${props => props.selected ? 'rgba(59,130,246,0.5)' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-    border-radius: 6px;
-    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+    padding: 10px 16px;
+    background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent'};
+    border: none;
+    border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
     cursor: pointer;
     transition: all 0.15s;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    &:hover { color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'}; }
+    letter-spacing: 0.02em;
+    &:last-child { border-right: none; }
+    &:hover {
+      background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+      color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+    }
+    @media (max-width: 640px) {
+      padding: 8px 12px;
+      font-size: 11px;
+    }
   `;
 
   const OfferCard = styled.div`
@@ -1112,12 +1133,13 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {/* Sub-tabs */}
       <Box style={{
         display: 'inline-flex',
-        gap: '2px',
-        padding: '4px',
-        background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.05)',
-        border: `1px solid ${isDark ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.1)'}`,
-        borderRadius: '10px',
-        marginBottom: '4px'
+        gap: '0',
+        padding: '0',
+        background: 'transparent',
+        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        borderRadius: '12px',
+        marginBottom: '4px',
+        overflow: 'hidden'
       }}>
         <SubTab
           selected={activeSubTab === 'assets'}
@@ -1898,34 +1920,34 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         return (
           <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
             <VolumeIndicator volume={volumePercentage} isDark={isDark} />
-            <CardContent style={{ padding: '6px 0' }}>
-              <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+            <CardContent>
+              <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                 {/* Left: Type + Time */}
-                <Box style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '65px' }}>
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '75px' }}>
                   {isLiquidity ? (
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: trade.type === 'deposit' || trade.type === 'create' ? '#8b5cf6' : '#f59e0b' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: trade.type === 'deposit' || trade.type === 'create' ? '#8b5cf6' : '#f59e0b' }}>
                       {getLiquidityLabel(trade.type)}
                     </span>
                   ) : (
                     <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
                   )}
-                  <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                     {formatRelativeTime(trade.time)}
                   </span>
                 </Box>
                 {/* Center: Amount → Total with labels */}
-                <Box style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, justifyContent: 'center' }}>
-                  <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeValue(amountData.value)} <span style={{ opacity: 0.4, fontSize: '9px' }}>{decodeCurrency(amountData.currency)}</span>
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                    {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
                   </span>
-                  <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>→</span>
-                  <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeValue(totalData.value)} <span style={{ opacity: 0.4, fontSize: '9px' }}>{decodeCurrency(totalData.currency)}</span>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>→</span>
+                  <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                    {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
                   </span>
                 </Box>
                 {/* Right: Link */}
-                <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark} style={{ padding: '2px' }}>
-                  <ExternalLink size={12} />
+                <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark} style={{ padding: '4px' }}>
+                  <ExternalLink size={16} />
                 </IconButton>
               </Box>
             </CardContent>

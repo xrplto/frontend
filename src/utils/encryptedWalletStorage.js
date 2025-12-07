@@ -171,7 +171,7 @@ export class UnifiedWalletStorage {
 
     // Key derivation: entropy + version (no unstable browser fingerprinting)
     // The entropy provides 128 bits of randomness, PBKDF2 provides the stretching
-    return 'xrpl-wallet-v3-' + storedEntropy;
+    return 'xrpl-wallet-v1-' + storedEntropy;
   }
 
   // Check if Web Crypto API is available (secure context required)

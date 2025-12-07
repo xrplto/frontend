@@ -31,8 +31,8 @@ const formatMcap = (value) => {
 const Card = styled.div`
   width: 100%;
   height: 100%;
-  padding: ${props => props.isMobile ? '8px' : '16px'};
-  padding-bottom: ${props => props.isMobile ? '8px' : '16px'};
+  padding: ${props => props.isMobile ? '6px' : '16px'};
+  padding-bottom: ${props => props.isMobile ? '6px' : '16px'};
   background: transparent;
   border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
@@ -69,10 +69,10 @@ const ButtonGroup = styled.div`
 `;
 
 const Button = styled.button`
-  padding: ${props => props.isMobile ? '6px 10px' : '5px 10px'};
-  font-size: ${props => props.isMobile ? '12px' : '12px'};
+  padding: ${props => props.isMobile ? '4px 8px' : '5px 10px'};
+  font-size: ${props => props.isMobile ? '11px' : '12px'};
   min-width: ${props => props.minWidth || 'auto'};
-  height: ${props => props.isMobile ? '30px' : '28px'};
+  height: ${props => props.isMobile ? '28px' : '28px'};
   border-radius: 6px;
   font-weight: 400;
   border: 1.5px solid ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
@@ -86,7 +86,7 @@ const Button = styled.button`
   &:hover {
     border-color: ${props => props.isActive ? '#3b82f6' : '#3b82f6'};
   }
-  & svg { width: 14px; height: 14px; }
+  & svg { width: ${props => props.isMobile ? '12px' : '14px'}; height: ${props => props.isMobile ? '12px' : '14px'}; }
 `;
 
 const Spinner = styled(Loader2)`
@@ -494,7 +494,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 600);
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 400 : 620);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: containerHeight,
@@ -509,11 +509,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(240, 240, 240, 0.8)',
-          style: 1
+          color: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+          style: 0
         },
         horzLines: {
-          color: isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(240, 240, 240, 1)',
+          color: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
           style: 0
         }
       },
@@ -535,19 +535,19 @@ const PriceChartAdvanced = memo(({ token }) => {
       rightPriceScale: {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         scaleMargins: {
-          top: 0.05,
-          bottom: 0.15
+          top: 0.02,
+          bottom: 0.08
         },
         mode: 0,
         autoScale: true,
         borderVisible: false,
         visible: true,
         entireTextOnly: false,
-        drawTicks: isMobile ? false : true,
-        ticksVisible: isMobile ? false : true,
+        drawTicks: !isMobile,
+        ticksVisible: !isMobile,
         alignLabels: true,
         textColor: isDark ? '#ffffff' : '#000000',
-        minimumWidth: isMobile ? 50 : 80
+        minimumWidth: isMobile ? 42 : 80
       },
       localization: {
         priceFormatter: (price) => {
@@ -610,26 +610,29 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderVisible: true,
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 5,
-        barSpacing: 8,
-        minBarSpacing: 0.1,  // Allow more bars on smaller viewports
+        rightOffset: isMobile ? 2 : 8,
+        barSpacing: isMobile ? 6 : 10,
+        minBarSpacing: isMobile ? 2 : 1,
         fixLeftEdge: true,   // Prevent scrolling past oldest data
         fixRightEdge: true,  // Prevent scrolling past newest data
         rightBarStaysOnScroll: true,
         lockVisibleTimeRangeOnResize: true,
         shiftVisibleRangeOnNewBar: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
-          // time is in UTC seconds, use UTC methods for consistency
           const date = new Date(time * 1000);
           const hours = date.getUTCHours().toString().padStart(2, '0');
           const minutes = date.getUTCMinutes().toString().padStart(2, '0');
           const day = date.getUTCDate();
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           const month = months[date.getUTCMonth()];
-          // Show date for day boundaries or when tickMarkType indicates year/month/day
-          if (tickMarkType >= 2 || (hours === '00' && minutes === '00')) {
+          // tickMarkType: 0=time, 1=time, 2=day, 3=month, 4=year
+          if (tickMarkType >= 3) {
             return `${month} ${day}`;
           }
+          if (tickMarkType === 2) {
+            return `${month} ${day}`;
+          }
+          // For intraday, always show time
           return `${hours}:${minutes}`;
         }
       },
@@ -687,7 +690,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 130px; position: absolute; display: none; padding: 8px; font-size: 11px; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#010815' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.08)'}`;
+    toolTip.style = `width: ${isMobile ? '115px' : '130px'}; position: absolute; display: none; padding: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '10px' : '11px'}; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#010815' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 
@@ -757,7 +760,8 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         toolTip.innerHTML = ohlcData;
         toolTip.style.display = 'block';
-        toolTip.style.left = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 140, param.point.x - 50)) + 'px';
+        const tipWidth = isMobile ? 125 : 140;
+        toolTip.style.left = Math.max(0, Math.min(chartContainerRef.current.clientWidth - tipWidth, param.point.x - 50)) + 'px';
         // Dynamic vertical positioning
         const yPos = param.point.y > chartContainerRef.current.clientHeight / 2 ? 8 : param.point.y + 20;
         toolTip.style.top = yPos + 'px';
@@ -810,7 +814,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         lastValueVisible: false
       });
       volumeSeriesRef.current = volumeSeries;
-      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
+      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.88, bottom: 0 } });
     }
 
     // Debounced resize with ResizeObserver
@@ -866,7 +870,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (!chartContainerRef.current || !chartRef.current) return;
 
     const container = chartContainerRef.current;
-    const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 620;
+    const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 400 : 620;
     const newWidth = container.clientWidth;
 
     // Use only applyOptions (resize is redundant)
@@ -911,7 +915,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceScaleId: 'volume', scaleMargins: { top: 0.85, bottom: 0 },
         priceLineVisible: false, lastValueVisible: false
       });
-      chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
+      chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.88, bottom: 0 } });
     }
 
     const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
@@ -946,12 +950,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       const dataLength = chartData.length;
       // Visible bars based on timeframe (matching the time period)
       const visibleBarsMap = {
-        '1d': isMobile ? 48 : 96,    // 24h of 15-min bars
-        '5d': isMobile ? 240 : 480,  // 5 days of 15-min bars
-        '1m': isMobile ? 360 : 720,  // 30 days of 1h bars
-        '3m': isMobile ? 270 : 540,  // 90 days of 4h bars
-        '1y': isMobile ? 180 : 365,  // 1 year of daily bars
-        '5y': isMobile ? 130 : 260   // 5 years of weekly bars
+        '1d': isMobile ? 48 : 120,   // 24h+ of 15-min bars
+        '5d': isMobile ? 240 : 400,  // 5 days of 15-min bars
+        '1m': isMobile ? 360 : 500,  // 30 days of 1h bars
+        '3m': isMobile ? 270 : 400,  // 90 days of 4h bars
+        '1y': isMobile ? 180 : 300,  // 1 year of daily bars
+        '5y': isMobile ? 130 : 200   // 5 years of weekly bars
       };
       const visibleBars = visibleBarsMap[timeRange] || 96;
       const from = Math.max(0, dataLength - visibleBars);
@@ -978,7 +982,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   return (
     <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
-      <Box style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: isMobile ? '8px' : '12px', gap: isMobile ? '10px' : '8px' }}>
+      <Box style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: isMobile ? '6px' : '12px', gap: isMobile ? '6px' : '8px' }}>
         <Box style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '10px', flexWrap: 'wrap' }}>
           <Typography variant="h6" isDark={isDark}>
             {token.name} {chartType === 'holders' ? 'Holders' : `(${activeFiatCurrency})`}
@@ -1012,7 +1016,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           )}
         </Box>
 
-        <Box style={{ display: 'flex', gap: isMobile ? '8px' : '6px', flexWrap: 'wrap', alignItems: 'center', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
+        <Box style={{ display: 'flex', gap: isMobile ? '4px' : '6px', flexWrap: 'wrap', alignItems: 'center', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
           <ButtonGroup>
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
               <Button key={type} onClick={() => setChartType(type)} isActive={chartType === type} isMobile={isMobile} isDark={isDark}>
@@ -1033,7 +1037,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 isActive={timeRange === range}
                 isMobile={isMobile}
                 isDark={isDark}
-                minWidth={isMobile ? '32px' : '32px'}
+                minWidth={isMobile ? '28px' : '32px'}
               >
                 {range.toUpperCase()}
               </Button>
@@ -1047,7 +1051,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         </Box>
       </Box>
 
-      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '380px' : '620px', borderRadius: '8px' }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '400px' : '620px', borderRadius: '8px' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && (
           <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

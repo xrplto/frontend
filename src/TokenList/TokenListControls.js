@@ -11,19 +11,19 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
-  backdrop-filter: blur(10px);
+  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+  backdrop-filter: blur(12px);
 `;
 
 const StyledTableCell = styled.th`
   font-weight: 500;
-  font-size: 0.65rem;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)')};
-  padding: ${(props) => (props.isMobile ? '10px 6px' : '10px 8px')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
+  padding: ${(props) => (props.isMobile ? '14px 8px' : '16px 12px')};
   border-bottom: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -33,12 +33,13 @@ const StyledTableCell = styled.th`
   position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
   left: ${(props) => props.left || 'unset'};
   z-index: ${(props) => (props.sticky ? 101 : 'auto')};
-  background: ${(props) => (props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent')};
+  background: ${(props) => (props.sticky ? (props.darkMode ? '#0a0a0a' : '#fff') : 'transparent')};
   font-family: inherit;
   overflow: visible !important;
+  transition: color 0.15s ease;
 
   &:hover {
-    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)') : 'inherit')};
+    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit')};
   }
 
   ${(props) =>
@@ -52,19 +53,19 @@ const StyledTableCell = styled.th`
       top: 0;
       bottom: 0;
       width: 1px;
-      background: ${props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
-      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+      background: ${props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
     }
   `}
 `;
 
 const SortIndicator = styled.span`
   display: inline-block;
-  margin-left: 4px;
-  font-size: 0.6rem;
-  color: ${(props) => (props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')};
+  margin-left: 6px;
+  font-size: 8px;
+  color: ${(props) => (props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)')};
   transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
-  opacity: ${(props) => (props.active ? 1 : 0.6)};
+  opacity: ${(props) => (props.active ? 1 : 0.5)};
+  transition: transform 0.15s ease, color 0.15s ease;
 `;
 
 const Tooltip = styled.div`

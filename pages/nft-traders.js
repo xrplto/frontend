@@ -86,41 +86,44 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: 0;
   z-index: 10;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(18,18,18,0.98)' : 'rgba(255,255,255,0.98)')};
-  backdrop-filter: blur(10px);
+  background: ${({ darkMode }) => (darkMode ? '#0a0a0a' : '#ffffff')};
+  backdrop-filter: blur(12px);
 `;
 
 const StyledTh = styled.th`
   font-weight: 500;
-  font-size: 0.65rem;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')};
-  padding: 10px 8px;
-  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)')};
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
+  padding: 16px 12px;
+  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
   text-align: ${({ align }) => align || 'left'};
   width: ${({ width }) => width || 'auto'};
   cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
   white-space: nowrap;
   font-family: inherit;
+  transition: color 0.15s ease;
 
   &:hover {
-    color: ${({ sortable, darkMode }) => (sortable ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'))};
+    color: ${({ sortable, darkMode }) => (sortable ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)'))};
   }
 `;
 
 const StyledTbody = styled.tbody`
   tr {
-    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)')};
+    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+    transition: background 0.2s ease;
     &:hover {
-      background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)')};
+      background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
     }
   }
 `;
 
 const StyledTd = styled.td`
-  padding: 12px 10px;
+  padding: 18px 12px;
   font-size: 13px;
+  letter-spacing: 0.01em;
   color: ${({ color, darkMode }) => color || (darkMode ? '#fff' : '#212B36')};
   text-align: ${({ align }) => align || 'left'};
   vertical-align: middle;
@@ -130,44 +133,53 @@ const StyledTd = styled.td`
 const SortIndicator = styled.span`
   display: inline-block;
   margin-left: 4px;
-  font-size: 9px;
+  font-size: 8px;
   color: #3b82f6;
   transform: ${({ direction }) => (direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transition: transform 0.15s ease;
 `;
 
 const TraderLink = styled(Link)`
   color: #3b82f6;
   text-decoration: none;
-  &:hover { text-decoration: underline; }
+  font-weight: 500;
+  transition: color 0.15s ease;
+  &:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+  }
 `;
 
 const Badge = styled.span`
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
   font-weight: 500;
   background: ${({ type }) =>
-    type === 'buyer' ? 'rgba(59, 130, 246, 0.1)' :
-    type === 'seller' ? 'rgba(239,83,80,0.1)' : 'rgba(255,193,7,0.1)'};
+    type === 'buyer' ? 'rgba(59, 130, 246, 0.12)' :
+    type === 'seller' ? 'rgba(239,68,68,0.12)' : 'rgba(234,179,8,0.12)'};
   color: ${({ type }) =>
     type === 'buyer' ? '#3b82f6' :
-    type === 'seller' ? '#EF5350' : '#FFC107'};
+    type === 'seller' ? '#ef4444' : '#eab308'};
 `;
 
 const CollectionImg = styled.img`
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 1px solid ${({ darkMode }) => (darkMode ? '#000' : '#fff')};
+  border: 2px solid ${({ darkMode }) => (darkMode ? '#0a0a0a' : '#fff')};
+  object-fit: cover;
 `;
 
 const MarketBadge = styled.span`
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 9px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)')};
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
 `;
 
 // Pagination Components

@@ -86,8 +86,8 @@ const StyledTableBody = styled.tbody`
 
     &:hover {
       background: ${(props) => props.darkMode
-        ? 'rgba(66, 133, 244, 0.02)'
-        : 'rgba(66, 133, 244, 0.015)'};
+        ? 'rgba(255, 255, 255, 0.02)'
+        : 'rgba(0, 0, 0, 0.015)'};
     }
   }
 

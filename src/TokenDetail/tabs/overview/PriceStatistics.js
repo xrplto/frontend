@@ -224,23 +224,77 @@ export default function PriceStatistics({ token, isDark = false }) {
   }, [creator]);
 
   // Fetch creator activity when expanded
-  useEffect(() => {
-    if (!activityOpen || !creator || transactions.length > 0) return;
-    setLoadingTx(true);
-    fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=10`)
-      .then(res => res.json())
-      .then(data => {
-        if (data?.result === 'success' && data?.transactions) {
-          const validTxs = data.transactions
-            .map(t => t.tx_json && !t.tx ? { ...t, tx: t.tx_json } : t)
-            .filter(t => t?.tx?.TransactionType)
-            .slice(0, 6);
-          setTransactions(validTxs);
+  const [hasWarning, setHasWarning] = useState(false);
+  const [activityFilter, setActivityFilter] = useState('all');
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [noTokenActivity, setNoTokenActivity] = useState(false);
+
+  const fetchActivity = async (filter) => {
+    if (!creator) return;
+    setFilterLoading(true);
+    setNoTokenActivity(false);
+
+    try {
+      // First try creator-activity API (token-specific)
+      let url = `https://api.xrpl.to/api/creator-activity/${creator}?limit=12`;
+      if (filter === 'sells') url += '&side=sell';
+      else if (filter === 'buys') url += '&side=buy';
+      else if (filter === 'amm') url += '&type=AMMDeposit,AMMWithdraw';
+      else if (filter === 'exits') url += '&side=sell,withdraw';
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data?.events?.length > 0) {
+        setTransactions(data.events);
+        setHasWarning(data.warning || false);
+      } else if (filter === 'all') {
+        // Fallback to account_tx for general activity
+        setNoTokenActivity(true);
+        const txRes = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=12`);
+        const txData = await txRes.json();
+        if (txData?.result === 'success' && txData?.transactions) {
+          const mapped = txData.transactions.map(t => {
+            const tx = t.tx_json || t.tx || {};
+            const meta = t.meta || {};
+            const amt = meta.delivered_amount || meta.DeliveredAmount || tx.Amount;
+            const isXrp = typeof amt === 'string';
+            const isOutgoing = tx.Account === creator;
+            return {
+              hash: tx.hash || t.hash,
+              type: tx.TransactionType,
+              side: tx.TransactionType === 'Payment' ? (isOutgoing ? 'send' : 'receive') : null,
+              result: meta.TransactionResult || 'tesSUCCESS',
+              time: tx.date ? (tx.date + 946684800) * 1000 : Date.now(),
+              ledger: tx.ledger_index || tx.inLedger,
+              tokenAmount: !isXrp && amt?.value ? parseFloat(amt.value) : 0,
+              xrpAmount: isXrp ? parseInt(amt) / 1e6 : 0,
+              currency: !isXrp && amt?.currency ? (amt.currency.length > 3 ? Buffer.from(amt.currency, 'hex').toString().replace(/\0/g, '').trim() : amt.currency) : 'XRP',
+              destination: tx.Destination
+            };
+          });
+          setTransactions(mapped);
+          // Check for failed in last 24h
+          const day = 24 * 60 * 60 * 1000;
+          setHasWarning(mapped.some(t => t.result !== 'tesSUCCESS' && (Date.now() - t.time) < day));
+        } else {
+          setTransactions([]);
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoadingTx(false));
-  }, [activityOpen, creator, transactions.length]);
+      } else {
+        setTransactions([]);
+      }
+    } catch (e) {
+      setTransactions([]);
+    } finally {
+      setFilterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!activityOpen || !creator) return;
+    setTransactions([]);
+    fetchActivity(activityFilter);
+  }, [activityOpen, creator, activityFilter]);
 
   const voldivmarket =
     marketcap > 0 && vol24hxrp != null
@@ -459,55 +513,198 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell colSpan={2} style={{ padding: '8px' }}>
                 <Box style={{
-                  background: isDark ? 'rgba(156,39,176,0.05)' : 'rgba(156,39,176,0.03)',
+                  background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)',
                   borderRadius: '8px',
-                  padding: '8px'
+                  padding: '10px',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`
                 }}>
-                  {loadingTx ? (
+                  {/* Filter Tabs */}
+                  <Stack direction="row" style={{ gap: '4px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                    {[
+                      { key: 'all', label: 'All' },
+                      { key: 'exits', label: '🚨 Exits', color: '#ef4444' },
+                      { key: 'sells', label: 'Sells' },
+                      { key: 'buys', label: 'Buys' },
+                      { key: 'amm', label: 'AMM' }
+                    ].map(f => (
+                      <Typography
+                        key={f.key}
+                        variant="caption"
+                        onClick={() => setActivityFilter(f.key)}
+                        style={{
+                          padding: '4px 10px',
+                          fontSize: '10px',
+                          fontWeight: activityFilter === f.key ? 600 : 400,
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          background: activityFilter === f.key
+                            ? (f.color ? alpha(f.color, 0.15) : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'))
+                            : 'transparent',
+                          color: activityFilter === f.key
+                            ? (f.color || (isDark ? '#fff' : '#000'))
+                            : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'),
+                          border: `1px solid ${activityFilter === f.key ? (f.color ? alpha(f.color, 0.3) : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)')) : 'transparent'}`,
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        {f.label}
+                      </Typography>
+                    ))}
+                  </Stack>
+
+                  {/* Warning Banner */}
+                  {hasWarning && (
+                    <Stack direction="row" alignItems="center" style={{ gap: '6px', marginBottom: '10px', padding: '8px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                      <AlertTriangle size={14} color="#ef4444" />
+                      <Stack style={{ flex: 1 }}>
+                        <Typography variant="caption" style={{ color: '#ef4444', fontSize: '11px', fontWeight: 600 }}>⚠️ Exit Signal Detected</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '9px' }}>Creator has failed transactions in the last 24 hours</Typography>
+                      </Stack>
+                    </Stack>
+                  )}
+
+                  {/* No token activity notice */}
+                  {noTokenActivity && transactions.length > 0 && (
+                    <Stack direction="row" alignItems="center" style={{ gap: '6px', marginBottom: '8px', padding: '6px 8px', background: isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.2)' }}>
+                      <Typography variant="caption" style={{ color: '#3b82f6', fontSize: '9px' }}>
+                        ℹ️ No token trades found. Showing general account activity.
+                      </Typography>
+                    </Stack>
+                  )}
+
+                  {/* Loading / Empty / List */}
+                  {(loadingTx || filterLoading) ? (
                     <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
                       Loading...
                     </Typography>
                   ) : transactions.length === 0 ? (
                     <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
-                      No recent activity
+                      No activity found
                     </Typography>
                   ) : (
-                    <Stack spacing={0.5}>
-                      {transactions.map((txData, i) => {
-                        const tx = txData.tx;
-                        const meta = txData.meta;
-                        const type = tx.TransactionType;
-                        const isIn = tx.Destination === creator;
-                        const isSelf = tx.Account === tx.Destination;
-                        const label = type === 'Payment' ? (isSelf && tx.SendMax ? 'Swap' : isIn ? 'In' : 'Out') : type === 'OfferCreate' ? 'Offer' : type === 'TrustSet' ? 'Trust' : type?.slice(0,5);
-                        const color = type === 'Payment' ? (isSelf ? '#3b82f6' : isIn ? '#22c55e' : '#ef4444') : type === 'OfferCreate' ? '#3b82f6' : '#9C27B0';
+                    <Stack spacing={0}>
+                      {/* Header */}
+                      <Stack direction="row" style={{ padding: '0 0 6px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`, marginBottom: '4px' }}>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '70px', textTransform: 'uppercase' }}>Action</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, flex: 1, textAlign: 'right', textTransform: 'uppercase' }}>Token Amt</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '70px', textAlign: 'right', textTransform: 'uppercase' }}>XRP</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '50px', textAlign: 'right', textTransform: 'uppercase' }}>Time</Typography>
+                      </Stack>
+
+                      {transactions.map((event, i) => {
+                        const { side, tokenAmount, xrpAmount, result, time, hash, ledger, type, currency, destination } = event;
+                        const isFailed = result && result !== 'tesSUCCESS';
+
+                        // Side-based styling with fallback to type
+                        const sideConfig = {
+                          sell: { label: 'SELL', color: '#ef4444', icon: '📤' },
+                          buy: { label: 'BUY', color: '#22c55e', icon: '📥' },
+                          deposit: { label: 'DEPOSIT', color: '#22c55e', icon: '💧' },
+                          withdraw: { label: 'WITHDRAW', color: '#f59e0b', icon: '🔥' },
+                          receive: { label: 'RECEIVE', color: '#22c55e', icon: '📥' },
+                          send: { label: 'SEND', color: '#f59e0b', icon: '📤' },
+                          clawback: { label: 'CLAWBACK', color: '#ef4444', icon: '⚠️' },
+                          check_create: { label: 'CHECK', color: '#3b82f6', icon: '📝' },
+                          check_receive: { label: 'CHECK IN', color: '#22c55e', icon: '📥' },
+                          check_send: { label: 'CHECK OUT', color: '#ef4444', icon: '📤' }
+                        };
+                        const typeConfig = {
+                          Payment: { label: 'TRANSFER', color: '#9C27B0', icon: '↔️' },
+                          AMMDeposit: { label: 'AMM ADD', color: '#22c55e', icon: '💧' },
+                          AMMWithdraw: { label: 'AMM EXIT', color: '#f59e0b', icon: '🔥' },
+                          OfferCreate: { label: 'OFFER', color: '#3b82f6', icon: '📊' },
+                          OfferCancel: { label: 'CANCEL', color: '#9C27B0', icon: '❌' },
+                          TrustSet: { label: 'TRUST', color: '#3b82f6', icon: '🔗' },
+                          AccountSet: { label: 'SETTINGS', color: '#6b7280', icon: '⚙️' },
+                          Clawback: { label: 'CLAWBACK', color: '#ef4444', icon: '⚠️' }
+                        };
+                        const cfg = side ? sideConfig[side] : (typeConfig[type] || { label: type?.slice(0,8), color: '#9C27B0', icon: '•' });
+                        const displayColor = isFailed ? '#ef4444' : cfg.color;
 
                         // Time ago
-                        const diffMs = tx.date ? Date.now() - new Date((tx.date + 946684800) * 1000) : 0;
+                        const diffMs = time ? Date.now() - time : 0;
                         const mins = Math.floor(diffMs / 60000);
                         const hours = Math.floor(diffMs / 3600000);
                         const days = Math.floor(diffMs / 86400000);
-                        const timeAgo = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : `${mins}m`;
+                        const timeAgo = days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : mins > 0 ? `${mins}m ago` : 'just now';
 
-                        // Amount
-                        let amountStr = '';
-                        if (type === 'Payment') {
-                          const amt = meta?.delivered_amount || meta?.DeliveredAmount || tx.Amount;
-                          if (typeof amt === 'string') {
-                            amountStr = `${fNumber(parseInt(amt) / 1e6)} XRP`;
-                          } else if (amt?.value) {
-                            const curr = amt.currency?.length > 3 ? Buffer.from(amt.currency, 'hex').toString().replace(/\0/g, '') : amt.currency;
-                            amountStr = `${fNumber(amt.value)} ${curr}`;
-                          }
-                        }
+                        // Format amounts
+                        const hasToken = tokenAmount > 0;
+                        const hasXrp = xrpAmount > 0.001;
+                        const displayCurrency = currency || 'tokens';
 
                         return (
-                          <Stack key={tx.hash || i} direction="row" alignItems="center" style={{ gap: '6px', justifyContent: 'space-between' }}>
-                            <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
-                              <Typography variant="caption" style={{ color, fontSize: '10px', fontWeight: 500, minWidth: '32px' }}>{label}</Typography>
-                              {amountStr && <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontSize: '10px' }}>{amountStr}</Typography>}
+                          <Stack
+                            key={hash || i}
+                            direction="row"
+                            alignItems="center"
+                            style={{
+                              padding: '6px 0',
+                              borderBottom: i < transactions.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'}` : 'none',
+                              opacity: isFailed ? 0.6 : 1
+                            }}
+                          >
+                            {/* Action */}
+                            <Stack direction="row" alignItems="center" style={{ width: '70px', gap: '4px' }}>
+                              <Tooltip title={`${type}\n${result}\nLedger: ${ledger}`}>
+                                <Link
+                                  href={`https://xrpscan.com/tx/${hash}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                >
+                                  <span style={{ fontSize: '10px' }}>{cfg.icon}</span>
+                                  <Typography variant="caption" style={{
+                                    color: displayColor,
+                                    fontSize: '9px',
+                                    fontWeight: 600
+                                  }}>{cfg.label}</Typography>
+                                </Link>
+                              </Tooltip>
+                              {isFailed && <span style={{ fontSize: '8px' }}>❌</span>}
                             </Stack>
-                            <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '9px' }}>{timeAgo}</Typography>
+
+                            {/* Token Amount */}
+                            <Tooltip title={hasToken ? `${fNumber(tokenAmount)} ${displayCurrency}` : ''}>
+                              <Typography variant="caption" style={{
+                                flex: 1,
+                                textAlign: 'right',
+                                color: hasToken ? (isDark ? '#fff' : '#000') : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
+                                fontSize: '11px',
+                                fontWeight: hasToken ? 600 : 400,
+                                fontFamily: 'monospace',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {hasToken ? `${fNumber(tokenAmount)}` : '-'}
+                              </Typography>
+                            </Tooltip>
+
+                            {/* XRP Amount */}
+                            <Tooltip title={hasXrp ? `${fNumber(xrpAmount)} XRP${destination ? `\nTo: ${destination.slice(0,8)}...` : ''}` : ''}>
+                              <Typography variant="caption" style={{
+                                width: '70px',
+                                textAlign: 'right',
+                                color: hasXrp ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
+                                fontSize: '10px',
+                                fontWeight: hasXrp ? 500 : 400,
+                                fontFamily: 'monospace'
+                              }}>
+                                {hasXrp ? `${fNumber(xrpAmount)}` : '-'}
+                              </Typography>
+                            </Tooltip>
+
+                            {/* Time */}
+                            <Typography variant="caption" style={{
+                              width: '50px',
+                              textAlign: 'right',
+                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                              fontSize: '9px'
+                            }}>
+                              {timeAgo}
+                            </Typography>
                           </Stack>
                         );
                       })}
@@ -575,7 +772,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   fontSize: '12px'
                 }}
               >
-                {fNumber(dom || 0)} %
+                {(dom || 0).toFixed(6)} %
               </Typography>
             </ModernTableCell>
           </TableRow>
@@ -805,10 +1002,10 @@ export default function PriceStatistics({ token, isDark = false }) {
           <Stack
             direction="row"
             alignItems="center"
-            style={{ flexWrap: 'wrap', gap: '8px' }}
+            style={{ flexWrap: 'wrap', gap: '6px' }}
           >
-            <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 3 : 5} />
-            <CompactSocialLinks social={social} size="small" />
+            <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 4 : 5} />
+            <CompactSocialLinks social={social} size="small" fullWidth={true} isDark={isDark} />
           </Stack>
         </Box>
       )}
@@ -870,7 +1067,7 @@ const getFullUrl = (platform, handle) => {
 };
 
 // Compact social links component for header integration
-export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', isDark = false }) => {
+export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', isDark = false, fullWidth = false }) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -886,19 +1083,76 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
   if (socialEntries.length === 0) return null;
 
   const getIcon = (platform) => {
-    const size = isMobile ? 12 : 14;
+    const iconSize = isMobile ? 14 : 14;
     const color = '#4285f4';
     switch(platform) {
       case 'twitter':
-      case 'x': return <Twitter size={size} color={color} />;
-      case 'telegram': return <Send size={size} color={color} />;
-      case 'discord': return <MessageCircle size={size} color={color} />;
-      case 'website': return <Globe size={size} color={color} />;
-      case 'github': return <Github size={size} color={color} />;
-      case 'reddit': return <TrendingUp size={size} color={color} />;
-      default: return <LinkIcon size={size} color={color} />;
+      case 'x': return <Twitter size={iconSize} color={color} />;
+      case 'telegram': return <Send size={iconSize} color={color} />;
+      case 'discord': return <MessageCircle size={iconSize} color={color} />;
+      case 'website': return <Globe size={iconSize} color={color} />;
+      case 'github': return <Github size={iconSize} color={color} />;
+      case 'reddit': return <TrendingUp size={iconSize} color={color} />;
+      default: return <LinkIcon size={iconSize} color={color} />;
     }
   };
+
+  const getPlatformLabel = (platform) => {
+    switch(platform) {
+      case 'twitter':
+      case 'x': return 'Twitter';
+      case 'telegram': return 'Telegram';
+      case 'discord': return 'Discord';
+      case 'website': return 'Website';
+      case 'github': return 'GitHub';
+      case 'reddit': return 'Reddit';
+      case 'facebook': return 'Facebook';
+      case 'linkedin': return 'LinkedIn';
+      case 'instagram': return 'Instagram';
+      case 'youtube': return 'YouTube';
+      case 'medium': return 'Medium';
+      case 'tiktok': return 'TikTok';
+      case 'twitch': return 'Twitch';
+      default: return platform.charAt(0).toUpperCase() + platform.slice(1);
+    }
+  };
+
+  // Compact mode with text labels - horizontal row that wraps
+  if (fullWidth) {
+    return (
+      <Stack direction="row" style={{ flexWrap: 'wrap', gap: '6px' }}>
+        {socialEntries.map(([platform, url]) => (
+          <Link
+            key={platform}
+            href={getFullUrl(platform, url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 10px',
+              borderRadius: '8px',
+              background: alpha('rgba(66,133,244,1)', 0.08),
+              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
+              textDecoration: 'none'
+            }}
+          >
+            {getIcon(platform)}
+            <Typography
+              style={{
+                fontSize: '11px',
+                fontWeight: 500,
+                color: '#4285f4'
+              }}
+            >
+              {getPlatformLabel(platform)}
+            </Typography>
+          </Link>
+        ))}
+      </Stack>
+    );
+  }
 
   return (
     <Stack direction="row" spacing={0.75} alignItems="center" style={{ gap: '8px' }}>

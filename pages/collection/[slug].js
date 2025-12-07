@@ -35,11 +35,11 @@ export default function Overview({ collection }) {
         {collectionName} NFT Collection
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <div className="px-2 sm:px-4">
         <CollectionBreadcrumb collection={collection} />
       </div>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <div className="px-2 sm:px-4">
         <Collection collection={collection} />
       </div>
 

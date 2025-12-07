@@ -39,6 +39,7 @@ const OverView = ({ account }) => {
   const [showAllTokens, setShowAllTokens] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
   const [hideZeroHoldings, setHideZeroHoldings] = useState(true);
+  const [txSearch, setTxSearch] = useState('');
 
   useEffect(() => {
     // Reset data and loading state when account changes
@@ -47,6 +48,8 @@ const OverView = ({ account }) => {
     setHoldings(null);
     setHoldingsPage(0);
     setTxPage(0);
+    setTxSearch('');
+    setTxFilter('all');
     setLoading(true);
 
     const fetchData = async () => {
@@ -90,17 +93,51 @@ const OverView = ({ account }) => {
   }, [holdingsPage]);
 
   useEffect(() => {
-    if (txFilter === 'all') {
-      setFilteredTxHistory(txHistory);
-      return;
+    let filtered = txHistory;
+
+    // Filter by transaction type
+    if (txFilter !== 'all') {
+      filtered = filtered.filter(tx => {
+        const txData = tx.tx_json || tx.tx;
+        return txData.TransactionType === txFilter;
+      });
     }
 
-    const filtered = txHistory.filter(tx => {
-      const txData = tx.tx_json || tx.tx;
-      return txData.TransactionType === txFilter;
-    });
+    // Filter by search term
+    if (txSearch.trim()) {
+      const search = txSearch.toLowerCase().trim();
+      filtered = filtered.filter(tx => {
+        const txData = tx.tx_json || tx.tx;
+        const hash = (txData.hash || tx.hash || '').toLowerCase();
+        const account = (txData.Account || '').toLowerCase();
+        const destination = (txData.Destination || '').toLowerCase();
+        const txType = (txData.TransactionType || '').toLowerCase();
+
+        // Check amounts for currency
+        const getCurrency = (amt) => {
+          if (!amt) return '';
+          if (typeof amt === 'string') return 'xrp';
+          return (amt.currency || '').toLowerCase();
+        };
+        const amountCurr = getCurrency(txData.Amount);
+        const sendMaxCurr = getCurrency(txData.SendMax);
+        const takerGetsCurr = getCurrency(txData.TakerGets);
+        const takerPaysCurr = getCurrency(txData.TakerPays);
+
+        return hash.includes(search) ||
+          account.includes(search) ||
+          destination.includes(search) ||
+          txType.includes(search) ||
+          amountCurr.includes(search) ||
+          sendMaxCurr.includes(search) ||
+          takerGetsCurr.includes(search) ||
+          takerPaysCurr.includes(search);
+      });
+    }
+
     setFilteredTxHistory(filtered);
-  }, [txFilter, txHistory]);
+    setTxPage(0);
+  }, [txFilter, txSearch, txHistory]);
 
   const getAvailableTxTypes = () => {
     const types = new Set(['all']);
@@ -467,24 +504,38 @@ const OverView = ({ account }) => {
           <div className="mt-4">
             <div className="flex items-center justify-between mb-3 px-1">
               <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-800")}>
-                Account transactions
+                Account transactions ({filteredTxHistory.length})
               </p>
-              <div className="relative">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={txSearch}
+                  onChange={(e) => setTxSearch(e.target.value)}
+                  className={cn(
+                    "text-[11px] px-2 py-1 rounded border outline-none w-32",
+                    isDark
+                      ? "bg-[#0d0d0d] border-white/10 text-white/70 placeholder:text-white/30"
+                      : "bg-white border-gray-200 text-gray-600 placeholder:text-gray-400"
+                  )}
+                />
                 <select
                   value={txFilter}
-                  onChange={(e) => { setTxFilter(e.target.value); setTxPage(0); }}
+                  onChange={(e) => setTxFilter(e.target.value)}
                   className={cn(
-                    "appearance-none text-[12px] pl-2 pr-5 py-0.5 rounded border-0 cursor-pointer",
-                    isDark ? "bg-transparent text-white/50" : "bg-transparent text-gray-400"
+                    "text-[11px] px-2 py-1 rounded border cursor-pointer outline-none",
+                    isDark
+                      ? "bg-[#0d0d0d] border-white/10 text-white/60"
+                      : "bg-white border-gray-200 text-gray-500"
                   )}
+                  style={isDark ? { colorScheme: 'dark' } : {}}
                 >
                   {getAvailableTxTypes().map(filter => (
-                    <option key={filter} value={filter} className={isDark ? "bg-[#0d0d0d]" : "bg-white"}>
-                      {filter === 'all' ? 'Filters' : filter}
+                    <option key={filter} value={filter}>
+                      {filter === 'all' ? 'All' : filter}
                     </option>
                   ))}
                 </select>
-                <span className={cn("absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none text-[8px]", isDark ? "text-white/25" : "text-gray-300")}>▼</span>
               </div>
             </div>
 

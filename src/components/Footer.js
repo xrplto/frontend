@@ -123,7 +123,7 @@ const PRODUCTS = [
   { href: '/collections', label: 'NFTs' },
   { href: '/swap', label: 'Swap' },
   { href: '/news', label: 'News' },
-  { href: '/api-docs', label: 'API' },
+  { href: '/docs', label: 'API' },
   { href: '/about', label: 'About' }
 ];
 const RedditIcon = ({ size = 18 }) => (
