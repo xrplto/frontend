@@ -458,7 +458,7 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
       metaUrl = nft.meta.image;
     }
 
-    if (metaUrl) {
+    if (metaUrl && typeof metaUrl === 'string') {
       // Convert IPFS URLs to gateway URLs
       if (metaUrl.startsWith('ipfs://')) {
         const ipfsPath = metaUrl.replace('ipfs://', '');
@@ -508,7 +508,7 @@ export const getNftFilesUrls = (nft, type = 'image') => {
       metaUrl = nft.meta.image;
     }
 
-    if (metaUrl) {
+    if (metaUrl && typeof metaUrl === 'string') {
       // Convert IPFS URLs to gateway URLs
       if (metaUrl.startsWith('ipfs://')) {
         const ipfsPath = metaUrl.replace('ipfs://', '');

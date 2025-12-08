@@ -967,14 +967,14 @@ export default function Summary() {
                 <MetricValue isDark={darkMode}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(
-                    new Decimal(metrics.H24?.totalTVL || 0)
+                    new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0)
                       .div(fiatRate)
                       .toNumber()
                   )}
                 </MetricValue>
-                <PercentageChange isPositive={(metrics.H24?.totalTVLPro || 0) >= 0}>
-                  {(metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(metrics.H24?.totalTVLPro || 0).toFixed(2)}%
+                <PercentageChange isPositive={(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0}>
+                  {(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
 

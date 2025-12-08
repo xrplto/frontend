@@ -14,8 +14,6 @@ const initialState = {
       tradedXRP24H: 0,
       tradedTokens24H: 0,
       activeAddresses24H: 0,
-      totalTVL: 0,
-      totalTVLPro: 0,
       uniqueTraders24H: 0,
       xrpPro24h: 0
     },
@@ -25,6 +23,8 @@ const initialState = {
       gMarketcapPro: 0,
       gDexVolume: 0,
       gDexVolumePro: 0,
+      gTVL: 0,
+      gTVLPro: 0,
       gScamVolume: 0,
       gScamVolumePro: 0,
       gStableVolume: 0,

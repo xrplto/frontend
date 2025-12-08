@@ -382,7 +382,11 @@ function RSIAnalysisPage({ data }) {
     sortBy: 'rsi24h',
     sortType: 'desc',
     timeframe: '24h',
-    origin: 'FirstLedger',
+    origin: '',
+    tag: '',
+    filter: '',
+    activeOnly: true,
+    excludeNeutral: true,
     minMarketCap: '',
     maxMarketCap: '',
     minVolume24h: '',
@@ -404,21 +408,20 @@ function RSIAnalysisPage({ data }) {
   ];
 
   const presets = [
-    { label: 'Reset', filter: { origin: 'FirstLedger', minMarketCap: '', maxMarketCap: '', minVolume24h: '', maxVolume24h: '' } },
-    { label: 'All', filter: {} },
-    { label: 'Overbought', filter: { minRsi24h: '70' } },
-    { label: 'Oversold', filter: { maxRsi24h: '30' } },
-    { label: 'Extreme OB', filter: { minRsi24h: '80' } },
-    { label: 'Extreme OS', filter: { maxRsi24h: '20' } },
-    { label: 'FirstLedger', filter: { origin: 'FirstLedger', minMarketCap: '25000' } },
-    { label: 'Quality', filter: { minMarketCap: '50000', minVolume24h: '5000' } }
+    { label: 'Reset', filter: { origin: '', tag: '', minMarketCap: '', maxMarketCap: '', minVolume24h: '', maxVolume24h: '', minRsi24h: '', maxRsi24h: '' } },
+    { label: 'Overbought', filter: { minRsi24h: '70', maxRsi24h: '' } },
+    { label: 'Oversold', filter: { maxRsi24h: '30', minRsi24h: '' } },
+    { label: 'Extreme OB', filter: { minRsi24h: '80', maxRsi24h: '' } },
+    { label: 'Extreme OS', filter: { maxRsi24h: '20', minRsi24h: '' } },
+    { label: 'Memes', filter: { tag: 'Memes' } },
+    { label: 'DeFi', filter: { tag: 'DeFi' } }
   ];
 
   const loadTokens = useCallback(async () => {
     setLoading(true);
     try {
       const cleanParams = Object.entries(params).reduce((acc, [key, val]) => {
-        if (val !== '' && val !== null && val !== undefined) {
+        if (val !== '' && val !== null && val !== undefined && val !== false) {
           acc[key] = val;
         }
         return acc;
@@ -460,9 +463,23 @@ function RSIAnalysisPage({ data }) {
   };
 
   const applyPreset = (preset) => {
+    const rsiField = `minRsi${params.timeframe}`;
+    const maxRsiField = `maxRsi${params.timeframe}`;
+
+    // Map generic RSI filters to current timeframe
+    const mappedFilter = { ...preset.filter };
+    if ('minRsi24h' in preset.filter) {
+      mappedFilter[rsiField] = preset.filter.minRsi24h;
+      delete mappedFilter.minRsi24h;
+    }
+    if ('maxRsi24h' in preset.filter) {
+      mappedFilter[maxRsiField] = preset.filter.maxRsi24h;
+      delete mappedFilter.maxRsi24h;
+    }
+
     setParams(prev => ({
       ...prev,
-      ...preset.filter,
+      ...mappedFilter,
       start: 0
     }));
   };
@@ -481,6 +498,8 @@ function RSIAnalysisPage({ data }) {
     const maxRsiField = `maxRsi${params.timeframe}`;
 
     if (params.origin) filters.push({ key: 'origin', label: `Origin: ${params.origin}`, value: params.origin });
+    if (params.tag) filters.push({ key: 'tag', label: `Tag: ${params.tag}`, value: params.tag });
+    if (params.filter) filters.push({ key: 'filter', label: `Search: ${params.filter}`, value: params.filter });
     if (params.minMarketCap) filters.push({ key: 'minMarketCap', label: `Min MC: $${params.minMarketCap}`, value: params.minMarketCap });
     if (params.maxMarketCap) filters.push({ key: 'maxMarketCap', label: `Max MC: $${params.maxMarketCap}`, value: params.maxMarketCap });
     if (params.minVolume24h) filters.push({ key: 'minVolume24h', label: `Min Vol: $${params.minVolume24h}`, value: params.minVolume24h });
@@ -498,6 +517,11 @@ function RSIAnalysisPage({ data }) {
       sortType: prev.sortBy === field && prev.sortType === 'desc' ? 'asc' : 'desc',
       start: 0
     }));
+  };
+
+  const getSortIndicator = (field) => {
+    if (params.sortBy !== field) return '';
+    return params.sortType === 'desc' ? ' ↓' : ' ↑';
   };
 
   const getRSIValue = (token) => {
@@ -755,116 +779,127 @@ function RSIAnalysisPage({ data }) {
       <div className="mx-auto max-w-[1920px] px-4">
         <Controls darkMode={darkMode}>
               <ControlRow>
-                <MobileSection>
-                  <Label darkMode={darkMode}>Timeframe:</Label>
-                  <MobileButtonGrid>
-                    {timeframes.map(tf => (
-                      <Button
-                        key={tf.value}
-                        darkMode={darkMode}
-                        selected={params.timeframe === tf.value}
-                        onClick={() => setTimeframe(tf.value)}
-                      >
-                        {tf.label}
-                      </Button>
-                    ))}
-                  </MobileButtonGrid>
-                </MobileSection>
-                <div style={{ marginLeft: 'auto' }}>
+                <MobileButtonGrid>
+                  {timeframes.map(tf => (
+                    <Button
+                      key={tf.value}
+                      darkMode={darkMode}
+                      selected={params.timeframe === tf.value}
+                      onClick={() => setTimeframe(tf.value)}
+                    >
+                      {tf.label}
+                    </Button>
+                  ))}
+                </MobileButtonGrid>
+                <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto', alignItems: 'center' }}>
+                  {presets.map(preset => (
+                    <Button
+                      key={preset.label}
+                      darkMode={darkMode}
+                      onClick={() => applyPreset(preset)}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
                   <Select
                     darkMode={darkMode}
                     value={params.limit}
                     onChange={e => updateParam('limit', e.target.value)}
                   >
-                    <option value="25">25 rows</option>
-                    <option value="50">50 rows</option>
-                    <option value="100">100 rows</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
                   </Select>
                 </div>
               </ControlRow>
 
               <ControlRow>
-                <MobileSection>
-                  <Label darkMode={darkMode}>Presets:</Label>
-                  <MobileButtonGrid>
-                    {presets.map(preset => (
-                      <Button
-                        key={preset.label}
-                        darkMode={darkMode}
-                        onClick={() => applyPreset(preset)}
-                      >
-                        {preset.label}
-                      </Button>
-                    ))}
-                  </MobileButtonGrid>
-                </MobileSection>
-              </ControlRow>
-
-              <ControlRow>
-                <MobileSection>
-                  <Label darkMode={darkMode}>Filters:</Label>
-                  <MobileFilterGrid>
-                    <Select
-                      darkMode={darkMode}
-                      selected={params.origin === 'FirstLedger'}
-                      value={params.origin}
-                      onChange={e => updateParam('origin', e.target.value)}
-                    >
-                      <option value="">All Origins</option>
-                      <option value="FirstLedger">FirstLedger</option>
-                    </Select>
-                    <FilterInput
-                      darkMode={darkMode}
-                      placeholder="Min MC"
-                      value={params.minMarketCap}
-                      onChange={e => updateParam('minMarketCap', e.target.value)}
-                    />
-                    <FilterInput
-                      darkMode={darkMode}
-                      placeholder="Max MC"
-                      value={params.maxMarketCap}
-                      onChange={e => updateParam('maxMarketCap', e.target.value)}
-                    />
-                    <FilterInput
-                      darkMode={darkMode}
-                      placeholder="Min Vol"
-                      value={params.minVolume24h}
-                      onChange={e => updateParam('minVolume24h', e.target.value)}
-                    />
-                    <FilterInput
-                      darkMode={darkMode}
-                      placeholder={`Min RSI ${params.timeframe}`}
-                      value={params[`minRsi${params.timeframe}`] || ''}
-                      onChange={e => updateParam(`minRsi${params.timeframe}`, e.target.value)}
-                    />
-                    <FilterInput
-                      darkMode={darkMode}
-                      placeholder={`Max RSI ${params.timeframe}`}
-                      value={params[`maxRsi${params.timeframe}`] || ''}
-                      onChange={e => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
-                    />
-                  </MobileFilterGrid>
-                </MobileSection>
+                <MobileFilterGrid>
+                  <SearchInput
+                    darkMode={darkMode}
+                    placeholder="Search..."
+                    value={params.filter}
+                    onChange={e => updateParam('filter', e.target.value)}
+                    style={{ minWidth: '120px', maxWidth: '160px' }}
+                  />
+                  <Select
+                    darkMode={darkMode}
+                    selected={!!params.tag}
+                    value={params.tag}
+                    onChange={e => updateParam('tag', e.target.value)}
+                  >
+                    <option value="">All Tags</option>
+                    <option value="Memes">Memes</option>
+                    <option value="DeFi">DeFi</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="NFT">NFT</option>
+                    <option value="Stablecoin">Stablecoin</option>
+                  </Select>
+                  <Select
+                    darkMode={darkMode}
+                    selected={!!params.origin}
+                    value={params.origin}
+                    onChange={e => updateParam('origin', e.target.value)}
+                  >
+                    <option value="">All Origins</option>
+                    <option value="FirstLedger">FirstLedger</option>
+                  </Select>
+                  <FilterInput
+                    darkMode={darkMode}
+                    placeholder="Min MC"
+                    value={params.minMarketCap}
+                    onChange={e => updateParam('minMarketCap', e.target.value)}
+                  />
+                  <FilterInput
+                    darkMode={darkMode}
+                    placeholder="Min Vol"
+                    value={params.minVolume24h}
+                    onChange={e => updateParam('minVolume24h', e.target.value)}
+                  />
+                  <FilterInput
+                    darkMode={darkMode}
+                    placeholder="Min RSI"
+                    value={params[`minRsi${params.timeframe}`] || ''}
+                    onChange={e => updateParam(`minRsi${params.timeframe}`, e.target.value)}
+                  />
+                  <FilterInput
+                    darkMode={darkMode}
+                    placeholder="Max RSI"
+                    value={params[`maxRsi${params.timeframe}`] || ''}
+                    onChange={e => updateParam(`maxRsi${params.timeframe}`, e.target.value)}
+                  />
+                  <Button
+                    darkMode={darkMode}
+                    selected={params.activeOnly}
+                    onClick={() => updateParam('activeOnly', !params.activeOnly)}
+                    title="Only tokens with 24h volume"
+                  >
+                    Active
+                  </Button>
+                  <Button
+                    darkMode={darkMode}
+                    selected={params.excludeNeutral}
+                    onClick={() => updateParam('excludeNeutral', !params.excludeNeutral)}
+                    title="Exclude RSI=50 (no data)"
+                  >
+                    Valid RSI
+                  </Button>
+                </MobileFilterGrid>
               </ControlRow>
 
               {getActiveFilters().length > 0 && (
-                <ControlRow>
-                  <MobileSection>
-                    <Label darkMode={darkMode}>Active:</Label>
-                    <ActiveFilters>
-                      {getActiveFilters().map(filter => (
-                        <FilterChip
-                          key={filter.key}
-                          darkMode={darkMode}
-                          onClick={() => removeFilter(filter.key)}
-                          title="Click to remove filter"
-                        >
-                          {filter.label}
-                        </FilterChip>
-                      ))}
-                    </ActiveFilters>
-                  </MobileSection>
-                </ControlRow>
+                <ActiveFilters>
+                  {getActiveFilters().map(filter => (
+                    <FilterChip
+                      key={filter.key}
+                      darkMode={darkMode}
+                      onClick={() => removeFilter(filter.key)}
+                      title="Click to remove"
+                    >
+                      {filter.label}
+                    </FilterChip>
+                  ))}
+                </ActiveFilters>
               )}
             </Controls>
 
@@ -877,14 +912,42 @@ function RSIAnalysisPage({ data }) {
               />
               <div style={{
                 position: 'absolute',
-                top: '16px',
+                top: '12px',
                 left: '20px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                letterSpacing: '0.3px'
+                right: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                RSI Heatmap · {params.timeframe.toUpperCase()}
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                }}>
+                  RSI Heatmap · {params.timeframe.toUpperCase()}
+                </span>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '11px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff4444' }} />
+                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>≥80</span>
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff8844' }} />
+                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>≥70</span>
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#44ff44' }} />
+                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>30-70</span>
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4488ff' }} />
+                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>≤30</span>
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8844ff' }} />
+                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>≤20</span>
+                  </span>
+                </div>
               </div>
               {loading && (
                 <div style={{
@@ -920,19 +983,22 @@ function RSIAnalysisPage({ data }) {
                     <Th darkMode={darkMode}>#</Th>
                     <Th darkMode={darkMode}>Token</Th>
                     <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('exch')}>
-                      Price
+                      Price{getSortIndicator('exch')}
                     </Th>
                     <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('pro24h')}>
-                      24h Change
+                      24h{getSortIndicator('pro24h')}
                     </Th>
                     <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('vol24hxrp')}>
-                      Volume 24h
+                      Volume{getSortIndicator('vol24hxrp')}
                     </Th>
                     <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('marketcap')}>
-                      Market Cap
+                      MCap{getSortIndicator('marketcap')}
+                    </Th>
+                    <Th darkMode={darkMode} align="right" sortable onClick={() => handleSort('holders')}>
+                      Holders{getSortIndicator('holders')}
                     </Th>
                     <Th darkMode={darkMode} align="center" sortable onClick={() => handleSort(`rsi${params.timeframe}`)}>
-                      RSI {params.timeframe.toUpperCase()}
+                      RSI{getSortIndicator(`rsi${params.timeframe}`)}
                     </Th>
                   </tr>
                 </thead>
@@ -989,6 +1055,11 @@ function RSIAnalysisPage({ data }) {
                              fNumber(marketCapFiat)}
                           </span>
                         </Td>
+                        <Td darkMode={darkMode} align="right">
+                          <span style={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                            {token.holders ? fNumber(token.holders) : '-'}
+                          </span>
+                        </Td>
                         <Td darkMode={darkMode} align="center">
                           <RSIBadge {...rsiColors}>
                             {rsi ? rsi.toFixed(1) : '-'}
@@ -1041,7 +1112,9 @@ export async function getStaticProps() {
         sortBy: 'rsi24h',
         sortType: 'desc',
         limit: 50,
-        timeframe: '24h'
+        timeframe: '24h',
+        activeOnly: true,
+        excludeNeutral: true
       }
     });
 

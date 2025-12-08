@@ -447,7 +447,14 @@ function AMMPoolsPage({ data }) {
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Total Liquidity</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{currencySymbols[activeFiatCurrency]}{formatCurrency(new Decimal(summary.totalLiquidity).div(exchRate).toNumber())}</SummaryValue>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalLiquidity)} XRP</SummaryValue>
+              {(summary.xrpTokenLiquidity || summary.tokenTokenLiquidity) && (
+                <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginTop: 4 }}>
+                  {summary.xrpTokenLiquidity && <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>}
+                  {summary.xrpTokenLiquidity && summary.tokenTokenLiquidity && <span> · </span>}
+                  {summary.tokenTokenLiquidity && <span>Token Pools: {formatCurrency(summary.tokenTokenLiquidity)}</span>}
+                </div>
+              )}
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Volume (24h)</SummaryLabel>
@@ -472,37 +479,50 @@ function AMMPoolsPage({ data }) {
           </SummaryGrid>
         )}
 
-        <Controls darkMode={darkMode}>
-          <ControlRow>
-            <MobileSection>
-              <Label darkMode={darkMode}>Sort by:</Label>
-              <MobileButtonGrid>
-                {sortOptions.map(opt => (
-                  <Button
-                    key={opt.value}
-                    darkMode={darkMode}
-                    selected={params.sortBy === opt.value}
-                    onClick={() => updateParam('sortBy', opt.value)}
-                  >
-                    {opt.label}
-                  </Button>
-                ))}
-              </MobileButtonGrid>
-            </MobileSection>
-            <div style={{ marginLeft: 'auto' }}>
-              <Select
-                darkMode={darkMode}
-                value={params.limit}
-                onChange={e => updateParam('limit', e.target.value)}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {sortOptions.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => updateParam('sortBy', opt.value)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: `1.5px solid ${params.sortBy === opt.value ? 'rgba(59,130,246,0.4)' : darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                  background: params.sortBy === opt.value ? 'rgba(59,130,246,0.1)' : 'transparent',
+                  color: params.sortBy === opt.value ? '#3b82f6' : darkMode ? '#fff' : '#333',
+                  fontSize: 13,
+                  fontWeight: params.sortBy === opt.value ? 500 : 400,
+                  cursor: 'pointer'
+                }}
               >
-                <option value="25">25 rows</option>
-                <option value="50">50 rows</option>
-                <option value="100">100 rows</option>
-              </Select>
-            </div>
-          </ControlRow>
-
-        </Controls>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <select
+            value={params.limit}
+            onChange={e => updateParam('limit', e.target.value)}
+            style={{
+              padding: '8px 32px 8px 12px',
+              borderRadius: 8,
+              border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              background: darkMode ? 'rgba(255,255,255,0.05)' : '#fff',
+              color: darkMode ? '#fff' : '#333',
+              fontSize: 13,
+              cursor: 'pointer',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23333'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 8px center',
+              backgroundSize: 14
+            }}
+          >
+            <option value="25">25 rows</option>
+            <option value="50">50 rows</option>
+            <option value="100">100 rows</option>
+          </select>
+        </div>
 
         <TableWrapper darkMode={darkMode}>
           <Table>

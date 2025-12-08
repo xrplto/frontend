@@ -85,7 +85,9 @@ export function addTokenToTabs(item) {
       user: item.user || item.name || '',
       type: item.type || 'token',
       logoImage: item.logoImage || null,
-      thumbnail: item.thumbnail || null
+      thumbnail: item.thumbnail || null,
+      collectionSlug: item.collectionSlug || null,
+      collectionName: item.collectionName || null
     };
     tabs = [newTab, ...filtered].slice(0, MAX_TABS);
 

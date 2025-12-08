@@ -1,5 +1,5 @@
 import { memo, useContext, useState, useRef, useEffect, useCallback } from 'react';
-import { X, Plus, Search, Trash2 } from 'lucide-react';
+import { X, Plus, Search, Trash2, ChevronLeft } from 'lucide-react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
@@ -13,13 +13,18 @@ const TokenTabs = memo(({ currentMd5 }) => {
   const isDark = themeName === 'XrplToDarkTheme';
   const { tabs, removeTab, clearTabs } = useTokenTabs();
 
+  const currentTab = tabs.find((t) => t.md5 === currentMd5 || t.slug === currentMd5);
+  const isNftWithCollection = currentTab?.type === 'nft' && currentTab?.collectionSlug;
+  const isCollection = currentTab?.type === 'collection';
+  const isToken = currentTab?.type === 'token';
+
+
   const clearOthers = useCallback(() => {
-    const currentTab = tabs.find((t) => t.md5 === currentMd5 || t.slug === currentMd5);
     if (currentTab) {
       clearTabs();
       addTokenToTabs({ ...currentTab });
     }
-  }, [tabs, currentMd5, clearTabs]);
+  }, [currentTab, clearTabs]);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -83,15 +88,36 @@ const TokenTabs = memo(({ currentMd5 }) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-start gap-1.5 px-4 h-[36px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 -mt-1',
+        'flex items-center justify-start gap-1 px-3 h-[30px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 -mt-1',
         isDark ? 'border-b-white/10 bg-[#131313]' : 'border-b-gray-200 bg-gray-50'
       )}
     >
-      {[...tabs].sort((a, b) => {
-        const aMatch = a.md5 === currentMd5 || a.slug === currentMd5;
-        const bMatch = b.md5 === currentMd5 || b.slug === currentMd5;
-        return aMatch ? -1 : bMatch ? 1 : 0;
-      }).map((tab) => {
+      {/* Back navigation */}
+      {(isNftWithCollection || isCollection || isToken) && (
+        <>
+          <a
+            href={isNftWithCollection ? `/collection/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
+            className={cn(
+              'flex items-center gap-0.5 px-1.5 h-5 rounded text-[10px] font-medium transition-all shrink-0',
+              'text-primary/70 hover:text-primary hover:bg-primary/10'
+            )}
+          >
+            <ChevronLeft size={11} />
+            <span className="max-w-[100px] truncate">
+              {isNftWithCollection ? currentTab.collectionName || 'Collection' : isCollection ? 'Collections' : 'Tokens'}
+            </span>
+          </a>
+          <div className={cn('w-px h-3 shrink-0', isDark ? 'bg-white/10' : 'bg-gray-300')} />
+        </>
+      )}
+
+      {[...tabs]
+        .filter((t) => !(isNftWithCollection && t.type === 'collection' && t.slug === currentTab.collectionSlug))
+        .sort((a, b) => {
+          const aMatch = a.md5 === currentMd5 || a.slug === currentMd5;
+          const bMatch = b.md5 === currentMd5 || b.slug === currentMd5;
+          return aMatch ? -1 : bMatch ? 1 : 0;
+        }).slice(0, 6).map((tab) => {
         const isCollection = tab.type === 'collection';
         const isNft = tab.type === 'nft';
         const isAccount = tab.type === 'account';
@@ -113,7 +139,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
             href={href}
             onClick={(e) => isActive && e.preventDefault()}
             className={cn(
-              'flex items-center gap-1.5 px-2.5 h-6 rounded text-[11px] font-medium transition-all shrink-0',
+              'flex items-center gap-1 px-2 h-5 rounded text-[10px] font-medium transition-all shrink-0',
               isActive
                 ? 'bg-primary/15 text-primary border border-primary/30'
                 : isDark
@@ -124,7 +150,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
             <img
               src={imgSrc}
               alt=""
-              className={cn('w-3.5 h-3.5 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
+              className={cn('w-3 h-3 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
               onError={(e) => (e.target.src = '/static/alt.webp')}
             />
             <span className="max-w-[120px] truncate">{label}</span>
@@ -139,7 +165,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 isActive ? 'text-primary' : isDark ? 'hover:text-white' : 'hover:text-gray-600'
               )}
             >
-              <X size={11} />
+              <X size={10} />
             </button>
           </a>
         );
@@ -153,11 +179,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
           onClick={openSearch}
           title="Add tab"
           className={cn(
-            'p-1.5 rounded transition-colors',
-            isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'
+            'p-1 rounded transition-colors',
+            isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'
           )}
         >
-          <Plus size={14} />
+          <Plus size={12} />
         </button>
 
         {tabs.length > 1 && (
@@ -165,11 +191,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={clearOthers}
             title="Clear other tabs"
             className={cn(
-              'p-1.5 rounded transition-colors',
-              isDark ? 'text-white/50 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'
+              'p-1 rounded transition-colors',
+              isDark ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'
             )}
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
           </button>
         )}
       </div>
