@@ -920,30 +920,18 @@ const HoldersTab = React.memo(({ slug }) => {
   const [holdersData, setHoldersData] = useState(null);
   const [distribution, setDistribution] = useState(null);
   const [searchAddress, setSearchAddress] = useState('');
-  const [minNFT, setMinNFT] = useState(0);
   const [searchResult, setSearchResult] = useState(null);
   const [searching, setSearching] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const LIMIT = 20;
 
-  const tierFilters = [
-    { label: 'All', min: 0 },
-    { label: '2+', min: 2 },
-    { label: '5+', min: 5 },
-    { label: '10+', min: 10 },
-    { label: '20+', min: 20 }
-  ];
-
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
 
-    const params = new URLSearchParams({ limit: LIMIT.toString(), page: page.toString() });
-    if (minNFT > 0) params.append('minCount', minNFT.toString());
-
     Promise.all([
-      axios.get(`${BASE_URL}/nft/holders/${slug}?${params}`),
+      axios.get(`${BASE_URL}/nft/holders/${slug}?page=${page}&limit=${LIMIT}`),
       axios.get(`${BASE_URL}/nft/holders/${slug}/distribution`)
     ])
       .then(([holdersRes, distRes]) => {
@@ -953,12 +941,7 @@ const HoldersTab = React.memo(({ slug }) => {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [slug, minNFT, page]);
-
-  // Reset page when filter changes
-  useEffect(() => {
-    setPage(1);
-  }, [minNFT]);
+  }, [slug, page]);
 
   // Search for specific address across all collections they hold
   const handleSearch = async () => {
@@ -1189,56 +1172,34 @@ const HoldersTab = React.memo(({ slug }) => {
 
         {/* Right: Top Holders */}
         <div className="lg:col-span-8 space-y-3">
-          {/* Search & Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            {/* Address Search */}
-            <div className="flex-1 flex gap-2">
-              <input
-                type="text"
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search address..."
-                className={cn(
-                  'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-mono outline-none',
-                  isDark
-                    ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50'
-                    : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
-                )}
-              />
-              <button
-                onClick={handleSearch}
-                disabled={searching || !searchAddress.trim()}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-colors',
-                  searching || !searchAddress.trim()
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-primary/10 hover:border-primary/50',
-                  isDark ? 'border-white/15 text-white/70' : 'border-gray-300 text-gray-600'
-                )}
-              >
-                {searching ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
-              </button>
-            </div>
-            {/* Min NFT Filter */}
-            <div className="flex gap-1">
-              {tierFilters.map(f => (
-                <button
-                  key={f.min}
-                  onClick={() => setMinNFT(f.min)}
-                  className={cn(
-                    'px-2.5 py-1.5 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors',
-                    minNFT === f.min
-                      ? 'border-primary/50 text-primary bg-primary/10'
-                      : isDark
-                      ? 'border-white/15 text-white/50 hover:bg-white/5 hover:border-primary/30'
-                      : 'border-gray-300 text-gray-500 hover:bg-gray-100 hover:border-primary/30'
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+          {/* Address Search */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={searchAddress}
+              onChange={(e) => setSearchAddress(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="Search address..."
+              className={cn(
+                'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-mono outline-none',
+                isDark
+                  ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50'
+                  : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
+              )}
+            />
+            <button
+              onClick={handleSearch}
+              disabled={searching || !searchAddress.trim()}
+              className={cn(
+                'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-colors',
+                searching || !searchAddress.trim()
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-primary/10 hover:border-primary/50',
+                isDark ? 'border-white/15 text-white/70' : 'border-gray-300 text-gray-600'
+              )}
+            >
+              {searching ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+            </button>
           </div>
 
           {/* Search Result */}
@@ -1300,7 +1261,7 @@ const HoldersTab = React.memo(({ slug }) => {
                 {topHolders.length === 0 ? (
                   <tr>
                     <td colSpan={4} className={cn('px-4 py-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                      No holders found with {minNFT}+ NFTs
+                      No holders found
                     </td>
                   </tr>
                 ) : (

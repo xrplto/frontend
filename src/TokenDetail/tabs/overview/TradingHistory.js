@@ -1575,7 +1575,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const [expandedTradeId, setExpandedTradeId] = useState(null);
   const [pairType, setPairType] = useState('xrp'); // xrp, token, or empty for all
   const [xrpAmount, setXrpAmount] = useState(''); // Filter by minimum XRP amount
-  const [historyType, setHistoryType] = useState('trades'); // trades, liquidity, all
+  const [historyType, setHistoryType] = useState('all'); // trades, liquidity, all
   const [timeRange, setTimeRange] = useState(''); // 1h, 24h, 7d, 30d, or empty for all
   const [accountFilter, setAccountFilter] = useState('');
   const [liquidityType, setLiquidityType] = useState(''); // deposit, withdraw, create, or empty for all
@@ -1639,6 +1639,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         direction: useDirection
       });
 
+      // Add liquidityType filter (API handles this server-side)
+      if (liquidityType) {
+        params.set('liquidityType', liquidityType);
+      }
+
       // Add cursor for pagination (but not for refresh which should get latest)
       if (useCursor && !isRefresh) {
         params.set('cursor', String(useCursor));
@@ -1676,14 +1681,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const data = await response.json();
 
       if (data.result === 'success') {
-        // Client-side filter for liquidity type (API doesn't support this filter)
-        let filteredHists = data.hists;
-        if (liquidityType && historyType !== 'trades') {
-          filteredHists = data.hists.filter(h => h.isLiquidity && h.type === liquidityType);
-        }
-
         const currentTradeIds = previousTradesRef.current;
-        const newTrades = filteredHists.filter((trade) => !currentTradeIds.has(trade._id));
+        const newTrades = data.hists.filter((trade) => !currentTradeIds.has(trade._id));
 
         if (newTrades.length > 0 && isRefresh) {
           setNewTradeIds(new Set(newTrades.map((trade) => trade._id)));
@@ -1693,15 +1692,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           }, 1000);
         }
 
-        setTrades(filteredHists.slice(0, 50));
+        setTrades(data.hists.slice(0, 50));
         setNextCursor(data.nextCursor || null);
         setTotalRecords(data.totalRecords || 0);
 
         // Determine if we've reached the end of records in the current direction
-        // For direction=asc with no cursor (first request), we're viewing the oldest records
-        // which IS the last page - nextCursor in this case points BACK toward page 1
-        // Only set isLastPage=false if we're navigating forward and there's more data
-        const recordsReturned = data.recordsReturned || filteredHists.length;
+        const recordsReturned = data.recordsReturned || data.hists.length;
 
         if (useDirection === 'asc' && !useCursor) {
           // First page of asc = last page of records (oldest), this is the end
@@ -1733,18 +1729,17 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
-  // Auto-refresh interval (only for page 1 with desc direction)
+  // Auto-refresh interval (only for page 1 with desc direction, disabled when filtering by account)
   useEffect(() => {
-    if (currentPage !== 1 || direction !== 'desc') return;
+    // Don't auto-refresh when filtering by account - preserves search results
+    if (currentPage !== 1 || direction !== 'desc' || accountFilter) return;
 
-    // Sync with ledger updates every 4 seconds (delay first refresh)
     const intervalId = setInterval(() => {
       fetchTradingHistory(null, true, 'desc');
     }, 4000);
 
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, direction]);
+  }, [currentPage, direction, accountFilter, fetchTradingHistory]);
 
   // Cursor-based pagination handlers
   const handleNextPage = useCallback(() => {
@@ -2172,31 +2167,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <option value="2500" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>2.5k+</option>
               <option value="5000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>5k+</option>
               <option value="10000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>10k+</option>
-            </select>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              style={{
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                border: `1px solid ${timeRange ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
-                background: isDark ? (timeRange ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (timeRange ? 'rgba(59,130,246,0.1)' : '#fff'),
-                color: timeRange ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
-                cursor: 'pointer',
-                outline: 'none',
-                colorScheme: isDark ? 'dark' : 'light',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                appearance: 'none'
-              }}
-            >
-              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All Time</option>
-              <option value="1h" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>1h</option>
-              <option value="24h" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>24h</option>
-              <option value="7d" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>7d</option>
-              <option value="30d" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>30d</option>
             </select>
             <input
               type="text"
