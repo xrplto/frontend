@@ -952,7 +952,9 @@ export default function CollectionView({ collection }) {
     issuer,
     twitter,
     website,
-    floor1dPercent
+    floor1dPercent,
+    linkedToken,
+    tokenMatchType
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
@@ -1049,6 +1051,19 @@ export default function CollectionView({ collection }) {
                     {taxon !== undefined && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Taxon</span><span className="font-mono">{taxon}</span></div>}
                     <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Issuer</span><span className="font-mono truncate max-w-[140px]">{account}</span></div>
                     <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Created</span><span>{formatMonthYear(created)}</span></div>
+                    {linkedToken && (
+                      <div className="flex justify-between items-center">
+                        <span className={isDark ? "text-white/40" : "text-gray-500"}>Token</span>
+                        <div className="flex items-center gap-1.5">
+                          {tokenMatchType && (
+                            <span className={cn("px-1 py-0.5 rounded text-[9px]", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
+                              {tokenMatchType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            </span>
+                          )}
+                          <Link href={`/token/${linkedToken}`} className="text-primary hover:underline font-medium" onClick={() => setOpenInfo(false)}>View →</Link>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

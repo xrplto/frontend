@@ -1242,9 +1242,19 @@ const SearchToolbar = memo(function SearchToolbar({
         <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
         <DrawerPaper isDark={darkMode}>
           <DrawerHeader isDark={darkMode}>
-            <DrawerTitle isDark={darkMode}>
-              Categories {tags?.length ? `(${tags.length})` : ''}
-            </DrawerTitle>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3b82f6', whiteSpace: 'nowrap' }}>
+                Categories {tags?.length ? `(${tags.length})` : ''}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: '14px',
+                  backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                  backgroundSize: '8px 5px'
+                }}
+              />
+            </div>
             <DrawerClose isDark={darkMode} onClick={() => setCategoriesOpen(false)} aria-label="Close">
               <X size={18} />
             </DrawerClose>

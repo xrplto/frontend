@@ -1105,7 +1105,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 });
 
 // Main CollectionList Component
-export default function CollectionList({ type, category, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
+export default function CollectionList({ type, category, tag, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
@@ -1134,9 +1134,14 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Reset page when tag changes
+  useEffect(() => {
+    setPage(0);
+  }, [tag]);
+
   useEffect(() => {
     // Only fetch if not initial load (page change, sort change, etc)
-    if (page === 0 && order === 'desc' && orderBy === 'totalVol24h' && rows === 50 && initialCollections.length > 0) {
+    if (page === 0 && order === 'desc' && orderBy === 'totalVol24h' && rows === 50 && !tag && initialCollections.length > 0) {
       return; // Use server-side data
     }
 
@@ -1151,6 +1156,10 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
         order: order,
         includeGlobalMetrics: 'true'
       });
+
+      if (tag) {
+        params.set('tag', tag);
+      }
 
       axios
         .get(`${BASE_URL}/nft/collections?${params.toString()}`)
@@ -1175,7 +1184,7 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
         });
     };
     loadCollections();
-  }, [sync, order, orderBy, page, rows]);
+  }, [sync, order, orderBy, page, rows, tag]);
 
   const handleRequestSort = useCallback(
     (event, id) => {
