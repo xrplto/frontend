@@ -11,7 +11,6 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Collection from 'src/NFTCollection/CollectionView';
 import ScrollToTop from 'src/components/ScrollToTop';
-import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
 
 const OverviewWrapper = styled.div`
   min-height: 100vh;
@@ -28,16 +27,12 @@ export default function Overview({ collection }) {
 
   return (
     <OverviewWrapper>
-      <div className="h-4" id="back-to-top-anchor" />
+      <div id="back-to-top-anchor" />
 
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {collectionName} NFT Collection
       </h1>
-
-      <div className="px-2 sm:px-4">
-        <CollectionBreadcrumb collection={collection} />
-      </div>
 
       <div className="px-2 sm:px-4">
         <Collection collection={collection} />

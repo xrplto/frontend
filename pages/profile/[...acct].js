@@ -6,6 +6,8 @@ import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
+import TokenTabs from 'src/TokenDetail/components/TokenTabs';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
@@ -25,6 +27,7 @@ const OverView = ({ account }) => {
   const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isOwnAccount = accountProfile?.account === account;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
   const [data, setData] = useState(null);
   const [txHistory, setTxHistory] = useState([]);
   const [filteredTxHistory, setFilteredTxHistory] = useState([]);
@@ -80,6 +83,17 @@ const OverView = ({ account }) => {
       }
     };
     fetchData();
+  }, [account]);
+
+  // Add account to tabs
+  useEffect(() => {
+    if (account) {
+      addTokenToTabs({
+        slug: account,
+        name: account.slice(0, 8) + '...',
+        type: 'account'
+      });
+    }
   }, [account]);
 
   useEffect(() => {
@@ -153,9 +167,10 @@ const OverView = ({ account }) => {
   if (loading) {
     return (
       <PageWrapper>
-        <div className="h-6" id="back-to-top-anchor" />
+        <div className="h-0" id="back-to-top-anchor" />
         <Header />
-        <div className="mx-auto max-w-[1920px] px-4">
+        {!isMobile && <TokenTabs currentMd5={account} />}
+        <div className="mx-auto max-w-[1920px] px-4 mt-4">
           <div className="flex flex-col">
             <div className="w-full flex justify-center items-center py-20">
               <p className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
@@ -174,13 +189,14 @@ const OverView = ({ account }) => {
 
   return (
     <PageWrapper>
-      <div className="h-6" id="back-to-top-anchor" />
+      <div className="h-0" id="back-to-top-anchor" />
       <Header />
+      {!isMobile && <TokenTabs currentMd5={account} />}
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {account} Profile on XRPL
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <div className="mx-auto max-w-[1920px] px-4 mt-4">
         <div className="flex flex-col">
           <div className="w-full">
         {/* Account Header */}

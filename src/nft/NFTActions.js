@@ -461,12 +461,12 @@ export default function NFTActions({ nft }) {
     <>
       {/* Main Glass Panel */}
       <div className={cn(
-        'rounded-2xl p-4 border backdrop-blur-lg transition-all duration-300',
+        'rounded-2xl p-3 border backdrop-blur-lg transition-all duration-300',
         isDark
           ? 'bg-white/5 border-primary/20 hover:border-primary/30'
           : 'bg-white/70 border-primary/15 shadow-lg shadow-primary/5 hover:shadow-primary/10'
       )}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Collection Header */}
           {self && (
             <div className="flex justify-between items-start">
@@ -771,7 +771,7 @@ export default function NFTActions({ nft }) {
           </div>
 
           {/* Offers and History */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Sell Offers (only for owner) */}
             {isOwner && (
               <div>

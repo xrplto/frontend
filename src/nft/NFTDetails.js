@@ -383,12 +383,12 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   return (
     <div className="flex flex-col w-full">
       {/* NFT Preview */}
-      <div className="mb-4 w-full">
+      <div className="mb-3 w-full">
         <NFTPreviewComponent nft={nft} showDetails={false} />
       </div>
 
       {/* Title and Collection */}
-      <div className="mb-5">
+      <div className="mb-3">
         <h1 className={cn("text-xl font-medium mb-1.5", isDark ? "text-white" : "text-gray-900")}>
           {nft.name || meta?.name || 'Untitled'}
         </h1>
@@ -403,8 +403,8 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Properties */}
       {properties && properties.length > 0 && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
-          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-gray-500" : "text-gray-400")}>Properties</p>
+        <div className={cn("p-3 mb-3 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-gray-500" : "text-gray-400")}>Properties</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {properties.map((item) => {
               const type = item.type || item.trait_type;
@@ -435,15 +435,15 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Description - hide if it just matches collection name */}
       {meta?.description && meta.description !== collection && meta.description !== collectionName && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
-          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-gray-500" : "text-gray-400")}>Description</p>
+        <div className={cn("p-3 mb-3 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1.5", isDark ? "text-gray-500" : "text-gray-400")}>Description</p>
           <p className={cn("text-[13px] leading-relaxed", isDark ? "text-gray-300" : "text-gray-600")}>{meta.description}</p>
         </div>
       )}
 
       {/* Stats */}
       {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+        <div className={cn("p-3 mb-3 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <div className="grid grid-cols-3 gap-4">
             {rarity_rank > 0 && (
               <div className="text-center">
@@ -468,7 +468,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Technical Details */}
-      <div className={cn("p-4 mb-8 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+      <div className={cn("p-3 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
         <div className="space-y-3">
           {/* Owner + Royalties row */}
           <div className="flex items-start justify-between gap-4">

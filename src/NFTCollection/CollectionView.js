@@ -1016,7 +1016,7 @@ export default function CollectionView({ collection }) {
 
       {/* Collection Header - OpenSea Style */}
       <div
-        className="rounded-[10px] px-4 py-3 mb-4 mt-4"
+        className="rounded-[10px] px-4 py-3 mb-4 mt-3"
         style={{ border: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}
       >
         {/* Top Row: Logo + Name + Actions */}

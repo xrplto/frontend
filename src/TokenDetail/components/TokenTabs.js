@@ -4,6 +4,7 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
+import { getHashIcon } from 'src/utils/formatters';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -93,15 +94,18 @@ const TokenTabs = memo(({ currentMd5 }) => {
       }).map((tab) => {
         const isCollection = tab.type === 'collection';
         const isNft = tab.type === 'nft';
+        const isAccount = tab.type === 'account';
         const tabId = tab.md5 || tab.slug;
         const isActive = tab.md5 === currentMd5 || tab.slug === currentMd5;
-        const href = isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
-        const imgSrc = isNft
-          ? `https://s1.xrpl.to/nft/${tab.thumbnail || tab.slug}`
-          : isCollection
-            ? `https://s1.xrpl.to/nft-collection/${tab.logoImage || tab.slug}`
-            : `https://s1.xrpl.to/token/${tab.md5}`;
-        const label = isNft ? tab.name : isCollection ? tab.name : `${tab.name}/XRP`;
+        const href = isAccount ? `/profile/${tab.slug}` : isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
+        const imgSrc = isAccount
+          ? getHashIcon(tab.slug)
+          : isNft
+            ? `https://s1.xrpl.to/nft/${tab.thumbnail || tab.slug}`
+            : isCollection
+              ? `https://s1.xrpl.to/nft-collection/${tab.logoImage || tab.slug}`
+              : `https://s1.xrpl.to/token/${tab.md5}`;
+        const label = isAccount ? tab.name : isNft ? tab.name : isCollection ? tab.name : `${tab.name}/XRP`;
 
         return (
           <a
