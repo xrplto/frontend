@@ -29,6 +29,8 @@ import {
   Package,
   Users,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Layers,
   CheckCircle,
   ClipboardCheck,
@@ -84,7 +86,7 @@ const TabContext = ({ value, children }) => {
 const TabPanel = ({ value, children, className }) => {
   const currentValue = useContext(TabContextProvider);
   if (currentValue !== value) return null;
-  return <div className={className || ''}>{children}</div>;
+  return <div className={cn('w-full', className)}>{children}</div>;
 };
 
 // Constants
@@ -845,6 +847,528 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   );
 }
 
+// Wallet tier SVG icons (consistent with TradingHistory)
+const TierIconBox = ({ children, isDark }) => (
+  <span style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px 4px',
+    borderRadius: '4px',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
+    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+  }}>{children}</span>
+);
+
+const ShrimpIcon = ({ size = 18, isDark }) => (
+  <TierIconBox isDark={isDark}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 823.528 795.746" width={size} height={size * 0.97} style={{ display: 'block' }}>
+      <g transform="translate(-808.445 -84.967)" fill="none" stroke="#6b7280" strokeLinecap="round" strokeWidth="30">
+        <line x2="247" y2="100" transform="translate(1011.5 104.5)" /><line x1="144" y2="34" transform="translate(867.5 104.5)" /><line y1="88" x2="13" transform="translate(854.5 138.5)" /><line x2="157" y2="125" transform="translate(854.5 226.5)" /><line x2="170" y2="106" transform="translate(829.5 279.5)" /><line y1="75" x2="96" transform="translate(829.5 204.5)" /><line x1="270" y1="19" transform="translate(925.5 204.5)" /><line x1="98" y1="11" transform="translate(1288.5 286.5)" /><line y1="55" x2="204" transform="translate(1084.5 286.5)" /><line x1="43" y2="38" transform="translate(1041.5 341.5)" /><line x1="48" y1="42" transform="translate(1041.5 379.5)" /><line y1="47" x2="236" transform="translate(1089.5 374.5)" /><line x2="72" y2="154" transform="translate(1288.5 292.5)" /><line x2="271" y2="25" transform="translate(1089.5 421.5)" /><line x1="30" y2="146" transform="translate(1360.5 300.5)" /><line x2="153" y2="90" transform="translate(1390.5 300.5)" /><line x1="69" y1="174" transform="translate(1543.5 390.5)" /><line x1="45" y2="164" transform="translate(1567.5 564.5)" /><line y1="76" x2="82" transform="translate(1485.5 728.5)" /><line x1="113" y2="55" transform="translate(1372.5 804.5)" /><line x2="76" y2="75" transform="translate(1296.5 784.5)" /><line x2="110" y2="13" transform="translate(1296.5 784.5)" /><line x1="37" y2="26" transform="translate(1406.5 771.5)" /><line y1="38" x2="35" transform="translate(1443.5 733.5)" /><line x1="24" y2="102" transform="translate(1478.5 631.5)" /><line x1="48" y1="130" transform="translate(1454.5 501.5)" /><line x2="99" y2="62" transform="translate(1355.5 439.5)" /><line y1="49" x2="178" transform="translate(1355.5 390.5)" /><line y1="114" x2="75" transform="translate(1458.5 390.5)" /><line x2="148" y2="60" transform="translate(1458.5 504.5)" /><line y1="65" x2="101" transform="translate(1505.5 564.5)" /><line x2="55" y2="88" transform="translate(1505.5 629.5)" /><line x2="79" y2="2" transform="translate(1481.5 728.5)" /><line x2="43" y2="16" transform="translate(1411.5 800.5)" /><line x1="14" y2="36" transform="translate(1411.5 693.5)" /><line y1="18" x2="27" transform="translate(1425.5 675.5)" /><line y1="3" x2="38" transform="translate(1409.5 616.5)" /><line y1="4" x2="53" transform="translate(1375.5 550.5)" /><line x2="46.5" transform="translate(1331.5 501.5)" /><line x1="27" y2="61" transform="translate(1304.5 501.5)" /><line x1="27" y2="58" transform="translate(1348.5 554.5)" /><line x1="36" y2="54" transform="translate(1373.5 619.5)" /><line x1="47" y2="55" transform="translate(1216.5 473.5)" /><line x2="158" y2="60" transform="translate(1058.5 468.5)" /><line x1="44" y2="71" transform="translate(1014.5 468.5)" />
+      </g>
+    </svg>
+  </TierIconBox>
+);
+
+const FishIcon2 = ({ size = 18, isDark }) => (
+  <TierIconBox isDark={isDark}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 999.334 735.299" width={size} height={size * 0.74} style={{ display: 'block' }}>
+      <g transform="translate(-649.816 -154.867)" fill="none" stroke="#60a5fa" strokeLinecap="round" strokeWidth="38">
+        <line x2="189" y2="44" transform="translate(1073.5 227.5)" /><line x1="139" y1="42" transform="translate(1266.5 262.5)" /><line y1="123" x2="161" transform="translate(1405.5 181.5)" /><line x2="384" transform="translate(1182.5 181.5)" /><line x1="109" y2="46" transform="translate(1073.5 181.5)" /><line x1="306" y2="64" transform="translate(1221.5 195.5)" /><line y1="27" x2="190" transform="translate(883.5 227.5)" /><line x2="60" y2="216" transform="translate(883.5 259.5)" /><line x1="119" y2="74" transform="translate(764.5 254.5)" /><line y1="168" x2="89" transform="translate(675.5 328.5)" /><line x2="80" y2="166" transform="translate(675.5 496.5)" /><line x1="123" y1="68" transform="translate(755.5 662.5)" /><line x2="75" y2="93" transform="translate(856.5 722.5)" /><line x1="116" y1="48" transform="translate(931.5 815.5)" /><line x1="92" y1="118" transform="translate(955.5 745.5)" /><line x1="683" y1="71" transform="translate(883.5 733.5)" /><line y1="49" x2="54" transform="translate(1001.5 755.5)" /><line x1="144" y2="192" transform="translate(1105.5 563.5)" /><line x1="132" y2="8" transform="translate(1117.5 563.5)" /><line x2="3" y2="79" transform="translate(1114.5 492.5)" /><line x1="171" y1="13" transform="translate(943.5 479.5)" /><line y1="95" x2="40" transform="translate(898.5 479.5)" /><line x1="81" y2="45" transform="translate(817.5 574.5)" /><line y1="40" x2="28" transform="translate(782.5 622.5)" /><line x1="249" y2="39" transform="translate(689.5 463.5)" /><line x1="152" y2="42" transform="translate(931.5 385.5)" /><line y1="102" x2="149" transform="translate(1091.5 283.5)" /><line x1="178" y1="114" transform="translate(913.5 271.5)" /><line x2="170" y2="172" transform="translate(1079.5 385.5)" /><line y1="43" transform="translate(1117.5 571.5)" /><line x1="84" y2="65" transform="translate(1033.5 614.5)" /><line x2="131" y2="108" transform="translate(902.5 571.5)" /><line x2="179" y2="86" transform="translate(926.5 522.5)" /><line y1="67" x2="119" transform="translate(870.5 655.5)" /><line x2="156" y2="41" transform="translate(1249.5 567.5)" /><line y1="94" x2="123" transform="translate(1266.5 608.5)" /><line x1="111" y2="43" transform="translate(1155.5 702.5)" /><line x1="41" y2="32" transform="translate(1397.5 571.5)" /><line x1="49" y2="91" transform="translate(1389.5 571.5)" /><line x1="177" y1="142" transform="translate(1389.5 662.5)" /><line x1="251" y1="74" transform="translate(1275.5 706.5)" /><line x2="27" y2="123" transform="translate(1405.5 304.5)" /><line x1="193" y2="45" transform="translate(1432.5 382.5)" /><line x1="41" y2="137" transform="translate(1584.5 382.5)" /><line x1="33" y1="89" transform="translate(1584.5 519.5)" /><line x1="175" y1="37" transform="translate(1442.5 571.5)" /><line x2="28" y2="57" transform="translate(1410.5 514.5)" /><line x1="140" y2="43" transform="translate(1270.5 514.5)" /><line y1="87" x2="22" transform="translate(1410.5 427.5)" /><line x2="315" y2="41" transform="translate(1117.5 393.5)" /><line x2="176" y2="148" transform="translate(1257 272)" /><line x1="182" y2="96" transform="translate(1429.5 406.5)" /><line x1="149" y1="17" transform="translate(1429.5 502.5)" />
+      </g>
+    </svg>
+  </TierIconBox>
+);
+
+const DolphinIcon = ({ size = 18, isDark }) => (
+  <TierIconBox isDark={isDark}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322.431 487.538" width={size} height={size * 0.37} style={{ display: 'block' }}>
+      <g transform="translate(-268.911 -233.804)" fill="none" stroke="#3b82f6" strokeLinecap="round" strokeWidth="34">
+        <line x2="806" y2="98.204" transform="translate(652.5 417.296)" /><line x1="122" y2="74.204" transform="translate(530.5 417.296)" /><line y1="24" x2="243" transform="translate(287.5 491.5)" /><line x2="175" y2="49" transform="translate(403.5 504.5)" /><line y1="23" x2="69" transform="translate(437.5 540.5)" /><line x2="247" y2="63" transform="translate(437.5 563.5)" /><line x1="132" y1="8" transform="translate(684.5 626.5)" /><line y1="20" x2="239" transform="translate(816.5 614.5)" /><line x1="339" y2="86" transform="translate(1055.5 528.5)" /><line x1="126" y1="45" transform="translate(1055.5 614.5)" /><line x1="14" y1="29" transform="translate(1167.5 630.5)" /><line x1="48" y2="49" transform="translate(1167.5 581.5)" /><line x2="62" y2="10" transform="translate(1215.5 581.5)" /><line x1="68" y2="45" transform="translate(1277.5 546.5)" /><line y1="48" x2="141" transform="translate(1317.5 515.5)" /><line x1="104" y1="182" transform="translate(1463.5 515.5)" /><line x1="196" y1="151" transform="translate(1371.5 546.5)" /><line x1="104" y2="204" transform="translate(1463.5 311.5)" /><line x1="81" y2="45" transform="translate(1486.5 311.5)" /><line y1="133" x2="119" transform="translate(1367.5 356.5)" /><line y1="81" x2="140" transform="translate(1375.5 408.5)" /><line x1="73" y1="11" transform="translate(1302.5 466.5)" /><line x2="37" y2="26" transform="translate(1265.5 440.5)" /><line x1="50" y2="32" transform="translate(1215.5 440.5)" /><line x2="395" y2="76" transform="translate(840.5 380.5)" /><line x1="51" y1="48" transform="translate(789.5 332.5)" /><line x1="4" y2="75" transform="translate(789.5 257.5)" /><line x1="82" y2="58" transform="translate(711.5 257.5)" /><line y1="93" x2="54" transform="translate(657.5 315.5)" /><line y1="73" x2="117" transform="translate(669.5 335.5)" /><line y1="37" x2="144" transform="translate(716.5 386.5)" /><line x2="71" y2="106" transform="translate(657.5 423.5)" /><line x1="49" y2="9" transform="translate(728.5 520.5)" /><line y1="80" x2="14" transform="translate(777.5 440.5)" /><line x1="180" y1="106" transform="translate(791.5 440.5)" /><line y1="26" x2="378" transform="translate(971.5 520.5)" /><line y1="53" x2="204" transform="translate(956.5 480.5)" /><line x2="143" y2="67" transform="translate(912.5 539.5)" /><line x1="142" y1="19" transform="translate(770.5 520.5)" /><line x1="135" y2="45" transform="translate(777.5 546.5)" /><line x2="77" transform="translate(700.5 591.5)" /><line y1="83" x2="39" transform="translate(684.5 539.5)" />
+      </g>
+    </svg>
+  </TierIconBox>
+);
+
+const OrcaIcon = ({ size = 18, isDark }) => (
+  <TierIconBox isDark={isDark}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1185.935 605.365" width={size} height={size * 0.51} style={{ display: 'block' }}>
+      <g transform="translate(-431.545 -170.466)" fill="none" stroke="#2563eb" strokeLinecap="round" strokeWidth="34">
+        <line y1="69" x2="301" transform="translate(498.5 400.5)" /><line x1="43" y2="51" transform="translate(455.5 469.5)" /><line x1="15" y1="39" transform="translate(455.5 520.5)" /><line x2="183" y2="72" transform="translate(470.5 559.5)" /><line x2="20" y2="88" transform="translate(646.5 577.5)" /><line x1="42" y1="41" transform="translate(604.5 536.5)" /><line y1="4" x2="134" transform="translate(470.5 536.5)" /><line x1="126" y2="53" transform="translate(604.5 483.5)" /><line y1="66" x2="22" transform="translate(730.5 417.5)" /><line x2="398" y2="37" transform="translate(739.5 469.5)" /><line x2="51" y2="86" transform="translate(730.5 480.5)" /><line y1="8" x2="125" transform="translate(656.5 566.5)" /><line x1="59" y1="44" transform="translate(781.5 566.5)" /><line x2="11" y2="101" transform="translate(840.5 610.5)" /><line y1="40" x2="35" transform="translate(816.5 711.5)" /><line x1="72" transform="translate(744.5 751.5)" /><line x2="74" y2="77" transform="translate(670.5 674.5)" /><line x1="139" y2="19" transform="translate(799.5 381.5)" /><line y1="95" x2="97" transform="translate(938.5 286.5)" /><line x2="8" y2="92" transform="translate(1027.5 194.5)" /><line x1="60" y2="57" transform="translate(967.5 194.5)" /><line y1="117" x2="40" transform="translate(927.5 251.5)" /><line x2="164" y2="16" transform="translate(914.5 384.5)" /><line x2="43" y2="117" transform="translate(1035.5 283.5)" /><line x1="237" y1="88" transform="translate(1078.5 400.5)" /><line x2="154" y2="87" transform="translate(1315.5 488.5)" /><line x1="59" y1="79" transform="translate(1469.5 575.5)" /><line x2="79" y2="5" transform="translate(1518.5 641.5)" /><line y1="106" x2="21" transform="translate(1576.5 646.5)" /><line x1="113" y1="68" transform="translate(1463.5 684.5)" /><line x1="51" y2="38" transform="translate(1463.5 646.5)" /><line x1="94" y1="7" transform="translate(1489.5 665.5)" /><line x1="365" y1="148" transform="translate(1140.5 506.5)" /><line y1="36" x2="55" transform="translate(1414.5 575.5)" /><line x2="14" y2="69" transform="translate(1406.5 611.5)" /><line x1="49" y1="4" transform="translate(1420.5 680.5)" /><line x2="17" y2="80" transform="translate(1306.5 488.5)" /><line y1="61" x2="59" transform="translate(1264.5 580.5)" /><line x1="62" y1="103" transform="translate(1078.5 400.5)" /><line x1="11" y2="62" transform="translate(1129.5 510.5)" /><line x1="40" y2="105" transform="translate(978.5 506.5)" /><line x1="207" y1="95" transform="translate(811.5 402.5)" /><line x1="119" y2="111" transform="translate(837.5 488.5)" /><line x2="233" y2="98" transform="translate(1131.5 572.5)" /><line x1="56" y1="10" transform="translate(1364.5 670.5)" /><line x1="285" y2="20" transform="translate(1011.5 646.5)" /><line x1="97" y1="24" transform="translate(1267.5 646.5)" /><line x2="160" y2="8" transform="translate(851.5 658.5)" /><line y1="3" x2="120" transform="translate(858.5 611.5)" /><line x1="157" y2="45" transform="translate(978.5 566.5)" />
+      </g>
+    </svg>
+  </TierIconBox>
+);
+
+const WhaleIcon = ({ size = 18, isDark }) => (
+  <TierIconBox isDark={isDark}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1329.594 627.908" width={size} height={size * 0.47} style={{ display: 'block' }}>
+      <g transform="translate(-312.905 -143.901)" fill="none" stroke="#22c55e" strokeLinecap="round" strokeWidth="32">
+        <line x2="512" y2="100" transform="translate(570.5 371.5)" /><line x1="230" y2="44" transform="translate(1082.5 427.5)" /><line y1="93" x2="95" transform="translate(1303.5 328.5)" /><line x2="15" y2="67" transform="translate(1383.5 261.5)" /><line x1="86" y1="95" transform="translate(1297.5 166.5)" /><line x1="43" y1="205" transform="translate(1297.5 166.5)" /><line x1="101" y1="18" transform="translate(1398.5 328.5)" /><line x2="19" transform="translate(1499.5 346.5)" /><line x1="103" y1="44" transform="translate(1518.5 346.5)" /><line x1="240" y2="51" transform="translate(1381.5 390.5)" /><line x2="94" y2="5" transform="translate(1297.5 432.5)" /><line y1="74" x2="83" transform="translate(1312.5 441.5)" /><line x1="167" y1="46" transform="translate(1154.5 461.5)" /><line x1="389" y2="204" transform="translate(923.5 515.5)" /><line x1="428" y2="136" transform="translate(884.5 515.5)" /><line x1="17" y1="54" transform="translate(878.5 651.5)" /><line x2="62" y2="44" transform="translate(895.5 705.5)" /><line y1="3" x2="131" transform="translate(826.5 749.5)" /><line x2="128" transform="translate(694.5 745.5)" /><line x2="110" y2="108" transform="translate(712.5 637.5)" /><line x1="104" y1="137" transform="translate(608.5 500.5)" /><line x1="197" y2="61" transform="translate(895.5 628.5)" /><line y1="114" x2="15" transform="translate(1067.5 474.5)" /><line x1="248" y1="3" transform="translate(819.5 585.5)" /><line x1="54" y1="60" transform="translate(819.5 585.5)" /><line x2="207" y2="85" transform="translate(612.5 500.5)" /><line y1="61" x2="283" transform="translate(612.5 439.5)" /><line x1="115" y2="7" transform="translate(497.5 500.5)" /><line x2="163" y2="74" transform="translate(334.5 433.5)" /><line y1="56" x2="107" transform="translate(334.5 377.5)" /><line x1="129" y2="6" transform="translate(441.5 371.5)" /><line x2="21" y2="67" transform="translate(334.5 433.5)" /><line x1="147" y1="165" transform="translate(355.5 500.5)" /><line x2="192" y2="80" transform="translate(502.5 665.5)" /><line x2="192" y2="8" transform="translate(588.5 697.5)" /><line x1="206" y1="235" transform="translate(388.5 462.5)" /><line x1="130" y1="138" transform="translate(491.5 507.5)" /><line x2="102" y2="14" transform="translate(621.5 645.5)" /><line x2="53" y2="6" transform="translate(612.5 574.5)" /><line x1="50" y1="56" transform="translate(562.5 518.5)" /><line x1="43" y1="49" transform="translate(605.5 507.5)" />
+      </g>
+    </svg>
+  </TierIconBox>
+);
+
+// Holders Tab Component
+const HoldersTab = React.memo(({ slug }) => {
+  const BASE_URL = 'https://api.xrpl.to/api';
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  const [loading, setLoading] = useState(true);
+  const [holdersData, setHoldersData] = useState(null);
+  const [distribution, setDistribution] = useState(null);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [minNFT, setMinNFT] = useState(0);
+  const [searchResult, setSearchResult] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const LIMIT = 20;
+
+  const tierFilters = [
+    { label: 'All', min: 0 },
+    { label: '2+', min: 2 },
+    { label: '5+', min: 5 },
+    { label: '10+', min: 10 },
+    { label: '20+', min: 20 }
+  ];
+
+  useEffect(() => {
+    if (!slug) return;
+    setLoading(true);
+
+    const params = new URLSearchParams({ limit: LIMIT.toString(), page: page.toString() });
+    if (minNFT > 0) params.append('minCount', minNFT.toString());
+
+    Promise.all([
+      axios.get(`${BASE_URL}/nft/holders/${slug}?${params}`),
+      axios.get(`${BASE_URL}/nft/holders/${slug}/distribution`)
+    ])
+      .then(([holdersRes, distRes]) => {
+        setHoldersData(holdersRes.data);
+        setDistribution(distRes.data?.distribution);
+        setTotalPages(holdersRes.data?.pagination?.pages || Math.ceil((holdersRes.data?.stats?.totalOwners || 0) / LIMIT));
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [slug, minNFT, page]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [minNFT]);
+
+  // Search for specific address across all collections they hold
+  const handleSearch = async () => {
+    if (!searchAddress.trim() || !slug) return;
+    setSearching(true);
+    setSearchResult(null);
+    try {
+      const res = await axios.get(`${BASE_URL}/nft/holders/address/${searchAddress.trim()}?limit=100`);
+      const holdings = res.data.holdings || [];
+      // Find if address holds NFTs in current collection
+      const match = holdings.find(h => h.slug === slug);
+      if (match) {
+        setSearchResult({
+          address: searchAddress.trim(),
+          count: match.count,
+          rank: match.rank,
+          percentage: match.percentage,
+          collectionName: match.name
+        });
+      } else {
+        setSearchResult({
+          error: 'Address does not hold NFTs in this collection',
+          totalCollections: res.data.totalCollections
+        });
+      }
+    } catch (err) {
+      setSearchResult({ error: err.response?.status === 404 ? 'Address not found' : 'Search failed' });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="animate-spin text-primary" size={24} />
+      </div>
+    );
+  }
+
+  if (!holdersData) {
+    return <div className={cn('text-center py-8 text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>No holder data available</div>;
+  }
+
+  const { stats, topHolders = [], changes, name: collectionName, account, taxon } = holdersData;
+  const tierIcons = {
+    whales: WhaleIcon,
+    orcas: OrcaIcon,
+    dolphins: DolphinIcon,
+    fish: FishIcon2,
+    shrimp: ShrimpIcon
+  };
+
+  // Calculate concentration
+  const total = stats?.totalNFTs || 0;
+  const top1Pct = total > 0 ? ((topHolders[0]?.count || 0) / total * 100).toFixed(1) : '0';
+  const top5Pct = total > 0 ? (topHolders.slice(0, 5).reduce((s, h) => s + h.count, 0) / total * 100).toFixed(1) : '0';
+  const top10Pct = total > 0 ? (topHolders.slice(0, 10).reduce((s, h) => s + h.count, 0) / total * 100).toFixed(1) : '0';
+  const top20Pct = total > 0 ? (topHolders.slice(0, 20).reduce((s, h) => s + h.count, 0) / total * 100).toFixed(1) : '0';
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Row */}
+      <div className={cn('grid gap-3', changes?.ownersChange !== undefined ? 'grid-cols-2 sm:grid-cols-5' : 'grid-cols-2 sm:grid-cols-4')}>
+        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+          <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}>Supply</div>
+          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{fIntNumber(total)}</div>
+        </div>
+        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+          <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}>Owners</div>
+          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{fIntNumber(stats?.totalOwners || 0)}</div>
+        </div>
+        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+          <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}>Unique %</div>
+          <div className={cn('text-[18px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{total > 0 ? ((stats?.totalOwners || 0) / total * 100).toFixed(1) : 0}%</div>
+        </div>
+        <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+          <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}>Top 10 Hold</div>
+          <div className={cn('text-[18px] font-medium', parseFloat(top10Pct) > 50 ? 'text-orange-500' : isDark ? 'text-white' : 'text-gray-900')}>{top10Pct}%</div>
+        </div>
+        {changes?.ownersChange !== undefined && (
+          <div className={cn('rounded-lg p-3', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+            <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}>Owner Δ</div>
+            <div className={cn('text-[18px] font-medium', changes.ownersChange > 0 ? 'text-green-500' : changes.ownersChange < 0 ? 'text-red-500' : isDark ? 'text-white/50' : 'text-gray-500')}>
+              {changes.ownersChange > 0 ? '+' : ''}{changes.ownersChange}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Ownership Changes */}
+      {changes && (changes.gainers?.length > 0 || changes.losers?.length > 0 || changes.newOwners?.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Gainers */}
+          {changes.gainers?.length > 0 && (
+            <div className={cn('rounded-lg p-3', isDark ? 'bg-green-500/5 border border-green-500/10' : 'bg-green-50 border border-green-100')}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-green-500 text-[10px] font-medium uppercase tracking-wide">Gainers</span>
+                <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{changes.summary?.gainers || changes.gainers.length}</span>
+              </div>
+              <div className="space-y-1">
+                {changes.gainers.slice(0, 5).map((g, i) => (
+                  <Link key={g.address} href={`/profile/${g.address}`} className="flex items-center gap-2 group">
+                    <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
+                      {g.address.slice(0, 6)}...{g.address.slice(-4)}
+                    </span>
+                    <span className="text-[10px] font-medium text-green-500">{g.change}</span>
+                    <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>→{g.now}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Losers */}
+          {changes.losers?.length > 0 && (
+            <div className={cn('rounded-lg p-3', isDark ? 'bg-red-500/5 border border-red-500/10' : 'bg-red-50 border border-red-100')}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-red-500 text-[10px] font-medium uppercase tracking-wide">Losers</span>
+                <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{changes.summary?.losers || changes.losers.length}</span>
+              </div>
+              <div className="space-y-1">
+                {changes.losers.slice(0, 5).map((l, i) => (
+                  <Link key={l.address} href={`/profile/${l.address}`} className="flex items-center gap-2 group">
+                    <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
+                      {l.address.slice(0, 6)}...{l.address.slice(-4)}
+                    </span>
+                    <span className="text-[10px] font-medium text-red-500">{l.change}</span>
+                    <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>→{l.now}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* New Owners */}
+          {changes.newOwners?.length > 0 && (
+            <div className={cn('rounded-lg p-3', isDark ? 'bg-blue-500/5 border border-blue-500/10' : 'bg-blue-50 border border-blue-100')}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-blue-500 text-[10px] font-medium uppercase tracking-wide">New Owners</span>
+                <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{changes.summary?.newOwners || changes.newOwners.length}</span>
+              </div>
+              <div className="space-y-1">
+                {changes.newOwners.slice(0, 5).map((n, i) => (
+                  <Link key={n.address} href={`/profile/${n.address}`} className="flex items-center gap-2 group">
+                    <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
+                      {n.address.slice(0, 6)}...{n.address.slice(-4)}
+                    </span>
+                    <span className="text-[10px] font-medium text-blue-500">+{n.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Exited Owners */}
+          {changes.exitedOwners?.length > 0 && (
+            <div className={cn('rounded-lg p-3', isDark ? 'bg-orange-500/5 border border-orange-500/10' : 'bg-orange-50 border border-orange-100')}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-orange-500 text-[10px] font-medium uppercase tracking-wide">Exited</span>
+                <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{changes.summary?.exitedOwners || changes.exitedOwners.length}</span>
+              </div>
+              <div className="space-y-1">
+                {changes.exitedOwners.slice(0, 5).map((e, i) => (
+                  <Link key={e.address} href={`/profile/${e.address}`} className="flex items-center gap-2 group">
+                    <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
+                      {e.address.slice(0, 6)}...{e.address.slice(-4)}
+                    </span>
+                    <span className="text-[10px] font-medium text-orange-500">had {e.had}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {changes?.since && (
+        <div className={cn('text-[9px] text-right', isDark ? 'text-white/20' : 'text-gray-400')}>
+          Changes since {new Date(changes.since).toLocaleDateString()}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Left: Distribution */}
+        <div className={cn('lg:col-span-4 rounded-lg p-4', isDark ? 'bg-white/[0.02] border border-white/[0.06]' : 'bg-gray-50 border border-gray-100')}>
+          {/* Concentration */}
+          <h3 className={cn('text-[10px] font-medium uppercase tracking-wide mb-3', isDark ? 'text-white/40' : 'text-gray-500')}>Concentration</h3>
+          <div className="space-y-2.5">
+            {[
+              { label: 'Top 1', pct: top1Pct },
+              { label: 'Top 5', pct: top5Pct },
+              { label: 'Top 10', pct: top10Pct },
+              { label: 'Top 20', pct: top20Pct }
+            ].map(row => (
+              <div key={row.label} className="flex items-center gap-2">
+                <span className={cn('text-[11px] w-11', isDark ? 'text-white/50' : 'text-gray-500')}>{row.label}</span>
+                <div className={cn('flex-1 h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                  <div className={cn('h-full rounded-full', parseFloat(row.pct) > 50 ? 'bg-orange-500' : 'bg-primary')} style={{ width: `${Math.min(parseFloat(row.pct), 100)}%` }} />
+                </div>
+                <span className={cn('text-[11px] w-11 text-right font-medium', isDark ? 'text-white' : 'text-gray-900')}>{row.pct}%</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Tier Distribution */}
+          {distribution && (
+            <div className={cn('mt-4 pt-4 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-200')}>
+              <h4 className={cn('text-[10px] font-medium uppercase tracking-wide mb-3', isDark ? 'text-white/40' : 'text-gray-500')}>NFTs by Holder Size</h4>
+              <div className="space-y-2.5">
+                {Object.entries(distribution).map(([tier, data]) => {
+                  const TierIcon = tierIcons[tier] || tierIcons.fish;
+                  const nftPct = data.nftsPct || '0';
+                  return (
+                    <div key={tier} className="flex items-center gap-2">
+                      <TierIcon size={18} isDark={isDark} />
+                      <div className="w-20">
+                        <span className={cn('text-[10px] capitalize block', isDark ? 'text-white/70' : 'text-gray-700')}>{tier}</span>
+                        <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>{data.threshold}</span>
+                      </div>
+                      <div className={cn('flex-1 h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                        <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.min(parseFloat(nftPct), 100)}%` }} />
+                      </div>
+                      <span className={cn('text-[10px] w-11 text-right font-medium', isDark ? 'text-white' : 'text-gray-900')}>{nftPct}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Top Holders */}
+        <div className="lg:col-span-8 space-y-3">
+          {/* Search & Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* Address Search */}
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                value={searchAddress}
+                onChange={(e) => setSearchAddress(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Search address..."
+                className={cn(
+                  'flex-1 px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-mono outline-none',
+                  isDark
+                    ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50'
+                    : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50'
+                )}
+              />
+              <button
+                onClick={handleSearch}
+                disabled={searching || !searchAddress.trim()}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-colors',
+                  searching || !searchAddress.trim()
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-primary/10 hover:border-primary/50',
+                  isDark ? 'border-white/15 text-white/70' : 'border-gray-300 text-gray-600'
+                )}
+              >
+                {searching ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+              </button>
+            </div>
+            {/* Min NFT Filter */}
+            <div className="flex gap-1">
+              {tierFilters.map(f => (
+                <button
+                  key={f.min}
+                  onClick={() => setMinNFT(f.min)}
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors',
+                    minNFT === f.min
+                      ? 'border-primary/50 text-primary bg-primary/10'
+                      : isDark
+                      ? 'border-white/15 text-white/50 hover:bg-white/5 hover:border-primary/30'
+                      : 'border-gray-300 text-gray-500 hover:bg-gray-100 hover:border-primary/30'
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search Result */}
+          {searchResult && (
+            <div className={cn(
+              'rounded-lg border-[1.5px] p-3',
+              searchResult.error
+                ? isDark ? 'bg-red-500/5 border-red-500/20' : 'bg-red-50 border-red-200'
+                : isDark ? 'bg-primary/5 border-primary/20' : 'bg-blue-50 border-blue-200'
+            )}>
+              {searchResult.error ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-red-500">{searchResult.error}</span>
+                    {searchResult.totalCollections > 0 && (
+                      <span className={cn('text-[10px] ml-2', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        (holds NFTs in {searchResult.totalCollections} other collection{searchResult.totalCollections > 1 ? 's' : ''})
+                      </span>
+                    )}
+                  </div>
+                  <button onClick={() => setSearchResult(null)} className="text-red-500 hover:text-red-400">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Link href={`/profile/${searchResult.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
+                      <span className="hidden sm:inline">{searchResult.address}</span>
+                      <span className="sm:hidden">{searchResult.address?.slice(0, 6)}...{searchResult.address?.slice(-4)}</span>
+                    </Link>
+                    <span className={cn('text-[11px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                      {fIntNumber(searchResult.count)} NFTs
+                    </span>
+                    <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                      Rank #{searchResult.rank} • {searchResult.percentage}%
+                    </span>
+                  </div>
+                  <button onClick={() => setSearchResult(null)} className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Holders Table */}
+          <div className={cn('overflow-x-auto rounded-xl border-[1.5px]', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+            <table className="w-full min-w-[500px]">
+              <thead className={cn('sticky top-0 z-10', isDark ? 'bg-black/50 backdrop-blur-lg' : 'bg-gray-50/50 backdrop-blur-lg')}>
+                <tr>
+                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide w-12', isDark ? 'text-gray-400 border-b border-white/5' : 'text-gray-600 border-b border-gray-200')}>Rank</th>
+                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400 border-b border-white/5' : 'text-gray-600 border-b border-gray-200')}>Address</th>
+                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400 border-b border-white/5' : 'text-gray-600 border-b border-gray-200')}>NFTs</th>
+                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase tracking-wide w-20', isDark ? 'text-gray-400 border-b border-white/5' : 'text-gray-600 border-b border-gray-200')}>Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topHolders.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className={cn('px-4 py-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                      No holders found with {minNFT}+ NFTs
+                    </td>
+                  </tr>
+                ) : (
+                  topHolders.map((holder, idx) => {
+                    const rank = holder.rank || (page - 1) * LIMIT + idx + 1;
+                    return (
+                    <tr key={holder.address} className={cn('transition-colors', isDark ? 'border-b border-white/5 hover:bg-white/5' : 'border-b border-gray-100 hover:bg-gray-50')}>
+                      <td className="px-4 py-2.5">
+                        <span className={cn(
+                          'w-6 h-6 rounded flex items-center justify-center text-[10px] font-medium',
+                          rank === 1 ? 'bg-yellow-500/20 text-yellow-500' :
+                          rank === 2 ? 'bg-gray-400/20 text-gray-400' :
+                          rank === 3 ? 'bg-amber-600/20 text-amber-600' :
+                          isDark ? 'text-white/30' : 'text-gray-400'
+                        )}>{rank}</span>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <Link href={`/profile/${holder.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
+                          <span className="hidden sm:inline">{holder.address}</span>
+                          <span className="sm:hidden">{holder.address.slice(0, 6)}...{holder.address.slice(-4)}</span>
+                        </Link>
+                      </td>
+                      <td className={cn('px-4 py-2.5 text-right text-[11px] font-medium tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{fIntNumber(holder.count)}</td>
+                      <td className={cn('px-4 py-2.5 text-right text-[10px] tabular-nums', isDark ? 'text-white/40' : 'text-gray-500')}>{holder.percentage}%</td>
+                    </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1 pt-2">
+              <button
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  page === 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
+                  isDark ? "text-white/50" : "text-gray-500"
+                )}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+                {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page >= totalPages}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  page >= totalPages ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
+                  isDark ? "text-white/50" : "text-gray-500"
+                )}
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 // Export components for external use
 export { AttributeFilter, CollectionCard, NFTCard };
 
@@ -1182,6 +1706,7 @@ export default function CollectionView({ collection }) {
             >
               {[
                 { id: 'tab-nfts', label: 'NFTs', icon: <Package size={14} /> },
+                { id: 'tab-holders', label: 'Holders', icon: <Users size={14} /> },
                 { id: 'tab-creator-transactions', label: 'Activity', icon: <Activity size={14} /> }
               ].map((tab, idx, arr) => (
                 <button
@@ -1221,6 +1746,9 @@ export default function CollectionView({ collection }) {
 
           <TabPanel value="tab-nfts" className="px-2.5 pb-2.5">
             <NFTGrid collection={collection} />
+          </TabPanel>
+          <TabPanel value="tab-holders" className="px-2.5 pb-2.5">
+            <HoldersTab slug={slug} />
           </TabPanel>
           <TabPanel value="tab-creator-transactions" className="px-2.5 pb-2.5">
             <AccountTransactions collectionSlug={slug} />

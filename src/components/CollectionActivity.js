@@ -112,7 +112,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
 
   if (!collectionSlug) {
     return (
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-0">
+      <div className="w-full">
         <div className={cn(
           "rounded-xl border-[1.5px] p-8 mb-6 text-center",
           isDark ? "bg-black/20 border-white/[0.08]" : "bg-white border-gray-200"
@@ -124,10 +124,10 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   }
 
   return (
-    <div className="max-w-[1920px] mx-auto px-4 sm:px-0">
+    <div className="w-full">
       <div className="mb-6">
         {/* Filter Chips */}
-        <div className="mb-4 px-4">
+        <div className="mb-4">
           <div className="flex flex-wrap gap-2">
             {['ALL', 'SALE', 'CREATE_BUY_OFFER', 'CREATE_SELL_OFFER', 'CANCEL_BUY_OFFER', 'TRANSFER'].map(type => (
               <button
