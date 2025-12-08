@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -53,6 +53,8 @@ const RichList = ({ token, amm }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalHolders, setTotalHolders] = useState(0);
   const [summary, setSummary] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const rowsPerPage = isMobile ? 10 : 20;
 
   const ammAccount = amm || token?.AMM;
@@ -68,9 +70,11 @@ const RichList = ({ token, amm }) => {
 
       setLoading(true);
       try {
-        const response = await fetch(
-          `https://api.xrpl.to/api/richlist/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`
-        );
+        let url = `https://api.xrpl.to/api/richlist/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
+        if (searchTerm.length >= 3) {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.result === 'success') {
@@ -88,32 +92,103 @@ const RichList = ({ token, amm }) => {
     };
 
     fetchRichList();
-  }, [token?.md5, page, rowsPerPage, mobileChecked]);
+  }, [token?.md5, page, rowsPerPage, mobileChecked, searchTerm]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  if (loading) {
+  const handleSearch = () => {
+    if (searchInput.length >= 3 || searchInput.length === 0) {
+      setSearchTerm(searchInput);
+      setPage(1);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    // Auto-clear search when input is emptied
+    if (!value && searchTerm) {
+      setSearchTerm('');
+      setPage(1);
+    }
+  };
+
+  const renderSearchBar = () => (
+    <div className="flex items-center gap-2">
+      <div className={cn(
+        'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
+        isDark ? 'border-[rgba(59,130,246,0.12)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-200 bg-gray-50'
+      )}>
+        <Search size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+        <input
+          type="text"
+          value={searchInput}
+          onChange={handleInputChange}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          placeholder="Search by address (min 3 chars)"
+          className={cn(
+            'flex-1 bg-transparent text-[13px] outline-none placeholder:text-[12px]',
+            isDark ? 'text-white placeholder:text-white/30' : 'text-gray-900 placeholder:text-gray-400'
+          )}
+        />
+        {searchInput && (
+          <button onClick={clearSearch} className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}>
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      <button
+        onClick={handleSearch}
+        disabled={searchInput.length > 0 && searchInput.length < 3}
+        className={cn(
+          'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-40',
+          isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+        )}
+      >
+        Search
+      </button>
+    </div>
+  );
+
+  if (loading && !richList.length) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="space-y-4">
+        {renderSearchBar()}
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   if (!richList || richList.length === 0) {
     return (
-      <div className={cn(
-        'rounded-xl border-[1.5px] border-dashed py-12 text-center',
-        isDark ? 'border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-300 bg-gray-50'
-      )}>
-        <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
-          No Holder Data Available
-        </h3>
-        <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>
-          Rich list data will appear here when available
-        </p>
+      <div className="space-y-4">
+        {renderSearchBar()}
+        {searchTerm && (
+          <div className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+            No results for "{searchTerm}"
+          </div>
+        )}
+        <div className={cn(
+          'rounded-xl border-[1.5px] border-dashed py-12 text-center',
+          isDark ? 'border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-300 bg-gray-50'
+        )}>
+          <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
+            {searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
+          </h3>
+          <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>
+            {searchTerm ? 'Try a different address' : 'Rich list data will appear here when available'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -149,6 +224,15 @@ const RichList = ({ token, amm }) => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Search */}
+      {renderSearchBar()}
+      {searchTerm && (
+        <div className={cn('flex items-center gap-2 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+          Showing results for "{searchTerm}" ({totalHolders} found)
+          {loading && <Loader2 size={12} className="animate-spin" />}
         </div>
       )}
 
