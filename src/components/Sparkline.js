@@ -113,11 +113,12 @@ const Sparkline = ({
       return { x, y };
     });
 
-    // Draw gradient fill if enabled
+    // Draw gradient fill if enabled - subtle glow effect
     if (showGradient) {
       const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, color + '25');
-      gradient.addColorStop(1, color + '05');
+      gradient.addColorStop(0, color + '20');
+      gradient.addColorStop(0.5, color + '10');
+      gradient.addColorStop(1, color + '00');
 
       ctx.beginPath();
       ctx.moveTo(points[0].x, height);
@@ -193,34 +194,35 @@ const Sparkline = ({
     };
   }, [url, inView, chartData]);
 
-  // Loading skeleton styled like a sparkline
+  // Loading skeleton - subtle shimmer
   if (isLoading) {
     return (
-      <div ref={ref} className="w-full h-full min-h-[40px] relative overflow-hidden">
-        <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-full h-full">
-          <path
-            d="M0,30 Q15,25 25,28 T50,20 T75,25 T100,18"
-            fill="none"
-            className={cn(
-              "animate-pulse",
-              isDark ? "stroke-white/10" : "stroke-gray-200"
-            )}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
+      <div ref={ref} className="w-full h-full min-h-[40px] flex items-center justify-center">
+        <div
+          className={cn(
+            "w-full h-[2px] rounded-full",
+            isDark ? "bg-white/5" : "bg-gray-100"
+          )}
+          style={{
+            background: isDark
+              ? 'linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%)'
+              : 'linear-gradient(90deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.06) 50%, rgba(0,0,0,0.02) 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s infinite'
+          }}
+        />
       </div>
     );
   }
 
-  // Error/no data state
+  // Error/no data state - minimal dash
   if (isError || !chartData) {
     return (
-      <div ref={ref} className="w-full h-full min-h-[40px] flex items-center">
-        <div className={cn(
-          "w-full h-px",
-          isDark ? "bg-white/10" : "bg-gray-200"
-        )} />
+      <div ref={ref} className="w-full h-full min-h-[40px] flex items-center justify-center">
+        <span className={cn(
+          "text-[11px]",
+          isDark ? "text-white/20" : "text-gray-300"
+        )}>—</span>
       </div>
     );
   }

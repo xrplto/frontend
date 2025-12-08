@@ -68,7 +68,7 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  border-radius: 12px;
+  border-radius: 0;
   background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
   border: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -83,7 +83,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 0 0 auto;
     min-width: 72px;
-    border-radius: 10px;
+    border-radius: 0;
     border-width: 1px;
     justify-content: space-between;
   }
@@ -93,7 +93,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 0 0 auto;
     min-width: 72px;
-    border-radius: 10px;
+    border-radius: 0;
     border-width: 1px;
     justify-content: space-between;
   }
@@ -330,23 +330,17 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
         )}
       </Container>
 
-      <div
-        style={{
-          minHeight: '50vh',
-          padding: isMobile ? '0 8px' : '0 24px',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
+      {/* Table Section - aligned with metric boxes */}
+      <Container>
         <div
           style={{
-            borderRadius: '0',
-            background: 'transparent',
-            backdropFilter: 'none',
-            border: 'none',
-            boxShadow: 'none',
-            overflow: 'visible',
-            position: 'relative'
+            minHeight: '50vh',
+            position: 'relative',
+            zIndex: 1,
+            borderRadius: 0,
+            background: isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)',
+            border: `1px solid ${isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'}`,
+            overflow: 'hidden'
           }}
         >
           <CollectionList
@@ -356,7 +350,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
             initialTotal={initialTotal}
           />
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

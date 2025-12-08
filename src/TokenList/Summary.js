@@ -94,7 +94,7 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  border-radius: 12px;
+  border-radius: 0;
   background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
   border: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -109,7 +109,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 0 0 auto;
     min-width: 72px;
-    border-radius: 10px;
+    border-radius: 0;
     border-width: 1px;
     justify-content: space-between;
   }
@@ -119,7 +119,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 0 0 auto;
     min-width: 72px;
-    border-radius: 10px;
+    border-radius: 0;
     border-width: 1px;
     justify-content: space-between;
   }

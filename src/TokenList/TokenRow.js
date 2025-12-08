@@ -123,7 +123,7 @@ const StyledRow = styled.tr`
 `;
 
 const StyledCell = styled.td`
-  padding: 18px 12px;
+  padding: 12px 8px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
@@ -131,15 +131,23 @@ const StyledCell = styled.td`
   color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isTokenColumn ? '220px' : 'auto')};
+  min-width: ${(props) => (props.isTokenColumn ? '200px' : 'auto')};
   letter-spacing: 0.01em;
+
+  &:first-of-type {
+    padding-left: 12px;
+  }
+
+  &:last-of-type {
+    padding-right: 12px;
+  }
 `;
 
 // Mobile-specific flexbox components
 const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 14px 8px;
+  padding: 10px 12px;
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)'};
   cursor: pointer;
   box-sizing: border-box;
@@ -1416,20 +1424,21 @@ export const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => props.isDark ? '#0a0a0a' : '#FFFFFF'};
+  background: transparent;
 `;
 
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
-  padding: 12px 8px;
-  background: ${(props) => props.isDark ? '#0a0a0a' : '#FFFFFF'};
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0,0,0,0.08)'};
+  padding: 10px 12px;
+  background: ${(props) => props.isDark ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.06)'};
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  letter-spacing: 0.04em;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'};
   position: sticky;
   top: 0;
   z-index: 10;

@@ -36,10 +36,17 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 0; /* Ensure no padding */
-  margin: 0; /* Ensure no margin */
+  padding: 0;
+  margin: 0;
   contain: layout style;
   overflow: visible;
+`;
+
+const TableWrapper = styled.div`
+  border-radius: 0;
+  background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
+  border: 1px solid ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
+  overflow: hidden;
 `;
 
 const TableContainer = styled.div`
@@ -872,6 +879,7 @@ function TokenListComponent({
           )}
         </CustomColumnsPanel>
       ) : isMobile ? (
+        <TableWrapper darkMode={darkMode}>
         <MobileContainer isDark={darkMode}>
           <MobileHeader isDark={darkMode}>
             <HeaderCell
@@ -1017,7 +1025,9 @@ function TokenListComponent({
             />
           ))}
         </MobileContainer>
+        </TableWrapper>
       ) : (
+        <TableWrapper darkMode={darkMode}>
         <TableContainer ref={tableContainerRef} isMobile={isMobile}>
           <StyledTable ref={tableRef} isMobile={isMobile}>
             <TokenListHead
@@ -1058,6 +1068,7 @@ function TokenListComponent({
             </StyledTableBody>
           </StyledTable>
         </TableContainer>
+        </TableWrapper>
       )}
       <ToolbarContainer isMobile={isMobile}>
         <TokenListToolbar

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useContext } from 'react';
+import React, { lazy, Suspense, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { cn } from 'src/utils/cn';
 
@@ -9,27 +9,52 @@ import { getNftCoverUrl } from 'src/utils/parseUtils';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
-const TokenDetail = lazy(() => import('src/NFT'));
+import TokenTabs from 'src/TokenDetail/components/TokenTabs';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
+const NFTDetail = lazy(() => import('src/NFT'));
 
 import { AppContext } from 'src/AppContext';
 
 export default function Overview({ nft }) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-
-  // Create the properly structured collection data
-  const collectionData = nft?.nft
-    ? {
-        collection: {
-          name: nft.nft.collection || 'No Collection',
-          slug: nft.nft.cslug || ''
-        }
-      }
-    : null;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 
   const nftName = nft?.nft?.meta?.name || nft?.nft?.meta?.Name || 'No Name';
-  const nftId = nft?.nft?.NFTokenID;
+  const nftTokenId = nft?.nft?.NFTokenID;
+  const collectionSlug = nft?.nft?.cslug;
+  const collectionName = nft?.nft?.collection;
+  const nftThumbnail = nft?.nft?.files?.[0]?.thumbnail?.small || nft?.nft?.files?.[0]?.thumbnail?.medium;
+
+  // Add current NFT to tabs on mount
+  useEffect(() => {
+    if (nftTokenId && nftName) {
+      addTokenToTabs({
+        slug: nftTokenId,
+        name: nftName,
+        type: 'nft',
+        thumbnail: nftThumbnail,
+        collectionSlug,
+        collectionName
+      });
+    }
+  }, [nftTokenId, nftName, nftThumbnail, collectionSlug, collectionName]);
+
+  // Also add collection to tabs - fetch logoImage from collection API
+  useEffect(() => {
+    if (collectionSlug && collectionName) {
+      axios.get(`https://api.xrpl.to/api/nft/collections/${collectionSlug}`)
+        .then(res => {
+          addTokenToTabs({
+            slug: collectionSlug,
+            name: collectionName,
+            type: 'collection',
+            logoImage: res.data?.logoImage || collectionSlug
+          });
+        })
+        .catch(() => {});
+    }
+  }, [collectionSlug, collectionName]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -39,10 +64,9 @@ export default function Overview({ nft }) {
         {nftName} NFT on XRPL
       </h1>
 
-      <div className="mx-auto max-w-7xl flex-1 px-4">
-        {collectionData && (
-          <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
-        )}
+      {!isMobile && <TokenTabs currentMd5={nftTokenId} />}
+
+      <div className="mx-auto max-w-7xl flex-1 px-4 mt-4">
         <Suspense
           fallback={
             <div className="flex min-h-[400px] items-center justify-center">
@@ -50,7 +74,7 @@ export default function Overview({ nft }) {
             </div>
           }
         >
-          <TokenDetail nft={nft.nft} />
+          <NFTDetail nft={nft.nft} />
         </Suspense>
       </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const MAX_TABS = 10;
+const MAX_TABS = 20;
 const STORAGE_KEY = 'token_tabs_history';
 
 // Custom event for cross-component sync
@@ -84,7 +84,8 @@ export function addTokenToTabs(item) {
       name: item.name || item.user || 'Item',
       user: item.user || item.name || '',
       type: item.type || 'token',
-      logoImage: item.logoImage || null
+      logoImage: item.logoImage || null,
+      thumbnail: item.thumbnail || null
     };
     tabs = [newTab, ...filtered].slice(0, MAX_TABS);
 

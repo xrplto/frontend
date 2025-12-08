@@ -221,10 +221,7 @@ const TableContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   gap: 0;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-left: ${(props) => (props.isMobile ? '0' : '0')};
-  padding-right: ${(props) => (props.isMobile ? '0' : '0')};
+  padding: 0;
   overflow-x: auto;
   overflow-y: visible;
   width: 100%;
@@ -258,10 +255,6 @@ const StyledTableBody = styled.tbody`
       background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)')};
     }
   }
-
-  td {
-    padding: 18px 12px;
-  }
 `;
 
 const StyledRow = styled.tr`
@@ -275,7 +268,7 @@ const StyledRow = styled.tr`
 `;
 
 const StyledCell = styled.td`
-  padding: 18px 12px;
+  padding: 16px 12px;
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
@@ -285,13 +278,21 @@ const StyledCell = styled.td`
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isCollectionColumn ? '250px' : 'auto')};
   letter-spacing: 0.01em;
+
+  &:first-of-type {
+    padding-left: 16px;
+  }
+
+  &:last-of-type {
+    padding-right: 16px;
+  }
 `;
 
 // Mobile components
 const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 14px 8px;
+  padding: 14px 16px;
   border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)')};
   cursor: pointer;
   box-sizing: border-box;
@@ -375,16 +376,18 @@ const StyledToolbar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
-  gap: 6px;
+  padding: 12px 16px;
+  gap: 8px;
   flex-wrap: wrap;
+  border-top: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  background: transparent;
 
   @media (max-width: 900px) {
     flex-direction: row;
     align-items: stretch;
     flex-wrap: wrap;
-    gap: 2px;
-    padding: 2px;
+    gap: 4px;
+    padding: 10px 12px;
   }
 `;
 
@@ -392,11 +395,11 @@ const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
-  min-height: 36px;
-  border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  padding: 4px 8px;
+  min-height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
 
   @media (max-width: 900px) {
     width: 100%;
@@ -409,49 +412,43 @@ const PaginationContainer = styled.div`
 const RowsSelector = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  min-height: 36px;
-  border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  gap: 6px;
+  padding: 0;
+  min-height: 32px;
+  background: transparent;
+  border: none;
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: center;
-    padding: 4px 8px;
-    gap: 2px;
+    gap: 4px;
   }
 `;
 
 const InfoBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
-  padding: 6px 10px;
-  min-height: 36px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
+  padding: 0;
+  min-height: 32px;
+  border: none;
+  background: transparent;
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: flex-start;
-    gap: 2px;
-    padding: 4px 8px;
+    gap: 4px;
   }
 `;
 
 const Chip = styled.span`
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  padding: 2px 6px;
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 5px;
+  padding: 0;
   color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
 `;
 
@@ -579,7 +576,7 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+  background: ${(props) => (props.darkMode ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)')};
   backdrop-filter: blur(12px);
 `;
 
@@ -588,9 +585,9 @@ const StyledTableCell = styled.th`
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: 16px 12px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.45)')};
+  padding: 14px 12px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -599,6 +596,14 @@ const StyledTableCell = styled.th`
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   font-family: inherit;
   transition: color 0.15s ease;
+
+  &:first-of-type {
+    padding-left: 16px;
+  }
+
+  &:last-of-type {
+    padding-right: 16px;
+  }
 
   &:hover {
     color: ${(props) =>
@@ -624,7 +629,7 @@ const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+  background: transparent;
 `;
 
 // Table Head Configuration
@@ -1256,9 +1261,7 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
           </StyledTable>
         </TableContainer>
       )}
-      <div style={{ marginTop: '8px' }}>
-        <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} darkMode={darkMode} />
-      </div>
+      <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} darkMode={darkMode} />
     </Container>
   );
 }

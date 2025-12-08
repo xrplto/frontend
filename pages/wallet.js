@@ -10,7 +10,7 @@ import {
   Send, ArrowDownLeft, ArrowUpRight, Copy, Check, QrCode,
   Wallet, Image, RotateCcw, TrendingUp, Building2,
   ChevronRight, ExternalLink, ArrowRightLeft, ChevronDown,
-  Search, SlidersHorizontal, Eye, EyeOff, Plus, Trash2, X
+  Search, SlidersHorizontal, Eye, EyeOff, Plus, Trash2, X, Star
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,8 +57,9 @@ const MOCK_NFTS = [
 export default function WalletPage() {
   const router = useRouter();
   const { tab: initialTab } = router.query;
-  const { themeName, accountProfile, accountLogin, setOpenWalletModal } = useContext(AppContext);
+  const { themeName, accountProfile, setOpenWalletModal, watchList } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const accountLogin = accountProfile?.account;
   const address = accountLogin;
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
@@ -411,6 +412,36 @@ export default function WalletPage() {
                           <p className={cn("text-xs tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{trade.total}</p>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Watchlist Preview */}
+                  <div className={cn("rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-between p-4 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <Star size={14} className="text-primary" />
+                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Watchlist</p>
+                      </div>
+                      <Link href="/watchlist" className="text-xs text-primary font-medium">View All</Link>
+                    </div>
+                    <div className="p-3">
+                      {watchList?.length > 0 ? (
+                        <div className="space-y-1">
+                          <p className={cn("text-xs", isDark ? "text-white/60" : "text-gray-500")}>
+                            {watchList.length} token{watchList.length !== 1 ? 's' : ''} tracked
+                          </p>
+                          <Link href="/watchlist" className={cn("block text-xs py-2 text-center rounded-lg transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                            View Watchlist
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="text-center py-2">
+                          <p className={cn("text-xs mb-2", isDark ? "text-white/40" : "text-gray-400")}>No tokens tracked yet</p>
+                          <Link href="/" className={cn("text-xs text-primary hover:underline")}>
+                            Browse tokens
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

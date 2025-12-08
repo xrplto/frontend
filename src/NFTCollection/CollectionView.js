@@ -52,6 +52,8 @@ import AccountTransactions from 'src/components/CollectionActivity';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from '../components/ShareButtons';
+import TokenTabs from 'src/TokenDetail/components/TokenTabs';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 // Native debounce implementation
 const debounce = (func, delay) => {
@@ -854,6 +856,7 @@ export default function CollectionView({ collection }) {
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const isAdmin = accountProfile?.admin;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 
   const [openShare, setOpenShare] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
@@ -862,6 +865,19 @@ export default function CollectionView({ collection }) {
   const infoDropdownRef = useRef(null);
 
   const BASE_URL = 'https://api.xrpl.to/api';
+
+  // Add current collection to tabs on mount
+  const collectionData = collection?.collection || collection;
+  useEffect(() => {
+    if (collectionData?.slug && collectionData?.name) {
+      addTokenToTabs({
+        slug: collectionData.slug,
+        name: collectionData.name,
+        type: 'collection',
+        logoImage: collectionData.logoImage
+      });
+    }
+  }, [collectionData?.slug, collectionData?.name, collectionData?.logoImage]);
 
   // Debug info loader
   useEffect(() => {
@@ -995,9 +1011,12 @@ export default function CollectionView({ collection }) {
 
   return (
     <div className="w-full relative animate-fadeIn">
+      {/* Token/Collection Tabs - Same as TokenDetail */}
+      {!isMobile && <TokenTabs currentMd5={collectionData?.slug} />}
+
       {/* Collection Header - OpenSea Style */}
       <div
-        className="rounded-[10px] px-4 py-3 mb-4"
+        className="rounded-[10px] px-4 py-3 mb-4 mt-4"
         style={{ border: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}
       >
         {/* Top Row: Logo + Name + Actions */}

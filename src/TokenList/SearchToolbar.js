@@ -19,22 +19,16 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-radius: 12px;
-  border: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  border-radius: 0;
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
   background: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
-  padding: 8px 10px;
+  padding: 8px 12px;
   position: relative;
   transition: border-color 0.2s ease, background 0.2s ease;
 
-  &:hover {
-    border-color: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.25)'};
-  }
-
   @media (max-width: 600px) {
-    padding: 6px;
+    padding: 6px 8px;
     gap: 6px;
-    border-radius: 10px;
   }
 `;
 

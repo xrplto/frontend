@@ -13,7 +13,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
   const { tabs, removeTab, clearTabs } = useTokenTabs();
 
   const clearOthers = useCallback(() => {
-    const currentTab = tabs.find((t) => t.md5 === currentMd5);
+    const currentTab = tabs.find((t) => t.md5 === currentMd5 || t.slug === currentMd5);
     if (currentTab) {
       clearTabs();
       addTokenToTabs({ ...currentTab });
@@ -82,19 +82,26 @@ const TokenTabs = memo(({ currentMd5 }) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-start gap-2 px-4 h-[40px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4',
+        'flex items-center justify-start gap-1.5 px-4 h-[36px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 -mt-1',
         isDark ? 'border-b-white/10 bg-[#131313]' : 'border-b-gray-200 bg-gray-50'
       )}
     >
-      {[...tabs].sort((a, b) => (a.md5 === currentMd5 ? -1 : b.md5 === currentMd5 ? 1 : 0)).map((tab) => {
+      {[...tabs].sort((a, b) => {
+        const aMatch = a.md5 === currentMd5 || a.slug === currentMd5;
+        const bMatch = b.md5 === currentMd5 || b.slug === currentMd5;
+        return aMatch ? -1 : bMatch ? 1 : 0;
+      }).map((tab) => {
         const isCollection = tab.type === 'collection';
+        const isNft = tab.type === 'nft';
         const tabId = tab.md5 || tab.slug;
-        const isActive = tab.md5 === currentMd5;
-        const href = isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
-        const imgSrc = isCollection
-          ? `https://s1.xrpl.to/nft-collection/${tab.logoImage}`
-          : `https://s1.xrpl.to/token/${tab.md5}`;
-        const label = isCollection ? tab.name : `${tab.name}/XRP`;
+        const isActive = tab.md5 === currentMd5 || tab.slug === currentMd5;
+        const href = isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
+        const imgSrc = isNft
+          ? `https://s1.xrpl.to/nft/${tab.thumbnail || tab.slug}`
+          : isCollection
+            ? `https://s1.xrpl.to/nft-collection/${tab.logoImage || tab.slug}`
+            : `https://s1.xrpl.to/token/${tab.md5}`;
+        const label = isNft ? tab.name : isCollection ? tab.name : `${tab.name}/XRP`;
 
         return (
           <a
@@ -102,38 +109,34 @@ const TokenTabs = memo(({ currentMd5 }) => {
             href={href}
             onClick={(e) => isActive && e.preventDefault()}
             className={cn(
-              'flex items-center gap-1.5 px-3 h-7 rounded text-[12px] font-medium transition-all shrink-0',
+              'flex items-center gap-1.5 px-2.5 h-6 rounded text-[11px] font-medium transition-all shrink-0',
               isActive
-                ? isDark
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-gray-900 text-white border border-gray-900'
+                ? 'bg-primary/15 text-primary border border-primary/30'
                 : isDark
-                  ? 'text-white/60 hover:text-white/80'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             )}
           >
             <img
               src={imgSrc}
               alt=""
-              className={cn('w-4 h-4 shrink-0 object-cover', isCollection ? 'rounded' : 'rounded-full')}
+              className={cn('w-3.5 h-3.5 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
               onError={(e) => (e.target.src = '/static/alt.webp')}
             />
-            {label}
-            {!isActive && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  removeTab(tabId);
-                }}
-                className={cn(
-                  'ml-0.5 transition-colors',
-                  isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600'
-                )}
-              >
-                <X size={12} />
-              </button>
-            )}
+            <span className="max-w-[120px] truncate">{label}</span>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeTab(tabId);
+              }}
+              className={cn(
+                'ml-0.5 transition-colors opacity-50 hover:opacity-100',
+                isActive ? 'text-primary' : isDark ? 'hover:text-white' : 'hover:text-gray-600'
+              )}
+            >
+              <X size={11} />
+            </button>
           </a>
         );
       })}
@@ -141,12 +144,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
       <div className="flex-1" />
 
       {/* Right side actions */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={openSearch}
+          title="Add tab"
           className={cn(
-            'flex items-center gap-1 text-[12px] transition-colors',
-            isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+            'p-1.5 rounded transition-colors',
+            isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'
           )}
         >
           <Plus size={14} />
@@ -155,12 +159,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
         {tabs.length > 1 && (
           <button
             onClick={clearOthers}
+            title="Clear other tabs"
             className={cn(
-              'flex items-center gap-1 text-[12px] transition-colors',
-              isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+              'p-1.5 rounded transition-colors',
+              isDark ? 'text-white/50 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'
             )}
           >
-            Clear Tabs
+            <Trash2 size={14} />
           </button>
         )}
       </div>

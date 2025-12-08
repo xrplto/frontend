@@ -1,24 +1,24 @@
 export const XrplToLightTheme = {
   colors: {
     primary: '#3b82f6',
-    secondary: '#64748B',
-    success: '#10B981',
-    warning: '#F59E0B',
-    error: '#EF4444',
+    secondary: '#6b7280',
+    success: '#22c55e',
+    warning: '#f59e0b',
+    error: '#ef4444',
     info: '#3b82f6',
     black: '#000000',
     white: '#ffffff',
     neutral: {
-      50: '#f8fafd',
-      100: '#f1f5fb',
-      200: '#e4eaf4',
-      300: '#c8d4e8',
-      400: '#94a3b8',
-      500: '#64748b',
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b',
-      900: '#0f172a'
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#e5e5e5',
+      300: '#d4d4d4',
+      400: '#a3a3a3',
+      500: '#737373',
+      600: '#525252',
+      700: '#404040',
+      800: '#262626',
+      900: '#171717'
     }
   },
 
@@ -27,54 +27,61 @@ export const XrplToLightTheme = {
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
-    background: 'linear-gradient(135deg, #fafbfe 0%, #f0f4fb 20%, #e8f0fc 40%, #f5f8fe 60%, #eef4fc 80%, #fafbfe 100%)',
-    backgroundAlt: 'linear-gradient(180deg, #f8fafd 0%, #f0f5fc 50%, #f4f7fb 100%)',
-    backgroundAsset: 'radial-gradient(ellipse at top, #e8f2ff 0%, #f0f4fa 50%, #f5f8fc 100%)',
-    glassMorphism: 'rgba(59, 130, 246, 0.03)',
-    cardBackground: 'rgba(255, 255, 255, 0.85)',
+    background: '#fafafa',
+    backgroundAlt: '#f5f5f5',
+    backgroundAsset: '#ffffff',
+    glassMorphism: 'rgba(59, 130, 246, 0.02)',
+    cardBackground: 'rgba(59, 130, 246, 0.02)',
     cardBackgroundSolid: '#ffffff',
-    surfaceElevated: 'rgba(255, 255, 255, 0.95)',
-    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.1), transparent)',
-    borderSubtle: 'rgba(59, 130, 246, 0.08)',
-    borderMedium: 'rgba(59, 130, 246, 0.15)'
+    surfaceElevated: '#ffffff',
+    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.08), transparent)',
+    borderSubtle: 'rgba(59, 130, 246, 0.1)',
+    borderMedium: 'rgba(59, 130, 246, 0.18)'
   },
 
   header: {
-    height: '80px',
-    background: 'rgba(255, 255, 255, 0.9)',
-    boxShadow: '0 1px 0 rgba(59, 130, 246, 0.08)',
-    backdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(59, 130, 246, 0.1)',
-    textColor: '#000000'
+    height: '56px',
+    background: 'rgba(255, 255, 255, 0.95)',
+    boxShadow: 'none',
+    backdropFilter: 'blur(12px)',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+    textColor: '#171717'
   },
 
   sidebar: {
-    background: '#fafbfe',
-    textColor: '#64748B',
-    width: '290px'
+    background: '#f5f5f5',
+    textColor: '#525252',
+    width: '280px'
   },
 
   walletDialog: {
-    background: '#FFFFFF',
-    backgroundSecondary: '#f8fafd',
-    border: 'rgba(59, 130, 246, 0.15)'
+    background: '#ffffff',
+    backgroundSecondary: '#f5f5f5',
+    border: 'rgba(0, 0, 0, 0.08)'
   },
 
   currency: {
-    background1: 'rgba(59, 130, 246, 0.06)',
-    background2: 'rgba(59, 130, 246, 0.1)',
+    background1: 'rgba(59, 130, 246, 0.04)',
+    background2: 'rgba(59, 130, 246, 0.08)',
     border: '1px solid rgba(59, 130, 246, 0.12)'
   },
 
   chart: {
-    background: 'rgba(255, 255, 255, 0.8)',
-    gridColor: 'rgba(59, 130, 246, 0.06)',
-    borderColor: 'rgba(59, 130, 246, 0.12)'
+    background: 'transparent',
+    gridColor: 'rgba(0, 0, 0, 0.04)',
+    borderColor: 'rgba(0, 0, 0, 0.06)'
+  },
+
+  table: {
+    headerBg: 'transparent',
+    rowBorder: 'rgba(0, 0, 0, 0.06)',
+    rowHover: 'rgba(0, 0, 0, 0.02)',
+    cellPadding: '16px 12px'
   },
 
   typography: {
     fontFamily: 'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-    fontSize: 14,
+    fontSize: 13,
     fontVariantNumeric: 'tabular-nums'
   }
 };
