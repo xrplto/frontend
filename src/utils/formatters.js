@@ -249,7 +249,7 @@ const essentialFields = ['md5', 'currency', 'issuer', 'name', 'pro24h', 'pro1h',
 export async function getTokens(sortBy = 'vol24hxrp', sortType = 'desc', tags = 'yes',
   showNew = false, showSlug = false, limit = 100) {
   try {
-    const res = await axios.get(`${process.env.API_URL}/tokens`, {
+    const res = await axios.get('https://api.xrpl.to/api/tokens', {
       params: { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug }
     });
 

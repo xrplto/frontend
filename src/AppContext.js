@@ -16,7 +16,7 @@ export const AppContext = createContext({});
 
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const walletStorage = new EncryptedWalletStorage();
 
   // Define constants first before using them
