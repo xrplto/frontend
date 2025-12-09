@@ -522,7 +522,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 320 : 480);
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 570);
     const containerWidth = chartContainerRef.current.clientWidth || 600;
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
@@ -933,7 +933,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (!chartContainerRef.current || !chartRef.current) return;
 
     const container = chartContainerRef.current;
-    const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 320 : 480;
+    const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 360 : 570;
     const newWidth = container.clientWidth;
 
     // Use only applyOptions (resize is redundant)
@@ -1140,7 +1140,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         </Box>
       </Box>
 
-      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '320px' : '480px', borderRadius: '8px', overflow: 'hidden' }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '360px' : '570px', borderRadius: '8px', overflow: 'hidden' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && (
           <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
