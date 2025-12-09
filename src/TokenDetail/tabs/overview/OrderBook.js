@@ -216,7 +216,12 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
   const effectiveToken = isXRPToken ? rlusdToken : token;
   const tokenMd5 = effectiveToken?.md5;
 
+  // Ref to track last data hash for smart polling (skip updates when data unchanged)
+  const lastDataHashRef = useRef(null);
+  const mountedRef = useRef(true);
+
   useEffect(() => {
+    mountedRef.current = true;
     if (!tokenMd5 || !effectiveToken?.issuer) return;
 
     const pairKey = `ob2-${tokenMd5}`;
@@ -227,6 +232,9 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
     const controller = new AbortController();
 
     async function fetchOrderbook() {
+      // Early exit if unmounted or aborted
+      if (!mountedRef.current || controller.signal.aborted) return;
+
       try {
         const params = new URLSearchParams({
           base_currency: 'XRP',
@@ -236,6 +244,9 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
         params.append('quote_issuer', effectiveToken.issuer);
 
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
+
+        // Check mounted again after async
+        if (!mountedRef.current || controller.signal.aborted) return;
 
         if (res.data?.success) {
           const parsedBids = (res.data.bids || [])
@@ -258,12 +269,22 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
             }))
             .filter(o => !isNaN(o.price) && o.price > 0);
 
+          // Smart polling: compute simple hash to detect actual changes
+          const newHash = `${parsedBids.length}-${parsedAsks.length}-${parsedBids[0]?.price || 0}-${parsedAsks[0]?.price || 0}`;
+          if (newHash === lastDataHashRef.current) {
+            // Data unchanged, skip state update to prevent re-renders
+            return;
+          }
+          lastDataHashRef.current = newHash;
+
           let bidSum = 0, askSum = 0;
           parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
           parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
 
-          setBids(parsedBids.slice(0, 30));
-          setAsks(parsedAsks.slice(0, 30));
+          if (mountedRef.current) {
+            setBids(parsedBids.slice(0, 30));
+            setAsks(parsedAsks.slice(0, 30));
+          }
         }
       } catch (err) {
         if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
@@ -276,9 +297,11 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
     const timer = setInterval(fetchOrderbook, 5000);
 
     return () => {
+      mountedRef.current = false;
       controller.abort();
       clearInterval(timer);
       fetchCache.orderbook = null;
+      lastDataHashRef.current = null;
     };
   }, [tokenMd5]);
 

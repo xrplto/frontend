@@ -36,6 +36,7 @@ import {
   X,
   PawPrint,
   Sun,
+  Moon,
   BadgeCheck,
   Settings,
   Wallet,
@@ -1382,70 +1383,75 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {settingsMenuOpen && (
                   <div
                     className={cn(
-                      'absolute right-0 top-10 z-[2147483647] min-w-[180px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
+                      'absolute right-0 top-10 z-[2147483647] w-[200px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
                       isDark
-                        ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
-                        : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
+                        ? 'border-white/10 bg-[#0a0a0a]/98 backdrop-blur-xl shadow-2xl'
+                        : 'border-gray-200 bg-white/98 backdrop-blur-xl shadow-xl'
                     )}
                   >
-                    <div className="p-1.5">
+                    <div className="p-3">
                       {/* Currency Section */}
-                      <p className={cn('flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        <ArrowLeftRight size={10} />
+                      <p className={cn('text-[10px] font-medium uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>
                         Currency
                       </p>
-                      {currencyConfig.availableFiatCurrencies.map((currency) => (
-                        <button
-                          key={currency}
-                          onClick={() => {
-                            toggleFiatCurrency(currency);
-                            setSettingsMenuOpen(false);
-                          }}
-                          className={cn(
-                            'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors duration-150',
-                            currency === activeFiatCurrency
-                              ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
-                              : isDark ? 'text-white/80 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                          )}
-                        >
-                          <span className="text-[13px]">
-                            {currencySymbols[currency] || ''}{currency}
-                          </span>
-                          {currency === activeFiatCurrency && <Check size={13} className={isDark ? "text-blue-400" : "text-blue-600"} />}
-                        </button>
-                      ))}
+                      <div className="grid grid-cols-5 gap-1 mb-3">
+                        {currencyConfig.availableFiatCurrencies.map((currency) => (
+                          <button
+                            key={currency}
+                            onClick={() => {
+                              toggleFiatCurrency(currency);
+                              setSettingsMenuOpen(false);
+                            }}
+                            className={cn(
+                              'flex items-center justify-center h-8 rounded-lg text-[11px] font-medium transition-all duration-150',
+                              currency === activeFiatCurrency
+                                ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                                : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            )}
+                          >
+                            {currency === 'XRP' ? '✕' : currencySymbols[currency]?.trim() || currency.charAt(0)}
+                          </button>
+                        ))}
+                      </div>
 
-                      <div className={cn('my-1.5 border-t', isDark ? 'border-blue-500/10' : 'border-blue-200/30')} />
+                      <div className={cn('border-t mb-3', isDark ? 'border-white/5' : 'border-gray-100')} />
 
                       {/* Theme Section */}
-                      <p className={cn('flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        <Palette size={10} />
+                      <p className={cn('text-[10px] font-medium uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>
                         Theme
                       </p>
-                      {[
-                        { id: 'XrplToLightTheme', name: 'Light', icon: <Sun size={14} /> },
-                        { id: 'XrplToDarkTheme', name: 'Dark', icon: <div className="h-3.5 w-3.5 rounded-full bg-gray-800 border border-gray-600" /> }
-                      ].map((themeOption) => (
+                      <div className="grid grid-cols-2 gap-1.5">
                         <button
-                          key={themeOption.id}
                           onClick={() => {
-                            setTheme(themeOption.id);
+                            setTheme('XrplToLightTheme');
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors duration-150',
-                            themeName === themeOption.id
-                              ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
-                              : isDark ? 'text-white/80 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
+                            themeName === 'XrplToLightTheme'
+                              ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                              : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                           )}
                         >
-                          {themeOption.icon}
-                          <span className="flex-1 text-left text-[13px]">
-                            {themeOption.name}
-                          </span>
-                          {themeName === themeOption.id && <Check size={13} className={isDark ? "text-blue-400" : "text-blue-600"} />}
+                          <Sun size={12} />
+                          Light
                         </button>
-                      ))}
+                        <button
+                          onClick={() => {
+                            setTheme('XrplToDarkTheme');
+                            setSettingsMenuOpen(false);
+                          }}
+                          className={cn(
+                            'flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all duration-150',
+                            themeName === 'XrplToDarkTheme'
+                              ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                              : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          )}
+                        >
+                          <Moon size={12} />
+                          Dark
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1865,22 +1871,22 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
               {/* Currency */}
               <div className="px-1">
-                <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <p className={cn('mb-2 px-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
                   Currency
                 </p>
-                <div className="flex flex-wrap gap-1">
+                <div className="grid grid-cols-5 gap-1.5 px-1">
                   {currencyConfig.availableFiatCurrencies.map((currency) => (
                     <button
                       key={currency}
                       onClick={() => toggleFiatCurrency(currency)}
                       className={cn(
-                        'rounded-lg px-3 py-2 text-[13px] transition-colors duration-150',
+                        'flex items-center justify-center h-10 rounded-lg text-[12px] font-medium transition-all duration-150',
                         currency === activeFiatCurrency
-                          ? isDark ? 'bg-blue-500/15 text-blue-400 font-medium' : 'bg-blue-500/10 text-blue-600 font-medium'
-                          : isDark ? 'text-white/60 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                          ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                          : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                       )}
                     >
-                      {currencySymbols[currency] || ''}{currency}
+                      {currency === 'XRP' ? '✕' : currencySymbols[currency]?.trim() || currency.charAt(0)}
                     </button>
                   ))}
                 </div>
@@ -1888,17 +1894,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
               {/* Theme */}
               <div className="mt-4 px-1">
-                <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                <p className={cn('mb-2 px-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
                   Theme
                 </p>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2 px-1">
                   <button
                     onClick={() => setTheme('XrplToLightTheme')}
                     className={cn(
-                      'flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors',
+                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
                       themeName === 'XrplToLightTheme'
-                        ? isDark ? 'bg-white/[0.12] text-white font-medium' : 'bg-primary/10 text-primary font-medium'
-                        : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                        ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                        : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     )}
                   >
                     <Sun size={14} />
@@ -1907,13 +1913,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <button
                     onClick={() => setTheme('XrplToDarkTheme')}
                     className={cn(
-                      'flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors',
+                      'flex items-center justify-center gap-2 h-10 rounded-lg text-[13px] font-medium transition-all duration-150',
                       themeName === 'XrplToDarkTheme'
-                        ? 'bg-white/[0.12] text-white font-medium'
-                        : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                        ? isDark ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/40' : 'bg-blue-500 text-white'
+                        : isDark ? 'text-white/60 hover:bg-white/5 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     )}
                   >
-                    <div className="h-3.5 w-3.5 rounded-full bg-gray-700 border border-gray-500" />
+                    <Moon size={14} />
                     Dark
                   </button>
                 </div>

@@ -62,6 +62,9 @@ const RichList = ({ token, amm }) => {
   useEffect(() => {
     if (!mobileChecked) return;
 
+    const controller = new AbortController();
+    let mounted = true;
+
     const fetchRichList = async () => {
       if (!token || !token.md5) {
         setLoading(false);
@@ -74,10 +77,13 @@ const RichList = ({ token, amm }) => {
         if (searchTerm.length >= 3) {
           url += `&search=${encodeURIComponent(searchTerm)}`;
         }
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
+
+        if (!mounted || controller.signal.aborted) return;
+
         const data = await response.json();
 
-        if (data.result === 'success') {
+        if (data.result === 'success' && mounted) {
           setRichList(data.richList || []);
           setSummary(data.summary || null);
           const actualHolders = data.length || data.richList?.length || 0;
@@ -85,13 +91,22 @@ const RichList = ({ token, amm }) => {
           setTotalPages(Math.ceil((actualHolders || 100) / rowsPerPage));
         }
       } catch (error) {
-        console.error('Error fetching rich list:', error);
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching rich list:', error);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRichList();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [token?.md5, page, rowsPerPage, mobileChecked, searchTerm]);
 
   const handlePageChange = (newPage) => {

@@ -214,24 +214,37 @@ export default function PriceStatistics({ token, isDark = false }) {
   } = token;
 
   useEffect(() => {
-    if (creator && fetchedCreatorRef.current !== creator) {
-      fetchedCreatorRef.current = creator;
-      fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.accounts) {
-            let count = 0;
-            const hasLegacy = data.accounts.some((acc) => acc.ledger_index <= 91444888);
-            if (hasLegacy) {
-              count = 1;
-            } else {
-              count = data.accounts.filter((acc) => acc.initial_balance > 98).length;
-            }
-            setCreations(count);
+    if (!creator || fetchedCreatorRef.current === creator) return;
+    fetchedCreatorRef.current = creator;
+
+    const controller = new AbortController();
+    let mounted = true;
+
+    fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!mounted) return;
+        if (data && data.accounts) {
+          let count = 0;
+          const hasLegacy = data.accounts.some((acc) => acc.ledger_index <= 91444888);
+          if (hasLegacy) {
+            count = 1;
+          } else {
+            count = data.accounts.filter((acc) => acc.initial_balance > 98).length;
           }
-        })
-        .catch((err) => console.error('Failed to fetch account creations:', err));
-    }
+          setCreations(count);
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to fetch account creations:', err);
+        }
+      });
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [creator]);
 
   // Fetch creator activity when expanded
@@ -240,7 +253,10 @@ export default function PriceStatistics({ token, isDark = false }) {
   const [filterLoading, setFilterLoading] = useState(false);
   const [noTokenActivity, setNoTokenActivity] = useState(false);
 
-  const fetchActivity = async (filter) => {
+  // Ref for activity fetch abort controller
+  const activityAbortRef = useRef(null);
+
+  const fetchActivity = async (filter, signal) => {
     if (!creator) return;
     setFilterLoading(true);
     setNoTokenActivity(false);
@@ -253,7 +269,8 @@ export default function PriceStatistics({ token, isDark = false }) {
       else if (filter === 'amm') url += '&type=AMMDeposit,AMMWithdraw';
       else if (filter === 'exits') url += '&side=sell,withdraw';
 
-      const res = await fetch(url);
+      const res = await fetch(url, { signal });
+      if (signal?.aborted) return;
       const data = await res.json();
 
       if (data?.events?.length > 0) {
@@ -262,7 +279,8 @@ export default function PriceStatistics({ token, isDark = false }) {
       } else if (filter === 'all') {
         // Fallback to account_tx for general activity
         setNoTokenActivity(true);
-        const txRes = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=12`);
+        const txRes = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=12`, { signal });
+        if (signal?.aborted) return;
         const txData = await txRes.json();
         if (txData?.result === 'success' && txData?.transactions) {
           const mapped = txData.transactions.map(t => {
@@ -295,16 +313,33 @@ export default function PriceStatistics({ token, isDark = false }) {
         setTransactions([]);
       }
     } catch (e) {
-      setTransactions([]);
+      if (e.name !== 'AbortError') {
+        setTransactions([]);
+      }
     } finally {
-      setFilterLoading(false);
+      if (!signal?.aborted) {
+        setFilterLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     if (!activityOpen || !creator) return;
+
+    // Abort previous fetch
+    if (activityAbortRef.current) {
+      activityAbortRef.current.abort();
+    }
+    activityAbortRef.current = new AbortController();
+
     setTransactions([]);
-    fetchActivity(activityFilter);
+    fetchActivity(activityFilter, activityAbortRef.current.signal);
+
+    return () => {
+      if (activityAbortRef.current) {
+        activityAbortRef.current.abort();
+      }
+    };
   }, [activityOpen, creator, activityFilter]);
 
   const voldivmarket =

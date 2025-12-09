@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
@@ -23,12 +23,29 @@ const currencySymbols = {
 
 const CURRENCY_ISSUERS = { XRP_MD5: 'XRP' };
 
-// Price formatter - full precision
+// Price formatter - matches TrendingTokens style
 const formatPrice = (price) => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice)) return '0';
-  if (numPrice === 0) return '0';
-  return String(numPrice);
+  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice) || numPrice === 0) return '0';
+
+  if (numPrice < 0.01) {
+    const str = numPrice.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
+    }
+    return numPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 1) {
+    return numPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 100) {
+    return numPrice.toFixed(2);
+  } else if (numPrice >= 1e6) {
+    return `${(numPrice / 1e6).toFixed(1)}M`;
+  } else if (numPrice >= 1e3) {
+    return `${(numPrice / 1e3).toFixed(1)}K`;
+  }
+  return Math.round(numPrice).toString();
 };
 
 // Origin Icon
@@ -53,6 +70,20 @@ const TokenSummary = memo(({ token }) => {
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Ref for cleanup tracking
+  const mountedRef = useRef(true);
+  const statusTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -98,8 +129,16 @@ const TokenSummary = memo(({ token }) => {
   // Trustline handler
   const handleSetTrust = async () => {
     const showStatus = (msg, duration = 2500) => {
+      if (!mountedRef.current) return;
       setTrustStatus(msg);
-      setTimeout(() => setTrustStatus(null), duration);
+      if (statusTimeoutRef.current) {
+        clearTimeout(statusTimeoutRef.current);
+      }
+      statusTimeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          setTrustStatus(null);
+        }
+      }, duration);
     };
 
     if (!accountProfile?.account) {
@@ -233,12 +272,23 @@ const TokenSummary = memo(({ token }) => {
   // Check existing trustline
   useEffect(() => {
     if (!accountProfile) return;
-    axios.get(`${BASE_URL}/account/lines/${accountProfile?.account}`).then((res) => {
-      if (res.status === 200 && res.data?.lines) {
-        const tl = res.data.lines.find((t) => (t.LowLimit.issuer === issuer || t.HighLimit.issuer === issuer) && t.LowLimit.currency === currency);
-        setIsRemove(!!tl);
-      }
-    }).catch(() => {});
+
+    const controller = new AbortController();
+
+    axios.get(`${BASE_URL}/account/lines/${accountProfile?.account}`, { signal: controller.signal })
+      .then((res) => {
+        if (res.status === 200 && res.data?.lines && mountedRef.current) {
+          const tl = res.data.lines.find((t) => (t.LowLimit.issuer === issuer || t.HighLimit.issuer === issuer) && t.LowLimit.currency === currency);
+          setIsRemove(!!tl);
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          // Silent fail for trustline check
+        }
+      });
+
+    return () => controller.abort();
   }, [accountProfile, sync, issuer, currency]);
 
   const getPriceDisplay = () => {
@@ -343,12 +393,18 @@ const TokenSummary = memo(({ token }) => {
       {range24h && (
         <div className={cn("flex items-center gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-100")}>
           <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24H</span>
-          <span className="text-[10px] text-green-500 flex-shrink-0">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.min)}</span>
+          <span className="text-[10px] text-green-500 flex-shrink-0">
+            {currencySymbols[activeFiatCurrency]}
+            {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
+          </span>
           <div className={cn("flex-1 h-1.5 rounded-full relative", isDark ? "bg-white/10" : "bg-gray-200")}>
             <div className="absolute inset-y-0 rounded-full bg-gradient-to-r from-green-500/30 to-red-500/30" style={{ width: '100%' }} />
             <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary shadow-sm" style={{ left: `calc(${range24h.percent}% - 6px)` }} />
           </div>
-          <span className="text-[10px] text-red-500 flex-shrink-0">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.max)}</span>
+          <span className="text-[10px] text-red-500 flex-shrink-0">
+            {currencySymbols[activeFiatCurrency]}
+            {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
+          </span>
         </div>
       )}
 

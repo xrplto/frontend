@@ -51,7 +51,9 @@ const Overview = memo(
     }, [orderBookCollapsed]);
     const [description, setDescription] = useState(token.description || '');
     const [pairs, setPairs] = useState([]);
+    // LRU cache with max 50 entries to prevent unbounded memory growth
     const pairsCache = useRef(new Map());
+    const CACHE_MAX_SIZE = 50;
 
     // Markdown parser removed for build simplicity
 
@@ -63,24 +65,32 @@ const Overview = memo(
     useEffect(() => {
       if (!token.md5) return;
 
-      // Check cache first
+      // Check cache first (LRU: move to end on access)
       if (pairsCache.current.has(token.md5)) {
-        requestAnimationFrame(() => setPairs(pairsCache.current.get(token.md5)));
+        const cachedPairs = pairsCache.current.get(token.md5);
+        // Move to end for LRU
+        pairsCache.current.delete(token.md5);
+        pairsCache.current.set(token.md5, cachedPairs);
+        requestAnimationFrame(() => setPairs(cachedPairs));
         return;
       }
 
+      const controller = new AbortController();
       const timeoutId = setTimeout(async () => {
         try {
-          const controller = new AbortController();
-          const fetchTimeoutId = setTimeout(() => controller.abort(), 5000);
-
           const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`, {
             signal: controller.signal
           });
-          clearTimeout(fetchTimeoutId);
+
+          if (controller.signal.aborted) return;
 
           const data = await response.json();
           if (data.pairs) {
+            // LRU eviction: remove oldest entries if cache is full
+            while (pairsCache.current.size >= CACHE_MAX_SIZE) {
+              const oldestKey = pairsCache.current.keys().next().value;
+              pairsCache.current.delete(oldestKey);
+            }
             pairsCache.current.set(token.md5, data.pairs);
             requestAnimationFrame(() => setPairs(data.pairs));
           }
@@ -91,7 +101,10 @@ const Overview = memo(
         }
       }, 300);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+        controller.abort();
+      };
     }, [token.md5, BASE_URL]);
 
     const onApplyDescription = useCallback(async () => {
