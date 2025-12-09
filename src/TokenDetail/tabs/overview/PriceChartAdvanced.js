@@ -132,6 +132,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [holderData, setHolderData] = useState(null);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   // ATH from token prop
   const athData = useMemo(() => {
@@ -252,7 +253,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             high: convertScientific(candle[2]),
             low: convertScientific(candle[3]),
             close: convertScientific(candle[4]),
-            value: convertScientific(candle[4]),
             volume: convertScientific(candle[5]) || 0
           }))
           .sort((a, b) => a.time - b.time);
@@ -309,8 +309,8 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         // Presets with bar count (cb) - load ~1 month+ of data initially
         const presets = {
-          '1d':  { resolution: '15',  cb: 3000 },  // 15min bars, ~31 days
-          '5d':  { resolution: '15',  cb: 3000 },  // 15min bars, ~31 days
+          '1d':  { resolution: '15',  cb: 100  },  // 15min bars, ~25 hours
+          '5d':  { resolution: '15',  cb: 500  },  // 15min bars, ~5 days
           '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
           '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
           '1y':  { resolution: 'D',   cb: 400  },  // daily, ~13 months
@@ -322,6 +322,15 @@ const PriceChartAdvanced = memo(({ token }) => {
         const response = await axios.get(endpoint, { signal: controller.signal });
 
         if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
+          // Debug: log raw API response
+          const rawSample = response.data.ohlc.slice(-3);
+          console.log('RAW OHLC from API:', rawSample);
+          setDebugInfo({
+            endpoint,
+            rawSample,
+            totalBars: response.data.ohlc.length
+          });
+
           const processedData = response.data.ohlc
             .map((candle) => ({
               time: Math.floor(candle[0] / 1000),
@@ -329,10 +338,12 @@ const PriceChartAdvanced = memo(({ token }) => {
               high: convertScientific(candle[2]),
               low: convertScientific(candle[3]),
               close: convertScientific(candle[4]),
-              value: convertScientific(candle[4]),
               volume: convertScientific(candle[5]) || 0
             }))
             .sort((a, b) => a.time - b.time);
+
+          // Debug: log processed data
+          console.log('PROCESSED OHLC:', processedData.slice(-3));
 
           if (isUpdate && dataRef.current && dataRef.current.length > 0) {
             // For updates, only update if there are actual changes
@@ -932,7 +943,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       candleSeriesRef.current.setData(scaledData);
     } else if (chartType === 'line' && lineSeriesRef.current) {
       lineSeriesRef.current.setData(chartData.map(d => ({
-        time: d.time, value: (d.close || d.value) * scaleFactor
+        time: d.time, value: d.close * scaleFactor
       })));
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       lineSeriesRef.current.setData(chartData.map(d => ({ time: d.time, value: d.value || d.holders })));
@@ -1047,6 +1058,22 @@ const PriceChartAdvanced = memo(({ token }) => {
           <Button onClick={handleFullscreen} isDark={isDark} isMobile={isMobile}>
             {isFullscreen ? <Minimize /> : <Maximize />}
             {!isMobile && (isFullscreen ? 'Exit' : 'Full')}
+          </Button>
+          <Button
+            onClick={() => {
+              if (debugInfo) {
+                console.log('=== DEBUG INFO ===');
+                console.log('Endpoint:', debugInfo.endpoint);
+                console.log('Total bars:', debugInfo.totalBars);
+                console.log('Raw sample (last 3):', JSON.stringify(debugInfo.rawSample, null, 2));
+                alert(`Bars: ${debugInfo.totalBars}\nCheck console for details`);
+              }
+            }}
+            isDark={isDark}
+            isMobile={isMobile}
+            style={{ background: '#f59e0b', color: '#000' }}
+          >
+            DBG
           </Button>
         </Box>
       </Box>

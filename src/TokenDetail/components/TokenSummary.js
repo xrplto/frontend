@@ -23,25 +23,12 @@ const currencySymbols = {
 
 const CURRENCY_ISSUERS = { XRP_MD5: 'XRP' };
 
-// Price formatter
+// Price formatter - full precision
 const formatPrice = (price) => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
   if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice)) return '0';
   if (numPrice === 0) return '0';
-  if (numPrice < 0.0001) {
-    const str = numPrice.toFixed(15);
-    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-    if (zeros >= 4) {
-      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-      return `0.0(${zeros})${significant.slice(0, 4)}`;
-    }
-    return numPrice.toFixed(8);
-  }
-  if (numPrice < 1) return numPrice.toFixed(4);
-  if (numPrice < 100) return numPrice.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
-  if (numPrice < 1000) return numPrice.toFixed(2);
-  if (numPrice < 1000000) return numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return numPrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return String(numPrice);
 };
 
 // Origin Icon
@@ -258,15 +245,26 @@ const TokenSummary = memo(({ token }) => {
     const symbol = currencySymbols[activeFiatCurrency];
     const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
     const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-    if (price && price < 0.001) {
+    if (!price || price === 0) return { symbol, price: '0', isCompact: false };
+
+    if (price < 0.01) {
       const str = price.toFixed(15);
       const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
       if (zeros >= 4) {
         const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
         return { symbol, zeros, significant: significant.slice(0, 4), isCompact: true };
       }
+      return { symbol, price: price.toFixed(6).replace(/0+$/, '').replace(/\.$/, ''), isCompact: false };
+    } else if (price < 1) {
+      return { symbol, price: price.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''), isCompact: false };
+    } else if (price < 100) {
+      return { symbol, price: price.toFixed(2), isCompact: false };
+    } else if (price >= 1e6) {
+      return { symbol, price: `${(price / 1e6).toFixed(1)}M`, isCompact: false };
+    } else if (price >= 1e3) {
+      return { symbol, price: `${(price / 1e3).toFixed(1)}K`, isCompact: false };
     }
-    return { symbol, price: formatPrice(price), isCompact: false };
+    return { symbol, price: Math.round(price).toString(), isCompact: false };
   };
 
   const priceDisplay = getPriceDisplay();
