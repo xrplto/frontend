@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, Loader2 } from 'lucide-react';
 import {
@@ -37,6 +38,7 @@ const Card = styled.div`
   border-radius: 12px;
   position: relative;
   z-index: 1;
+  overflow: hidden;
   ${props => props.isFullscreen && `
     position: fixed;
     inset: 0;
@@ -44,6 +46,8 @@ const Card = styled.div`
     border-radius: 0;
     background: ${props.isDark ? '#000' : '#fff'};
     border: none;
+    padding: 16px 20px;
+    overflow: hidden;
   `}
 `;
 
@@ -519,8 +523,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     lastChartTypeRef.current = chartType;
 
     const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 320 : 480);
+    const containerWidth = chartContainerRef.current.clientWidth || 600;
     const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
+      width: containerWidth,
       height: containerHeight,
       layout: {
         background: {
@@ -557,21 +562,20 @@ const PriceChartAdvanced = memo(({ token }) => {
         }
       },
       rightPriceScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
         scaleMargins: {
-          top: 0.08,
-          bottom: 0.18
+          top: 0.05,
+          bottom: 0.25
         },
         mode: 0,
         autoScale: true,
-        borderVisible: false,
+        borderVisible: true,
         visible: true,
         entireTextOnly: false,
-        drawTicks: !isMobile,
-        ticksVisible: !isMobile,
+        drawTicks: true,
+        ticksVisible: true,
         alignLabels: true,
-        textColor: isDark ? '#ffffff' : '#000000',
-        minimumWidth: isMobile ? 38 : 70
+        textColor: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
       },
       localization: {
         priceFormatter: (price) => {
@@ -633,7 +637,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderVisible: true,
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: isMobile ? 4 : 10,
+        rightOffset: 5,
         barSpacing: isMobile ? 10 : 14,
         minBarSpacing: isMobile ? 5 : 8,
         fixLeftEdge: true,   // Prevent scrolling past oldest data
@@ -649,13 +653,16 @@ const PriceChartAdvanced = memo(({ token }) => {
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           const month = months[date.getUTCMonth()];
           // tickMarkType: 0=time, 1=time, 2=day, 3=month, 4=year
-          if (tickMarkType >= 3) {
+          if (tickMarkType >= 4) {
+            return `${month} '${date.getUTCFullYear().toString().slice(-2)}`;
+          }
+          if (tickMarkType === 3) {
             return `${month} ${day}`;
           }
           if (tickMarkType === 2) {
-            return `${month} ${day}`;
+            return `${day} ${hours}:${minutes}`;
           }
-          // For intraday, always show time
+          // For intraday, show time
           return `${hours}:${minutes}`;
         }
       },
@@ -816,7 +823,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderUpColor: '#22c55e',
         borderDownColor: '#ef4444',
         wickUpColor: '#22c55e',
-        wickDownColor: '#ef4444'
+        wickDownColor: '#ef4444',
+        priceFormat: {
+          type: 'price',
+          minMove: 0.00000001,
+          precision: 8
+        }
       });
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
@@ -828,7 +840,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
         crosshairMarkerBorderColor: '#3b82f6',
-        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff'
+        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff',
+        priceFormat: {
+          type: 'price',
+          minMove: 0.00000001,
+          precision: 8
+        }
       });
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
@@ -840,7 +857,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
         crosshairMarkerBorderColor: '#a855f7',
-        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff'
+        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff',
+        priceFormat: {
+          type: 'price',
+          minMove: 1,
+          precision: 0
+        }
       });
       lineSeriesRef.current = holdersSeries;
     }
@@ -850,12 +872,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         color: 'rgba(34, 197, 94, 0.6)',
         priceFormat: { type: 'volume' },
         priceScaleId: 'volume',
-        scaleMargins: { top: 0.7, bottom: 0 },
+        scaleMargins: { top: 0.65, bottom: 0 },
         priceLineVisible: false,
         lastValueVisible: false
       });
       volumeSeriesRef.current = volumeSeries;
-      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.7, bottom: 0 } });
     }
 
     // Debounced resize with ResizeObserver
@@ -946,7 +968,8 @@ const PriceChartAdvanced = memo(({ token }) => {
       candleSeriesRef.current = chartRef.current.addSeries(CandlestickSeries, {
         upColor: '#22c55e', downColor: '#ef4444',
         borderUpColor: '#22c55e', borderDownColor: '#ef4444',
-        wickUpColor: '#22c55e', wickDownColor: '#ef4444'
+        wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+        priceFormat: { type: 'price', minMove: 0.00000001, precision: 8 }
       });
     }
 
@@ -956,17 +979,18 @@ const PriceChartAdvanced = memo(({ token }) => {
         lineColor: isHolders ? '#a855f7' : '#3b82f6',
         topColor: isHolders ? 'rgba(168, 85, 247, 0.25)' : 'rgba(59, 130, 246, 0.25)',
         bottomColor: isHolders ? 'rgba(168, 85, 247, 0.02)' : 'rgba(59, 130, 246, 0.02)',
-        lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3
+        lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
+        priceFormat: isHolders ? { type: 'price', minMove: 1, precision: 0 } : { type: 'price', minMove: 0.00000001, precision: 8 }
       });
     }
 
     if (chartType !== 'holders' && !volumeSeriesRef.current) {
       volumeSeriesRef.current = chartRef.current.addSeries(HistogramSeries, {
         color: 'rgba(34, 197, 94, 0.6)', priceFormat: { type: 'volume' },
-        priceScaleId: 'volume', scaleMargins: { top: 0.7, bottom: 0 },
+        priceScaleId: 'volume', scaleMargins: { top: 0.65, bottom: 0 },
         priceLineVisible: false, lastValueVisible: false
       });
-      chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.7, bottom: 0 } });
     }
 
     const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
@@ -1021,12 +1045,20 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
   }, []);
 
-  // Cleanup body overflow on unmount
+  // Cleanup body overflow on unmount + ESC key to exit fullscreen
   useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        document.body.style.overflow = '';
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
     return () => {
+      window.removeEventListener('keydown', handleEsc);
       document.body.style.overflow = '';
     };
-  }, []);
+  }, [isFullscreen]);
 
   return (
     <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
@@ -1092,13 +1124,23 @@ const PriceChartAdvanced = memo(({ token }) => {
             ))}
           </ButtonGroup>
 
-          <Button onClick={handleFullscreen} isDark={isDark} isMobile={isMobile}>
+          <Button
+            onClick={handleFullscreen}
+            isDark={isDark}
+            isMobile={isMobile}
+            style={isFullscreen ? {
+              background: '#ef4444',
+              borderColor: '#ef4444',
+              color: '#fff'
+            } : {}}
+          >
             {isFullscreen ? <Minimize /> : <Maximize />}
+            {isFullscreen && 'Exit'}
           </Button>
         </Box>
       </Box>
 
-      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '320px' : '480px', borderRadius: '8px' }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '320px' : '480px', borderRadius: '8px', overflow: 'hidden' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && (
           <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1117,6 +1159,38 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Box>
         )}
       </Box>
+
+      {/* Fullscreen close button - rendered via portal to document.body */}
+      {isFullscreen && typeof document !== 'undefined' && createPortal(
+        <button
+          onClick={handleFullscreen}
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            zIndex: 999999,
+            padding: '10px 20px',
+            background: '#ef4444',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            transition: 'transform 0.1s',
+          }}
+          onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+        >
+          <Minimize size={18} />
+          Exit Fullscreen
+        </button>,
+        document.body
+      )}
     </Card>
   );
 });
