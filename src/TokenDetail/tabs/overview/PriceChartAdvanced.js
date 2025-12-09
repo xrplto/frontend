@@ -305,7 +305,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         // Presets with bar count (cb) - load data based on timeframe
         const presets = {
-          '1d':  { resolution: '15',  cb: 100  },  // 15min bars, ~25 hours
+          '1d':  { resolution: '5',   cb: 288  },  // 5min bars, 24 hours
           '5d':  { resolution: '15',  cb: 500  },  // 15min bars, ~5 days
           '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
           '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
@@ -647,23 +647,28 @@ const PriceChartAdvanced = memo(({ token }) => {
         shiftVisibleRangeOnNewBar: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
           const date = new Date(time * 1000);
-          const hours = date.getUTCHours().toString().padStart(2, '0');
-          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-          const day = date.getUTCDate();
+          // Convert to EST (America/New_York handles EST/EDT automatically)
+          const estOptions = { timeZone: 'America/New_York' };
+          const estDate = new Date(date.toLocaleString('en-US', estOptions));
+          const hours24 = estDate.getHours();
+          const hours12 = hours24 % 12 || 12;
+          const ampm = hours24 >= 12 ? 'PM' : 'AM';
+          const minutes = estDate.getMinutes().toString().padStart(2, '0');
+          const day = estDate.getDate();
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const month = months[date.getUTCMonth()];
+          const month = months[estDate.getMonth()];
           // tickMarkType: 0=time, 1=time, 2=day, 3=month, 4=year
           if (tickMarkType >= 4) {
-            return `${month} '${date.getUTCFullYear().toString().slice(-2)}`;
+            return `${month} '${estDate.getFullYear().toString().slice(-2)}`;
           }
           if (tickMarkType === 3) {
             return `${month} ${day}`;
           }
           if (tickMarkType === 2) {
-            return `${day} ${hours}:${minutes}`;
+            return `${day} ${hours12}:${minutes}${ampm}`;
           }
           // For intraday, show time
-          return `${hours}:${minutes}`;
+          return `${hours12}:${minutes}${ampm}`;
         }
       },
       handleScroll: {
@@ -762,8 +767,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         }
 
         const date = new Date(param.time * 1000);
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' });
         const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
         const isXRP = activeFiatCurrencyRef.current === 'XRP';
         const currentChartType = chartTypeRef.current;
