@@ -18,7 +18,7 @@ import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 const BASE_URL = 'https://api.xrpl.to/api';
 
 // Module-level cache to prevent duplicate fetches in StrictMode
-const fetchCache = { orderbook: null };
+const fetchInFlight = new Map();
 
 const Container = styled.div`
   border-radius: 12px;
@@ -205,13 +205,26 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
 
   // Fetch RLUSD when viewing XRP
   useEffect(() => {
-    if (!isXRPToken) return;
-    const controller = new AbortController();
-    axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`, { signal: controller.signal })
-      .then(res => res.data?.token && setRlusdToken(res.data.token))
-      .catch(() => {});
-    return () => controller.abort();
-  }, [isXRPToken]);
+    if (!isXRPToken || collapsed) return;
+    let mounted = true;
+    const rlusdKey = 'rlusd-token';
+
+    if (fetchInFlight.has(rlusdKey)) {
+      fetchInFlight.get(rlusdKey)
+        .then(token => mounted && token && setRlusdToken(token))
+        .catch(() => {});
+      return () => { mounted = false; };
+    }
+
+    const promise = axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`)
+      .then(res => res.data?.token);
+    fetchInFlight.set(rlusdKey, promise);
+
+    promise
+      .then(token => { mounted && token && setRlusdToken(token); fetchInFlight.delete(rlusdKey); })
+      .catch(() => fetchInFlight.delete(rlusdKey));
+    return () => { mounted = false; };
+  }, [isXRPToken, collapsed]);
 
   const effectiveToken = isXRPToken ? rlusdToken : token;
   const tokenMd5 = effectiveToken?.md5;
@@ -222,88 +235,102 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
 
   useEffect(() => {
     mountedRef.current = true;
-    if (!tokenMd5 || !effectiveToken?.issuer) return;
+    // Don't fetch if collapsed or no token
+    if (collapsed || !tokenMd5 || !effectiveToken?.issuer) return;
 
     const pairKey = `ob2-${tokenMd5}`;
-    // Skip if fetch in progress for this pair (StrictMode protection)
-    if (fetchCache.orderbook === pairKey) return;
-    fetchCache.orderbook = pairKey;
 
-    const controller = new AbortController();
+    async function fetchOrderbook(isUpdate = false) {
+      if (!mountedRef.current) return;
 
-    async function fetchOrderbook() {
-      // Early exit if unmounted or aborted
-      if (!mountedRef.current || controller.signal.aborted) return;
+      const params = new URLSearchParams({
+        base_currency: 'XRP',
+        quote_currency: effectiveToken.currency,
+        limit: '60'
+      });
+      params.append('quote_issuer', effectiveToken.issuer);
+      const url = `${BASE_URL}/orderbook?${params}`;
+
+      // Reuse in-flight request (StrictMode protection) - only for initial load
+      if (!isUpdate && fetchInFlight.has(pairKey)) {
+        try {
+          const data = await fetchInFlight.get(pairKey);
+          if (mountedRef.current && data) {
+            processOrderbookData(data);
+          }
+        } catch {}
+        return;
+      }
+
+      // Create fetch promise
+      const fetchPromise = axios.get(url).then(r => r.data);
+      if (!isUpdate) {
+        fetchInFlight.set(pairKey, fetchPromise);
+      }
 
       try {
-        const params = new URLSearchParams({
-          base_currency: 'XRP',
-          quote_currency: effectiveToken.currency,
-          limit: '60'
-        });
-        params.append('quote_issuer', effectiveToken.issuer);
+        const res = { data: await fetchPromise };
 
-        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
-
-        // Check mounted again after async
-        if (!mountedRef.current || controller.signal.aborted) return;
+        if (!mountedRef.current) return;
 
         if (res.data?.success) {
-          const parsedBids = (res.data.bids || [])
-            .map(o => ({
-              price: parseFloat(o.price),
-              amount: parseFloat(o.amount),
-              total: parseFloat(o.total),
-              account: o.account,
-              funded: o.funded
-            }))
-            .filter(o => !isNaN(o.price) && o.price > 0);
-
-          const parsedAsks = (res.data.asks || [])
-            .map(o => ({
-              price: parseFloat(o.price),
-              amount: parseFloat(o.amount),
-              total: parseFloat(o.total),
-              account: o.account,
-              funded: o.funded
-            }))
-            .filter(o => !isNaN(o.price) && o.price > 0);
-
-          // Smart polling: compute simple hash to detect actual changes
-          const newHash = `${parsedBids.length}-${parsedAsks.length}-${parsedBids[0]?.price || 0}-${parsedAsks[0]?.price || 0}`;
-          if (newHash === lastDataHashRef.current) {
-            // Data unchanged, skip state update to prevent re-renders
-            return;
-          }
-          lastDataHashRef.current = newHash;
-
-          let bidSum = 0, askSum = 0;
-          parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
-          parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
-
-          if (mountedRef.current) {
-            setBids(parsedBids.slice(0, 30));
-            setAsks(parsedAsks.slice(0, 30));
-          }
+          processOrderbookData(res.data);
         }
+        fetchInFlight.delete(pairKey);
       } catch (err) {
+        fetchInFlight.delete(pairKey);
         if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
           console.error('Orderbook fetch error:', err);
         }
       }
     }
 
+    function processOrderbookData(data) {
+      const parsedBids = (data.bids || [])
+        .map(o => ({
+          price: parseFloat(o.price),
+          amount: parseFloat(o.amount),
+          total: parseFloat(o.total),
+          account: o.account,
+          funded: o.funded
+        }))
+        .filter(o => !isNaN(o.price) && o.price > 0);
+
+      const parsedAsks = (data.asks || [])
+        .map(o => ({
+          price: parseFloat(o.price),
+          amount: parseFloat(o.amount),
+          total: parseFloat(o.total),
+          account: o.account,
+          funded: o.funded
+        }))
+        .filter(o => !isNaN(o.price) && o.price > 0);
+
+      // Smart polling: compute simple hash to detect actual changes
+      const newHash = `${parsedBids.length}-${parsedAsks.length}-${parsedBids[0]?.price || 0}-${parsedAsks[0]?.price || 0}`;
+      if (newHash === lastDataHashRef.current) return;
+      lastDataHashRef.current = newHash;
+
+      let bidSum = 0, askSum = 0;
+      parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
+      parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+
+      if (mountedRef.current) {
+        setBids(parsedBids.slice(0, 30));
+        setAsks(parsedAsks.slice(0, 30));
+      }
+    }
+
     fetchOrderbook();
-    const timer = setInterval(fetchOrderbook, 5000);
+    const timer = setInterval(() => fetchOrderbook(true), 5000);
 
     return () => {
       mountedRef.current = false;
-      controller.abort();
       clearInterval(timer);
-      fetchCache.orderbook = null;
+      fetchInFlight.delete(pairKey);
       lastDataHashRef.current = null;
     };
-  }, [tokenMd5]);
+  }, [tokenMd5, collapsed, effectiveToken?.issuer]);
 
   const { bestBid, bestAsk, spreadPct } = useMemo(() => {
     const bb = bids.length ? bids[0].price : null;

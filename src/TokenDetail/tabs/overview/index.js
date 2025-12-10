@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 // Context
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
+import { ChevronRight, BookOpen } from 'lucide-react';
 
 // Dynamic imports for heavy components (code splitting)
 const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
@@ -197,11 +198,26 @@ const Overview = memo(
               aria-label="Order Book"
             >
               <h2 className="sr-only">Order Book</h2>
-              <OrderBook
-                token={token}
-                collapsed={orderBookCollapsed}
-                onToggleCollapse={() => setOrderBookCollapsed(!orderBookCollapsed)}
-              />
+              {orderBookCollapsed ? (
+                <div
+                  onClick={() => setOrderBookCollapsed(false)}
+                  className={cn(
+                    "w-[36px] h-full rounded-xl border cursor-pointer flex flex-col items-center py-2 gap-2 transition-all",
+                    isDark ? "border-white/8 bg-white/2 hover:border-blue-500" : "border-black/8 bg-black/2 hover:border-blue-500"
+                  )}
+                  title="Expand Order Book"
+                >
+                  <ChevronRight size={16} className={isDark ? "text-white/50" : "text-black/50"} />
+                  <BookOpen size={14} className={isDark ? "text-white/60" : "text-black/60"} />
+                  <span className={cn("writing-mode-vertical text-[11px] font-medium tracking-wide", isDark ? "text-white/70" : "text-black/70")} style={{ writingMode: 'vertical-rl' }}>ORDER BOOK</span>
+                </div>
+              ) : (
+                <OrderBook
+                  token={token}
+                  collapsed={false}
+                  onToggleCollapse={() => setOrderBookCollapsed(true)}
+                />
+              )}
             </aside>
           )}
 

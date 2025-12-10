@@ -216,11 +216,9 @@ export default function PriceStatistics({ token, isDark = false }) {
   useEffect(() => {
     if (!creator || fetchedCreatorRef.current === creator) return;
     fetchedCreatorRef.current = creator;
-
-    const controller = new AbortController();
     let mounted = true;
 
-    fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`, { signal: controller.signal })
+    fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`)
       .then((res) => res.json())
       .then((data) => {
         if (!mounted) return;
@@ -236,15 +234,10 @@ export default function PriceStatistics({ token, isDark = false }) {
         }
       })
       .catch((err) => {
-        if (err.name !== 'AbortError') {
-          console.error('Failed to fetch account creations:', err);
-        }
+        console.error('Failed to fetch account creations:', err);
       });
 
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
+    return () => { mounted = false; };
   }, [creator]);
 
   // Fetch creator activity when expanded

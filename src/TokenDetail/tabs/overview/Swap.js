@@ -20,7 +20,7 @@ const currencySymbols = {
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL', md5: '84e5efeb89c4eae8f68188982dc290d8', name: 'XRP' };
 
 // Module-level cache to prevent duplicate fetches in StrictMode
-const fetchCache = { orderbook: null, pairRates: null };
+const fetchInFlight = new Map();
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 
@@ -983,39 +983,50 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   // Fetch RLUSD token info when viewing XRP page
   useEffect(() => {
     if (!isXRPTokenPage) return;
-
-    const controller = new AbortController();
+    let mounted = true;
+    const cacheKey = 'swap-rlusd';
 
     async function fetchRLUSD() {
-      try {
-        // Fetch RLUSD token info to get correct md5 and other details
-        const res = await axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`, { signal: controller.signal });
-        if (res.data?.token) {
-          const rlusdToken = res.data.token;
-          setToken2({
-            ...rlusdToken,
-            currency: rlusdToken.currency || 'USD',
-            issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
-          });
-          setPair(prev => ({
-            ...prev,
-            curr2: {
-              ...rlusdToken,
-              currency: rlusdToken.currency || 'USD',
-              issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
-            }
-          }));
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('RLUSD fetch error:', err);
-        }
+      if (fetchInFlight.has(cacheKey)) {
+        try {
+          const token = await fetchInFlight.get(cacheKey);
+          if (mounted && token) applyRLUSD(token);
+        } catch {}
+        return;
       }
+
+      const promise = axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`).then(r => r.data?.token);
+      fetchInFlight.set(cacheKey, promise);
+
+      try {
+        const token = await promise;
+        if (mounted && token) applyRLUSD(token);
+        fetchInFlight.delete(cacheKey);
+      } catch (err) {
+        fetchInFlight.delete(cacheKey);
+        console.error('RLUSD fetch error:', err);
+      }
+    }
+
+    function applyRLUSD(rlusdToken) {
+      setToken2({
+        ...rlusdToken,
+        currency: rlusdToken.currency || 'USD',
+        issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
+      });
+      setPair(prev => ({
+        ...prev,
+        curr2: {
+          ...rlusdToken,
+          currency: rlusdToken.currency || 'USD',
+          issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
+        }
+      }));
     }
 
     fetchRLUSD();
 
-    return () => controller.abort();
+    return () => { mounted = false; };
   }, [isXRPTokenPage]);
 
   // Fetch orderbook from API - token (token2) as base, XRP (token1) as quote
@@ -1025,65 +1036,72 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   useEffect(() => {
     if (!token1Md5 || !token2Md5) return;
+    let mounted = true;
 
-    const pairKey = `ob-${token1Md5}-${token2Md5}`;
-    // Skip if fetch in progress for this pair (StrictMode protection)
-    if (fetchCache.orderbook === pairKey) return;
-    fetchCache.orderbook = pairKey;
+    const pairKey = `swap-ob-${token1Md5}-${token2Md5}`;
 
-    const controller = new AbortController();
-    let timer;
+    async function fetchOrderbook(isUpdate = false) {
+      if (!mounted) return;
 
-    async function fetchOrderbook() {
+      const params = new URLSearchParams({
+        base_currency: token2.currency,
+        quote_currency: token1.currency,
+        limit: '60'
+      });
+      if (token2.currency !== 'XRP' && token2.issuer) params.append('base_issuer', token2.issuer);
+      if (token1.currency !== 'XRP' && token1.issuer) params.append('quote_issuer', token1.issuer);
+
+      // Reuse in-flight request (StrictMode protection) - only for initial load
+      if (!isUpdate && fetchInFlight.has(pairKey)) {
+        try {
+          const data = await fetchInFlight.get(pairKey);
+          if (mounted && data) processOrderbookData(data);
+        } catch {}
+        return;
+      }
+
+      const fetchPromise = axios.get(`${BASE_URL}/orderbook?${params}`).then(r => r.data);
+      if (!isUpdate) fetchInFlight.set(pairKey, fetchPromise);
+
       try {
-        const params = new URLSearchParams({
-          base_currency: token2.currency,
-          quote_currency: token1.currency,
-          limit: '60'
-        });
-        if (token2.currency !== 'XRP' && token2.issuer) params.append('base_issuer', token2.issuer);
-        if (token1.currency !== 'XRP' && token1.issuer) params.append('quote_issuer', token1.issuer);
-
-        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
-
-        if (res.data?.success) {
-          const parsedBids = (res.data.bids || []).map(o => ({
-            price: parseFloat(o.price),
-            amount: parseFloat(o.amount),
-            total: parseFloat(o.total),
-            account: o.account,
-            funded: o.funded
-          }));
-
-          const parsedAsks = (res.data.asks || []).map(o => ({
-            price: parseFloat(o.price),
-            amount: parseFloat(o.amount),
-            total: parseFloat(o.total),
-            account: o.account,
-            funded: o.funded
-          }));
-
-          let bidSum = 0, askSum = 0;
-          parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
-          parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
-
-          setBids(parsedBids.slice(0, 30));
-          setAsks(parsedAsks.slice(0, 30));
-        }
+        const data = await fetchPromise;
+        if (mounted && data?.success) processOrderbookData(data);
+        fetchInFlight.delete(pairKey);
       } catch (err) {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('Orderbook fetch error:', err);
-        }
+        fetchInFlight.delete(pairKey);
+        console.error('Orderbook fetch error:', err);
       }
     }
 
+    function processOrderbookData(data) {
+      const parsedBids = (data.bids || []).map(o => ({
+        price: parseFloat(o.price),
+        amount: parseFloat(o.amount),
+        total: parseFloat(o.total),
+        account: o.account,
+        funded: o.funded
+      }));
+      const parsedAsks = (data.asks || []).map(o => ({
+        price: parseFloat(o.price),
+        amount: parseFloat(o.amount),
+        total: parseFloat(o.total),
+        account: o.account,
+        funded: o.funded
+      }));
+      let bidSum = 0, askSum = 0;
+      parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
+      parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+      setBids(parsedBids.slice(0, 30));
+      setAsks(parsedAsks.slice(0, 30));
+    }
+
     fetchOrderbook();
-    timer = setInterval(fetchOrderbook, 5000);
+    const timer = setInterval(() => fetchOrderbook(true), 5000);
 
     return () => {
-      controller.abort();
+      mounted = false;
       clearInterval(timer);
-      fetchCache.orderbook = null;
+      fetchInFlight.delete(pairKey);
     };
   }, [token1Md5, token2Md5]);
 
@@ -1180,7 +1198,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let mounted = true;
 
     async function getAccountInfo() {
       if (!accountProfile || !accountProfile.account) return;
@@ -1190,9 +1208,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       try {
         const balanceRes = await axios.get(
-          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`,
-          { signal: controller.signal }
+          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
         );
+        if (!mounted) return;
 
         if (balanceRes.status === 200 && balanceRes.data) {
           setAccountPairBalance(balanceRes.data.pair);
@@ -1210,9 +1228,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           let totalTrustlines = 0;
 
           const firstResponse = await axios.get(
-            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`,
-            { signal: controller.signal }
+            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`
           );
+          if (!mounted) return [];
 
           if (firstResponse.status === 200 && firstResponse.data) {
             allTrustlines = firstResponse.data.lines || [];
@@ -1224,9 +1242,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
               for (let page = 1; page < totalPages; page++) {
                 additionalRequests.push(
-                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`, {
-                    signal: controller.signal
-                  })
+                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`)
                 );
               }
 
@@ -1355,53 +1371,55 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           setHasTrustline2(hasCurr2Trustline);
         })
         .catch((err) => {
-          if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-            console.error('Trustline fetch error:', err);
-          }
+          console.error('Trustline fetch error:', err);
         });
     }
 
     getAccountInfo();
 
-    return () => controller.abort();
+    return () => { mounted = false; };
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
   useEffect(() => {
     if (!token1Md5 || !token2Md5) return;
+    let mounted = true;
 
     const pairKey = `pr-${token1Md5}-${token2Md5}`;
-    // Skip if fetch in progress for this pair (StrictMode protection)
-    if (fetchCache.pairRates === pairKey) return;
-    fetchCache.pairRates = pairKey;
-
-    const controller = new AbortController();
 
     async function getTokenPrice() {
-      setLoadingPrice(true);
-      try {
-        const res = await axios.get(`${BASE_URL}/pair_rates?md51=${token1Md5}&md52=${token2Md5}`, {
-          signal: controller.signal
-        });
+      if (fetchInFlight.has(pairKey)) {
+        try {
+          const data = await fetchInFlight.get(pairKey);
+          if (mounted && data) {
+            setTokenExch1(data.rate1 || 0);
+            setTokenExch2(data.rate2 || 0);
+          }
+        } catch {}
+        return;
+      }
 
-        if (res.status === 200 && res.data) {
-          setTokenExch1(res.data.rate1 || 0);
-          setTokenExch2(res.data.rate2 || 0);
+      setLoadingPrice(true);
+      const promise = axios.get(`${BASE_URL}/pair_rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
+      fetchInFlight.set(pairKey, promise);
+
+      try {
+        const data = await promise;
+        if (mounted && data) {
+          setTokenExch1(data.rate1 || 0);
+          setTokenExch2(data.rate2 || 0);
         }
+        fetchInFlight.delete(pairKey);
       } catch (err) {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('Token price fetch error:', err);
-        }
+        fetchInFlight.delete(pairKey);
+        console.error('Token price fetch error:', err);
       } finally {
-        setLoadingPrice(false);
+        if (mounted) setLoadingPrice(false);
       }
     }
 
     getTokenPrice();
 
-    return () => {
-      controller.abort();
-      fetchCache.pairRates = null;
-    };
+    return () => { mounted = false; fetchInFlight.delete(pairKey); };
   }, [token1Md5, token2Md5]);
 
   useEffect(() => {
