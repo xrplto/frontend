@@ -11,6 +11,31 @@ import {
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 
+// Module-level cache to prevent duplicate fetches in StrictMode
+const fetchInFlight = new Map(); // stores pending promises
+
+// Process OHLC data
+const processOhlc = (ohlc) => {
+  const MAX_CHART_VALUE = 90071992547409;
+  const MIN_CHART_VALUE = 1e-12;
+  return ohlc
+    .filter(candle =>
+      candle[1] > MIN_CHART_VALUE && candle[1] < MAX_CHART_VALUE &&
+      candle[2] > MIN_CHART_VALUE && candle[2] < MAX_CHART_VALUE &&
+      candle[3] > MIN_CHART_VALUE && candle[3] < MAX_CHART_VALUE &&
+      candle[4] > MIN_CHART_VALUE && candle[4] < MAX_CHART_VALUE
+    )
+    .map((candle) => ({
+      time: Math.floor(candle[0] / 1000),
+      open: candle[1],
+      high: candle[2],
+      low: candle[3],
+      close: candle[4],
+      volume: candle[5] || 0
+    }))
+    .sort((a, b) => a.time - b.time);
+};
+
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -253,11 +278,11 @@ const PriceChartAdvanced = memo(({ token }) => {
             dataRef.current = olderData;
             return olderData;
           }
-          // olderData is already sorted, prev is already sorted
-          // Merge sorted arrays (more efficient than Map + sort)
-          const seen = new Set(prev.map(d => d.time));
-          const newItems = olderData.filter(d => !seen.has(d.time));
-          const merged = [...newItems, ...prev]; // newItems are older, so prepend
+          // Merge and dedupe by time, then sort ascending
+          const timeMap = new Map();
+          olderData.forEach(d => timeMap.set(d.time, d));
+          prev.forEach(d => timeMap.set(d.time, d)); // prev overwrites older
+          const merged = Array.from(timeMap.values()).sort((a, b) => a.time - b.time);
           dataRef.current = merged;
           return merged;
         });
@@ -274,7 +299,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       isLoadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [token?.md5, timeRange, activeFiatCurrency, hasMore, convertScientific]);
+  }, [token?.md5, timeRange, activeFiatCurrency, hasMore]);
 
   // Keep ref updated
   useEffect(() => {
@@ -288,11 +313,44 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
 
     let mounted = true;
-    const controller = new AbortController();
 
     const fetchData = async (isUpdate = false) => {
       if (!mounted) {
         return;
+      }
+
+      // Presets with bar count (cb) - load data based on timeframe
+      const presets = {
+        '1d':  { resolution: '5',   cb: 288  },  // 5min bars, 24 hours
+        '5d':  { resolution: '15',  cb: 500  },  // 15min bars, ~5 days
+        '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
+        '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
+        '1y':  { resolution: 'D',   cb: 400  },  // daily, ~13 months
+        '5y':  { resolution: 'W',   cb: 300  },  // weekly, ~6 years
+        'all': { resolution: 'D',   cb: 5000 }   // daily, max bars
+      };
+      const preset = presets[timeRange] || presets['1d'];
+      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${preset.resolution}&cb=${preset.cb}&vs_currency=${activeFiatCurrency}`;
+      const cacheKey = endpoint;
+
+      // Reuse in-flight request (StrictMode protection) - only for initial load
+      if (!isUpdate && fetchInFlight.has(cacheKey)) {
+        try {
+          const data = await fetchInFlight.get(cacheKey);
+          if (mounted && data) {
+            dataRef.current = data;
+            setData(data);
+            setLoading(false);
+            setLastUpdate(new Date());
+          }
+        } catch {}
+        return;
+      }
+
+      // Create fetch promise and store it
+      const fetchPromise = axios.get(endpoint).then(r => r.data);
+      if (!isUpdate) {
+        fetchInFlight.set(cacheKey, fetchPromise.then(d => d?.ohlc ? processOhlc(d.ohlc) : null));
       }
 
       try {
@@ -303,55 +361,10 @@ const PriceChartAdvanced = memo(({ token }) => {
           setHasMore(true);
         }
 
-        // Presets with bar count (cb) - load data based on timeframe
-        const presets = {
-          '1d':  { resolution: '5',   cb: 288  },  // 5min bars, 24 hours
-          '5d':  { resolution: '15',  cb: 500  },  // 15min bars, ~5 days
-          '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
-          '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
-          '1y':  { resolution: 'D',   cb: 400  },  // daily, ~13 months
-          '5y':  { resolution: 'W',   cb: 300  },  // weekly, ~6 years
-          'all': { resolution: 'D',   cb: 5000 }   // daily, max bars
-        };
-        const preset = presets[timeRange] || presets['1d'];
-        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${preset.resolution}&cb=${preset.cb}&vs_currency=${activeFiatCurrency}`;
+        const responseData = await fetchPromise;
 
-        const response = await axios.get(endpoint, { signal: controller.signal });
-
-        if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
-          // Debug: log raw API response
-          const rawSample = response.data.ohlc.slice(-3);
-          console.log('RAW OHLC from API:', rawSample);
-          setDebugInfo({
-            endpoint,
-            rawSample,
-            totalBars: response.data.ohlc.length
-          });
-
-          // Bounds for lightweight-charts (must be between ±90071992547409.91)
-          const MAX_CHART_VALUE = 90071992547409;
-          const MIN_CHART_VALUE = 1e-12;
-
-          const processedData = response.data.ohlc
-            .filter(candle =>
-              // Filter raw data BEFORE conversion
-              candle[1] > MIN_CHART_VALUE && candle[1] < MAX_CHART_VALUE &&
-              candle[2] > MIN_CHART_VALUE && candle[2] < MAX_CHART_VALUE &&
-              candle[3] > MIN_CHART_VALUE && candle[3] < MAX_CHART_VALUE &&
-              candle[4] > MIN_CHART_VALUE && candle[4] < MAX_CHART_VALUE
-            )
-            .map((candle) => ({
-              time: Math.floor(candle[0] / 1000),
-              open: candle[1],
-              high: candle[2],
-              low: candle[3],
-              close: candle[4],
-              volume: candle[5] || 0
-            }))
-            .sort((a, b) => a.time - b.time);
-
-          // Debug: log processed data
-          console.log('PROCESSED OHLC:', processedData.slice(-3));
+        if (mounted && responseData?.ohlc && responseData.ohlc.length > 0) {
+          const processedData = processOhlc(responseData.ohlc);
 
           if (isUpdate && dataRef.current && dataRef.current.length > 0) {
             // For updates, only update if there are actual changes
@@ -392,6 +405,8 @@ const PriceChartAdvanced = memo(({ token }) => {
             setData(processedData);
             setLastUpdate(new Date());
           }
+          // Clear in-flight after success
+          fetchInFlight.delete(cacheKey);
 
           // Disable "load more" for 'all' timerange since we already have everything
           if (timeRange === 'all') {
@@ -409,6 +424,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           }
         }
       } catch (error) {
+        fetchInFlight.delete(cacheKey);
         if (!axios.isCancel(error) && error.code !== 'ERR_CANCELED' && error.name !== 'AbortError') {
           console.error('Chart fetch error:', error.message);
         }
@@ -422,17 +438,16 @@ const PriceChartAdvanced = memo(({ token }) => {
     fetchData();
 
     const updateInterval = setInterval(() => {
-      if (!isUserZoomedRef.current && mounted && !controller.signal.aborted) {
+      if (!isUserZoomedRef.current && mounted) {
         fetchData(true);
       }
-    }, 10000);
+    }, 4000);
 
     return () => {
       mounted = false;
-      controller.abort();
       clearInterval(updateInterval);
     };
-  }, [token.md5, timeRange, BASE_URL, activeFiatCurrency, convertScientific]);
+  }, [token.md5, timeRange, activeFiatCurrency]);
 
   // Fetch holder data
   useEffect(() => {
