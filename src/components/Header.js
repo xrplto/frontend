@@ -818,14 +818,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               className={cn(
                 "flex items-center gap-3 px-4 h-[52px] w-full max-w-[800px] cursor-text border-0 transition-all duration-200",
                 searchOpen
-                  ? "bg-primary/5"
+                  ? isDark ? "bg-blue-500/10" : "bg-blue-50"
                   : isDark
-                    ? "bg-white/[0.04] hover:bg-white/[0.06]"
-                    : "bg-gray-50 hover:bg-gray-100"
+                    ? "bg-white/[0.04] hover:bg-blue-500/5"
+                    : "bg-gray-50 hover:bg-blue-50/50"
               )}
               onClick={openSearch}
             >
-              <Search size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+              <Search size={16} className={isDark ? "text-blue-400" : "text-blue-500"} />
               {searchOpen ? (
                 <input
                   ref={searchInputRef}
@@ -848,27 +848,27 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             {/* Search Dropdown */}
             {searchOpen && (
               <div className={cn(
-                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[800px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
+                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[800px] mt-2 rounded-xl border overflow-hidden z-[9999]",
                 isDark
-                  ? "bg-[#070b12]/98 backdrop-blur-xl border-white/[0.06] shadow-2xl shadow-black/50"
-                  : "bg-white/98 backdrop-blur-xl border-gray-200 shadow-xl shadow-gray-200/50"
+                  ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10"
+                  : "bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50"
               )}>
                 {!searchQuery && recentSearches.length > 0 && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Recent Searches</span>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Recent Searches</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
                           backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                             : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                           backgroundSize: '8px 5px',
                           WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
                           maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                         }}
                       />
-                      <button onClick={clearRecentSearches} className={cn("flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-teal-400/80 hover:text-teal-300" : "text-primary hover:text-blue-400")}>
+                      <button onClick={clearRecentSearches} className={cn("flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>
                         <Trash2 size={12} />
                         Clear
                       </button>
@@ -886,7 +886,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                         <div className="flex items-center gap-3">
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{item.type === 'token' ? 'Token' : 'NFT'}</span>
-                          {(item.verified === true || item.verified === 'yes') && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          {(item.verified === true || item.verified === 'yes') && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                           {item.holders && (
                             <div className="text-right min-w-[50px]">
                               <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{item.holders?.toLocaleString()}</span>
@@ -909,12 +909,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     {suggestedTokens.length > 0 && (
                       <div className="px-3 py-2">
                         <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Tokens</span>
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Tokens</span>
                           <div
                             className="flex-1 h-[14px]"
                             style={{
                               backgroundImage: isDark
-                                ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                                ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                                 : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                               backgroundSize: '8px 5px',
                               WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
@@ -935,7 +935,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
-                              {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                              {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                               <div className="text-right min-w-[50px]">
                                 <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
                                 <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
@@ -948,12 +948,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     {suggestedCollections.length > 0 && (
                       <div className="px-3 py-2">
                         <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFTs</span>
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</span>
                           <div
                             className="flex-1 h-[14px]"
                             style={{
                               backgroundImage: isDark
-                                ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                                ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                                 : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                               backgroundSize: '8px 5px',
                               WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
@@ -972,7 +972,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
-                              {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                              {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                               <div className="text-right min-w-[50px]">
                                 <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
                                 <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
@@ -987,8 +987,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchResults.txHash && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Transaction</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Transaction</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
                     <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                       <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50")}>
@@ -1005,8 +1005,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchResults.nft && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFT</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFT</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
                     <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                       {getNftImage(searchResults.nft) ? (
@@ -1027,8 +1027,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchResults.address && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Account</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Account</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
                     <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                       <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-purple-500/10 border border-purple-500/20" : "bg-purple-50")}>
@@ -1045,30 +1045,30 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchResults.ledger && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Ledger</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Ledger</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
                     <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-teal-500/10 border border-teal-500/20" : "bg-cyan-50")}>
-                        <Layers size={16} className={isDark ? "text-teal-400" : "text-cyan-500"} />
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50")}>
+                        <Layers size={16} className={isDark ? "text-blue-400" : "text-blue-500"} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>View Ledger</span>
                         <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>#{searchResults.ledger}</p>
                       </div>
-                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-cyan-50 text-cyan-600")}>Ledger</span>
+                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>Ledger</span>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.tokens.length > 0 && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Tokens</span>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Tokens</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
                           backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                             : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                           backgroundSize: '8px 5px',
                           WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
@@ -1089,7 +1089,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                         <div className="flex items-center gap-3">
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
-                          {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                           <div className="text-right min-w-[50px]">
                             <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
                             <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
@@ -1102,12 +1102,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {searchQuery && searchResults.collections.length > 0 && (
                   <div className="px-3 py-2">
                     <div className="flex items-center gap-3 px-1 py-2 mb-1">
-                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFTs</span>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
                           backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
                             : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                           backgroundSize: '8px 5px',
                           WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
@@ -1126,7 +1126,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                         <div className="flex items-center gap-3">
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
-                          {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                           <div className="text-right min-w-[50px]">
                             <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
                             <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
@@ -1152,7 +1152,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div className="fixed inset-0 z-[9998] bg-black/50" onClick={() => { setFullSearch(false); setSearchQuery(''); }} />
           <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-2" ref={searchRef}>
             <div className={cn("flex items-center gap-2 rounded-xl px-4 h-11 border transition-all", isDark ? "bg-[#0a0f1a] border-blue-500/20" : "bg-white border-blue-200/50 shadow-sm")}>
-              <Search size={18} className={isDark ? "text-white/40" : "text-gray-400"} />
+              <Search size={18} className={isDark ? "text-blue-400" : "text-blue-500"} />
               <input
                 autoFocus
                 value={searchQuery}
@@ -1175,7 +1175,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {!searchQuery && suggestedTokens.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Tokens</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {suggestedTokens.map((token, i) => (
@@ -1189,7 +1189,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {token.verified && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        {token.verified && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
@@ -1202,7 +1202,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {!searchQuery && suggestedCollections.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {suggestedCollections.map((col, i) => (
@@ -1213,7 +1213,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {col.verified === 'yes' && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
@@ -1226,7 +1226,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {searchQuery && searchResults.txHash && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Transaction</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Transaction</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
@@ -1244,7 +1244,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {searchQuery && searchResults.nft && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFT</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFT</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
@@ -1266,7 +1266,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {searchQuery && searchResults.address && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Account</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Account</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
@@ -1284,25 +1284,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {searchQuery && searchResults.ledger && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Ledger</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Ledger</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-cyan-500/20" : "bg-cyan-100")}>
-                      <Layers size={18} className="text-cyan-500" />
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
+                      <Layers size={18} className={isDark ? "text-blue-400" : "text-blue-500"} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Ledger</span>
                       <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>#{searchResults.ledger}</p>
                     </div>
-                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-cyan-500/20 text-cyan-400" : "bg-cyan-100 text-cyan-600")}>Ledger</span>
+                    <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>Ledger</span>
                   </div>
                 </div>
               )}
               {searchQuery && searchResults.tokens.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>Tokens</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {searchResults.tokens.map((token, i) => (
@@ -1316,7 +1316,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {token.verified && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        {token.verified && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
@@ -1329,7 +1329,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {searchQuery && searchResults.collections.length > 0 && (
                 <div className="p-2">
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {searchResults.collections.map((col, i) => (
@@ -1340,7 +1340,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {col.verified === 'yes' && <span className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
+                        {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
