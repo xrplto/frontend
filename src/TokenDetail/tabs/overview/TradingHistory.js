@@ -1909,6 +1909,35 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
   // Memoized trade list rendering
   const renderedTrades = useMemo(() => {
+    // Helper to get display address for a trade
+    const getTradeAddress = (t) => {
+      if (!t) return null;
+      const isLiq = t.isLiquidity;
+      let addr = isLiq ? t.account : t.taker;
+      if (!isLiq && amm && t.taker === amm) addr = t.maker;
+      return addr;
+    };
+
+    // Pre-compute which addresses appear more than once and assign colors
+    const addressCounts = {};
+    trades.forEach((trade) => {
+      const addr = getTradeAddress(trade);
+      if (addr) addressCounts[addr] = (addressCounts[addr] || 0) + 1;
+    });
+    const dotColors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+    const addressColorMap = {};
+    let colorIndex = 0;
+    Object.keys(addressCounts).forEach((addr) => {
+      if (addressCounts[addr] > 1) {
+        addressColorMap[addr] = dotColors[colorIndex % dotColors.length];
+        colorIndex++;
+      }
+    });
+    const getAddressDotColor = (trade) => {
+      const addr = getTradeAddress(trade);
+      return addr ? addressColorMap[addr] : null;
+    };
+
     return trades.map((trade, index) => {
       const isLiquidity = trade.isLiquidity;
       const isBuy = trade.paid.currency === 'XRP';
@@ -1920,10 +1949,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const totalData = isBuy ? trade.paid : trade.got;
 
       // For liquidity events, show the account; for trades show taker (or maker if taker is AMM)
-      let addressToShow = isLiquidity ? trade.account : trade.taker;
-      if (!isLiquidity && amm && trade.taker === amm) {
-        addressToShow = trade.maker;
-      }
+      const addressToShow = getTradeAddress(trade);
+      const dotColor = getAddressDotColor(trade);
 
       // Liquidity type label
       const getLiquidityLabel = (type) => {
@@ -2031,9 +2058,25 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Trader Address */}
               <a
                 href={`/profile/${addressToShow}`}
-                style={{ fontSize: '11px', fontFamily: 'monospace', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                  textDecoration: 'none',
+                  padding: '3px 6px',
+                  borderRadius: '4px',
+                  background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                  transition: 'all 0.15s'
+                }}
                 title={addressToShow}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#3b82f6'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'; e.currentTarget.style.color = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'; }}
               >
+                {dotColor && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: dotColor, flexShrink: 0 }} />}
                 {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
               </a>
 
