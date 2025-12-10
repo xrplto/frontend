@@ -474,13 +474,29 @@ function TokenListComponent({
     });
   }, [dispatch, setTokens, startTransition]);
 
+  // WebSocket reconnection state with exponential backoff
+  const reconnectAttemptRef = useRef(0);
+  const maxReconnectDelay = 60000; // Max 60 seconds between attempts
+
   // WebSocket for real-time token updates
   const { sendJsonMessage, readyState } = useWebSocket(
     WSS_FEED_URL,
     {
-      shouldReconnect: () => !!WSS_FEED_URL,
+      shouldReconnect: (closeEvent) => {
+        // Don't reconnect if we've exceeded attempts or got rate limited too many times
+        if (reconnectAttemptRef.current >= 10) {
+          console.log('WebSocket: Max reconnect attempts reached, stopping');
+          return false;
+        }
+        return !!WSS_FEED_URL;
+      },
       reconnectAttempts: 10,
-      reconnectInterval: 3000,
+      reconnectInterval: (attemptNumber) => {
+        // Exponential backoff: 3s, 6s, 12s, 24s, 48s, 60s (capped)
+        const delay = Math.min(3000 * Math.pow(2, attemptNumber), maxReconnectDelay);
+        console.log(`WebSocket: Reconnecting in ${delay / 1000}s (attempt ${attemptNumber + 1})`);
+        return delay;
+      },
       onMessage: useCallback(
         (event) => {
           try {
@@ -503,9 +519,17 @@ function TokenListComponent({
         },
         [processWebSocketQueue]
       ),
-      onOpen: () => {},
-      onClose: () => {},
-      onError: () => {}
+      onOpen: () => {
+        console.log('WebSocket: Connected successfully');
+        reconnectAttemptRef.current = 0; // Reset on successful connection
+      },
+      onClose: (event) => {
+        reconnectAttemptRef.current++;
+        console.log(`WebSocket: Closed (code: ${event.code})`);
+      },
+      onError: (event) => {
+        console.log('WebSocket: Connection error');
+      }
     }
   );
 

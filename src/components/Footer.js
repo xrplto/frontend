@@ -183,7 +183,7 @@ function Footer() {
           <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>
-                <Logo alt="XRPL.to" style={{ width: '60px', height: 'auto' }} />
+                <Logo asLink={false} style={{ width: '60px', height: 'auto' }} />
               </NextLink>
               <Typography
                 variant="body2"

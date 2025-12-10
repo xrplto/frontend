@@ -39,14 +39,23 @@ function Detail({ data }) {
     }
   }, [dispatch]);
 
+  // WebSocket reconnection tracking
+  const reconnectAttemptRef = useRef(0);
+
   const { lastMessage } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => {},
-    onClose: () => {},
-    shouldReconnect: () => document.visibilityState === 'visible', // Only reconnect if tab is visible
+    onOpen: () => {
+      reconnectAttemptRef.current = 0;
+    },
+    onClose: () => {
+      reconnectAttemptRef.current++;
+    },
+    shouldReconnect: () => {
+      if (reconnectAttemptRef.current >= 10) return false;
+      return document.visibilityState === 'visible';
+    },
     reconnectAttempts: 10,
-    reconnectInterval: 3000,
-    // Don't auto-connect if tab is hidden (prevents memory leaks)
-    share: true // Share connection across components
+    reconnectInterval: (attemptNumber) => Math.min(3000 * Math.pow(2, attemptNumber), 60000),
+    share: true
   });
 
   useEffect(() => {
