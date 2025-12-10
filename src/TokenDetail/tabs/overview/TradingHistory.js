@@ -1772,11 +1772,48 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // Don't auto-refresh when filtering by account - preserves search results
     if (currentPage !== 1 || direction !== 'desc' || accountFilter) return;
 
-    const intervalId = setInterval(() => {
-      fetchTradingHistory(null, true, 'desc');
-    }, 4000);
+    let intervalId = null;
+    let lastFetchTime = Date.now();
+    const POLL_INTERVAL = 5000; // 5 second updates
 
-    return () => clearInterval(intervalId);
+    const startPolling = () => {
+      if (intervalId) return;
+      intervalId = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          const now = Date.now();
+          if (now - lastFetchTime >= POLL_INTERVAL - 500) {
+            lastFetchTime = now;
+            fetchTradingHistory(null, true, 'desc');
+          }
+        }
+      }, POLL_INTERVAL);
+    };
+
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    if (document.visibilityState === 'visible') {
+      startPolling();
+    }
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [currentPage, direction, accountFilter, fetchTradingHistory]);
 
   // Cursor-based pagination handlers

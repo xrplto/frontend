@@ -437,15 +437,55 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     fetchData();
 
-    const updateInterval = setInterval(() => {
-      if (!isUserZoomedRef.current && mounted) {
-        fetchData(true);
+    // Use visibility-aware polling - pause when tab is hidden
+    let updateInterval = null;
+    let lastFetchTime = Date.now();
+    const POLL_INTERVAL = 5000; // 5 second updates
+
+    const startPolling = () => {
+      if (updateInterval) return;
+      updateInterval = setInterval(() => {
+        if (!isUserZoomedRef.current && mounted && document.visibilityState === 'visible') {
+          // Skip if last fetch was recent (prevents accumulation)
+          const now = Date.now();
+          if (now - lastFetchTime >= POLL_INTERVAL - 500) {
+            lastFetchTime = now;
+            fetchData(true);
+          }
+        }
+      }, POLL_INTERVAL);
+    };
+
+    const stopPolling = () => {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
       }
-    }, 4000);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Refresh data when tab becomes visible again
+        if (mounted && !isUserZoomedRef.current) {
+          fetchData(true);
+        }
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Only start polling if tab is visible
+    if (document.visibilityState === 'visible') {
+      startPolling();
+    }
 
     return () => {
       mounted = false;
-      clearInterval(updateInterval);
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [token.md5, timeRange, activeFiatCurrency]);
 

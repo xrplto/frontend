@@ -322,11 +322,55 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
     }
 
     fetchOrderbook();
-    const timer = setInterval(() => fetchOrderbook(true), 5000);
+
+    // Visibility-aware polling to prevent memory leaks when tab is hidden
+    let timer = null;
+    let lastFetchTime = Date.now();
+    const POLL_INTERVAL = 5000; // 5 second updates
+
+    const startPolling = () => {
+      if (timer) return;
+      timer = setInterval(() => {
+        if (mountedRef.current && document.visibilityState === 'visible') {
+          const now = Date.now();
+          if (now - lastFetchTime >= POLL_INTERVAL - 500) {
+            lastFetchTime = now;
+            fetchOrderbook(true);
+          }
+        }
+      }, POLL_INTERVAL);
+    };
+
+    const stopPolling = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Refresh on tab focus
+        if (mountedRef.current) {
+          fetchOrderbook(true);
+        }
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Only start polling if tab is visible
+    if (document.visibilityState === 'visible') {
+      startPolling();
+    }
 
     return () => {
       mountedRef.current = false;
-      clearInterval(timer);
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       fetchInFlight.delete(pairKey);
       lastDataHashRef.current = null;
     };

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 // Redux
@@ -24,27 +24,56 @@ function Detail({ data }) {
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${data.token.md5}`;
   const tokenName = token.name || 'Token';
 
+  // Refs to prevent flushSync errors during React render cycles
+  const pendingUpdateRef = useRef(null);
+  const rafIdRef = useRef(null);
+
+  // Process WebSocket message outside of React's render cycle
+  const processMessage = useCallback((messageData) => {
+    try {
+      const json = JSON.parse(messageData);
+      dispatch(update_metrics(json));
+      setToken(prev => ({ ...prev, ...json.token }));
+    } catch (err) {
+      console.error(err);
+    }
+  }, [dispatch]);
+
   const { lastMessage } = useWebSocket(WSS_FEED_URL, {
     onOpen: () => {},
     onClose: () => {},
-    shouldReconnect: () => true,
+    shouldReconnect: () => document.visibilityState === 'visible', // Only reconnect if tab is visible
     reconnectAttempts: 10,
-    reconnectInterval: 3000
+    reconnectInterval: 3000,
+    // Don't auto-connect if tab is hidden (prevents memory leaks)
+    share: true // Share connection across components
   });
 
   useEffect(() => {
     if (!lastMessage?.data) return;
 
-    try {
-      const json = JSON.parse(lastMessage.data);
-      dispatch(update_metrics(json));
+    // Store pending update
+    pendingUpdateRef.current = lastMessage.data;
 
-      // Use functional update to avoid stale closure
-      setToken(prev => ({ ...prev, ...json.token }));
-    } catch (err) {
-      console.error(err);
+    // Cancel any pending RAF
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
     }
-  }, [lastMessage, dispatch]);
+
+    // Defer state update to next animation frame to avoid flushSync conflicts
+    rafIdRef.current = requestAnimationFrame(() => {
+      if (pendingUpdateRef.current) {
+        processMessage(pendingUpdateRef.current);
+        pendingUpdateRef.current = null;
+      }
+    });
+
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [lastMessage, processMessage]);
 
   const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
 
