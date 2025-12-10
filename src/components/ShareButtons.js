@@ -72,7 +72,7 @@ const getIconColor = (platform) => {
   }
 };
 
-const getBgColor = (isDark = true) => isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const getBgColor = (isDark = true) => isDark ? 'rgba(255,255,255,0.04)' : 'rgba(59,130,246,0.05)';
 
 // Share button component
 export const ShareButton = ({ platform, url, title, size = 40, round = true, isDark = true, ...props }) => {
@@ -278,8 +278,8 @@ export function TokenShareModal({ token }) {
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1 px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors ${
           isDark
-            ? 'border-white/10 text-white/50 hover:border-primary/30 hover:text-primary'
-            : 'border-gray-200 text-gray-500 hover:border-primary/30 hover:text-primary'
+            ? 'border-blue-500/20 text-white/50 hover:border-blue-500/40 hover:text-blue-400'
+            : 'border-blue-200 text-gray-500 hover:border-blue-400 hover:text-blue-600'
         }`}
       >
         <ShareIcon size={12} />
@@ -294,7 +294,7 @@ export function TokenShareModal({ token }) {
           <div
             onClick={e => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-xl border-[1.5px] overflow-hidden ${
-              isDark ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'
+              isDark ? 'bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10' : 'bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50'
             }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
@@ -310,14 +310,14 @@ export function TokenShareModal({ token }) {
               <img
                 src={imgUrl}
                 alt={name}
-                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-white/10' : 'border-gray-200'}`}
+                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-blue-500/20' : 'border-blue-200'}`}
               />
               <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {user} {name}
               </span>
 
               <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                isDark ? 'border-blue-500/20 bg-white/[0.04]' : 'border-blue-200 bg-blue-50/50'
               }`}>
                 <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Current Price</p>
                 <p className="text-[18px] font-medium text-primary">
@@ -364,7 +364,7 @@ export function TokenShareModal({ token }) {
                   />
                 </div>
                 <div className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                  isDark ? 'border-blue-500/20 bg-white/[0.04]' : 'border-blue-200 bg-blue-50/50'
                 }`}>
                   <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
                     {url}

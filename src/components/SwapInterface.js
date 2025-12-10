@@ -93,7 +93,7 @@ const styled = (Component) => (styleFn) => {
 const createTheme = (isDark) => ({
   palette: {
     mode: isDark ? 'dark' : 'light',
-    divider: isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.12)',
+    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
     primary: { main: '#3b82f6' },
     text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
     background: { default: isDark ? '#010815' : '#fff', paper: isDark ? '#020a1a' : '#fff' },

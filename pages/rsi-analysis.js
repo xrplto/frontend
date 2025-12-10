@@ -25,14 +25,14 @@ const Controls = styled.div`
   gap: 14px;
   margin-bottom: 16px;
   padding: 16px 20px;
-  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.25)'};
+    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
   }
 `;
 
@@ -224,16 +224,16 @@ const Label = styled.span`
 const HeatMap = styled.div`
   width: 100%;
   height: 320px;
-  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.3)'};
+    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
   }
 `;
 
@@ -261,8 +261,8 @@ const CustomTooltip = styled.div`
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.15)'};
-  background: ${p => p.darkMode ? 'rgba(59,130,246,0.02)' : 'rgba(59,130,246,0.02)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   width: 100%;
 `;
 

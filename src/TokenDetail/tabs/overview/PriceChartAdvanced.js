@@ -728,7 +728,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: ${isMobile ? '105px' : '120px'}; position: absolute; display: none; padding: ${isMobile ? '5px' : '6px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 5px; background: ${isDark ? '#010815' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.08)'}`;
+    toolTip.style = `width: ${isMobile ? '105px' : '120px'}; position: absolute; display: none; padding: ${isMobile ? '5px' : '6px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(7,11,18,0.98)' : 'rgba(255,255,255,0.98)'}; backdrop-filter: blur(12px); color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'}; box-shadow: ${isDark ? '0 8px 32px rgba(59,130,246,0.1)' : '0 8px 32px rgba(59,130,246,0.15)'}`;
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 

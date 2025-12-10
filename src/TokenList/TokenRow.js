@@ -113,12 +113,12 @@ const OptimizedChart = memo(
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)'};
   cursor: pointer;
   transition: background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
   }
 `;
 
@@ -1431,9 +1431,9 @@ export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 12px;
-  background: ${(props) => props.isDark ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
+  background: ${(props) => props.isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.06)'};
+  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;

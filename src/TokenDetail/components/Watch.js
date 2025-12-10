@@ -6,8 +6,8 @@ import { Bookmark } from 'lucide-react';
 
 const WatchButton = styled.button`
   border-radius: 8px;
-  border: 1.5px solid ${props => props.isActive ? 'rgba(246,184,126,0.3)' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)')};
-  background: ${props => props.isActive ? 'rgba(246,184,126,0.1)' : 'transparent'};
+  border: 1.5px solid ${props => props.isActive ? 'rgba(246,184,126,0.3)' : (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.25)')};
+  background: ${props => props.isActive ? 'rgba(246,184,126,0.1)' : (props.isDark ? 'rgba(255,255,255,0.04)' : 'transparent')};
   padding: 4px 8px;
   display: flex;
   align-items: center;
@@ -17,8 +17,8 @@ const WatchButton = styled.button`
   font-weight: 500;
   color: ${props => props.isActive ? '#F6B87E' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   &:hover {
-    border-color: rgba(246,184,126,0.3);
-    color: #F6B87E;
+    border-color: ${props => props.isActive ? 'rgba(246,184,126,0.4)' : 'rgba(59,130,246,0.4)'};
+    background: ${props => props.isActive ? 'rgba(246,184,126,0.15)' : 'rgba(59,130,246,0.05)'};
   }
 `;
 

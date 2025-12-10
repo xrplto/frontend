@@ -1415,8 +1415,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'absolute right-0 top-10 z-[2147483647] w-[200px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
                       isDark
-                        ? 'border-white/10 bg-[#0a0a0a]/98 backdrop-blur-xl shadow-2xl'
-                        : 'border-gray-200 bg-white/98 backdrop-blur-xl shadow-xl'
+                        ? 'border-blue-500/20 bg-[#070b12]/98 backdrop-blur-xl shadow-2xl shadow-blue-500/10'
+                        : 'border-blue-200 bg-white/98 backdrop-blur-xl shadow-xl shadow-blue-200/50'
                     )}
                   >
                     <div className="p-3">

@@ -210,8 +210,8 @@ const DialogContent = ({ children, sx }) => (
 // StyledPopoverPaper component - Glass effect styling with mobile support
 const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
   <div className={cn(
-    "overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border-[1.5px]",
-    isDark ? "bg-[#0a0f1a] border-white/10" : "bg-white border-gray-200"
+    "overflow-hidden max-h-[80vh] overflow-y-auto rounded-xl border-[1.5px]",
+    isDark ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50"
   )}>
     {children}
   </div>
@@ -251,12 +251,12 @@ const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick
     justifyContent: 'center',
     gap: 8,
     padding: size === 'small' ? '4px 10px' : '8px 16px',
-    borderRadius: 8,
+    borderRadius: 12,
     fontSize: 14,
     fontWeight: 400,
     cursor: disabled ? 'not-allowed' : 'pointer',
     width: fullWidth ? '100%' : 'auto',
-    border: variant === 'outlined' ? '1px solid rgba(255,255,255,0.2)' : 'none',
+    border: variant === 'outlined' ? '1.5px solid rgba(59,130,246,0.2)' : 'none',
     background: variant === 'contained' ? (disabled ? '#94a3b8' : '#4285f4') : 'transparent',
     color: variant === 'contained' ? '#fff' : '#4285f4',
     opacity: disabled && variant !== 'contained' ? 0.5 : 1,
@@ -277,9 +277,9 @@ const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress,
     width: fullWidth ? '100%' : 'auto',
     padding: size === 'small' ? '8px 12px' : '12px 14px',
     fontSize: 14,
-    borderRadius: 8,
-    border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',
-    background: 'transparent',
+    borderRadius: 12,
+    border: isDark ? '1.5px solid rgba(59,130,246,0.2)' : '1.5px solid rgba(59,130,246,0.3)',
+    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(249,250,251,1)',
     color: isDark ? '#fff' : '#000',
     outline: 'none',
     fontFamily: inputProps?.style?.fontFamily || 'inherit',
@@ -696,14 +696,14 @@ const WalletContent = ({
               "w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all",
               backupAgreed
                 ? "border-primary bg-primary/5"
-                : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
+                : isDark ? "border-blue-500/20 hover:border-blue-500/30" : "border-blue-200 hover:border-blue-300"
             )}
           >
             <div className={cn(
               "w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
               backupAgreed
                 ? "bg-primary"
-                : isDark ? "border-2 border-white/20" : "border-2 border-gray-300"
+                : isDark ? "border-2 border-blue-500/30" : "border-2 border-blue-300"
             )}>
               {backupAgreed && <Check size={12} className="text-white" />}
             </div>
@@ -728,8 +728,8 @@ const WalletContent = ({
               className={cn(
                 "w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all",
                 isDark
-                  ? "bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50 disabled:opacity-40"
-                  : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary disabled:opacity-40"
+                  ? "bg-white/[0.04] border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50 disabled:opacity-40"
+                  : "bg-gray-50 border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 disabled:opacity-40"
               )}
             />
             <button
@@ -756,8 +756,8 @@ const WalletContent = ({
               className={cn(
                 "flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all",
                 isDark
-                  ? "border-white/10 text-white/70 hover:bg-white/5"
-                  : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "border-blue-500/20 text-white/70 hover:bg-blue-500/5"
+                  : "border-blue-200 text-gray-600 hover:bg-blue-50"
               )}
             >
               Cancel
@@ -1182,14 +1182,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Create a simple theme object to replace MUI's useTheme
   const theme = {
     palette: {
-      divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+      divider: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.2)',
       success: { main: '#4caf50' },
       warning: { main: '#ff9800', dark: '#f57c00' },
       error: { main: '#f44336' },
       primary: { main: '#4285f4' },
       text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
-      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#0d0d0d' : '#fff' },
-      action: { hover: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
+      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#070b12' : '#fff' },
+      action: { hover: isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.05)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
     },
     spacing: (...args) => args.map(v => v * 8).join('px ') + 'px'
   };
@@ -3511,8 +3511,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             newAccountMode === 'new'
                               ? "border-primary bg-primary text-white"
                               : isDark
-                              ? "border-white/15 text-white hover:border-primary/50"
-                              : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40"
+                              : "border-blue-200 text-gray-900 hover:bg-blue-50"
                           )}
                         >
                           New
@@ -3524,8 +3524,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             newAccountMode === 'import'
                               ? "border-primary bg-primary text-white"
                               : isDark
-                              ? "border-white/15 text-white hover:border-primary/50"
-                              : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40"
+                              : "border-blue-200 text-gray-900 hover:bg-blue-50"
                           )}
                         >
                           Import Seed
@@ -3555,8 +3555,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       : hasInput && validation.valid
                                       ? "border-green-500/50 focus:border-green-500"
                                       : isDark
-                                      ? "border-white/10 focus:border-primary/50"
-                                      : "border-gray-200 focus:border-primary",
+                                      ? "border-blue-500/20 focus:border-blue-500/50"
+                                      : "border-blue-200 focus:border-blue-500",
                                     isDark
                                       ? "bg-white/[0.03] border text-white placeholder:text-white/30"
                                       : "bg-white border text-gray-900 placeholder:text-gray-400"
@@ -3588,8 +3588,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
                               isDark
-                                ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                             )}
                           />
                           <button
@@ -3668,8 +3668,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "w-full flex items-center justify-between p-3 rounded-lg border-[1.5px] transition-colors",
                               isDark
-                                ? "border-white/10 hover:border-primary/50 hover:bg-primary/5"
-                                : "border-gray-200 hover:border-primary/50 hover:bg-primary/5"
+                                ? "border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/5"
+                                : "border-blue-200 hover:border-blue-400 hover:bg-blue-50"
                             )}
                           >
                             <span className={cn("text-[13px]", isDark ? "text-white" : "text-gray-900")}>View Seed</span>
@@ -3706,7 +3706,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               "w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors",
                               seedWarningAgreed
                                 ? "border-primary bg-primary/5"
-                                : isDark ? "border-white/15 hover:border-primary" : "border-gray-200 hover:border-primary"
+                                : isDark ? "border-blue-500/20 hover:border-blue-500/40" : "border-blue-200 hover:border-blue-400"
                             )}
                           >
                             <div className={cn(
@@ -3736,8 +3736,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors",
                                   isDark
-                                    ? "bg-white/5 border-white/15 text-white placeholder:text-white/30 focus:border-primary"
-                                    : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500"
+                                    : "bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                               <button
@@ -3761,7 +3761,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
-                                isDark ? "border-white/15 text-white hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                                isDark ? "border-blue-500/20 text-white hover:bg-blue-500/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
                               )}
                             >
                               Cancel
@@ -3798,7 +3798,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             title={seedBlurred ? 'Click to reveal' : ''}
                             className={cn(
                               "p-3 rounded-lg font-mono text-[11px] break-all leading-relaxed",
-                              isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200",
+                              isDark ? "bg-white/[0.04] border border-blue-500/20" : "bg-gray-50 border border-blue-200",
                               seedBlurred && "blur-[5px] cursor-pointer select-none"
                             )}
                           >
@@ -3820,7 +3820,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               onClick={() => setSeedBlurred(!seedBlurred)}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors",
-                                isDark ? "border-white/15 text-white hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                                isDark ? "border-blue-500/20 text-white hover:bg-blue-500/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
                               )}
                             >
                               {seedBlurred ? 'Show' : 'Hide'}
@@ -3869,8 +3869,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
-                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
                           <svg className="h-[18px] w-[18px] flex-shrink-0" viewBox="0 0 24 24">
@@ -3888,8 +3888,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
-                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
                           <Mail size={18} className={isDark ? "text-white/50" : "text-gray-400"} />
@@ -3902,8 +3902,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
-                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
                           <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50" : "text-gray-400")} viewBox="0 0 24 24" fill="currentColor">
@@ -3918,8 +3918,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-white/10 text-white hover:border-primary/50 hover:bg-primary/5"
-                              : "border-gray-200 text-gray-700 hover:border-primary/50 hover:bg-primary/5"
+                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
                           <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50" : "text-gray-400")} viewBox="0 0 24 24" fill="currentColor">
@@ -3980,8 +3980,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4017,8 +4017,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm text-center font-mono tracking-[0.5em] outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4054,8 +4054,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4219,7 +4219,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       ? "bg-white"
                                       : clearSliderValue > 0
                                         ? "bg-red-500"
-                                        : isDark ? "bg-white/15" : "bg-white border border-gray-200"
+                                        : isDark ? "bg-white/15" : "bg-white border border-blue-200"
                                   )}
                                   style={{
                                     left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.44}px + 4px)`,
@@ -4266,8 +4266,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full mt-3 py-2.5 rounded-xl text-xs font-medium border-[1.5px] transition-all",
                                   isDark
-                                    ? "border-white/10 text-white/60 hover:border-white/20 hover:text-white/80"
-                                    : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                                    ? "border-blue-500/20 text-white/60 hover:border-blue-500/30 hover:text-white/80"
+                                    : "border-blue-200 text-gray-500 hover:border-blue-300 hover:text-gray-700"
                                 )}
                               >
                                 Cancel
@@ -4301,8 +4301,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-[1.5px] text-xs font-normal transition-all",
                               isDark
-                                ? "border-white/10 text-white/60 hover:border-primary/50 hover:text-primary"
-                                : "border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary"
+                                ? "border-blue-500/20 text-white/60 hover:border-blue-500/40 hover:text-blue-400"
+                                : "border-blue-200 text-gray-500 hover:border-blue-400 hover:text-blue-600"
                             )}
                           >
                             <ArrowLeft size={14} />
@@ -4362,8 +4362,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
                                   isDark
-                                    ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                    : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                               <button
@@ -4388,8 +4388,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-3 rounded-xl text-sm outline-none transition-all",
                                   isDark
-                                    ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
-                                    : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
+                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                                 )}
                               />
                             )}
@@ -4406,8 +4406,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all",
                                   isDark
-                                    ? "border-white/10 text-white/70 hover:bg-white/5"
-                                    : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                                    ? "border-blue-500/20 text-white/70 hover:bg-blue-500/5"
+                                    : "border-blue-200 text-gray-600 hover:bg-blue-50"
                                 )}
                               >
                                 Cancel

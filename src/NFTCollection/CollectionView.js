@@ -1504,7 +1504,7 @@ export default function CollectionView({ collection }) {
       {/* Collection Header - OpenSea Style */}
       <div
         className="rounded-[10px] px-4 py-3 mb-4 mt-3"
-        style={{ border: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}
+        style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
       >
         {/* Top Row: Logo + Name + Actions */}
         <div className="flex items-center gap-3 mb-3">
@@ -1657,7 +1657,7 @@ export default function CollectionView({ collection }) {
       {/* NFTs and Activity Tabs */}
       <div
         className="rounded-[10px] overflow-hidden"
-        style={{ border: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}
+        style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
       >
         <TabContext value={value}>
           <div className="flex justify-between items-center px-2.5 pt-2 pb-1">
