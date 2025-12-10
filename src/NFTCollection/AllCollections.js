@@ -35,140 +35,93 @@ const Container = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(${(props) => props.cols || 1}, 1fr);
-  gap: ${(props) => props.spacing || '12px'};
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
   width: 100%;
 
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   @media (max-width: 900px) {
-    grid-template-columns: repeat(${(props) => props.mdCols || props.cols || 1}, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   @media (max-width: 600px) {
     display: flex;
     overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
+    gap: 8px;
+    padding-bottom: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;
     }
   }
-
-  @media (max-width: 480px) {
-    gap: 6px;
-  }
 `;
 
 const MetricBox = styled.div`
-  padding: 16px;
-  height: 100%;
-  min-height: 85px;
+  padding: 14px 16px;
+  height: 88px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
   border-radius: 12px;
-  background: ${(props) => props.isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
-  backdrop-filter: blur(12px);
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
-  transition: border-color 0.2s ease, background 0.2s ease;
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.4)'};
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   }
 
   @media (max-width: 600px) {
-    padding: 8px;
-    min-height: 62px;
+    padding: 10px 12px;
+    height: 72px;
     flex: 0 0 auto;
-    min-width: 72px;
-    border-radius: 0;
-    border-width: 1px;
-    justify-content: space-between;
-  }
-
-  @media (max-width: 480px) {
-    padding: 8px;
-    min-height: 62px;
-    flex: 0 0 auto;
-    min-width: 72px;
-    border-radius: 0;
-    border-width: 1px;
-    justify-content: space-between;
+    min-width: 100px;
+    border-radius: 12px;
   }
 `;
 
 const MetricTitle = styled.span`
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
-  margin-bottom: 6px;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.55)'};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.6rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-    flex-shrink: 0;
+    font-size: 0.55rem;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.35rem;
-  font-weight: 500;
+  font-size: 1.4rem;
+  font-weight: 600;
   color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
-  line-height: 1.1;
-  margin-bottom: 4px;
-  font-family: inherit;
+  line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.8rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.8rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
+    font-size: 0.95rem;
   }
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.75rem;
-  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
+  font-size: 0.7rem;
+  color: ${(props) => props.isPositive ? '#22c55e' : '#ef4444'};
   display: inline-flex;
   align-items: center;
   gap: 2px;
   font-weight: 500;
-  font-family: inherit;
   letter-spacing: -0.01em;
 
   @media (max-width: 600px) {
     font-size: 0.6rem;
-    gap: 1px;
-    flex-shrink: 0;
-    margin-top: auto;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.6rem;
-    gap: 1px;
-    flex-shrink: 0;
-    margin-top: auto;
   }
 `;
 
@@ -189,15 +142,14 @@ const VolumePercentage = styled.span`
   }
 `;
 
-// Tags Bar Components - matching SearchToolbar.js
+// Tags Bar Components
 const TagsContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
   border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)')};
-  background: ${(props) => (props.isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
-  backdrop-filter: blur(12px);
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
   padding: 8px 12px;
   position: relative;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -250,10 +202,10 @@ const TagChip = styled.button`
   align-items: center;
   gap: 3px;
   padding: 3px 10px;
-  border: 1.5px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)')};
+  border: 1px solid ${(props) => props.selected ? (props.isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 6px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : (props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(59, 130, 246, 0.05)')};
-  color: ${(props) => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
+  background: ${(props) => props.selected ? (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'};
+  color: ${(props) => props.selected ? (props.isDark ? '#fff' : '#000') : (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
   font-size: 0.68rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
@@ -263,9 +215,9 @@ const TagChip = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.4);
-    color: #3b82f6;
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    color: ${(props) => props.isDark ? '#fff' : '#000'};
   }
 
   @media (max-width: 600px) {
@@ -282,10 +234,10 @@ const AllTagsButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
   border-radius: 6px;
-  background: rgba(59, 130, 246, 0.08);
-  color: #3b82f6;
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
   font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
@@ -296,8 +248,8 @@ const AllTagsButton = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.12);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'};
   }
 
   @media (max-width: 600px) {
@@ -334,12 +286,11 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
-  backdrop-filter: blur(12px);
+  background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1.5px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.25)'};
-  box-shadow: ${props => props.isDark ? '0 -8px 32px rgba(59, 130, 246, 0.1)' : '0 -8px 32px rgba(59, 130, 246, 0.15)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -363,24 +314,24 @@ const DrawerTitle = styled.h2`
 const DrawerClose = styled.button`
   width: 32px;
   height: 32px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.25)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(59, 130, 246, 0.05)'};
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   &:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+    color: ${props => props.isDark ? '#fff' : '#000'};
   }
 `;
 
 const SearchBox = styled.div`
   padding: 12px 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
 `;
 
 const SearchInputWrapper = styled.div`
@@ -395,26 +346,25 @@ const SearchIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b82f6;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'};
   pointer-events: none;
-  opacity: 0.5;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
   padding: 12px 12px 12px 40px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 8px;
   font-size: 15px;
   outline: none;
-  background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)'};
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+  color: ${props => props.isDark ? '#fff' : '#000'};
   font-family: inherit;
   &:focus {
-    border-color: ${props => props.isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.5)'};
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
   }
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(33, 43, 54, 0.35)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0, 0, 0, 0.35)'};
   }
 `;
 
@@ -428,7 +378,7 @@ const TagsGrid = styled.div`
   align-content: flex-start;
   &::-webkit-scrollbar { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.15); border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.2); border-radius: 3px; }
 `;
 
 const TagButton = styled.button`
@@ -436,10 +386,10 @@ const TagButton = styled.button`
   max-width: 200px;
   height: 40px;
   padding: 0 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(59, 130, 246, 0.05)'};
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  background: transparent;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
@@ -450,9 +400,9 @@ const TagButton = styled.button`
   text-overflow: ellipsis;
   transition: border-color 0.2s ease, background 0.2s ease;
   &:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
+    color: ${props => props.isDark ? '#fff' : '#000'};
   }
 `;
 
@@ -533,13 +483,13 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
           <DrawerPaper isDark={isDark}>
             <DrawerHeader>
               <div className="flex items-center gap-4 flex-1">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-primary whitespace-nowrap">
+                <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', whiteSpace: 'nowrap' }}>
                   Categories {tags?.length ? `(${tags.length})` : ''}
                 </span>
                 <div
                   className="flex-1 h-[14px]"
                   style={{
-                    backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                    backgroundImage: isDark ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
                     backgroundSize: '8px 5px'
                   }}
                 />
@@ -555,7 +505,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
             </DrawerHeader>
             <SearchBox isDark={isDark}>
               <SearchInputWrapper>
-                <SearchIconWrapper><Search size={18} /></SearchIconWrapper>
+                <SearchIconWrapper isDark={isDark}><Search size={18} /></SearchIconWrapper>
                 <SearchInput
                   type="search"
                   placeholder="Search categories..."
@@ -575,7 +525,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                       key={tagName}
                       isDark={isDark}
                       onClick={() => handleTagClick(tagName)}
-                      style={selectedTag === tagName ? { borderColor: '#3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)' } : {}}
+                      style={selectedTag === tagName ? { borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', color: isDark ? '#fff' : '#000', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' } : {}}
                     >
                       {tagName}{count ? ` (${count})` : ''}
                     </TagButton>
@@ -595,113 +545,68 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
       <Container>
         {globalMetrics && (
           <div style={{ width: '100%' }}>
-            <Grid cols={6} mdCols={3} spacing="12px">
+            <Grid>
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Trading Volume</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>24h</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.totalVolume || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>All Time</VolumePercentage>
-                  </div>
-                </div>
+                <MetricTitle isDark={isDark}>24h Volume</MetricTitle>
+                <MetricValue isDark={isDark}>
+                  ✕{formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
+                </MetricValue>
+                <PercentageChange isPositive={(globalMetrics.volume24hChange || 0) >= 0}>
+                  {(globalMetrics.volume24hChange || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.volume24hChange || 0).toFixed(1)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Activity</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Sales</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hTransfers || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Transfers</VolumePercentage>
-                  </div>
-                </div>
+                <MetricTitle isDark={isDark}>24h Sales</MetricTitle>
+                <MetricValue isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
+                </MetricValue>
+                <PercentageChange isPositive={(globalMetrics.sales24hChange || 0) >= 0}>
+                  {(globalMetrics.sales24hChange || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.sales24hChange || 0).toFixed(1)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>24h Traders</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Active</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Liquidity</VolumePercentage>
-                  </div>
-                </div>
+                <MetricValue isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
+                </MetricValue>
+                <PercentageChange isPositive={(globalMetrics.traders24hChange || 0) >= 0}>
+                  {(globalMetrics.traders24hChange || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.traders24hChange || 0).toFixed(1)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>Collections</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Active</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Total</VolumePercentage>
-                  </div>
-                </div>
+                <MetricValue isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
+                </MetricValue>
+                <VolumePercentage isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active
+                </VolumePercentage>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Mints & Burns</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hMints || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Minted</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hBurns || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Burned</VolumePercentage>
-                  </div>
-                </div>
+                <MetricTitle isDark={isDark}>24h Mints</MetricTitle>
+                <MetricValue isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.total24hMints || 0)}
+                </MetricValue>
+                <VolumePercentage isDark={isDark}>
+                  {formatNumberWithDecimals(globalMetrics.total24hBurns || 0)} burned
+                </VolumePercentage>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Fees Paid</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Broker</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.8rem' : '1.35rem' }}>
-                      {formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={isDark} style={{ display: 'block', marginTop: '2px' }}>Royalties</VolumePercentage>
-                  </div>
-                </div>
+                <MetricTitle isDark={isDark}>24h Fees</MetricTitle>
+                <MetricValue isDark={isDark}>
+                  ✕{formatNumberWithDecimals((globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0))}
+                </MetricValue>
+                <VolumePercentage isDark={isDark}>
+                  ✕{formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker | ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} creator
+                </VolumePercentage>
               </MetricBox>
             </Grid>
           </div>
@@ -737,7 +642,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                 })}
               </TagsScrollArea>
               <AllButtonWrapper>
-                <AllTagsButton onClick={() => setTagsDrawerOpen(true)}>
+                <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
                   <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
                 </AllTagsButton>
               </AllButtonWrapper>
@@ -753,10 +658,8 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
             minHeight: '50vh',
             position: 'relative',
             zIndex: 1,
-            borderRadius: 0,
-            background: isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(12px)',
-            border: `1.5px solid ${isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'}`,
+            background: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
             borderRadius: '12px',
             overflow: 'hidden'
           }}

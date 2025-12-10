@@ -179,7 +179,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, [router.pathname]);
 
   const isTokensActive = router.pathname === '/' ||
-    ['/trending', '/spotlight', '/most-viewed', '/gainers', '/new', '/watchlist', '/rsi-analysis', '/amm-pools'].some(p => router.pathname.startsWith(p)) ||
+    ['/trending', '/spotlight', '/most-viewed', '/gainers', '/watchlist', '/rsi-analysis', '/amm-pools'].some(p => router.pathname.startsWith(p)) ||
+    router.pathname === '/new' ||
     router.pathname.startsWith('/view/');
 
   const isNftsActive = router.pathname.startsWith('/collection') || router.pathname.startsWith('/nft');

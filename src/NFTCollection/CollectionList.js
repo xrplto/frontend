@@ -6,7 +6,6 @@ import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
-import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
 
 // Optimized chart wrapper with direct canvas rendering
 const OptimizedChart = memo(
@@ -267,23 +266,23 @@ const StyledRow = styled.tr`
 `;
 
 const StyledCell = styled.td`
-  padding: 16px 12px;
+  padding: 12px 8px;
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#212B36')};
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isCollectionColumn ? '250px' : 'auto')};
+  min-width: ${(props) => (props.isCollectionColumn ? '200px' : 'auto')};
   letter-spacing: 0.01em;
 
   &:first-of-type {
-    padding-left: 16px;
+    padding-left: 12px;
   }
 
   &:last-of-type {
-    padding-right: 16px;
+    padding-right: 4px;
   }
 `;
 
@@ -291,7 +290,7 @@ const StyledCell = styled.td`
 const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)')};
   cursor: pointer;
   box-sizing: border-box;
@@ -317,7 +316,7 @@ const MobileCell = styled.div`
   padding: 0 6px;
   font-weight: ${(props) => props.fontWeight || 500};
   font-size: 13px;
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#212B36')};
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
   min-width: ${(props) => props.minWidth || 'auto'};
   letter-spacing: 0.01em;
   ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
@@ -327,7 +326,7 @@ const MobileCell = styled.div`
 const CollectionImage = styled.div`
   width: ${(props) => (props.isMobile ? '28px' : '36px')};
   height: ${(props) => (props.isMobile ? '28px' : '36px')};
-  border-radius: 12px;
+  border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
@@ -344,7 +343,7 @@ const CollectionDetails = styled.div`
 const CollectionName = styled.span`
   font-weight: 600;
   font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
-  color: ${(props) => (props.darkMode ? '#ffffff' : '#212B36')};
+  color: ${(props) => (props.darkMode ? '#FFFFFF' : '#000000')};
   max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -356,7 +355,7 @@ const CollectionName = styled.span`
 
 const CollectionSubtext = styled.span`
   font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   opacity: 1;
   font-weight: 400;
   display: block;
@@ -575,8 +574,7 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)')};
-  backdrop-filter: blur(12px);
+  background: ${(props) => (props.darkMode ? 'rgba(10, 10, 10, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
 `;
 
 const StyledTableCell = styled.th`
@@ -585,28 +583,28 @@ const StyledTableCell = styled.th`
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: 14px 12px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  padding: 12px 8px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isCollectionColumn ? '250px' : props.width || 'auto')};
+  min-width: ${(props) => (props.isCollectionColumn ? '200px' : props.width || 'auto')};
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   font-family: inherit;
   transition: color 0.15s ease;
 
   &:first-of-type {
-    padding-left: 16px;
+    padding-left: 12px;
   }
 
   &:last-of-type {
-    padding-right: 16px;
+    padding-right: 4px;
   }
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') : 'inherit'};
   }
 `;
 
@@ -631,6 +629,35 @@ const MobileContainer = styled.div`
   background: transparent;
 `;
 
+const StyledMobileHeader = styled.div`
+  display: flex;
+  width: 100%;
+  padding: 10px 12px;
+  background: ${(props) => props.isDark ? 'rgba(10, 10, 10, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'};
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+`;
+
+const StyledHeaderCell = styled.div`
+  flex: ${(props) => props.flex || 1};
+  text-align: ${(props) => props.align || 'left'};
+  padding: 0 6px;
+  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: ${(props) => props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
+  }
+`;
+
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
@@ -641,19 +668,19 @@ const TABLE_HEAD_MOBILE = [
 
 const TABLE_HEAD_DESKTOP = [
   { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
-  { id: 'name', label: 'COLLECTION', align: 'left', width: '250px', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true, tooltip: 'Floor price in XRP' },
-  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '10%', order: true, tooltip: '24h floor price change' },
-  { id: 'totalVol24h', label: 'VOL (24H)', align: 'right', width: '12%', order: true, tooltip: '24h trading volume' },
-  { id: 'totalVolume', label: 'VOL (ALL)', align: 'right', width: '12%', order: true, tooltip: 'All-time trading volume' },
-  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: '10%', order: true, tooltip: '24h sales count' },
-  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: '12%', order: true, tooltip: 'Floor price × supply' },
-  { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true, tooltip: 'NFTs listed for sale' },
-  { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true, tooltip: 'Unique holders' },
-  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true, tooltip: 'Total NFTs in collection' },
-  { id: 'origin', label: 'SOURCE', align: 'right', width: '8%', order: true, tooltip: 'Origin marketplace' },
-  { id: 'created', label: 'CREATED', align: 'right', width: '8%', order: true, tooltip: 'Collection creation date' },
-  { id: 'sparkline', label: '30D CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' }, tooltip: '30-day sales history' }
+  { id: 'name', label: 'COLLECTION', align: 'left', width: '220px', order: false },
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: 'auto', order: true, tooltip: 'Floor price in XRP' },
+  { id: 'floor1dPercent', label: '24H %', align: 'right', width: 'auto', order: true, tooltip: '24h floor price change' },
+  { id: 'totalVol24h', label: 'VOL (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
+  { id: 'totalVolume', label: 'VOL (ALL)', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
+  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
+  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: 'auto', order: true, tooltip: 'Floor price × supply' },
+  { id: 'listedCount', label: 'LISTED', align: 'right', width: 'auto', order: true, tooltip: 'NFTs listed for sale' },
+  { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
+  { id: 'items', label: 'SUPPLY', align: 'right', width: 'auto', order: true, tooltip: 'Total NFTs in collection' },
+  { id: 'origin', label: 'SOURCE', align: 'right', width: 'auto', order: true, tooltip: 'Origin marketplace' },
+  { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
+  { id: 'sparkline', label: '30D CHART', align: 'center', width: '220px', order: false, style: { paddingLeft: '16px' }, tooltip: '30-day sales history' }
 ];
 
 // ListHead Component
@@ -710,14 +737,14 @@ const OptimizedImage = memo(
     }, []);
 
     return (
-      <div style={{ width: size, height: size, borderRadius: '12px', overflow: 'hidden' }}>
+      <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
         <img
           src={imgSrc}
           alt={alt}
           onError={handleError}
           style={{
-            width: size,
-            height: size,
+            width: '100%',
+            height: '100%',
             objectFit: 'cover',
             display: 'block'
           }}
@@ -854,14 +881,14 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   return (
     <StyledRow onClick={handleRowClick} darkMode={darkMode}>
       <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-        <span style={{ fontWeight: '400', color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)' }}>{idx + 1}</span>
+        <span style={{ fontWeight: '400', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>{idx + 1}</span>
       </StyledCell>
 
       <StyledCell
         align="left"
         darkMode={darkMode}
         isCollectionColumn={true}
-        style={{ width: '250px', minWidth: '250px', maxWidth: '250px' }}
+        style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <CollectionImage darkMode={darkMode}>
@@ -1220,20 +1247,20 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
     <Container>
       {isMobile ? (
         <MobileContainer darkMode={darkMode}>
-          <MobileHeader darkMode={darkMode}>
-            <HeaderCell flex={2} align="left" sortable={false}>
+          <StyledMobileHeader isDark={darkMode}>
+            <StyledHeaderCell flex={2} align="left">
               COLLECTION
-            </HeaderCell>
-            <HeaderCell flex={1.2} align="right" sortable={false}>
+            </StyledHeaderCell>
+            <StyledHeaderCell flex={1.2} align="right">
               FLOOR
-            </HeaderCell>
-            <HeaderCell flex={0.9} align="right" sortable={false}>
+            </StyledHeaderCell>
+            <StyledHeaderCell flex={0.9} align="right">
               24H
-            </HeaderCell>
-            <HeaderCell flex={1} align="right" sortable={false}>
+            </StyledHeaderCell>
+            <StyledHeaderCell flex={1} align="right">
               VOL
-            </HeaderCell>
-          </MobileHeader>
+            </StyledHeaderCell>
+          </StyledMobileHeader>
           {collections.map((collection, idx) => (
             <CollectionRow
               key={collection.slug || collection.name || idx}
