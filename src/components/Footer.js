@@ -42,7 +42,7 @@ const Tooltip = ({ title, children, arrow }) => {
           padding: '4px 8px',
           background: 'rgba(0,0,0,0.9)',
           color: '#fff',
-          borderRadius: '4px',
+          borderRadius: '8px',
           fontSize: '12px',
           whiteSpace: 'nowrap',
           zIndex: 1000,

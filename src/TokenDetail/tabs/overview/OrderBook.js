@@ -21,7 +21,7 @@ const BASE_URL = 'https://api.xrpl.to/api';
 const fetchCache = { orderbook: null };
 
 const Container = styled.div`
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
   height: 100%;
@@ -151,7 +151,7 @@ const CollapseButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
   background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};
   color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
@@ -166,7 +166,7 @@ const CollapseButton = styled.button`
 const CollapsedBar = styled.div`
   width: 36px;
   height: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   display: flex;
@@ -413,7 +413,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
           <span style={{ color: '#22c55e' }}>▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}</span>
           <span style={{
             padding: '2px 8px',
-            borderRadius: '4px',
+            borderRadius: '8px',
             background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
             fontWeight: 500
           }}>

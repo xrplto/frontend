@@ -33,7 +33,7 @@ const alpha = (color, opacity) => {
 };
 
 const Container = styled('div')(({ isDark }) => ({
-  borderRadius: '10px',
+  borderRadius: '12px',
   background: 'transparent',
   border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
   position: 'relative',
@@ -75,7 +75,7 @@ const RankBadge = styled('div')(({ isDark, rank }) => {
     justifyContent: 'center',
     width: 20,
     height: 20,
-    borderRadius: '6px',
+    borderRadius: '8px',
     fontWeight: 500,
     fontSize: '10px',
     flexShrink: 0,
@@ -170,7 +170,7 @@ const Chip = styled('span')(({ isDark }) => ({
   color: '#22c55e',
   fontWeight: 500,
   padding: '0 5px',
-  borderRadius: '4px',
+  borderRadius: '8px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
@@ -200,7 +200,7 @@ const Skeleton = ({ variant, width, height, sx = {} }) => {
         width: typeof width === 'number' ? `${width}px` : width || '100%',
         height: typeof height === 'number' ? `${height}px` : height || '20px',
         backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-        borderRadius: variant === 'rounded' ? '12px' : variant === 'text' ? '4px' : '4px',
+        borderRadius: variant === 'rounded' ? '12px' : variant === 'text' ? '8px' : '8px',
         ...sx
       }}
     />
@@ -210,7 +210,7 @@ const Skeleton = ({ variant, width, height, sx = {} }) => {
 const Alert = styled('div')(({ severity, isDark }) => ({
   background: 'transparent',
   border: `1.5px solid ${severity === 'error' ? alpha('#f44336', 0.2) : alpha('#4285f4', 0.2)}`,
-  borderRadius: '10px',
+  borderRadius: '12px',
   padding: '10px 12px',
   display: 'flex',
   alignItems: 'center',

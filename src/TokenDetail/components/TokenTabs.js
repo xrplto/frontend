@@ -88,8 +88,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-start gap-1 px-3 h-[30px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 -mt-1',
-        isDark ? 'border-b-white/10 bg-[#131313]' : 'border-b-gray-200 bg-gray-50'
+        'flex items-center justify-start gap-1.5 px-3 h-[36px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 mb-3',
+        isDark ? 'border-b-white/10 bg-[#0d0d0d]' : 'border-b-gray-200 bg-gray-50/80'
       )}
     >
       {/* Back navigation */}
@@ -98,16 +98,16 @@ const TokenTabs = memo(({ currentMd5 }) => {
           <a
             href={isNftWithCollection ? `/collection/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
             className={cn(
-              'flex items-center gap-0.5 px-1.5 h-5 rounded text-[10px] font-medium transition-all shrink-0',
-              'text-primary/70 hover:text-primary hover:bg-primary/10'
+              'flex items-center gap-0.5 px-2 h-6 rounded-md text-[11px] font-medium transition-all shrink-0',
+              'text-primary/80 hover:text-primary hover:bg-primary/10'
             )}
           >
-            <ChevronLeft size={11} />
+            <ChevronLeft size={12} />
             <span className="max-w-[100px] truncate">
               {isNftWithCollection ? currentTab.collectionName || 'Collection' : isCollection ? 'Collections' : 'Tokens'}
             </span>
           </a>
-          <div className={cn('w-px h-3 shrink-0', isDark ? 'bg-white/10' : 'bg-gray-300')} />
+          <div className={cn('w-px h-4 shrink-0', isDark ? 'bg-white/15' : 'bg-gray-300')} />
         </>
       )}
 
@@ -139,21 +139,21 @@ const TokenTabs = memo(({ currentMd5 }) => {
             href={href}
             onClick={(e) => isActive && e.preventDefault()}
             className={cn(
-              'flex items-center gap-1 px-2 h-5 rounded text-[10px] font-medium transition-all shrink-0',
+              'group flex items-center gap-1.5 px-2.5 h-6 rounded-md text-[11px] font-medium transition-all shrink-0',
               isActive
                 ? 'bg-primary/15 text-primary border border-primary/30'
                 : isDark
-                  ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  ? 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent hover:border-gray-200'
             )}
           >
             <img
               src={imgSrc}
               alt=""
-              className={cn('w-3 h-3 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
+              className={cn('w-3.5 h-3.5 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
               onError={(e) => (e.target.src = '/static/alt.webp')}
             />
-            <span className="max-w-[120px] truncate">{label}</span>
+            <span className="max-w-[100px] truncate">{label}</span>
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -161,11 +161,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 removeTab(tabId);
               }}
               className={cn(
-                'ml-0.5 transition-colors opacity-50 hover:opacity-100',
-                isActive ? 'text-primary' : isDark ? 'hover:text-white' : 'hover:text-gray-600'
+                'ml-0.5 transition-all opacity-0 group-hover:opacity-60 hover:!opacity-100',
+                isActive ? 'opacity-60 text-primary' : isDark ? 'hover:text-white' : 'hover:text-gray-600'
               )}
             >
-              <X size={10} />
+              <X size={11} />
             </button>
           </a>
         );
@@ -174,16 +174,16 @@ const TokenTabs = memo(({ currentMd5 }) => {
       <div className="flex-1" />
 
       {/* Right side actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 shrink-0">
         <button
           onClick={openSearch}
           title="Add tab"
           className={cn(
-            'p-1 rounded transition-colors',
-            isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'
+            'p-1.5 rounded-md transition-colors',
+            isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
           )}
         >
-          <Plus size={12} />
+          <Plus size={14} />
         </button>
 
         {tabs.length > 1 && (
@@ -191,11 +191,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={clearOthers}
             title="Clear other tabs"
             className={cn(
-              'p-1 rounded transition-colors',
-              isDark ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-200'
+              'p-1.5 rounded-md transition-colors',
+              isDark ? 'text-white/50 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
             )}
           >
-            <Trash2 size={12} />
+            <Trash2 size={13} />
           </button>
         )}
       </div>

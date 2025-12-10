@@ -125,7 +125,7 @@ const Button = styled.button`
   padding: 8px 20px;
   font-size: 13px;
   font-weight: 400;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1.5px solid rgba(244, 67, 54, 0.3);
   cursor: pointer;
   background: rgba(244, 67, 54, 0.1);
@@ -391,7 +391,7 @@ export default function PriceStatistics({ token, isDark = false }) {
   return (
     <Box
       style={{
-        borderRadius: '10px',
+        borderRadius: '12px',
         background: 'transparent',
         border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
         width: '100%',

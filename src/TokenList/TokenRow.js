@@ -65,7 +65,7 @@ const SparklineChart = memo(({ url }) => {
           <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : (
-        <div style={{ width: '100%', height: 44, background: 'rgba(128,128,128,0.05)', borderRadius: 4 }} />
+        <div style={{ width: '100%', height: 44, background: 'rgba(128,128,128,0.05)', borderRadius: 8 }} />
       )}
     </div>
   );

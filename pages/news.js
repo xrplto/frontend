@@ -26,17 +26,18 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
   const hiddenCount = totalSources - displayLimit;
 
   return (
-    <div className={cn("mb-4 rounded-xl border-[1.5px] bg-transparent p-4", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
+    <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
       <div className="mb-3 flex items-center justify-between">
-        <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
-          {isMobile ? `Sources (${totalSources})` : `News Sources (${totalSources})`}
+        <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
+          {isMobile ? `Sources` : `News Sources`}
+          <span className={cn("ml-2 rounded px-1.5 py-0.5 text-[10px]", isDark ? "bg-[rgba(59,130,246,0.1)]" : "bg-gray-100")}>{totalSources}</span>
         </p>
         {totalSources > displayLimit && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className={cn("rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-gray-700" : "border-gray-300")}
+            className={cn("rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-normal transition-colors hover:border-primary hover:bg-primary/5", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}
           >
-            {showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
+            {showAll ? 'Show Less' : `+${hiddenCount} more`}
           </button>
         )}
       </div>
@@ -47,7 +48,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
             'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
             !selectedSource
               ? 'border-primary bg-primary text-white'
-              : isDark ? 'border-gray-700 hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
+              : isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
           )}
         >
           All Sources
@@ -65,7 +66,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
                   'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
                   isSelected
                     ? 'border-primary bg-primary text-white'
-                    : isDark ? 'border-gray-700 hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
+                    : isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
                 )}
               >
                 <span>{source}</span>
@@ -315,7 +316,7 @@ function NewsPage() {
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
       <h1 className="sr-only">XRPL News & Updates</h1>
-      <div className={cn('flex-1 py-4 sm:py-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
+      <div className={cn('flex-1 pt-[72px] pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
         {loading ? (
           <div className="flex justify-center py-16">
             <svg className="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
@@ -328,20 +329,25 @@ function NewsPage() {
         ) : (
           <>
             {/* Header with Search */}
-            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.12)] bg-[rgba(59,130,246,0.02)]" : "border-gray-200 bg-gray-50")}>
+            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-200 bg-gray-50")}>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <h2 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>XRP News</h2>
-                  {totalCount > 0 && (
-                    <span className={cn("rounded-lg border-[1.5px] bg-transparent px-2 py-0.5 text-[13px] font-normal", isDark ? "border-[rgba(59,130,246,0.15)] text-white" : "border-gray-300 text-gray-700")}>
-                      {totalCount.toLocaleString()}
-                    </span>
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", isDark ? "bg-primary/10" : "bg-primary/5")}>
+                    <svg className="h-[18px] w-[18px] text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>XRP News</h2>
+                    <p className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-500")}>
+                      {totalCount > 0 ? `${totalCount.toLocaleString()} articles` : 'Latest updates'}
+                    </p>
+                  </div>
                 </div>
 
                 <form
                   onSubmit={handleSearch}
-                  className={cn("flex h-10 min-w-full items-center gap-3 rounded-xl border-[1.5px] px-4 hover:border-primary/30 hover:bg-primary/5 focus-within:border-primary/50 sm:min-w-[320px]", isDark ? "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]" : "border-gray-300 bg-white")}
+                  className={cn("flex h-10 min-w-full items-center gap-3 rounded-xl border-[1.5px] px-4 transition-all hover:border-primary/30 focus-within:border-primary/50 sm:min-w-[320px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-200 bg-white")}
                 >
                   <svg className={cn("h-4 w-4", isDark ? "text-gray-400/60" : "text-gray-500")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -375,7 +381,7 @@ function NewsPage() {
                       </button>
                       <button
                         type="submit"
-                        className={cn("rounded-lg border-[1.5px] px-4 py-1 text-[0.95rem] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-gray-700" : "border-gray-300")}
+                        className={cn("rounded-lg border-[1.5px] px-4 py-1 text-[0.95rem] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-300")}
                       >
                         Search
                       </button>
@@ -386,23 +392,19 @@ function NewsPage() {
             </div>
 
             {/* Sentiment Summary */}
-            <div className={cn("mb-4 rounded-xl border-[1.5px] bg-transparent p-4", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
-              {searchQuery && searchSentimentScore !== null ? (
-                <div className="mb-4 flex items-center gap-2">
-                  <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
-                    {isMobile ? 'Sentiment' : 'Market Sentiment'}
-                  </p>
-                  <span className={cn("rounded-md border-[1.5px] px-2 py-0.5 text-[11px] font-normal", isDark ? "border-[rgba(59,130,246,0.15)] text-white" : "border-gray-300 text-gray-700")}>
-                    {searchSentimentScore}
-                  </span>
-                </div>
-              ) : (
-                <p className={cn("mb-4 block text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
+            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
+              <div className="mb-3 flex items-center justify-between">
+                <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
                   {isMobile ? 'Sentiment' : 'Market Sentiment'}
                 </p>
-              )}
+                {searchQuery && searchSentimentScore !== null && (
+                  <span className={cn("rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium", isDark ? "border-[rgba(59,130,246,0.08)] text-gray-400" : "border-gray-200 text-gray-500")}>
+                    Score: {searchSentimentScore}
+                  </span>
+                )}
+              </div>
 
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {[
                   { period: '24H', stats: sentimentStats.last24h },
                   { period: '7D', stats: sentimentStats.last7d },
@@ -411,27 +413,21 @@ function NewsPage() {
                 ].map((item) => (
                   <div
                     key={item.period}
-                    className={cn("rounded-xl border-[1.5px] p-4 text-center", isDark ? "border-[rgba(59,130,246,0.12)] bg-[rgba(59,130,246,0.02)]" : "border-gray-200 bg-gray-50")}
+                    className={cn("rounded-xl border-[1.5px] p-3", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-100 bg-gray-50")}
                   >
-                    <p className={cn("mb-2 text-[11px] font-medium", isDark ? "text-gray-400" : "text-gray-600")}>{item.period}</p>
-                    <div className="flex justify-center gap-3">
-                      <div className="flex flex-col items-center gap-1">
-                        <p className="text-[15px] font-medium text-green-500">
-                          {item.stats?.bullish || 0}%
-                        </p>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Bull</p>
+                    <p className={cn("mb-2 text-center text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-500")}>{item.period}</p>
+                    <div className="flex justify-center gap-4">
+                      <div className="text-center">
+                        <p className="text-[14px] font-semibold text-green-500">{item.stats?.bullish || 0}%</p>
+                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Bull</p>
                       </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <p className="text-[15px] font-medium text-red-500">
-                          {item.stats?.bearish || 0}%
-                        </p>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Bear</p>
+                      <div className="text-center">
+                        <p className="text-[14px] font-semibold text-red-500">{item.stats?.bearish || 0}%</p>
+                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Bear</p>
                       </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <p className="text-[15px] font-medium text-yellow-500">
-                          {item.stats?.neutral || 0}%
-                        </p>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Neutral</p>
+                      <div className="text-center">
+                        <p className="text-[14px] font-semibold text-yellow-500">{item.stats?.neutral || 0}%</p>
+                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Neut</p>
                       </div>
                     </div>
                   </div>
@@ -450,37 +446,43 @@ function NewsPage() {
             {/* News Grid */}
             <div className="space-y-3">
               {currentItems.length === 0 ? (
-                <p className={cn("py-16 text-center text-sm font-normal", isDark ? "text-gray-400/70" : "text-gray-500")}>
-                  No news found at the moment
-                </p>
+                <div className="py-16 text-center">
+                  <div className={cn("mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl", isDark ? "bg-[rgba(59,130,246,0.05)]" : "bg-gray-100")}>
+                    <svg className={cn("h-7 w-7", isDark ? "text-gray-600" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    </svg>
+                  </div>
+                  <p className={cn("text-[14px] font-medium", isDark ? "text-gray-400" : "text-gray-600")}>No news found</p>
+                  <p className={cn("text-[12px]", isDark ? "text-gray-600" : "text-gray-500")}>Try adjusting your search or filters</p>
+                </div>
               ) : (
                 currentItems.map((article) => (
                   <div
                     key={article._id}
-                    className={cn("cursor-pointer rounded-xl border-[1.5px] bg-transparent p-4 sm:p-5", isDark ? "border-[rgba(59,130,246,0.12)] hover:border-[rgba(59,130,246,0.2)] hover:bg-[rgba(59,130,246,0.02)]" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
+                    className={cn("group cursor-pointer rounded-xl border-[1.5px] p-4 transition-all sm:p-5", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)] hover:border-[rgba(59,130,246,0.12)] hover:bg-[rgba(59,130,246,0.02)]" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
                   >
-                    <div className="mb-3 flex items-start justify-between">
-                      <p className={cn("flex-1 pr-4 text-[15px] font-medium leading-snug", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <p className={cn("flex-1 text-[14px] font-medium leading-snug transition-colors group-hover:text-primary", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
                       <span
-                        className="shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide"
+                        className="shrink-0 rounded-md border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
                         style={{
-                          borderColor: `${getSentimentColor(article.sentiment)}4D`,
+                          borderColor: `${getSentimentColor(article.sentiment)}3D`,
                           color: `${getSentimentColor(article.sentiment)}`,
-                          backgroundColor: `${getSentimentColor(article.sentiment)}14`
+                          backgroundColor: `${getSentimentColor(article.sentiment)}10`
                         }}
                       >
                         {article.sentiment || 'Unknown'}
                       </span>
                     </div>
 
-                    <p className={cn("mb-4 line-clamp-2 text-sm leading-relaxed", isDark ? "text-gray-400" : "text-gray-600")}>{article.summary}</p>
+                    <p className={cn("mb-3 line-clamp-2 text-[13px] leading-relaxed", isDark ? "text-gray-500" : "text-gray-600")}>{article.summary}</p>
 
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className={cn("rounded-md px-2 py-0.5 text-[11px] font-medium", isDark ? "bg-white/5 text-gray-300" : "bg-gray-100 text-gray-600")}>
+                        <span className={cn("rounded-md px-2 py-0.5 text-[10px] font-medium", isDark ? "bg-[rgba(59,130,246,0.08)] text-gray-400" : "bg-gray-100 text-gray-600")}>
                           {article.sourceName}
                         </span>
-                        <span className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-400")}>
+                        <span className={cn("text-[10px]", isDark ? "text-gray-600" : "text-gray-400")}>
                           {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                         </span>
                       </div>
@@ -488,9 +490,12 @@ function NewsPage() {
                         href={article.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[13px] font-medium text-primary hover:underline"
+                        className="flex items-center gap-1 text-[12px] font-medium text-primary hover:underline"
                       >
-                        Read article →
+                        Read
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </a>
                     </div>
                   </div>
@@ -501,8 +506,8 @@ function NewsPage() {
             {/* Pagination */}
             {totalCount > 0 && (
               <div className="mt-4 flex flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
-                <div className={cn("flex flex-wrap items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.1)] bg-transparent" : "border-black/8 bg-white")}>
-                  <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal tabular-nums border", isDark ? "border-[rgba(59,130,246,0.1)] text-white" : "border-black/8 text-gray-700")}>
+                <div className={cn("flex flex-wrap items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-transparent" : "border-black/8 bg-white")}>
+                  <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal tabular-nums border", isDark ? "border-[rgba(59,130,246,0.08)] text-white" : "border-black/8 text-gray-700")}>
                     {`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}
                   </span>
                   <span className={cn("text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-600")}>articles</span>
@@ -522,7 +527,7 @@ function NewsPage() {
 
                 {totalPages > 1 && (
                   <div className="flex flex-1 justify-center">
-                    <div className={cn("flex items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.1)] bg-transparent" : "border-black/8 bg-white")}>
+                    <div className={cn("flex items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-transparent" : "border-black/8 bg-white")}>
                       <button
                         onClick={() => handlePageChange(null, 1)}
                         disabled={currentPage === 1}

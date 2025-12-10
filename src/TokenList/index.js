@@ -43,7 +43,7 @@ const Container = styled.div`
 `;
 
 const TableWrapper = styled.div`
-  border-radius: 0;
+  border-radius: 12px;
   background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   overflow: hidden;

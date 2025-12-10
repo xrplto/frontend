@@ -79,7 +79,7 @@ const Tooltip = styled.div`
     background-color: red !important;
     color: white !important;
     padding: 8px 12px !important;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 14px !important;
     white-space: nowrap;
     z-index: 99999999 !important;
@@ -195,7 +195,7 @@ const Text = styled.span`
 const NavButton = styled.button`
   width: 26px;
   height: 26px;
-  border-radius: 5px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -218,7 +218,7 @@ const NavButton = styled.button`
 const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
-  border-radius: 5px;
+  border-radius: 8px;
   border: none;
   background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
   color: ${(props) => props.selected ? 'white' : props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
@@ -273,7 +273,7 @@ const SelectMenu = styled.div`
   margin-top: 4px;
   background: ${({ isDark }) => isDark ? '#1a1a1a' : '#fff'};
   border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   min-width: 50px;

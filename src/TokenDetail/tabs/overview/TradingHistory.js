@@ -92,7 +92,8 @@ const TierIconBox = ({ children, isDark }) => (
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '2px 4px',
+    width: '24px',
+    height: '24px',
     borderRadius: '4px',
     border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
     background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
@@ -495,7 +496,7 @@ const LiveIndicator = styled.div`
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)'};
 `;
 
@@ -553,26 +554,33 @@ const VolumeIndicator = styled.div`
   transition: width 0.2s;
 `;
 
-// Bar cell for showing colored bars behind values (like in the screenshot)
+// Bar cell for showing colored bars behind values
 const BarCell = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  height: 28px;
-  padding: 0 8px;
+  height: 26px;
+  padding: 0 10px;
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 20px;
+    height: 22px;
     width: ${props => Math.min(100, Math.max(8, props.barWidth || 0))}%;
     background: ${props => props.isBuy
-      ? (props.isDark ? 'rgba(34, 197, 94, 0.25)' : 'rgba(34, 197, 94, 0.2)')
-      : (props.isDark ? 'rgba(239, 68, 68, 0.25)' : 'rgba(239, 68, 68, 0.2)')};
-    border-radius: 2px;
-    transition: width 0.2s ease-out;
+      ? (props.isDark
+          ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
+          : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)')
+      : (props.isDark
+          ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
+          : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)')};
+    border-radius: 4px;
+    border-left: 2px solid ${props => props.isBuy
+      ? (props.isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(34, 197, 94, 0.5)')
+      : (props.isDark ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.5)')};
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   & > span {
     position: relative;
@@ -610,7 +618,7 @@ const PaginationButton = styled.button`
   color: ${props => props.selected ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   background: ${props => props.selected ? '#3b82f6' : 'transparent'};
   border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
   min-width: 32px;
@@ -733,7 +741,7 @@ const IconButton = styled.button`
   padding: 4px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
   cursor: pointer;
   display: inline-flex;
@@ -805,7 +813,7 @@ const Button = styled.button`
   padding: ${props => props.size === 'small' ? '4px 10px' : '8px 16px'};
   font-size: 11px;
   font-weight: 400;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.1)'};
   background: transparent;
   color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
@@ -1083,7 +1091,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   const OfferCard = styled.div`
     background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
     border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 14px;
     &:hover {
       border-color: ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'};
@@ -1096,7 +1104,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     padding: 6px 12px;
     background: transparent;
     border: 1.5px solid ${props => props.isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.4)'};
-    border-radius: 6px;
+    border-radius: 8px;
     color: #ef4444;
     cursor: pointer;
     transition: all 0.15s;

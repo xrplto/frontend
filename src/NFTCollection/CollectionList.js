@@ -327,7 +327,7 @@ const MobileCell = styled.div`
 const CollectionImage = styled.div`
   width: ${(props) => (props.isMobile ? '28px' : '36px')};
   height: ${(props) => (props.isMobile ? '28px' : '36px')};
-  border-radius: 50%;
+  border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
   background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
@@ -396,7 +396,7 @@ const PaginationContainer = styled.div`
   gap: 4px;
   padding: 4px 8px;
   min-height: 32px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   border: none;
 
@@ -461,7 +461,7 @@ const Text = styled.span`
 const NavButton = styled.button`
   width: 26px;
   height: 26px;
-  border-radius: 5px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -484,7 +484,7 @@ const NavButton = styled.button`
 const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
-  border-radius: 5px;
+  border-radius: 8px;
   border: none;
   background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
   color: ${(props) =>
@@ -543,7 +543,7 @@ const SelectMenu = styled.div`
   margin-top: 4px;
   background: ${({ darkMode }) => (darkMode ? 'rgba(20, 20, 20, 0.98)' : '#ffffff')};
   border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 5px;
+  border-radius: 8px;
   z-index: 1000;
   min-width: 50px;
   backdrop-filter: blur(10px);
@@ -710,7 +710,7 @@ const OptimizedImage = memo(
     }, []);
 
     return (
-      <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
+      <div style={{ width: size, height: size, borderRadius: '12px', overflow: 'hidden' }}>
         <img
           src={imgSrc}
           alt={alt}

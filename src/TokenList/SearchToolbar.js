@@ -19,7 +19,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-radius: 0;
+  border-radius: 12px;
   border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
   padding: 8px 12px;
@@ -118,7 +118,7 @@ const RowContent = styled.div`
 const RowsSelector = styled.select`
   padding: 3px 6px;
   border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 6px;
+  border-radius: 8px;
   background: ${(props) =>
     props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   color: ${(props) => (props.darkMode ? '#fff' : '#1a1a1a')};
@@ -188,7 +188,7 @@ const Button = styled.button`
   padding: 6px 12px;
   border: ${(props) =>
     props.variant === 'outlined' ? '1px solid rgba(59, 130, 246, 0.15)' : 'none'};
-  border-radius: 6px;
+  border-radius: 8px;
   background: ${(props) => {
     if (props.variant === 'contained') {
       return props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)';
@@ -240,7 +240,7 @@ const StyledIconButton = styled.button`
   padding: 0;
   border: 1px solid ${(props) =>
     props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)') : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 6px;
+  border-radius: 8px;
   background: ${(props) => (props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent')};
   color: inherit;
   cursor: pointer;
@@ -264,11 +264,11 @@ const ButtonGroup = styled.div`
   flex-shrink: 0;
   background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   padding: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
 
   & > button {
-    border-radius: 5px;
+    border-radius: 8px;
     border: none;
     min-width: 32px;
     height: 26px;
@@ -336,7 +336,7 @@ const Chip = styled.button`
   padding: 3px 10px;
   border: 1px solid;
   border-color: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 6px;
+  border-radius: 8px;
   background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.7rem;
@@ -368,7 +368,7 @@ const TagChip = styled.button`
   gap: 3px;
   padding: 3px 10px;
   border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 6px;
+  border-radius: 8px;
   background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.68rem;
@@ -400,7 +400,7 @@ const AllTagsButton = styled.button`
   gap: 4px;
   padding: 4px 10px;
   border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(59, 130, 246, 0.08);
   color: #3b82f6;
   font-size: 0.7rem;
@@ -517,7 +517,7 @@ const MenuItem = styled.button`
   width: 100%;
   padding: 8px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   font-size: 13px;
   text-align: left;
@@ -597,7 +597,7 @@ const TagsGrid = styled.div`
 
   &::-webkit-scrollbar-thumb {
     background: rgba(59, 130, 246, 0.15);
-    border-radius: 3px;
+    border-radius: 8px;
   }
 
   @media (max-width: 600px) {

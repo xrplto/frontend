@@ -106,7 +106,7 @@ const MetricBox = styled.div`
     height: 72px;
     flex: 0 0 auto;
     min-width: 100px;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 `;
 
@@ -208,7 +208,7 @@ const Skeleton = styled.div`
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
-  border-radius: 4px;
+  border-radius: 8px;
   height: ${(props) => props.height || '20px'};
   width: ${(props) => props.width || '100%'};
 
