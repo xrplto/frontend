@@ -1512,9 +1512,24 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           {/* Trader Info */}
           {account && (
-            <div style={{ minWidth: '160px' }}>
+            <div style={{ minWidth: '120px', maxWidth: '180px', overflow: 'hidden' }}>
               <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Trader</div>
-              <a href={`/profile/${account}`} style={{ fontSize: '11px', fontFamily: 'monospace', color: '#3b82f6', textDecoration: 'none' }}>{account.slice(0,6)}...{account.slice(-4)}</a>
+              <a
+                href={`/profile/${account}`}
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  color: '#3b82f6',
+                  textDecoration: 'none',
+                  display: 'block',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+                title={account}
+              >
+                {account.slice(0,6)}...{account.slice(-4)}
+              </a>
               {(profileData?.balance || profileData?.Balance || profileData?.account_data?.Balance) && (
                 <div style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                   {dropsToXrp(profileData?.balance || profileData?.Balance || profileData?.account_data?.Balance)} XRP
@@ -2012,7 +2027,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       return (
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
-            <Box style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}75px 70px 40px`, gap: '8px', alignItems: 'center' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`, gap: '8px', alignItems: 'center' }}>
               {/* Time */}
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                 {formatRelativeTime(trade.time, true)}
@@ -2070,7 +2085,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   borderRadius: '4px',
                   background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                   border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                  transition: 'all 0.15s'
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '95px'
                 }}
                 title={addressToShow}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#3b82f6'; }}
@@ -2273,7 +2292,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           {!isMobile && (
             <Box style={{
               display: 'grid',
-              gridTemplateColumns: '70px 50px 90px 1fr 1fr 75px 70px 40px',
+              gridTemplateColumns: '70px 50px 90px 1fr 1fr 95px 70px 40px',
               gap: '8px',
               alignItems: 'center',
               padding: '8px 0',

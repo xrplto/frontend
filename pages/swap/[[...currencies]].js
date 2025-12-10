@@ -1,5 +1,3 @@
-import axios from 'axios';
-import { performance } from 'perf_hooks';
 import { useState, useEffect, useContext } from 'react';
 
 // Context
@@ -47,67 +45,6 @@ function SwapPage({ data }) {
   const [revert, setRevert] = useState(false);
   const [pair, setPair] = useState(DEFAULT_PAIR);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const [bids, setBids] = useState([]);
-  const [asks, setAsks] = useState([]);
-
-  // Orderbook REST API polling
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchOrderbook() {
-      const curr1 = pair.curr1;
-      const curr2 = pair.curr2;
-
-      // Determine base/quote - XRP is typically the base
-      const isXrpBase = curr1.currency === 'XRP';
-      const base = isXrpBase ? curr1 : curr2;
-      const quote = isXrpBase ? curr2 : curr1;
-
-      try {
-        const params = new URLSearchParams({
-          base_currency: base.currency,
-          quote_currency: quote.currency,
-          limit: '60'
-        });
-        if (base.issuer) params.append('base_issuer', base.issuer);
-        if (quote.issuer) params.append('quote_issuer', quote.issuer);
-
-        const res = await axios.get(`https://api.xrpl.to/api/orderbook?${params}`, {
-          signal: controller.signal
-        });
-
-        if (res.data?.success) {
-          const parsedBids = (res.data.bids || []).map(o => ({
-            price: parseFloat(o.price),
-            amount: parseFloat(o.amount),
-            total: parseFloat(o.total),
-            account: o.account
-          })).filter(o => !isNaN(o.price) && o.price > 0);
-
-          const parsedAsks = (res.data.asks || []).map(o => ({
-            price: parseFloat(o.price),
-            amount: parseFloat(o.amount),
-            total: parseFloat(o.total),
-            account: o.account
-          })).filter(o => !isNaN(o.price) && o.price > 0);
-
-          setBids(isXrpBase ? parsedBids : parsedAsks);
-          setAsks(isXrpBase ? parsedAsks : parsedBids);
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('Orderbook fetch error:', err);
-        }
-      }
-    }
-
-    fetchOrderbook();
-    const timer = setInterval(fetchOrderbook, 4000);
-    return () => {
-      controller.abort();
-      clearInterval(timer);
-    };
-  }, [pair, revert]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden fixed top-0 left-0 right-0 bottom-0">
@@ -136,8 +73,6 @@ function SwapPage({ data }) {
           setPair={setPair}
           revert={revert}
           setRevert={setRevert}
-          bids={bids}
-          asks={asks}
         />
       </div>
 

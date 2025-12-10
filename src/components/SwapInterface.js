@@ -581,9 +581,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [bids, setBids] = useState(propsBids || []);
   const [asks, setAsks] = useState(propsAsks || []);
 
-  // Fetch orderbook via REST API
+  // Fetch orderbook via REST API - only when limit order or orderbook view is enabled
   useEffect(() => {
+    // Only fetch when user needs orderbook data
+    if (orderType !== 'limit' && !showOrderbook) return;
     if (!token1?.currency || !token2?.currency) return;
+
     const controller = new AbortController();
 
     async function fetchOrderbook() {
@@ -598,7 +601,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
         if (res.data?.success) {
-          // API returns pre-processed data with price, amount, total as strings
           const parseBids = (res.data.bids || []).map(b => ({
             ...b,
             price: parseFloat(b.price) || 0,
@@ -627,7 +629,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       controller.abort();
       clearInterval(timer);
     };
-  }, [token1, token2]);
+  }, [token1, token2, orderType, showOrderbook]);
 
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
@@ -640,9 +642,15 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [selectedCategory, setSelectedCategory] = useState('all');
   const searchInputRef = useRef(null);
 
-  // Categories will be populated from API
-  const [categories, setCategories] = useState([]);
-  const [apiTags, setApiTags] = useState([]);
+  // Hardcoded categories with their API endpoints
+  const categories = [
+    { value: 'all', label: 'All Tokens' },
+    { value: 'trending', label: 'Trending' },
+    { value: 'spotlight', label: 'Spotlight' },
+    { value: 'new', label: 'New' },
+    { value: 'gainers-24h', label: 'Gainers 24h' },
+    { value: 'most-viewed', label: 'Most Viewed' }
+  ];
 
   // URL parsing and token loading state
   const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
@@ -1931,48 +1939,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
-  // Fetch categories from API on component mount
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // Fetch tags from API
-        const tagsRes = await axios.get(`${BASE_URL}/tags`);
-        if (tagsRes.status === 200 && tagsRes.data) {
-          setApiTags(tagsRes.data);
-
-          // Build categories from API response
-          const dynamicCategories = [
-            { value: 'all', label: 'All Tokens' },
-            { value: 'trending', label: 'Trending' },
-            { value: 'spotlight', label: 'Spotlight' },
-            { value: 'new', label: 'New' },
-            { value: 'gainers-24h', label: 'Gainers 24h' },
-            { value: 'most-viewed', label: 'Most Viewed' }
-          ];
-
-          // Add tag-based categories from API
-          if (tagsRes.data && Array.isArray(tagsRes.data)) {
-            tagsRes.data.forEach((tag) => {
-              dynamicCategories.push({
-                value: tag,
-                label: tag
-              });
-            });
-          }
-
-          setCategories(dynamicCategories);
-        }
-      } catch (err) {
-        // Set basic categories as fallback
-        setCategories([
-          { value: 'all', label: 'All Tokens' },
-          { value: 'trending', label: 'Trending' }
-        ]);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   // Token Selector Functions
   useEffect(() => {
@@ -2089,62 +2055,27 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     if (selectedCategory && selectedCategory !== 'all') {
       setLoadingTokens(true);
       try {
-        let apiUrl = '';
+        // Map category to API endpoint
+        const categoryEndpoints = {
+          'trending': `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`,
+          'spotlight': `${BASE_URL}/tokens?start=0&limit=50&sortBy=assessmentScore&sortType=desc`,
+          'new': `${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc`,
+          'gainers-24h': `${BASE_URL}/tokens?start=0&limit=50&sortBy=pro24h&sortType=desc`,
+          'most-viewed': `${BASE_URL}/tokens?start=0&limit=50&sortBy=nginxScore&sortType=desc`
+        };
 
-        // Use specific endpoints for known categories - matching the dedicated pages
-        if (selectedCategory === 'trending') {
-          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`;
-        } else if (selectedCategory === 'spotlight') {
-          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=assessmentScore&sortType=desc`;
-        } else if (selectedCategory === 'new') {
-          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc`;
-        } else if (selectedCategory === 'gainers-24h') {
-          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=pro24h&sortType=desc`;
-        } else if (selectedCategory === 'most-viewed') {
-          apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=nginxScore&sortType=desc`;
-        } else {
-          // For tag-based categories, use tag parameter
-          apiUrl = `${BASE_URL}/tokens?tag=${encodeURIComponent(selectedCategory)}&start=0&limit=50`;
+        const apiUrl = categoryEndpoints[selectedCategory];
+        if (!apiUrl) {
+          setFilteredTokens(selectorTokens);
+          setLoadingTokens(false);
+          return;
         }
 
         const res = await axios.get(apiUrl);
         if (res.status === 200 && res.data?.tokens) {
-          const tokens = res.data.tokens || [];
-
-          // Check if we should exclude XRP for specific categories
-          const excludeXrpCategories = [
-            'trending',
-            'spotlight',
-            'new',
-            'gainers-24h',
-            'most-viewed'
-          ];
-
-          if (excludeXrpCategories.includes(selectedCategory)) {
-            // For these categories, don't add XRP and filter out any XRP entries
-            const nonXrpTokens = tokens.filter((t) => t.currency !== 'XRP');
-            setFilteredTokens(nonXrpTokens);
-          } else {
-            // For 'all' and tag-based categories, include XRP at the top
-            // Find XRP from the loaded tokens or use default
-            let xrpToken = selectorTokens.find(t => t.currency === 'XRP');
-            if (!xrpToken) {
-              xrpToken = {
-                md5: '84e5efeb89c4eae8f68188982dc290d8',
-                name: 'XRP',
-                user: 'XRP',
-                issuer: 'XRPL',
-                currency: 'XRP',
-                ext: 'png',
-                isOMCF: 'yes',
-                exch: 1
-              };
-            }
-
-            // Filter out any duplicate XRP entries
-            const nonXrpTokens = tokens.filter((t) => t.currency !== 'XRP');
-            setFilteredTokens([xrpToken, ...nonXrpTokens]);
-          }
+          // Filter out XRP for category views
+          const nonXrpTokens = (res.data.tokens || []).filter((t) => t.currency !== 'XRP');
+          setFilteredTokens(nonXrpTokens);
         } else {
           setFilteredTokens(selectorTokens);
         }

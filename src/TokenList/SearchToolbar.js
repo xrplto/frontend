@@ -541,50 +541,48 @@ const SearchBox = styled.div`
 `;
 
 const SearchInputWrapper = styled.div`
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#fff'};
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'};
+  }
+
+  &:focus-within {
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+  }
 `;
 
 const SearchIconWrapper = styled.div`
-  position: absolute;
-  left: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b82f6;
-  pointer-events: none;
-  opacity: 0.5;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  flex-shrink: 0;
 `;
 
 const SearchInput = styled.input`
-  width: 100%;
-  padding: 12px 12px 12px 40px;
+  flex: 1;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
   outline: none;
-  box-shadow: none;
-  -webkit-appearance: none;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+  font-size: 14px;
   color: ${props => props.isDark ? '#fff' : '#212B36'};
   font-family: inherit;
-  transition: background 0.2s ease;
 
   &:focus {
     outline: none;
-    box-shadow: none;
-    border: none;
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: none;
   }
 
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33, 43, 54, 0.4)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)'};
   }
 `;
 
@@ -676,9 +674,9 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
     <>
       {tags && tags.length > 0 && (
         <SearchBox isDark={darkMode}>
-          <SearchInputWrapper>
+          <SearchInputWrapper isDark={darkMode}>
             <SearchIconWrapper isDark={darkMode}>
-              <Search size={18} />
+              <Search size={16} />
             </SearchIconWrapper>
             <SearchInput
               type="search"

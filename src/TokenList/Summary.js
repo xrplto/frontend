@@ -240,8 +240,7 @@ const CircularProgress = styled.div`
 const ChartMetricBox = styled(MetricBox)`
   grid-column: span 1;
   overflow: visible;
-  height: auto;
-  min-height: 88px;
+  height: 88px;
 
   @media (max-width: 1400px) {
     grid-column: span 4;
@@ -564,8 +563,8 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         ref={containerRef}
         style={{
           width: '100%',
-          height: '50px',
-          marginTop: '-4px',
+          height: '42px',
+          marginTop: '-2px',
           position: 'relative'
         }}
         onMouseMove={handleMouseMove}
