@@ -335,7 +335,7 @@ const TokenSummary = memo(({ token }) => {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className={cn("text-[15px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-              {verified && <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase bg-green-500/20 text-green-500">✓ Verified</span>}
+              {verified && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓ Verified</span>}
               {id && <span className="px-1 py-0.5 rounded text-[9px] font-medium bg-primary/10 text-primary">#{id}</span>}
               <span className={cn("inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px]", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
                 <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />{origin || 'XRPL'}

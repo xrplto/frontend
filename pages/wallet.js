@@ -162,18 +162,18 @@ export default function WalletPage() {
 
       {!accountLogin ? (
         <div className={cn("min-h-[calc(100vh-64px)] flex items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
-          <div className={cn("text-center p-10 rounded-3xl max-w-md", isDark ? "bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10" : "bg-white border border-gray-200 shadow-sm")}>
-            <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6", isDark ? "bg-primary/10" : "bg-primary/5")}>
-              <Wallet size={36} className="text-primary" />
+          <div className={cn("text-center p-10 rounded-xl max-w-md", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+            <div className={cn("w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6", isDark ? "bg-blue-500/10" : "bg-blue-50")}>
+              <Wallet size={36} className="text-blue-500" />
             </div>
-            <h2 className={cn("text-2xl font-semibold mb-3", isDark ? "text-white" : "text-gray-900")}>Connect Wallet</h2>
-            <p className={cn("text-sm mb-8 leading-relaxed", isDark ? "text-white/50" : "text-gray-500")}>
+            <h2 className={cn("text-xl font-medium mb-3", isDark ? "text-white/90" : "text-gray-900")}>Connect Wallet</h2>
+            <p className={cn("text-[13px] mb-8 leading-relaxed", isDark ? "text-white/50" : "text-gray-500")}>
               Manage your tokens, NFTs, offers, and transaction history all in one place
             </p>
-            <button onClick={() => setOpenWalletModal(true)} className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors">
+            <button onClick={() => setOpenWalletModal(true)} className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200">
               Connect Wallet
             </button>
-            <p className={cn("text-xs mt-4", isDark ? "text-white/30" : "text-gray-400")}>
+            <p className={cn("text-[11px] mt-4", isDark ? "text-white/25" : "text-gray-400")}>
               Secure • Non-custodial • Encrypted locally
             </p>
           </div>
@@ -183,12 +183,12 @@ export default function WalletPage() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className={cn("text-xl font-medium", isDark ? "text-white" : "text-gray-900")}>Wallet</h1>
+            <h1 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Wallet</h1>
             <button
               onClick={() => handleCopy(address)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono",
-                copied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/5 text-white/60 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150",
+                copied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               )}
             >
               {address?.slice(0, 8)}...{address?.slice(-6)}
@@ -197,16 +197,16 @@ export default function WalletPage() {
           </div>
 
           {/* Tabs */}
-          <div className={cn("flex gap-1 p-1 rounded-xl mb-6 overflow-x-auto", isDark ? "bg-white/5" : "bg-gray-100")}>
+          <div className={cn("flex gap-1 p-1 rounded-xl mb-6 overflow-x-auto", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all",
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all duration-200",
                   activeTab === tab.id
-                    ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
-                    : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                    ? isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600"
+                    : isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/5" : "text-gray-500 hover:text-blue-600 hover:bg-blue-50/50"
                 )}
               >
                 <tab.icon size={14} />
@@ -219,10 +219,10 @@ export default function WalletPage() {
           {activeTab === 'overview' && (
             <div className="space-y-4">
               {/* Portfolio Header */}
-              <div className={cn("rounded-2xl p-6", isDark ? "bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/10" : "bg-gradient-to-br from-gray-50 to-white border border-gray-200")}>
+              <div className={cn("rounded-xl p-6", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}>
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                   <div>
-                    <p className={cn("text-xs uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Portfolio Value</p>
+                    <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2", isDark ? "text-blue-400" : "text-blue-500")}>Portfolio Value</p>
                     <p className={cn("text-5xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>$1,266.75</p>
                     <div className="flex items-center gap-3 mt-2">
                       <span className="text-emerald-500 text-sm font-medium">+$45.20 (3.7%)</span>
@@ -230,11 +230,11 @@ export default function WalletPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setShowPanel('send')} className={cn("flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all", showPanel === 'send' ? "bg-primary text-white" : "bg-primary text-white hover:bg-primary/90")}>
-                      <ArrowUpRight size={18} /> Send
+                    <button onClick={() => setShowPanel('send')} className={cn("flex items-center gap-2 px-5 py-3 rounded-lg text-[13px] font-medium transition-all duration-200", showPanel === 'send' ? "bg-blue-500 text-white" : "bg-blue-500 text-white hover:bg-blue-600")}>
+                      <ArrowUpRight size={16} /> Send
                     </button>
-                    <button onClick={() => setShowPanel('receive')} className={cn("flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all", showPanel === 'receive' ? "bg-primary text-white" : isDark ? "bg-white/10 text-white hover:bg-white/15" : "bg-gray-100 text-gray-700 hover:bg-gray-200")}>
-                      <ArrowDownLeft size={18} /> Receive
+                    <button onClick={() => setShowPanel('receive')} className={cn("flex items-center gap-2 px-5 py-3 rounded-lg text-[13px] font-medium transition-all duration-200", showPanel === 'receive' ? "bg-blue-500/10 text-blue-400" : isDark ? "bg-white/[0.04] text-white/70 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600")}>
+                      <ArrowDownLeft size={16} /> Receive
                     </button>
                   </div>
                 </div>
@@ -242,17 +242,17 @@ export default function WalletPage() {
 
               {/* Send/Receive Modal */}
               {showPanel && (
-                <div className={cn("rounded-2xl p-6", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                <div className={cn("rounded-xl p-6", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
                   {showPanel === 'send' ? (
                     <div className="max-w-md mx-auto">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Send Token</h3>
-                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                        <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Send Token</h3>
+                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
                       </div>
                       <div className="space-y-4">
                         <div className="relative">
-                          <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Token</label>
-                          <button type="button" onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)} className={cn("w-full px-4 py-3 rounded-xl text-sm text-left flex items-center justify-between", isDark ? "bg-white/5 text-white border border-white/10 hover:border-white/20" : "bg-gray-50 border border-gray-200 hover:border-gray-300")}>
+                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Token</label>
+                          <button type="button" onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)} className={cn("w-full px-4 py-3 rounded-lg text-[13px] text-left flex items-center justify-between transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 hover:border-blue-500/30" : "bg-gray-50 border border-blue-200/50 hover:border-blue-300")}>
                             <div className="flex items-center gap-3">
                               <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: MOCK_TOKENS.find(t => t.symbol === selectedToken)?.color || '#333' }}>
                                 {MOCK_TOKENS.find(t => t.symbol === selectedToken)?.icon || selectedToken[0]}
@@ -266,20 +266,20 @@ export default function WalletPage() {
                           {tokenDropdownOpen && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setTokenDropdownOpen(false)} />
-                              <div className={cn("absolute z-50 w-full mt-2 rounded-xl overflow-hidden", isDark ? "bg-[#0d0d0d] border border-white/15 shadow-2xl shadow-black/50" : "bg-white border border-gray-200 shadow-xl")}>
+                              <div className={cn("absolute z-50 w-full mt-2 rounded-xl overflow-hidden", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border border-blue-200 shadow-xl shadow-blue-200/50")}>
                                 <div className={cn("max-h-[240px] overflow-y-auto", isDark ? "scrollbar-thin scrollbar-thumb-white/10" : "")}>
                                   {MOCK_TOKENS.map((t) => (
-                                    <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-4 py-3 flex items-center gap-3 text-left transition-colors", selectedToken === t.symbol ? (isDark ? "bg-white/10" : "bg-primary/5") : (isDark ? "bg-[#0d0d0d]" : "bg-white"), isDark ? "hover:bg-white/[0.08]" : "hover:bg-gray-50")}>
+                                    <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150", selectedToken === t.symbol ? (isDark ? "bg-blue-500/10" : "bg-blue-50") : "", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: t.color }}>
                                         {t.icon || t.symbol[0]}
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{t.symbol}</p>
-                                        <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{t.name}</p>
+                                        <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{t.symbol}</p>
+                                        <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{t.name}</p>
                                       </div>
                                       <div className="text-right shrink-0">
-                                        <p className={cn("text-sm tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>{t.amount}</p>
-                                        <p className={cn("text-xs tabular-nums", isDark ? "text-white/40" : "text-gray-400")}>{t.value}</p>
+                                        <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{t.amount}</p>
+                                        <p className={cn("text-[10px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{t.value}</p>
                                       </div>
                                     </button>
                                   ))}
@@ -289,17 +289,17 @@ export default function WalletPage() {
                           )}
                         </div>
                         <div>
-                          <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Amount</label>
-                          <div className={cn("rounded-xl p-4", isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200")}>
+                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Amount</label>
+                          <div className={cn("rounded-lg p-4", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}>
                             <input type="text" inputMode="decimal" value={sendAmount} onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="0.00" className={cn("w-full text-3xl font-light bg-transparent outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")} />
-                            <p className={cn("text-xs mt-2", isDark ? "text-white/40" : "text-gray-400")}>≈ $0.00 USD</p>
+                            <p className={cn("text-[10px] mt-2", isDark ? "text-white/30" : "text-gray-400")}>≈ $0.00 USD</p>
                           </div>
                         </div>
                         <div>
-                          <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Recipient</label>
-                          <input type="text" value={sendTo} onChange={(e) => setSendTo(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Recipient</label>
+                          <input type="text" value={sendTo} onChange={(e) => setSendTo(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                         </div>
-                        <button className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2 mt-2">
+                        <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 mt-2 transition-colors duration-200">
                           <Send size={16} /> Send {selectedToken}
                         </button>
                       </div>
@@ -307,14 +307,14 @@ export default function WalletPage() {
                   ) : (
                     <div className="max-w-sm mx-auto text-center">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Receive</h3>
-                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                        <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Receive</h3>
+                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
                       </div>
-                      <div className="inline-block p-3 bg-white rounded-2xl mb-4">
+                      <div className="inline-block p-3 bg-white rounded-xl mb-4">
                         <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${address}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[180px] h-[180px]" />
                       </div>
-                      <p className={cn("font-mono text-xs break-all mb-4 px-4", isDark ? "text-white/60" : "text-gray-500")}>{address}</p>
-                      <button onClick={() => handleCopy(address)} className={cn("w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2", copied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white")}>
+                      <p className={cn("font-mono text-[10px] break-all mb-4 px-4", isDark ? "text-white/50" : "text-gray-500")}>{address}</p>
+                      <button onClick={() => handleCopy(address)} className={cn("w-full py-3 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 transition-colors duration-200", copied ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500 text-white hover:bg-blue-600")}>
                         {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy Address'}
                       </button>
                     </div>
@@ -325,35 +325,35 @@ export default function WalletPage() {
               {/* Main Content Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Token Holdings - Takes 2 columns */}
-                <div className={cn("lg:col-span-2 rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
-                  <div className="flex items-center justify-between p-4 border-b border-white/5">
+                <div className={cn("lg:col-span-2 rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                  <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
                     <div className="flex items-center gap-3">
-                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Top Assets</p>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length} total</span>
+                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Top Assets</p>
+                      <span className={cn("text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length} total</span>
                     </div>
-                    <button onClick={() => setActiveTab('tokens')} className="text-xs text-primary font-medium hover:underline">View All →</button>
+                    <button onClick={() => setActiveTab('tokens')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All →</button>
                   </div>
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-blue-500/5">
                     {MOCK_TOKENS.slice(0, 5).map((token) => (
-                      <div key={token.symbol} className={cn("flex items-center gap-4 p-4 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: token.color }}>
+                      <div key={token.symbol} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
                           {token.icon || token.symbol[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
-                          <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{token.name}</p>
+                          <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                          <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
-                          <p className={cn("text-xs tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                          <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{token.value}</p>
+                          <p className={cn("text-[10px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           {token.slug && (
-                            <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                            <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                               <ArrowRightLeft size={14} />
                             </Link>
                           )}
-                          <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                          <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                             <Send size={14} />
                           </button>
                         </div>
@@ -361,8 +361,8 @@ export default function WalletPage() {
                     ))}
                   </div>
                   {MOCK_TOKENS.length > 5 && (
-                    <div className={cn("p-3 text-center border-t", isDark ? "border-white/5" : "border-gray-100")}>
-                      <button onClick={() => setActiveTab('tokens')} className={cn("text-xs py-2 px-4 rounded-lg transition-colors", isDark ? "text-white/60 hover:bg-white/5 hover:text-white" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700")}>
+                    <div className={cn("p-3 text-center border-t", isDark ? "border-blue-500/10" : "border-blue-100")}>
+                      <button onClick={() => setActiveTab('tokens')} className={cn("text-[11px] py-2 px-4 rounded-lg transition-colors duration-150", isDark ? "text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "text-gray-500 hover:bg-blue-50 hover:text-blue-600")}>
                         +{MOCK_TOKENS.length - 5} more tokens
                       </button>
                     </div>
@@ -372,20 +372,20 @@ export default function WalletPage() {
                 {/* Right Sidebar */}
                 <div className="space-y-4">
                   {/* NFT Collections */}
-                  <div className={cn("rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
-                    <div className="flex items-center justify-between p-4 border-b border-white/5">
-                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>NFTs</p>
-                      <button onClick={() => setActiveTab('nfts')} className="text-xs text-primary font-medium">View All</button>
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
+                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</p>
+                      <button onClick={() => setActiveTab('nfts')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
                     </div>
                     <div className="p-3 grid grid-cols-2 gap-2">
                       {[...new Map(MOCK_NFTS.map(n => [n.collection, n])).values()].slice(0, 4).map((nft) => {
                         const count = MOCK_NFTS.filter(n => n.collection === nft.collection).length;
                         return (
-                          <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("rounded-xl overflow-hidden text-left", isDark ? "hover:ring-1 hover:ring-white/20" : "hover:ring-1 hover:ring-gray-300")}>
+                          <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("rounded-lg overflow-hidden text-left transition-all duration-150", isDark ? "hover:ring-1 hover:ring-blue-500/30" : "hover:ring-1 hover:ring-blue-300")}>
                             <img src={nft.image} alt={nft.collection} className="w-full aspect-square object-cover" />
                             <div className="p-2">
                               <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{nft.collection}</p>
-                              <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{count} items</p>
+                              <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{count} items</p>
                             </div>
                           </button>
                         );
@@ -394,50 +394,50 @@ export default function WalletPage() {
                   </div>
 
                   {/* Recent Activity */}
-                  <div className={cn("rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
-                    <div className="flex items-center justify-between p-4 border-b border-white/5">
-                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Activity</p>
-                      <button onClick={() => setActiveTab('trades')} className="text-xs text-primary font-medium">View All</button>
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
+                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Activity</p>
+                      <button onClick={() => setActiveTab('trades')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
                     </div>
                     <div className="p-2">
                       {MOCK_TRADES.slice(0, 3).map((trade) => (
-                        <div key={trade.id} className={cn("flex items-center gap-3 p-2 rounded-lg", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <div key={trade.id} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                           <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", trade.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
                             {trade.type === 'buy' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={cn("text-xs font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{trade.type === 'buy' ? 'Bought' : 'Sold'} {trade.amount}</p>
-                            <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{trade.time}</p>
+                            <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{trade.type === 'buy' ? 'Bought' : 'Sold'} {trade.amount}</p>
+                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.time}</p>
                           </div>
-                          <p className={cn("text-xs tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{trade.total}</p>
+                          <p className={cn("text-[12px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{trade.total}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Watchlist Preview */}
-                  <div className={cn("rounded-2xl", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
-                    <div className="flex items-center justify-between p-4 border-b border-white/5">
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
                       <div className="flex items-center gap-2">
-                        <Star size={14} className="text-primary" />
-                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Watchlist</p>
+                        <Star size={14} className="text-blue-400" />
+                        <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Watchlist</p>
                       </div>
-                      <Link href="/watchlist" className="text-xs text-primary font-medium">View All</Link>
+                      <Link href="/watchlist" className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</Link>
                     </div>
                     <div className="p-3">
                       {watchList?.length > 0 ? (
                         <div className="space-y-1">
-                          <p className={cn("text-xs", isDark ? "text-white/60" : "text-gray-500")}>
+                          <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
                             {watchList.length} token{watchList.length !== 1 ? 's' : ''} tracked
                           </p>
-                          <Link href="/watchlist" className={cn("block text-xs py-2 text-center rounded-lg transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                          <Link href="/watchlist" className={cn("block text-[13px] py-2 text-center rounded-lg transition-colors duration-150", isDark ? "bg-white/[0.04] text-white/60 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600")}>
                             View Watchlist
                           </Link>
                         </div>
                       ) : (
                         <div className="text-center py-2">
-                          <p className={cn("text-xs mb-2", isDark ? "text-white/40" : "text-gray-400")}>No tokens tracked yet</p>
-                          <Link href="/" className={cn("text-xs text-primary hover:underline")}>
+                          <p className={cn("text-[12px] mb-2", isDark ? "text-white/35" : "text-gray-400")}>No tokens tracked yet</p>
+                          <Link href="/" className={cn("text-[12px] transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>
                             Browse tokens
                           </Link>
                         </div>
@@ -466,17 +466,17 @@ export default function WalletPage() {
             return (
               <div className="space-y-4">
                 {/* Search & Filter Bar */}
-                <div className={cn("rounded-2xl p-4", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
+                <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
                   <div className="flex flex-col sm:flex-row gap-3">
                     {/* Search */}
                     <div className="flex-1 relative">
-                      <Search size={16} className={cn("absolute left-3 top-1/2 -translate-y-1/2", isDark ? "text-white/30" : "text-gray-400")} />
+                      <Search size={16} className={cn("absolute left-3 top-1/2 -translate-y-1/2", isDark ? "text-blue-400" : "text-blue-500")} />
                       <input
                         type="text"
                         value={tokenSearch}
                         onChange={(e) => setTokenSearch(e.target.value)}
                         placeholder="Search tokens..."
-                        className={cn("w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")}
+                        className={cn("w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")}
                       />
                     </div>
                     {/* Sort */}
@@ -484,7 +484,7 @@ export default function WalletPage() {
                       <select
                         value={tokenSort}
                         onChange={(e) => setTokenSort(e.target.value)}
-                        className={cn("px-3 py-2.5 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10" : "bg-gray-50 border border-gray-200")}
+                        className={cn("px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}
                       >
                         <option value="value">Sort by Value</option>
                         <option value="name">Sort by Name</option>
@@ -492,7 +492,7 @@ export default function WalletPage() {
                       </select>
                       <button
                         onClick={() => setHideZeroBalance(!hideZeroBalance)}
-                        className={cn("p-2.5 rounded-xl transition-colors", hideZeroBalance ? "bg-primary text-white" : isDark ? "bg-white/5 text-white/60 hover:bg-white/10" : "bg-gray-50 text-gray-500 hover:bg-gray-100")}
+                        className={cn("p-2.5 rounded-lg transition-colors duration-150", hideZeroBalance ? "bg-blue-500 text-white" : isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600")}
                         title={hideZeroBalance ? "Show zero balances" : "Hide zero balances"}
                       >
                         {hideZeroBalance ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -500,19 +500,19 @@ export default function WalletPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 mt-3">
-                    <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>
+                    <span className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-400")}>
                       {filteredTokens.length} of {MOCK_TOKENS.length} tokens
                     </span>
                     {tokenSearch && (
-                      <button onClick={() => setTokenSearch('')} className="text-xs text-primary hover:underline">Clear search</button>
+                      <button onClick={() => setTokenSearch('')} className={cn("text-[11px] transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>Clear search</button>
                     )}
                   </div>
                 </div>
 
                 {/* Token List */}
-                <div className={cn("rounded-2xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/5" : "bg-white border border-gray-200")}>
+                <div className={cn("rounded-xl overflow-hidden", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
                   {/* Table Header */}
-                  <div className={cn("grid grid-cols-12 gap-4 px-4 py-3 text-[10px] uppercase tracking-wider font-medium border-b", isDark ? "text-white/30 border-white/5 bg-white/[0.02]" : "text-gray-400 border-gray-100 bg-gray-50")}>
+                  <div className={cn("grid grid-cols-12 gap-4 px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-semibold border-b", isDark ? "text-blue-400 border-blue-500/10 bg-white/[0.02]" : "text-blue-500 border-blue-100 bg-gray-50")}>
                     <div className="col-span-4">Asset</div>
                     <div className="col-span-2 text-right">Balance</div>
                     <div className="col-span-2 text-right">Value</div>
@@ -523,31 +523,31 @@ export default function WalletPage() {
                   {/* Token Rows */}
                   <div className="max-h-[500px] overflow-y-auto">
                     {filteredTokens.length === 0 ? (
-                      <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>
-                        <p>No tokens found</p>
+                      <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                        <p className="text-[13px]">No tokens found</p>
                       </div>
                     ) : (
                       filteredTokens.map((token) => (
-                        <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-colors", isDark ? "border-white/5 hover:bg-white/[0.03]" : "border-gray-50 hover:bg-gray-50")}>
+                        <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-all duration-150", isDark ? "border-blue-500/5 hover:bg-white/[0.02]" : "border-blue-50 hover:bg-gray-50")}>
                           <div className="col-span-4 flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
                               {token.icon || token.symbol[0]}
                             </div>
                             <div className="min-w-0">
-                              <p className={cn("text-sm font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
-                              <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{token.name}</p>
+                              <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                              <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
                             </div>
                           </div>
-                          <div className={cn("col-span-2 text-right text-sm tabular-nums", isDark ? "text-white/80" : "text-gray-600")}>{token.amount}</div>
-                          <div className={cn("col-span-2 text-right text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{token.value}</div>
-                          <div className={cn("col-span-2 text-right text-sm tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</div>
+                          <div className={cn("col-span-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.amount}</div>
+                          <div className={cn("col-span-2 text-right text-[12px] font-medium tabular-nums", isDark ? "text-white/90" : "text-gray-900")}>{token.value}</div>
+                          <div className={cn("col-span-2 text-right text-[12px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</div>
                           <div className="col-span-2 flex items-center justify-end gap-1">
                             {token.slug && (
-                              <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors text-xs font-medium flex items-center gap-1", isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700")}>
+                              <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                                 <ArrowRightLeft size={14} />
                               </Link>
                             )}
-                            <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700")}>
+                            <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                               <Send size={14} />
                             </button>
                           </div>
@@ -564,23 +564,23 @@ export default function WalletPage() {
           {activeTab === 'offers' && (
             <div className="space-y-4">
               {/* Token Offers */}
-              <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
-                <div className="p-4 border-b border-white/5 flex items-center gap-2">
-                  <RotateCcw size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
-                  <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Token Offers</p>
-                  <span className={cn("ml-auto text-[10px] px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{MOCK_TOKEN_OFFERS.length}</span>
+              <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                <div className="p-4 border-b border-blue-500/10 flex items-center gap-2">
+                  <RotateCcw size={14} className={isDark ? "text-blue-400" : "text-blue-500"} />
+                  <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Token Offers</p>
+                  <span className={cn("ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{MOCK_TOKEN_OFFERS.length}</span>
                 </div>
-                <div className="divide-y divide-white/5">
+                <div className="divide-y divide-blue-500/5">
                   {MOCK_TOKEN_OFFERS.map((offer) => (
-                    <div key={offer.id} className="flex items-center gap-4 p-4">
-                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", offer.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                        {offer.type === 'buy' ? <ArrowDownLeft size={18} className="text-emerald-500" /> : <ArrowUpRight size={18} className="text-red-400" />}
+                    <div key={offer.id} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", offer.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                        {offer.type === 'buy' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
                       </div>
                       <div className="flex-1">
-                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{offer.from} → {offer.to}</p>
-                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>Rate: {offer.rate} • {offer.created}</p>
+                        <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{offer.from} → {offer.to}</p>
+                        <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>Rate: {offer.rate} • {offer.created}</p>
                       </div>
-                      <button className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100")}>
+                      <button className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors duration-150", isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100")}>
                         Cancel
                       </button>
                     </div>
@@ -589,26 +589,26 @@ export default function WalletPage() {
               </div>
 
               {/* NFT Offers */}
-              <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
-                <div className="p-4 border-b border-white/5 flex items-center gap-2">
-                  <Image size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
-                  <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>NFT Offers</p>
-                  <span className={cn("ml-auto text-[10px] px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{MOCK_NFT_OFFERS.length}</span>
+              <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                <div className="p-4 border-b border-blue-500/10 flex items-center gap-2">
+                  <Image size={14} className={isDark ? "text-blue-400" : "text-blue-500"} />
+                  <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>NFT Offers</p>
+                  <span className={cn("ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{MOCK_NFT_OFFERS.length}</span>
                 </div>
-                <div className="divide-y divide-white/5">
+                <div className="divide-y divide-blue-500/5">
                   {MOCK_NFT_OFFERS.map((offer) => (
-                    <div key={offer.id} className="flex items-center gap-4 p-4">
-                      <img src={offer.image} alt={offer.nft} className="w-12 h-12 rounded-lg object-cover" />
+                    <div key={offer.id} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                      <img src={offer.image} alt={offer.nft} className="w-10 h-10 rounded-lg object-cover" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{offer.nft}</p>
-                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded", offer.type === 'sell' ? "bg-red-500/10 text-red-400" : "bg-emerald-500/10 text-emerald-500")}>
+                          <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{offer.nft}</p>
+                          <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide", offer.type === 'sell' ? "bg-red-500/10 text-red-400" : "bg-emerald-500/10 text-emerald-500")}>
                             {offer.type === 'sell' ? 'Selling' : 'Buying'}
                           </span>
                         </div>
-                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{offer.collection} • {offer.price} • {offer.created}</p>
+                        <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{offer.collection} • {offer.price} • {offer.created}</p>
                       </div>
-                      <button className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100")}>
+                      <button className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors duration-150", isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100")}>
                         Cancel
                       </button>
                     </div>
@@ -620,25 +620,25 @@ export default function WalletPage() {
 
           {/* Trades Tab */}
           {activeTab === 'trades' && (
-            <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
-              <div className="p-4 border-b border-white/5">
-                <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Trade History</p>
+            <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+              <div className="p-4 border-b border-blue-500/10">
+                <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Trade History</p>
               </div>
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-blue-500/5">
                 {MOCK_TRADES.map((trade) => (
-                  <div key={trade.id} className="flex items-center gap-4 p-4">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", trade.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                      {trade.type === 'buy' ? <ArrowDownLeft size={18} className="text-emerald-500" /> : <ArrowUpRight size={18} className="text-red-400" />}
+                  <div key={trade.id} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", trade.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                      {trade.type === 'buy' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
                     </div>
                     <div className="flex-1">
-                      <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>
                         <span className={trade.type === 'buy' ? "text-emerald-500" : "text-red-400"}>{trade.type.toUpperCase()}</span> {trade.pair}
                       </p>
-                      <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{trade.amount} @ {trade.price}</p>
+                      <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.amount} @ {trade.price}</p>
                     </div>
                     <div className="text-right">
-                      <p className={cn("text-sm font-medium", isDark ? "text-white/80" : "text-gray-700")}>{trade.total}</p>
-                      <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{trade.time}</p>
+                      <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{trade.total}</p>
+                      <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.time}</p>
                     </div>
                   </div>
                 ))}
@@ -652,26 +652,26 @@ export default function WalletPage() {
               {/* Add Withdrawal Modal */}
               {showAddWithdrawal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAddWithdrawal(false)}>
-                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                  <div className={cn("w-full max-w-md rounded-xl p-6", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20" : "bg-white/98 backdrop-blur-xl border border-blue-200")} onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Add Withdrawal Address</h3>
-                      <button onClick={() => setShowAddWithdrawal(false)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}><X size={18} /></button>
+                      <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Add Withdrawal Address</h3>
+                      <button onClick={() => setShowAddWithdrawal(false)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}><X size={18} /></button>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Name</label>
-                        <input type="text" value={newWithdrawal.name} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, name: e.target.value }))} placeholder="e.g. Binance, Coinbase" className={cn("w-full px-4 py-3 rounded-xl text-sm outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                        <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Name</label>
+                        <input type="text" value={newWithdrawal.name} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, name: e.target.value }))} placeholder="e.g. Binance, Coinbase" className={cn("w-full px-4 py-3 rounded-lg text-[13px] outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                       </div>
                       <div>
-                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>XRPL Address</label>
-                        <input type="text" value={newWithdrawal.address} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, address: e.target.value }))} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                        <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>XRPL Address</label>
+                        <input type="text" value={newWithdrawal.address} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, address: e.target.value }))} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                       </div>
                       <div>
-                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Destination Tag (optional)</label>
-                        <input type="text" value={newWithdrawal.tag} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, tag: e.target.value.replace(/\D/g, '') }))} placeholder="e.g. 12345678" className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                        <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Destination Tag (optional)</label>
+                        <input type="text" value={newWithdrawal.tag} onChange={(e) => setNewWithdrawal(prev => ({ ...prev, tag: e.target.value.replace(/\D/g, '') }))} placeholder="e.g. 12345678" className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                       </div>
-                      {withdrawalError && <p className="text-xs text-red-400">{withdrawalError}</p>}
-                      <button onClick={handleAddWithdrawal} disabled={withdrawalLoading} className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2">
+                      {withdrawalError && <p className="text-[11px] text-red-400">{withdrawalError}</p>}
+                      <button onClick={handleAddWithdrawal} disabled={withdrawalLoading} className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors duration-200">
                         {withdrawalLoading ? 'Saving...' : <><Plus size={16} /> Save Address</>}
                       </button>
                     </div>
@@ -679,40 +679,40 @@ export default function WalletPage() {
                 </div>
               )}
 
-              <div className={cn("rounded-2xl", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
-                <div className="p-4 border-b border-white/5 flex items-center justify-between">
+              <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                <div className="p-4 border-b border-blue-500/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Saved Withdrawal Addresses</p>
-                    <span className={cn("text-[10px] px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{withdrawals.length}</span>
+                    <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Saved Withdrawal Addresses</p>
+                    <span className={cn("text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{withdrawals.length}</span>
                   </div>
-                  <button onClick={() => setShowAddWithdrawal(true)} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline"><Plus size={12} /> Add New</button>
+                  <button onClick={() => setShowAddWithdrawal(true)} className={cn("text-[11px] font-medium uppercase tracking-wide flex items-center gap-1 transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}><Plus size={12} /> Add New</button>
                 </div>
                 {withdrawals.length === 0 ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>
+                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
                     <Building2 size={32} className="mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">No saved addresses yet</p>
-                    <p className="text-xs mt-1">Add exchange or wallet addresses for quick withdrawals</p>
+                    <p className="text-[13px]">No saved addresses yet</p>
+                    <p className="text-[11px] mt-1">Add exchange or wallet addresses for quick withdrawals</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-blue-500/5">
                     {withdrawals.map((wallet) => (
-                      <div key={wallet.id} className={cn("flex items-center gap-4 p-4 group", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-white/5" : "bg-gray-100")}>
-                          <Building2 size={18} className={isDark ? "text-white/60" : "text-gray-500"} />
+                      <div key={wallet.id} className={cn("flex items-center gap-3 px-3 py-2.5 group transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-blue-500/10" : "bg-blue-50")}>
+                          <Building2 size={16} className={isDark ? "text-blue-400" : "text-blue-500"} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{wallet.name}</p>
-                          <p className={cn("text-xs font-mono truncate", isDark ? "text-white/40" : "text-gray-400")}>{wallet.address}</p>
-                          {wallet.tag && <p className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>Tag: {wallet.tag}</p>}
+                          <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{wallet.name}</p>
+                          <p className={cn("text-[10px] font-mono truncate", isDark ? "text-white/35" : "text-gray-400")}>{wallet.address}</p>
+                          {wallet.tag && <p className={cn("text-[10px]", isDark ? "text-white/25" : "text-gray-400")}>Tag: {wallet.tag}</p>}
                         </div>
                         <div className="flex items-center gap-1">
-                          <button onClick={() => handleCopy(wallet.address)} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                          <button onClick={() => handleCopy(wallet.address)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                             <Copy size={14} />
                           </button>
-                          <button onClick={() => { setSelectedToken('XRP'); setSendTo(wallet.address); setSendTag(wallet.tag || ''); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors", isDark ? "hover:bg-white/10 text-white/40 hover:text-white" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}>
+                          <button onClick={() => { setSelectedToken('XRP'); setSendTo(wallet.address); setSendTag(wallet.tag || ''); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                             <Send size={14} />
                           </button>
-                          <button onClick={() => handleDeleteWithdrawal(wallet.id)} className={cn("p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100", isDark ? "hover:bg-red-500/10 text-white/40 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500")}>
+                          <button onClick={() => handleDeleteWithdrawal(wallet.id)} className={cn("p-2 rounded-lg transition-colors duration-150 opacity-0 group-hover:opacity-100", isDark ? "hover:bg-red-500/10 text-white/40 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500")}>
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -730,27 +730,27 @@ export default function WalletPage() {
               {/* NFT Transfer Modal */}
               {nftToTransfer && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setNftToTransfer(null)}>
-                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                  <div className={cn("w-full max-w-md rounded-xl p-6", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20" : "bg-white/98 backdrop-blur-xl border border-blue-200")} onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Transfer NFT</h3>
-                      <button onClick={() => setNftToTransfer(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                      <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Transfer NFT</h3>
+                      <button onClick={() => setNftToTransfer(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
                     </div>
-                    <div className={cn("flex items-center gap-4 p-3 rounded-xl mb-4", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <img src={nftToTransfer.image} alt={nftToTransfer.name} className="w-16 h-16 rounded-lg object-cover" />
+                    <div className={cn("flex items-center gap-4 p-3 rounded-lg mb-4", isDark ? "bg-white/[0.04] border border-blue-500/10" : "bg-gray-50 border border-blue-100")}>
+                      <img src={nftToTransfer.image} alt={nftToTransfer.name} className="w-14 h-14 rounded-lg object-cover" />
                       <div>
-                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{nftToTransfer.name}</p>
-                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{nftToTransfer.collection}</p>
+                        <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{nftToTransfer.name}</p>
+                        <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{nftToTransfer.collection}</p>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Recipient Address</label>
-                        <input type="text" value={nftRecipient} onChange={(e) => setNftRecipient(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-xl text-sm font-mono outline-none", isDark ? "bg-white/5 text-white border border-white/10 placeholder:text-white/30 focus:border-primary" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-primary")} />
+                        <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Recipient Address</label>
+                        <input type="text" value={nftRecipient} onChange={(e) => setNftRecipient(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                       </div>
-                      <div className={cn("p-3 rounded-xl text-xs", isDark ? "bg-yellow-500/10 text-yellow-400" : "bg-yellow-50 text-yellow-700")}>
-                        ⚠️ This will transfer ownership. This action cannot be undone.
+                      <div className={cn("p-3 rounded-lg text-[11px]", isDark ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" : "bg-yellow-50 text-yellow-700 border border-yellow-200")}>
+                        This will transfer ownership. This action cannot be undone.
                       </div>
-                      <button className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2">
+                      <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 transition-colors duration-200">
                         <Send size={16} /> Transfer NFT
                       </button>
                     </div>
@@ -761,39 +761,39 @@ export default function WalletPage() {
               {/* NFT Sell Modal */}
               {nftToSell && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setNftToSell(null)}>
-                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#111] border border-white/10" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
+                  <div className={cn("w-full max-w-md rounded-xl p-6", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20" : "bg-white/98 backdrop-blur-xl border border-blue-200")} onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>List NFT for Sale</h3>
-                      <button onClick={() => setNftToSell(null)} className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>✕</button>
+                      <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>List NFT for Sale</h3>
+                      <button onClick={() => setNftToSell(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
                     </div>
-                    <div className={cn("flex items-center gap-4 p-3 rounded-xl mb-4", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <img src={nftToSell.image} alt={nftToSell.name} className="w-16 h-16 rounded-lg object-cover" />
+                    <div className={cn("flex items-center gap-4 p-3 rounded-lg mb-4", isDark ? "bg-white/[0.04] border border-blue-500/10" : "bg-gray-50 border border-blue-100")}>
+                      <img src={nftToSell.image} alt={nftToSell.name} className="w-14 h-14 rounded-lg object-cover" />
                       <div className="flex-1">
-                        <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{nftToSell.name}</p>
-                        <p className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>{nftToSell.collection}</p>
+                        <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{nftToSell.name}</p>
+                        <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{nftToSell.collection}</p>
                       </div>
                       <div className="text-right">
-                        <p className={cn("text-[10px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>Floor</p>
-                        <p className={cn("text-sm font-medium", isDark ? "text-white/60" : "text-gray-500")}>{nftToSell.floor}</p>
+                        <p className={cn("text-[9px] uppercase font-semibold tracking-wide", isDark ? "text-white/25" : "text-gray-400")}>Floor</p>
+                        <p className={cn("text-[12px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>{nftToSell.floor}</p>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className={cn("text-xs uppercase tracking-wider mb-2 block", isDark ? "text-white/40" : "text-gray-400")}>Sale Price</label>
-                        <div className={cn("flex items-center rounded-xl overflow-hidden", isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200")}>
+                        <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Sale Price</label>
+                        <div className={cn("flex items-center rounded-lg overflow-hidden", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}>
                           <input type="text" inputMode="decimal" value={nftSellPrice} onChange={(e) => setNftSellPrice(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="0.00" className={cn("flex-1 px-4 py-3 text-lg font-light bg-transparent outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")} />
-                          <span className={cn("px-4 py-3 text-sm font-medium", isDark ? "text-white/60 bg-white/5" : "text-gray-500 bg-gray-100")}>XRP</span>
+                          <span className={cn("px-4 py-3 text-[13px] font-medium", isDark ? "text-white/50 bg-white/[0.04]" : "text-gray-500 bg-gray-100")}>XRP</span>
                         </div>
                       </div>
-                      <div className={cn("flex items-center justify-between p-3 rounded-xl text-xs", isDark ? "bg-white/5" : "bg-gray-50")}>
-                        <span className={isDark ? "text-white/40" : "text-gray-400"}>Marketplace fee (2.5%)</span>
-                        <span className={isDark ? "text-white/60" : "text-gray-500"}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.025).toFixed(2) : '0.00'} XRP</span>
+                      <div className={cn("flex items-center justify-between p-3 rounded-lg text-[11px]", isDark ? "bg-white/[0.04] border border-blue-500/10" : "bg-gray-50 border border-blue-100")}>
+                        <span className={isDark ? "text-white/35" : "text-gray-400"}>Marketplace fee (2.5%)</span>
+                        <span className={isDark ? "text-white/50" : "text-gray-500"}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.025).toFixed(2) : '0.00'} XRP</span>
                       </div>
-                      <div className={cn("flex items-center justify-between p-3 rounded-xl", isDark ? "bg-white/5" : "bg-gray-50")}>
-                        <span className={cn("text-sm", isDark ? "text-white/60" : "text-gray-500")}>You receive</span>
-                        <span className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.975).toFixed(2) : '0.00'} XRP</span>
+                      <div className={cn("flex items-center justify-between p-3 rounded-lg", isDark ? "bg-white/[0.04] border border-blue-500/10" : "bg-gray-50 border border-blue-100")}>
+                        <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>You receive</span>
+                        <span className={cn("text-lg font-medium", isDark ? "text-white/90" : "text-gray-900")}>{nftSellPrice ? (parseFloat(nftSellPrice) * 0.975).toFixed(2) : '0.00'} XRP</span>
                       </div>
-                      <button className="w-full py-4 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2">
+                      <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 transition-colors duration-200">
                         <ArrowUpRight size={16} /> List for Sale
                       </button>
                     </div>
@@ -803,33 +803,33 @@ export default function WalletPage() {
 
               {selectedCollection && (
                 <div className="flex items-center gap-2 mb-4">
-                  <button onClick={() => setSelectedCollection(null)} className={cn("text-xs", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}>All NFTs</button>
+                  <button onClick={() => setSelectedCollection(null)} className={cn("text-[11px] transition-colors", isDark ? "text-white/35 hover:text-blue-400" : "text-gray-400 hover:text-blue-600")}>All NFTs</button>
                   <span className={isDark ? "text-white/20" : "text-gray-300"}>/</span>
-                  <span className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{selectedCollection}</span>
-                  <button onClick={() => setSelectedCollection(null)} className={cn("ml-auto text-xs px-2 py-1 rounded", isDark ? "bg-white/5 text-white/60 hover:bg-white/10" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}>Clear</button>
+                  <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{selectedCollection}</span>
+                  <button onClick={() => setSelectedCollection(null)} className={cn("ml-auto text-[11px] px-2 py-1 rounded-lg transition-colors duration-150", isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600")}>Clear</button>
                 </div>
               )}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {MOCK_NFTS.filter(nft => !selectedCollection || nft.collection === selectedCollection).map((nft) => (
-                  <div key={nft.id} className={cn("rounded-2xl overflow-hidden group", isDark ? "bg-white/[0.03] border border-white/5" : "bg-white border border-gray-200")}>
+                  <div key={nft.id} className={cn("rounded-xl overflow-hidden group", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
                     <div className="relative">
                       <img src={nft.image} alt={nft.name} className="w-full aspect-square object-cover" />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Link href={`/nft/${nft.nftId}`} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-xs font-medium flex items-center gap-1">
+                        <Link href={`/nft/${nft.nftId}`} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
                           <ExternalLink size={12} /> View
                         </Link>
-                        <button onClick={() => setNftToTransfer(nft)} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-xs font-medium flex items-center gap-1">
+                        <button onClick={() => setNftToTransfer(nft)} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
                           <Send size={12} /> Send
                         </button>
-                        <button onClick={() => setNftToSell(nft)} className="p-2 rounded-lg bg-primary text-white hover:bg-primary/80 text-xs font-medium flex items-center gap-1">
+                        <button onClick={() => setNftToSell(nft)} className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[11px] font-medium flex items-center gap-1 transition-colors">
                           <ArrowUpRight size={12} /> Sell
                         </button>
                       </div>
                     </div>
                     <div className="p-3">
-                      <p className={cn("text-sm font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{nft.name}</p>
-                      <Link href={`/collection/${nft.collectionSlug}`} className={cn("text-xs truncate block hover:text-primary", isDark ? "text-white/40" : "text-gray-400")}>{nft.collection}</Link>
-                      <p className={cn("text-xs mt-2", isDark ? "text-white/60" : "text-gray-500")}>Floor: {nft.floor}</p>
+                      <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{nft.name}</p>
+                      <Link href={`/collection/${nft.collectionSlug}`} className={cn("text-[10px] truncate block transition-colors", isDark ? "text-white/35 hover:text-blue-400" : "text-gray-400 hover:text-blue-600")}>{nft.collection}</Link>
+                      <p className={cn("text-[10px] mt-2", isDark ? "text-white/50" : "text-gray-500")}>Floor: {nft.floor}</p>
                     </div>
                   </div>
                 ))}

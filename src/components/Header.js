@@ -619,7 +619,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <header
       className={cn(
         'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark ? 'bg-black border-b border-blue-500/20' : 'bg-white border-b border-blue-200/50',
+        isDark ? 'bg-black border-b border-white/10' : 'bg-white border-b border-gray-200',
         !openDrawer && !isDark && 'bg-white/95 backdrop-blur-md'
       )}
     >

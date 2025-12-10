@@ -2216,7 +2216,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           Token
         </span>
         {(token.kyc || token.isOMCF === 'yes') && (
-          <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">
+          <span className={cn("flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded", darkMode ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>
             ✓ Verified
           </span>
         )}

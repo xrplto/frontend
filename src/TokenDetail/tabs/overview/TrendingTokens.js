@@ -524,13 +524,13 @@ const TrendingTokens = () => {
                         <span
                           style={{
                             padding: '1px 4px',
-                            background: 'rgba(34,197,94,0.2)',
+                            background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
                             borderRadius: '4px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 8,
-                            color: '#22c55e',
+                            color: darkMode ? '#60a5fa' : '#2563eb',
                             fontWeight: 600,
                             flexShrink: 0
                           }}
