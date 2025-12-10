@@ -326,7 +326,7 @@ const MobileCell = styled.div`
 const CollectionImage = styled.div`
   width: ${(props) => (props.isMobile ? '28px' : '36px')};
   height: ${(props) => (props.isMobile ? '28px' : '36px')};
-  border-radius: 50%;
+  border-radius: 4px;
   overflow: hidden;
   flex-shrink: 0;
   background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
@@ -737,7 +737,7 @@ const OptimizedImage = memo(
     }, []);
 
     return (
-      <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
+      <div style={{ width: size, height: size, borderRadius: '4px', overflow: 'hidden' }}>
         <img
           src={imgSrc}
           alt={alt}

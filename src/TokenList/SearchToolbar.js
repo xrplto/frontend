@@ -451,11 +451,13 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#fff'};
-  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
+  background: ${props => props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)'};
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)'};
+  box-shadow: ${props => props.isDark ? '0 -25px 50px -12px rgba(59,130,246,0.1)' : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -536,7 +538,6 @@ const MenuItem = styled.button`
 
 const SearchBox = styled.div`
   padding: 12px 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)'};
 `;
 
 const SearchInputWrapper = styled.div`
@@ -559,22 +560,31 @@ const SearchIconWrapper = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 12px 12px 12px 40px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
+  border: none;
   border-radius: 8px;
   font-size: 15px;
   outline: none;
-  background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)'};
+  box-shadow: none;
+  -webkit-appearance: none;
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
   color: ${props => props.isDark ? '#fff' : '#212B36'};
   font-family: inherit;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: background 0.2s ease;
 
   &:focus {
-    border-color: ${props => props.isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.5)'};
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.05)'};
+    outline: none;
+    box-shadow: none;
+    border: none;
+    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(33, 43, 54, 0.35)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33, 43, 54, 0.4)'};
   }
 `;
 
@@ -607,39 +617,33 @@ const TagsGrid = styled.div`
 `;
 
 const TagButton = styled.button`
-  min-width: 80px;
-  max-width: 200px;
-  height: 40px;
-  padding: 0 14px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
+  background: transparent;
   color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
-  font-size: 13px;
+  font-size: 0.75rem;
   font-weight: 400;
   cursor: pointer;
   font-family: inherit;
-  text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  height: 28px;
+  flex-shrink: 0;
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
     color: #3b82f6;
   }
 
-  &:active {
-    transform: scale(0.98);
-  }
-
   @media (max-width: 600px) {
-    height: 42px;
-    padding: 0 16px;
-    font-size: 14px;
-    min-width: 90px;
+    height: 32px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
   }
 `;
 
@@ -1248,8 +1252,12 @@ const SearchToolbar = memo(function SearchToolbar({
                 style={{
                   flex: 1,
                   height: '14px',
-                  backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                  backgroundSize: '8px 5px'
+                  backgroundImage: darkMode
+                    ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                  backgroundSize: '8px 5px',
+                  WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                 }}
               />
             </div>
