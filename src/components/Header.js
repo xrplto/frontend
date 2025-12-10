@@ -850,39 +850,55 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <div className={cn(
                 "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[800px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
                 isDark
-                  ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10"
-                  : "bg-blue-50/95 backdrop-blur-xl border-primary/20 shadow-xl shadow-primary/10"
+                  ? "bg-[#070b12]/98 backdrop-blur-xl border-white/[0.06] shadow-2xl shadow-black/50"
+                  : "bg-white/98 backdrop-blur-xl border-gray-200 shadow-xl shadow-gray-200/50"
               )}>
                 {!searchQuery && recentSearches.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Recent Searches</span>
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Recent Searches</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
-                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
+                          backgroundImage: isDark
+                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                          backgroundSize: '8px 5px',
+                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                         }}
                       />
-                      <button onClick={clearRecentSearches} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors">
+                      <button onClick={clearRecentSearches} className={cn("flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-teal-400/80 hover:text-teal-300" : "text-primary hover:text-blue-400")}>
                         <Trash2 size={12} />
                         Clear
                       </button>
                     </div>
                     {recentSearches.map((item, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                        <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-9 h-9 object-cover", item.type === 'token' ? "rounded-full" : "rounded-lg")} alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150 group", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-8 h-8 object-cover flex-shrink-0", item.type === 'token' ? "rounded-full" : "rounded-md")} alt="" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{item.user || item.name}</span>
-                            <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
-                            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({item.name || item.type})</span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{item.user || item.name}</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/25" : "text-gray-400")}>•</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-500")}>({item.name || item.type})</span>
                           </div>
-                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{item.issuer || item.account || ''}</p>
+                          <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{item.issuer || item.account || ''}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{item.type === 'token' ? 'Token' : 'NFT'}</span>
-                          {(item.verified === true || item.verified === 'yes') && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
+                        <div className="flex items-center gap-3">
+                          <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{item.type === 'token' ? 'Token' : 'NFT'}</span>
+                          {(item.verified === true || item.verified === 'yes') && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          {item.holders && (
+                            <div className="text-right min-w-[50px]">
+                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{item.holders?.toLocaleString()}</span>
+                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                            </div>
+                          )}
+                          {item.items && (
+                            <div className="text-right min-w-[50px]">
+                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{item.items?.toLocaleString()}</span>
+                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -891,70 +907,76 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {!searchQuery && (suggestedTokens.length > 0 || suggestedCollections.length > 0) && (
                   <>
                     {suggestedTokens.length > 0 && (
-                      <div className="p-2">
-                        <div className="flex items-center gap-3 px-2 py-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                      <div className="px-3 py-2">
+                        <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Tokens</span>
                           <div
                             className="flex-1 h-[14px]"
                             style={{
-                              backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                              backgroundSize: '8px 5px'
+                              backgroundImage: isDark
+                                ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                                : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                              backgroundSize: '8px 5px',
+                              WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                              maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                             }}
                           />
                         </div>
                         {suggestedTokens.map((token, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
+                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="" />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
-                                <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
-                                <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
+                              <div className="flex items-center gap-2">
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                                <span className={cn("text-[11px]", isDark ? "text-white/25" : "text-gray-400")}>•</span>
+                                <span className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-500")}>({token.name})</span>
                               </div>
-                              <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                              <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{token.issuer}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>Token</span>
-                              {token.verified && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
-                              <div className="text-right">
-                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
-                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
-                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
+                              {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                              <div className="text-right min-w-[50px]">
+                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
+                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
                     {suggestedCollections.length > 0 && (
-                      <div className="p-2">
-                        {suggestedTokens.length > 0 && (
-                          <div className="flex items-center gap-3 px-2 py-2">
-                            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
-                            <div
-                              className="flex-1 h-[14px]"
-                              style={{
-                                backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                                backgroundSize: '8px 5px'
-                              }}
-                            />
-                          </div>
-                        )}
+                      <div className="px-3 py-2">
+                        <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFTs</span>
+                          <div
+                            className="flex-1 h-[14px]"
+                            style={{
+                              backgroundImage: isDark
+                                ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                                : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                              backgroundSize: '8px 5px',
+                              WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                              maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                            }}
+                          />
+                        </div>
                         {suggestedCollections.map((col, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
+                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-8 h-8 rounded-md object-cover flex-shrink-0" alt="" />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                              <div className="flex items-center gap-2">
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</span>
                               </div>
-                              <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                              <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{col.account}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>NFT</span>
-                              {col.verified === 'yes' && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
-                              <div className="text-right">
-                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
-                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
-                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
+                              {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                              <div className="text-right min-w-[50px]">
+                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
+                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -963,144 +985,152 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   </>
                 )}
                 {searchQuery && searchResults.txHash && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Transaction</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Transaction</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
-                    <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-blue-500/20" : "bg-blue-100")}>
-                        <ArrowLeftRight size={18} className="text-blue-500" />
+                    <div onClick={() => handleSearchSelect(searchResults.txHash, 'tx')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50")}>
+                        <ArrowLeftRight size={16} className={isDark ? "text-blue-400" : "text-blue-500"} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Transaction</span>
-                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.txHash}</p>
+                        <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>View Transaction</span>
+                        <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{searchResults.txHash}</p>
                       </div>
-                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>TX</span>
+                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>TX</span>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.nft && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFT</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFT</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
-                    <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                    <div onClick={() => handleSearchSelect(searchResults.nft, 'nft')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                       {getNftImage(searchResults.nft) ? (
-                        <img src={getNftImage(searchResults.nft)} alt="" className="w-9 h-9 rounded-lg object-cover" />
+                        <img src={getNftImage(searchResults.nft)} alt="" className="w-8 h-8 rounded-md object-cover flex-shrink-0" />
                       ) : (
-                        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", isDark ? "bg-pink-500/20" : "bg-pink-100")}>
-                          <Sparkles size={18} className="text-pink-500" />
+                        <div className={cn("w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0", isDark ? "bg-pink-500/10 border border-pink-500/20" : "bg-pink-50")}>
+                          <Sparkles size={16} className={isDark ? "text-pink-400" : "text-pink-500"} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
-                        <p className={cn("text-[11px] truncate mt-0.5", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.nft.collection || searchResults.nft._id}</p>
+                        <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
+                        <p className={cn("text-[10px] truncate mt-0.5", isDark ? "text-white/35" : "text-gray-500")}>{searchResults.nft.collection || searchResults.nft._id}</p>
                       </div>
-                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-pink-500/20 text-pink-400" : "bg-pink-100 text-pink-600")}>NFT</span>
+                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-pink-500/10 text-pink-400 border border-pink-500/20" : "bg-pink-50 text-pink-600")}>NFT</span>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.address && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Account</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Account</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
-                    <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-purple-500/20" : "bg-purple-100")}>
-                        <Wallet size={18} className="text-purple-500" />
+                    <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-purple-500/10 border border-purple-500/20" : "bg-purple-50")}>
+                        <Wallet size={16} className={isDark ? "text-purple-400" : "text-purple-500"} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Profile</span>
-                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address}</p>
+                        <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>View Profile</span>
+                        <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{searchResults.address}</p>
                       </div>
-                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600")}>Account</span>
+                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600")}>Account</span>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.ledger && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Ledger</span>
-                      <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Ledger</span>
+                      <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
-                    <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                      <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-cyan-500/20" : "bg-cyan-100")}>
-                        <Layers size={18} className="text-cyan-500" />
+                    <div onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-teal-500/10 border border-teal-500/20" : "bg-cyan-50")}>
+                        <Layers size={16} className={isDark ? "text-teal-400" : "text-cyan-500"} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>View Ledger</span>
-                        <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>#{searchResults.ledger}</p>
+                        <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>View Ledger</span>
+                        <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>#{searchResults.ledger}</p>
                       </div>
-                      <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-cyan-500/20 text-cyan-400" : "bg-cyan-100 text-cyan-600")}>Ledger</span>
+                      <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-cyan-50 text-cyan-600")}>Ledger</span>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.tokens.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>Tokens</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
-                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
+                          backgroundImage: isDark
+                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                          backgroundSize: '8px 5px',
+                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                         }}
                       />
                     </div>
                     {searchResults.tokens.map((token, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
-                            <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
-                            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/25" : "text-gray-400")}>•</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-500")}>({token.name})</span>
                           </div>
-                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                          <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{token.issuer}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>Token</span>
-                          {token.verified && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
-                          <div className="text-right">
-                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
-                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
+                          {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          <div className="text-right min-w-[50px]">
+                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
+                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
                 {searchQuery && searchResults.collections.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                  <div className="px-3 py-2">
+                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-teal-400" : "text-primary")}>NFTs</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
-                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
+                          backgroundImage: isDark
+                            ? 'radial-gradient(circle, rgba(45,212,191,0.4) 1px, transparent 1px)'
+                            : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                          backgroundSize: '8px 5px',
+                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
                         }}
                       />
                     </div>
                     {searchResults.collections.map((col, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                        <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-8 h-8 rounded-md object-cover flex-shrink-0" alt="" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</span>
                           </div>
-                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                          <p className={cn("text-[10px] font-mono truncate mt-0.5", isDark ? "text-white/20" : "text-gray-400")}>{col.account}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>NFT</span>
-                          {col.verified === 'yes' && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
-                          <div className="text-right">
-                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
-                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
+                          {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : "bg-green-50 text-green-600")}>✓ Verified</span>}
+                          <div className="text-right min-w-[50px]">
+                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
+                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                          </div>
                         </div>
                       </div>
                     ))}
