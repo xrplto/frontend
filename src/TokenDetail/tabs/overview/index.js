@@ -203,7 +203,7 @@ const Overview = memo(
                   onClick={() => setOrderBookCollapsed(false)}
                   className={cn(
                     "w-[36px] h-full rounded-xl border cursor-pointer flex flex-col items-center py-2 gap-2 transition-all",
-                    isDark ? "border-white/8 bg-white/2 hover:border-blue-500" : "border-black/8 bg-black/2 hover:border-blue-500"
+                    isDark ? "border-gray-600 bg-white/[0.02] hover:border-blue-500" : "border-gray-400 bg-black/[0.02] hover:border-blue-500"
                   )}
                   title="Expand Order Book"
                 >

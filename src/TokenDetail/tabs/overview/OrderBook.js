@@ -22,7 +22,7 @@ const fetchInFlight = new Map();
 
 const Container = styled.div`
   border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(107,114,128,0.5)' : 'rgba(107,114,128,0.4)'};
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -167,7 +167,7 @@ const CollapsedBar = styled.div`
   width: 36px;
   height: 100%;
   border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? '#4b5563' : '#9ca3af'};
   background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   display: flex;
   flex-direction: column;

@@ -170,7 +170,7 @@ function ImagesPage() {
 
       <div className={cn('flex-1 pt-[72px] pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
         {/* Page Header */}
-        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-200 bg-gray-50")}>
+        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", isDark ? "bg-primary/10" : "bg-primary/5")}>
@@ -181,7 +181,7 @@ function ImagesPage() {
                 <p className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-500")}>Upload and manage images</p>
               </div>
             </div>
-            <span className={cn("rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium", isDark ? "border-[rgba(59,130,246,0.08)] text-gray-400" : "border-gray-200 text-gray-500")}>
+            <span className={cn("rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium", isDark ? "border-white/10 text-gray-400" : "border-gray-200 text-gray-500")}>
               {images.length} images
             </span>
           </div>
@@ -206,7 +206,7 @@ function ImagesPage() {
         )}
 
         {/* Upload Section */}
-        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
+        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.01]" : "border-gray-200")}>
           <p className={cn("mb-3 text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
             Upload New Image
           </p>
@@ -222,7 +222,7 @@ function ImagesPage() {
                 dragActive
                   ? "border-primary bg-primary/5"
                   : isDark
-                    ? "border-[rgba(59,130,246,0.12)] hover:border-primary/40 hover:bg-primary/5"
+                    ? "border-white/15 hover:border-primary/40 hover:bg-primary/5"
                     : "border-gray-300 hover:border-primary/50 hover:bg-gray-50"
               )}
             >
@@ -256,7 +256,7 @@ function ImagesPage() {
               <div className="flex flex-col gap-4 sm:flex-row">
                 <div className={cn(
                   "relative h-48 w-full overflow-hidden rounded-xl border-[1.5px] sm:w-48",
-                  isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-300"
+                  isDark ? "border-white/15" : "border-gray-300"
                 )}>
                   <img
                     src={previewUrl}
@@ -284,7 +284,7 @@ function ImagesPage() {
                       className={cn(
                         "w-full rounded-lg border-[1.5px] bg-transparent px-3 py-2 text-sm focus:border-primary focus:outline-none",
                         isDark
-                          ? "border-[rgba(59,130,246,0.12)] text-white placeholder:text-gray-500"
+                          ? "border-white/15 text-white placeholder:text-gray-500"
                           : "border-gray-300 text-gray-900 placeholder:text-gray-400"
                       )}
                     />
@@ -326,7 +326,7 @@ function ImagesPage() {
                       className={cn(
                         "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
                         isDark
-                          ? "border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5"
+                          ? "border-white/15 hover:border-primary hover:bg-primary/5"
                           : "border-gray-300 hover:border-primary hover:bg-gray-100"
                       )}
                     >
