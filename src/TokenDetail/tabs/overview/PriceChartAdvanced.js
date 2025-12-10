@@ -1072,24 +1072,79 @@ const PriceChartAdvanced = memo(({ token }) => {
           <Typography variant="h6" isDark={isDark}>
             {token.name} {chartType === 'holders' ? 'Holders' : `(${activeFiatCurrency})`}
           </Typography>
-          {athData.athMcap > 0 && chartType !== 'holders' && (
-            <Box style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
-            }}>
-              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>ATH</span>
-              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', fontFamily: 'monospace' }}>
-                {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
-              </span>
-              <span style={{ fontSize: '10px', color: athData.percentDown < 0 ? '#ef4444' : '#22c55e', fontFamily: 'monospace' }}>
-                {athData.percentDown}%
-              </span>
-            </Box>
-          )}
+          {athData.athMcap > 0 && chartType !== 'holders' && (() => {
+            const progressPercent = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
+            const isNearATH = progressPercent > 80;
+            const isCritical = progressPercent < 20;
+            return (
+              <Box style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`
+              }}>
+                <span style={{
+                  fontSize: '9px',
+                  fontWeight: 500,
+                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>ATH</span>
+
+                {/* Progress bar container */}
+                <Box style={{
+                  position: 'relative',
+                  width: isMobile ? '60px' : '80px',
+                  height: '6px',
+                  borderRadius: '3px',
+                  background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                  overflow: 'hidden'
+                }}>
+                  {/* Progress fill */}
+                  <Box style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    height: '100%',
+                    width: `${progressPercent}%`,
+                    borderRadius: '3px',
+                    background: isNearATH
+                      ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                      : isCritical
+                        ? 'linear-gradient(90deg, #ef4444, #f87171)'
+                        : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </Box>
+
+                {/* Percentage text */}
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  fontFamily: 'monospace',
+                  color: isNearATH ? '#22c55e' : isCritical ? '#ef4444' : '#f59e0b',
+                  minWidth: '42px',
+                  textAlign: 'right'
+                }}>
+                  {athData.percentDown > 0 ? '+' : ''}{athData.percentDown}%
+                </span>
+
+                {/* ATH value */}
+                <span style={{
+                  fontSize: '10px',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                  fontFamily: 'monospace',
+                  borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+                  paddingLeft: '8px'
+                }}>
+                  {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
+                </span>
+              </Box>
+            );
+          })()}
           {lastUpdate && (
             <Box style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.5 }}>
               <Box style={{ width: '4px', height: '4px', borderRadius: '50%', background: isUserZoomed ? '#f59e0b' : '#22c55e' }} />
