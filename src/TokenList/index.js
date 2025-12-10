@@ -8,7 +8,6 @@ import {
   useDeferredValue,
   useTransition
 } from 'react';
-import useWebSocket from 'react-use-websocket';
 import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -20,6 +19,7 @@ import React, { memo, lazy, Suspense } from 'react';
 import { debounce, throttle } from 'src/utils/formatters';
 import { useRouter } from 'next/router';
 import { TokenListToolbar } from './TokenListControls';
+import { useTokenSync } from 'src/hooks/useTokenSync';
 
 // Simple memoization
 const MemoizedTokenRow = memo(TokenRow);
@@ -191,8 +191,6 @@ function TokenListComponent({
   }, []);
   const router = useRouter();
 
-  // Enable WebSocket for real-time updates
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = 'https://api.xrpl.to/api';
 
   const [filterName, setFilterName] = useState('');
@@ -401,205 +399,64 @@ function TokenListComponent({
     };
   }, [handleScrollX, handleScrollY]);
 
-  const [lastJsonMessage, setLastJsonMessage] = useState(null);
-
   // React 18 transition hook
   const [isPending, startTransition] = useTransition();
 
-  // Optimized WebSocket handler with React 18 features
-  const wsMessageQueue = useRef([]);
-  const wsProcessTimer = useRef(null);
-  const wsProcessing = useRef(false);
-
-  // Process WebSocket messages in batches using Web Worker pattern
-  const processWebSocketQueue = useCallback(() => {
-    if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
-    wsProcessing.current = true;
-
-    const messages = wsMessageQueue.current.splice(0, 50); // Reduced batch size for smoother updates
-
-    // Use requestAnimationFrame for smoother visual updates
-    requestAnimationFrame(() => {
-      const aggregatedTokens = new Map();
-      let latestMetrics = null;
-
-      messages.forEach((msg) => {
-        if (msg.metrics) latestMetrics = msg.metrics;
-        if (msg.tokens) {
-          msg.tokens.forEach((token) => {
-            // Only keep latest update per token
-            const existing = aggregatedTokens.get(token.md5);
-            if (!existing || token.time > existing.time) {
-              aggregatedTokens.set(token.md5, token);
-            }
-          });
-        }
-      });
-
-      // Batch updates without startTransition to reduce overhead
-      if (latestMetrics) {
-        requestAnimationFrame(() => dispatch(update_metrics(latestMetrics)));
-      }
-
-      if (aggregatedTokens.size > 0) {
-        setTokens((prevTokens) => {
-          if (aggregatedTokens.size === 0) return prevTokens;
-
-          let hasChanges = false;
-          const result = prevTokens.map(token => {
-            const update = aggregatedTokens.get(token.md5);
-            if (update && token.exch !== update.exch) {
-              hasChanges = true;
-              const direction = token.exch > update.exch ? -1 : 1;
-              return {
-                ...token,
-                ...update,
-                time: Date.now(),
-                bearbull: direction,
-                bearbullTime: Date.now()
-              };
-            }
-            return token;
-          });
-
-          return hasChanges ? result : prevTokens;
-        });
-      }
-
-      wsProcessing.current = false;
-      // Continue processing if more messages
-      if (wsMessageQueue.current.length > 0) {
-        requestIdleCallback(() => processWebSocketQueue(), { timeout: 100 });
-      }
-    });
-  }, [dispatch, setTokens, startTransition]);
-
-  // WebSocket reconnection state with exponential backoff
-  const reconnectAttemptRef = useRef(0);
-  const maxReconnectDelay = 60000; // Max 60 seconds between attempts
-  const [wsEnabled, setWsEnabled] = useState(false);
-
   // Delay WebSocket connection to avoid rate limits
+  const [wsEnabled, setWsEnabled] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setWsEnabled(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
-  // WebSocket for real-time token updates
-  const { sendJsonMessage, readyState } = useWebSocket(
-    wsEnabled ? WSS_FEED_URL : null,
-    {
-      shouldReconnect: (closeEvent) => {
-        // Don't reconnect if we've exceeded attempts or got rate limited too many times
-        if (reconnectAttemptRef.current >= 10) {
-          console.log('WebSocket: Max reconnect attempts reached, stopping');
-          return false;
-        }
-        return !!WSS_FEED_URL;
-      },
-      reconnectAttempts: 10,
-      reconnectInterval: (attemptNumber) => {
-        // Exponential backoff: 3s, 6s, 12s, 24s, 48s, 60s (capped)
-        const delay = Math.min(3000 * Math.pow(2, attemptNumber), maxReconnectDelay);
-        console.log(`WebSocket: Reconnecting in ${delay / 1000}s (attempt ${attemptNumber + 1})`);
-        return delay;
-      },
-      onMessage: useCallback(
-        (event) => {
-          try {
-            const json = JSON.parse(event.data);
-
-            // Queue the message
-            wsMessageQueue.current.push(json);
-
-            // Process queue with a small delay to batch multiple messages
-            if (wsProcessTimer.current) {
-              clearTimeout(wsProcessTimer.current);
-            }
-
-            wsProcessTimer.current = setTimeout(() => {
-              requestIdleCallback(() => processWebSocketQueue(), { timeout: 100 });
-            }, 32); // Batch messages with 32ms delay (30fps for smoother updates)
-          } catch (err) {
-            console.error('Error parsing WebSocket message:', err);
-          }
-        },
-        [processWebSocketQueue]
-      ),
-      onOpen: () => {
-        console.log('WebSocket: Connected successfully');
-        reconnectAttemptRef.current = 0; // Reset on successful connection
-      },
-      onClose: (event) => {
-        reconnectAttemptRef.current++;
-        console.log(`WebSocket: Closed (code: ${event.code})`);
-      },
-      onError: (event) => {
-        console.log('WebSocket: Connection error');
-      }
-    }
-  );
-
-  // Optimized token change detector using shallow comparison
-  const applyTokenChanges = useCallback(
-    (newTokens) => {
+  // Handle token updates from WebSocket
+  const handleTokensUpdate = useCallback(
+    (updatedTokens) => {
       setTokens((prevTokens) => {
-        // Use a single pass with early exit optimization
-        const tokenMap = new Map();
-        const changedTokens = new Set();
+        if (!updatedTokens || updatedTokens.length === 0) return prevTokens;
 
-        // Build map and track existing tokens
-        prevTokens.forEach((token) => {
-          tokenMap.set(token.md5, token);
-        });
+        let hasChanges = false;
+        const tokenMap = new Map(prevTokens.map((t) => [t.md5, t]));
 
-        // Apply updates and track changes
-        newTokens.forEach((newToken) => {
-          const existing = tokenMap.get(newToken.md5);
-          if (existing) {
-            // Fast shallow comparison of critical fields only
-            const criticalFields = [
-              'exch',
-              'pro5m',
-              'pro1h',
-              'pro24h',
-              'pro7d',
-              'vol24hxrp',
-              'marketcap'
-            ];
-            const hasChanged = criticalFields.some((field) => existing[field] !== newToken[field]);
-
-            if (hasChanged) {
-              const updated = {
-                ...existing,
-                ...newToken,
-                time: Date.now(),
-                bearbull: existing.exch > newToken.exch ? -1 : 1,
-                bearbullTime: Date.now()
-              };
-              tokenMap.set(newToken.md5, updated);
-              changedTokens.add(newToken.md5);
-            }
+        updatedTokens.forEach((update) => {
+          const existing = tokenMap.get(update.md5);
+          if (existing && existing.exch !== update.exch) {
+            hasChanges = true;
+            tokenMap.set(update.md5, {
+              ...existing,
+              ...update,
+              time: Date.now(),
+              bearbull: existing.exch > update.exch ? -1 : 1,
+              bearbullTime: Date.now()
+            });
           }
         });
 
-        // Only recreate array if changes detected
-        return changedTokens.size > 0 ? Array.from(tokenMap.values()) : prevTokens;
+        return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
       });
     },
     [setTokens]
   );
 
-  // Cleanup timer on unmount
+  // Handle metrics updates from WebSocket
+  const handleMetricsUpdate = useCallback(
+    (metrics) => {
+      dispatch(update_metrics(metrics));
+    },
+    [dispatch]
+  );
+
+  // Use the new WebSocket hook with subscription filtering
+  const { isConnected, subscribe, resync } = useTokenSync({
+    onTokensUpdate: handleTokensUpdate,
+    onMetricsUpdate: handleMetricsUpdate,
+    filter: { topN: rows }, // Subscribe to top N tokens based on rows setting
+    enabled: wsEnabled
+  });
+
+  // Cleanup scroll handlers on unmount
   useEffect(() => {
     return () => {
-      if (wsProcessTimer.current) {
-        clearTimeout(wsProcessTimer.current);
-        wsProcessTimer.current = null;
-      }
-      wsMessageQueue.current = [];
-      wsProcessing.current = false;
-      // Clean up any pending animations
       if (handleScrollX.cancel) handleScrollX.cancel();
       if (handleScrollY.cancel) handleScrollY.cancel();
     };

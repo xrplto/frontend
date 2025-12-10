@@ -1,0 +1,65 @@
+import { useRef, useCallback, useEffect } from 'react';
+import useWebSocket from 'react-use-websocket';
+
+/**
+ * WebSocket hook for single token updates (/ws/token/{md5})
+ * Supports field filtering and delta mode
+ *
+ * Field presets: ticker (6), price (10), trading (20), full (71), all (~106)
+ */
+export function useTokenDetail({
+  md5,
+  onTokenUpdate,
+  onMetricsUpdate,
+  fields = 'trading',
+  delta = true,
+  enabled = true
+}) {
+  const rafRef = useRef(null);
+
+  const wsUrl = enabled && md5
+    ? `wss://api.xrpl.to/ws/token/${md5}?fields=${fields}&delta=${delta}`
+    : null;
+
+  const processMessage = useCallback((data) => {
+    if (data.exch) {
+      onMetricsUpdate?.({ exch: data.exch, total: data.total, H24: data.H24, global: data.global });
+    }
+    if (data.token) {
+      onTokenUpdate?.(data.token, data.delta || false);
+    }
+  }, [onTokenUpdate, onMetricsUpdate]);
+
+  const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
+    onMessage: (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'pong') return;
+
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => processMessage(data));
+      } catch {}
+    },
+    shouldReconnect: (e) => e.code !== 4020 && e.code !== 4021,
+    reconnectAttempts: 10,
+    reconnectInterval: (n) => Math.min(3000 * Math.pow(2, n), 60000),
+    share: true
+  });
+
+  // Heartbeat
+  useEffect(() => {
+    if (readyState !== 1) return;
+    const id = setInterval(() => sendJsonMessage({ type: 'ping' }), 10000);
+    return () => clearInterval(id);
+  }, [readyState, sendJsonMessage]);
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+
+  return {
+    setFields: (f) => sendJsonMessage({ type: 'setFields', fields: f }),
+    setDelta: (d) => sendJsonMessage({ type: 'setDelta', enabled: d }),
+    resync: () => sendJsonMessage({ type: 'resync' })
+  };
+}
+
+export default useTokenDetail;

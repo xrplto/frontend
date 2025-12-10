@@ -1,16 +1,17 @@
 import axios from 'axios';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import useWebSocket from 'react-use-websocket';
+import { useState, useEffect, useCallback } from 'react';
 
 // Redux
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
+// Hooks
+import { useTokenDetail } from 'src/hooks/useTokenDetail';
+
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-// TrustSetDialog removed - Xaman no longer used
 
 import TokenDetail from 'src/TokenDetail';
 
@@ -21,75 +22,46 @@ function Detail({ data }) {
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
   const [orderBookOpen, setOrderBookOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${data.token.md5}`;
   const tokenName = token.name || 'Token';
 
-  // Refs to prevent flushSync errors during React render cycles
-  const pendingUpdateRef = useRef(null);
-  const rafIdRef = useRef(null);
-
-  // Process WebSocket message outside of React's render cycle
-  const processMessage = useCallback((messageData) => {
-    try {
-      const json = JSON.parse(messageData);
-      dispatch(update_metrics(json));
-      setToken(prev => ({ ...prev, ...json.token }));
-    } catch (err) {
-      console.error(err);
-    }
-  }, [dispatch]);
-
-  // WebSocket reconnection tracking
-  const reconnectAttemptRef = useRef(0);
-  const [wsEnabled, setWsEnabled] = useState(false);
-
   // Delay WebSocket connection to avoid rate limits during navigation
+  const [wsEnabled, setWsEnabled] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setWsEnabled(true), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  const { lastMessage } = useWebSocket(wsEnabled ? WSS_FEED_URL : null, {
-    onOpen: () => {
-      reconnectAttemptRef.current = 0;
+  // Handle token updates from WebSocket (supports delta mode)
+  const handleTokenUpdate = useCallback(
+    (tokenData, isDelta) => {
+      if (isDelta) {
+        // Delta update: merge only changed fields
+        setToken((prev) => ({ ...prev, ...tokenData }));
+      } else {
+        // Full update: replace token data
+        setToken((prev) => ({ ...prev, ...tokenData }));
+      }
     },
-    onClose: () => {
-      reconnectAttemptRef.current++;
+    []
+  );
+
+  // Handle metrics/exchange rate updates
+  const handleMetricsUpdate = useCallback(
+    (metrics) => {
+      dispatch(update_metrics(metrics));
     },
-    shouldReconnect: () => {
-      if (reconnectAttemptRef.current >= 10) return false;
-      return document.visibilityState === 'visible';
-    },
-    reconnectAttempts: 10,
-    reconnectInterval: (attemptNumber) => Math.min(3000 * Math.pow(2, attemptNumber), 60000),
-    share: true
+    [dispatch]
+  );
+
+  // Use the new WebSocket hook with field filtering and delta mode
+  const { isConnected, setFields, resync } = useTokenDetail({
+    md5: data.token.md5,
+    onTokenUpdate: handleTokenUpdate,
+    onMetricsUpdate: handleMetricsUpdate,
+    fields: 'trading', // Get trading-related fields (20 fields)
+    deltaMode: true, // Only receive changed fields
+    enabled: wsEnabled
   });
-
-  useEffect(() => {
-    if (!lastMessage?.data) return;
-
-    // Store pending update
-    pendingUpdateRef.current = lastMessage.data;
-
-    // Cancel any pending RAF
-    if (rafIdRef.current) {
-      cancelAnimationFrame(rafIdRef.current);
-    }
-
-    // Defer state update to next animation frame to avoid flushSync conflicts
-    rafIdRef.current = requestAnimationFrame(() => {
-      if (pendingUpdateRef.current) {
-        processMessage(pendingUpdateRef.current);
-        pendingUpdateRef.current = null;
-      }
-    });
-
-    return () => {
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
-    };
-  }, [lastMessage, processMessage]);
 
   const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
 
