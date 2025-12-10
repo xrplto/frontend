@@ -140,7 +140,7 @@ const RichList = ({ token, amm }) => {
     <div className="flex items-center gap-2">
       <div className={cn(
         'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
-        isDark ? 'border-[rgba(59,130,246,0.12)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-200 bg-gray-50'
+        isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
       )}>
         <Search size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
         <input
@@ -165,7 +165,7 @@ const RichList = ({ token, amm }) => {
         disabled={searchInput.length > 0 && searchInput.length < 3}
         className={cn(
           'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-40',
-          isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+          isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
         )}
       >
         Search
@@ -195,7 +195,7 @@ const RichList = ({ token, amm }) => {
         )}
         <div className={cn(
           'rounded-xl border-[1.5px] border-dashed py-12 text-center',
-          isDark ? 'border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-300 bg-gray-50'
+          isDark ? 'border-white/15 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
         )}>
           <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
             {searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
@@ -212,7 +212,7 @@ const RichList = ({ token, amm }) => {
     if (rank === 1) return 'bg-yellow-500/15 text-yellow-500';
     if (rank === 2) return 'bg-gray-400/15 text-gray-400';
     if (rank === 3) return 'bg-orange-600/15 text-orange-500';
-    return isDark ? 'bg-[rgba(59,130,246,0.08)] text-white/50' : 'bg-gray-100 text-gray-500';
+    return isDark ? 'bg-white/[0.06] text-white/50' : 'bg-gray-100 text-gray-500';
   };
 
   return (
@@ -228,7 +228,7 @@ const RichList = ({ token, amm }) => {
           ].map(({ label, value }) => (
             <div key={label} className={cn(
               'rounded-lg border px-3 py-2',
-              isDark ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-200 bg-gray-50'
+              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
             )}>
               <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
               <div className={cn(
@@ -363,7 +363,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsLeft size={14} />
@@ -373,7 +373,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronLeft size={14} />
@@ -386,7 +386,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronRight size={14} />
@@ -396,7 +396,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsRight size={14} />

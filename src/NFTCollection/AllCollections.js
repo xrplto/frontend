@@ -70,13 +70,13 @@ const MetricBox = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   border-radius: 0;
-  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
-  border: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.04)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
   }
 
   @media (max-width: 600px) {
@@ -194,8 +194,8 @@ const TagsContainer = styled.div`
   flex-direction: column;
   gap: 6px;
   border-radius: 0;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
-  background: ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
   padding: 8px 12px;
   position: relative;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -248,9 +248,9 @@ const TagChip = styled.button`
   align-items: center;
   gap: 3px;
   padding: 3px 10px;
-  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 6px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.02)'};
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
   color: ${(props) => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.68rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
@@ -261,8 +261,8 @@ const TagChip = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.4);
     color: #3b82f6;
   }
 
@@ -432,9 +432,9 @@ const TagButton = styled.button`
   max-width: 200px;
   height: 40px;
   padding: 0 14px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   font-size: 13px;
   font-weight: 400;
@@ -446,8 +446,8 @@ const TagButton = styled.button`
   text-overflow: ellipsis;
   transition: border-color 0.2s ease, background 0.2s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.08);
     color: #3b82f6;
   }
 `;
@@ -750,8 +750,8 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
             position: 'relative',
             zIndex: 1,
             borderRadius: 0,
-            background: isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)',
-            border: `1px solid ${isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'}`,
+            background: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
             overflow: 'hidden'
           }}
         >

@@ -20,8 +20,8 @@ const Container = styled.div`
   flex-direction: column;
   gap: 6px;
   border-radius: 0;
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
-  background: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
   padding: 8px 12px;
   position: relative;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -117,10 +117,10 @@ const RowContent = styled.div`
 
 const RowsSelector = styled.select`
   padding: 3px 6px;
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
+  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 6px;
   background: ${(props) =>
-    props.darkMode ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)'};
+    props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   color: ${(props) => (props.darkMode ? '#fff' : '#1a1a1a')};
   font-size: 0.68rem;
   font-weight: 400;
@@ -140,13 +140,13 @@ const RowsSelector = styled.select`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.05)'};
+    border-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   }
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.5);
   }
 
   option {
@@ -239,18 +239,17 @@ const StyledIconButton = styled.button`
   height: 36px;
   padding: 0;
   border: 1px solid ${(props) =>
-    props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+    props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)') : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 6px;
-  background: ${(props) => (props.selected ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.02)')};
-  color: ${(props) => (props.selected ? '#3b82f6' : 'inherit')};
+  background: ${(props) => (props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent')};
+  color: inherit;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
   flex-shrink: 0;
 
   &:hover {
-    background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
-    border-color: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    color: #3b82f6;
+    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
   }
 
   @media (max-width: 600px) {
@@ -263,10 +262,10 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 1px;
   flex-shrink: 0;
-  background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)'};
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   padding: 2px;
   border-radius: 6px;
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)'};
+  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
 
   & > button {
     border-radius: 5px;
@@ -288,18 +287,17 @@ const ButtonGroup = styled.div`
     transition: background 0.2s ease;
 
     &:hover {
-      background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
-      color: #3b82f6;
+      background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
     }
   }
 
   & > button.selected {
-    background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.12)' : 'rgba(59, 130, 246, 0.1)'};
+    background: rgba(59, 130, 246, 0.12);
     color: #3b82f6;
     font-weight: 500;
 
     &:hover {
-      background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.12)'};
+      background: rgba(59, 130, 246, 0.18);
     }
   }
 
@@ -320,7 +318,7 @@ const ButtonGroup = styled.div`
 const Divider = styled.div`
   width: 1px;
   height: 18px;
-  background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.12)' : 'rgba(59, 130, 246, 0.15)'};
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
   margin: 0 6px;
   flex-shrink: 0;
 
@@ -337,9 +335,9 @@ const Chip = styled.button`
   gap: 3px;
   padding: 3px 10px;
   border: 1px solid;
-  border-color: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  border-color: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 6px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.02)'};
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.7rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
@@ -350,8 +348,8 @@ const Chip = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
-    border-color: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
     color: #3b82f6;
   }
 
@@ -369,9 +367,9 @@ const TagChip = styled.button`
   align-items: center;
   gap: 3px;
   padding: 3px 10px;
-  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 6px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.02)'};
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.68rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
@@ -382,8 +380,8 @@ const TagChip = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)'};
-    border-color: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
     color: #3b82f6;
   }
 
@@ -415,8 +413,8 @@ const AllTagsButton = styled.button`
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.12);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
   }
 
   @media (max-width: 600px) {

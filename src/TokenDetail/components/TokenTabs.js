@@ -209,10 +209,10 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={(e) => e.stopPropagation()}
             className={cn(
               'relative w-full max-w-lg rounded-xl border overflow-hidden',
-              isDark ? 'bg-[#0a0f1a] border-blue-500/20 shadow-2xl' : 'bg-white border-gray-200 shadow-2xl'
+              isDark ? 'bg-[#0a0f1a] border-[rgba(59,130,246,0.3)] shadow-2xl' : 'bg-white border-[rgba(59,130,246,0.2)] shadow-2xl'
             )}
           >
-            <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-blue-500/10' : 'border-gray-100')}>
+            <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
               <Search size={18} className={isDark ? 'text-white/40' : 'text-gray-400'} />
               <input
                 ref={inputRef}

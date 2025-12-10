@@ -7,6 +7,19 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'Courier New', 'monospace'],
+      },
+      fontSize: {
+        // Standardized scale (use these instead of arbitrary values)
+        'xs': ['11px', { lineHeight: '1.4' }],      // labels, captions
+        'sm': ['13px', { lineHeight: '1.5' }],      // body small, buttons
+        'base': ['14px', { lineHeight: '1.5' }],    // body text
+        'lg': ['16px', { lineHeight: '1.4' }],      // subheadings
+        'xl': ['20px', { lineHeight: '1.3' }],      // headings
+        '2xl': ['24px', { lineHeight: '1.2' }],     // page titles
+      },
       colors: {
         primary: {
           DEFAULT: '#4285f4',

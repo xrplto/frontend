@@ -101,15 +101,17 @@ const Sparkline = ({
     const range = maxPrice - minPrice;
 
     // Scale points to canvas with padding
-    const padding = height * 0.15;
-    const chartHeight = height - padding * 2;
+    const paddingY = height * 0.15;
+    const paddingX = 16; // Horizontal padding to avoid edge clipping
+    const chartHeight = height - paddingY * 2;
+    const chartWidth = width - paddingX * 2;
 
     const points = prices.map((price, index) => {
-      const x = (index / (prices.length - 1)) * width;
+      const x = paddingX + (index / (prices.length - 1)) * chartWidth;
       const y =
         range === 0
           ? height / 2
-          : padding + chartHeight - ((price - minPrice) / range) * chartHeight;
+          : paddingY + chartHeight - ((price - minPrice) / range) * chartHeight;
       return { x, y };
     });
 
@@ -228,7 +230,7 @@ const Sparkline = ({
   }
 
   return (
-    <div ref={ref} className="w-full h-full relative">
+    <div ref={ref} className="w-full h-full relative" style={{ paddingRight: '12px' }}>
       <canvas
         ref={canvasRef}
         className={cn(

@@ -365,7 +365,7 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Row 2: Stats Grid (2x2) */}
-      <div className="grid grid-cols-4 gap-2 mt-2.5 pt-2.5 border-t border-[rgba(59,130,246,0.08)]">
+      <div className={cn("grid grid-cols-4 gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
         {[
           { label: 'MCAP', value: formatValue(convertedMarketCap), color: 'text-green-500' },
           { label: 'VOL 24H', value: formatValue(convertedVolume), color: 'text-red-500' },
@@ -391,7 +391,7 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Row 4: 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-100")}>
+        <div className={cn("flex items-center gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
           <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24H</span>
           <span className="text-[10px] text-green-500 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
@@ -409,7 +409,7 @@ const TokenSummary = memo(({ token }) => {
       )}
 
       {/* Row 5: Actions */}
-      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-[rgba(59,130,246,0.08)]">
+      <div className={cn("flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
         <div className="flex items-center gap-1.5 relative">
           {trustStatus && trustStatus !== 'loading' && (
             <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">

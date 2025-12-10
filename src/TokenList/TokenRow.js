@@ -67,7 +67,7 @@ const OptimizedChart = memo(
         <div
           ref={chartRef}
           style={{
-            width: '260px',
+            width: '240px',
             height: '60px',
             background: 'rgba(128, 128, 128, 0.05)',
             borderRadius: '4px',
@@ -81,7 +81,7 @@ const OptimizedChart = memo(
       <div
         ref={chartRef}
         style={{
-          width: '260px',
+          width: '240px',
           height: '60px',
           display: 'inline-block',
           contain: 'layout size style'
@@ -95,7 +95,7 @@ const OptimizedChart = memo(
           lineWidth={1}
           opts={{
             renderer: 'svg', // Use SVG to reduce memory usage
-            width: 260,
+            width: 240,
             height: 60,
             devicePixelRatio: 1,
             animation: false
@@ -752,7 +752,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume * 7)}
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px' }}>
+            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
@@ -830,7 +830,7 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px' }}>
+            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
@@ -868,7 +868,7 @@ const DesktopTokenRow = ({
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px' }}>
+            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
@@ -905,17 +905,17 @@ const DesktopTokenRow = ({
               <StyledCell
                 align="right"
                 isDark={darkMode}
-                style={{ minWidth: '280px', paddingLeft: '16px' }}
+                style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
               >
                 {sparklineUrl ? (
-                  <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+                  <div style={{ width: '240px', height: '60px', display: 'inline-block' }}>
                     <Sparkline
                       url={sparklineUrl}
                       style={{ width: '100%', height: '100%' }}
                       animation={false}
                       showGradient={false}
                       lineWidth={1}
-                      opts={{ renderer: 'svg', width: 260, height: 60, devicePixelRatio: 1 }}
+                      opts={{ renderer: 'svg', width: 240, height: 60, devicePixelRatio: 1 }}
                     />
                   </div>
                 ) : (
@@ -1077,17 +1077,17 @@ const DesktopTokenRow = ({
                   key="sparkline"
                   align="right"
                   isDark={darkMode}
-                  style={{ minWidth: '280px', paddingLeft: '16px' }}
+                  style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
                 >
                   {sparklineUrl ? (
-                    <div style={{ width: '260px', height: '60px', display: 'inline-block' }}>
+                    <div style={{ width: '240px', height: '60px', display: 'inline-block' }}>
                       <Sparkline
                         url={sparklineUrl}
                         style={{ width: '100%', height: '100%' }}
                         animation={false}
                         showGradient={false}
                         lineWidth={1}
-                        opts={{ renderer: 'svg', width: 260, height: 60, devicePixelRatio: 1 }}
+                        opts={{ renderer: 'svg', width: 240, height: 60, devicePixelRatio: 1 }}
                       />
                     </div>
                   ) : (
@@ -1171,7 +1171,7 @@ const DesktopTokenRow = ({
             <StyledCell
               align="center"
               isDark={darkMode}
-              style={{ minWidth: '280px', paddingLeft: '16px' }}
+              style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
             >
               {sparklineUrl ? (
                 <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
