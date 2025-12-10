@@ -477,10 +477,17 @@ function TokenListComponent({
   // WebSocket reconnection state with exponential backoff
   const reconnectAttemptRef = useRef(0);
   const maxReconnectDelay = 60000; // Max 60 seconds between attempts
+  const [wsEnabled, setWsEnabled] = useState(false);
+
+  // Delay WebSocket connection to avoid rate limits
+  useEffect(() => {
+    const timer = setTimeout(() => setWsEnabled(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // WebSocket for real-time token updates
   const { sendJsonMessage, readyState } = useWebSocket(
-    WSS_FEED_URL,
+    wsEnabled ? WSS_FEED_URL : null,
     {
       shouldReconnect: (closeEvent) => {
         // Don't reconnect if we've exceeded attempts or got rate limited too many times

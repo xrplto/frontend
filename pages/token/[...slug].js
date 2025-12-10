@@ -41,8 +41,15 @@ function Detail({ data }) {
 
   // WebSocket reconnection tracking
   const reconnectAttemptRef = useRef(0);
+  const [wsEnabled, setWsEnabled] = useState(false);
 
-  const { lastMessage } = useWebSocket(WSS_FEED_URL, {
+  // Delay WebSocket connection to avoid rate limits during navigation
+  useEffect(() => {
+    const timer = setTimeout(() => setWsEnabled(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const { lastMessage } = useWebSocket(wsEnabled ? WSS_FEED_URL : null, {
     onOpen: () => {
       reconnectAttemptRef.current = 0;
     },
