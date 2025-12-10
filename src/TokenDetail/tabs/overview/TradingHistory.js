@@ -3,10 +3,20 @@ import { createPortal } from 'react-dom';
 import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
 import { AppContext } from 'src/AppContext';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCw } from 'lucide-react';
+
+const currencySymbols = {
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: '✕'
+};
 
 // Custom styled components
 const Box = styled.div``;
@@ -1569,6 +1579,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   }, []);
   const isMobile = isMobileState || isMobileProp;
 
+  // Fiat currency conversion
+  const { activeFiatCurrency } = useContext(AppContext);
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
@@ -1930,7 +1945,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     {formatRelativeTime(trade.time)}
                   </span>
                 </Box>
-                {/* Center: Amount → Total with labels */}
+                {/* Center: Amount → Total with fiat value */}
                 <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
                   <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
                     {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
@@ -1938,6 +1953,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>→</span>
                   <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
                     {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
+                    {activeFiatCurrency !== 'XRP' && (
+                      <span style={{ fontSize: '10px', color: '#22c55e', marginLeft: '4px', opacity: 0.7 }}>
+                        {currencySymbols[activeFiatCurrency]}{formatTradeValue(xrpAmount / exchRate)}
+                      </span>
+                    )}
                   </span>
                 </Box>
                 {/* Right: Link */}
@@ -1957,7 +1977,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       return (
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
-            <Box style={{ display: 'grid', gridTemplateColumns: '70px 50px 90px 1fr 1fr 75px 70px 40px', gap: '8px', alignItems: 'center' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}75px 70px 40px`, gap: '8px', alignItems: 'center' }}>
               {/* Time */}
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                 {formatRelativeTime(trade.time, true)}
@@ -1993,6 +2013,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 </span>
               </BarCell>
 
+              {/* Fiat Value */}
+              {activeFiatCurrency !== 'XRP' && (
+                <span style={{ fontSize: '11px', color: '#22c55e', opacity: 0.8, textAlign: 'right' }}>
+                  {currencySymbols[activeFiatCurrency]}{formatTradeValue(xrpAmount / exchRate)}
+                </span>
+              )}
+
               {/* Trader Address */}
               <a
                 href={`/profile/${addressToShow}`}
@@ -2025,7 +2052,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         </Card>
       );
     });
-  }, [trades, newTradeIds, amm, calculatePrice, handleTxClick, isMobile, isDark, expandedTradeId]);
+  }, [trades, newTradeIds, amm, calculatePrice, handleTxClick, isMobile, isDark, expandedTradeId, activeFiatCurrency, exchRate]);
 
 
   if (loading) {
