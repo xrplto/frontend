@@ -168,7 +168,7 @@ function ImagesPage() {
       />
       <h1 className="sr-only">Image Upload</h1>
 
-      <div className={cn('flex-1 py-4 sm:py-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
+      <div className={cn('flex-1 pt-[60px] pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
         {/* Page Header */}
         <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.12)] bg-[rgba(59,130,246,0.02)]" : "border-gray-200 bg-gray-50")}>
           <div className="flex items-center gap-2">

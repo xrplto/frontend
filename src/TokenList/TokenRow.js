@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } f
 import React from 'react';
 import styled from '@emotion/styled';
 import Image from 'next/image';
+import axios from 'axios';
 
 import { AppContext } from 'src/AppContext';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
@@ -15,102 +16,62 @@ const currencySymbols = {
   CNH: '¥',
   XRP: ''
 };
-import Sparkline from 'src/components/Sparkline';
 
-// Optimized chart wrapper with intersection observer
-const OptimizedChart = memo(
-  ({ url, darkMode }) => {
-    const [isVisible, setIsVisible] = useState(typeof window === 'undefined');
-    const chartRef = useRef(null);
-    const observerRef = useRef(null);
+// Simple cache for sparkline data
+const sparklineCache = new Map();
 
-    useEffect(() => {
-      if (!chartRef.current) return;
+// Inline Sparkline - SVG based
+const SparklineChart = memo(({ url }) => {
+  const [path, setPath] = useState('');
+  const [color, setColor] = useState('#22c55e');
+  const containerRef = useRef(null);
+  const [visible, setVisible] = useState(false);
 
-      // Delay observer creation slightly to avoid initial render overhead
-      const timer = setTimeout(() => {
-        if (!chartRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { rootMargin: '50px' });
+    obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
 
-        observerRef.current = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) {
-              setIsVisible(true);
-              if (observerRef.current) {
-                observerRef.current.disconnect();
-                observerRef.current = null;
-              }
-            }
-          },
-          {
-            rootMargin: '200px', // Increased for earlier loading
-            threshold: 0.01
-          }
-        );
-
-        if (chartRef.current) {
-          observerRef.current.observe(chartRef.current);
-        }
-      }, 50);
-
-      return () => {
-        clearTimeout(timer);
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-          observerRef.current = null;
-        }
-      };
-    }, []);
-
-    // Don't render chart until visible
-    if (!isVisible) {
-      return (
-        <div
-          ref={chartRef}
-          style={{
-            width: '240px',
-            height: '60px',
-            background: 'rgba(128, 128, 128, 0.05)',
-            borderRadius: '4px',
-            contain: 'layout size style'
-          }}
-        />
-      );
+  useEffect(() => {
+    if (!visible || !url) return;
+    const cached = sparklineCache.get(url);
+    if (cached && Date.now() - cached.ts < 300000) {
+      setPath(cached.path);
+      setColor(cached.color);
+      return;
     }
+    axios.get(url).then(res => {
+      const prices = res.data?.data?.prices?.map(Number) || [];
+      if (prices.length < 2) return;
+      const w = 260, h = 44;
+      const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
+      const pts = prices.map((p, i) => [i / (prices.length - 1) * w, h - ((p - min) / range) * h]);
+      const d = 'M' + pts.map(p => p.join(',')).join('L');
+      const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
+      sparklineCache.set(url, { path: d, color: c, ts: Date.now() });
+      setPath(d);
+      setColor(c);
+    }).catch(() => {});
+  }, [visible, url]);
 
-    return (
-      <div
-        ref={chartRef}
-        style={{
-          width: '240px',
-          height: '60px',
-          display: 'inline-block',
-          contain: 'layout size style'
-        }}
-      >
-        <Sparkline
-          url={url}
-          style={{ width: '100%', height: '100%' }}
-          animation={false}
-          showGradient={false}
-          lineWidth={1}
-          opts={{
-            renderer: 'svg', // Use SVG to reduce memory usage
-            width: 240,
-            height: 60,
-            devicePixelRatio: 1,
-            animation: false
-          }}
-        />
-      </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    // Only re-render if URL changes
-    return prevProps.url === nextProps.url && prevProps.darkMode === nextProps.darkMode;
-  }
-);
+  return (
+    <div ref={containerRef} style={{ width: '100%' }}>
+      {path ? (
+        <svg width="100%" height="44" viewBox="0 0 260 44" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <div style={{ width: '100%', height: 44, background: 'rgba(128,128,128,0.05)', borderRadius: 4 }} />
+      )}
+    </div>
+  );
+}, (prev, next) => prev.url === next.url);
 
-OptimizedChart.displayName = 'OptimizedChart';
+SparklineChart.displayName = 'SparklineChart';
 
 const StyledRow = styled.tr`
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)'};
@@ -139,7 +100,7 @@ const StyledCell = styled.td`
   }
 
   &:last-of-type {
-    padding-right: 12px;
+    padding-right: 4px;
   }
 `;
 
@@ -752,9 +713,9 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume * 7)}
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
+            <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -830,9 +791,9 @@ const DesktopTokenRow = ({
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
+            <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -868,9 +829,9 @@ const DesktopTokenRow = ({
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
-            <StyledCell align="center" isDark={darkMode} style={{ minWidth: '280px', paddingRight: '24px' }}>
+            <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -902,22 +863,9 @@ const DesktopTokenRow = ({
                   {formatValue(convertedValues.marketCap)}
                 </span>
               </StyledCell>
-              <StyledCell
-                align="right"
-                isDark={darkMode}
-                style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
-              >
+              <StyledCell align="right" isDark={darkMode}>
                 {sparklineUrl ? (
-                  <div style={{ width: '240px', height: '60px', display: 'inline-block' }}>
-                    <Sparkline
-                      url={sparklineUrl}
-                      style={{ width: '100%', height: '100%' }}
-                      animation={false}
-                      showGradient={false}
-                      lineWidth={1}
-                      opts={{ renderer: 'svg', width: 240, height: 60, devicePixelRatio: 1 }}
-                    />
-                  </div>
+                  <SparklineChart url={sparklineUrl} darkMode={darkMode} />
                 ) : (
                   <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
                 )}
@@ -932,7 +880,7 @@ const DesktopTokenRow = ({
 
         customColumns.forEach((column, index) => {
           const isLastColumn = index === lastColumnIndex;
-          const extraStyle = isLastColumn ? { paddingRight: '24px' } : {};
+          const extraStyle = {};
 
           switch (column) {
             case 'price':
@@ -1073,23 +1021,9 @@ const DesktopTokenRow = ({
               break;
             case 'sparkline':
               columnElements.push(
-                <StyledCell
-                  key="sparkline"
-                  align="right"
-                  isDark={darkMode}
-                  style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
-                >
+                <StyledCell key="sparkline" align="right" isDark={darkMode}>
                   {sparklineUrl ? (
-                    <div style={{ width: '240px', height: '60px', display: 'inline-block' }}>
-                      <Sparkline
-                        url={sparklineUrl}
-                        style={{ width: '100%', height: '100%' }}
-                        animation={false}
-                        showGradient={false}
-                        lineWidth={1}
-                        opts={{ renderer: 'svg', width: 240, height: 60, devicePixelRatio: 1 }}
-                      />
-                    </div>
+                    <SparklineChart url={sparklineUrl} darkMode={darkMode} />
                   ) : (
                     <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
                   )}
@@ -1165,16 +1099,12 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               {formatValue(holders, 'int')}
             </StyledCell>
-            <StyledCell align="right" isDark={darkMode} style={{ paddingRight: '16px' }}>
+            <StyledCell align="right" isDark={darkMode}>
               {origin || 'XRPL'}
             </StyledCell>
-            <StyledCell
-              align="center"
-              isDark={darkMode}
-              style={{ minWidth: '280px', paddingLeft: '16px', paddingRight: '24px' }}
-            >
+            <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <OptimizedChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}

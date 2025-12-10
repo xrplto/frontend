@@ -322,22 +322,22 @@ const TokenSummary = memo(({ token }) => {
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] px-3 py-2.5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
+    <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
       {/* Row 1: Token Info + Price */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-4">
         {/* Left: Token Image + Info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="relative group cursor-pointer flex-shrink-0" onClick={handleGoogleLensSearch}>
-            <Image src={tokenImageUrl} alt={name} width={40} height={40} priority unoptimized
-              className="rounded-lg object-cover border border-primary/20"
+            <Image src={tokenImageUrl} alt={name} width={44} height={44} priority unoptimized
+              className="rounded-xl object-cover border-2 border-primary/30"
               onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={cn("text-[15px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-              {verified && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓ Verified</span>}
-              {id && <span className="px-1 py-0.5 rounded text-[9px] font-medium bg-primary/10 text-primary">#{id}</span>}
-              <span className={cn("inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px]", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
+              <span className={cn("text-[17px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
+              {verified && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600")}>Verified</span>}
+              {id && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-600")}>#{id}</span>}
+              <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px]", isDark ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-600")}>
                 <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />{origin || 'XRPL'}
               </span>
             </div>
@@ -355,7 +355,7 @@ const TokenSummary = memo(({ token }) => {
 
         {/* Right: Price + Change */}
         <div className="flex flex-col items-end flex-shrink-0">
-          <span className={cn("text-xl font-bold tracking-tight", priceColor ? "" : "text-primary")} style={priceColor ? { color: priceColor } : undefined}>
+          <span className={cn("text-2xl font-bold tracking-tight", priceColor ? "" : isDark ? "text-white" : "text-gray-900")} style={priceColor ? { color: priceColor } : undefined}>
             {priceDisplay.isCompact ? <>{priceDisplay.symbol}0.0<sub className="text-[0.5em]">{priceDisplay.zeros}</sub>{priceDisplay.significant}</> : <>{priceDisplay.symbol}{priceDisplay.price}</>}
           </span>
           <span className={cn("text-[11px] font-medium", mainChange >= 0 ? "text-green-500" : "text-red-500")}>
@@ -364,42 +364,42 @@ const TokenSummary = memo(({ token }) => {
         </div>
       </div>
 
-      {/* Row 2: Stats Grid (2x2) */}
-      <div className={cn("grid grid-cols-4 gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+      {/* Row 2: Stats Grid */}
+      <div className={cn("grid grid-cols-4 gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
         {[
           { label: 'MCAP', value: formatValue(convertedMarketCap), color: 'text-green-500' },
           { label: 'VOL 24H', value: formatValue(convertedVolume), color: 'text-red-500' },
           { label: 'TVL', value: formatValue(convertedTvl), color: 'text-blue-500' },
           { label: 'HOLDERS', value: formatValue(holders || 0), color: 'text-orange-500', noSymbol: true }
         ].map((stat) => (
-          <div key={stat.label} className={cn("text-center py-1.5 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50/50")}>
-            <div className={cn("text-[9px] uppercase tracking-wide mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
-            <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
+          <div key={stat.label} className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+            <div className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>{stat.label}</div>
+            <div className={cn("text-[14px] font-semibold", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
           </div>
         ))}
       </div>
 
       {/* Row 3: Price Changes */}
-      <div className="grid grid-cols-4 gap-2 mt-2">
+      <div className="grid grid-cols-4 gap-3 mt-3">
         {priceChanges.map((item) => (
-          <div key={item.label} className={cn("text-center py-1 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50/50")}>
-            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{item.label}</span>
-            <span className={cn("text-[12px] font-medium ml-1", item.value >= 0 ? "text-green-500" : "text-red-500")}>{formatPct(item.value)}</span>
+          <div key={item.label} className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+            <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>{item.label}</span>
+            <span className={cn("text-[13px] font-semibold ml-1.5", item.value >= 0 ? "text-green-500" : "text-red-500")}>{formatPct(item.value)}</span>
           </div>
         ))}
       </div>
 
       {/* Row 4: 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
-          <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24H</span>
+        <div className={cn("flex items-center gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+          <span className={cn("text-[10px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/40" : "text-gray-500")}>24H</span>
           <span className="text-[10px] text-green-500 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
             {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
           </span>
-          <div className={cn("flex-1 h-1.5 rounded-full relative", isDark ? "bg-white/10" : "bg-gray-200")}>
-            <div className="absolute inset-y-0 rounded-full bg-gradient-to-r from-green-500/30 to-red-500/30" style={{ width: '100%' }} />
-            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary shadow-sm" style={{ left: `calc(${range24h.percent}% - 6px)` }} />
+          <div className={cn("flex-1 h-2 rounded-full relative overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500/40 via-yellow-500/30 to-red-500/40" />
+            <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-primary shadow-lg" style={{ left: `calc(${range24h.percent}% - 7px)` }} />
           </div>
           <span className="text-[10px] text-red-500 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
@@ -409,7 +409,7 @@ const TokenSummary = memo(({ token }) => {
       )}
 
       {/* Row 5: Actions */}
-      <div className={cn("flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className={cn("flex items-center justify-between gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
         <div className="flex items-center gap-1.5 relative">
           {trustStatus && trustStatus !== 'loading' && (
             <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
@@ -420,12 +420,14 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleSetTrust}
             disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
             className={cn(
-              "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all flex items-center gap-1",
-              isRemove ? "border-red-500/30 text-red-500 hover:bg-red-500/10" : "border-green-500/30 text-green-500 hover:bg-green-500/10",
+              "px-4 py-2 rounded-lg text-[12px] font-medium transition-all flex items-center gap-1.5",
+              isRemove
+                ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                : "bg-green-500/10 text-green-500 hover:bg-green-500/20",
               (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
             )}
           >
-            {trustStatus === 'loading' ? <Loader2 size={12} className="animate-spin" /> : null}
+            {trustStatus === 'loading' ? <Loader2 size={14} className="animate-spin" /> : null}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
         </div>

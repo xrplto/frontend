@@ -7,7 +7,6 @@ import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
 import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
-import Sparkline from 'src/components/Sparkline';
 
 // Optimized chart wrapper with direct canvas rendering
 const OptimizedChart = memo(

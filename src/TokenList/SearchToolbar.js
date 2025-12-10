@@ -75,12 +75,11 @@ const TagsScrollArea = styled.div`
   align-items: center;
   gap: 6px;
   overflow-x: auto;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-right: 4px;
 
   &::-webkit-scrollbar {
     display: none;
@@ -101,6 +100,7 @@ const RowContent = styled.div`
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  flex: 1 1 auto;
 
   @media (max-width: 600px) {
     gap: 6px;
@@ -1050,7 +1050,7 @@ const SearchToolbar = memo(function SearchToolbar({
             selected={currentView === 'trending'}
             darkMode={darkMode}
           >
-            <Flame size={12} /> Hot
+            <Flame size={12} /> Trending
           </Chip>
 
           <Chip
@@ -1058,7 +1058,7 @@ const SearchToolbar = memo(function SearchToolbar({
             selected={currentView === 'spotlight'}
             darkMode={darkMode}
           >
-            <Gem size={12} /> Gems
+            <Gem size={12} /> Spotlight
           </Chip>
 
           <Chip
@@ -1082,7 +1082,7 @@ const SearchToolbar = memo(function SearchToolbar({
             selected={currentView === 'most-viewed'}
             darkMode={darkMode}
           >
-            <Eye size={12} /> Popular
+            <Eye size={12} /> Most Viewed
           </Chip>
         </RowContent>
 

@@ -1,53 +1,25 @@
-import { useContext, useState, useMemo } from 'react';
-import Image from 'next/image';
+import { useContext } from 'react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 
-function Logo({ style }) {
+function Logo() {
   const { themeName } = useContext(AppContext);
-  const [imageError, setImageError] = useState(false);
-
-  // Memoize logo paths - removed query string to avoid Next.js localPatterns warning
-  const { img_black, img_white } = useMemo(
-    () => ({
-      img_black: '/logo/xrpl-to-logo-black.svg',
-      img_white: '/logo/xrpl-to-logo-white.svg'
-    }),
-    []
-  );
-
   const isDark = themeName === 'XrplToDarkTheme';
-  const img = isDark ? img_white : img_black;
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
+  const img = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
 
   return (
-    <div
-      className="inline-flex cursor-pointer relative w-[100px] h-9"
-      style={style}
-      onClick={() => (window.location.href = '/')}
+    <a
+      href="/"
+      className="inline-flex cursor-pointer items-center"
     >
-      {imageError ? (
-        <div className={cn(
-          "w-[100px] h-9 flex items-center justify-center",
-          isDark ? "text-white" : "text-black"
-        )}>
-          XRPL.to
-        </div>
-      ) : (
-        <Image
-          src={img}
-          width={100}
-          height={37}
-          alt="XRPL.to - XRP Ledger Analytics"
-          onError={handleImageError}
-          style={{ objectFit: 'contain', width: 'auto', height: 'auto' }}
-          priority
-        />
-      )}
-    </div>
+      <img
+        src={img}
+        alt="XRPL.to"
+        width={100}
+        height={36}
+        style={{ width: '100px', height: '36px', objectFit: 'contain' }}
+      />
+    </a>
   );
 }
 

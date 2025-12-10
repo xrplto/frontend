@@ -622,11 +622,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         isDark ? 'bg-black border-b border-white/10' : 'bg-white border-b border-gray-200',
         !openDrawer && !isDark && 'bg-white/95 backdrop-blur-md'
       )}
-    >
-      <div className="mx-auto flex w-full max-w-full items-center px-4 sm:px-6">
+          >
+      <div className="relative mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-6">
         {/* Left: Logo + Nav */}
-        <div className="flex shrink-0 items-center gap-6">
-          <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '24px' }} />
+        <div className="flex shrink-0 items-center gap-6" >
+          <Logo alt="xrpl.to Logo" />
 
           {/* Desktop Navigation - Left Side */}
           {isDesktop && (
@@ -661,7 +661,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
                         : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
                     )}
-                  >
+                                      >
                     <div className="flex gap-0 p-1.5">
                       {/* Column 1: Launchpads */}
                       <div className="min-w-[150px] p-2">
@@ -763,7 +763,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
                         : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
                     )}
-                  >
+                                      >
                     <div className="p-1.5">
                       {nftItems.map((item) => (
                         <div
@@ -813,10 +813,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
         {/* Center: Search */}
         {isDesktop && (
-          <div ref={searchRef} className="relative flex-1 flex justify-center px-8">
+          <div ref={searchRef} className="absolute left-1/2 -translate-x-1/2 w-full max-w-[600px] px-4" >
             <div
               className={cn(
-                "flex items-center gap-3 px-4 h-[52px] w-full max-w-[800px] cursor-text border-0 transition-all duration-200",
+                "flex items-center gap-3 px-4 h-[36px] w-full cursor-text rounded-lg transition-all duration-200",
                 searchOpen
                   ? isDark ? "bg-blue-500/10" : "bg-blue-50"
                   : isDark
@@ -1369,7 +1369,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         {!fullSearch && isTabletOrMobile && <div className="flex-1" />}
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" >
           {/* Mobile Search Icon */}
           {!fullSearch && isTabletOrMobile && (
             <button
@@ -1418,7 +1418,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         ? 'border-blue-500/20 bg-[#070b12]/98 backdrop-blur-xl shadow-2xl shadow-blue-500/10'
                         : 'border-blue-200 bg-white/98 backdrop-blur-xl shadow-xl shadow-blue-200/50'
                     )}
-                  >
+                                      >
                     <div className="p-3">
                       {/* Currency Section */}
                       <p className={cn('text-[10px] font-medium uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>

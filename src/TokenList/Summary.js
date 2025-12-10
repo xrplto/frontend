@@ -39,13 +39,8 @@ const Container = styled.div`
   overflow: visible;
 
   @media (max-width: 600px) {
-    margin: 4px 0;
-    padding: 0 4px;
-  }
-
-  @media (max-width: 480px) {
-    margin: 4px 0;
-    padding: 0 4px;
+    margin: 8px 0;
+    padding: 0;
   }
 `;
 
@@ -60,139 +55,97 @@ const Stack = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(${(props) => props.cols || 1}, 1fr);
-  gap: ${(props) => props.spacing || '12px'};
+  grid-template-columns: repeat(6, 1fr) 1.5fr;
+  gap: 12px;
   width: 100%;
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(${(props) => props.mdCols || props.cols || 1}, 1fr);
-    gap: 12px;
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   @media (max-width: 600px) {
     display: flex;
     overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
+    gap: 8px;
+    padding-bottom: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;
     }
   }
-
-  @media (max-width: 480px) {
-    gap: 6px;
-  }
 `;
 
 const MetricBox = styled.div`
-  padding: 16px;
-  height: 100%;
-  min-height: 85px;
+  padding: 14px 16px;
+  height: 88px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
-  border-radius: 0;
+  border-radius: 12px;
   background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  transition: border-color 0.2s ease, background 0.2s ease;
+  border: 1.5px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0, 0, 0, 0.08)'};
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.3)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
   }
 
   @media (max-width: 600px) {
-    padding: 8px;
-    min-height: 62px;
+    padding: 10px 12px;
+    height: 72px;
     flex: 0 0 auto;
-    min-width: 72px;
-    border-radius: 0;
-    border-width: 1px;
-    justify-content: space-between;
-  }
-
-  @media (max-width: 480px) {
-    padding: 8px;
-    min-height: 62px;
-    flex: 0 0 auto;
-    min-width: 72px;
-    border-radius: 0;
-    border-width: 1px;
-    justify-content: space-between;
+    min-width: 100px;
+    border-radius: 10px;
   }
 `;
 
 const MetricTitle = styled.span`
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
-  margin-bottom: 6px;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.55)'};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.6rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-    flex-shrink: 0;
+    font-size: 0.55rem;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.35rem;
-  font-weight: 500;
+  font-size: 1.4rem;
+  font-weight: 600;
   color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
-  line-height: 1.1;
-  margin-bottom: 4px;
-  font-family: inherit;
+  line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.8rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.8rem;
-    margin-bottom: 2px;
-    line-height: 1.1;
+    font-size: 0.95rem;
   }
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.75rem;
-  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
+  font-size: 0.7rem;
+  color: ${(props) => props.isPositive ? '#22c55e' : '#ef4444'};
   display: inline-flex;
   align-items: center;
   gap: 2px;
   font-weight: 500;
-  font-family: inherit;
   letter-spacing: -0.01em;
 
   @media (max-width: 600px) {
     font-size: 0.6rem;
-    gap: 1px;
-    flex-shrink: 0;
-    margin-top: auto;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.6rem;
-    gap: 1px;
-    flex-shrink: 0;
-    margin-top: auto;
   }
 `;
 
@@ -287,16 +240,22 @@ const CircularProgress = styled.div`
 const ChartMetricBox = styled(MetricBox)`
   grid-column: span 1;
   overflow: visible;
+  height: auto;
+  min-height: 88px;
 
-  @media (max-width: 900px) {
-    grid-column: span 1;
+  @media (max-width: 1400px) {
+    grid-column: span 4;
+  }
+
+  @media (max-width: 1024px) {
+    grid-column: span 3;
+  }
+
+  @media (max-width: 768px) {
+    grid-column: span 2;
   }
 
   @media (max-width: 600px) {
-    display: none;
-  }
-
-  @media (max-width: 480px) {
     display: none;
   }
 `;
@@ -952,7 +911,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={6} mdCols={3} smCols={1}>
+            <Grid>
               <MetricBox isDark={darkMode}>
                 <MetricTitle isDark={darkMode}>MCap</MetricTitle>
                 <MetricValue isDark={darkMode}>
@@ -987,25 +946,29 @@ export default function Summary() {
 
               <MetricBox isDark={darkMode}>
                 <MetricTitle isDark={darkMode}>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
+                <MetricValue isDark={darkMode}>
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
+                      .div(fiatRate)
+                      .toNumber()
+                  )}
+                </MetricValue>
                 {(() => {
                   const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   return (
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                      <MetricValue isDark={darkMode}>
-                        {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(
-                          new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
-                            .div(fiatRate)
-                            .toNumber()
-                        )}
-                      </MetricValue>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
+                        {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
+                        {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
+                      </PercentageChange>
                       {!isMobile && (
                         <>
                           <span style={{
-                            fontSize: '11px',
+                            fontSize: '10px',
                             fontWeight: 400,
-                            padding: '2px 5px',
+                            padding: '1px 4px',
                             borderRadius: '3px',
                             background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
                             color: '#10b981'
@@ -1013,9 +976,9 @@ export default function Summary() {
                             Stable {stablePercent.toFixed(1)}%
                           </span>
                           <span style={{
-                            fontSize: '11px',
+                            fontSize: '10px',
                             fontWeight: 400,
-                            padding: '2px 5px',
+                            padding: '1px 4px',
                             borderRadius: '3px',
                             background: darkMode ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
                             color: '#f59e0b'
@@ -1027,10 +990,6 @@ export default function Summary() {
                     </div>
                   );
                 })()}
-                <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
-                  {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
-                </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={darkMode}>
@@ -1047,42 +1006,77 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>{isMobile ? 'Traders' : '24h Traders'}</MetricTitle>
+                <MetricValue isDark={darkMode}>
+                  {formatNumberWithDecimals(metrics.H24?.uniqueTraders24H || 0)}
+                </MetricValue>
+                {(() => {
+                  const buyVol = metrics.H24?.globalBuy24hxrp || 0;
+                  const sellVol = metrics.H24?.globalSell24hxrp || 0;
+                  const total = buyVol + sellVol;
+                  const buyPercent = total > 0 ? (buyVol / total * 100) : 50;
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 400,
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                        background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                        color: '#10b981'
+                      }}>
+                        Buy {buyPercent.toFixed(0)}%
+                      </span>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 400,
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                        background: darkMode ? 'rgba(239, 68, 68, 0.12)' : 'rgba(239, 68, 68, 0.08)',
+                        color: '#ef4444'
+                      }}>
+                        Sell {(100 - buyPercent).toFixed(0)}%
+                      </span>
+                    </div>
+                  );
+                })()}
+              </MetricBox>
+
               <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
-                  <div>
-                    <MetricValue
-                      style={{
-                        fontSize: isMobile ? '0.8rem' : '1.35rem',
-                        color:
-                          metrics.global?.sentimentScore >= 60
+                <div style={{ display: 'flex', gap: isMobile ? '16px' : '28px', alignItems: 'baseline' }}>
+                  <MetricValue
+                    style={{
+                      fontSize: isMobile ? '0.95rem' : '1.4rem',
+                      color:
+                        metrics.global?.sentimentScore >= 60
+                          ? '#10b981'
+                          : metrics.global?.sentimentScore >= 40
+                            ? '#fbbf24'
+                            : '#ef4444'
+                    }}
+                  >
+                    {(metrics.global?.sentimentScore || 0).toFixed(0)}
+                  </MetricValue>
+                  <MetricValue
+                    isDark={darkMode}
+                    style={{
+                      fontSize: isMobile ? '0.95rem' : '1.4rem',
+                      color:
+                        (metrics.global?.avgRSI || 50) <= 30
+                          ? '#ef4444'
+                          : (metrics.global?.avgRSI || 50) >= 70
                             ? '#10b981'
-                            : metrics.global?.sentimentScore >= 40
-                              ? '#fbbf24'
-                              : '#ef4444'
-                      }}
-                    >
-                      {(metrics.global?.sentimentScore || 0).toFixed(0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px', fontSize: isMobile ? '0.5rem' : undefined }}>Sent</VolumePercentage>
-                  </div>
-                  <div>
-                    <MetricValue
-                      isDark={darkMode}
-                      style={{
-                        fontSize: isMobile ? '0.8rem' : '1.35rem',
-                        color:
-                          (metrics.global?.avgRSI || 50) <= 30
-                            ? '#ef4444'
-                            : (metrics.global?.avgRSI || 50) >= 70
-                              ? '#10b981'
-                              : darkMode ? '#FFFFFF' : '#212B36'
-                      }}
-                    >
-                      {(metrics.global?.avgRSI || 50).toFixed(0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px', fontSize: isMobile ? '0.5rem' : undefined }}>RSI</VolumePercentage>
-                  </div>
+                            : darkMode ? '#FFFFFF' : '#212B36'
+                    }}
+                  >
+                    {(metrics.global?.avgRSI || 50).toFixed(0)}
+                  </MetricValue>
+                </div>
+                <div style={{ display: 'flex', gap: isMobile ? '16px' : '28px' }}>
+                  <VolumePercentage isDark={darkMode} style={{ fontSize: isMobile ? '0.5rem' : '0.6rem' }}>Sent</VolumePercentage>
+                  <VolumePercentage isDark={darkMode} style={{ fontSize: isMobile ? '0.5rem' : '0.6rem' }}>RSI</VolumePercentage>
                 </div>
               </MetricBox>
 
