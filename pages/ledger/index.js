@@ -1,11 +1,26 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { Zap, Clock, Hash, Layers, ChevronRight, Search, X } from 'lucide-react';
+import { Zap, Clock, Hash, Layers, ChevronRight, Search, X, Copy, Check, Volume2, VolumeX, ChevronDown, Share2 } from 'lucide-react';
 
-// Transaction type categories with colors (per xrpl.org/docs/references/protocol/transactions/types)
+// All XRPL transaction types
+const ALL_TX_TYPES = [
+  'Payment', 'OfferCreate', 'OfferCancel', 'TrustSet',
+  'AccountSet', 'AccountDelete', 'SetRegularKey', 'SignerListSet', 'DepositPreauth', 'TicketCreate',
+  'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMVote', 'AMMBid', 'AMMDelete', 'AMMClawback',
+  'NFTokenMint', 'NFTokenBurn', 'NFTokenCreateOffer', 'NFTokenCancelOffer', 'NFTokenAcceptOffer',
+  'CheckCreate', 'CheckCash', 'CheckCancel',
+  'EscrowCreate', 'EscrowFinish', 'EscrowCancel',
+  'PaymentChannelCreate', 'PaymentChannelFund', 'PaymentChannelClaim',
+  'Clawback', 'DIDSet', 'DIDDelete',
+  'XChainCreateBridge', 'XChainCommit', 'XChainClaim', 'XChainCreateClaimID',
+  'EnableAmendment', 'SetFee', 'UNLModify'
+];
+
+// Transaction type categories with colors
 const TX_CATEGORIES = {
   Payment: { color: '#22c55e', label: 'Payment' },
   Dex: { color: '#3b82f6', label: 'DEX' },
@@ -15,29 +30,89 @@ const TX_CATEGORIES = {
   Other: { color: '#64748b', label: 'Other' }
 };
 
-// Map transaction types to categories
-const getTxCategory = (txType) => {
-  const dexTypes = [
-    'OfferCreate', 'OfferCancel', 'TrustSet',
-    'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMBid', 'AMMVote', 'AMMDelete', 'AMMClawback',
-    'Clawback', 'MPTokenAuthorize', 'MPTokenIssuanceCreate', 'MPTokenIssuanceDestroy', 'MPTokenIssuanceSet'
-  ];
-  const nftTypes = ['NFTokenMint', 'NFTokenBurn', 'NFTokenCreateOffer', 'NFTokenCancelOffer', 'NFTokenAcceptOffer', 'NFTokenModify'];
-  const accountTypes = [
-    'AccountSet', 'AccountDelete', 'SignerListSet', 'DepositPreauth', 'DelegateSet',
-    'DIDSet', 'DIDDelete', 'CredentialCreate', 'CredentialAccept', 'CredentialDelete', 'TicketCreate'
-  ];
-  const pseudoTypes = ['EnableAmendment', 'SetFee', 'UNLModify'];
+// Action types with shapes
+const TX_ACTIONS = {
+  Create: { shape: 'circle', label: 'Create' },
+  Modify: { shape: 'square', label: 'Modify' },
+  Finish: { shape: 'triangle', label: 'Finish' },
+  Cancel: { shape: 'x', label: 'Cancel' },
+  Send: { shape: 'arrow', label: 'Send' }
+};
 
+const getTxAction = (txType) => {
+  const createTypes = ['OfferCreate', 'NFTokenCreateOffer', 'NFTokenMint', 'AMMCreate', 'CheckCreate', 'EscrowCreate', 'TicketCreate', 'TrustSet'];
+  const modifyTypes = ['AccountSet', 'AMMDeposit', 'AMMWithdraw', 'AMMVote', 'AMMBid', 'SignerListSet', 'DepositPreauth'];
+  const finishTypes = ['NFTokenAcceptOffer', 'EscrowFinish', 'CheckCash'];
+  const cancelTypes = ['OfferCancel', 'NFTokenCancelOffer', 'NFTokenBurn', 'EscrowCancel', 'CheckCancel', 'AMMDelete', 'AccountDelete'];
+  const sendTypes = ['Payment', 'Clawback'];
+
+  if (createTypes.includes(txType)) return 'Create';
+  if (modifyTypes.includes(txType)) return 'Modify';
+  if (finishTypes.includes(txType)) return 'Finish';
+  if (cancelTypes.includes(txType)) return 'Cancel';
+  if (sendTypes.includes(txType)) return 'Send';
+  return 'Modify';
+};
+
+const getTxCategory = (txType) => {
   if (txType === 'Payment') return 'Payment';
-  if (dexTypes.includes(txType)) return 'Dex';
-  if (nftTypes.includes(txType)) return 'NFT';
-  if (accountTypes.includes(txType)) return 'Account';
-  if (pseudoTypes.includes(txType)) return 'Pseudo';
+  if (['OfferCreate', 'OfferCancel', 'TrustSet', 'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMBid', 'AMMVote', 'AMMDelete', 'Clawback'].includes(txType)) return 'Dex';
+  if (['NFTokenMint', 'NFTokenBurn', 'NFTokenCreateOffer', 'NFTokenCancelOffer', 'NFTokenAcceptOffer'].includes(txType)) return 'NFT';
+  if (['AccountSet', 'AccountDelete', 'SignerListSet', 'DepositPreauth', 'TicketCreate'].includes(txType)) return 'Account';
+  if (['EnableAmendment', 'SetFee', 'UNLModify'].includes(txType)) return 'Pseudo';
   return 'Other';
 };
 
-// Color legend component
+// Shape SVG components
+const ShapeIcon = ({ shape, size = 10, color = 'currentColor' }) => {
+  const s = size;
+  switch (shape) {
+    case 'circle':
+      return <circle cx={s/2} cy={s/2} r={s/2 - 1} fill={color} />;
+    case 'square':
+      return <rect x={1} y={1} width={s-2} height={s-2} fill={color} />;
+    case 'triangle':
+      return <polygon points={`${s/2},1 ${s-1},${s-1} 1,${s-1}`} fill={color} />;
+    case 'x':
+      return <path d={`M2,2 L${s-2},${s-2} M${s-2},2 L2,${s-2}`} stroke={color} strokeWidth={2} fill="none" />;
+    case 'arrow':
+      return <path d={`M2,${s/2} L${s-2},${s/2} M${s-4},${s/4} L${s-2},${s/2} L${s-4},${s*3/4}`} stroke={color} strokeWidth={2} fill="none" />;
+    default:
+      return <circle cx={s/2} cy={s/2} r={s/2 - 1} fill={color} />;
+  }
+};
+
+// Copy button
+const CopyButton = ({ text, isDark }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <button onClick={copy} className={cn("p-1 rounded transition-colors", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+      {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />}
+    </button>
+  );
+};
+
+// Play alert sound
+const playAlertSound = () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    gain.gain.value = 0.1;
+    osc.start();
+    osc.stop(ctx.currentTime + 0.1);
+  } catch {}
+};
+
+// Color legend
 const ColorLegend = ({ isDark }) => (
   <div className="flex flex-wrap gap-3 sm:gap-4">
     {Object.entries(TX_CATEGORIES).map(([key, { color, label }]) => (
@@ -49,11 +124,26 @@ const ColorLegend = ({ isDark }) => (
   </div>
 );
 
-// Transaction bar that lazy-loads real data
-const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddress, onAddressMatch }) => {
+// Shapes legend
+const ShapesLegend = ({ isDark }) => (
+  <div className="flex flex-wrap gap-3 sm:gap-4">
+    {Object.entries(TX_ACTIONS).map(([key, { shape, label }]) => (
+      <div key={key} className="flex items-center gap-1.5">
+        <svg width={10} height={10} className={isDark ? "text-white/70" : "text-gray-600"}>
+          <ShapeIcon shape={shape} size={10} color="currentColor" />
+        </svg>
+        <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>{label}</span>
+      </div>
+    ))}
+  </div>
+);
+
+// Transaction bar
+const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], watchTxType, onTypeMatch }) => {
   const [txSequence, setTxSequence] = useState(null);
   const [loading, setLoading] = useState(true);
   const [matchCount, setMatchCount] = useState(0);
+  const [typeMatchCount, setTypeMatchCount] = useState(0);
 
   useEffect(() => {
     if (!ledgerIndex || txnCount === 0) {
@@ -69,80 +159,129 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddress, onAddress
       .then(res => res.json())
       .then(transactions => {
         if (Array.isArray(transactions)) {
-          // Sort by TransactionIndex
           const sorted = transactions.sort(
             (a, b) => (a.meta?.TransactionIndex || 0) - (b.meta?.TransactionIndex || 0)
           );
 
-          // Check if address is involved in transaction
-          const isAddressInvolved = (tx, addr) => {
-            if (!addr) return false;
-            return tx.Account === addr || tx.Destination === addr ||
-              tx.Owner === addr || tx.Issuer === addr;
+          const isAddressInvolved = (tx) => {
+            if (!watchAddresses.length) return false;
+            return watchAddresses.some(addr =>
+              tx.Account === addr || tx.Destination === addr || tx.Owner === addr || tx.Issuer === addr
+            );
           };
 
-          // Map to categories, highlight watched address
           const sequence = sorted.map(tx => ({
             category: getTxCategory(tx.TransactionType),
-            matched: watchAddress ? isAddressInvolved(tx, watchAddress) : false,
-            hash: tx.hash
+            txType: tx.TransactionType,
+            matched: isAddressInvolved(tx),
+            typeMatched: watchTxType ? tx.TransactionType === watchTxType : false
           }));
 
           const matches = sequence.filter(s => s.matched).length;
+          const typeMatches = sequence.filter(s => s.typeMatched).length;
           setMatchCount(matches);
+          setTypeMatchCount(typeMatches);
           setTxSequence(sequence);
-          if (matches > 0 && onAddressMatch) {
-            onAddressMatch(ledgerIndex, matches);
-          }
+          if (onTypeMatch) onTypeMatch(typeMatches);
         }
         setLoading(false);
       })
       .catch(err => {
-        if (err.name !== 'AbortError') {
-          setLoading(false);
-        }
+        if (err.name !== 'AbortError') setLoading(false);
       });
 
     return () => controller.abort();
-  }, [ledgerIndex, txnCount, watchAddress, onAddressMatch]);
+  }, [ledgerIndex, txnCount, watchAddresses.join(','), watchTxType]);
 
   if (txnCount === 0) return null;
 
-  // Loading skeleton
   if (loading) {
-    return (
-      <div className={cn(
-        "h-1.5 rounded-full overflow-hidden animate-pulse",
-        isDark ? "bg-white/10" : "bg-gray-200"
-      )} />
-    );
+    return <div className={cn("h-5 rounded-lg animate-pulse", isDark ? "bg-white/10" : "bg-gray-200")} />;
   }
 
   if (!txSequence || txSequence.length === 0) return null;
 
   return (
     <div className="space-y-1">
-      <div className="h-1.5 rounded-full overflow-hidden flex">
-        {txSequence.map((item, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              backgroundColor: item.matched ? '#fff' : (TX_CATEGORIES[item.category]?.color || TX_CATEGORIES.Other.color),
-              boxShadow: item.matched ? '0 0 4px #fff' : 'none'
-            }}
-            className="h-full"
-          />
-        ))}
+      <div className="h-2 rounded-full overflow-hidden flex">
+        {txSequence.map((item, i) => {
+          let bgColor = TX_CATEGORIES[item.category]?.color || TX_CATEGORIES.Other.color;
+          let glow = 'none';
+          if (item.typeMatched) { bgColor = '#facc15'; glow = '0 0 6px #facc15'; }
+          if (item.matched) { bgColor = '#fff'; glow = '0 0 6px #fff'; }
+          return (
+            <div
+              key={i}
+              className="h-full"
+              style={{
+                flex: 1,
+                backgroundColor: bgColor,
+                boxShadow: glow,
+                minWidth: 2
+              }}
+              title={`${item.txType} (${item.category})`}
+            />
+          );
+        })}
       </div>
-      {watchAddress && matchCount > 0 && (
-        <p className="text-[10px] text-primary font-medium">{matchCount} tx from watched address</p>
+      {(watchAddresses.length > 0 && matchCount > 0) || (watchTxType && typeMatchCount > 0) ? (
+        <p className="text-[10px] font-medium">
+          {watchTxType && typeMatchCount > 0 && <span className="text-yellow-400">{typeMatchCount} {watchTxType}</span>}
+          {watchTxType && typeMatchCount > 0 && watchAddresses.length > 0 && matchCount > 0 && ' · '}
+          {watchAddresses.length > 0 && matchCount > 0 && <span className="text-primary">{matchCount} from address</span>}
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
+// Transaction type filter
+const TxTypeFilter = ({ selected, onChange, isDark }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 text-[13px] rounded-lg border-[1.5px] transition-colors",
+          selected ? "border-primary bg-primary/10 text-primary" : (isDark ? "border-white/10 text-white/70 hover:border-white/20" : "border-gray-200 text-gray-600 hover:border-gray-300")
+        )}
+      >
+        <Layers size={14} />
+        {selected || 'Filter by Tx Type'}
+        {selected && (
+          <X
+            size={12}
+            className="hover:text-white"
+            onClick={(e) => { e.stopPropagation(); onChange(''); setOpen(false); }}
+          />
+        )}
+      </button>
+      {open && (
+        <div className={cn(
+          "absolute top-full left-0 mt-1 w-56 max-h-64 overflow-y-auto rounded-lg border-[1.5px] shadow-lg z-50",
+          isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+        )}>
+          {ALL_TX_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => { onChange(type); setOpen(false); }}
+              className={cn(
+                "w-full text-left px-3 py-2 text-[12px] transition-colors",
+                selected === type ? "bg-primary/20 text-primary" : (isDark ? "text-white/70 hover:bg-white/5" : "text-gray-700 hover:bg-gray-50")
+              )}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
 };
 
-// Address filter input
+// Address filter
 const AddressFilter = ({ value, onChange, isDark }) => {
   const [input, setInput] = useState(value);
 
@@ -151,23 +290,15 @@ const AddressFilter = ({ value, onChange, isDark }) => {
     onChange(input.trim());
   };
 
-  const handleClear = () => {
-    setInput('');
-    onChange('');
-  };
-
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
       <div className="relative flex-1">
-        <Search size={14} className={cn(
-          "absolute left-3 top-1/2 -translate-y-1/2",
-          isDark ? "text-white/40" : "text-gray-400"
-        )} />
+        <Search size={14} className={cn("absolute left-3 top-1/2 -translate-y-1/2", isDark ? "text-white/40" : "text-gray-400")} />
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Watch address (r...)"
+          placeholder="Watch addresses (comma-separated)"
           className={cn(
             "w-full pl-9 pr-8 py-2 text-[13px] rounded-lg border-[1.5px] outline-none transition-colors",
             isDark
@@ -178,11 +309,8 @@ const AddressFilter = ({ value, onChange, isDark }) => {
         {input && (
           <button
             type="button"
-            onClick={handleClear}
-            className={cn(
-              "absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded",
-              isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600"
-            )}
+            onClick={() => { setInput(''); onChange(''); }}
+            className={cn("absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
           >
             <X size={14} />
           </button>
@@ -192,9 +320,7 @@ const AddressFilter = ({ value, onChange, isDark }) => {
         type="submit"
         className={cn(
           "px-4 py-2 text-[13px] rounded-lg border-[1.5px] transition-colors",
-          isDark
-            ? "border-primary/50 text-primary hover:bg-primary/10"
-            : "border-primary/50 text-primary hover:bg-primary/5"
+          isDark ? "border-primary/50 text-primary hover:bg-primary/10" : "border-primary/50 text-primary hover:bg-primary/5"
         )}
       >
         Watch
@@ -203,25 +329,29 @@ const AddressFilter = ({ value, onChange, isDark }) => {
   );
 };
 
-// Single ledger card in the stream
-const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
+// Ledger card
+const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType }) => {
   const totalTx = ledger.txn_count || 0;
+  const [hasTypeMatch, setHasTypeMatch] = useState(false);
 
   return (
     <div className={cn(
       "relative p-4 rounded-xl border-[1.5px] transition-all duration-300",
       isLatest && "ring-1 ring-primary/30",
-      isDark
-        ? "border-white/10 bg-white/[0.02]"
-        : "border-gray-200 bg-gray-50/50"
+      hasTypeMatch && watchTxType && "ring-2 ring-yellow-400/50 border-yellow-400/30",
+      isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50/50"
     )}>
       {isLatest && (
         <div className="absolute -top-2 left-4">
-          <span className={cn(
-            "px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full",
-            "bg-primary text-white"
-          )}>
+          <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full bg-primary text-white">
             Latest
+          </span>
+        </div>
+      )}
+      {hasTypeMatch && watchTxType && (
+        <div className="absolute -top-2 right-4">
+          <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-yellow-400 text-black">
+            {watchTxType}
           </span>
         </div>
       )}
@@ -232,10 +362,7 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
             <Layers size={14} className="text-primary" />
             <a
               href={`/ledger/${ledger.ledger_index}`}
-              className={cn(
-                "text-[15px] font-medium hover:text-primary transition-colors",
-                isDark ? "text-white" : "text-gray-900"
-              )}
+              className={cn("text-[15px] font-medium hover:text-primary transition-colors", isDark ? "text-white" : "text-gray-900")}
             >
               #{ledger.ledger_index?.toLocaleString()}
             </a>
@@ -256,12 +383,13 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
             </div>
           </div>
 
-          {/* Transaction bar - lazy loads real data */}
           <TransactionBar
             ledgerIndex={ledger.ledger_index}
             txnCount={totalTx}
             isDark={isDark}
-            watchAddress={watchAddress}
+            watchAddresses={watchAddresses}
+            watchTxType={watchTxType}
+            onTypeMatch={(count) => setHasTypeMatch(count > 0)}
           />
         </div>
 
@@ -269,25 +397,16 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
           href={`/ledger/${ledger.ledger_index}`}
           className={cn(
             "p-2 rounded-lg border-[1.5px] transition-colors",
-            isDark
-              ? "border-white/10 hover:border-primary hover:bg-primary/5"
-              : "border-gray-200 hover:border-primary hover:bg-primary/5"
+            isDark ? "border-white/10 hover:border-primary hover:bg-primary/5" : "border-gray-200 hover:border-primary hover:bg-primary/5"
           )}
         >
           <ChevronRight size={14} className={isDark ? "text-white/60" : "text-gray-400"} />
         </a>
       </div>
 
-      {/* Hash preview */}
-      <div className={cn(
-        "mt-3 pt-3 border-t flex items-center gap-1.5",
-        isDark ? "border-white/5" : "border-gray-100"
-      )}>
+      <div className={cn("mt-3 pt-3 border-t flex items-center gap-1.5", isDark ? "border-white/5" : "border-gray-100")}>
         <Hash size={10} className={isDark ? "text-white/30" : "text-gray-300"} />
-        <span className={cn(
-          "text-[10px] font-mono truncate",
-          isDark ? "text-white/30" : "text-gray-400"
-        )}>
+        <span className={cn("text-[10px] font-mono truncate", isDark ? "text-white/30" : "text-gray-400")}>
           {ledger.ledger_hash}
         </span>
       </div>
@@ -295,7 +414,7 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
   );
 };
 
-// Stats bar at the top
+// Stats bar
 const StatsBar = ({ latestLedger, isDark }) => {
   if (!latestLedger) return null;
 
@@ -315,47 +434,216 @@ const StatsBar = ({ latestLedger, isDark }) => {
     )}>
       {stats.map(({ label, value }) => (
         <div key={label}>
-          <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>
-            {label}
-          </p>
-          <p className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-            {value}
-          </p>
+          <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>{label}</p>
+          <p className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{value}</p>
         </div>
       ))}
     </div>
   );
 };
 
-// Connection status indicator
+// Connection status
 const ConnectionStatus = ({ status, isDark }) => {
-  const statusConfig = {
+  const config = {
     connecting: { color: 'bg-yellow-500', text: 'Connecting...' },
     connected: { color: 'bg-green-500', text: 'Live' },
     disconnected: { color: 'bg-red-500', text: 'Disconnected' }
-  };
-
-  const config = statusConfig[status] || statusConfig.disconnected;
+  }[status] || { color: 'bg-red-500', text: 'Disconnected' };
 
   return (
     <div className="flex items-center gap-1.5">
       <div className={cn("w-1.5 h-1.5 rounded-full", config.color, status === 'connected' && "animate-pulse")} />
-      <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
-        {config.text}
-      </span>
+      <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>{config.text}</span>
     </div>
   );
 };
 
-const LedgerStreamPage = () => {
+export default function LedgerStreamPage() {
+  const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [ledgers, setLedgers] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState('connecting');
-  const [watchAddress, setWatchAddress] = useState('');
+  const [watchAddresses, setWatchAddresses] = useState([]);
+  const [watchTxType, setWatchTxType] = useState('');
+  const [watchedTxs, setWatchedTxs] = useState([]);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [expandedTx, setExpandedTx] = useState(null);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+
+  // Load from URL params
+  useEffect(() => {
+    if (router.isReady) {
+      if (router.query.address) setWatchAddresses(router.query.address.split(',').filter(Boolean));
+      if (router.query.type) setWatchTxType(router.query.type);
+      if (router.query.sound === '1') setSoundEnabled(true);
+    }
+  }, [router.isReady, router.query]);
+
+  // Sync to URL
+  const updateURL = useCallback((addresses, txType, sound) => {
+    const params = new URLSearchParams();
+    if (addresses.length) params.set('address', addresses.join(','));
+    if (txType) params.set('type', txType);
+    if (sound) params.set('sound', '1');
+    const url = params.toString() ? `?${params.toString()}` : '/ledger';
+    router.replace(url, undefined, { shallow: true });
+  }, [router]);
+
+  const handleAddressChange = (input) => {
+    const addresses = input.split(',').map(a => a.trim()).filter(Boolean);
+    setWatchAddresses(addresses);
+    updateURL(addresses, watchTxType, soundEnabled);
+  };
+
+  const handleTxTypeChange = (type) => {
+    setWatchTxType(type);
+    updateURL(watchAddresses, type, soundEnabled);
+  };
+
+  const handleSoundToggle = () => {
+    const newVal = !soundEnabled;
+    setSoundEnabled(newVal);
+    updateURL(watchAddresses, watchTxType, newVal);
+    if (newVal) playAlertSound();
+  };
+
+  const copyShareURL = () => {
+    navigator.clipboard.writeText(window.location.href);
+  };
+
+  // Fetch transactions for watched addresses when new ledger arrives
+  useEffect(() => {
+    if (watchAddresses.length === 0 || ledgers.length === 0) return;
+
+    const latestLedger = ledgers[0];
+    if (!latestLedger?.ledger_index || latestLedger.txn_count === 0) return;
+
+    const controller = new AbortController();
+
+    fetch(`https://api.xrpscan.com/api/v1/ledger/${latestLedger.ledger_index}/transactions`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(transactions => {
+        if (!Array.isArray(transactions)) return;
+
+        const isAddressInvolved = (tx) => {
+          return watchAddresses.some(addr =>
+            tx.Account === addr || tx.Destination === addr || tx.Owner === addr || tx.Issuer === addr
+          );
+        };
+
+        const decodeHexCurrency = (code) => {
+          if (!code || code.length <= 3) return code;
+          if (code.length === 40 && /^[0-9A-Fa-f]+$/.test(code)) {
+            try {
+              const hex = code.replace(/0+$/, '');
+              let str = '';
+              for (let i = 0; i < hex.length; i += 2) {
+                const char = parseInt(hex.substr(i, 2), 16);
+                if (char >= 32 && char < 127) str += String.fromCharCode(char);
+              }
+              return str || code.slice(0, 8);
+            } catch { return code.slice(0, 8); }
+          }
+          return code;
+        };
+
+        const formatValue = (val) => {
+          const num = parseFloat(val);
+          if (isNaN(num)) return '0';
+          if (num > 1e20) return 'MAX';
+          if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+          if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+          if (num < 0.01 && num > 0) return '<0.01';
+          return num.toFixed(2);
+        };
+
+        const parseAmount = (amt) => {
+          if (!amt) return null;
+          if (typeof amt === 'string') return { currency: 'XRP', value: formatValue(parseInt(amt) / 1000000) };
+          return { currency: decodeHexCurrency(amt.currency), value: formatValue(amt.value), issuer: amt.issuer };
+        };
+
+        const getTxLabel = (tx) => {
+          if (tx.TransactionType === 'Payment') {
+            const sendMax = parseAmount(tx.SendMax);
+            const amount = parseAmount(tx.Amount || tx.DeliverMax);
+            const delivered = parseAmount(tx.meta?.delivered_amount || tx.meta?.DeliveredAmount);
+
+            // Has SendMax = cross-currency swap
+            if (sendMax && amount) {
+              const received = delivered || amount;
+              return {
+                label: 'Swap',
+                detail: `${sendMax.value} ${sendMax.currency} → ${received.value} ${received.currency}`
+              };
+            }
+            // Same currency = transfer
+            const transferAmt = delivered || amount;
+            return {
+              label: 'Transfer',
+              detail: transferAmt ? `${transferAmt.value} ${transferAmt.currency}` : ''
+            };
+          }
+          if (tx.TransactionType === 'OfferCreate') {
+            const pays = parseAmount(tx.TakerPays);
+            const gets = parseAmount(tx.TakerGets);
+            return {
+              label: 'DEX Order',
+              detail: pays && gets ? `${gets.value} ${gets.currency} for ${pays.value} ${pays.currency}` : ''
+            };
+          }
+          if (tx.TransactionType === 'TrustSet') {
+            const limit = tx.LimitAmount;
+            return {
+              label: 'Trust Line',
+              detail: limit ? `${limit.currency}` : ''
+            };
+          }
+          return { label: tx.TransactionType, detail: '' };
+        };
+
+        const matched = transactions
+          .filter(isAddressInvolved)
+          .map(tx => {
+            const { label, detail } = getTxLabel(tx);
+            const result = tx.meta?.TransactionResult || '';
+            const success = result === 'tesSUCCESS';
+            return {
+              hash: tx.hash,
+              type: tx.TransactionType,
+              label,
+              detail,
+              success,
+              result,
+              account: tx.Account,
+              destination: tx.Destination,
+              ledger: latestLedger.ledger_index,
+              time: latestLedger.close_time,
+              category: getTxCategory(tx.TransactionType),
+              raw: tx
+            };
+          });
+
+        if (matched.length > 0) {
+          setWatchedTxs(prev => [...matched, ...prev].slice(0, 50));
+          if (soundEnabled) playAlertSound();
+        }
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [ledgers[0]?.ledger_index, watchAddresses, soundEnabled]);
+
+  // Clear watched txs when addresses change
+  useEffect(() => {
+    setWatchedTxs([]);
+    setExpandedTx(null);
+  }, [watchAddresses.join(',')]);
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -363,15 +651,11 @@ const LedgerStreamPage = () => {
     setConnectionStatus('connecting');
     const ws = new WebSocket('wss://api.xrpl.to/ws/ledger');
 
-    ws.onopen = () => {
-      setConnectionStatus('connected');
-    };
+    ws.onopen = () => setConnectionStatus('connected');
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-
-        // Skip pong messages
         if (data.type === 'pong') return;
 
         const ledger = {
@@ -386,13 +670,8 @@ const LedgerStreamPage = () => {
         };
 
         setLedgers(prev => {
-          // Avoid duplicates
-          if (prev.some(l => l.ledger_index === ledger.ledger_index)) {
-            return prev;
-          }
-          // Keep last 20 ledgers
-          const updated = [ledger, ...prev].slice(0, 20);
-          return updated;
+          if (prev.some(l => l.ledger_index === ledger.ledger_index)) return prev;
+          return [ledger, ...prev].slice(0, 20);
         });
       } catch (err) {
         console.error('WebSocket parse error:', err);
@@ -401,23 +680,15 @@ const LedgerStreamPage = () => {
 
     ws.onclose = () => {
       setConnectionStatus('disconnected');
-      // Reconnect after 3 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        connectWebSocket();
-      }, 3000);
+      reconnectTimeoutRef.current = setTimeout(connectWebSocket, 3000);
     };
 
-    ws.onerror = () => {
-      ws.close();
-    };
+    ws.onerror = () => ws.close();
 
     wsRef.current = ws;
 
-    // Keep-alive ping
     const pingInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ping' }));
-      }
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
     }, 30000);
 
     return () => clearInterval(pingInterval);
@@ -425,14 +696,9 @@ const LedgerStreamPage = () => {
 
   useEffect(() => {
     connectWebSocket();
-
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      if (wsRef.current) wsRef.current.close();
     };
   }, [connectWebSocket]);
 
@@ -453,41 +719,56 @@ const LedgerStreamPage = () => {
           <ConnectionStatus status={connectionStatus} isDark={isDark} />
         </div>
 
-        {/* Legend + Address Filter */}
-        <div className={cn(
-          "p-3 rounded-xl border-[1.5px] mb-4 space-y-3",
-          isDark ? "border-white/10" : "border-gray-200"
-        )}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <ColorLegend isDark={isDark} />
-            <div className="w-full sm:w-80">
-              <AddressFilter value={watchAddress} onChange={setWatchAddress} isDark={isDark} />
+        {/* Legend + Filters */}
+        <div className={cn("p-3 rounded-xl border-[1.5px] mb-4 space-y-3", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <ColorLegend isDark={isDark} />
+              <div className="w-px h-4 bg-white/10 hidden lg:block" />
+              <TxTypeFilter selected={watchTxType} onChange={handleTxTypeChange} isDark={isDark} />
+              <button
+                onClick={handleSoundToggle}
+                className={cn(
+                  "p-2 rounded-lg border-[1.5px] transition-colors",
+                  soundEnabled ? "border-primary bg-primary/10 text-primary" : (isDark ? "border-white/10 text-white/50" : "border-gray-200 text-gray-400")
+                )}
+                title={soundEnabled ? "Sound alerts on" : "Sound alerts off"}
+              >
+                {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              </button>
+              {(watchAddresses.length > 0 || watchTxType) && (
+                <button
+                  onClick={copyShareURL}
+                  className={cn("flex items-center gap-1.5 px-2 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors", isDark ? "border-white/10 text-white/50 hover:text-primary" : "border-gray-200 text-gray-500 hover:text-primary")}
+                  title="Copy shareable URL"
+                >
+                  <Share2 size={12} /> Share
+                </button>
+              )}
+            </div>
+            <div className="w-full lg:w-96">
+              <AddressFilter value={watchAddresses.join(', ')} onChange={handleAddressChange} isDark={isDark} />
             </div>
           </div>
-          {watchAddress && (
+          {watchAddresses.length > 0 && (
             <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
-              Watching: <span className="font-mono text-primary">{watchAddress}</span>
+              Watching {watchAddresses.length} address{watchAddresses.length > 1 ? 'es' : ''}: {watchAddresses.map((a, i) => (
+                <span key={a}><span className="font-mono text-primary">{a.slice(0,8)}...</span>{i < watchAddresses.length - 1 ? ', ' : ''}</span>
+              ))}
             </p>
           )}
         </div>
 
         {/* Stats */}
-        {ledgers.length > 0 && (
-          <StatsBar latestLedger={ledgers[0]} isDark={isDark} />
-        )}
+        {ledgers.length > 0 && <StatsBar latestLedger={ledgers[0]} isDark={isDark} />}
 
         {/* Ledger stream */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {ledgers.length === 0 ? (
-            <div className={cn(
-              "col-span-full p-8 rounded-xl border-[1.5px] text-center",
-              isDark ? "border-white/10" : "border-gray-200"
-            )}>
+            <div className={cn("col-span-full p-8 rounded-xl border-[1.5px] text-center", isDark ? "border-white/10" : "border-gray-200")}>
               <div className="animate-pulse">
                 <Layers size={24} className={cn("mx-auto mb-2", isDark ? "text-white/30" : "text-gray-300")} />
-                <p className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>
-                  Waiting for ledgers...
-                </p>
+                <p className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>Waiting for ledgers...</p>
               </div>
             </div>
           ) : (
@@ -497,15 +778,91 @@ const LedgerStreamPage = () => {
                 ledger={ledger}
                 isDark={isDark}
                 isLatest={index === 0}
-                watchAddress={watchAddress}
+                watchAddresses={watchAddresses}
+                watchTxType={watchTxType}
               />
             ))
           )}
         </div>
+
+        {/* Watched Address Transactions */}
+        {watchAddresses.length > 0 && (
+          <div className="mt-6">
+            <h2 className={cn("text-[15px] font-medium mb-3", isDark ? "text-white" : "text-gray-900")}>
+              Transactions for watched addresses
+            </h2>
+            {watchedTxs.length === 0 ? (
+              <div className={cn("p-4 rounded-xl border-[1.5px] text-center", isDark ? "border-white/10" : "border-gray-200")}>
+                <p className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>
+                  Waiting for transactions...
+                </p>
+              </div>
+            ) : (
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-100")}>
+                  {watchedTxs.map((tx, i) => (
+                    <div key={`${tx.hash}-${i}`}>
+                      <div
+                        className={cn("flex items-center gap-3 px-4 py-3 cursor-pointer", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}
+                        onClick={() => setExpandedTx(expandedTx === tx.hash ? null : tx.hash)}
+                      >
+                        <div
+                          className={cn("w-2 h-2 rounded-full flex-shrink-0", !tx.success && "ring-2 ring-red-500/50")}
+                          style={{ backgroundColor: tx.success ? TX_CATEGORIES[tx.category]?.color : '#ef4444' }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                              {tx.label}
+                            </span>
+                            {!tx.success && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
+                                FAILED
+                              </span>
+                            )}
+                            {tx.detail && (
+                              <span className={cn("text-[12px]", isDark ? "text-white/60" : "text-gray-600")}>
+                                {tx.detail}
+                              </span>
+                            )}
+                            <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
+                              #{tx.ledger?.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className={cn("text-[11px] font-mono truncate", isDark ? "text-white/30" : "text-gray-400")}>
+                              {tx.hash.slice(0, 16)}...
+                            </span>
+                            <CopyButton text={tx.hash} isDark={isDark} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
+                            {new Date(tx.time).toLocaleTimeString()}
+                          </span>
+                          <ChevronDown size={14} className={cn("transition-transform", expandedTx === tx.hash && "rotate-180", isDark ? "text-white/30" : "text-gray-400")} />
+                        </div>
+                      </div>
+                      {expandedTx === tx.hash && tx.raw && (
+                        <div className={cn("px-4 pb-3", isDark ? "bg-white/[0.01]" : "bg-gray-50")}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Raw JSON</span>
+                            <CopyButton text={JSON.stringify(tx.raw, null, 2)} isDark={isDark} />
+                          </div>
+                          <pre className={cn("text-[11px] font-mono p-3 rounded-lg overflow-x-auto max-h-64", isDark ? "bg-black/50 text-white/70" : "bg-white text-gray-700")}>
+                            {JSON.stringify(tx.raw, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Footer />
     </div>
   );
-};
-
-export default LedgerStreamPage;
+}
