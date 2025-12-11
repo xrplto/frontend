@@ -3,9 +3,9 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { Zap, Clock, Hash, Layers, ChevronRight } from 'lucide-react';
+import { Zap, Clock, Hash, Layers, ChevronRight, Search, X } from 'lucide-react';
 
-// Transaction type categories with colors
+// Transaction type categories with colors (per xrpl.org/docs/references/protocol/transactions/types)
 const TX_CATEGORIES = {
   Payment: { color: '#22c55e', label: 'Payment' },
   Dex: { color: '#3b82f6', label: 'DEX' },
@@ -15,9 +15,8 @@ const TX_CATEGORIES = {
   Other: { color: '#64748b', label: 'Other' }
 };
 
-// Map transaction types to categories (per xrpl.org/docs/references/protocol/transactions/types)
+// Map transaction types to categories
 const getTxCategory = (txType) => {
-  const paymentTypes = ['Payment'];
   const dexTypes = [
     'OfferCreate', 'OfferCancel', 'TrustSet',
     'AMMCreate', 'AMMDeposit', 'AMMWithdraw', 'AMMBid', 'AMMVote', 'AMMDelete', 'AMMClawback',
@@ -29,10 +28,8 @@ const getTxCategory = (txType) => {
     'DIDSet', 'DIDDelete', 'CredentialCreate', 'CredentialAccept', 'CredentialDelete', 'TicketCreate'
   ];
   const pseudoTypes = ['EnableAmendment', 'SetFee', 'UNLModify'];
-  // Other: CheckCreate, CheckCash, CheckCancel, EscrowCreate, EscrowFinish, EscrowCancel,
-  // XChain*, Batch, LedgerStateFix
 
-  if (paymentTypes.includes(txType)) return 'Payment';
+  if (txType === 'Payment') return 'Payment';
   if (dexTypes.includes(txType)) return 'Dex';
   if (nftTypes.includes(txType)) return 'NFT';
   if (accountTypes.includes(txType)) return 'Account';
@@ -52,9 +49,162 @@ const ColorLegend = ({ isDark }) => (
   </div>
 );
 
+// Transaction bar that lazy-loads real data
+const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddress, onAddressMatch }) => {
+  const [txSequence, setTxSequence] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [matchCount, setMatchCount] = useState(0);
+
+  useEffect(() => {
+    if (!ledgerIndex || txnCount === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`https://api.xrpscan.com/api/v1/ledger/${ledgerIndex}/transactions`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(transactions => {
+        if (Array.isArray(transactions)) {
+          // Sort by TransactionIndex
+          const sorted = transactions.sort(
+            (a, b) => (a.meta?.TransactionIndex || 0) - (b.meta?.TransactionIndex || 0)
+          );
+
+          // Check if address is involved in transaction
+          const isAddressInvolved = (tx, addr) => {
+            if (!addr) return false;
+            return tx.Account === addr || tx.Destination === addr ||
+              tx.Owner === addr || tx.Issuer === addr;
+          };
+
+          // Map to categories, highlight watched address
+          const sequence = sorted.map(tx => ({
+            category: getTxCategory(tx.TransactionType),
+            matched: watchAddress ? isAddressInvolved(tx, watchAddress) : false,
+            hash: tx.hash
+          }));
+
+          const matches = sequence.filter(s => s.matched).length;
+          setMatchCount(matches);
+          setTxSequence(sequence);
+          if (matches > 0 && onAddressMatch) {
+            onAddressMatch(ledgerIndex, matches);
+          }
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [ledgerIndex, txnCount, watchAddress, onAddressMatch]);
+
+  if (txnCount === 0) return null;
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className={cn(
+        "h-1.5 rounded-full overflow-hidden animate-pulse",
+        isDark ? "bg-white/10" : "bg-gray-200"
+      )} />
+    );
+  }
+
+  if (!txSequence || txSequence.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      <div className="h-1.5 rounded-full overflow-hidden flex">
+        {txSequence.map((item, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1,
+              backgroundColor: item.matched ? '#fff' : (TX_CATEGORIES[item.category]?.color || TX_CATEGORIES.Other.color),
+              boxShadow: item.matched ? '0 0 4px #fff' : 'none'
+            }}
+            className="h-full"
+          />
+        ))}
+      </div>
+      {watchAddress && matchCount > 0 && (
+        <p className="text-[10px] text-primary font-medium">{matchCount} tx from watched address</p>
+      )}
+    </div>
+  );
+};
+
+// Address filter input
+const AddressFilter = ({ value, onChange, isDark }) => {
+  const [input, setInput] = useState(value);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onChange(input.trim());
+  };
+
+  const handleClear = () => {
+    setInput('');
+    onChange('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="relative flex-1">
+        <Search size={14} className={cn(
+          "absolute left-3 top-1/2 -translate-y-1/2",
+          isDark ? "text-white/40" : "text-gray-400"
+        )} />
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Watch address (r...)"
+          className={cn(
+            "w-full pl-9 pr-8 py-2 text-[13px] rounded-lg border-[1.5px] outline-none transition-colors",
+            isDark
+              ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-primary"
+              : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+          )}
+        />
+        {input && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className={cn(
+              "absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded",
+              isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600"
+            )}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      <button
+        type="submit"
+        className={cn(
+          "px-4 py-2 text-[13px] rounded-lg border-[1.5px] transition-colors",
+          isDark
+            ? "border-primary/50 text-primary hover:bg-primary/10"
+            : "border-primary/50 text-primary hover:bg-primary/5"
+        )}
+      >
+        Watch
+      </button>
+    </form>
+  );
+};
+
 // Single ledger card in the stream
-const LedgerCard = ({ ledger, isDark, isLatest }) => {
-  const txCounts = ledger.txCounts || {};
+const LedgerCard = ({ ledger, isDark, isLatest, watchAddress }) => {
   const totalTx = ledger.txn_count || 0;
 
   return (
@@ -106,24 +256,13 @@ const LedgerCard = ({ ledger, isDark, isLatest }) => {
             </div>
           </div>
 
-          {/* Transaction type distribution bar */}
-          {totalTx > 0 && (
-            <div className="h-1.5 rounded-full overflow-hidden flex bg-black/10">
-              {Object.entries(TX_CATEGORIES).map(([key, { color }]) => {
-                const count = txCounts[key] || 0;
-                const pct = (count / totalTx) * 100;
-                if (pct === 0) return null;
-                return (
-                  <div
-                    key={key}
-                    style={{ width: `${pct}%`, backgroundColor: color }}
-                    className="h-full transition-all duration-300"
-                    title={`${TX_CATEGORIES[key].label}: ${count}`}
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* Transaction bar - lazy loads real data */}
+          <TransactionBar
+            ledgerIndex={ledger.ledger_index}
+            txnCount={totalTx}
+            isDark={isDark}
+            watchAddress={watchAddress}
+          />
         </div>
 
         <a
@@ -160,9 +299,12 @@ const LedgerCard = ({ ledger, isDark, isLatest }) => {
 const StatsBar = ({ latestLedger, isDark }) => {
   if (!latestLedger) return null;
 
+  const reserveBase = latestLedger.reserve_base / 1000000;
+  const reserveInc = latestLedger.reserve_inc / 1000000;
+
   const stats = [
-    { label: 'Reserve', value: `${(latestLedger.reserve_base / 1000000).toFixed(0)} XRP` },
-    { label: 'Owner Reserve', value: `${(latestLedger.reserve_inc / 1000000).toFixed(0)} XRP` },
+    { label: 'Base Reserve', value: `${reserveBase} XRP` },
+    { label: 'Owner Reserve', value: `${reserveInc} XRP` },
     { label: 'Base Fee', value: `${latestLedger.fee_base} drops` }
   ];
 
@@ -211,6 +353,7 @@ const LedgerStreamPage = () => {
 
   const [ledgers, setLedgers] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [watchAddress, setWatchAddress] = useState('');
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
 
@@ -231,24 +374,6 @@ const LedgerStreamPage = () => {
         // Skip pong messages
         if (data.type === 'pong') return;
 
-        // Generate random tx distribution for demo (since we don't have actual tx breakdown)
-        const totalTx = data.txn_count || 0;
-        const txCounts = {};
-        if (totalTx > 0) {
-          let remaining = totalTx;
-          const categories = ['Payment', 'Dex', 'NFT', 'Account', 'Pseudo', 'Other'];
-          categories.forEach((cat, i) => {
-            if (i === categories.length - 1) {
-              txCounts[cat] = remaining;
-            } else {
-              const max = Math.floor(remaining * 0.6);
-              const count = Math.floor(Math.random() * max);
-              txCounts[cat] = count;
-              remaining -= count;
-            }
-          });
-        }
-
         const ledger = {
           ledger_index: data.ledger_index,
           ledger_hash: data.ledger_hash,
@@ -257,8 +382,7 @@ const LedgerStreamPage = () => {
           reserve_base: data.reserve_base,
           reserve_inc: data.reserve_inc,
           fee_base: data.fee_base,
-          validated: data.validated,
-          txCounts
+          validated: data.validated
         };
 
         setLedgers(prev => {
@@ -329,12 +453,22 @@ const LedgerStreamPage = () => {
           <ConnectionStatus status={connectionStatus} isDark={isDark} />
         </div>
 
-        {/* Legend */}
+        {/* Legend + Address Filter */}
         <div className={cn(
-          "p-3 rounded-xl border-[1.5px] mb-4",
+          "p-3 rounded-xl border-[1.5px] mb-4 space-y-3",
           isDark ? "border-white/10" : "border-gray-200"
         )}>
-          <ColorLegend isDark={isDark} />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <ColorLegend isDark={isDark} />
+            <div className="w-full sm:w-80">
+              <AddressFilter value={watchAddress} onChange={setWatchAddress} isDark={isDark} />
+            </div>
+          </div>
+          {watchAddress && (
+            <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
+              Watching: <span className="font-mono text-primary">{watchAddress}</span>
+            </p>
+          )}
         </div>
 
         {/* Stats */}
@@ -363,6 +497,7 @@ const LedgerStreamPage = () => {
                 ledger={ledger}
                 isDark={isDark}
                 isLatest={index === 0}
+                watchAddress={watchAddress}
               />
             ))
           )}
