@@ -153,7 +153,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   }, []);
 
   const [chartType, setChartType] = useState('candles');
-  const [timeRange, setTimeRange] = useState('1d');
+  const [timeRange, setTimeRange] = useState('5d');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -314,9 +314,9 @@ const PriceChartAdvanced = memo(({ token }) => {
     loadMoreDataRef.current = loadMoreData;
   }, [loadMoreData]);
 
-  // Map timeRange to WebSocket interval
+  // Map timeRange to WebSocket interval (matches HTTP resolution)
   const getWsInterval = useCallback((range) => {
-    const intervalMap = { '1d': '5m', '5d': '15m', '1m': '1h', '3m': '4h', '1y': '1d', '5y': '1d', 'all': '1d' };
+    const intervalMap = { '1d': '1m', '5d': '5m', '1m': '30m', '3m': '2h', '1y': '1w', '5y': '1w', 'all': '1d' };
     return intervalMap[range] || '5m';
   }, []);
 
@@ -337,18 +337,19 @@ const PriceChartAdvanced = memo(({ token }) => {
       wsPingRef.current = null;
     }
 
-    // For longer timeframes, fetch via HTTP first to get more historical data
-    const needsHttpFetch = ['1m', '3m', '1y', '5y', 'all'].includes(timeRange);
+    // Fetch via HTTP first to get enough historical data for all timeframes
+    const needsHttpFetch = true;
 
     const fetchHistoricalData = async () => {
-      if (!needsHttpFetch) return;
-
+      // Candle resolution per timeframe (like Dexscreener)
       const presets = {
-        '1m':  { resolution: '60',  cb: 750  },
-        '3m':  { resolution: '240', cb: 550  },
-        '1y':  { resolution: 'D',   cb: 400  },
-        '5y':  { resolution: 'W',   cb: 300  },
-        'all': { resolution: 'D',   cb: 5000 }
+        '1d':  { resolution: '1',   cb: 43200 }, // 1min candles, 30 days
+        '5d':  { resolution: '5',   cb: 8640  }, // 5min candles, 30 days (default)
+        '1m':  { resolution: '30',  cb: 1440  }, // 30min candles, 30 days
+        '3m':  { resolution: '120', cb: 1080  }, // 2h candles, 90 days (we don't have 6m, using 3m)
+        '1y':  { resolution: 'W',   cb: 52    }, // 1 week candles, 1 year
+        '5y':  { resolution: 'W',   cb: 260   }, // 1 week candles, 5 years
+        'all': { resolution: 'D',   cb: 5000  }  // Daily candles, all time
       };
       const preset = presets[timeRange];
       if (!preset) return;
@@ -392,15 +393,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         const msg = JSON.parse(event.data);
 
         if (msg.type === 'initial' && msg.ohlc) {
-          // Only use initial data for short timeframes (longer ones use HTTP)
-          if (!needsHttpFetch) {
-            const processedData = processOhlc(msg.ohlc);
-            dataRef.current = processedData;
-            setData(processedData);
-            setLoading(false);
-            setLastUpdate(new Date());
-            setHasMore(true);
-          }
+          // Skip WS initial data - we use HTTP fetch for all timeframes to get more history
         } else if (msg.e === 'kline' && msg.k) {
           // Real-time candle update
           const k = msg.k;
@@ -422,13 +415,16 @@ const PriceChartAdvanced = memo(({ token }) => {
             if (!prev || prev.length === 0) return prev;
             const updated = [...prev];
             const lastIdx = updated.length - 1;
+            const lastTime = updated[lastIdx]?.time;
 
-            if (updated[lastIdx]?.time === candleTime) {
+            if (lastTime === candleTime) {
               // Update existing candle
               updated[lastIdx] = newCandle;
-            } else if (candleTime > updated[lastIdx]?.time) {
+            } else if (candleTime > lastTime) {
               // New candle
               updated.push(newCandle);
+            } else {
+              return prev; // Candle older than last, skip
             }
             dataRef.current = updated;
             return updated;
@@ -453,17 +449,10 @@ const PriceChartAdvanced = memo(({ token }) => {
       };
     };
 
-    // Start loading
-    if (!needsHttpFetch) setLoading(true);
-
-    // Fetch historical data first (for longer timeframes), then connect WS
-    if (needsHttpFetch) {
-      fetchHistoricalData().then(() => {
-        if (mounted) connectWebSocket();
-      });
-    } else {
-      connectWebSocket();
-    }
+    // Fetch historical data first, then connect WS for real-time updates
+    fetchHistoricalData().then(() => {
+      if (mounted) connectWebSocket();
+    });
 
     return () => {
       mounted = false;
@@ -747,10 +736,10 @@ const PriceChartAdvanced = memo(({ token }) => {
       clearTimeout(zoomCheckTimeout);
       zoomCheckTimeout = setTimeout(() => {
         const dataLength = dataRef.current.length;
+        // Only pause if user scrolled away from the right edge (not viewing latest)
         const isScrolledRight = logicalRange.to < dataLength - 2;
-        const isScrolledLeft = logicalRange.from < dataLength - 200;
 
-        const shouldPauseUpdates = isScrolledRight || isScrolledLeft;
+        const shouldPauseUpdates = isScrolledRight;
 
         // Only update ref, avoid setState during active zooming
         if (shouldPauseUpdates !== isUserZoomedRef.current) {
@@ -1060,16 +1049,16 @@ const PriceChartAdvanced = memo(({ token }) => {
       const dataLength = chartData.length;
       // Visible bars based on timeframe (matching the time period)
       const visibleBarsMap = {
-        '1d': isMobile ? 35 : 60,    // Wider candles, clearer view
-        '5d': isMobile ? 60 : 100,   // 5 days
-        '1m': isMobile ? 80 : 140,   // 30 days
-        '3m': isMobile ? 100 : 180,  // 90 days
-        '1y': isMobile ? 90 : 150,   // 1 year
-        '5y': isMobile ? 80 : 120,   // 5 years
+        '1d': isMobile ? 120 : 240,  // Show ~4h on load (1min candles)
+        '5d': isMobile ? 200 : 400,  // Show ~33h on load (5min candles)
+        '1m': isMobile ? 100 : 200,  // Show ~4 days on load (30min candles)
+        '3m': isMobile ? 120 : 240,  // Show ~10 days on load (1h candles)
+        '1y': isMobile ? 30 : 52,    // Show full year (1w candles)
+        '5y': isMobile ? 100 : 200,  // Show ~4 years on load (1w candles)
         'all': dataLength            // Show all data
       };
-      const visibleBars = visibleBarsMap[timeRange] || 96;
-      const from = timeRange === 'all' ? 0 : Math.max(0, dataLength - visibleBars);
+      const visibleBars = Math.min(visibleBarsMap[timeRange] || 192, dataLength);
+      const from = Math.max(0, dataLength - visibleBars);
       chartRef.current.timeScale().setVisibleLogicalRange({ from, to: dataLength + 5 });
       lastChartTypeRef.current = currentKey;
     }
