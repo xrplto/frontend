@@ -673,13 +673,13 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'floor1dPercent', label: '24H %', align: 'right', width: 'auto', order: true, tooltip: '24h floor price change' },
   { id: 'totalVol24h', label: 'VOL (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
   { id: 'totalVolume', label: 'VOL (ALL)', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
+  { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
   { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
   { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: 'auto', order: true, tooltip: 'Floor price × supply' },
   { id: 'listedCount', label: 'LISTED', align: 'right', width: 'auto', order: true, tooltip: 'NFTs listed for sale' },
   { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
   { id: 'items', label: 'SUPPLY', align: 'right', width: 'auto', order: true, tooltip: 'Total NFTs in collection' },
   { id: 'origin', label: 'SOURCE', align: 'right', width: 'auto', order: true, tooltip: 'Origin marketplace' },
-  { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
   { id: 'sparkline', label: '30D CHART', align: 'center', width: '220px', order: false, style: { paddingLeft: '16px' }, tooltip: '30-day sales history' }
 ];
 
@@ -917,6 +917,10 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+        <span style={{ fontSize: '11px' }}>{strDateTime}</span>
+      </StyledCell>
+
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(sales24h || 0)}
       </StyledCell>
 
@@ -938,10 +942,6 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {origin || 'XRPL'}
-      </StyledCell>
-
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
-        <span style={{ fontSize: '11px' }}>{strDateTime}</span>
       </StyledCell>
 
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>

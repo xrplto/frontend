@@ -957,7 +957,7 @@ export default function Summary() {
                   const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                         {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
                         {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
@@ -965,24 +965,24 @@ export default function Summary() {
                       {!isMobile && (
                         <>
                           <span style={{
-                            fontSize: '10px',
+                            fontSize: '9px',
                             fontWeight: 400,
-                            padding: '1px 4px',
-                            borderRadius: '3px',
+                            padding: '0px 3px',
+                            borderRadius: '2px',
                             background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
                             color: '#10b981'
                           }}>
-                            Stable {stablePercent.toFixed(1)}%
+                            Stable {stablePercent.toFixed(0)}%
                           </span>
                           <span style={{
-                            fontSize: '10px',
+                            fontSize: '9px',
                             fontWeight: 400,
-                            padding: '1px 4px',
-                            borderRadius: '3px',
+                            padding: '0px 3px',
+                            borderRadius: '2px',
                             background: darkMode ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
                             color: '#f59e0b'
                           }}>
-                            Meme {memePercent.toFixed(1)}%
+                            Meme {memePercent.toFixed(0)}%
                           </span>
                         </>
                       )}
@@ -1016,22 +1016,22 @@ export default function Summary() {
                   const total = buyVol + sellVol;
                   const buyPercent = total > 0 ? (buyVol / total * 100) : 50;
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: 400,
-                        padding: '1px 4px',
-                        borderRadius: '3px',
+                        padding: '0px 3px',
+                        borderRadius: '2px',
                         background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
                         color: '#10b981'
                       }}>
                         Buy {buyPercent.toFixed(0)}%
                       </span>
                       <span style={{
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: 400,
-                        padding: '1px 4px',
-                        borderRadius: '3px',
+                        padding: '0px 3px',
+                        borderRadius: '2px',
                         background: darkMode ? 'rgba(239, 68, 68, 0.12)' : 'rgba(239, 68, 68, 0.08)',
                         color: '#ef4444'
                       }}>
