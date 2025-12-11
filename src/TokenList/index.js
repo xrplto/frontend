@@ -164,7 +164,8 @@ function TokenListComponent({
   tokens,
   setTokens,
   tMap,
-  initialOrderBy
+  initialOrderBy,
+  autoAddNewTokens = false
 }) {
   const {
     accountProfile,
@@ -420,22 +421,36 @@ function TokenListComponent({
 
         updatedTokens.forEach((update) => {
           const existing = tokenMap.get(update.md5);
-          if (existing && existing.exch !== update.exch) {
+          if (existing) {
+            // Update existing token if price changed
+            if (existing.exch !== update.exch) {
+              hasChanges = true;
+              tokenMap.set(update.md5, {
+                ...existing,
+                ...update,
+                time: Date.now(),
+                bearbull: existing.exch > update.exch ? -1 : 1,
+                bearbullTime: Date.now()
+              });
+            }
+          } else if (autoAddNewTokens && update.name && update.dateon) {
+            // Add new token if autoAddNewTokens enabled and has required fields
             hasChanges = true;
-            tokenMap.set(update.md5, {
-              ...existing,
-              ...update,
-              time: Date.now(),
-              bearbull: existing.exch > update.exch ? -1 : 1,
-              bearbullTime: Date.now()
-            });
+            tokenMap.set(update.md5, { ...update, time: Date.now(), isNew: true });
           }
         });
 
-        return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
+        if (!hasChanges) return prevTokens;
+
+        let result = Array.from(tokenMap.values());
+        // Sort by dateon desc if adding new tokens
+        if (autoAddNewTokens) {
+          result.sort((a, b) => new Date(b.dateon) - new Date(a.dateon));
+        }
+        return result;
       });
     },
-    [setTokens]
+    [setTokens, autoAddNewTokens]
   );
 
   // Handle metrics updates from WebSocket

@@ -66,6 +66,7 @@ function NewTokensPage({ data }) {
                 tMap={tMap}
                 setTokens={setTokens}
                 initialOrderBy="dateon"
+                autoAddNewTokens
               />
             </>
           ) : (

@@ -76,7 +76,11 @@ SparklineChart.displayName = 'SparklineChart';
 const StyledRow = styled.tr`
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)'};
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.3s ease, border-color 0.3s ease;
+  ${(props) => props.isNew && `
+    background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
+    border-left: 2px solid #22c55e;
+  `}
 
   &:hover {
     background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
@@ -113,6 +117,11 @@ const MobileTokenCard = styled.div`
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
+  transition: background 0.3s ease;
+  ${(props) => props.isNew && `
+    background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
+    border-left: 2px solid #22c55e;
+  `}
 
   &:hover {
     background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
@@ -412,7 +421,8 @@ const MobileTokenRow = ({
     holders,
     amount,
     dateon,
-    date
+    date,
+    isNew
   } = token;
 
   const [flashColor, setFlashColor] = useState(null);
@@ -514,7 +524,7 @@ const MobileTokenRow = ({
 
   // Using flexbox layout instead of table
   return (
-    <MobileTokenCard onClick={handleRowClick} isDark={darkMode}>
+    <MobileTokenCard onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
       <MobileTokenInfo>
         <TokenImage isMobile={true} isDark={darkMode}>
           <OptimizedImage
@@ -573,7 +583,8 @@ const DesktopTokenRow = ({
     amount,
     dateon,
     date,
-    origin
+    origin,
+    isNew
   } = token;
 
   const [flashColor, setFlashColor] = useState(null);
@@ -1115,7 +1126,7 @@ const DesktopTokenRow = ({
   };
 
   return (
-    <StyledRow onClick={handleRowClick} isDark={darkMode}>
+    <StyledRow onClick={handleRowClick} isDark={darkMode} isNew={isNew}>
       {isLoggedIn && (
         <StyledCell
           align="center"
@@ -1202,7 +1213,8 @@ const FTokenRow = memo(
       tvl,
       origin,
       holders,
-      dateon
+      dateon,
+      isNew
     } = token;
 
     const handleWatchlistClick = useCallback(
