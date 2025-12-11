@@ -9,7 +9,7 @@ import { cn } from 'src/utils/cn';
 import { ChevronRight, BookOpen } from 'lucide-react';
 
 // Dynamic imports for heavy components (code splitting)
-const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
+const PriceChart = dynamic(() => import('./ohlc'), {
   loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false
 });

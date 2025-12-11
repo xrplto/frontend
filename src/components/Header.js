@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { throttle } from 'src/utils/formatters';
+import { throttle, fVolume } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
@@ -256,6 +256,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [recentSearches, setRecentSearches] = useState([]);
   const [typedText, setTypedText] = useState('');
   const searchWords = ['tokens', 'NFTs', 'collections'];
+
+  // Helper to extract marketcap value (can be object with amount or number)
+  const getMcap = (mcap) => typeof mcap === 'object' ? mcap?.amount || 0 : mcap || 0;
+
+  // Helper to format marketcap with user's selected currency
+  const exchRate = metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
+  const formatMcap = (mcapXrp) => {
+    if (!mcapXrp) return '0';
+    // API returns marketcap in XRP, convert if needed
+    const value = activeFiatCurrency === 'XRP' ? mcapXrp : mcapXrp / exchRate;
+    const symbol = activeFiatCurrency === 'XRP' ? '✕' : (currencySymbols[activeFiatCurrency]?.trim() || '$');
+    return `${symbol}${fVolume(value)}`;
+  };
   const baseText = 'Search for ';
 
   // Load recent searches from localStorage
@@ -888,16 +901,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <div className="flex items-center gap-3">
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{item.type === 'token' ? 'Token' : 'NFT'}</span>
                           {(item.verified === true || item.verified === 'yes') && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
-                          {item.holders && (
+                          {item.type === 'token' && (
                             <div className="text-right min-w-[50px]">
-                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{item.holders?.toLocaleString()}</span>
-                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{formatMcap(getMcap(item.marketcap))}</span>
+                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
                             </div>
                           )}
-                          {item.items && (
+                          {item.type === 'collection' && (
                             <div className="text-right min-w-[50px]">
-                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{item.items?.toLocaleString()}</span>
-                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                              <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{getMcap(item.marketcap) ? formatMcap(getMcap(item.marketcap)) : `${item.items?.toLocaleString() || 0} items`}</span>
+                              <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(item.marketcap) ? 'Mkt Cap' : ''}</p>
                             </div>
                           )}
                         </div>
@@ -938,8 +951,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
                               {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                               <div className="text-right min-w-[50px]">
-                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
-                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{formatMcap(getMcap(token.marketcap))}</span>
+                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
                               </div>
                             </div>
                           </div>
@@ -975,8 +988,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
                               {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                               <div className="text-right min-w-[50px]">
-                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
-                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                                <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0} items`}</span>
+                                <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : ''}</p>
                               </div>
                             </div>
                           </div>
@@ -1092,8 +1105,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
                           {token.verified && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                           <div className="text-right min-w-[50px]">
-                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{token.holders?.toLocaleString()}</span>
-                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{formatMcap(getMcap(token.marketcap))}</span>
+                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
                           </div>
                         </div>
                       </div>
@@ -1129,8 +1142,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
                           {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold uppercase rounded tracking-wide", isDark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600")}>✓ Verified</span>}
                           <div className="text-right min-w-[50px]">
-                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{col.items?.toLocaleString()}</span>
-                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                            <span className={cn("text-[12px] font-medium tabular-nums block", isDark ? "text-white/70" : "text-gray-700")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0} items`}</span>
+                            <p className={cn("text-[8px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : ''}</p>
                           </div>
                         </div>
                       </div>
@@ -1192,8 +1205,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex items-center gap-2 shrink-0">
                         {token.verified && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
-                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
-                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{formatMcap(getMcap(token.marketcap))}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
                         </div>
                       </div>
                     </div>
@@ -1216,8 +1229,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex items-center gap-2 shrink-0">
                         {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
-                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
-                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0} items`}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : ''}</p>
                         </div>
                       </div>
                     </div>
@@ -1319,8 +1332,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex items-center gap-2 shrink-0">
                         {token.verified && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
-                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
-                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{formatMcap(getMcap(token.marketcap))}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
                         </div>
                       </div>
                     </div>
@@ -1343,8 +1356,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex items-center gap-2 shrink-0">
                         {col.verified === 'yes' && <span className={cn("flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓</span>}
                         <div className="text-right">
-                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
-                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                          <span className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0} items`}</span>
+                          <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : ''}</p>
                         </div>
                       </div>
                     </div>

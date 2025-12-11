@@ -375,7 +375,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     const connectWebSocket = () => {
       if (!mounted) return;
 
-      const ws = new WebSocket(`${WS_OHLC_URL}/${token.md5}?interval=${wsInterval}`);
+      const ws = new WebSocket(`${WS_OHLC_URL}/${token.md5}?interval=${wsInterval}&vs_currency=${activeFiatCurrency}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -394,18 +394,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         if (msg.type === 'initial' && msg.ohlc) {
           // Only use initial data for short timeframes (longer ones use HTTP)
           if (!needsHttpFetch) {
-            // WS returns USD prices - convert to active currency
-            const currency = activeFiatCurrencyRef.current;
-            const m = metricsRef.current;
-            const rate = currency === 'USD' ? 1 : (m?.[currency] || (currency === 'CNH' ? m?.CNY : null) || 1);
-
-            const processedData = processOhlc(msg.ohlc).map(c => ({
-              ...c,
-              open: c.open / rate,
-              high: c.high / rate,
-              low: c.low / rate,
-              close: c.close / rate
-            }));
+            const processedData = processOhlc(msg.ohlc);
             dataRef.current = processedData;
             setData(processedData);
             setLoading(false);
@@ -413,21 +402,16 @@ const PriceChartAdvanced = memo(({ token }) => {
             setHasMore(true);
           }
         } else if (msg.e === 'kline' && msg.k) {
-          // Real-time candle update - WS returns USD prices, convert if needed
+          // Real-time candle update
           const k = msg.k;
           const candleTime = Math.floor(k.t / 1000);
 
-          // Convert USD prices to active currency
-          const currency = activeFiatCurrencyRef.current;
-          const m = metricsRef.current;
-          const rate = currency === 'USD' ? 1 : (m?.[currency] || (currency === 'CNH' ? m?.CNY : null) || 1);
-
           const newCandle = {
             time: candleTime,
-            open: parseFloat(k.o) / rate,
-            high: parseFloat(k.h) / rate,
-            low: parseFloat(k.l) / rate,
-            close: parseFloat(k.c) / rate,
+            open: parseFloat(k.o),
+            high: parseFloat(k.h),
+            low: parseFloat(k.l),
+            close: parseFloat(k.c),
             volume: parseFloat(k.v) || 0
           };
 

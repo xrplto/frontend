@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
+import { Wifi, WifiOff } from 'lucide-react';
 
 // Format price with enough decimals for small values (no scientific notation)
 const formatPrice = (price) => {
@@ -199,6 +200,8 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
   const [asks, setAsks] = useState([]);
   const asksSideRef = useRef(null);
   const [rlusdToken, setRlusdToken] = useState(null);
+  const [wsConnected, setWsConnected] = useState(false);
+  const wsRef = useRef(null);
 
   // XRP is native asset - show RLUSD/XRP orderbook instead
   const isXRPToken = token?.currency === 'XRP';
@@ -233,10 +236,86 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
   const lastDataHashRef = useRef(null);
   const mountedRef = useRef(true);
 
+  // Process WebSocket orderbook data
+  const processWsOrderbook = (rawBids, rawAsks) => {
+    const parsedBids = (rawBids || [])
+      .map(o => ({
+        price: parseFloat(o.price),
+        amount: parseFloat(o.amount),
+        total: parseFloat(o.total),
+        account: o.account,
+        funded: o.funded
+      }))
+      .filter(o => !isNaN(o.price) && o.price > 0);
+
+    const parsedAsks = (rawAsks || [])
+      .map(o => ({
+        price: parseFloat(o.price),
+        amount: parseFloat(o.amount),
+        total: parseFloat(o.total),
+        account: o.account,
+        funded: o.funded
+      }))
+      .filter(o => !isNaN(o.price) && o.price > 0);
+
+    let bidSum = 0, askSum = 0;
+    parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
+    parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+
+    setBids(parsedBids.slice(0, 30));
+    setAsks(parsedAsks.slice(0, 30));
+  };
+
+  // WebSocket for real-time orderbook updates
+  useEffect(() => {
+    if (collapsed || !effectiveToken?.issuer || !effectiveToken?.currency) {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+        setWsConnected(false);
+      }
+      return;
+    }
+
+    const params = new URLSearchParams({
+      base_currency: 'XRP',
+      quote_currency: effectiveToken.currency,
+      quote_issuer: effectiveToken.issuer,
+      limit: '30'
+    });
+    const wsUrl = `wss://api.xrpl.to/ws/orderbook?${params}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => setWsConnected(true);
+    ws.onclose = () => setWsConnected(false);
+    ws.onerror = () => setWsConnected(false);
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'snapshot') {
+          processWsOrderbook(msg.bids, msg.asks);
+        } else if (msg.e === 'depth') {
+          processWsOrderbook(msg.b, msg.a);
+        }
+      } catch (e) {
+        console.error('OrderBook WS parse error:', e);
+      }
+    };
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+      setWsConnected(false);
+    };
+  }, [effectiveToken?.issuer, effectiveToken?.currency, collapsed]);
+
+  // HTTP polling fallback (only when WebSocket not connected)
   useEffect(() => {
     mountedRef.current = true;
-    // Don't fetch if collapsed or no token
-    if (collapsed || !tokenMd5 || !effectiveToken?.issuer) return;
+    // Don't fetch if collapsed, no token, or WebSocket is connected
+    if (collapsed || !tokenMd5 || !effectiveToken?.issuer || wsConnected) return;
 
     const pairKey = `ob2-${tokenMd5}`;
 
@@ -374,7 +453,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
       fetchInFlight.delete(pairKey);
       lastDataHashRef.current = null;
     };
-  }, [tokenMd5, collapsed, effectiveToken?.issuer]);
+  }, [tokenMd5, collapsed, effectiveToken?.issuer, wsConnected]);
 
   const { bestBid, bestAsk, spreadPct } = useMemo(() => {
     const bb = bids.length ? bids[0].price : null;
@@ -437,8 +516,20 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
           {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
         </Title>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            background: wsConnected ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
+            color: wsConnected ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'),
+            fontSize: '9px'
+          }}>
+            {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
+          </div>
           <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-            {bids.length} bids · {asks.length} asks
+            {bids.length}B · {asks.length}A
           </span>
           {onToggleCollapse && (
             <CollapseButton isDark={isDark} onClick={onToggleCollapse} title="Collapse Order Book">

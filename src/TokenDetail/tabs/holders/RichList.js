@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -55,12 +55,60 @@ const RichList = ({ token, amm }) => {
   const [summary, setSummary] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [wsConnected, setWsConnected] = useState(false);
+  const wsRef = useRef(null);
   const rowsPerPage = isMobile ? 10 : 20;
 
   const ammAccount = amm || token?.AMM;
 
+  // WebSocket for real-time updates (only on page 1, no search)
+  useEffect(() => {
+    if (!token?.md5 || !mobileChecked || page !== 1 || searchTerm) {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+        setWsConnected(false);
+      }
+      return;
+    }
+
+    const wsUrl = `wss://api.xrpl.to/ws/richlist/${token.md5}?limit=${rowsPerPage}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => setWsConnected(true);
+    ws.onclose = () => setWsConnected(false);
+    ws.onerror = () => setWsConnected(false);
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'initial' || msg.e === 'update') {
+          if (msg.holders) setRichList(msg.holders);
+          if (msg.summary) setSummary(msg.summary);
+          if (msg.total) {
+            setTotalHolders(msg.total);
+            setTotalPages(Math.ceil(msg.total / rowsPerPage));
+          }
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error('WS parse error:', e);
+      }
+    };
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+      setWsConnected(false);
+    };
+  }, [token?.md5, mobileChecked, page, searchTerm, rowsPerPage]);
+
+  // HTTP fetch for pagination/search (skip when WS handles page 1)
   useEffect(() => {
     if (!mobileChecked) return;
+    // Skip HTTP fetch if WebSocket handles page 1 without search
+    if (page === 1 && !searchTerm && wsRef.current) return;
 
     const controller = new AbortController();
     let mounted = true;
@@ -107,7 +155,7 @@ const RichList = ({ token, amm }) => {
       mounted = false;
       controller.abort();
     };
-  }, [token?.md5, page, rowsPerPage, mobileChecked, searchTerm]);
+  }, [token?.md5, page, rowsPerPage, mobileChecked, searchTerm, wsConnected]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -138,6 +186,16 @@ const RichList = ({ token, amm }) => {
 
   const renderSearchBar = () => (
     <div className="flex items-center gap-2">
+      {/* WS Status */}
+      {page === 1 && !searchTerm && (
+        <div className={cn(
+          'flex items-center gap-1 rounded-md px-2 py-1 text-[10px]',
+          wsConnected ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-white/30'
+        )}>
+          {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
+          <span className="hidden sm:inline">{wsConnected ? 'Live' : 'Offline'}</span>
+        </div>
+      )}
       <div className={cn(
         'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
         isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'

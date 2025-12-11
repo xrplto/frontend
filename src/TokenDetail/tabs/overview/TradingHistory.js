@@ -1619,6 +1619,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const [liquidityType, setLiquidityType] = useState(''); // deposit, withdraw, create, or empty for all
   const [tabValue, setTabValue] = useState(0);
   const previousTradesRef = useRef(new Set());
+  const wsRef = useRef(null);
+  const wsPingRef = useRef(null);
   const limit = isMobile ? 10 : 20;
 
   // Cursor-based pagination state
@@ -1767,54 +1769,84 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
-  // Auto-refresh interval (only for page 1 with desc direction, disabled when filtering by account)
+  // WebSocket for real-time trade updates (only for page 1 with desc direction, no account filter)
   useEffect(() => {
-    // Don't auto-refresh when filtering by account - preserves search results
-    if (currentPage !== 1 || direction !== 'desc' || accountFilter) return;
-
-    let intervalId = null;
-    let lastFetchTime = Date.now();
-    const POLL_INTERVAL = 5000; // 5 second updates
-
-    const startPolling = () => {
-      if (intervalId) return;
-      intervalId = setInterval(() => {
-        if (document.visibilityState === 'visible') {
-          const now = Date.now();
-          if (now - lastFetchTime >= POLL_INTERVAL - 500) {
-            lastFetchTime = now;
-            fetchTradingHistory(null, true, 'desc');
-          }
-        }
-      }, POLL_INTERVAL);
-    };
-
-    const stopPolling = () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
+    if (!tokenId || currentPage !== 1 || direction !== 'desc' || accountFilter) {
+      // Close existing WS if conditions not met
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
       }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    if (document.visibilityState === 'visible') {
-      startPolling();
+      return;
     }
 
-    return () => {
-      stopPolling();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    // Close existing WS
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (wsPingRef.current) {
+      clearInterval(wsPingRef.current);
+      wsPingRef.current = null;
+    }
+
+    const wsParams = new URLSearchParams({ limit: String(limit) });
+    if (pairType) wsParams.set('pairType', pairType);
+    if (historyType !== 'all') wsParams.set('type', historyType);
+
+    const ws = new WebSocket(`wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      wsPingRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 30000);
     };
-  }, [currentPage, direction, accountFilter, fetchTradingHistory]);
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'initial' && msg.trades) {
+        setTrades(msg.trades.slice(0, 50));
+        previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
+        setLoading(false);
+      } else if (msg.e === 'trades' && msg.trades?.length > 0) {
+        const currentIds = previousTradesRef.current;
+        const newTrades = msg.trades.filter(t => !currentIds.has(t._id || t.id));
+
+        if (newTrades.length > 0) {
+          setNewTradeIds(new Set(newTrades.map(t => t._id || t.id)));
+          setTrades(prev => [...newTrades, ...prev].slice(0, 50));
+          newTrades.forEach(t => currentIds.add(t._id || t.id));
+          setTimeout(() => setNewTradeIds(new Set()), 1000);
+        }
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('History WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      if (wsPingRef.current) {
+        clearInterval(wsPingRef.current);
+        wsPingRef.current = null;
+      }
+    };
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (wsPingRef.current) {
+        clearInterval(wsPingRef.current);
+        wsPingRef.current = null;
+      }
+    };
+  }, [tokenId, currentPage, direction, accountFilter, pairType, historyType, limit]);
 
   // Cursor-based pagination handlers
   const handleNextPage = useCallback(() => {
