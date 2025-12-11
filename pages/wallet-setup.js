@@ -1,10 +1,13 @@
-import { useState, useContext, useEffect, useMemo } from 'react';
+import { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { Eye, EyeOff, Loader2, Plus, X, Copy, Check } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plus, X, Copy, Check, ChevronDown, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
 import { Wallet as XRPLWallet } from 'xrpl';
+
+// Bridge API configuration
+const BRIDGE_API_URL = 'https://api.xrpl.to/api/bridge';
 
 // Generate random wallet for OAuth
 const generateRandomWallet = () => {
@@ -37,6 +40,7 @@ const WalletSetupPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [importSeeds, setImportSeeds] = useState(['']);
+  const [showSeeds, setShowSeeds] = useState({});
   const [importFile, setImportFile] = useState(null);
   const [importFileData, setImportFileData] = useState(null);
   const [error, setError] = useState('');
@@ -47,6 +51,19 @@ const WalletSetupPage = () => {
   const [createdWallet, setCreatedWallet] = useState(null);
   const [copied, setCopied] = useState(false);
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
+
+  // ChangeNOW exchange state
+  const [currencies, setCurrencies] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [exchangeAmount, setExchangeAmount] = useState('');
+  const [estimatedXrp, setEstimatedXrp] = useState(null);
+  const [minAmount, setMinAmount] = useState(null);
+  const [exchangeLoading, setExchangeLoading] = useState(false);
+  const [exchangeError, setExchangeError] = useState('');
+  const [exchangeData, setExchangeData] = useState(null);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [currencySearch, setCurrencySearch] = useState('');
+  const [txStatus, setTxStatus] = useState(null);
 
   // OAuth data - start as undefined to indicate "not yet loaded"
   const [oauthData, setOauthData] = useState(undefined);
@@ -72,6 +89,140 @@ const WalletSetupPage = () => {
       window.location.href = '/';
     }
   }, []);
+
+  // Fetch available currencies from Bridge API
+  const fetchCurrencies = useCallback(async () => {
+    try {
+      const res = await fetch(`${BRIDGE_API_URL}/currencies`);
+      if (!res.ok) throw new Error('Failed to fetch currencies');
+      const data = await res.json();
+      // Filter to popular currencies and sort
+      const popular = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'sol', 'ada', 'doge', 'matic', 'ltc', 'trx', 'avax'];
+      const sorted = data
+        .filter(c => c.ticker !== 'xrp')
+        .sort((a, b) => {
+          const aIdx = popular.indexOf(a.ticker);
+          const bIdx = popular.indexOf(b.ticker);
+          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          if (aIdx !== -1) return -1;
+          if (bIdx !== -1) return 1;
+          return a.name.localeCompare(b.name);
+        });
+      setCurrencies(sorted);
+      if (sorted.length > 0 && !selectedCurrency) {
+        setSelectedCurrency(sorted[0]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch currencies:', err);
+    }
+  }, [selectedCurrency]);
+
+  // Fetch minimum amount and estimate
+  const fetchEstimate = useCallback(async () => {
+    if (!selectedCurrency || !exchangeAmount) {
+      setEstimatedXrp(null);
+      return;
+    }
+    setExchangeLoading(true);
+    setExchangeError('');
+    try {
+      // Get min amount
+      const minRes = await fetch(
+        `${BRIDGE_API_URL}/min-amount?fromCurrency=${selectedCurrency.ticker}&toCurrency=xrp&fromNetwork=${selectedCurrency.network}&toNetwork=xrp`
+      );
+      if (minRes.ok) {
+        const minData = await minRes.json();
+        setMinAmount(minData.minAmount);
+        if (parseFloat(exchangeAmount) < minData.minAmount) {
+          setExchangeError(`Minimum: ${minData.minAmount} ${selectedCurrency.ticker.toUpperCase()}`);
+          setEstimatedXrp(null);
+          setExchangeLoading(false);
+          return;
+        }
+      }
+
+      // Get estimate
+      const estRes = await fetch(
+        `${BRIDGE_API_URL}/estimate?fromCurrency=${selectedCurrency.ticker}&toCurrency=xrp&fromAmount=${exchangeAmount}&fromNetwork=${selectedCurrency.network}&toNetwork=xrp`
+      );
+      if (!estRes.ok) throw new Error('Failed to get estimate');
+      const estData = await estRes.json();
+      setEstimatedXrp(estData.toAmount);
+    } catch (err) {
+      setExchangeError('Failed to get estimate');
+    } finally {
+      setExchangeLoading(false);
+    }
+  }, [selectedCurrency, exchangeAmount]);
+
+  // Create exchange transaction
+  const createExchange = async (walletAddress) => {
+    if (!selectedCurrency || !exchangeAmount || !estimatedXrp) return;
+    setExchangeLoading(true);
+    setExchangeError('');
+    try {
+      const res = await fetch(`${BRIDGE_API_URL}/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromCurrency: selectedCurrency.ticker,
+          toCurrency: 'xrp',
+          fromNetwork: selectedCurrency.network,
+          toNetwork: 'xrp',
+          fromAmount: parseFloat(exchangeAmount),
+          address: walletAddress
+        })
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to create exchange');
+      }
+      const data = await res.json();
+      setExchangeData(data);
+      setTxStatus({ status: 'waiting', updatedAt: Date.now() });
+    } catch (err) {
+      setExchangeError(err.message || 'Failed to create exchange');
+    } finally {
+      setExchangeLoading(false);
+    }
+  };
+
+  // Fetch transaction status
+  const fetchTxStatus = useCallback(async () => {
+    if (!exchangeData?.id) return;
+    try {
+      const res = await fetch(`${BRIDGE_API_URL}/status?id=${exchangeData.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTxStatus({ status: data.status, hash: data.payoutHash, updatedAt: Date.now() });
+      }
+    } catch (err) {
+      console.error('Failed to fetch status:', err);
+    }
+  }, [exchangeData?.id]);
+
+  // Poll transaction status
+  useEffect(() => {
+    if (!exchangeData?.id) return;
+    fetchTxStatus();
+    const interval = setInterval(fetchTxStatus, 15000);
+    return () => clearInterval(interval);
+  }, [exchangeData?.id, fetchTxStatus]);
+
+  // Load currencies on mount
+  useEffect(() => {
+    fetchCurrencies();
+  }, [fetchCurrencies]);
+
+  // Debounce estimate fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (selectedCurrency && exchangeAmount) {
+        fetchEstimate();
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [selectedCurrency, exchangeAmount, fetchEstimate]);
 
   const handleCreateWallet = async () => {
     // Validate password
@@ -342,7 +493,7 @@ const WalletSetupPage = () => {
               <span className="text-[20px]">⚠️</span>
               <div className="text-[12px] leading-relaxed">
                 <p className={isDark ? "text-white" : "text-[#212B36]"}>
-                  This password is the only way to use your wallets via the xrpl.to app. If you lose your password, it cannot be recovered.
+                  Your password is the only way to use your wallets via the xrpl.to app. If you lose your password, it cannot be recovered.
                 </p>
                 <p className={cn("mt-3", isDark ? "text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.6)]")}>
                   We recommend exporting your private keys to mitigate the risk of permanently losing access to your funds.
@@ -397,76 +548,429 @@ const WalletSetupPage = () => {
     );
   }
 
+  // Filter currencies for dropdown
+  const filteredCurrencies = currencies.filter(c =>
+    c.name.toLowerCase().includes(currencySearch.toLowerCase()) ||
+    c.ticker.toLowerCase().includes(currencySearch.toLowerCase())
+  );
+
   // Fund wallet screen
   if (showFundScreen && createdWallet) {
     const walletAddress = createdWallet.wallet.address || createdWallet.wallet.account;
+
+    // If exchange was created, show deposit address
+    if (exchangeData) {
+      return (
+        <div className="flex min-h-screen items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md text-center">
+            <div className="mb-5">
+              <div className={cn(
+                "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full",
+                "bg-[rgba(59,130,246,0.15)]"
+              )}>
+                <ArrowRight size={24} className="text-[#3b82f6]" />
+              </div>
+              <h1 className={cn("text-[18px] font-normal", isDark ? "text-white" : "text-[#212B36]")}>
+                Send {selectedCurrency?.ticker?.toUpperCase()} to this address
+              </h1>
+              <p className={cn("mt-1 text-[12px]", isDark ? "text-[rgba(255,255,255,0.5)]" : "text-[rgba(33,43,54,0.5)]")}>
+                {exchangeAmount} {selectedCurrency?.ticker?.toUpperCase()} → ~{estimatedXrp} XRP
+              </p>
+            </div>
+
+            {/* Deposit Address Card */}
+            <div className={cn(
+              "mb-4 rounded-[12px] border p-5",
+              isDark ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]" : "border-[rgba(0,0,0,0.08)] bg-gray-50"
+            )}>
+              <div className="mx-auto mb-4 w-fit rounded-xl bg-white p-3">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${exchangeData.payinAddress}`}
+                  alt="Deposit QR"
+                  width={140}
+                  height={140}
+                />
+              </div>
+
+              <div className={cn(
+                "rounded-[8px] border p-3 text-left",
+                isDark ? "border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]" : "border-[rgba(0,0,0,0.06)] bg-white"
+              )}>
+                <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400")}>
+                  Deposit Address
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={cn("font-mono text-[11px] break-all", isDark ? "text-white" : "text-gray-900")}>
+                    {exchangeData.payinAddress}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(exchangeData.payinAddress);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className={cn(
+                      "flex-shrink-0 rounded-[6px] p-1.5 transition-colors",
+                      copied ? "bg-[rgba(34,197,94,0.15)] text-[#22c55e]" : isDark ? "bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)]" : "bg-gray-100 text-gray-600"
+                    )}
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                </div>
+                {exchangeData.payinExtraId && (
+                  <>
+                    <p className={cn("text-[9px] uppercase tracking-wide mt-3 mb-1", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400")}>
+                      Memo / Tag
+                    </p>
+                    <span className={cn("font-mono text-[11px]", isDark ? "text-white" : "text-gray-900")}>
+                      {exchangeData.payinExtraId}
+                    </span>
+                  </>
+                )}
+              </div>
+
+            </div>
+
+            {/* Status Tracker */}
+            <div className={cn(
+              "mb-4 rounded-[12px] border p-4",
+              isDark ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]" : "border-[rgba(0,0,0,0.08)] bg-gray-50"
+            )}>
+              <div className="flex items-center justify-between mb-3">
+                <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400")}>
+                  Status
+                </span>
+                <button
+                  onClick={fetchTxStatus}
+                  className={cn("p-1 rounded transition-colors", isDark ? "hover:bg-[rgba(255,255,255,0.05)]" : "hover:bg-gray-100")}
+                >
+                  <RefreshCw size={12} className={isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400"} />
+                </button>
+              </div>
+
+              {/* Status Steps */}
+              <div className="flex items-center justify-between">
+                {[
+                  { key: 'waiting', label: 'Waiting' },
+                  { key: 'confirming', label: 'Confirming' },
+                  { key: 'exchanging', label: 'Exchanging' },
+                  { key: 'sending', label: 'Sending' },
+                  { key: 'finished', label: 'Done' }
+                ].map((step, idx, arr) => {
+                  const statusOrder = ['waiting', 'confirming', 'exchanging', 'sending', 'finished'];
+                  const currentIdx = statusOrder.indexOf(txStatus?.status || 'waiting');
+                  const stepIdx = statusOrder.indexOf(step.key);
+                  const isActive = stepIdx <= currentIdx;
+                  const isCurrent = step.key === txStatus?.status;
+                  const isFailed = txStatus?.status === 'failed' || txStatus?.status === 'refunded';
+
+                  return (
+                    <div key={step.key} className="flex flex-col items-center flex-1">
+                      <div className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium mb-1 transition-colors",
+                        isFailed ? "bg-[rgba(244,67,54,0.15)] text-[#f44336]" :
+                        isActive ? "bg-[rgba(34,197,94,0.15)] text-[#22c55e]" :
+                        isDark ? "bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.3)]" : "bg-gray-100 text-gray-400"
+                      )}>
+                        {isActive && !isFailed ? <Check size={12} /> : idx + 1}
+                      </div>
+                      <span className={cn(
+                        "text-[9px]",
+                        isCurrent ? (isDark ? "text-white" : "text-gray-900") :
+                        isActive ? "text-[#22c55e]" :
+                        isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-400"
+                      )}>
+                        {step.label}
+                      </span>
+                      {idx < arr.length - 1 && (
+                        <div className={cn(
+                          "absolute h-0.5 w-[calc(100%/5-20px)]",
+                          isActive ? "bg-[#22c55e]" : isDark ? "bg-[rgba(255,255,255,0.1)]" : "bg-gray-200"
+                        )} style={{ left: `calc(${(idx + 0.5) * 20}% + 12px)`, top: '12px' }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {txStatus?.status === 'failed' && (
+                <p className="mt-3 text-[11px] text-[#f44336] text-center">Exchange failed. Contact support with ID: {exchangeData.id}</p>
+              )}
+              {txStatus?.status === 'refunded' && (
+                <p className="mt-3 text-[11px] text-[#FF9800] text-center">Refunded to sender address</p>
+              )}
+              {txStatus?.status === 'finished' && (
+                <p className="mt-3 text-[11px] text-[#22c55e] text-center">XRP received! Your wallet is now active.</p>
+              )}
+
+              <p className={cn("mt-3 text-[9px] text-center", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-400")}>
+                ID: {exchangeData.id}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setExchangeData(null)}
+                className={cn(
+                  "flex-1 rounded-[10px] border px-4 py-2.5 text-[12px] transition-colors",
+                  isDark ? "border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.6)]" : "border-gray-200 text-gray-600"
+                )}
+              >
+                Back
+              </button>
+              <button
+                onClick={handleStartTrading}
+                className="flex-1 rounded-[10px] bg-[#22c55e] px-4 py-2.5 text-[12px] font-medium text-white transition-colors hover:bg-[#1ea34b]"
+              >
+                Continue to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
         <div className="w-full max-w-md text-center">
-          <h1 className="mb-8 text-[22px] font-normal text-[#22c55e]">
-            Wallet ready. Fund to activate
-          </h1>
-
-          {/* Chain selector (XRPL only) */}
-          <div className={cn(
-            "mb-6 flex items-center gap-3 rounded-[10px] border px-4 py-3",
-            isDark ? "border-[rgba(255,255,255,0.12)] bg-transparent" : "border-[rgba(0,0,0,0.08)] bg-white"
-          )}>
-            <img src="/xrp.webp" alt="XRP" className="h-5 w-5" />
-            <span className={cn("text-[13px]", isDark ? "text-white" : "text-[#212B36]")}>
-              XRP Ledger
-            </span>
+          <div className="mb-5">
+            <div className={cn(
+              "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full",
+              "bg-[rgba(34,197,94,0.15)]"
+            )}>
+              <Check size={24} className="text-[#22c55e]" />
+            </div>
+            <h1 className={cn("text-[20px] font-normal", isDark ? "text-white" : "text-[#212B36]")}>
+              Wallet Created
+            </h1>
+            <p className={cn("mt-1 text-[12px]", isDark ? "text-[rgba(255,255,255,0.5)]" : "text-[rgba(33,43,54,0.5)]")}>
+              Fund with at least 1 XRP to activate
+            </p>
           </div>
 
-          {/* QR Code section */}
+          {/* Swap Interface */}
           <div className={cn(
-            "mb-6 rounded-[10px] border p-6",
-            isDark ? "border-[rgba(255,255,255,0.12)]" : "border-[rgba(0,0,0,0.08)]"
+            "mb-4 rounded-[12px] border p-4",
+            isDark ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]" : "border-[rgba(0,0,0,0.08)] bg-gray-50"
           )}>
-            <p className={cn("mb-4 text-[12px]", isDark ? "text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.6)]")}>
-              Top up your wallet
+            <p className={cn("mb-3 text-[11px] font-medium text-left", isDark ? "text-[rgba(255,255,255,0.5)]" : "text-gray-500")}>
+              Swap any crypto to XRP
             </p>
-            <div className="mx-auto w-fit rounded-lg bg-white p-3">
+
+            {/* From Currency */}
+            <div className={cn(
+              "rounded-[10px] border p-3 mb-2",
+              isDark ? "border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]" : "border-gray-200 bg-white"
+            )}>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-[8px] border px-3 py-2 transition-colors",
+                      isDark ? "border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)]" : "border-gray-200 hover:border-gray-300"
+                    )}
+                  >
+                    {selectedCurrency?.image ? (
+                      <img src={selectedCurrency.image} alt={selectedCurrency.ticker} className="h-5 w-5 rounded-full" />
+                    ) : (
+                      <div className={cn("h-5 w-5 rounded-full", isDark ? "bg-[rgba(255,255,255,0.1)]" : "bg-gray-200")} />
+                    )}
+                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      {selectedCurrency?.ticker?.toUpperCase() || 'Select'}
+                    </span>
+                    <ChevronDown size={14} className={isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400"} />
+                  </button>
+
+                  {/* Currency Dropdown */}
+                  {showCurrencyDropdown && (
+                    <div className={cn(
+                      "absolute left-0 top-full mt-1 z-50 w-[200px] max-h-[250px] overflow-hidden rounded-[10px] border shadow-lg",
+                      isDark ? "border-[rgba(255,255,255,0.1)] bg-[#0a0a0a]" : "border-gray-200 bg-white"
+                    )}>
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          value={currencySearch}
+                          onChange={(e) => setCurrencySearch(e.target.value)}
+                          placeholder="Search..."
+                          className={cn(
+                            "w-full rounded-[6px] border px-3 py-1.5 text-[12px] outline-none",
+                            isDark ? "border-[rgba(255,255,255,0.1)] bg-transparent text-white placeholder:text-[rgba(255,255,255,0.3)]" : "border-gray-200 bg-gray-50 text-gray-900"
+                          )}
+                        />
+                      </div>
+                      <div className="max-h-[180px] overflow-y-auto">
+                        {filteredCurrencies.slice(0, 50).map((c) => (
+                          <button
+                            key={`${c.ticker}-${c.network}`}
+                            onClick={() => {
+                              setSelectedCurrency(c);
+                              setShowCurrencyDropdown(false);
+                              setCurrencySearch('');
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
+                              isDark ? "hover:bg-[rgba(255,255,255,0.05)]" : "hover:bg-gray-50",
+                              selectedCurrency?.ticker === c.ticker && selectedCurrency?.network === c.network && (isDark ? "bg-[rgba(255,255,255,0.05)]" : "bg-gray-100")
+                            )}
+                          >
+                            {c.image ? (
+                              <img src={c.image} alt={c.ticker} className="h-5 w-5 rounded-full" />
+                            ) : (
+                              <div className={cn("h-5 w-5 rounded-full", isDark ? "bg-[rgba(255,255,255,0.1)]" : "bg-gray-200")} />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className={cn("text-[12px] font-medium block", isDark ? "text-white" : "text-gray-900")}>
+                                {c.ticker.toUpperCase()}
+                              </span>
+                              <span className={cn("text-[10px] truncate block", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400")}>
+                                {c.name}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="number"
+                  value={exchangeAmount}
+                  onChange={(e) => setExchangeAmount(e.target.value)}
+                  placeholder="0.00"
+                  className={cn(
+                    "flex-1 bg-transparent text-right text-[18px] font-medium outline-none",
+                    isDark ? "text-white placeholder:text-[rgba(255,255,255,0.2)]" : "text-gray-900 placeholder:text-gray-300"
+                  )}
+                />
+              </div>
+              {minAmount && (
+                <p className={cn("text-[10px] text-right mt-1", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-400")}>
+                  Min: {minAmount} {selectedCurrency?.ticker?.toUpperCase()}
+                </p>
+              )}
+            </div>
+
+            {/* Arrow */}
+            <div className="flex justify-center my-2">
+              <div className={cn(
+                "rounded-full p-1.5",
+                isDark ? "bg-[rgba(255,255,255,0.05)]" : "bg-gray-100"
+              )}>
+                <ArrowRight size={14} className={cn("rotate-90", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-gray-400")} />
+              </div>
+            </div>
+
+            {/* To XRP */}
+            <div className={cn(
+              "rounded-[10px] border p-3",
+              isDark ? "border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]" : "border-gray-200 bg-white"
+            )}>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-[8px] border px-3 py-2 border-transparent">
+                  <img src="/static/xrp.svg" alt="XRP" className="h-5 w-5" />
+                  <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>XRP</span>
+                </div>
+                <div className="flex-1 text-right">
+                  {exchangeLoading ? (
+                    <Loader2 size={18} className={cn("animate-spin ml-auto", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-300")} />
+                  ) : (
+                    <span className={cn(
+                      "text-[18px] font-medium",
+                      estimatedXrp ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-[rgba(255,255,255,0.2)]" : "text-gray-300")
+                    )}>
+                      {estimatedXrp || '0.00'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {exchangeError && (
+              <p className="text-[11px] text-[#f44336] mt-2 text-left">{exchangeError}</p>
+            )}
+
+            {/* Exchange Button */}
+            <button
+              onClick={() => createExchange(walletAddress)}
+              disabled={!selectedCurrency || !exchangeAmount || !estimatedXrp || exchangeLoading}
+              className={cn(
+                "w-full mt-4 rounded-[10px] px-4 py-3 text-[13px] font-medium transition-colors",
+                selectedCurrency && exchangeAmount && estimatedXrp && !exchangeLoading
+                  ? "bg-[#3b82f6] text-white hover:bg-[#2563eb]"
+                  : isDark
+                  ? "bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.3)] cursor-not-allowed"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              )}
+            >
+              {exchangeLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 size={16} className="animate-spin" /> Processing...
+                </span>
+              ) : (
+                'Create Exchange'
+              )}
+            </button>
+
+            <p className={cn("mt-3 text-[9px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-400")}>
+              Bridge to the XRP Ledger
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="mb-4 flex items-center gap-3">
+            <div className={cn("h-px flex-1", isDark ? "bg-[rgba(255,255,255,0.08)]" : "bg-gray-200")} />
+            <span className={cn("text-[10px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-gray-400")}>or send XRP directly</span>
+            <div className={cn("h-px flex-1", isDark ? "bg-[rgba(255,255,255,0.08)]" : "bg-gray-200")} />
+          </div>
+
+          {/* QR Code + Address Card */}
+          <div className={cn(
+            "mb-4 rounded-[12px] border p-4",
+            isDark ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]" : "border-[rgba(0,0,0,0.08)] bg-gray-50"
+          )}>
+            <div className="mx-auto mb-3 w-fit rounded-xl bg-white p-2">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${walletAddress}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${walletAddress}`}
                 alt="Wallet QR Code"
-                width={140}
-                height={140}
+                width={100}
+                height={100}
               />
+            </div>
+
+            <div className={cn(
+              "flex items-center justify-between rounded-[8px] border px-3 py-2",
+              isDark ? "border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]" : "border-[rgba(0,0,0,0.06)] bg-white"
+            )}>
+              <span className={cn("font-mono text-[10px]", isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]")}>
+                {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
+              </span>
+              <button
+                onClick={copyAddress}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-[10px] font-medium transition-colors",
+                  copied
+                    ? "bg-[rgba(34,197,94,0.15)] text-[#22c55e]"
+                    : isDark
+                    ? "bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)] hover:bg-[rgba(255,255,255,0.12)]"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
             </div>
           </div>
 
-          {/* Address with copy */}
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <span className={cn("font-mono text-[12px]", isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]")}>
-              {walletAddress}
-            </span>
-            <button onClick={copyAddress} className="text-[rgba(255,255,255,0.5)] hover:text-white">
-              {copied ? <Check size={14} className="text-[#22c55e]" /> : <Copy size={14} />}
-            </button>
-          </div>
-
-          <p className={cn("mb-8 text-[11px]", "text-[#FF9800]")}>
-            Send at least 1 XRP to activate this wallet
-          </p>
-
-          {/* Start trading button */}
+          {/* Continue button */}
           <button
             onClick={handleStartTrading}
-            className="w-full rounded-full bg-[#22c55e] px-6 py-3 text-[13px] font-normal text-black transition-colors hover:bg-[#1ea34b]"
+            className="w-full rounded-[10px] bg-[#22c55e] px-6 py-3 text-[13px] font-medium text-white transition-colors hover:bg-[#1ea34b]"
           >
-            Start trading
+            Continue to Dashboard
           </button>
-
-          <p className="mt-6">
-            <span className={cn("text-[12px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]")}>or </span>
-            <button
-              onClick={() => { setShowFundScreen(false); setShowSuccess(false); }}
-              className="text-[12px] text-[#3b82f6] hover:underline"
-            >
-              Import wallet
-            </button>
-          </p>
         </div>
       </div>
     );
@@ -625,7 +1129,7 @@ const WalletSetupPage = () => {
                     <div key={idx}>
                       <div className="relative">
                         <input
-                          type="text"
+                          type={showSeeds[idx] ? 'text' : 'password'}
                           value={seed}
                           onChange={(e) => {
                             const newSeeds = [...importSeeds];
@@ -634,7 +1138,7 @@ const WalletSetupPage = () => {
                           }}
                           placeholder={`Seed ${idx + 1} (starts with "s")`}
                           className={cn(
-                            "w-full rounded-[8px] border-[1.5px] px-4 py-2 pr-8 text-[11px] font-mono outline-none transition-colors",
+                            "w-full rounded-[8px] border-[1.5px] px-4 py-2 pr-16 text-[11px] font-mono outline-none transition-colors",
                             hasInput && !validation.valid
                               ? "border-[rgba(244,67,54,0.3)] focus:border-[#f44336]"
                               : hasInput && validation.valid
@@ -645,18 +1149,30 @@ const WalletSetupPage = () => {
                             isDark ? "bg-transparent text-white" : "bg-white text-gray-900"
                           )}
                         />
-                        {importSeeds.length > 1 && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={() => setImportSeeds(importSeeds.filter((_, i) => i !== idx))}
+                            onClick={() => setShowSeeds(prev => ({ ...prev, [idx]: !prev[idx] }))}
                             className={cn(
-                              "absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 transition-colors",
-                              isDark ? "text-[rgba(255,255,255,0.3)] hover:text-[#f44336]" : "text-[rgba(33,43,54,0.3)] hover:text-[#f44336]"
+                              "rounded p-0.5 transition-colors",
+                              isDark ? "text-[rgba(255,255,255,0.3)] hover:text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.3)] hover:text-[rgba(33,43,54,0.6)]"
                             )}
                           >
-                            <X size={14} />
+                            {showSeeds[idx] ? <EyeOff size={14} /> : <Eye size={14} />}
                           </button>
-                        )}
+                          {importSeeds.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setImportSeeds(importSeeds.filter((_, i) => i !== idx))}
+                              className={cn(
+                                "rounded p-0.5 transition-colors",
+                                isDark ? "text-[rgba(255,255,255,0.3)] hover:text-[#f44336]" : "text-[rgba(33,43,54,0.3)] hover:text-[#f44336]"
+                              )}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       {hasInput && validation.error && (
                         <p className="mt-1 text-[10px] text-[#f44336]">{validation.error}</p>

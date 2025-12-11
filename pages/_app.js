@@ -175,6 +175,25 @@ function AppPageLayout({ children }) {
   );
 }
 
+// Custom Toaster wrapper that uses theme context
+function ThemedToaster() {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  return (
+    <Toaster
+      position="bottom-right"
+      closeButton
+      duration={4000}
+      theme={isDark ? 'dark' : 'light'}
+      gap={12}
+      toastOptions={{
+        className: 'sonner-toast-custom',
+      }}
+    />
+  );
+}
+
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
@@ -310,7 +329,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <AppPageLayout>
               <Component {...pageProps} />
             </AppPageLayout>
-            <Toaster position="bottom-right" richColors closeButton duration={4000} />
+            <ThemedToaster />
             <TransactionAlert />
             <Wallet />
           </ThemeProvider>

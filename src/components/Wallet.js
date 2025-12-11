@@ -1283,6 +1283,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
   const [backupAgreed, setBackupAgreed] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearWarningAgreed, setClearWarningAgreed] = useState(false);
   const [clearSliderValue, setClearSliderValue] = useState(0);
   const [storedWalletCount, setStoredWalletCount] = useState(0);
   const [storedWalletDate, setStoredWalletDate] = useState(null);
@@ -1310,9 +1311,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             const store = tx.objectStore('wallets');
             const allReq = store.getAll();
             allReq.onsuccess = () => {
-              // Only count actual wallets (have address field, exclude passwords and lookup hashes)
+              // Count actual wallets: have encrypted data blob and maskedAddress (exclude password/lookup entries)
               const wallets = allReq.result.filter(r =>
-                r.address && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__lookup__')
+                r.data && r.maskedAddress && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__lookup__')
               );
               setStoredWalletCount(wallets.length);
             };
@@ -2690,13 +2691,59 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Clear all wallets
   const handleClearAllWallets = async () => {
     try {
-      await indexedDB.deleteDatabase('XRPLWalletDB');
+      // Close any existing connections first
+      const dbs = await indexedDB.databases?.() || [];
+      for (const db of dbs) {
+        if (db.name === 'XRPLWalletDB') {
+          indexedDB.deleteDatabase('XRPLWalletDB');
+        }
+      }
+
+      // Fallback: directly delete database
+      const deleteRequest = indexedDB.deleteDatabase('XRPLWalletDB');
+      deleteRequest.onsuccess = () => console.log('IndexedDB deleted');
+      deleteRequest.onerror = () => console.log('IndexedDB delete error');
+      deleteRequest.onblocked = () => console.log('IndexedDB delete blocked - will clear on reload');
+
+      // Clear all wallet-related localStorage keys
       localStorage.removeItem('profiles');
+      localStorage.removeItem('accountLogin');
+      localStorage.removeItem('authMethod');
+      localStorage.removeItem('user');
+
+      // Clear all backup flags and encrypted items
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (
+          key.startsWith('wallet_') ||
+          key.startsWith('jwt') ||
+          key.endsWith('_enc')
+        )) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      // Clear session storage OAuth data
+      sessionStorage.removeItem('oauth_temp_token');
+      sessionStorage.removeItem('oauth_temp_provider');
+      sessionStorage.removeItem('oauth_temp_user');
+      sessionStorage.removeItem('oauth_action');
+
+      // Clear state
+      setProfiles([]);
+      setStoredWalletCount(0);
+
+      // Logout
       handleLogout();
       setShowClearConfirm(false);
       setClearSliderValue(0);
       setOpenWalletModal(false);
       openSnackbar('All wallets cleared', 'success');
+
+      // Force reload to ensure clean state
+      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       openSnackbar('Failed to clear wallets: ' + error.message, 'error');
     }
@@ -4091,88 +4138,61 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Encrypted and stored locally
                           </span>
                         </div>
-                        {(profiles.length > 0 || storedWalletCount > 0) && !showClearConfirm ? (
-                          <button
-                            onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); }}
-                            className={cn("text-[10px] mt-2", isDark ? "text-red-400/50 hover:text-red-400" : "text-red-400/60 hover:text-red-500")}
-                          >
-                            Clear all wallets
-                          </button>
-                        ) : showClearConfirm ? (
-                          <div className={cn(
-                            "mt-4 rounded-2xl border-[1.5px] overflow-hidden",
-                            isDark ? "bg-[#0d0d0d] border-red-500/20" : "bg-white border-red-200"
-                          )}>
-                            {/* Header with warning */}
-                            <div className={cn(
-                              "px-4 py-3 border-b",
-                              isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-100"
-                            )}>
-                              <div className="flex items-center gap-3">
-                                <div className={cn(
-                                  "w-10 h-10 rounded-xl flex items-center justify-center",
-                                  isDark ? "bg-red-500/10" : "bg-red-100"
-                                )}>
-                                  <Trash2 size={18} className="text-red-500" />
-                                </div>
-                                <div>
-                                  <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>
-                                    Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}?
-                                  </p>
-                                  <p className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
-                                    This action cannot be undone
-                                  </p>
-                                </div>
+                        {(profiles.length > 0 || storedWalletCount > 0) && (
+                          !showClearConfirm ? (
+                            <button
+                              onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); setClearWarningAgreed(false); }}
+                              className={cn("text-[10px] mt-2", isDark ? "text-red-400/50 hover:text-red-400" : "text-red-400/60 hover:text-red-500")}
+                            >
+                              Clear all wallets
+                            </button>
+                          ) : (
+                            <div className={cn("mt-3 p-3 rounded-xl", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
+                              {/* Header row */}
+                              <div className="flex items-center gap-2 mb-2">
+                                <Trash2 size={14} className="text-red-500" />
+                                <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                                  Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}?
+                                </span>
                               </div>
-                            </div>
 
-                            {/* Wallet details */}
-                            <div className="px-4 py-3">
-                              {(storedWalletDate || storedWalletAddresses.length > 0) && (
+                              {/* Warning checkbox */}
+                              <button
+                                onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
+                                className={cn(
+                                  "w-full flex items-start gap-2.5 p-2.5 rounded-lg text-left mb-3 transition-all border",
+                                  clearWarningAgreed
+                                    ? "border-red-500/50 bg-red-500/10"
+                                    : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
+                                )}
+                              >
                                 <div className={cn(
-                                  "rounded-xl p-3 mb-3",
-                                  isDark ? "bg-white/[0.02]" : "bg-gray-50"
+                                  "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+                                  clearWarningAgreed ? "bg-red-500" : isDark ? "border border-white/20" : "border border-gray-300"
                                 )}>
-                                  {storedWalletAddresses.slice(0, 3).map((addr, i) => (
-                                    <div key={i} className="flex items-center gap-2 mb-1.5 last:mb-0">
-                                      <div className={cn(
-                                        "w-1.5 h-1.5 rounded-full",
-                                        isDark ? "bg-red-400/60" : "bg-red-400"
-                                      )} />
-                                      <span className={cn(
-                                        "font-mono text-[11px]",
-                                        isDark ? "text-white/60" : "text-gray-600"
-                                      )}>{addr}</span>
-                                    </div>
-                                  ))}
-                                  {storedWalletAddresses.length > 3 && (
-                                    <p className={cn("text-[10px] mt-1 pl-3.5", isDark ? "text-white/30" : "text-gray-400")}>
-                                      +{storedWalletAddresses.length - 3} more wallet{storedWalletAddresses.length - 3 !== 1 ? 's' : ''}
-                                    </p>
-                                  )}
-                                  {storedWalletDate && (
-                                    <p className={cn("text-[10px] mt-2 pt-2 border-t", isDark ? "text-white/30 border-white/5" : "text-gray-400 border-gray-100")}>
-                                      Created {new Date(storedWalletDate).toLocaleDateString()}
-                                    </p>
-                                  )}
+                                  {clearWarningAgreed && <Check size={10} className="text-white" />}
                                 </div>
-                              )}
+                                <span className={cn("text-[11px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                                  I understand this will permanently delete all wallets and cannot be undone
+                                </span>
+                              </button>
 
                               {/* Slide to delete */}
                               <div
                                 className={cn(
-                                  "relative h-12 rounded-xl overflow-hidden cursor-pointer select-none",
+                                  "relative h-11 rounded-xl overflow-hidden select-none transition-opacity",
+                                  clearWarningAgreed ? "cursor-pointer" : "cursor-not-allowed opacity-40",
                                   clearSliderValue >= 95
                                     ? "bg-red-500"
-                                    : isDark ? "bg-white/[0.06]" : "bg-gray-100"
+                                    : isDark ? "bg-white/[0.04]" : "bg-white border border-gray-200"
                                 )}
                                 onMouseDown={(e) => {
+                                  if (!clearWarningAgreed) return;
                                   const rect = e.currentTarget.getBoundingClientRect();
                                   const handleMove = (moveEvent) => {
                                     const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
-                                    const val = Math.round((x / rect.width) * 100);
-                                    setClearSliderValue(val);
-                                    if (val >= 95) handleClearAllWallets();
+                                    setClearSliderValue(Math.round((x / rect.width) * 100));
+                                    if (x / rect.width >= 0.95) handleClearAllWallets();
                                   };
                                   const handleUp = () => {
                                     document.removeEventListener('mousemove', handleMove);
@@ -4184,13 +4204,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   document.addEventListener('mouseup', handleUp);
                                 }}
                                 onTouchStart={(e) => {
+                                  if (!clearWarningAgreed) return;
                                   const rect = e.currentTarget.getBoundingClientRect();
                                   const handleMove = (moveEvent) => {
                                     const touch = moveEvent.touches[0];
                                     const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
-                                    const val = Math.round((x / rect.width) * 100);
-                                    setClearSliderValue(val);
-                                    if (val >= 95) handleClearAllWallets();
+                                    setClearSliderValue(Math.round((x / rect.width) * 100));
+                                    if (x / rect.width >= 0.95) handleClearAllWallets();
                                   };
                                   const handleEnd = () => {
                                     document.removeEventListener('touchmove', handleMove);
@@ -4204,77 +4224,48 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               >
                                 {/* Progress fill */}
                                 <div
-                                  className={cn(
-                                    "absolute inset-y-0 left-0",
-                                    clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500/30"
-                                  )}
+                                  className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500/20")}
                                   style={{ width: `${clearSliderValue}%` }}
                                 />
 
                                 {/* Thumb */}
                                 <div
                                   className={cn(
-                                    "absolute top-1 bottom-1 w-11 rounded-lg flex items-center justify-center",
-                                    clearSliderValue >= 95
-                                      ? "bg-white"
-                                      : clearSliderValue > 0
-                                        ? "bg-red-500"
-                                        : isDark ? "bg-white/15" : "bg-white border border-blue-200"
+                                    "absolute top-1 bottom-1 w-9 rounded-lg flex items-center justify-center",
+                                    clearSliderValue >= 95 ? "bg-white" : clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/10" : "bg-gray-100"
                                   )}
                                   style={{
-                                    left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.44}px + 4px)`,
-                                    transition: clearSliderValue === 0 ? 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+                                    left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.36}px + 4px)`,
+                                    transition: clearSliderValue === 0 ? 'left 0.25s ease-out' : 'none'
                                   }}
                                 >
                                   {clearSliderValue >= 95 ? (
-                                    <Loader2 size={16} className="text-red-500 animate-spin" />
+                                    <Loader2 size={14} className="text-red-500 animate-spin" />
                                   ) : (
-                                    <ChevronRight size={16} className={cn(
-                                      clearSliderValue > 0 ? "text-white" : isDark ? "text-white/50" : "text-gray-400"
-                                    )} />
+                                    <ChevronRight size={14} className={clearSliderValue > 0 ? "text-white" : isDark ? "text-white/40" : "text-gray-400"} />
                                   )}
                                 </div>
 
                                 {/* Label */}
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                  <span className={cn(
-                                    "text-xs font-medium transition-opacity duration-150",
-                                    clearSliderValue > 30 ? "opacity-0" : "opacity-100",
-                                    clearSliderValue >= 95
-                                      ? "text-white"
-                                      : isDark ? "text-white/40" : "text-gray-500"
-                                  )}
-                                  style={{ marginLeft: '44px' }}
-                                  >
-                                    Slide to delete
-                                  </span>
-                                </div>
-
-                                {/* Deleting text */}
-                                {clearSliderValue >= 95 && (
-                                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <span className="text-xs font-medium text-white">
-                                      Deleting...
-                                    </span>
-                                  </div>
-                                )}
+                                <span className={cn(
+                                  "absolute inset-0 flex items-center justify-center text-[11px] pointer-events-none transition-opacity",
+                                  clearSliderValue > 20 ? "opacity-0" : "opacity-100",
+                                  isDark ? "text-white/40" : "text-gray-400"
+                                )} style={{ paddingLeft: 36 }}>
+                                  {clearSliderValue >= 95 ? "Deleting..." : "Slide to delete"}
+                                </span>
                               </div>
 
-                              {/* Cancel button */}
+                              {/* Cancel */}
                               <button
-                                onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); }}
-                                className={cn(
-                                  "w-full mt-3 py-2.5 rounded-xl text-xs font-medium border-[1.5px] transition-all",
-                                  isDark
-                                    ? "border-blue-500/20 text-white/60 hover:border-blue-500/30 hover:text-white/80"
-                                    : "border-blue-200 text-gray-500 hover:border-blue-300 hover:text-gray-700"
-                                )}
+                                onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); setClearWarningAgreed(false); }}
+                                className={cn("w-full mt-2 py-2 text-[11px]", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}
                               >
                                 Cancel
                               </button>
                             </div>
-                          </div>
-                        ) : null}
+                          )
+                        )}
 
                         {/* Debug: Test entropy backup recovery */}
                         {process.env.NODE_ENV === 'development' && (
