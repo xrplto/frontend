@@ -9,6 +9,8 @@ import {
   AreaSeries
 } from 'lightweight-charts';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 
 // Module-level cache to prevent duplicate fetches in StrictMode
@@ -127,6 +129,7 @@ const Spinner = styled(Loader2)`
 
 const PriceChartAdvanced = memo(({ token }) => {
   const { activeFiatCurrency, themeName } = useContext(AppContext);
+  const metrics = useSelector(selectMetrics);
   const isDark = themeName === 'XrplToDarkTheme';
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
@@ -184,6 +187,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   const hasMoreRef = useRef(true);
 
   const BASE_URL = 'https://api.xrpl.to/api';
+  const OHLC_ENDPOINT = `${BASE_URL}/ohlc`;
+  const WS_OHLC_URL = 'wss://api.xrpl.to/ws/ohlc';
 
   // Memoize icons to prevent recreation
   const chartTypeIcons = useMemo(() => ({
@@ -197,15 +202,18 @@ const PriceChartAdvanced = memo(({ token }) => {
   const chartTypeRef = useRef(chartType);
   const loadMoreAbortRef = useRef(null);
   const crosshairRafRef = useRef(null);
-  const lastDataLengthRef = useRef(0);
+  const wsRef = useRef(null);
+  const wsPingRef = useRef(null);
+  const metricsRef = useRef(metrics);
 
   // Update refs when values change (combined for efficiency)
   useEffect(() => {
     activeFiatCurrencyRef.current = activeFiatCurrency;
+    metricsRef.current = metrics;
     isUserZoomedRef.current = isUserZoomed;
     hasMoreRef.current = hasMore;
     chartTypeRef.current = chartType;
-  }, [activeFiatCurrency, isUserZoomed, hasMore, chartType]);
+  }, [activeFiatCurrency, metrics, isUserZoomed, hasMore, chartType]);
 
 
   // Helper functions
@@ -249,7 +257,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const oldestTime = dataRef.current[0].time * 1000;
       const barsToLoad = 200;
 
-      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${resolution}&cb=${barsToLoad}&abn=${oldestTime}&vs_currency=${activeFiatCurrency}`;
+      const endpoint = `${OHLC_ENDPOINT}/${token.md5}?resolution=${resolution}&cb=${barsToLoad}&abn=${oldestTime}&vs_currency=${activeFiatCurrency}`;
       const response = await axios.get(endpoint, { signal: loadMoreAbortRef.current.signal });
 
       if (response.data?.ohlc && response.data.ohlc.length > 0) {
@@ -306,188 +314,185 @@ const PriceChartAdvanced = memo(({ token }) => {
     loadMoreDataRef.current = loadMoreData;
   }, [loadMoreData]);
 
-  // Fetch price data (initial load and updates)
+  // Map timeRange to WebSocket interval
+  const getWsInterval = useCallback((range) => {
+    const intervalMap = { '1d': '5m', '5d': '15m', '1m': '1h', '3m': '4h', '1y': '1d', '5y': '1d', 'all': '1d' };
+    return intervalMap[range] || '5m';
+  }, []);
+
+  // Fetch price data via WebSocket with HTTP fallback for historical data
   useEffect(() => {
-    if (!token?.md5) {
-      return;
-    }
+    if (!token?.md5) return;
 
     let mounted = true;
+    const wsInterval = getWsInterval(timeRange);
 
-    const fetchData = async (isUpdate = false) => {
-      if (!mounted) {
-        return;
-      }
+    // Close existing WebSocket
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (wsPingRef.current) {
+      clearInterval(wsPingRef.current);
+      wsPingRef.current = null;
+    }
 
-      // Presets with bar count (cb) - load data based on timeframe
+    // For longer timeframes, fetch via HTTP first to get more historical data
+    const needsHttpFetch = ['1m', '3m', '1y', '5y', 'all'].includes(timeRange);
+
+    const fetchHistoricalData = async () => {
+      if (!needsHttpFetch) return;
+
       const presets = {
-        '1d':  { resolution: '5',   cb: 288  },  // 5min bars, 24 hours
-        '5d':  { resolution: '15',  cb: 500  },  // 15min bars, ~5 days
-        '1m':  { resolution: '60',  cb: 750  },  // 1h bars, ~31 days
-        '3m':  { resolution: '240', cb: 550  },  // 4h bars, ~90 days
-        '1y':  { resolution: 'D',   cb: 400  },  // daily, ~13 months
-        '5y':  { resolution: 'W',   cb: 300  },  // weekly, ~6 years
-        'all': { resolution: 'D',   cb: 5000 }   // daily, max bars
+        '1m':  { resolution: '60',  cb: 750  },
+        '3m':  { resolution: '240', cb: 550  },
+        '1y':  { resolution: 'D',   cb: 400  },
+        '5y':  { resolution: 'W',   cb: 300  },
+        'all': { resolution: 'D',   cb: 5000 }
       };
-      const preset = presets[timeRange] || presets['1d'];
-      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?resolution=${preset.resolution}&cb=${preset.cb}&vs_currency=${activeFiatCurrency}`;
-      const cacheKey = endpoint;
-
-      // Reuse in-flight request (StrictMode protection) - only for initial load
-      if (!isUpdate && fetchInFlight.has(cacheKey)) {
-        try {
-          const data = await fetchInFlight.get(cacheKey);
-          if (mounted && data) {
-            dataRef.current = data;
-            setData(data);
-            setLoading(false);
-            setLastUpdate(new Date());
-          }
-        } catch {}
-        return;
-      }
-
-      // Create fetch promise and store it
-      const fetchPromise = axios.get(endpoint).then(r => r.data);
-      if (!isUpdate) {
-        fetchInFlight.set(cacheKey, fetchPromise.then(d => d?.ohlc ? processOhlc(d.ohlc) : null));
-      }
+      const preset = presets[timeRange];
+      if (!preset) return;
 
       try {
-        if (isUpdate) {
-          setIsUpdating(true);
-        } else {
-          setLoading(true);
-          setHasMore(true);
-        }
-
-        const responseData = await fetchPromise;
-
-        if (mounted && responseData?.ohlc && responseData.ohlc.length > 0) {
-          const processedData = processOhlc(responseData.ohlc);
-
-          if (isUpdate && dataRef.current && dataRef.current.length > 0) {
-            // For updates, only update if there are actual changes
-            const lastExisting = dataRef.current[dataRef.current.length - 1];
-            const lastNew = processedData[processedData.length - 1];
-
-            // Check if the last candle actually changed
-            const hasChanges = !lastExisting || !lastNew ||
-              lastExisting.time !== lastNew.time ||
-              lastExisting.close !== lastNew.close ||
-              lastExisting.high !== lastNew.high ||
-              lastExisting.low !== lastNew.low ||
-              lastExisting.volume !== lastNew.volume;
-
-            if (hasChanges) {
-              const lastExistingTime = lastExisting.time;
-
-              // Build lookup map for O(1) access - O(n) instead of O(n²)
-              const processedMap = new Map(processedData.map(p => [p.time, p]));
-
-              // Update existing candles using map lookup
-              const updatedData = dataRef.current.map(d => processedMap.get(d.time) || d);
-
-              // Add new candles that come after existing data
-              const newerCandles = processedData.filter(d => d.time > lastExistingTime);
-
-              // Combine and sort only if there are new candles
-              const finalData = newerCandles.length > 0
-                ? [...updatedData, ...newerCandles].sort((a, b) => a.time - b.time)
-                : updatedData;
-
-              dataRef.current = finalData;
-              setData(finalData);
-              setLastUpdate(new Date());
-            }
-          } else {
-            dataRef.current = processedData;
-            setData(processedData);
-            setLastUpdate(new Date());
-          }
-          // Clear in-flight after success
-          fetchInFlight.delete(cacheKey);
-
-          // Disable "load more" for 'all' timerange since we already have everything
-          if (timeRange === 'all') {
-            setHasMore(false);
-          }
-
-          if (mounted) {
-            setLoading(false);
-            setIsUpdating(false);
-          }
-        } else {
-          if (mounted) {
-            setLoading(false);
-            setIsUpdating(false);
-          }
+        setLoading(true);
+        const endpoint = `${OHLC_ENDPOINT}/${token.md5}?resolution=${preset.resolution}&cb=${preset.cb}&vs_currency=${activeFiatCurrency}`;
+        const response = await axios.get(endpoint);
+        if (mounted && response.data?.ohlc) {
+          const processedData = processOhlc(response.data.ohlc);
+          dataRef.current = processedData;
+          setData(processedData);
+          setLastUpdate(new Date());
+          setHasMore(timeRange !== 'all');
         }
       } catch (error) {
-        fetchInFlight.delete(cacheKey);
-        if (!axios.isCancel(error) && error.code !== 'ERR_CANCELED' && error.name !== 'AbortError') {
-          console.error('Chart fetch error:', error.message);
-        }
-        if (mounted) {
-          setLoading(false);
-          setIsUpdating(false);
-        }
+        console.error('Historical fetch error:', error.message);
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
 
-    fetchData();
+    // Connect WebSocket for real-time updates
+    const connectWebSocket = () => {
+      if (!mounted) return;
 
-    // Use visibility-aware polling - pause when tab is hidden
-    let updateInterval = null;
-    let lastFetchTime = Date.now();
-    const POLL_INTERVAL = 5000; // 5 second updates
+      const ws = new WebSocket(`${WS_OHLC_URL}/${token.md5}?interval=${wsInterval}`);
+      wsRef.current = ws;
 
-    const startPolling = () => {
-      if (updateInterval) return;
-      updateInterval = setInterval(() => {
-        if (!isUserZoomedRef.current && mounted && document.visibilityState === 'visible') {
-          // Skip if last fetch was recent (prevents accumulation)
-          const now = Date.now();
-          if (now - lastFetchTime >= POLL_INTERVAL - 500) {
-            lastFetchTime = now;
-            fetchData(true);
+      ws.onopen = () => {
+        // Keep-alive ping every 30s
+        wsPingRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
           }
+        }, 30000);
+      };
+
+      ws.onmessage = (event) => {
+        if (!mounted) return;
+        const msg = JSON.parse(event.data);
+
+        if (msg.type === 'initial' && msg.ohlc) {
+          // Only use initial data for short timeframes (longer ones use HTTP)
+          if (!needsHttpFetch) {
+            // WS returns USD prices - convert to active currency
+            const currency = activeFiatCurrencyRef.current;
+            const m = metricsRef.current;
+            const rate = currency === 'USD' ? 1 : (m?.[currency] || (currency === 'CNH' ? m?.CNY : null) || 1);
+
+            const processedData = processOhlc(msg.ohlc).map(c => ({
+              ...c,
+              open: c.open / rate,
+              high: c.high / rate,
+              low: c.low / rate,
+              close: c.close / rate
+            }));
+            dataRef.current = processedData;
+            setData(processedData);
+            setLoading(false);
+            setLastUpdate(new Date());
+            setHasMore(true);
+          }
+        } else if (msg.e === 'kline' && msg.k) {
+          // Real-time candle update - WS returns USD prices, convert if needed
+          const k = msg.k;
+          const candleTime = Math.floor(k.t / 1000);
+
+          // Convert USD prices to active currency
+          const currency = activeFiatCurrencyRef.current;
+          const m = metricsRef.current;
+          const rate = currency === 'USD' ? 1 : (m?.[currency] || (currency === 'CNH' ? m?.CNY : null) || 1);
+
+          const newCandle = {
+            time: candleTime,
+            open: parseFloat(k.o) / rate,
+            high: parseFloat(k.h) / rate,
+            low: parseFloat(k.l) / rate,
+            close: parseFloat(k.c) / rate,
+            volume: parseFloat(k.v) || 0
+          };
+
+          // Skip updates when user is zoomed/panning
+          if (isUserZoomedRef.current) return;
+
+          setData(prev => {
+            if (!prev || prev.length === 0) return prev;
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+
+            if (updated[lastIdx]?.time === candleTime) {
+              // Update existing candle
+              updated[lastIdx] = newCandle;
+            } else if (candleTime > updated[lastIdx]?.time) {
+              // New candle
+              updated.push(newCandle);
+            }
+            dataRef.current = updated;
+            return updated;
+          });
+          setLastUpdate(new Date());
         }
-      }, POLL_INTERVAL);
-    };
+      };
 
-    const stopPolling = () => {
-      if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-      }
-    };
+      ws.onerror = (error) => {
+        console.error('OHLC WebSocket error:', error);
+      };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Refresh data when tab becomes visible again
-        if (mounted && !isUserZoomedRef.current) {
-          fetchData(true);
+      ws.onclose = (event) => {
+        if (wsPingRef.current) {
+          clearInterval(wsPingRef.current);
+          wsPingRef.current = null;
         }
-        startPolling();
-      } else {
-        stopPolling();
-      }
+        // Reconnect on unexpected close (not user-initiated)
+        if (mounted && event.code !== 1000) {
+          setTimeout(connectWebSocket, 3000);
+        }
+      };
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Start loading
+    if (!needsHttpFetch) setLoading(true);
 
-    // Only start polling if tab is visible
-    if (document.visibilityState === 'visible') {
-      startPolling();
+    // Fetch historical data first (for longer timeframes), then connect WS
+    if (needsHttpFetch) {
+      fetchHistoricalData().then(() => {
+        if (mounted) connectWebSocket();
+      });
+    } else {
+      connectWebSocket();
     }
 
     return () => {
       mounted = false;
-      stopPolling();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (wsPingRef.current) {
+        clearInterval(wsPingRef.current);
+        wsPingRef.current = null;
+      }
     };
-  }, [token.md5, timeRange, activeFiatCurrency]);
+  }, [token.md5, timeRange, activeFiatCurrency, getWsInterval]);
 
   // Fetch holder data
   useEffect(() => {
@@ -1013,15 +1018,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     const chartData = chartType === 'holders' ? holderData : data;
     if (!chartData || chartData.length === 0) return;
 
-    // Skip update if data hasn't actually changed (prevents lag during zoom)
-    const dataLength = chartData.length;
-    const lastTime = chartData[dataLength - 1]?.time;
-    const dataChanged = dataLength !== lastDataLengthRef.current ||
-      lastTime !== (chartType === 'holders' ? holderDataRef.current : dataRef.current)?.[lastDataLengthRef.current - 1]?.time;
-
-    if (!dataChanged && lastChartTypeRef.current === `${chartType}-${timeRange}-${activeFiatCurrency}`) {
-      return; // Skip - nothing changed
-    }
+    // Always update chart when data changes (real-time WS updates modify last candle)
 
     // Create series if needed
     if (chartType === 'candles' && !candleSeriesRef.current) {
@@ -1055,9 +1052,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     const currentKey = `${chartType}-${timeRange}-${activeFiatCurrency}`;
     const isNewDataSet = lastChartTypeRef.current !== currentKey;
-
-    // Update refs
-    lastDataLengthRef.current = dataLength;
+    const dataLength = chartData.length;
 
     if (chartType === 'candles' && candleSeriesRef.current) {
       candleSeriesRef.current.setData(chartData);

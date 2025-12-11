@@ -2533,14 +2533,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             /* Desktop grid layout */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
               {/* Header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1.5fr) repeat(6, 1fr) 70px', gap: '16px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Pool</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fee</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>APY</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fees</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Volume</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fees (7d)</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Vol (7d)</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Liquidity</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Last Trade</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Last</span>
                 <span></span>
               </div>
               {/* Rows */}
@@ -2552,7 +2552,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: isMainPool ? '12px 10px 12px 12px' : '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderRadius: isMainPool ? '8px' : '0', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', marginBottom: isMainPool ? '6px' : '0' }}>
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1.5fr) repeat(6, 1fr) 70px', gap: '16px', padding: isMainPool ? '12px 10px 12px 12px' : '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderRadius: isMainPool ? '8px' : '0', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', marginBottom: isMainPool ? '6px' : '0' }}>
                     {/* Pool pair */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'flex' }}>
@@ -2565,21 +2565,29 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                       )}
                     </div>
                     {/* Fee */}
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', textAlign: 'right' }}>{feePercent}%</span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{feePercent}%</span>
+                    </div>
                     {/* APY */}
-                    <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), textAlign: 'right' }}>
-                      {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
-                    </span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') }}>
+                        {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
+                      </span>
+                    </div>
                     {/* Fees */}
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', textAlign: 'right' }}>
-                      {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
-                    </span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                        {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
+                      </span>
+                    </div>
                     {/* Volume */}
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', textAlign: 'right' }}>
-                      {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
-                    </span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                        {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
+                      </span>
+                    </div>
                     {/* Liquidity */}
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       {pool.apy7d?.liquidity > 0 ? (
                         <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>{abbreviateNumber(pool.apy7d.liquidity)} <span style={{ opacity: 0.5 }}>XRP</span></span>
                       ) : pool.currentLiquidity ? (
@@ -2590,29 +2598,32 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                       ) : <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>}
                     </div>
                     {/* Last Trade */}
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>
-                      {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
-                    </span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                        {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
+                      </span>
+                    </div>
                     {/* Action */}
-                    <button
-                      onClick={() => handleAddLiquidity(pool)}
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: '#3b82f6',
-                        color: '#fff',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        marginLeft: 'auto'
-                      }}
-                    >
-                      <Plus size={12} /> Add
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => handleAddLiquidity(pool)}
+                        style={{
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: '#3b82f6',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Plus size={12} /> Add
+                      </button>
+                    </div>
                   </div>
                 );
               })}
