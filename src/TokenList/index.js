@@ -213,6 +213,7 @@ function TokenListComponent({
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
   const [viewType, setViewType] = useState('row');
+  const [liveTags, setLiveTags] = useState(tags);
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('tokenListViewMode') || 'classic';
@@ -461,11 +462,16 @@ function TokenListComponent({
     [dispatch]
   );
 
+  // Handle tags updates from WebSocket
+  const handleTagsUpdate = useCallback((newTags) => {
+    setLiveTags(newTags);
+  }, []);
+
   // Use the new WebSocket hook with subscription filtering
-  const { isConnected, subscribe, resync } = useTokenSync({
+  const { subscribe, resync } = useTokenSync({
     onTokensUpdate: handleTokensUpdate,
     onMetricsUpdate: handleMetricsUpdate,
-    filter: { topN: rows }, // Subscribe to top N tokens based on rows setting
+    onTagsUpdate: handleTagsUpdate,
     enabled: wsEnabled
   });
 
@@ -618,7 +624,7 @@ function TokenListComponent({
         <SearchContainer>
           <Suspense fallback={<div style={{ height: '56px' }} />}>
             <LazySearchToolbar
-              tags={tags}
+              tags={liveTags || tags}
               tagName={tagName}
               filterName={filterName}
               onFilterName={handleFilterByName}

@@ -7,7 +7,7 @@ const WSS_URL = 'wss://api.xrpl.to/ws/sync/';
  * WebSocket hook for token list sync (/ws/sync/)
  * Supports subscription filtering and batched updates
  */
-export function useTokenSync({ onTokensUpdate, onMetricsUpdate, enabled = true }) {
+export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, enabled = true }) {
   const queueRef = useRef([]);
   const timerRef = useRef(null);
 
@@ -17,21 +17,24 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, enabled = true }
     const messages = queueRef.current.splice(0, 50);
     const tokens = new Map();
     let metrics = null;
+    let tags = null;
 
     messages.forEach((msg) => {
       if (msg.exch) {
         metrics = { exch: msg.exch, total: msg.total, H24: msg.H24, global: msg.global };
       }
+      if (msg.tags) tags = msg.tags;
       msg.tokens?.forEach((t) => tokens.set(t.md5, t));
     });
 
     if (metrics) onMetricsUpdate?.(metrics);
+    if (tags) onTagsUpdate?.(tags);
     if (tokens.size > 0) onTokensUpdate?.(Array.from(tokens.values()));
 
     if (queueRef.current.length > 0) {
       requestIdleCallback(processQueue, { timeout: 100 });
     }
-  }, [onTokensUpdate, onMetricsUpdate]);
+  }, [onTokensUpdate, onMetricsUpdate, onTagsUpdate]);
 
   const { sendJsonMessage, readyState } = useWebSocket(enabled ? WSS_URL : null, {
     onMessage: (e) => {
