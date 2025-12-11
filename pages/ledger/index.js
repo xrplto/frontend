@@ -144,6 +144,7 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
   const [loading, setLoading] = useState(true);
   const [matchCount, setMatchCount] = useState(0);
   const [typeMatchCount, setTypeMatchCount] = useState(0);
+  const [txDistribution, setTxDistribution] = useState({});
 
   useEffect(() => {
     if (!ledgerIndex || txnCount === 0) {
@@ -183,6 +184,11 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
           setTypeMatchCount(typeMatches);
           setTxSequence(sequence);
           if (onTypeMatch) onTypeMatch(typeMatches);
+
+          // Calculate distribution
+          const dist = {};
+          sequence.forEach(s => { dist[s.category] = (dist[s.category] || 0) + 1; });
+          setTxDistribution(dist);
         }
         setLoading(false);
       })
@@ -202,7 +208,7 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
   if (!txSequence || txSequence.length === 0) return null;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div className="h-2 rounded-full overflow-hidden flex">
         {txSequence.map((item, i) => {
           let bgColor = TX_CATEGORIES[item.category]?.color || TX_CATEGORIES.Other.color;
@@ -224,13 +230,16 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
           );
         })}
       </div>
-      {(watchAddresses.length > 0 && matchCount > 0) || (watchTxType && typeMatchCount > 0) ? (
-        <p className="text-[10px] font-medium">
-          {watchTxType && typeMatchCount > 0 && <span className="text-yellow-400">{typeMatchCount} {watchTxType}</span>}
-          {watchTxType && typeMatchCount > 0 && watchAddresses.length > 0 && matchCount > 0 && ' · '}
-          {watchAddresses.length > 0 && matchCount > 0 && <span className="text-primary">{matchCount} from address</span>}
-        </p>
-      ) : null}
+      <div className="flex items-center gap-2 flex-wrap">
+        {Object.entries(txDistribution).slice(0, 4).map(([cat, count]) => (
+          <span key={cat} className="flex items-center gap-1 text-[10px]" style={{ color: TX_CATEGORIES[cat]?.color }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TX_CATEGORIES[cat]?.color }} />
+            {count}
+          </span>
+        ))}
+        {(watchAddresses.length > 0 && matchCount > 0) && <span className="text-[10px] text-primary font-medium">{matchCount} watched</span>}
+        {(watchTxType && typeMatchCount > 0) && <span className="text-[10px] text-yellow-400 font-medium">{typeMatchCount} {watchTxType}</span>}
+      </div>
     </div>
   );
 };
@@ -415,16 +424,18 @@ const LedgerCard = ({ ledger, isDark, isLatest, watchAddresses = [], watchTxType
 };
 
 // Stats bar
-const StatsBar = ({ latestLedger, isDark }) => {
+const StatsBar = ({ latestLedger, networkStats, isDark }) => {
   if (!latestLedger) return null;
 
   const reserveBase = latestLedger.reserve_base / 1000000;
   const reserveInc = latestLedger.reserve_inc / 1000000;
 
   const stats = [
+    { label: 'TPS', value: networkStats.tps || '-', highlight: true },
+    { label: 'Success Rate', value: networkStats.successRate ? `${networkStats.successRate}%` : '-', color: networkStats.successRate >= 95 ? 'text-green-500' : networkStats.successRate >= 80 ? 'text-yellow-500' : 'text-red-500' },
+    { label: 'Avg Fee', value: networkStats.avgFee ? `${networkStats.avgFee} drops` : '-' },
     { label: 'Base Reserve', value: `${reserveBase} XRP` },
-    { label: 'Owner Reserve', value: `${reserveInc} XRP` },
-    { label: 'Base Fee', value: `${latestLedger.fee_base} drops` }
+    { label: 'Owner Reserve', value: `${reserveInc} XRP` }
   ];
 
   return (
@@ -432,10 +443,10 @@ const StatsBar = ({ latestLedger, isDark }) => {
       "flex flex-wrap gap-4 sm:gap-6 p-4 rounded-xl border-[1.5px] mb-4",
       isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50/50"
     )}>
-      {stats.map(({ label, value }) => (
+      {stats.map(({ label, value, highlight, color }) => (
         <div key={label}>
           <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>{label}</p>
-          <p className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{value}</p>
+          <p className={cn("text-[13px] font-medium", color || (isDark ? "text-white" : "text-gray-900"), highlight && "text-primary")}>{value}</p>
         </div>
       ))}
     </div>
@@ -470,8 +481,10 @@ export default function LedgerStreamPage() {
   const [watchedTxs, setWatchedTxs] = useState([]);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [expandedTx, setExpandedTx] = useState(null);
+  const [networkStats, setNetworkStats] = useState({ tps: 0, successRate: 0, avgFee: 0 });
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const statsWindowRef = useRef({ txCounts: [], times: [], successes: [], totals: [], fees: [] });
 
   // Load from URL params
   useEffect(() => {
@@ -621,7 +634,9 @@ export default function LedgerStreamPage() {
               success,
               result,
               account: tx.Account,
+              accountName: tx.AccountName,
               destination: tx.Destination,
+              destinationName: tx.DestinationName,
               ledger: latestLedger.ledger_index,
               time: latestLedger.close_time,
               category: getTxCategory(tx.TransactionType),
@@ -644,6 +659,60 @@ export default function LedgerStreamPage() {
     setWatchedTxs([]);
     setExpandedTx(null);
   }, [watchAddresses.join(',')]);
+
+  // Calculate rolling TPS and network stats (10 ledger window)
+  useEffect(() => {
+    if (ledgers.length === 0) return;
+    const latest = ledgers[0];
+    const stats = statsWindowRef.current;
+    const WINDOW = 10;
+
+    // Add to rolling window
+    stats.txCounts.push(latest.txn_count || 0);
+    stats.times.push(latest.close_time);
+    if (stats.txCounts.length > WINDOW) {
+      stats.txCounts.shift();
+      stats.times.shift();
+    }
+
+    // Calculate rolling TPS (total txs / total time span)
+    if (stats.times.length >= 2) {
+      const totalTx = stats.txCounts.reduce((a, b) => a + b, 0);
+      const timeSpan = (stats.times[stats.times.length - 1] - stats.times[0]) / 1000; // seconds
+      const tps = timeSpan > 0 ? (totalTx / timeSpan).toFixed(1) : 0;
+      setNetworkStats(prev => ({ ...prev, tps: parseFloat(tps) }));
+    }
+
+    // Fetch success rate and fee stats (accumulate over window)
+    if (latest.txn_count > 0) {
+      fetch(`https://api.xrpscan.com/api/v1/ledger/${latest.ledger_index}/transactions`)
+        .then(res => res.json())
+        .then(txs => {
+          if (!Array.isArray(txs)) return;
+          const success = txs.filter(tx => tx.meta?.TransactionResult === 'tesSUCCESS').length;
+          const totalFees = txs.reduce((sum, tx) => sum + parseInt(tx.Fee || 0), 0);
+
+          stats.successes.push(success);
+          stats.totals.push(txs.length);
+          stats.fees.push(totalFees);
+          if (stats.successes.length > WINDOW) {
+            stats.successes.shift();
+            stats.totals.shift();
+            stats.fees.shift();
+          }
+
+          const totalSuccesses = stats.successes.reduce((a, b) => a + b, 0);
+          const totalTxs = stats.totals.reduce((a, b) => a + b, 0);
+          const totalFeesSum = stats.fees.reduce((a, b) => a + b, 0);
+
+          const successRate = totalTxs > 0 ? ((totalSuccesses / totalTxs) * 100).toFixed(0) : 0;
+          const avgFee = totalTxs > 0 ? (totalFeesSum / totalTxs).toFixed(0) : 0;
+
+          setNetworkStats(prev => ({ ...prev, successRate: parseFloat(successRate), avgFee: parseFloat(avgFee) }));
+        })
+        .catch(() => {});
+    }
+  }, [ledgers[0]?.ledger_index]);
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -751,16 +820,33 @@ export default function LedgerStreamPage() {
             </div>
           </div>
           {watchAddresses.length > 0 && (
-            <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
-              Watching {watchAddresses.length} address{watchAddresses.length > 1 ? 'es' : ''}: {watchAddresses.map((a, i) => (
-                <span key={a}><span className="font-mono text-primary">{a.slice(0,8)}...</span>{i < watchAddresses.length - 1 ? ', ' : ''}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>Watching:</span>
+              {watchAddresses.map((a) => (
+                <span key={a} className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono", isDark ? "bg-primary/10 text-primary" : "bg-primary/10 text-primary")}>
+                  {a.slice(0, 8)}...
+                  <button
+                    onClick={() => handleAddressChange(watchAddresses.filter(addr => addr !== a).join(', '))}
+                    className="hover:text-white"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
               ))}
-            </p>
+              {watchAddresses.length > 1 && (
+                <button
+                  onClick={() => handleAddressChange('')}
+                  className={cn("text-[10px] hover:text-red-400", isDark ? "text-white/40" : "text-gray-400")}
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
           )}
         </div>
 
         {/* Stats */}
-        {ledgers.length > 0 && <StatsBar latestLedger={ledgers[0]} isDark={isDark} />}
+        {ledgers.length > 0 && <StatsBar latestLedger={ledgers[0]} networkStats={networkStats} isDark={isDark} />}
 
         {/* Ledger stream */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -828,6 +914,18 @@ export default function LedgerStreamPage() {
                             <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
                               #{tx.ledger?.toLocaleString()}
                             </span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {tx.accountName && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                {tx.accountName}
+                              </span>
+                            )}
+                            {tx.destinationName && tx.destinationName !== tx.accountName && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">
+                                → {tx.destinationName}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1">
                             <span className={cn("text-[11px] font-mono truncate", isDark ? "text-white/30" : "text-gray-400")}>
