@@ -50,13 +50,13 @@ function GainersPage({ data, period }) {
         Top Gaining XRPL Tokens
       </h1>
 
-      <div className="mx-auto max-w-7xl px-0 md:px-4">
+      <div className="mx-auto max-w-[1920px] px-0 md:px-4">
         <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-1">
           <Summary />
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-[1920px] px-4">
         <div className="flex flex-col">
           <div className="w-full">
             {data && data.tags ? (
