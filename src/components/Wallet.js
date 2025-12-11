@@ -2636,7 +2636,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           const store = tx.objectStore('wallets');
           const allReq = store.getAll();
           allReq.onsuccess = () => {
-            const wallets = allReq.result.filter(r => !r.id?.startsWith?.('__pwd__'));
+            // Count actual wallets: have encrypted data blob and maskedAddress (exclude entropy backups, password entries)
+            const wallets = allReq.result.filter(r =>
+              r.data && r.maskedAddress && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__entropy_backup__')
+            );
             setStoredWalletCount(wallets.length);
             if (wallets.length > 0) {
               const oldest = Math.min(...wallets.map(w => w.timestamp || Date.now()));
@@ -4147,122 +4150,109 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               Clear all wallets
                             </button>
                           ) : (
-                            <div className={cn("mt-3 p-3 rounded-xl", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
-                              {/* Header row */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <Trash2 size={14} className="text-red-500" />
-                                <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-                                  Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}?
-                                </span>
-                              </div>
+                            <div className={cn("mt-2 p-3 rounded-xl border-[1.5px] relative overflow-hidden", isDark ? "bg-black/40 border-red-500/20" : "bg-white border-red-200")}>
+                              {/* Dot pattern background */}
+                              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(239,68,68,0.2) 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
 
-                              {/* Warning checkbox */}
-                              <button
-                                onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
-                                className={cn(
-                                  "w-full flex items-start gap-2.5 p-2.5 rounded-lg text-left mb-3 transition-all border",
-                                  clearWarningAgreed
-                                    ? "border-red-500/50 bg-red-500/10"
-                                    : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
-                                )}
-                              >
-                                <div className={cn(
-                                  "w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
-                                  clearWarningAgreed ? "bg-red-500" : isDark ? "border border-white/20" : "border border-gray-300"
-                                )}>
-                                  {clearWarningAgreed && <Check size={10} className="text-white" />}
+                              <div className="relative z-10">
+                                {/* Header */}
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Trash2 size={14} className="text-red-500" />
+                                  <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                                    Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}
+                                  </span>
                                 </div>
-                                <span className={cn("text-[11px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
-                                  I understand this will permanently delete all wallets and cannot be undone
-                                </span>
-                              </button>
 
-                              {/* Slide to delete */}
-                              <div
-                                className={cn(
-                                  "relative h-11 rounded-xl overflow-hidden select-none transition-opacity",
-                                  clearWarningAgreed ? "cursor-pointer" : "cursor-not-allowed opacity-40",
-                                  clearSliderValue >= 95
-                                    ? "bg-red-500"
-                                    : isDark ? "bg-white/[0.04]" : "bg-white border border-gray-200"
+                                {/* Wallet addresses */}
+                                {storedWalletAddresses.length > 0 && (
+                                  <div className={cn("mb-2 px-2 py-1.5 rounded-lg", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
+                                    {storedWalletAddresses.slice(0, 3).map((addr, idx) => (
+                                      <div key={idx} className="flex items-center gap-1.5 py-0.5">
+                                        <div className="w-1 h-1 rounded-full bg-red-400/60" />
+                                        <span className={cn("text-[10px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>{addr}</span>
+                                      </div>
+                                    ))}
+                                    {storedWalletAddresses.length > 3 && (
+                                      <span className={cn("text-[9px] ml-2.5", isDark ? "text-white/30" : "text-gray-400")}>+{storedWalletAddresses.length - 3} more</span>
+                                    )}
+                                  </div>
                                 )}
-                                onMouseDown={(e) => {
-                                  if (!clearWarningAgreed) return;
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  const handleMove = (moveEvent) => {
-                                    const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
-                                    setClearSliderValue(Math.round((x / rect.width) * 100));
-                                    if (x / rect.width >= 0.95) handleClearAllWallets();
-                                  };
-                                  const handleUp = () => {
-                                    document.removeEventListener('mousemove', handleMove);
-                                    document.removeEventListener('mouseup', handleUp);
-                                    if (clearSliderValue < 95) setClearSliderValue(0);
-                                  };
-                                  handleMove(e);
-                                  document.addEventListener('mousemove', handleMove);
-                                  document.addEventListener('mouseup', handleUp);
-                                }}
-                                onTouchStart={(e) => {
-                                  if (!clearWarningAgreed) return;
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  const handleMove = (moveEvent) => {
-                                    const touch = moveEvent.touches[0];
-                                    const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
-                                    setClearSliderValue(Math.round((x / rect.width) * 100));
-                                    if (x / rect.width >= 0.95) handleClearAllWallets();
-                                  };
-                                  const handleEnd = () => {
-                                    document.removeEventListener('touchmove', handleMove);
-                                    document.removeEventListener('touchend', handleEnd);
-                                    if (clearSliderValue < 95) setClearSliderValue(0);
-                                  };
-                                  handleMove(e);
-                                  document.addEventListener('touchmove', handleMove);
-                                  document.addEventListener('touchend', handleEnd);
-                                }}
-                              >
-                                {/* Progress fill */}
-                                <div
-                                  className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500/20")}
-                                  style={{ width: `${clearSliderValue}%` }}
-                                />
 
-                                {/* Thumb */}
+                                {/* Confirmation toggle */}
+                                <button
+                                  onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
+                                  className={cn(
+                                    "w-full flex items-center gap-2 p-2 rounded-lg text-left mb-2 transition-all border",
+                                    clearWarningAgreed ? "border-red-500/50 bg-red-500/10" : isDark ? "border-white/10" : "border-gray-200"
+                                  )}
+                                >
+                                  <div className={cn(
+                                    "w-4 h-4 rounded flex items-center justify-center flex-shrink-0",
+                                    clearWarningAgreed ? "bg-red-500" : isDark ? "border border-white/20" : "border border-gray-300"
+                                  )}>
+                                    {clearWarningAgreed && <Check size={10} className="text-white" />}
+                                  </div>
+                                  <span className={cn("text-[10px]", isDark ? "text-white/60" : "text-gray-500")}>I understand this is permanent</span>
+                                </button>
+
+                                {/* Slide to delete */}
                                 <div
                                   className={cn(
-                                    "absolute top-1 bottom-1 w-9 rounded-lg flex items-center justify-center",
-                                    clearSliderValue >= 95 ? "bg-white" : clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/10" : "bg-gray-100"
+                                    "relative h-10 rounded-lg overflow-hidden select-none transition-all",
+                                    clearWarningAgreed ? "cursor-pointer" : "cursor-not-allowed opacity-40",
+                                    clearSliderValue >= 95 ? "bg-red-500" : isDark ? "bg-white/[0.03]" : "bg-gray-100"
                                   )}
-                                  style={{
-                                    left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.36}px + 4px)`,
-                                    transition: clearSliderValue === 0 ? 'left 0.25s ease-out' : 'none'
+                                  onMouseDown={(e) => {
+                                    if (!clearWarningAgreed) return;
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const handleMove = (moveEvent) => {
+                                      const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
+                                      setClearSliderValue(Math.round((x / rect.width) * 100));
+                                      if (x / rect.width >= 0.95) handleClearAllWallets();
+                                    };
+                                    const handleUp = () => {
+                                      document.removeEventListener('mousemove', handleMove);
+                                      document.removeEventListener('mouseup', handleUp);
+                                      if (clearSliderValue < 95) setClearSliderValue(0);
+                                    };
+                                    handleMove(e);
+                                    document.addEventListener('mousemove', handleMove);
+                                    document.addEventListener('mouseup', handleUp);
+                                  }}
+                                  onTouchStart={(e) => {
+                                    if (!clearWarningAgreed) return;
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const handleMove = (moveEvent) => {
+                                      const touch = moveEvent.touches[0];
+                                      const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
+                                      setClearSliderValue(Math.round((x / rect.width) * 100));
+                                      if (x / rect.width >= 0.95) handleClearAllWallets();
+                                    };
+                                    const handleEnd = () => {
+                                      document.removeEventListener('touchmove', handleMove);
+                                      document.removeEventListener('touchend', handleEnd);
+                                      if (clearSliderValue < 95) setClearSliderValue(0);
+                                    };
+                                    handleMove(e);
+                                    document.addEventListener('touchmove', handleMove);
+                                    document.addEventListener('touchend', handleEnd);
                                   }}
                                 >
-                                  {clearSliderValue >= 95 ? (
-                                    <Loader2 size={14} className="text-red-500 animate-spin" />
-                                  ) : (
-                                    <ChevronRight size={14} className={clearSliderValue > 0 ? "text-white" : isDark ? "text-white/40" : "text-gray-400"} />
-                                  )}
+                                  <div className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500/30")} style={{ width: `${clearSliderValue}%` }} />
+                                  {clearSliderValue < 95 && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(239,68,68,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)', backgroundSize: '6px 6px' }} />}
+                                  <div
+                                    className={cn("absolute top-1 bottom-1 w-8 rounded-md flex items-center justify-center", clearSliderValue >= 95 ? "bg-white" : clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/10" : "bg-white")}
+                                    style={{ left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.32}px + 4px)`, transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none' }}
+                                  >
+                                    {clearSliderValue >= 95 ? <Loader2 size={14} className="text-red-500 animate-spin" /> : <ChevronRight size={14} className={clearSliderValue > 0 ? "text-white" : isDark ? "text-white/40" : "text-gray-400"} />}
+                                  </div>
+                                  <span className={cn("absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wide", clearSliderValue > 15 ? "opacity-0" : "opacity-100", isDark ? "text-white/30" : "text-gray-400")} style={{ paddingLeft: 32 }}>
+                                    SLIDE TO DELETE
+                                  </span>
                                 </div>
 
-                                {/* Label */}
-                                <span className={cn(
-                                  "absolute inset-0 flex items-center justify-center text-[11px] pointer-events-none transition-opacity",
-                                  clearSliderValue > 20 ? "opacity-0" : "opacity-100",
-                                  isDark ? "text-white/40" : "text-gray-400"
-                                )} style={{ paddingLeft: 36 }}>
-                                  {clearSliderValue >= 95 ? "Deleting..." : "Slide to delete"}
-                                </span>
+                                <button onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); setClearWarningAgreed(false); }} className={cn("w-full mt-2 py-1 text-[10px]", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>Cancel</button>
                               </div>
-
-                              {/* Cancel */}
-                              <button
-                                onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); setClearWarningAgreed(false); }}
-                                className={cn("w-full mt-2 py-2 text-[11px]", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}
-                              >
-                                Cancel
-                              </button>
                             </div>
                           )
                         )}

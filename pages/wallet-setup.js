@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Eye, EyeOff, Loader2, Plus, X, Copy, Check, ChevronDown, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
+import { trackExchange } from 'src/components/BridgeTracker';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
@@ -180,6 +181,17 @@ const WalletSetupPage = () => {
       const data = await res.json();
       setExchangeData(data);
       setTxStatus({ status: 'waiting', updatedAt: Date.now() });
+      // Save to localStorage for persistence
+      localStorage.setItem(`bridge_tx_${data.id}`, JSON.stringify({
+        ...data,
+        fromCurrency: selectedCurrency.ticker,
+        fromAmount: exchangeAmount,
+        expectedAmount: estimatedXrp,
+        toAddress: walletAddress,
+        createdAt: Date.now()
+      }));
+      // Track for global notifications
+      trackExchange(data.id, { fromCurrency: selectedCurrency.ticker, fromAmount: exchangeAmount });
     } catch (err) {
       setExchangeError(err.message || 'Failed to create exchange');
     } finally {
@@ -423,6 +435,9 @@ const WalletSetupPage = () => {
 
       setProfiles(allProfiles);
 
+      // Login immediately so user is authenticated
+      doLogIn(wallets[0], allProfiles);
+
       // Store wallet info and show success screen
       setCreatedWallet({ wallet: wallets[0], allProfiles });
       setShowSuccess(true);
@@ -441,11 +456,8 @@ const WalletSetupPage = () => {
   };
 
   const handleStartTrading = () => {
-    if (createdWallet) {
-      doLogIn(createdWallet.wallet, createdWallet.allProfiles);
-      openSnackbar('Wallet ready!', 'success');
-      window.location.href = '/';
-    }
+    openSnackbar('Wallet ready!', 'success');
+    window.location.href = '/';
   };
 
   const copyAddress = () => {
@@ -533,16 +545,6 @@ const WalletSetupPage = () => {
           >
             Continue
           </button>
-
-          <p className="mt-6">
-            <span className={cn("text-[12px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]")}>or </span>
-            <button
-              onClick={handleSignOut}
-              className="text-[12px] text-[#3b82f6] hover:underline"
-            >
-              Sign out
-            </button>
-          </p>
         </div>
       </div>
     );
@@ -575,6 +577,10 @@ const WalletSetupPage = () => {
               </h1>
               <p className={cn("mt-1 text-[12px]", isDark ? "text-[rgba(255,255,255,0.5)]" : "text-[rgba(33,43,54,0.5)]")}>
                 {exchangeAmount} {selectedCurrency?.ticker?.toUpperCase()} → ~{estimatedXrp} XRP
+              </p>
+              <p className={cn("mt-2 text-[11px]", isDark ? "text-[rgba(255,255,255,0.4)]" : "text-[rgba(33,43,54,0.4)]")}>
+                Once you send funds, the exchange begins automatically. You can leave this page and track progress anytime at{' '}
+                <a href={`/bridge/${exchangeData.id}`} className="text-[#3b82f6] hover:underline">/bridge/{exchangeData.id}</a>
               </p>
             </div>
 

@@ -294,7 +294,7 @@ export function TokenShareModal({ token }) {
           <div
             onClick={e => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-xl border-[1.5px] overflow-hidden ${
-              isDark ? 'bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10' : 'bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50'
+              isDark ? 'bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10' : 'bg-white backdrop-blur-2xl border-blue-200 shadow-xl shadow-blue-200/50'
             }`}
           >
             <div className="flex items-center justify-between px-4 py-3">

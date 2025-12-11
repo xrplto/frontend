@@ -2214,8 +2214,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <div className={cn(
         "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-xl border overflow-hidden max-h-[80vh] flex flex-col z-[1201]",
         darkMode
-          ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10"
-          : "bg-blue-50/95 backdrop-blur-xl border-primary/20 shadow-xl shadow-primary/10"
+          ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10"
+          : "bg-white backdrop-blur-2xl border-blue-200 shadow-xl shadow-blue-200/50"
       )}>
         {/* Search Header */}
         <div className={cn(
@@ -2265,7 +2265,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             <div className="p-2">
               <div className="flex items-center gap-3 px-2 py-2">
                 <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Recent</span>
-                <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                <div className="flex-1 h-[14px]" style={{ backgroundImage: darkMode ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                 <button onClick={handleClearRecent} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors">
                   Clear
                 </button>
@@ -2280,7 +2280,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">
                 {searchQuery ? `Results (${filteredTokens.length})` : selectedCategory === 'all' ? 'Tokens' : categories.find((c) => c.value === selectedCategory)?.label}
               </span>
-              <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+              <div className="flex-1 h-[14px]" style={{ backgroundImage: darkMode ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
             </div>
 
             {loadingTokens ? (

@@ -54,6 +54,11 @@ const Wallet = dynamic(() => import('src/components/Wallet'), {
   loading: () => null
 });
 
+const BridgeTracker = dynamic(() => import('src/components/BridgeTracker'), {
+  ssr: false,
+  loading: () => null
+});
+
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
   '@context': 'http://schema.org/',
@@ -332,6 +337,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <ThemedToaster />
             <TransactionAlert />
             <Wallet />
+            <BridgeTracker />
           </ThemeProvider>
         </ContextProvider>
       </div>
