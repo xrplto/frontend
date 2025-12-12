@@ -101,21 +101,15 @@ const TokenDetail = memo(
         {/* Token Tabs - Full Width */}
         {!isMobile && <TokenTabs currentMd5={token?.md5} />}
 
-        <div className="flex flex-row">
-          {/* Main Content Area */}
-          <div className="flex-1 min-w-0">
-            <div id="back-to-top-tab-anchor" />
+        <div id="back-to-top-tab-anchor" />
 
-          <Overview
-            token={token}
-            onTransactionClick={handleSelectTransaction}
-            onOrderBookToggle={handleOrderBookToggle}
-            orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
-            onOrderBookData={handleOrderBookData}
-          />
-        </div>
-
-        </div>
+        <Overview
+          token={token}
+          onTransactionClick={handleSelectTransaction}
+          onOrderBookToggle={handleOrderBookToggle}
+          orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
+          onOrderBookData={handleOrderBookData}
+        />
       </div>
     );
   }

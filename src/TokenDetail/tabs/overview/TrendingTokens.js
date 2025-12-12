@@ -1,11 +1,10 @@
 import styled from '@emotion/styled';
-import Image from 'next/image';
-
 import { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-// Constants
+import axios from 'axios';
+
 const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
@@ -13,7 +12,6 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-import axios from 'axios';
 
 // Helper function for alpha
 const alpha = (color, opacity) => {
@@ -39,32 +37,33 @@ const Container = styled('div')(({ isDark }) => ({
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
-  minWidth: 0,
-  marginBottom: '6px'
+  minWidth: 0
 }));
 
 const TokenCard = styled('div')(({ isDark }) => ({
   background: 'transparent',
   border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
   borderRadius: '8px',
-  padding: '6px 8px',
+  padding: '8px 10px',
   cursor: 'pointer',
   width: '100%',
   minWidth: 0,
+  transition: 'border-color 0.15s, background 0.15s',
   '&:hover': {
-    background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(0,0,0,0.02)',
+    background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.03)',
     borderColor: 'rgba(59,130,246,0.3)'
   }
 }));
 
 const RankBadge = styled('div')(({ isDark, rank }) => {
   const getRankColors = () => {
-    if (rank === 1) return { bg: 'rgba(234,179,8,0.15)', color: '#eab308' };
-    if (rank === 2) return { bg: 'rgba(156,163,175,0.15)', color: '#9ca3af' };
-    if (rank === 3) return { bg: 'rgba(249,115,22,0.15)', color: '#f97316' };
+    if (rank === 1) return { bg: 'rgba(234,179,8,0.15)', color: '#eab308', border: 'rgba(234,179,8,0.3)' };
+    if (rank === 2) return { bg: 'rgba(156,163,175,0.15)', color: '#9ca3af', border: 'rgba(156,163,175,0.3)' };
+    if (rank === 3) return { bg: 'rgba(249,115,22,0.15)', color: '#f97316', border: 'rgba(249,115,22,0.3)' };
     return {
       bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+      border: 'transparent'
     };
   };
   const colors = getRankColors();
@@ -73,14 +72,15 @@ const RankBadge = styled('div')(({ isDark, rank }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 20,
-    height: 20,
-    borderRadius: '8px',
-    fontWeight: 500,
+    width: 18,
+    height: 18,
+    borderRadius: '6px',
+    fontWeight: 600,
     fontSize: '10px',
     flexShrink: 0,
     background: colors.bg,
-    color: colors.color
+    color: colors.color,
+    border: `1px solid ${colors.border}`
   };
 });
 
@@ -88,11 +88,11 @@ const StatsBox = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   gap: 0,
-  minWidth: '60px',
+  minWidth: '55px',
   textAlign: 'right',
   '& .value': {
     fontSize: '11px',
-    fontWeight: 400,
+    fontWeight: 500,
     lineHeight: 1.3,
     letterSpacing: '-0.01em',
     textAlign: 'right',
@@ -168,12 +168,35 @@ const Chip = styled('span')(({ isDark }) => ({
   fontSize: '8px',
   backgroundColor: 'rgba(34,197,94,0.15)',
   color: '#22c55e',
-  fontWeight: 500,
+  fontWeight: 600,
   padding: '0 5px',
-  borderRadius: '8px',
+  borderRadius: '4px',
   display: 'inline-flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  letterSpacing: '0.5px'
+}));
+
+const VerifiedBadge = styled('span')(({ isDark }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 14,
+  height: 14,
+  borderRadius: '50%',
+  background: isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)',
+  color: '#3b82f6',
+  fontSize: '8px',
+  flexShrink: 0
+}));
+
+const PriceChange = styled('span')(({ isPositive }) => ({
+  fontSize: '11px',
+  fontWeight: 500,
+  color: isPositive ? '#22c55e' : '#ef4444',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '2px'
 }));
 
 const Avatar = styled('div')(({ isDark }) => ({
@@ -220,7 +243,7 @@ const Alert = styled('div')(({ severity, isDark }) => ({
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-const TrendingTokens = () => {
+const TrendingTokens = ({ horizontal = false }) => {
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -365,6 +388,105 @@ const TrendingTokens = () => {
     );
   }
 
+  // Horizontal layout - grid of token cards
+  if (horizontal && !isMobile) {
+    return (
+      <Container isDark={darkMode} role="region" aria-label="Trending Tokens" style={{ marginBottom: 0 }}>
+        {/* Header */}
+        <Box
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 10px 6px'
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 500, fontSize: '10px', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Trending Tokens
+            </Typography>
+            <Chip isDark={darkMode}>LIVE</Chip>
+          </Stack>
+          <Button isDark={darkMode} as="a" href="/trending" aria-label="View all trending tokens">
+            View All→
+          </Button>
+        </Box>
+
+        {/* Horizontal Token Grid */}
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '6px',
+            padding: '0 8px 8px'
+          }}
+        >
+          {trendingList.slice(0, 10).map((token, index) => {
+            const rank = index + 1;
+            const priceChange = token.pro24h || 0;
+            const isPositive = priceChange >= 0;
+
+            return (
+              <Link
+                key={token.md5 || token.slug || `trending-${index}`}
+                href={`/token/${token.slug}`}
+                isDark={darkMode}
+                aria-label={`View ${token.user} token details`}
+              >
+                <TokenCard isDark={darkMode} style={{ padding: '10px' }}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <RankBadge rank={rank} isDark={darkMode}>{rank}</RankBadge>
+                    <Avatar isDark={darkMode} style={{ width: 28, height: 28 }}>
+                      {token.md5 ? (
+                        <img
+                          src={`https://s1.xrpl.to/token/${token.md5}`}
+                          alt={token.user}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentNode.textContent = token.user?.[0]?.toUpperCase();
+                          }}
+                        />
+                      ) : (
+                        token.user?.[0]?.toUpperCase()
+                      )}
+                    </Avatar>
+                    <Box style={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction="row" alignItems="center" spacing={0.25}>
+                        <Typography
+                          variant="body2"
+                          isDark={darkMode}
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {token.user}
+                        </Typography>
+                        {token.verified && <VerifiedBadge isDark={darkMode}>✓</VerifiedBadge>}
+                      </Stack>
+                    </Box>
+                  </Box>
+                  <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography isDark={darkMode} style={{ fontSize: '12px', fontWeight: 500 }}>
+                      {formatPrice(token.exch)}
+                    </Typography>
+                    <PriceChange isPositive={isPositive}>
+                      {isPositive ? '+' : ''}{priceChange.toFixed(1)}%
+                    </PriceChange>
+                  </Box>
+                </TokenCard>
+              </Link>
+            );
+          })}
+        </Box>
+      </Container>
+    );
+  }
+
+  // Vertical layout (original)
   return (
     <Container isDark={darkMode} role="region" aria-label="Trending Tokens">
       {/* Header */}
@@ -507,12 +629,13 @@ const TrendingTokens = () => {
 
                   {/* Token Info */}
                   <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: isMobile ? '4px' : '6px' }}>
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Stack direction="row" alignItems="center" spacing={0.25}>
                       <Typography
                         variant="body2"
                         isDark={darkMode}
                         style={{
                           fontSize: '12px',
+                          fontWeight: 500,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -521,25 +644,7 @@ const TrendingTokens = () => {
                       >
                         {token.user}
                       </Typography>
-                      {token.verified && (
-                        <span
-                          style={{
-                            padding: '1px 4px',
-                            background: darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)',
-                            borderRadius: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 8,
-                            color: darkMode ? '#60a5fa' : '#2563eb',
-                            fontWeight: 600,
-                            flexShrink: 0
-                          }}
-                          title="Verified"
-                        >
-                          ✓
-                        </span>
-                      )}
+                      {token.verified && <VerifiedBadge isDark={darkMode}>✓</VerifiedBadge>}
                     </Stack>
                     {token.name && token.name !== token.user && !isMobile && (
                       <Typography
@@ -578,15 +683,9 @@ const TrendingTokens = () => {
                     )}
 
                     <StatsBox>
-                      <Box
-                        className="value"
-                        style={{
-                          color: isPositive ? '#22c55e' : '#ef4444'
-                        }}
-                      >
-                        {isPositive ? '+' : ''}
-                        {priceChange.toFixed(1)}%
-                      </Box>
+                      <PriceChange isPositive={isPositive} className="value">
+                        {isPositive ? '+' : ''}{priceChange.toFixed(1)}%
+                      </PriceChange>
                     </StatsBox>
 
                     {!isMobile && (

@@ -490,7 +490,10 @@ const TokenSummary = memo(({ token }) => {
       {showInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInfo(false)}>
           <div
-            className={cn("w-full max-w-lg rounded-xl border-[1.5px] p-5", isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200")}
+            className={cn(
+              "w-full max-w-lg rounded-xl border-[1.5px] p-5 max-h-[80vh] overflow-y-auto",
+              isDark ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">

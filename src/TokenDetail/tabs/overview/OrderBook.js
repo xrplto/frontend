@@ -23,9 +23,9 @@ const fetchInFlight = new Map();
 
 const Container = styled.div`
   border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(107,114,128,0.5)' : 'rgba(107,114,128,0.4)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
-  height: 100%;
+  height: calc(100% - 24px);
   display: flex;
   flex-direction: column;
 `;
@@ -84,10 +84,10 @@ const Row = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 10px;
+  padding: 8px 10px;
   position: relative;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-family: monospace;
   transition: background 0.1s;
   &:hover {

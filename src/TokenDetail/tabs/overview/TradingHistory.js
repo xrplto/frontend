@@ -605,55 +605,30 @@ const Pagination = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  @media (max-width: 640px) {
-    gap: 3px;
-  }
+  gap: 1px;
 `;
 
 const PaginationButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.selected ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
-  background: ${props => props.selected ? '#3b82f6' : 'transparent'};
-  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)')};
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  min-width: 32px;
-  height: 32px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'};
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s;
   &:hover:not(:disabled) {
-    border-color: #3b82f6;
-    background: rgba(59,130,246,0.08);
+    color: #3b82f6;
   }
-  &:disabled { opacity: 0.3; cursor: default; }
-  @media (max-width: 640px) {
-    min-width: 28px;
-    height: 28px;
-    font-size: 11px;
-    border-radius: 8px;
-    & svg { width: 14px; height: 14px; }
-  }
+  &:disabled { opacity: 0.2; cursor: default; }
 `;
 
-const RecordsCount = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-  @media (max-width: 640px) {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-  @media (max-width: 480px) {
-    display: none;
-  }
+const PageInfo = styled.span`
+  font-size: 11px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  padding: 0 6px;
+  white-space: nowrap;
 `;
 
 const Table = styled.table`
@@ -695,7 +670,7 @@ const TableCell = styled.td`
 
 const TableContainer = styled.div`
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: auto;
 `;
 
@@ -2452,103 +2427,24 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
           {/* Cursor-based pagination */}
           {(totalRecords > limit || currentPage > 1) && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '16px', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '10px' }}>
               <Pagination isDark={isDark}>
-                <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark}><ChevronsLeft size={16} /></PaginationButton>
-                <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark}><ChevronLeft size={16} /></PaginationButton>
-
-                {/* Page number buttons */}
-                {(() => {
-                  const totalPages = Math.ceil(totalRecords / limit);
-                  const buttons = [];
-
-                  // Always show page 1
-                  if (currentPage > 3) {
-                    buttons.push(
-                      <PaginationButton key={1} onClick={handleFirstPage} isDark={isDark}>1</PaginationButton>
-                    );
-                    if (currentPage > 4) {
-                      buttons.push(
-                        <span key="dots1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
-                      );
-                    }
-                  }
-
-                  // Show pages around current page (that we can navigate to via history)
-                  for (let i = Math.max(1, currentPage - 2); i <= currentPage; i++) {
-                    if (i === currentPage) {
-                      buttons.push(
-                        <PaginationButton key={i} selected isDark={isDark}>{i}</PaginationButton>
-                      );
-                    } else if (i >= currentPage - cursorHistory.length) {
-                      // Can navigate back to this page via history
-                      const stepsBack = currentPage - i;
-                      buttons.push(
-                        <PaginationButton
-                          key={i}
-                          onClick={() => handleJumpBack(stepsBack)}
-                          isDark={isDark}
-                        >
-                          {i}
-                        </PaginationButton>
-                      );
-                    }
-                  }
-
-                  // Show next page indicator if available and not at the last page
-                  // For desc: show higher page numbers (older records)
-                  // For asc: show lower page numbers (newer records)
-                  const hasMorePages = nextCursor && !isLastPage;
-
-                  if (hasMorePages && direction === 'desc') {
-                    buttons.push(
-                      <PaginationButton key={currentPage + 1} onClick={handleNextPage} isDark={isDark}>
-                        {currentPage + 1}
-                      </PaginationButton>
-                    );
-                    if (totalPages > currentPage + 1) {
-                      buttons.push(
-                        <span key="dots2" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
-                      );
-                      // Show total pages estimate
-                      buttons.push(
-                        <Tooltip key="total" title={`~${totalPages.toLocaleString()} pages`}>
-                          <span style={{
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                            padding: '0 6px'
-                          }}>
-                            {totalPages.toLocaleString()}
-                          </span>
-                        </Tooltip>
-                      );
-                    }
-                  } else if (hasMorePages && direction === 'asc' && currentPage > 1) {
-                    // When viewing from last page (asc), show path back to page 1
-                    buttons.push(
-                      <PaginationButton key={currentPage - 1} onClick={handleNextPage} isDark={isDark}>
-                        {currentPage - 1}
-                      </PaginationButton>
-                    );
-                    if (currentPage > 2) {
-                      buttons.push(
-                        <span key="dots2" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
-                      );
-                      buttons.push(
-                        <span key="page1" style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 6px' }}>1</span>
-                      );
-                    }
-                  }
-
-                  return buttons;
-                })()}
-
-                <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark}><ChevronRight size={16} /></PaginationButton>
-                <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark}><ChevronsRight size={16} /></PaginationButton>
+                <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark} title="First">
+                  <ChevronsLeft size={14} />
+                </PaginationButton>
+                <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark} title="Previous">
+                  <ChevronLeft size={14} />
+                </PaginationButton>
+                <PageInfo isDark={isDark}>
+                  {currentPage.toLocaleString()}<span style={{ opacity: 0.5 }}>/</span>{Math.ceil(totalRecords / limit).toLocaleString()}
+                </PageInfo>
+                <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark} title="Next">
+                  <ChevronRight size={14} />
+                </PaginationButton>
+                <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark} title="Last">
+                  <ChevronsRight size={14} />
+                </PaginationButton>
               </Pagination>
-              <RecordsCount isDark={isDark}>
-                {totalRecords > 0 ? `${totalRecords.toLocaleString()} records` : ''}
-              </RecordsCount>
             </div>
           )}
         </>

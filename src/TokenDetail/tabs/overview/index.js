@@ -165,15 +165,15 @@ const Overview = memo(
 
     return (
       <div className="flex flex-col gap-2">
-        {/* Main row: Chart+TradingHistory | OrderBook | Swap sidebar */}
+        {/* Main content row */}
         <div className="flex flex-col md:flex-row items-stretch gap-2">
-          {/* Left: Chart + TradingHistory stacked */}
+          {/* Left column: Chart + Trading History */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
             <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
               <PriceChart token={token} />
             </section>
-            <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
+            <section aria-label="Trading History" className="flex-1" style={{ position: 'relative', zIndex: 0 }}>
               <h2 className="sr-only">Trading History</h2>
               <TradingHistory
                 tokenId={token.md5}
@@ -191,10 +191,9 @@ const Overview = memo(
           {!isTablet && (
             <aside
               className={cn(
-                "flex-shrink-0 self-start transition-all duration-300 ease-in-out",
+                "flex-shrink-0 transition-all duration-300 ease-in-out",
                 orderBookCollapsed ? "w-[36px]" : "w-[280px]"
               )}
-              style={{ height: '1300px' }}
               aria-label="Order Book"
             >
               <h2 className="sr-only">Order Book</h2>
@@ -202,9 +201,10 @@ const Overview = memo(
                 <div
                   onClick={() => setOrderBookCollapsed(false)}
                   className={cn(
-                    "w-[36px] h-full rounded-xl border cursor-pointer flex flex-col items-center py-2 gap-2 transition-all",
-                    isDark ? "border-gray-600 bg-white/[0.02] hover:border-blue-500" : "border-gray-400 bg-black/[0.02] hover:border-blue-500"
+                    "w-[36px] rounded-xl border cursor-pointer flex flex-col items-center justify-center gap-2 transition-all",
+                    isDark ? "bg-white/[0.02] hover:border-blue-500" : "bg-black/[0.02] hover:border-blue-500"
                   )}
+                  style={{ borderWidth: '1.5px', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', height: 'calc(100% - 24px)' }}
                   title="Expand Order Book"
                 >
                   <ChevronRight size={16} className={isDark ? "text-white/50" : "text-black/50"} />
@@ -221,7 +221,7 @@ const Overview = memo(
             </aside>
           )}
 
-          {/* Right sidebar: TokenSummary, Swap, Stats, Trending - fills remaining space */}
+          {/* Right sidebar: TokenSummary, Swap, Stats, Description */}
           <aside className="w-full md:w-[520px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
             <TokenSummary token={token} />
             <h2 className="sr-only">Swap</h2>
@@ -233,34 +233,34 @@ const Overview = memo(
             />
             <h2 className="sr-only">Price Statistics</h2>
             <PriceStatistics token={token} isDark={isDark} />
-            <TrendingTokens />
+            <Description
+              token={token}
+              showEditor={showEditor}
+              setShowEditor={setShowEditor}
+              description={description}
+              onApplyDescription={onApplyDescription}
+              isDark={isDark}
+              mdEditor={
+                showEditor ? (
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className={cn(
+                      "w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary",
+                      isDark
+                        ? "border-white/20 bg-white/5 text-white placeholder-white/40"
+                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
+                    )}
+                    placeholder="Enter description..."
+                  />
+                ) : null
+              }
+            />
           </aside>
         </div>
 
-        {/* Description below */}
-        <Description
-          token={token}
-          showEditor={showEditor}
-          setShowEditor={setShowEditor}
-          description={description}
-          onApplyDescription={onApplyDescription}
-          isDark={isDark}
-          mdEditor={
-            showEditor ? (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={cn(
-                  "w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary",
-                  isDark
-                    ? "border-white/20 bg-white/5 text-white placeholder-white/40"
-                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
-                )}
-                placeholder="Enter description..."
-              />
-            ) : null
-          }
-        />
+        {/* Trending Tokens - Full width horizontal section */}
+        <TrendingTokens horizontal />
       </div>
     );
   }

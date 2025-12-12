@@ -8,10 +8,9 @@ const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
 const Card = styled.div`
   border-radius: 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'};
+  background: transparent;
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
-  margin-bottom: 8px;
 `;
 
 const CardHeader = styled.div`
