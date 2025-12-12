@@ -25,7 +25,8 @@ const Container = styled.div`
   border-radius: 12px;
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
-  height: calc(100% - 24px);
+  height: 100%;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
 `;
