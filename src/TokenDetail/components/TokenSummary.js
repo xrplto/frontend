@@ -397,9 +397,16 @@ const TokenSummary = memo(({ token }) => {
             {currencySymbols[activeFiatCurrency]}
             {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
           </span>
-          <div className={cn("flex-1 h-2 rounded-full relative overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500/40 via-yellow-500/30 to-red-500/40" />
-            <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-primary shadow-lg" style={{ left: `calc(${range24h.percent}% - 7px)` }} />
+          <div className="flex-1 relative py-2">
+            <div className={cn("h-2 rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
+              <div className="absolute inset-x-0 top-2 h-2 rounded-full bg-gradient-to-r from-green-500/40 via-yellow-500/30 to-red-500/40" />
+            </div>
+            <div
+              className="absolute top-1/2 -translate-y-1/2 z-10"
+              style={{ left: `clamp(0px, calc(${range24h.percent}% - 5px), calc(100% - 10px))` }}
+            >
+              <div className={cn("w-2.5 h-2.5 rounded-full ring-2", isDark ? "bg-white ring-white/30" : "bg-primary ring-primary/30")} />
+            </div>
           </div>
           <span className="text-[10px] text-red-500 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}

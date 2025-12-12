@@ -2114,7 +2114,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
                     {activeFiatCurrency !== 'XRP' && (
                       <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', marginLeft: '4px' }}>
-                        ({currencySymbols[activeFiatCurrency]}{formatTradeValue(xrpAmount / exchRate)})
+                        ({currencySymbols[activeFiatCurrency]}{formatTradeValue((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)})
                       </span>
                     )}
                   </span>
@@ -2175,7 +2175,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right', fontFamily: 'monospace' }}>
-                  {currencySymbols[activeFiatCurrency]}{formatTradeValue(xrpAmount / exchRate)}
+                  {currencySymbols[activeFiatCurrency]}{formatTradeValue((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
                 </span>
               )}
 
