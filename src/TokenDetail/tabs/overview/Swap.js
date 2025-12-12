@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
 import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { ConnectWallet } from 'src/components/Wallet';
@@ -707,6 +708,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   });
 
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [orderBookPos, setOrderBookPos] = useState({ x: 100, y: 100 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const asksContainerRef = useRef(null);
   const [debugInfo, setDebugInfo] = useState(null);
 
   // Swap quote state
@@ -722,6 +727,32 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('swap_txfee', txFee);
   }, [txFee]);
+
+  // Floating orderbook drag handlers
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    dragOffset.current = {
+      x: e.clientX - orderBookPos.x,
+      y: e.clientY - orderBookPos.y
+    };
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMove = (e) => {
+      setOrderBookPos({
+        x: e.clientX - dragOffset.current.x,
+        y: e.clientY - dragOffset.current.y
+      });
+    };
+    const handleUp = () => setIsDragging(false);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [isDragging]);
 
   // Debug info loader
   useEffect(() => {
@@ -886,6 +917,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
+
+  // Scroll asks to bottom when orderbook opens or limit price changes
+  useEffect(() => {
+    if (showOrderbook && asksContainerRef.current) {
+      asksContainerRef.current.scrollTop = asksContainerRef.current.scrollHeight;
+    }
+  }, [showOrderbook, asks, limitPrice]);
 
   // Fetch swap quote from API (works with or without login)
   useEffect(() => {
@@ -2385,19 +2423,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     Enter a valid limit price greater than 0
                   </Typography>
                 )}
-                {orderType === 'limit' &&
-                  priceWarning &&
-                  (() => {
-                    const baseMsg =
-                      priceWarning.kind === 'buy'
-                        ? `Buy ${new Decimal(priceWarning.pct).toFixed(1)}% above ask`
-                        : `Sell ${new Decimal(priceWarning.pct).toFixed(1)}% below bid`;
+                {orderType === 'limit' && limitPrice && (() => {
                     const lp = Number(limitPrice);
-                    const marketable =
-                      priceWarning.kind === 'buy'
-                        ? bestAsk != null && lp >= Number(bestAsk)
-                        : bestBid != null && lp <= Number(bestBid);
-                    if (marketable) {
+                    if (!lp || !isFinite(lp)) return null;
+
+                    // Check if order would instantly fill
+                    const willFillBuy = revert && bestAsk != null && lp >= Number(bestAsk);
+                    const willFillSell = !revert && bestBid != null && lp <= Number(bestBid);
+
+                    if (willFillBuy || willFillSell) {
+                      const pct = willFillBuy
+                        ? ((lp - Number(bestAsk)) / Number(bestAsk)) * 100
+                        : ((Number(bestBid) - lp) / Number(bestBid)) * 100;
                       return (
                         <Alert severity="error" sx={{ mt: 0.25, py: 0.25 }}>
                           <Typography
@@ -2405,20 +2442,33 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             isDark={isDark}
                             sx={{ fontSize: '10px', fontWeight: 400, color: '#ef4444' }}
                           >
-                            Instant fill! {baseMsg}
+                            Instant fill! {pct > 0 ? `${pct.toFixed(1)}% ${willFillBuy ? 'above ask' : 'below bid'}` : 'At market price'}
                           </Typography>
                         </Alert>
                       );
                     }
-                    return (
-                      <Typography
-                        variant="caption"
-                        isDark={isDark}
-                        sx={{ fontSize: '10px', color: '#f59e0b' }}
-                      >
-                        {baseMsg}
-                      </Typography>
-                    );
+
+                    // Show warning if price deviates from market
+                    const refPrice = revert ? Number(bestAsk) : Number(bestBid);
+                    if (refPrice && refPrice > 0) {
+                      const pctDiff = revert
+                        ? ((lp - refPrice) / refPrice) * 100
+                        : ((refPrice - lp) / refPrice) * 100;
+                      if (Math.abs(pctDiff) > 1) {
+                        const direction = pctDiff > 0 ? 'above' : 'below';
+                        const color = pctDiff > 50 ? '#ef4444' : pctDiff > 10 ? '#f59e0b' : '#3b82f6';
+                        return (
+                          <Typography
+                            variant="caption"
+                            isDark={isDark}
+                            sx={{ fontSize: '10px', color }}
+                          >
+                            {Math.abs(pctDiff).toFixed(1)}% {direction} market
+                          </Typography>
+                        );
+                      }
+                    }
+                    return null;
                   })()}
 
                 {/* Order Expiration - Grid Style */}
@@ -2471,6 +2521,30 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     ))}
                   </div>
                 </div>
+
+                {/* Show Order Book Toggle */}
+                <button
+                  onClick={() => setShowOrderbook(!showOrderbook)}
+                  style={{
+                    marginTop: '12px',
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: `1px solid ${showOrderbook ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)')}`,
+                    background: showOrderbook ? 'rgba(66,133,244,0.1)' : 'transparent',
+                    color: showOrderbook ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.6)'),
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {showOrderbook ? 'Hide Order Book' : 'Show Order Book'}
+                </button>
 
               </Stack>
             </Box>
@@ -2561,7 +2635,211 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </Typography>
       </Stack>
 
+      {/* Floating Order Book Panel */}
+      {showOrderbook && (
+        <div
+          style={{
+            position: 'fixed',
+            left: orderBookPos.x,
+            top: orderBookPos.y,
+            zIndex: 9999,
+            width: 320,
+            borderRadius: 8,
+            border: `1.5px solid ${isDark ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+            background: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            overflow: 'hidden',
+            userSelect: 'none'
+          }}
+        >
+          {/* Drag Handle */}
+          <div
+            onMouseDown={handleDragStart}
+            className={cn(
+              "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move",
+              isDark ? "border-primary/20 bg-white/[0.03]" : "border-primary/15 bg-gray-50"
+            )}
+          >
+            <span className={cn("uppercase tracking-wide", isDark ? "text-primary/70" : "text-primary/70")}>Order Book</span>
+            <button
+              onClick={() => setShowOrderbook(false)}
+              className={cn(
+                "w-5 h-5 flex items-center justify-center rounded hover:bg-white/10",
+                isDark ? "text-white/50 hover:text-white" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <X size={14} />
+            </button>
+          </div>
+          {asks.length === 0 && bids.length === 0 ? (
+            <div className={cn("p-8 text-center text-[12px] font-mono", isDark ? "text-primary/40" : "text-primary/40")}>
+              No orderbook data available
+            </div>
+          ) : (
+            <>
+              <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
+                <span className={cn("flex-1", isDark ? "text-primary/40" : "text-primary/40")}>Price</span>
+                <span className={cn("flex-1 text-right", isDark ? "text-primary/40" : "text-primary/40")}>{curr1?.name || 'Token'}</span>
+                <span className={cn("flex-1 text-right", isDark ? "text-primary/40" : "text-primary/40")}>Total</span>
+              </div>
+              {/* Asks */}
+              <div ref={asksContainerRef} className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {(() => {
+                  const visibleAsks = asks.slice(0, 30);
+                  const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
+                  const userPrice = parseFloat(limitPrice) || 0;
+                  const reversedAsks = [...visibleAsks].reverse();
+                  const bestAsk = asks[0]?.price || Infinity;
 
+                  const rows = [];
+
+                  reversedAsks.forEach((ask, idx) => {
+                    rows.push(
+                      <div
+                        key={`ask-${idx}`}
+                        onClick={() => setLimitPrice(ask.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
+                          isDark ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <div
+                          className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
+                          style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
+                        />
+                        <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", isDark ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
+                      </div>
+                    );
+                  });
+
+                  // Add user order at bottom of asks if price is above best ask
+                  if (userPrice > 0 && userPrice >= bestAsk) {
+                    const willFill = userPrice >= bestAsk;
+                    rows.push(
+                      <div
+                        key="user-order-ask"
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono relative border-y",
+                          willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                        )}
+                      >
+                        <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    );
+                  }
+                  return rows;
+                })()}
+              </div>
+              {/* Spread + User Order if in spread */}
+              {(() => {
+                const userPrice = parseFloat(limitPrice) || 0;
+                const bestBid = bids[0]?.price || 0;
+                const bestAsk = asks[0]?.price || Infinity;
+                const inSpread = userPrice > 0 && userPrice > bestBid && userPrice < bestAsk;
+                return (
+                  <>
+                    {inSpread && (
+                      <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
+                        <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
+                        <span className="flex-1 text-right text-primary">Your Order</span>
+                        <span className="flex-1 text-right text-primary">{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    )}
+                    <div className={cn(
+                      "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
+                      isDark ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
+                    )}>
+                      <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
+                      <span className={cn(
+                        "px-2 py-0.5 rounded text-[10px]",
+                        isDark ? "bg-white/10" : "bg-gray-200"
+                      )}>
+                        {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                      </span>
+                      <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
+                    </div>
+                  </>
+                );
+              })()}
+              {/* Bids */}
+              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {(() => {
+                  const visibleBids = bids.slice(0, 30);
+                  const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
+                  const userPrice = parseFloat(limitPrice) || 0;
+
+                  // Find where user's order would land in bids (for sell orders)
+                  let userOrderInserted = false;
+                  const rows = [];
+
+                  const bestBidPrice = bids[0]?.price || 0;
+
+                  visibleBids.forEach((bid, idx) => {
+                    // Insert user order row if price is between this bid and previous
+                    if (!userOrderInserted && userPrice > 0 && userPrice <= bid.price) {
+                      const willFill = userPrice <= bestBidPrice;
+                      rows.push(
+                        <div
+                          key="user-order-bid"
+                          className={cn(
+                            "flex px-2 py-1 text-[11px] font-mono relative border-y",
+                            willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                          )}
+                        >
+                          <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                        </div>
+                      );
+                      userOrderInserted = true;
+                    }
+                    rows.push(
+                      <div
+                        key={`bid-${idx}`}
+                        onClick={() => setLimitPrice(bid.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
+                          isDark ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
+                          style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
+                        />
+                        <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", isDark ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
+                      </div>
+                    );
+                  });
+
+                  // If user price is below all bids, add at end
+                  if (!userOrderInserted && userPrice > 0 && userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)) {
+                    rows.push(
+                      <div
+                        key="user-order-bid"
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono relative",
+                          "bg-primary/20 border-y border-primary/50"
+                        )}
+                      >
+                        <span className="flex-1 text-primary relative z-[1]">{userPrice.toFixed(6)}</span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">Your Order</span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    );
+                  }
+                  return rows;
+                })()}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
     </Stack>
   );

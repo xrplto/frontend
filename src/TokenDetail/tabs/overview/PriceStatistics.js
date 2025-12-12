@@ -2,7 +2,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef } from 'react';
 import styled from '@emotion/styled';
-import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon } from 'lucide-react';
+import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -169,12 +169,10 @@ export default function PriceStatistics({ token, isDark = false }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const [isMobile, setIsMobile] = useState(false);
-  const [creations, setCreations] = useState(0);
   const [openScamWarning, setOpenScamWarning] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(false);
-  const fetchedCreatorRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 600);
@@ -192,6 +190,7 @@ export default function PriceStatistics({ token, isDark = false }) {
     dom,
     issuer,
     creator,
+    creatorTokenCount,
     tags,
     social,
     origin,
@@ -215,32 +214,8 @@ export default function PriceStatistics({ token, isDark = false }) {
     dateon
   } = token;
 
-  useEffect(() => {
-    if (!creator || fetchedCreatorRef.current === creator) return;
-    fetchedCreatorRef.current = creator;
-    let mounted = true;
-
-    fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!mounted) return;
-        if (data && data.accounts) {
-          let count = 0;
-          const hasLegacy = data.accounts.some((acc) => acc.ledger_index <= 91444888);
-          if (hasLegacy) {
-            count = 1;
-          } else {
-            count = data.accounts.filter((acc) => acc.initial_balance > 98).length;
-          }
-          setCreations(count);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to fetch account creations:', err);
-      });
-
-    return () => { mounted = false; };
-  }, [creator]);
+  // Use creatorTokenCount from API directly
+  const creatorTokens = creatorTokenCount || 0;
 
   // Fetch creator activity when expanded
   const [hasWarning, setHasWarning] = useState(false);
@@ -882,6 +857,39 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* ========== TOKEN INFO GROUP ========== */}
 
+          {/* Created Date Row */}
+          {date || dateon ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Created
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+                    fontSize: '12px'
+                  }}
+                >
+                  {fDate(date || dateon)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
           {/* Creator Row */}
           {creator && (
             <TableRow>
@@ -950,28 +958,89 @@ export default function PriceStatistics({ token, isDark = false }) {
                       <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
                     </IconButton>
                   </Tooltip>
-                  {creations > 0 ? (
-                    <Tooltip title="Number of tokens created by this creator.">
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          )}
+
+          {/* Creator Token Count - Full Width Warning Banner */}
+          {creator && creatorTokens > 0 && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '8px 10px' }}>
+                <Box
+                  style={{
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    background: creatorTokens >= 10
+                      ? alpha('rgba(239,68,68,1)', 0.1)
+                      : creatorTokens >= 5
+                      ? alpha('rgba(245,158,11,1)', 0.08)
+                      : creatorTokens >= 2
+                      ? alpha('rgba(59,130,246,1)', 0.06)
+                      : alpha('rgba(34,197,94,1)', 0.06),
+                    border: `1.5px solid ${
+                      creatorTokens >= 10
+                        ? alpha('rgba(239,68,68,1)', 0.3)
+                        : creatorTokens >= 5
+                        ? alpha('rgba(245,158,11,1)', 0.25)
+                        : creatorTokens >= 2
+                        ? alpha('rgba(59,130,246,1)', 0.15)
+                        : alpha('rgba(34,197,94,1)', 0.15)
+                    }`
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', gap: '12px' }}>
+                    {/* Left - Icon + Text */}
+                    <Stack direction="row" alignItems="center" style={{ gap: '10px', flex: 1 }}>
+                      {creatorTokens >= 5 ? (
+                        <AlertTriangle size={18} color={creatorTokens >= 10 ? '#ef4444' : '#f59e0b'} />
+                      ) : creatorTokens >= 2 ? (
+                        <Layers size={16} color="#3b82f6" />
+                      ) : (
+                        <CheckCircle size={16} color="#22c55e" />
+                      )}
+                      <Typography
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                        }}
+                      >
+                        {creatorTokens >= 10 ? 'Serial launcher' : creatorTokens >= 5 ? 'Multiple tokens' : creatorTokens >= 2 ? 'Has other tokens' : 'First token'}
+                      </Typography>
+                    </Stack>
+
+                    {/* Right - Count + Badge */}
+                    <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+                      <Typography
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: 600,
+                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : creatorTokens >= 2 ? '#3b82f6' : '#22c55e'
+                        }}
+                      >
+                        {creatorTokens}
+                      </Typography>
                       <Chip
                         size="small"
                         style={{
-                          borderRadius: '8px',
-                          height: isMobile ? '18px' : '20px',
-                          background: alpha('rgba(33,150,243,1)', 0.08),
-                          border: `1.5px solid ${alpha('rgba(33,150,243,1)', 0.15)}`,
-                          color: '#2196F3',
-                          fontWeight: 400,
-                          fontSize: isMobile ? '9px' : '10px',
-                          paddingLeft: '6px',
-                          paddingRight: '6px',
-                          flexShrink: 0
+                          height: '24px',
+                          borderRadius: '6px',
+                          background: creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.12) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.1) : creatorTokens >= 2 ? alpha('rgba(59,130,246,1)', 0.08) : alpha('rgba(34,197,94,1)', 0.08),
+                          border: `1.5px solid ${creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.3) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.25) : creatorTokens >= 2 ? alpha('rgba(59,130,246,1)', 0.15) : alpha('rgba(34,197,94,1)', 0.15)}`,
+                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : creatorTokens >= 2 ? '#3b82f6' : '#22c55e',
+                          fontSize: '9px',
+                          fontWeight: 600,
+                          paddingLeft: '8px',
+                          paddingRight: '8px',
+                          textTransform: 'uppercase'
                         }}
                       >
-                        {creations}
+                        {creatorTokens >= 10 ? 'HIGH RISK' : creatorTokens >= 5 ? 'CAUTION' : creatorTokens >= 2 ? 'MODERATE' : 'NEW'}
                       </Chip>
-                    </Tooltip>
-                  ) : null}
-                </Stack>
+                    </Stack>
+                  </Stack>
+                </Box>
               </ModernTableCell>
             </TableRow>
           )}
@@ -1182,39 +1251,6 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
             </TableRow>
           )}
-
-          {/* Created Date Row */}
-          {date || dateon ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Created
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-                    fontSize: '12px'
-                  }}
-                >
-                  {fDate(date || dateon)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
 
         </TableBody>
       </StyledTable>

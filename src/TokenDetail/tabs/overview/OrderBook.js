@@ -14,7 +14,7 @@ const formatPrice = (price) => {
   if (absPrice >= 0.000001) return price.toFixed(10);
   return price.toFixed(14);
 };
-import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -26,7 +26,6 @@ const Container = styled.div`
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
   height: 100%;
-  min-height: 420px;
   display: flex;
   flex-direction: column;
 `;
@@ -147,53 +146,8 @@ const SpreadBar = styled.div`
   flex-shrink: 0;
 `;
 
-const CollapseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  border: none;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
-  cursor: pointer;
-  transition: all 0.15s;
-  &:hover {
-    background: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'};
-    color: #3b82f6;
-  }
-`;
 
-const CollapsedBar = styled.div`
-  width: 36px;
-  height: 100%;
-  border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? '#4b5563' : '#9ca3af'};
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-  &:hover {
-    border-color: #3b82f6;
-    background: rgba(59,130,246,0.05);
-  }
-`;
-
-const VerticalText = styled.span`
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 11px;
-  font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
-  letter-spacing: 1px;
-`;
-
-const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
+const OrderBook = ({ token, onPriceClick }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -209,7 +163,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
 
   // Fetch RLUSD when viewing XRP
   useEffect(() => {
-    if (!isXRPToken || collapsed) return;
+    if (!isXRPToken) return;
     let mounted = true;
     const rlusdKey = 'rlusd-token';
 
@@ -228,7 +182,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
       .then(token => { mounted && token && setRlusdToken(token); fetchInFlight.delete(rlusdKey); })
       .catch(() => fetchInFlight.delete(rlusdKey));
     return () => { mounted = false; };
-  }, [isXRPToken, collapsed]);
+  }, [isXRPToken]);
 
   const effectiveToken = isXRPToken ? rlusdToken : token;
   const tokenMd5 = effectiveToken?.md5;
@@ -269,7 +223,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
 
   // WebSocket for real-time orderbook updates
   useEffect(() => {
-    if (collapsed || !effectiveToken?.issuer || !effectiveToken?.currency) {
+    if (!effectiveToken?.issuer || !effectiveToken?.currency) {
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
@@ -310,13 +264,13 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
       wsRef.current = null;
       setWsConnected(false);
     };
-  }, [effectiveToken?.issuer, effectiveToken?.currency, collapsed]);
+  }, [effectiveToken?.issuer, effectiveToken?.currency]);
 
   // HTTP polling fallback (only when WebSocket not connected)
   useEffect(() => {
     mountedRef.current = true;
-    // Don't fetch if collapsed, no token, or WebSocket is connected
-    if (collapsed || !tokenMd5 || !effectiveToken?.issuer || wsConnected) return;
+    // Don't fetch if no token or WebSocket is connected
+    if (!tokenMd5 || !effectiveToken?.issuer || wsConnected) return;
 
     const pairKey = `ob2-${tokenMd5}`;
 
@@ -454,7 +408,7 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
       fetchInFlight.delete(pairKey);
       lastDataHashRef.current = null;
     };
-  }, [tokenMd5, collapsed, effectiveToken?.issuer, wsConnected]);
+  }, [tokenMd5, effectiveToken?.issuer, wsConnected]);
 
   const { bestBid, bestAsk, spreadPct } = useMemo(() => {
     const bb = bids.length ? bids[0].price : null;
@@ -475,39 +429,10 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
   }, [asks]);
 
   if (!bids.length && !asks.length) {
-    // Show collapsed bar even with no data if collapse is enabled
-    if (collapsed && onToggleCollapse) {
-      return (
-        <CollapsedBar isDark={isDark} onClick={onToggleCollapse} title="Expand Order Book">
-          <ChevronRight size={16} style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-          <BookOpen size={14} style={{ opacity: 0.7, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }} />
-          <VerticalText isDark={isDark}>ORDER BOOK</VerticalText>
-        </CollapsedBar>
-      );
-    }
     return null;
   }
 
   const displayToken = effectiveToken || token;
-
-  // Collapsed view - vertical bar
-  if (collapsed) {
-    return (
-      <CollapsedBar isDark={isDark} onClick={onToggleCollapse} title="Expand Order Book">
-        <ChevronRight size={16} style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-        <BookOpen size={14} style={{ opacity: 0.7, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }} />
-        <VerticalText isDark={isDark}>ORDER BOOK</VerticalText>
-        <span style={{
-          writingMode: 'vertical-rl',
-          fontSize: '9px',
-          color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-          marginTop: '8px'
-        }}>
-          {bids.length}B · {asks.length}A
-        </span>
-      </CollapsedBar>
-    );
-  }
 
   return (
     <Container isDark={isDark}>
@@ -532,11 +457,6 @@ const OrderBook = ({ token, onPriceClick, collapsed, onToggleCollapse }) => {
           <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
             {bids.length}B · {asks.length}A
           </span>
-          {onToggleCollapse && (
-            <CollapseButton isDark={isDark} onClick={onToggleCollapse} title="Collapse Order Book">
-              <ChevronLeft size={14} />
-            </CollapseButton>
-          )}
         </div>
       </Header>
 

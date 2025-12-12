@@ -534,6 +534,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [customExpiry, setCustomExpiry] = useState(24); // hours for custom expiry
   const [showOrders, setShowOrders] = useState(false);
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [orderBookPos, setOrderBookPos] = useState({ x: 100, y: 100 });
+  const [isDraggingOB, setIsDraggingOB] = useState(false);
+  const dragOffsetOB = useRef({ x: 0, y: 0 });
+  const asksContainerRef = useRef(null);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [showDepthPanel, setShowDepthPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
@@ -551,6 +555,32 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       localStorage.setItem('swap_txfee', txFee);
     }
   }, [txFee]);
+
+  // Floating orderbook drag handlers
+  const handleDragStartOB = (e) => {
+    setIsDraggingOB(true);
+    dragOffsetOB.current = {
+      x: e.clientX - orderBookPos.x,
+      y: e.clientY - orderBookPos.y
+    };
+  };
+
+  useEffect(() => {
+    if (!isDraggingOB) return;
+    const handleMove = (e) => {
+      setOrderBookPos({
+        x: e.clientX - dragOffsetOB.current.x,
+        y: e.clientY - dragOffsetOB.current.y
+      });
+    };
+    const handleUp = () => setIsDraggingOB(false);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [isDraggingOB]);
 
   // Debug info for wallet
   useEffect(() => {
@@ -580,6 +610,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   // Orderbook state
   const [bids, setBids] = useState(propsBids || []);
   const [asks, setAsks] = useState(propsAsks || []);
+
+  // Scroll asks to bottom when orderbook opens or limit price changes
+  useEffect(() => {
+    if (showOrderbook && asksContainerRef.current) {
+      asksContainerRef.current.scrollTop = asksContainerRef.current.scrollHeight;
+    }
+  }, [showOrderbook, asks, limitPrice]);
 
   // Fetch orderbook via REST API - only when limit order or orderbook view is enabled
   useEffect(() => {
@@ -2581,15 +2618,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
           </div>
 
-          {/* Bottom Controls Container - Side by side on desktop for limit orders */}
-          <div className={cn(
-            "w-full rounded-xl relative",
-            orderType === 'limit' && showOrderbook ? "max-w-[900px]" : "max-w-[500px]"
-          )}>
-            <div className={cn(
-              "flex flex-col gap-4",
-              orderType === 'limit' && showOrderbook ? "md:flex-row" : ""
-            )}>
+          {/* Bottom Controls Container */}
+          <div className="w-full rounded-xl relative max-w-[500px]">
+            <div className="flex flex-col gap-4">
               {/* Left side - Controls */}
               <div className={cn(
                 "flex-1 flex flex-col",
@@ -2992,110 +3023,207 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             )}
               </div>
 
-              {/* Orderbook Panel - Right side on desktop */}
-              {orderType === 'limit' && showOrderbook && (
-            <div className={cn(
-              "w-full md:w-[320px] md:flex-shrink-0 md:self-stretch rounded-lg overflow-hidden relative flex flex-col",
-              darkMode ? "bg-black/50" : "bg-gray-50"
-            )}
-            style={{
-              border: `1.5px solid ${darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
-              clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))'
-            }}>
-              {/* Cyber corner accents */}
-              <div className="absolute top-0 left-0 w-8 h-[2px] bg-primary" />
-              <div className="absolute top-0 left-0 h-8 w-[2px] bg-primary" />
-              <div className="absolute bottom-0 right-0 w-8 h-[2px] bg-primary" />
-              <div className="absolute bottom-0 right-0 h-8 w-[2px] bg-primary" />
-
-              <div className={cn(
-                "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between",
-                darkMode ? "border-primary/20 text-primary/70" : "border-primary/15 text-primary/70"
-              )}>
-                <span className="uppercase tracking-wide">Order Book</span>
-                <button onClick={() => setShowOrderbook(false)} className="text-[10px] text-primary hover:text-primary/80">Hide</button>
-              </div>
-              {asks.length === 0 && bids.length === 0 ? (
-                <div className={cn("p-8 text-center text-[12px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
-                  No orderbook data available
-                </div>
-              ) : (
-                <>
-                  <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
-                    <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>XRP</span>
-                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>{token2?.name || token2?.currency || 'Token'}</span>
-                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>TOTAL</span>
-                  </div>
-                  {/* Asks */}
-                  <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                    {(() => {
-                      const visibleAsks = asks.slice(0, 8);
-                      const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
-                      return visibleAsks.reverse().map((ask, idx) => (
-                        <div
-                          key={`ask-${idx}`}
-                          onClick={() => setLimitPrice(ask.price.toString())}
-                          className={cn(
-                            "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
-                            darkMode ? "text-white/80" : "text-gray-700"
-                          )}
-                        >
-                          <div
-                            className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
-                            style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
-                          />
-                          <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
-                          <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                  {/* Spread */}
-                  <div className={cn(
-                    "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
-                    darkMode ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
-                  )}>
-                    <span className="text-green-400">▲ {bids[0]?.price?.toFixed(6) || '—'}</span>
-                    <span className={cn(
-                      "px-2 py-0.5 rounded text-[10px]",
-                      darkMode ? "bg-white/10" : "bg-gray-200"
-                    )}>
-                      {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
-                    </span>
-                    <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'} ▼</span>
-                  </div>
-                  {/* Bids */}
-                  <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                    {(() => {
-                      const visibleBids = bids.slice(0, 8);
-                      const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
-                      return visibleBids.map((bid, idx) => (
-                        <div
-                          key={`bid-${idx}`}
-                          onClick={() => setLimitPrice(bid.price.toString())}
-                          className={cn(
-                            "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
-                            darkMode ? "text-white/80" : "text-gray-700"
-                          )}
-                        >
-                          <div
-                            className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
-                            style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
-                          />
-                          <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
-                          <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </>
-              )}
-            </div>
-              )}
-            </div>
+                          </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating Order Book Panel */}
+      {showOrderbook && (
+        <div
+          style={{
+            position: 'fixed',
+            left: orderBookPos.x,
+            top: orderBookPos.y,
+            zIndex: 9999,
+            width: 320,
+            borderRadius: 8,
+            border: `1.5px solid ${darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+            background: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            overflow: 'hidden',
+            userSelect: 'none'
+          }}
+        >
+          {/* Drag Handle */}
+          <div
+            onMouseDown={handleDragStartOB}
+            className={cn(
+              "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move",
+              darkMode ? "border-primary/20 bg-white/[0.03]" : "border-primary/15 bg-gray-50"
+            )}
+          >
+            <span className={cn("uppercase tracking-wide", darkMode ? "text-primary/70" : "text-primary/70")}>Order Book</span>
+            <button
+              onClick={() => setShowOrderbook(false)}
+              className={cn(
+                "w-5 h-5 flex items-center justify-center rounded hover:bg-white/10",
+                darkMode ? "text-white/50 hover:text-white" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <X size={14} />
+            </button>
+          </div>
+          {asks.length === 0 && bids.length === 0 ? (
+            <div className={cn("p-8 text-center text-[12px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
+              No orderbook data available
+            </div>
+          ) : (
+            <>
+              <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
+                <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>Price</span>
+                <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>{token1?.name || 'Token'}</span>
+                <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>Total</span>
+              </div>
+              {/* Asks */}
+              <div ref={asksContainerRef} className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {(() => {
+                  const visibleAsks = asks.slice(0, 30);
+                  const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
+                  const userPrice = parseFloat(limitPrice) || 0;
+                  const reversedAsks = [...visibleAsks].reverse();
+                  const bestAsk = asks[0]?.price || Infinity;
+
+                  const rows = [];
+
+                  reversedAsks.forEach((ask, idx) => {
+                    rows.push(
+                      <div
+                        key={`ask-${idx}`}
+                        onClick={() => setLimitPrice(ask.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
+                          darkMode ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <div
+                          className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
+                          style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
+                        />
+                        <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
+                      </div>
+                    );
+                  });
+
+                  // Add user order at bottom of asks if price is above best ask
+                  if (userPrice > 0 && userPrice >= bestAsk) {
+                    const willFill = userPrice >= bestAsk;
+                    rows.push(
+                      <div
+                        key="user-order-ask"
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono relative border-y",
+                          willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                        )}
+                      >
+                        <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    );
+                  }
+                  return rows;
+                })()}
+              </div>
+              {/* Spread + User Order if in spread */}
+              {(() => {
+                const userPrice = parseFloat(limitPrice) || 0;
+                const bestBid = bids[0]?.price || 0;
+                const bestAsk = asks[0]?.price || Infinity;
+                const inSpread = userPrice > 0 && userPrice > bestBid && userPrice < bestAsk;
+                return (
+                  <>
+                    {inSpread && (
+                      <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
+                        <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
+                        <span className="flex-1 text-right text-primary">Your Order</span>
+                        <span className="flex-1 text-right text-primary">{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    )}
+                    <div className={cn(
+                      "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
+                      darkMode ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
+                    )}>
+                      <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
+                      <span className={cn(
+                        "px-2 py-0.5 rounded text-[10px]",
+                        darkMode ? "bg-white/10" : "bg-gray-200"
+                      )}>
+                        {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                      </span>
+                      <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
+                    </div>
+                  </>
+                );
+              })()}
+              {/* Bids */}
+              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {(() => {
+                  const visibleBids = bids.slice(0, 30);
+                  const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
+                  const userPrice = parseFloat(limitPrice) || 0;
+
+                  let userOrderInserted = false;
+                  const rows = [];
+                  const bestBidPrice = bids[0]?.price || 0;
+
+                  visibleBids.forEach((bid, idx) => {
+                    if (!userOrderInserted && userPrice > 0 && userPrice <= bid.price) {
+                      const willFill = userPrice <= bestBidPrice;
+                      rows.push(
+                        <div
+                          key="user-order-bid"
+                          className={cn(
+                            "flex px-2 py-1 text-[11px] font-mono relative border-y",
+                            willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                          )}
+                        >
+                          <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                        </div>
+                      );
+                      userOrderInserted = true;
+                    }
+                    rows.push(
+                      <div
+                        key={`bid-${idx}`}
+                        onClick={() => setLimitPrice(bid.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
+                          darkMode ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <div
+                          className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
+                          style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
+                        />
+                        <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
+                        <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
+                      </div>
+                    );
+                  });
+
+                  if (!userOrderInserted && userPrice > 0 && userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)) {
+                    rows.push(
+                      <div
+                        key="user-order-bid"
+                        className="flex px-2 py-1 text-[11px] font-mono relative bg-primary/20 border-y border-primary/50"
+                      >
+                        <span className="flex-1 text-primary relative z-[1]">{userPrice.toFixed(6)}</span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">Your Order</span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">{revert ? 'SELL' : 'BUY'}</span>
+                      </div>
+                    );
+                  }
+                  return rows;
+                })()}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

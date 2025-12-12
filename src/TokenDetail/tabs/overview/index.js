@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 // Context
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { ChevronRight, BookOpen } from 'lucide-react';
 
 // Dynamic imports for heavy components (code splitting)
 const PriceChart = dynamic(() => import('./ohlc'), {
@@ -15,10 +14,6 @@ const PriceChart = dynamic(() => import('./ohlc'), {
 });
 const TradingHistory = dynamic(() => import('./TradingHistory'), {
   loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
-  ssr: false
-});
-const OrderBook = dynamic(() => import('./OrderBook'), {
-  loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false
 });
 
@@ -38,18 +33,6 @@ const Overview = memo(
     const isDark = themeName === 'XrplToDarkTheme';
 
     const [showEditor, setShowEditor] = useState(false);
-    const [orderBookCollapsed, setOrderBookCollapsed] = useState(() => {
-      if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('orderBookCollapsed');
-        return stored === null ? true : stored === 'true';
-      }
-      return true;
-    });
-
-    // Persist collapse state
-    useEffect(() => {
-      localStorage.setItem('orderBookCollapsed', orderBookCollapsed);
-    }, [orderBookCollapsed]);
     const [description, setDescription] = useState(token.description || '');
     const [pairs, setPairs] = useState([]);
     // LRU cache with max 50 entries to prevent unbounded memory growth
@@ -186,40 +169,6 @@ const Overview = memo(
               />
             </section>
           </div>
-
-          {/* Middle: OrderBook - collapsible */}
-          {!isTablet && (
-            <aside
-              className={cn(
-                "flex-shrink-0 transition-all duration-300 ease-in-out",
-                orderBookCollapsed ? "w-[36px]" : "w-[280px]"
-              )}
-              aria-label="Order Book"
-            >
-              <h2 className="sr-only">Order Book</h2>
-              {orderBookCollapsed ? (
-                <div
-                  onClick={() => setOrderBookCollapsed(false)}
-                  className={cn(
-                    "w-[36px] rounded-xl border cursor-pointer flex flex-col items-center justify-center gap-2 transition-all",
-                    isDark ? "bg-white/[0.02] hover:border-blue-500" : "bg-black/[0.02] hover:border-blue-500"
-                  )}
-                  style={{ borderWidth: '1.5px', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', height: 'calc(100% - 24px)' }}
-                  title="Expand Order Book"
-                >
-                  <ChevronRight size={16} className={isDark ? "text-white/50" : "text-black/50"} />
-                  <BookOpen size={14} className={isDark ? "text-white/60" : "text-black/60"} />
-                  <span className={cn("writing-mode-vertical text-[11px] font-medium tracking-wide", isDark ? "text-white/70" : "text-black/70")} style={{ writingMode: 'vertical-rl' }}>ORDER BOOK</span>
-                </div>
-              ) : (
-                <OrderBook
-                  token={token}
-                  collapsed={false}
-                  onToggleCollapse={() => setOrderBookCollapsed(true)}
-                />
-              )}
-            </aside>
-          )}
 
           {/* Right sidebar: TokenSummary, Swap, Stats, Description */}
           <aside className="w-full md:w-[520px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
