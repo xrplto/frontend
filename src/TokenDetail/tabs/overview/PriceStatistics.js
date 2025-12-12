@@ -214,8 +214,9 @@ export default function PriceStatistics({ token, isDark = false }) {
     dateon
   } = token;
 
-  // Use creatorTokenCount from API directly
+  // Use creatorTokenCount and creatorExchange from token
   const creatorTokens = creatorTokenCount || 0;
+  const creatorExchange = token.creatorExchange || null;
 
   // Fetch creator activity when expanded
   const [hasWarning, setHasWarning] = useState(false);
@@ -1010,7 +1011,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                       </Typography>
                     </Stack>
 
-                    {/* Right - Count + Badge */}
+                    {/* Right - Count + Badge + Exchange */}
                     <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
                       <Typography
                         style={{
@@ -1021,23 +1022,43 @@ export default function PriceStatistics({ token, isDark = false }) {
                       >
                         {creatorTokens}
                       </Typography>
-                      <Chip
-                        size="small"
-                        style={{
-                          height: '24px',
-                          borderRadius: '6px',
-                          background: creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.12) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.1) : creatorTokens >= 2 ? alpha('rgba(59,130,246,1)', 0.08) : alpha('rgba(34,197,94,1)', 0.08),
-                          border: `1.5px solid ${creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.3) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.25) : creatorTokens >= 2 ? alpha('rgba(59,130,246,1)', 0.15) : alpha('rgba(34,197,94,1)', 0.15)}`,
-                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : creatorTokens >= 2 ? '#3b82f6' : '#22c55e',
-                          fontSize: '9px',
-                          fontWeight: 600,
-                          paddingLeft: '8px',
-                          paddingRight: '8px',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        {creatorTokens >= 10 ? 'HIGH RISK' : creatorTokens >= 5 ? 'CAUTION' : creatorTokens >= 2 ? 'MODERATE' : 'NEW'}
-                      </Chip>
+                      {creatorTokens >= 2 && (
+                        <Chip
+                          size="small"
+                          style={{
+                            height: '24px',
+                            borderRadius: '6px',
+                            background: creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.12) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.1) : alpha('rgba(59,130,246,1)', 0.08),
+                            border: `1.5px solid ${creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.3) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.25) : alpha('rgba(59,130,246,1)', 0.15)}`,
+                            color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : '#3b82f6',
+                            fontSize: '9px',
+                            fontWeight: 600,
+                            paddingLeft: '8px',
+                            paddingRight: '8px',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {creatorTokens >= 10 ? 'HIGH RISK' : creatorTokens >= 5 ? 'CAUTION' : 'MODERATE'}
+                        </Chip>
+                      )}
+                      {creatorExchange && (
+                        <Chip
+                          size="small"
+                          style={{
+                            height: '24px',
+                            borderRadius: '6px',
+                            background: alpha('rgba(34,197,94,1)', 0.08),
+                            border: `1.5px solid ${alpha('rgba(34,197,94,1)', 0.15)}`,
+                            color: '#22c55e',
+                            fontSize: '9px',
+                            fontWeight: 600,
+                            paddingLeft: '8px',
+                            paddingRight: '8px'
+                          }}
+                        >
+                          {creatorExchange}
+                        </Chip>
+                      )}
                     </Stack>
                   </Stack>
                 </Box>
@@ -1257,33 +1278,10 @@ export default function PriceStatistics({ token, isDark = false }) {
 
       {/* Social Links & Tags Section */}
       {(social || enhancedTags.length > 0) && (
-        <Box
-          style={{
-            padding: '10px',
-            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`
-          }}
-        >
-          <Typography
-            isDark={isDark}
-            variant="body2"
-            style={{
-              fontWeight: 500,
-              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)',
-              fontSize: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: '8px'
-            }}
-          >
-            Social & Tags
-          </Typography>
-          <Stack
-            direction="row"
-            alignItems="center"
-            style={{ flexWrap: 'wrap', gap: '6px' }}
-          >
-            <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 4 : 5} />
-            <CompactSocialLinks social={social} size="small" fullWidth={true} isDark={isDark} />
+        <Box style={{ padding: '10px' }}>
+          <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '6px' }}>
+            <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 4 : 6} isDark={isDark} />
+            <CompactSocialLinks social={social} size="small" isDark={isDark} />
           </Stack>
         </Box>
       )}
@@ -1433,143 +1431,82 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
   }
 
   return (
-    <Stack direction="row" spacing={0.75} alignItems="center" style={{ gap: '8px' }}>
-      {socialEntries.slice(0, 4).map(([platform, url]) => (
-        <Tooltip key={platform} title={`${platform}: ${url}`}>
-          <IconButton
-            as="a"
+    <Stack direction="row" alignItems="center" style={{ gap: '6px' }}>
+      {socialEntries.map(([platform, url]) => (
+        <Tooltip key={platform} title={getPlatformLabel(platform)}>
+          <Link
             href={getFullUrl(platform, url)}
             target="_blank"
             rel="noopener noreferrer"
-            size="small"
             style={{
-              width: '26px',
-              height: '26px',
-              padding: '4px',
-              borderRadius: '8px',
-              background: alpha('rgba(66,133,244,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              textDecoration: 'none'
             }}
           >
             {getIcon(platform)}
-          </IconButton>
+          </Link>
         </Tooltip>
       ))}
-      {socialEntries.length > 4 && toggleLinksDrawer && (
-        <Tooltip title="View all links">
-          <IconButton
-            onClick={() => toggleLinksDrawer(true)}
-            size="small"
-            style={{
-              width: '26px',
-              height: '26px',
-              padding: '4px',
-              borderRadius: '8px',
-              background: alpha('rgba(156,39,176,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
-              color: '#9C27B0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Typography style={{ fontSize: '11px', fontWeight: 400 }}>
-              +{socialEntries.length - 4}
-            </Typography>
-          </IconButton>
-        </Tooltip>
-      )}
     </Stack>
   );
 };
 
 // Compact tags component for inline integration
 export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDark = false }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 600);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   if (!enhancedTags || enhancedTags.length === 0) return null;
 
   return (
-    <Stack
-      direction="row"
-      spacing={0.75}
-      alignItems="center"
-      style={{ flexWrap: 'wrap', gap: '8px' }}
-    >
+    <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '6px' }}>
       {enhancedTags.slice(0, maxTags).map((tag) => (
         <Link
           key={tag}
           href={`/view/${normalizeTag(tag)}`}
-          style={{ display: 'inline-flex', textDecoration: 'none' }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+            textDecoration: 'none',
+            fontSize: '10px',
+            fontWeight: 500,
+            color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px'
+          }}
           rel="noreferrer noopener nofollow"
         >
-          <Chip
-            size="small"
-            style={{
-              height: '24px',
-              fontSize: '10px',
-              borderRadius: '8px',
-              paddingLeft: '10px',
-              paddingRight: '10px',
-              background: alpha('rgba(66,133,244,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
-              color: '#4285f4',
-              fontWeight: 400,
-              cursor: 'pointer',
-              minHeight: 'auto',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            {tag === 'aigent.run' ? (
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <img
-                  src="/static/aigentrun.gif"
-                  alt="Aigent.Run"
-                  style={{
-                    width: '14px',
-                    height: '14px',
-                    objectFit: 'contain'
-                  }}
-                />
-                {tag}
-              </Box>
-            ) : (
-              tag
-            )}
-          </Chip>
+          {tag === 'aigent.run' && (
+            <img src="/static/aigentrun.gif" alt="" style={{ width: '12px', height: '12px' }} />
+          )}
+          {tag}
         </Link>
       ))}
-      {enhancedTags.length > maxTags && toggleTagsDrawer && (
-        <Chip
-          size="small"
-          onClick={() => toggleTagsDrawer(true)}
+      {enhancedTags.length > maxTags && (
+        <Typography
           style={{
-            height: '24px',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
             fontSize: '10px',
-            borderRadius: '8px',
-            paddingLeft: '10px',
-            paddingRight: '10px',
-            background: alpha('rgba(66,133,244,1)', 0.08),
-            border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
-            color: '#4285f4',
-            fontWeight: 400,
-            cursor: 'pointer',
-            minHeight: 'auto'
+            fontWeight: 500,
+            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+            cursor: toggleTagsDrawer ? 'pointer' : 'default'
           }}
+          onClick={() => toggleTagsDrawer && toggleTagsDrawer(true)}
         >
           +{enhancedTags.length - maxTags}
-        </Chip>
+        </Typography>
       )}
     </Stack>
   );
