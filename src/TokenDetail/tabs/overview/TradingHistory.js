@@ -1808,20 +1808,60 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
 
+      // Helper to filter trades based on current filters
+      const applyClientFilters = (trades) => {
+        return trades.filter(t => {
+          // Filter by historyType (trades vs liquidity)
+          if (historyType === 'trades' && t.isLiquidity) return false;
+          if (historyType === 'liquidity' && !t.isLiquidity) return false;
+
+          // Filter by liquidityType (deposit/withdraw/create)
+          if (liquidityType && t.isLiquidity && t.type !== liquidityType) return false;
+
+          // Filter by pairType (xrp vs token pairs)
+          if (pairType) {
+            const hasXrp = t.paid?.currency === 'XRP' || t.got?.currency === 'XRP';
+            if (pairType === 'xrp' && !hasXrp) return false;
+            if (pairType === 'token' && hasXrp) return false;
+          }
+
+          // Filter by minimum XRP amount
+          if (xrpAmount) {
+            const minXrp = parseFloat(xrpAmount);
+            if (!isNaN(minXrp) && minXrp > 0) {
+              const tradeXrp = t.paid?.currency === 'XRP'
+                ? parseFloat(t.paid?.value || 0)
+                : parseFloat(t.got?.value || 0);
+              if (tradeXrp < minXrp) return false;
+            }
+          }
+
+          return true;
+        });
+      };
+
       if (msg.type === 'initial' && msg.trades) {
-        setTrades(msg.trades.slice(0, 50));
+        // WebSocket doesn't properly filter by type/pairType, so only use initial data when no filters active
+        // Let HTTP fetch handle initial data when filters are set
+        if (historyType !== 'liquidity' && !pairType) {
+          const filteredTrades = applyClientFilters(msg.trades);
+          setTrades(filteredTrades.slice(0, 50));
+          setLoading(false);
+        }
         previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
-        setLoading(false);
       } else if (msg.e === 'trades' && msg.trades?.length > 0) {
         const currentIds = previousTradesRef.current;
         const newTrades = msg.trades.filter(t => !currentIds.has(t._id || t.id));
+        const filteredNewTrades = applyClientFilters(newTrades);
 
-        if (newTrades.length > 0) {
-          setNewTradeIds(new Set(newTrades.map(t => t._id || t.id)));
-          setTrades(prev => [...newTrades, ...prev].slice(0, 50));
-          newTrades.forEach(t => currentIds.add(t._id || t.id));
+        if (filteredNewTrades.length > 0) {
+          setNewTradeIds(new Set(filteredNewTrades.map(t => t._id || t.id)));
+          setTrades(prev => [...filteredNewTrades, ...prev].slice(0, 50));
+          filteredNewTrades.forEach(t => currentIds.add(t._id || t.id));
           setTimeout(() => setNewTradeIds(new Set()), 1000);
         }
+        // Still track all trade IDs to prevent duplicates later
+        newTrades.forEach(t => currentIds.add(t._id || t.id));
       }
     };
 
@@ -1846,7 +1886,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         wsPingRef.current = null;
       }
     };
-  }, [tokenId, currentPage, direction, accountFilter, pairType, historyType, limit]);
+  }, [tokenId, currentPage, direction, accountFilter, pairType, historyType, liquidityType, xrpAmount, limit]);
 
   // Cursor-based pagination handlers
   const handleNextPage = useCallback(() => {
@@ -2128,7 +2168,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Value with colored bar */}
               <BarCell barWidth={barWidth} isBuy={isBuy} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                  {formatTradeValue(xrpAmount)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
+                  {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
                 </span>
               </BarCell>
 
@@ -2260,7 +2300,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </select>
             <select
               value={historyType}
-              onChange={(e) => setHistoryType(e.target.value)}
+              onChange={(e) => {
+                const newType = e.target.value;
+                setHistoryType(newType);
+                // Clear liquidityType filter when switching away from liquidity
+                if (newType !== 'liquidity') {
+                  setLiquidityType('');
+                }
+              }}
               style={{
                 padding: '5px 8px',
                 fontSize: '11px',
@@ -2281,7 +2328,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <option value="liquidity" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Liquidity</option>
               <option value="all" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All</option>
             </select>
-            {historyType !== 'trades' && (
+            {historyType === 'liquidity' && (
               <select
                 value={liquidityType}
                 onChange={(e) => setLiquidityType(e.target.value)}
