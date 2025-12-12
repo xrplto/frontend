@@ -197,14 +197,16 @@ export default function PriceStatistics({ token, isDark = false }) {
     origin,
     trustlines,
     uniqueTraders24h,
-    uniqueMakers24h,
-    uniqueTakers24h,
+    uniqueBuyers24h,
+    uniqueSellers24h,
     vol24htx,
     buy24hxrp,
     sell24hxrp,
     buy24htx,
     sell24htx,
-    buyerPressure,
+    buyTxns24h,
+    sellTxns24h,
+    txns24h,
     deposit24hxrp,
     deposit24htx,
     withdraw24hxrp,
@@ -558,7 +560,7 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* ========== 24H TRADING ACTIVITY GROUP ========== */}
 
           {/* Trades (24h) Row */}
-          {vol24htx ? (
+          {(txns24h || vol24htx) ? (
             <TableRow>
               <ModernTableCell>
                 <Typography
@@ -584,7 +586,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                     fontSize: '12px'
                   }}
                 >
-                  {fNumber(vol24htx)}
+                  {fNumber(txns24h || vol24htx)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -656,7 +658,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   >
                     {fNumber(buy24hxrp)} XRP
                   </Typography>
-                  {buy24htx ? (
+                  {(buyTxns24h || buy24htx) ? (
                     <Typography
                       variant="caption"
                       style={{
@@ -664,7 +666,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                         fontSize: '10px'
                       }}
                     >
-                      ({fNumber(buy24htx)} tx)
+                      ({fNumber(buyTxns24h || buy24htx)} tx)
                     </Typography>
                   ) : null}
                 </Stack>
@@ -673,7 +675,7 @@ export default function PriceStatistics({ token, isDark = false }) {
           ) : null}
 
           {/* Unique Buyers (24h) Row */}
-          {uniqueMakers24h ? (
+          {uniqueBuyers24h ? (
             <TableRow>
               <ModernTableCell>
                 <Typography
@@ -699,7 +701,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                     fontSize: '12px'
                   }}
                 >
-                  {fNumber(uniqueMakers24h)}
+                  {fNumber(uniqueBuyers24h)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -735,7 +737,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   >
                     {fNumber(sell24hxrp)} XRP
                   </Typography>
-                  {sell24htx ? (
+                  {(sellTxns24h || sell24htx) ? (
                     <Typography
                       variant="caption"
                       style={{
@@ -743,7 +745,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                         fontSize: '10px'
                       }}
                     >
-                      ({fNumber(sell24htx)} tx)
+                      ({fNumber(sellTxns24h || sell24htx)} tx)
                     </Typography>
                   ) : null}
                 </Stack>
@@ -752,7 +754,7 @@ export default function PriceStatistics({ token, isDark = false }) {
           ) : null}
 
           {/* Unique Sellers (24h) Row */}
-          {uniqueTakers24h ? (
+          {uniqueSellers24h ? (
             <TableRow>
               <ModernTableCell>
                 <Typography
@@ -778,7 +780,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                     fontSize: '12px'
                   }}
                 >
-                  {fNumber(uniqueTakers24h)}
+                  {fNumber(uniqueSellers24h)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
