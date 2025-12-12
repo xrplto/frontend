@@ -4,7 +4,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2 } from 'lucide-react';
+import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2, Info, X } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -22,6 +22,12 @@ const currencySymbols = {
 };
 
 const CURRENCY_ISSUERS = { XRP_MD5: 'XRP' };
+
+// Convert currency code to 40-char hex (XRPL standard)
+const currencyToHex = (currency) => {
+  if (!currency || currency.length <= 3) return null;
+  return Buffer.from(currency, 'utf8').toString('hex').toUpperCase().padEnd(40, '0');
+};
 
 // Price formatter - matches TrendingTokens style
 const formatPrice = (price) => {
@@ -98,6 +104,8 @@ const TokenSummary = memo(({ token }) => {
   const [editToken, setEditToken] = useState(null);
   const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
   const [debugInfo, setDebugInfo] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
+  const [showApi, setShowApi] = useState(false);
 
   // Debug info loader
   useEffect(() => {
@@ -124,7 +132,7 @@ const TokenSummary = memo(({ token }) => {
     loadDebugInfo();
   }, [accountProfile]);
 
-  const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator } = token;
+  const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator, trustlines } = token;
 
   // Trustline handler
   const handleSetTrust = async () => {
@@ -437,6 +445,16 @@ const TokenSummary = memo(({ token }) => {
             {trustStatus === 'loading' ? <Loader2 size={14} className="animate-spin" /> : null}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
+          <button
+            onClick={() => setShowInfo(true)}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+            )}
+            title="Technical Info"
+          >
+            <Info size={16} />
+          </button>
         </div>
         <div className="flex items-center gap-1.5">
           <Share token={token} />
@@ -464,6 +482,92 @@ const TokenSummary = memo(({ token }) => {
             <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
             <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
             <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
+          </div>
+        </div>
+      )}
+
+      {/* Technical Info Modal */}
+      {showInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInfo(false)}>
+          <div
+            className={cn("w-full max-w-lg rounded-xl border-[1.5px] p-5", isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>Technical Information</span>
+              <button onClick={() => setShowInfo(false)} className={cn("p-1 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                <X size={16} className={isDark ? "text-white/60" : "text-gray-500"} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'MD5 Hash', value: md5 },
+                { label: 'Currency Code', value: currency },
+                { label: 'Issuer Address', value: issuer },
+                { label: 'Trustlines', value: trustlines ? fNumber(trustlines) : '0', noCopy: true }
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>{item.label}</div>
+                  <div className={cn("flex items-center gap-2 font-mono text-[12px] p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <span className={cn("flex-1 break-all", isDark ? "text-white/80" : "text-gray-700")}>{item.value}</span>
+                    {!item.noCopy && (
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(item.value); }}
+                        className={cn("p-1 rounded hover:bg-white/10 flex-shrink-0", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* API Section */}
+              <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+                <button
+                  onClick={() => setShowApi(!showApi)}
+                  className={cn("flex items-center justify-between w-full text-left", isDark ? "text-white/60 hover:text-white" : "text-gray-600 hover:text-gray-900")}
+                >
+                  <span className="text-[10px] uppercase tracking-wide">API Endpoints</span>
+                  <span className="text-[10px]">{showApi ? '▲' : '▼'}</span>
+                </button>
+                {showApi && (
+                  <div className="space-y-2 mt-3">
+                    {[
+                      { label: 'Token Info', url: `https://api.xrpl.to/api/token/${md5}` },
+                      { label: 'Rich List', url: `https://api.xrpl.to/api/richlist/${md5}` },
+                      { label: 'Order Book', url: `https://api.xrpl.to/api/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
+                      { label: 'Trade History', url: `https://api.xrpl.to/api/history?token=${md5}` },
+                      { label: 'OHLC Data', url: `https://api.xrpl.to/api/ohlc/${md5}` },
+                      { label: 'Top Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
+                      { label: 'AMM Pools', url: `https://api.xrpl.to/api/amm-pools?issuer=${issuer}&currency=${currency}` },
+                      { label: 'Swap Quote (POST)', url: `https://api.xrpl.to/api/dex/quote` },
+                      { label: 'Pair Rates', url: `https://api.xrpl.to/api/pair_rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
+                    ].map((endpoint) => (
+                      <div key={endpoint.label} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div className="flex-1 min-w-0">
+                          <div className={cn("text-[9px] uppercase mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>{endpoint.label}</div>
+                          <div className={cn("font-mono text-[11px] break-all", isDark ? "text-primary" : "text-blue-600")}>{endpoint.url}</div>
+                        </div>
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(endpoint.url); }}
+                          className={cn("p-1 rounded hover:bg-white/10 flex-shrink-0", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                        >
+                          <Copy size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    <a
+                      href="/docs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn("block text-center text-[11px] mt-3 py-2 rounded-lg transition-colors", isDark ? "text-primary hover:bg-primary/10" : "text-blue-600 hover:bg-blue-50")}
+                    >
+                      Read API Docs →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
