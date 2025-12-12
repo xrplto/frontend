@@ -453,6 +453,433 @@ export default function PriceStatistics({ token, isDark = false }) {
 
       <StyledTable size="small" style={{ marginTop: '4px' }}>
         <TableBody>
+          {/* ========== MARKET METRICS GROUP ========== */}
+
+          {/* Fully Diluted Market Cap Row */}
+          <TableRow>
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
+                }}
+                noWrap
+              >
+                Fully Diluted Market Cap
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: '#3b82f6',
+                  fontSize: '12px'
+                }}
+              >
+                {currencySymbols[activeFiatCurrency]}{' '}
+                {fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
+              </Typography>
+            </ModernTableCell>
+          </TableRow>
+
+          {/* Market Dominance Row */}
+          <TableRow>
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
+                }}
+                noWrap
+              >
+                Volume Dominance
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: '#22c55e',
+                  fontSize: '12px'
+                }}
+              >
+                {(dom || 0).toFixed(6)} %
+              </Typography>
+            </ModernTableCell>
+          </TableRow>
+
+
+          {/* ========== SUPPLY & HOLDERS GROUP ========== */}
+
+          {/* Supply Row */}
+          {amount ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Supply
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: '#FF9800',
+                    fontSize: '12px'
+                  }}
+                >
+                  {fNumber(amount)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+
+          {/* ========== 24H TRADING ACTIVITY GROUP ========== */}
+
+          {/* Trades (24h) Row */}
+          {vol24htx ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Trades (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: '#F57C00',
+                    fontSize: '12px'
+                  }}
+                >
+                  {fNumber(vol24htx)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* Unique Traders (24h) Row */}
+          {uniqueTraders24h ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Unique Traders (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: '#FF9800',
+                    fontSize: '12px'
+                  }}
+                >
+                  {fNumber(uniqueTraders24h)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* ========== BUY/SELL METRICS GROUP ========== */}
+
+
+          {/* Buys (24h) Row */}
+          {buy24hxrp ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Buys (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                  <Typography
+                    isDark={isDark}
+                    variant="body2"
+                    style={{
+                      fontWeight: 400,
+                      color: '#22c55e',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {fNumber(buy24hxrp)} XRP
+                  </Typography>
+                  {buy24htx ? (
+                    <Typography
+                      variant="caption"
+                      style={{
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontSize: '10px'
+                      }}
+                    >
+                      ({fNumber(buy24htx)} tx)
+                    </Typography>
+                  ) : null}
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* Unique Buyers (24h) Row */}
+          {uniqueMakers24h ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Unique Buyers (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: '#22c55e',
+                    fontSize: '12px'
+                  }}
+                >
+                  {fNumber(uniqueMakers24h)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* Sells (24h) Row */}
+          {sell24hxrp ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Sells (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                  <Typography
+                    isDark={isDark}
+                    variant="body2"
+                    style={{
+                      fontWeight: 400,
+                      color: '#ef4444',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {fNumber(sell24hxrp)} XRP
+                  </Typography>
+                  {sell24htx ? (
+                    <Typography
+                      variant="caption"
+                      style={{
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontSize: '10px'
+                      }}
+                    >
+                      ({fNumber(sell24htx)} tx)
+                    </Typography>
+                  ) : null}
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* Unique Sellers (24h) Row */}
+          {uniqueTakers24h ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  Unique Sellers (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: '#ef4444',
+                    fontSize: '12px'
+                  }}
+                >
+                  {fNumber(uniqueTakers24h)}
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* ========== AMM LIQUIDITY GROUP ========== */}
+
+          {/* AMM Deposits (24h) Row */}
+          {deposit24hxrp ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  AMM Deposits (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                  <Typography
+                    isDark={isDark}
+                    variant="body2"
+                    style={{
+                      fontWeight: 400,
+                      color: '#22c55e',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {fNumber(deposit24hxrp)} XRP
+                  </Typography>
+                  {deposit24htx ? (
+                    <Typography
+                      variant="caption"
+                      style={{
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontSize: '10px'
+                      }}
+                    >
+                      ({fNumber(deposit24htx)} tx)
+                    </Typography>
+                  ) : null}
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* AMM Withdrawals (24h) Row */}
+          {withdraw24hxrp ? (
+            <TableRow>
+              <ModernTableCell>
+                <Typography
+                  isDark={isDark}
+                  variant="body2"
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
+                  }}
+                  noWrap
+                >
+                  AMM Withdrawals (24h)
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                  <Typography
+                    isDark={isDark}
+                    variant="body2"
+                    style={{
+                      fontWeight: 400,
+                      color: '#f59e0b',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {fNumber(withdraw24hxrp)} XRP
+                  </Typography>
+                  {withdraw24htx ? (
+                    <Typography
+                      variant="caption"
+                      style={{
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                        fontSize: '10px'
+                      }}
+                    >
+                      ({fNumber(withdraw24htx)} tx)
+                    </Typography>
+                  ) : null}
+                </Stack>
+              </ModernTableCell>
+            </TableRow>
+          ) : null}
+
+          {/* ========== TOKEN INFO GROUP ========== */}
+
           {/* Creator Row */}
           {creator && (
             <TableRow>
@@ -753,515 +1180,6 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
             </TableRow>
           )}
-
-          {/* Volume/Market Cap Row */}
-          <TableRow>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
-                }}
-                noWrap
-              >
-                Volume / Market Cap
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: '#FF9800',
-                  fontSize: '12px'
-                }}
-              >
-                {fNumber(voldivmarket)}
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
-
-          {/* Market Dominance Row */}
-          <TableRow>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
-                }}
-                noWrap
-              >
-                Market Dominance
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: '#22c55e',
-                  fontSize: '12px'
-                }}
-              >
-                {(dom || 0).toFixed(6)} %
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
-
-          {/* Diluted Market Cap Row */}
-          <TableRow>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
-                }}
-                noWrap
-              >
-                Fully Diluted Market Cap
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: '#3b82f6',
-                  fontSize: '12px'
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]}{' '}
-                {fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
-              </Typography>
-            </ModernTableCell>
-          </TableRow>
-
-          {/* Supply Row */}
-          {amount ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Supply
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#FF9800',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(amount)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Trustlines Row */}
-          {trustlines ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Trustlines
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#3b82f6',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(trustlines)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Unique Traders (24h) Row */}
-          {uniqueTraders24h ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Unique Traders (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#FF9800',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(uniqueTraders24h)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Trades (24h) Row */}
-          {vol24htx ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Trades (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#F57C00',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(vol24htx)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Buys (24h) Row */}
-          {buy24hxrp ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Buys (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 400,
-                      color: '#22c55e',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {fNumber(buy24hxrp)} XRP
-                  </Typography>
-                  {buy24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(buy24htx)} tx)
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Sells (24h) Row */}
-          {sell24hxrp ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Sells (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 400,
-                      color: '#ef4444',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {fNumber(sell24hxrp)} XRP
-                  </Typography>
-                  {sell24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(sell24htx)} tx)
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Buy/Sell Ratio Row */}
-          {buyerPressure ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Buy/Sell Ratio
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: buyerPressure >= 1 ? '#22c55e' : '#ef4444',
-                    fontSize: '12px'
-                  }}
-                >
-                  {buyerPressure.toFixed(2)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Unique Buyers (24h) Row */}
-          {uniqueMakers24h ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Unique Buyers (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#22c55e',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(uniqueMakers24h)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Unique Sellers (24h) Row */}
-          {uniqueTakers24h ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Unique Sellers (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#ef4444',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(uniqueTakers24h)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* AMM Deposits (24h) Row */}
-          {deposit24hxrp ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  AMM Deposits (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 400,
-                      color: '#22c55e',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {fNumber(deposit24hxrp)} XRP
-                  </Typography>
-                  {deposit24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(deposit24htx)} tx)
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* AMM Withdrawals (24h) Row */}
-          {withdraw24hxrp ? (
-            <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  AMM Withdrawals (24h)
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 400,
-                      color: '#f59e0b',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {fNumber(withdraw24hxrp)} XRP
-                  </Typography>
-                  {withdraw24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(withdraw24htx)} tx)
-                    </Typography>
-                  ) : null}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
 
           {/* Created Date Row */}
           {date || dateon ? (
