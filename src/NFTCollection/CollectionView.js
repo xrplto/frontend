@@ -280,6 +280,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
 
   const { cost, costb, meta, NFTokenID, rarity_rank, amount, MasterSequence } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
+  const isIPFS = imgUrl?.includes('ipfs.io');
   const name = nft.meta?.name || meta?.Name || 'No Name';
   const isVideo = nft?.meta?.video;
   const isLiked = likedNfts?.includes(NFTokenID);
@@ -343,6 +344,13 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
           {rarity_rank > 0 && (
             <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white backdrop-blur-sm">
               #{fIntNumber(rarity_rank)}
+            </div>
+          )}
+
+          {/* IPFS badge - top right */}
+          {isIPFS && (
+            <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-orange-500/90 text-white backdrop-blur-sm">
+              IPFS
             </div>
           )}
 

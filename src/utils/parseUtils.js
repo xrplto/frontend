@@ -465,6 +465,11 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
         const pathParts = ipfsPath.split('/');
         const encodedPath = pathParts.map(encodeURIComponent).join('/');
         return `https://ipfs.io/ipfs/${encodedPath}`;
+      } else if (metaUrl.startsWith('Qm') || metaUrl.startsWith('bafy')) {
+        // Raw IPFS CID (v0 starts with Qm, v1 starts with bafy)
+        const pathParts = metaUrl.split('/');
+        const encodedPath = pathParts.map(encodeURIComponent).join('/');
+        return `https://ipfs.io/ipfs/${encodedPath}`;
       }
       return metaUrl;
     }
