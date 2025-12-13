@@ -515,6 +515,11 @@ export const getNftFilesUrls = (nft, type = 'image') => {
         const pathParts = ipfsPath.split('/');
         const encodedPath = pathParts.map(encodeURIComponent).join('/');
         metaUrl = `https://ipfs.io/ipfs/${encodedPath}`;
+      } else if (metaUrl.startsWith('Qm') || metaUrl.startsWith('bafy')) {
+        // Raw IPFS CID (v0 starts with Qm, v1 starts with bafy)
+        const pathParts = metaUrl.split('/');
+        const encodedPath = pathParts.map(encodeURIComponent).join('/');
+        metaUrl = `https://ipfs.io/ipfs/${encodedPath}`;
       }
       return [{ cachedUrl: metaUrl, type }];
     }
