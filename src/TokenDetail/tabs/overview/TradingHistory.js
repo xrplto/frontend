@@ -923,7 +923,17 @@ const formatTradeValue = (value) => {
 };
 
 const formatPrice = (value) => {
+  // Handle null, undefined, NaN, Infinity
+  if (value == null || !Number.isFinite(value)) {
+    return '-';
+  }
+
   const numValue = typeof value === 'string' ? Number(value) : value;
+
+  // Double-check after conversion
+  if (!Number.isFinite(numValue)) {
+    return '-';
+  }
 
   if (Math.abs(numValue) < 0.000001) {
     return numValue.toFixed(12);
@@ -2003,7 +2013,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const calculatePrice = useCallback((trade) => {
     const xrpAmount = trade.got.currency === 'XRP' ? trade.got.value : trade.paid.value;
     const tokenAmount = trade.got.currency === 'XRP' ? trade.paid.value : trade.got.value;
-    return parseFloat(xrpAmount) / parseFloat(tokenAmount);
+    const parsedToken = parseFloat(tokenAmount);
+    // Return null if token amount is zero or invalid to avoid Infinity
+    if (!parsedToken || parsedToken === 0) {
+      return null;
+    }
+    return parseFloat(xrpAmount) / parsedToken;
   }, []);
 
   // Memoized trade list rendering
@@ -2011,10 +2026,26 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // Helper to get display address for a trade
     const getTradeAddress = (t) => {
       if (!t) return null;
-      const isLiq = t.isLiquidity;
-      let addr = isLiq ? t.account : t.taker;
-      if (!isLiq && amm && t.taker === amm) addr = t.maker;
-      return addr;
+
+      // For liquidity events, use account field
+      if (t.isLiquidity) {
+        return t.account || null;
+      }
+
+      // For regular trades, prefer taker unless it's the AMM
+      let addr = t.taker;
+
+      // If taker is the AMM or missing, use maker instead
+      if (!addr || (amm && addr === amm)) {
+        addr = t.maker;
+      }
+
+      // Final fallback: try account field if exists (some trade types may use it)
+      if (!addr) {
+        addr = t.account;
+      }
+
+      return addr || null;
     };
 
     // Pre-compute which addresses appear more than once and assign colors

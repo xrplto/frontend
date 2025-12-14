@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { throttle, fVolume } from 'src/utils/formatters';
+import { throttle, fVolume, fNumber } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
@@ -260,14 +260,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Helper to extract marketcap value (can be object with amount or number)
   const getMcap = (mcap) => typeof mcap === 'object' ? mcap?.amount || 0 : mcap || 0;
 
-  // Helper to format marketcap with user's selected currency
+  // Helper to format marketcap with user's selected currency (matches TokenSummary)
   const exchRate = metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
+  const formatMcapValue = (v) => {
+    if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
+    if (v >= 999500) return `${(v / 1e6).toFixed(1)}M`;
+    if (v >= 999.5) return `${(v / 1e3).toFixed(1)}K`;
+    return fNumber(v);
+  };
   const formatMcap = (mcapXrp) => {
     if (!mcapXrp) return '0';
-    // API returns marketcap in XRP, convert if needed
     const value = activeFiatCurrency === 'XRP' ? mcapXrp : mcapXrp / exchRate;
     const symbol = activeFiatCurrency === 'XRP' ? '✕' : (currencySymbols[activeFiatCurrency]?.trim() || '$');
-    return `${symbol}${fVolume(value)}`;
+    return `${symbol}${formatMcapValue(value)}`;
   };
   const baseText = 'Search for ';
 
