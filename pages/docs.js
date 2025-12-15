@@ -818,7 +818,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 {[
                   ['GET', '/api/amm-pools', 'AMM pools with metrics (sortBy: fees|apy|liquidity|volume|created)'],
                   ['GET', '/api/pairs/{md5}', 'Trading pairs for token'],
-                  ['GET', '/api/pair_rates', 'Exchange rates (base, quote)']
+                  ['GET', '/api/pair-rates', 'Exchange rates (base, quote)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>

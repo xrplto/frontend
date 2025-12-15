@@ -569,15 +569,19 @@ const BarCell = styled.div`
     transform: translateY(-50%);
     height: 22px;
     width: ${props => Math.min(100, Math.max(8, props.barWidth || 0))}%;
-    background: ${props => props.isBuy
+    background: ${props => props.isLP
       ? (props.isDark
-          ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
-          : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)')
-      : (props.isDark
-          ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
-          : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)')};
+          ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.18) 100%)'
+          : 'linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(139, 92, 246, 0.14) 100%)')
+      : props.isBuy
+        ? (props.isDark
+            ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
+            : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)')
+        : (props.isDark
+            ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
+            : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)')};
     border-radius: 4px;
-    border-left: 2px solid ${props => props.isBuy
+    border-left: 2px solid ${props => props.isLP ? 'rgba(139, 92, 246, 0.5)' : props.isBuy
       ? (props.isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(34, 197, 94, 0.5)')
       : (props.isDark ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.5)')};
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2082,26 +2086,28 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const addressToShow = getTradeAddress(trade);
       const dotColor = getAddressDotColor(trade);
 
-      // Liquidity type label
-      const getLiquidityLabel = (type) => {
-        if (type === 'deposit') return 'ADD';
-        if (type === 'withdraw') return 'REMOVE';
-        if (type === 'create') return 'CREATE';
-        return type?.toUpperCase() || 'LIQ';
+      // Simple liquidity label
+      const getLiquidityLabel = () => {
+        if (trade.type === 'withdraw') return 'Remove';
+        return 'Add';
       };
 
       // Mobile card layout - compact single row
       if (isMobile) {
         return (
-          <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
+          <Card key={trade._id || trade.id || index} isNew={newTradeIds.has(trade._id || trade.id)} isDark={isDark}>
             <VolumeIndicator volume={volumePercentage} isDark={isDark} />
             <CardContent>
               <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                 {/* Left: Type + Time */}
-                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '75px' }}>
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '75px' }}>
                   {isLiquidity ? (
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: trade.type === 'deposit' || trade.type === 'create' ? '#8b5cf6' : '#f59e0b' }}>
-                      {getLiquidityLabel(trade.type)}
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      color: trade.type === 'withdraw' ? '#f59e0b' : '#8b5cf6'
+                    }}>
+                      {getLiquidityLabel()}
                     </span>
                   ) : (
                     <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
@@ -2140,7 +2146,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
 
       return (
-        <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
+        <Card key={trade._id || trade.id || index} isNew={newTradeIds.has(trade._id || trade.id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
             <Box style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`, gap: '8px', alignItems: 'center' }}>
               {/* Time */}
@@ -2150,8 +2156,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
               {/* Type */}
               {isLiquidity ? (
-                <span style={{ fontSize: '12px', fontWeight: 500, color: trade.type === 'deposit' || trade.type === 'create' ? '#8b5cf6' : '#f59e0b' }}>
-                  {getLiquidityLabel(trade.type)}
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: trade.type === 'withdraw' ? '#f59e0b' : '#8b5cf6'
+                }}>
+                  {getLiquidityLabel()}
                 </span>
               ) : (
                 <span style={{ fontSize: '12px', fontWeight: 500, color: isBuy ? '#22c55e' : '#ef4444' }}>
@@ -2165,14 +2175,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </span>
 
               {/* Amount with colored bar */}
-              <BarCell barWidth={barWidth} isBuy={isBuy} isDark={isDark}>
+              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(amountData.currency)}</span>
                 </span>
               </BarCell>
 
               {/* Value with colored bar */}
-              <BarCell barWidth={barWidth} isBuy={isBuy} isDark={isDark}>
+              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
                 </span>
@@ -2222,8 +2232,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Animal tier icon - toggles inline details */}
               {(() => {
                 const { Icon } = getTradeSizeInfo(xrpAmount);
+                const tradeId = trade._id || trade.id;
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => setExpandedTradeId(expandedTradeId === trade._id ? null : trade._id)}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => setExpandedTradeId(expandedTradeId === tradeId ? null : tradeId)}>
                     <Icon size={16} isDark={isDark} />
                   </div>
                 );
@@ -2231,7 +2242,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </Box>
           </CardContent>
           {/* Inline expanded details */}
-          {expandedTradeId === trade._id && (
+          {expandedTradeId === (trade._id || trade.id) && (
             <TradeDetails trade={trade} account={addressToShow} isDark={isDark} onClose={() => setExpandedTradeId(null)} />
           )}
         </Card>

@@ -544,7 +544,7 @@ const TokenSummary = memo(({ token }) => {
                       { label: 'Top Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
                       { label: 'AMM Pools', url: `https://api.xrpl.to/api/amm-pools?issuer=${issuer}&currency=${currency}` },
                       { label: 'Swap Quote (POST)', url: `https://api.xrpl.to/api/dex/quote` },
-                      { label: 'Pair Rates', url: `https://api.xrpl.to/api/pair_rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
+                      { label: 'Pair Rates', url: `https://api.xrpl.to/api/pair-rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
                     ].map((endpoint) => (
                       <div key={endpoint.label} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
                         <div className="flex-1 min-w-0">

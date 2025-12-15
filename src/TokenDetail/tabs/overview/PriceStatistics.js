@@ -604,9 +604,8 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* ========== BUY/SELL METRICS GROUP ========== */}
 
 
-          {/* Buys (24h) Row */}
-          {buy24hxrp ? (
-            <TableRow>
+          {/* Buys (24h) Row - Always show */}
+          <TableRow>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -632,27 +631,23 @@ export default function PriceStatistics({ token, isDark = false }) {
                       fontSize: '12px'
                     }}
                   >
-                    {fNumber(buy24hxrp)} XRP
+                    {fNumber(buy24hxrp || 0)} XRP
                   </Typography>
-                  {(buyTxns24h || buy24htx) ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(buyTxns24h || buy24htx)} tx)
-                    </Typography>
-                  ) : null}
+                  <Typography
+                    variant="caption"
+                    style={{
+                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                      fontSize: '10px'
+                    }}
+                  >
+                    ({fNumber(buyTxns24h || buy24htx || 0)} tx)
+                  </Typography>
                 </Stack>
               </ModernTableCell>
             </TableRow>
-          ) : null}
 
-          {/* Unique Buyers (24h) Row */}
-          {uniqueBuyers24h ? (
-            <TableRow>
+          {/* Unique Buyers (24h) Row - Always show */}
+          <TableRow>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -677,15 +672,13 @@ export default function PriceStatistics({ token, isDark = false }) {
                     fontSize: '12px'
                   }}
                 >
-                  {fNumber(uniqueBuyers24h)}
+                  {fNumber(uniqueBuyers24h || 0)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          ) : null}
 
-          {/* Sells (24h) Row */}
-          {sell24hxrp ? (
-            <TableRow>
+          {/* Sells (24h) Row - Always show */}
+          <TableRow>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -711,27 +704,23 @@ export default function PriceStatistics({ token, isDark = false }) {
                       fontSize: '12px'
                     }}
                   >
-                    {fNumber(sell24hxrp)} XRP
+                    {fNumber(sell24hxrp || 0)} XRP
                   </Typography>
-                  {(sellTxns24h || sell24htx) ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
-                      }}
-                    >
-                      ({fNumber(sellTxns24h || sell24htx)} tx)
-                    </Typography>
-                  ) : null}
+                  <Typography
+                    variant="caption"
+                    style={{
+                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                      fontSize: '10px'
+                    }}
+                  >
+                    ({fNumber(sellTxns24h || sell24htx || 0)} tx)
+                  </Typography>
                 </Stack>
               </ModernTableCell>
             </TableRow>
-          ) : null}
 
-          {/* Unique Sellers (24h) Row */}
-          {uniqueSellers24h ? (
-            <TableRow>
+          {/* Unique Sellers (24h) Row - Always show */}
+          <TableRow>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -756,11 +745,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                     fontSize: '12px'
                   }}
                 >
-                  {fNumber(uniqueSellers24h)}
+                  {fNumber(uniqueSellers24h || 0)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
-          ) : null}
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
 

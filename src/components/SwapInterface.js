@@ -1060,7 +1060,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       // Get dynamic exchange rates from API
       axios
-        .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
+        .get(`${BASE_URL}/pair-rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
