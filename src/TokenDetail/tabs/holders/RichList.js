@@ -107,8 +107,8 @@ const RichList = ({ token, amm }) => {
   // HTTP fetch for pagination/search (skip when WS handles page 1)
   useEffect(() => {
     if (!mobileChecked) return;
-    // Skip HTTP fetch if WebSocket handles page 1 without search
-    if (page === 1 && !searchTerm && wsRef.current) return;
+    // Skip HTTP fetch if WebSocket is connected and handles page 1 without search
+    if (page === 1 && !searchTerm && wsConnected) return;
 
     const controller = new AbortController();
     let mounted = true;
@@ -121,7 +121,7 @@ const RichList = ({ token, amm }) => {
 
       setLoading(true);
       try {
-        let url = `https://api.xrpl.to/api/richlist/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
+        let url = `https://api.xrpl.to/api/rich-list/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
         if (searchTerm.length >= 3) {
           url += `&search=${encodeURIComponent(searchTerm)}`;
         }

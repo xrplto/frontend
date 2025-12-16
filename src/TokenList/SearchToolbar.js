@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
-import { Flame, Gem, TrendingUp, Sparkles, Eye, Search, X } from 'lucide-react';
+import { Flame, Gem, TrendingUp, Sparkles, Eye, Search, X, Star } from 'lucide-react';
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -968,7 +968,17 @@ const SearchToolbar = memo(function SearchToolbar({
       {/* Navigation buttons and chips - second row */}
       <Row spaceBetween>
         <RowContent>
-          <ButtonGroup>
+          <StyledIconButton
+            onClick={() => (window.location.href = '/watchlist')}
+            darkMode={darkMode}
+            selected={router.pathname === '/watchlist'}
+            title="Watchlist"
+            aria-label="View watchlist"
+          >
+            <Star size={16} />
+          </StyledIconButton>
+
+          <ButtonGroup darkMode={darkMode}>
             <button
               className={currentView === 'tokens' ? 'selected' : ''}
               onClick={() => (window.location.href = '/')}

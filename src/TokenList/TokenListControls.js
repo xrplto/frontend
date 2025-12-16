@@ -21,13 +21,11 @@ const StyledTableCell = styled.th`
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: ${(props) => (props.isMobile ? '14px 8px' : '16px 12px')};
+  padding: ${(props) => (props.isMobile ? '12px 6px' : '14px 4px')};
   border-bottom: 1px solid
     ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
-  white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
+  white-space: nowrap;
   text-align: ${(props) => props.align || 'left'};
-  width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isTokenColumn ? '220px' : props.width || 'auto')};
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
@@ -35,27 +33,22 @@ const StyledTableCell = styled.th`
   z-index: ${(props) => (props.sticky ? 101 : 'auto')};
   background: ${(props) => (props.sticky ? (props.darkMode ? '#0a0a0a' : '#fff') : 'transparent')};
   font-family: inherit;
-  overflow: visible !important;
   transition: color 0.15s ease;
+  width: ${(props) => (props.width ? `${props.width}px` : 'auto')};
+  max-width: ${(props) => (props.width ? `${props.width}px` : 'none')};
+  /* DEBUG */ outline: 1px solid rgba(255, 255, 0, 0.5);
+
+  &:first-of-type {
+    padding-left: 12px;
+  }
+
+  &:last-of-type {
+    padding-right: 12px;
+  }
 
   &:hover {
     color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit')};
   }
-
-  ${(props) =>
-    props.scrollLeft &&
-    props.stickyThird &&
-    `
-    &::after {
-      content: "";
-      position: absolute;
-      right: -1px;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      background: ${props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-    }
-  `}
 `;
 
 const SortIndicator = styled.span`
@@ -302,163 +295,22 @@ const CenterBox = styled.div`
 `;
 
 const DESKTOP_TABLE_HEAD = [
-  {
-    id: 'star',
-    label: '',
-    align: 'center',
-    width: '40px',
-    order: false,
-    sticky: false,
-    mobileHide: true
-  },
-  {
-    id: 'rank',
-    label: '#',
-    align: 'center',
-    width: '40px',
-    order: false,
-    sticky: false,
-    mobileHide: true
-  },
-  {
-    id: 'token',
-    label: 'TOKEN',
-    align: 'left',
-    width: '250px',
-    order: true,
-    sticky: false,
-    mobileHide: false
-  },
-  {
-    id: 'exch',
-    label: 'PRICE',
-    align: 'right',
-    width: '8%',
-    order: true,
-    sticky: false,
-    mobileHide: false
-  },
-  {
-    id: 'pro5m',
-    label: '5M %',
-    align: 'right',
-    width: '7%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: '5-minute price change'
-  },
-  {
-    id: 'pro1h',
-    label: '1H %',
-    align: 'right',
-    width: '7%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: '1-hour price change'
-  },
-  {
-    id: 'pro24h',
-    label: '24H %',
-    align: 'right',
-    width: '7%',
-    order: true,
-    sticky: false,
-    mobileHide: false,
-    tooltip: '24-hour price change'
-  },
-  {
-    id: 'pro7d',
-    label: '7D %',
-    align: 'right',
-    width: '7%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: '7-day price change'
-  },
-  {
-    id: 'vol24hxrp',
-    label: 'VOL (24H)',
-    align: 'right',
-    width: '8%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: '24-hour trading volume'
-  },
-  {
-    id: 'dateon',
-    label: 'CREATED',
-    align: 'right',
-    width: '8%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: 'Token creation date'
-  },
-  {
-    id: 'vol24htx',
-    label: 'TRADES',
-    align: 'right',
-    width: '7%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: '24-hour trade count'
-  },
-  {
-    id: 'tvl',
-    label: 'LIQUIDITY',
-    align: 'right',
-    width: '10%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: 'Total liquidity in DEX pools'
-  },
-  {
-    id: 'marketcap',
-    label: 'MARKET CAP',
-    align: 'right',
-    width: '10%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: 'Price × circulating supply'
-  },
-  {
-    id: 'holders',
-    label: 'HOLDERS',
-    align: 'right',
-    width: '10%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: 'Unique wallet addresses holding this token'
-  },
-  {
-    id: 'origin',
-    label: 'SOURCE',
-    align: 'right',
-    width: '13%',
-    order: true,
-    sticky: false,
-    mobileHide: true,
-    tooltip: 'Token origin/issuer platform',
-    style: { paddingRight: '16px' }
-  },
-  {
-    id: 'historyGraph',
-    label: '24H CHART',
-    align: 'right',
-    width: '15%',
-    order: false,
-    sticky: false,
-    mobileHide: true,
-    style: { paddingLeft: '16px' }
-  }
+  { id: 'star', label: '', align: 'center', order: false, mobileHide: true },
+  { id: 'rank', label: '#', align: 'center', order: false, mobileHide: true },
+  { id: 'token', label: 'TOKEN', align: 'left', order: true, mobileHide: false },
+  { id: 'exch', label: 'PRICE', align: 'right', order: true, mobileHide: false },
+  { id: 'sparkline', label: 'TRENDING 24H', align: 'center', order: false, mobileHide: true, width: 128 },
+  { id: 'pro5m', label: '5M %', align: 'right', order: true, mobileHide: true },
+  { id: 'pro1h', label: '1H %', align: 'right', order: true, mobileHide: true },
+  { id: 'pro24h', label: '24H %', align: 'right', order: true, mobileHide: false },
+  { id: 'pro7d', label: '7D %', align: 'right', order: true, mobileHide: true },
+  { id: 'vol24hxrp', label: 'VOL (24H)', align: 'right', order: true, mobileHide: true },
+  { id: 'dateon', label: 'CREATED', align: 'right', order: true, mobileHide: true },
+  { id: 'vol24htx', label: 'TRADES', align: 'right', order: true, mobileHide: true },
+  { id: 'tvl', label: 'LIQUIDITY', align: 'right', order: true, mobileHide: true },
+  { id: 'marketcap', label: 'MARKET CAP', align: 'right', order: true, mobileHide: true },
+  { id: 'holders', label: 'HOLDERS', align: 'right', order: true, mobileHide: true },
+  { id: 'origin', label: 'SOURCE', align: 'right', order: true, mobileHide: true }
 ];
 
 
@@ -1053,13 +905,19 @@ export const TokenListHead = memo(function TokenListHead({
               >
                 {headCell.order ? (
                   <span>
-                    {headCell.label}
+                    {headCell.id === 'vol24hxrp' ? (
+                      <>Volume <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span></>
+                    ) : (
+                      headCell.label
+                    )}
                     {orderBy === headCell.id && (
                       <SortIndicator active={true} direction={order} darkMode={darkMode}>
                         ▼
                       </SortIndicator>
                     )}
                   </span>
+                ) : headCell.id === 'sparkline' ? (
+                  <span>Trendline <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span></span>
                 ) : (
                   headCell.label
                 )}

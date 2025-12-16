@@ -20,9 +20,10 @@ const currencySymbols = {
 // Simple cache for sparkline data
 const sparklineCache = new Map();
 
-// Inline Sparkline - SVG based
+// Inline Sparkline - SVG based with filled area like Orb design
 const SparklineChart = memo(({ url }) => {
-  const [path, setPath] = useState('');
+  const [linePath, setLinePath] = useState('');
+  const [areaPath, setAreaPath] = useState('');
   const [color, setColor] = useState('#22c55e');
   const containerRef = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -40,32 +41,38 @@ const SparklineChart = memo(({ url }) => {
     if (!visible || !url) return;
     const cached = sparklineCache.get(url);
     if (cached && Date.now() - cached.ts < 300000) {
-      setPath(cached.path);
+      setLinePath(cached.linePath);
+      setAreaPath(cached.areaPath);
       setColor(cached.color);
       return;
     }
     axios.get(url).then(res => {
       const prices = res.data?.data?.prices?.map(Number) || [];
       if (prices.length < 2) return;
-      const w = 260, h = 44;
+      const w = 120, h = 32;
       const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
-      const pts = prices.map((p, i) => [i / (prices.length - 1) * w, h - ((p - min) / range) * h]);
-      const d = 'M' + pts.map(p => p.join(',')).join('L');
+      const pts = prices.map((p, i) => [i / (prices.length - 1) * w, h - ((p - min) / range) * (h - 4) - 2]);
+      const line = 'M' + pts.map(p => p.join(',')).join('L');
+      const area = line + `L${w},${h}L0,${h}Z`;
       const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
-      sparklineCache.set(url, { path: d, color: c, ts: Date.now() });
-      setPath(d);
+      sparklineCache.set(url, { linePath: line, areaPath: area, color: c, ts: Date.now() });
+      setLinePath(line);
+      setAreaPath(area);
       setColor(c);
     }).catch(() => {});
   }, [visible, url]);
 
+  const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
   return (
-    <div ref={containerRef} style={{ width: '100%' }}>
-      {path ? (
-        <svg width="100%" height="44" viewBox="0 0 260 44" preserveAspectRatio="none" style={{ display: 'block' }}>
-          <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <div ref={containerRef} style={{ width: 120, height: 32 }}>
+      {linePath ? (
+        <svg width="120" height="32" viewBox="0 0 120 32" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path d={areaPath} fill={fillColor} />
+          <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : (
-        <div style={{ width: '100%', height: 44, background: 'rgba(128,128,128,0.05)', borderRadius: 8 }} />
+        <div style={{ width: 120, height: 32, background: 'rgba(128,128,128,0.04)', borderRadius: 4 }} />
       )}
     </div>
   );
@@ -74,37 +81,34 @@ const SparklineChart = memo(({ url }) => {
 SparklineChart.displayName = 'SparklineChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
   cursor: pointer;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  transition: background 0.15s ease;
   ${(props) => props.isNew && `
     background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
-    border-left: 2px solid #22c55e;
   `}
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 12px 8px;
+  padding: 14px 4px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
+  color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
   vertical-align: middle;
-  width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isTokenColumn ? '200px' : 'auto')};
-  letter-spacing: 0.01em;
+  /* DEBUG */ outline: 1px solid rgba(255, 0, 0, 0.4);
 
   &:first-of-type {
     padding-left: 12px;
   }
 
   &:last-of-type {
-    padding-right: 4px;
+    padding-right: 12px;
   }
 `;
 
@@ -160,8 +164,8 @@ const MobilePercentCell = styled.div`
 
 // Shared components with mobile/desktop variations
 const TokenImage = styled.div`
-  width: ${(props) => (props.isMobile ? '28px' : '36px')};
-  height: ${(props) => (props.isMobile ? '28px' : '36px')};
+  width: ${(props) => (props.isMobile ? '32px' : '40px')};
+  height: ${(props) => (props.isMobile ? '32px' : '40px')};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -177,42 +181,38 @@ const TokenDetails = styled.div`
 `;
 
 const TokenName = styled.span`
-  font-weight: 600;
-  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
-  color: ${(props) => props.isDark ? '#FFFFFF' : '#000000'};
-  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
+  font-weight: 500;
+  font-size: ${(props) => (props.isMobile ? '14px' : '15px')};
+  color: ${(props) => props.isDark ? '#FFFFFF' : '#1a1a1a'};
+  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
+  line-height: 1.4;
 `;
 
 const UserName = styled.span`
-  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  opacity: 1;
+  font-size: ${(props) => (props.isMobile ? '12px' : '13px')};
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)'};
   font-weight: 400;
   display: block;
-  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.3;
-  margin-top: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
 `;
 
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (
   <span
     style={{
-      fontWeight: 500,
-      fontSize: isMobile ? '13px' : '14px',
-      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000'),
-      transition: 'color 1s ease-out',
-      letterSpacing: '0.01em'
+      fontWeight: 400,
+      fontSize: isMobile ? '14px' : '15px',
+      color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a'),
+      transition: 'color 0.8s ease-out',
+      fontFamily: 'SF Mono, Monaco, Consolas, monospace'
     }}
   >
     {children}
@@ -220,10 +220,10 @@ const PriceText = ({ flashColor, isDark, isMobile, children }) => (
 );
 
 const PercentText = styled.span`
-  font-weight: 500;
+  font-weight: 400;
   color: ${(props) => props.color};
-  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
-  letter-spacing: 0.01em;
+  font-size: ${(props) => (props.isMobile ? '14px' : '14px')};
+  font-family: SF Mono, Monaco, Consolas, monospace;
 `;
 
 const truncate = (str, n) => {
@@ -440,20 +440,12 @@ const MobileTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#22c55e' : '#16a34a';
-    return value < 0
-      ? '#ef4444'
-      : '#22c55e';
+      return darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+    return value < 0 ? '#c75050' : '#22a86b';
   };
 
-  const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#000000';
-    if (mcap >= 5e6) return '#22c55e';
-    if (mcap >= 1e6) return '#22c55e';
-    if (mcap >= 1e5) return '#3b82f6';
-    if (mcap >= 1e4) return '#eab308';
-    if (mcap >= 1e3) return '#f97316';
-    return '#ef4444';
+  const getMarketCapColor = () => {
+    return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -530,7 +522,7 @@ const MobileTokenRow = ({
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt={name || 'Token'}
-            size={28}
+            size={32}
             onError={() => setImgError(true)}
             priority={false}
             md5={md5}
@@ -602,20 +594,12 @@ const DesktopTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#22c55e' : '#16a34a';
-    return value < 0
-      ? '#ef4444'
-      : '#22c55e';
+      return darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+    return value < 0 ? '#c75050' : '#22a86b';
   };
 
-  const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#000000';
-    if (mcap >= 5e6) return '#22c55e';
-    if (mcap >= 1e6) return '#22c55e';
-    if (mcap >= 1e5) return '#3b82f6';
-    if (mcap >= 1e4) return '#eab308';
-    if (mcap >= 1e3) return '#f97316';
-    return '#ef4444';
+  const getMarketCapColor = () => {
+    return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
   };
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -628,24 +612,23 @@ const DesktopTokenRow = ({
         isDark={darkMode}
         isTokenColumn={true}
         style={{
-          width: '220px',
-          minWidth: '220px',
-          maxWidth: '220px'
+          width: 'auto',
+          paddingRight: '8px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TokenImage isDark={darkMode}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
-              size={36}
+              size={40}
               onError={() => setImgError(true)}
               priority={false}
               md5={md5}
             />
           </TokenImage>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <TokenName isDark={darkMode} title={name}>{truncate(name, 18)}</TokenName>
+          <div style={{ minWidth: 0 }}>
+            <TokenName isDark={darkMode} title={name}>{truncate(name, 16)}</TokenName>
             <UserName isDark={darkMode} title={user}>{truncate(user, 12)}</UserName>
           </div>
         </div>
@@ -654,29 +637,18 @@ const DesktopTokenRow = ({
 
     const priceCell = (() => {
       const rawPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-      if (rawPrice && rawPrice < 0.01) {
-        const str = rawPrice.toFixed(15);
-        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-        if (zeros >= 4) {
-          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-          return (
-            <StyledCell align="right" isDark={darkMode}>
-              <PriceText flashColor={flashColor} isDark={darkMode}>
-                <span>
-                  {currencySymbols[activeFiatCurrency]}0.0
-                  <sub style={{ fontSize: '0.6em' }}>{zeros}</sub>
-                  {significant.slice(0, 4)}
-                </span>
-              </PriceText>
-            </StyledCell>
-          );
-        }
-      }
-      const formattedPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
+      // Format price like Orb - clean comma separators
+      const formatOrbPrice = (price) => {
+        if (!price || isNaN(price)) return '0.00';
+        if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (price >= 1) return price.toFixed(2);
+        if (price >= 0.01) return price.toFixed(4);
+        return price.toFixed(6);
+      };
       return (
-        <StyledCell align="right" isDark={darkMode}>
+        <StyledCell align="right" isDark={darkMode} style={{ minWidth: 100 }}>
           <PriceText flashColor={flashColor} isDark={darkMode}>
-            {currencySymbols[activeFiatCurrency]}{formatPrice(formattedPrice)}
+            {currencySymbols[activeFiatCurrency]}{formatOrbPrice(rawPrice)}
           </PriceText>
         </StyledCell>
       );
@@ -1057,6 +1029,14 @@ const DesktopTokenRow = ({
           <>
             {tokenCell}
             {priceCell}
+            {/* Trendline after price */}
+            <td style={{ padding: '14px 4px', width: 128, maxWidth: 128, outline: '1px solid rgba(0, 255, 0, 0.5)' }}>
+              {sparklineUrl ? (
+                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+              ) : (
+                <div style={{ width: 120, height: 32, background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: 4 }} />
+              )}
+            </td>
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
@@ -1090,7 +1070,7 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.volume)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+              <span style={{ fontSize: '13px', color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -1102,7 +1082,7 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
+              <span style={{ fontWeight: '400', color: getMarketCapColor() }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
@@ -1112,13 +1092,6 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {origin || 'XRPL'}
-            </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
-              {sparklineUrl ? (
-                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
-              ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
-              )}
             </StyledCell>
           </>
         );
@@ -1141,10 +1114,11 @@ const DesktopTokenRow = ({
             onClick={handleWatchlistClick}
             style={{
               cursor: 'pointer',
-              fontSize: '18px',
-              color: watchList.includes(md5) ? '#FFB800' : (darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'),
+              fontSize: '16px',
+              color: watchList.includes(md5) ? '#e85454' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'),
               display: 'inline-block',
-              width: '100%'
+              width: '100%',
+              transition: 'color 0.15s ease'
             }}
           >
             {watchList.includes(md5) ? '★' : '☆'}
@@ -1156,12 +1130,17 @@ const DesktopTokenRow = ({
         align="center"
         isDark={darkMode}
         style={{
-          width: '40px',
-          minWidth: '40px',
-          maxWidth: '40px'
+          width: '50px',
+          minWidth: '50px',
+          maxWidth: '50px'
         }}
       >
-        <span style={{ fontWeight: '400', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>{idx + 1}</span>
+        <span style={{
+          fontWeight: '400',
+          fontSize: '13px',
+          color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+          fontFamily: 'SF Mono, Monaco, Consolas, monospace'
+        }}>{idx + 1}</span>
       </StyledCell>
 
       {renderColumns()}
@@ -1372,15 +1351,15 @@ export const MobileContainer = styled.div`
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
-  padding: 10px 12px;
-  background: ${(props) => props.isDark ? 'rgba(7, 11, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
+  padding: 12px 16px;
+  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)'};
   backdrop-filter: blur(12px);
-  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.2)'};
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   position: sticky;
   top: 0;
   z-index: 10;

@@ -74,13 +74,12 @@ const TableContainer = styled.div`
 `;
 
 const StyledTable = styled.table`
-  table-layout: fixed; /* Fixed layout for consistent spacing */
-  width: 100%;
+  table-layout: auto;
+  width: auto;
+  min-width: 100%;
   border-collapse: collapse;
-  contain: layout style paint;
   margin: 0;
   padding: 0;
-  will-change: auto;
 `;
 
 const StyledTableBody = styled.tbody`
