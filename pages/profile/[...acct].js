@@ -43,6 +43,7 @@ const OverView = ({ account }) => {
   const [tokenSearch, setTokenSearch] = useState('');
   const [hideZeroHoldings, setHideZeroHoldings] = useState(true);
   const [txSearch, setTxSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('tokens');
 
   useEffect(() => {
     // Reset data and loading state when account changes
@@ -399,6 +400,34 @@ const OverView = ({ account }) => {
         </>
         )}
 
+        {/* Tabs */}
+        <div className={cn("flex items-center gap-1 mb-4 border-b", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+          {[
+            { id: 'tokens', label: 'Tokens' },
+            { id: 'nfts', label: 'NFTs' },
+            { id: 'activity', label: 'Activity' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "px-4 py-2.5 text-[13px] font-medium transition-colors relative",
+                activeTab === tab.id
+                  ? (isDark ? "text-white" : "text-gray-900")
+                  : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
+              )}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Tokens Tab */}
+        {activeTab === 'tokens' && (
+        <>
         {/* Holdings */}
         {holdings && holdings.accountActive !== false && (() => {
           const filteredLines = hideZeroHoldings
@@ -558,10 +587,36 @@ const OverView = ({ account }) => {
           </div>
           );
         })()}
+        </>
+        )}
 
+        {/* NFTs Tab */}
+        {activeTab === 'nfts' && (
+          <div className="space-y-4">
+            {/* Mock NFT Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className={cn("rounded-xl border overflow-hidden", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+                  <div className={cn("aspect-square", isDark ? "bg-white/[0.03]" : "bg-black/[0.02]")} />
+                  <div className="p-3">
+                    <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/80" : "text-gray-800")}>NFT #{i}</p>
+                    <p className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Collection</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className={cn("text-center text-[12px] py-4", isDark ? "text-white/30" : "text-gray-400")}>
+              NFT display coming soon
+            </p>
+          </div>
+        )}
+
+        {/* Activity Tab */}
+        {activeTab === 'activity' && (
+        <>
         {/* Transaction History */}
         {txHistory.length > 0 && (
-          <div className="mt-4">
+          <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3 px-1">
               <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-800")}>
                 Account transactions ({filteredTxHistory.length})
@@ -977,6 +1032,13 @@ const OverView = ({ account }) => {
               </div>
             </div>
           </div>
+        )}
+        {txHistory.length === 0 && (
+          <div className={cn("text-center py-10 rounded-xl border", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+            <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No activity yet</p>
+          </div>
+        )}
+        </>
         )}
           </div>
         </div>
