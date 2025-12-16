@@ -59,9 +59,9 @@ const formatMcap = (value) => {
 const Card = styled.div`
   width: 100%;
   height: 100%;
-  padding: ${props => props.isMobile ? '8px' : '12px'};
-  background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'};
+  padding: ${props => props.isMobile ? '10px' : '14px'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   border-radius: 12px;
   position: relative;
   z-index: 1;
@@ -71,7 +71,7 @@ const Card = styled.div`
     inset: 0;
     z-index: 99999;
     border-radius: 0;
-    background: ${props.isDark ? '#000' : '#fff'};
+    background: ${props.isDark ? '#0a0f16' : '#fff'};
     border: none;
     padding: 16px 20px;
     overflow: hidden;
@@ -84,37 +84,40 @@ const Typography = styled.span`
   font-size: ${props => props.variant === 'h6' ? '12px' : '11px'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props =>
-    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)') :
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') :
     props.color === 'warning.main' ? '#f59e0b' :
-    (props.isDark ? '#fff' : '#1a1a1a')
+    (props.isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a')
   };
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  & > button { border-radius: 0; }
-  & > button:first-of-type { border-radius: 6px 0 0 6px; }
-  & > button:last-of-type { border-radius: 0 6px 6px 0; }
-  & > button:not(:first-of-type) { margin-left: -1px; }
+  padding: 2px;
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+  gap: 1px;
+  & > button { border-radius: 6px; border: none; }
 `;
 
 const Button = styled.button`
-  padding: ${props => props.isMobile ? '3px 6px' : '4px 8px'};
+  padding: ${props => props.isMobile ? '4px 6px' : '5px 10px'};
   font-size: ${props => props.isMobile ? '10px' : '11px'};
   min-width: ${props => props.minWidth || 'auto'};
   height: ${props => props.isMobile ? '24px' : '26px'};
-  border-radius: 5px;
-  font-weight: 400;
-  border: 1px solid ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
-  background: ${props => props.isActive ? '#3b82f6' : 'transparent'};
-  color: ${props => props.isActive ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : '#374151')};
+  border-radius: 6px;
+  font-weight: ${props => props.isActive ? 500 : 400};
+  border: none;
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
+  color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  transition: border-color 0.15s;
+  transition: all 0.15s ease;
+  box-shadow: ${props => props.isActive ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    border-color: #3b82f6;
+    background: ${props => props.isActive ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   & svg { width: ${props => props.isMobile ? '11px' : '12px'}; height: ${props => props.isMobile ? '11px' : '12px'}; }
 `;
@@ -761,7 +764,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: ${isMobile ? '105px' : '120px'}; position: absolute; display: none; padding: ${isMobile ? '5px' : '6px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(7,11,18,0.98)' : 'rgba(255,255,255,0.98)'}; backdrop-filter: blur(12px); color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'}; box-shadow: ${isDark ? '0 8px 32px rgba(59,130,246,0.1)' : '0 8px 32px rgba(59,130,246,0.15)'}`;
+    toolTip.style = `width: ${isMobile ? '105px' : '120px'}; position: absolute; display: none; padding: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(10,15,22,0.95)' : 'rgba(255,255,255,0.95)'}; backdrop-filter: blur(8px); color: ${isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a'}; border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 
@@ -1103,27 +1106,26 @@ const PriceChartAdvanced = memo(({ token }) => {
               <Box style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`
+                gap: '6px',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)',
               }}>
                 <span style={{
                   fontSize: '9px',
-                  fontWeight: 500,
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                  fontWeight: 400,
+                  color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.3px'
                 }}>ATH</span>
 
                 {/* Progress bar container */}
                 <Box style={{
                   position: 'relative',
-                  width: isMobile ? '60px' : '80px',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                  width: isMobile ? '50px' : '70px',
+                  height: '4px',
+                  borderRadius: '2px',
+                  background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
                   overflow: 'hidden'
                 }}>
                   {/* Progress fill */}
@@ -1133,23 +1135,19 @@ const PriceChartAdvanced = memo(({ token }) => {
                     top: 0,
                     height: '100%',
                     width: `${progressPercent}%`,
-                    borderRadius: '3px',
-                    background: isNearATH
-                      ? 'linear-gradient(90deg, #22c55e, #4ade80)'
-                      : isCritical
-                        ? 'linear-gradient(90deg, #ef4444, #f87171)'
-                        : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
-                    transition: 'width 0.3s ease'
+                    borderRadius: '2px',
+                    background: isNearATH ? '#22c55e' : isCritical ? '#ef4444' : '#f59e0b',
+                    transition: 'width 0.15s ease'
                   }} />
                 </Box>
 
                 {/* Percentage text */}
                 <span style={{
                   fontSize: '10px',
-                  fontWeight: 500,
+                  fontWeight: 400,
                   fontFamily: 'monospace',
                   color: isNearATH ? '#22c55e' : isCritical ? '#ef4444' : '#f59e0b',
-                  minWidth: '42px',
+                  minWidth: '40px',
                   textAlign: 'right'
                 }}>
                   {athData.percentDown > 0 ? '+' : ''}{athData.percentDown}%
@@ -1158,10 +1156,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                 {/* ATH value */}
                 <span style={{
                   fontSize: '10px',
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                  color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
                   fontFamily: 'monospace',
-                  borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
-                  paddingLeft: '8px'
+                  borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                  paddingLeft: '6px'
                 }}>
                   {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
                 </span>
@@ -1231,9 +1229,9 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Box>
         )}
         {isLoadingMore && (
-          <Box style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '4px', background: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-            <Spinner size={12} color={isDark ? '#fff' : '#1a1a1a'} />
-            <span style={{ fontSize: '10px', color: isDark ? '#fff' : '#1a1a1a' }}>Loading...</span>
+          <Box style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '6px', background: isDark ? 'rgba(10,15,22,0.9)' : 'rgba(255,255,255,0.95)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <Spinner size={11} color={isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'} />
+            <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }}>Loading...</span>
           </Box>
         )}
         {!loading && !(chartType === 'holders' ? holderData?.length : data?.length) && (
@@ -1249,28 +1247,27 @@ const PriceChartAdvanced = memo(({ token }) => {
           onClick={handleFullscreen}
           style={{
             position: 'fixed',
-            top: 20,
-            right: 20,
+            top: 16,
+            right: 16,
             zIndex: 999999,
-            padding: '10px 20px',
-            background: '#ef4444',
+            padding: '8px 16px',
+            background: isDark ? 'rgba(239, 68, 68, 0.9)' : '#ef4444',
             color: '#fff',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            transition: 'transform 0.1s',
+            gap: '6px',
+            fontSize: '13px',
+            fontWeight: 500,
+            transition: 'all 0.15s ease',
           }}
-          onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+          onMouseEnter={(e) => e.target.style.background = '#dc2626'}
+          onMouseLeave={(e) => e.target.style.background = isDark ? 'rgba(239, 68, 68, 0.9)' : '#ef4444'}
         >
-          <Minimize size={18} />
-          Exit Fullscreen
+          <Minimize size={16} />
+          Exit
         </button>,
         document.body
       )}

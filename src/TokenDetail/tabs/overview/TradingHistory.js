@@ -27,18 +27,18 @@ const Stack = styled.div`
 `;
 const Spinner = styled(Loader2)`
   animation: spin 1s linear infinite;
-  color: #147DFE;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'};
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
 `;
 const Typography = styled.div`
-  font-size: ${props => props.variant === 'h6' ? '14px' : props.variant === 'caption' ? '11px' : '12px'};
+  font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'caption' ? '11px' : '12px'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props =>
-    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)') :
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') :
     props.color === 'success.main' ? '#22c55e' :
-    (props.isDark ? '#fff' : '#1a1a1a')};
+    (props.isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a')};
 `;
 
 // Constants
@@ -92,11 +92,11 @@ const TierIconBox = ({ children, isDark }) => (
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '24px',
-    height: '24px',
+    width: '22px',
+    height: '22px',
     borderRadius: '4px',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
-    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+    background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'
   }}>{children}</span>
 );
 
@@ -496,15 +496,15 @@ const LiveIndicator = styled.div`
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)'};
+  border-radius: 6px;
+  background: ${props => props.isDark ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)'};
 `;
 
 const LiveCircle = styled.div`
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #22c55e;
   animation: pulse 2s infinite;
   @keyframes pulse {
     0%, 100% { opacity: 0.6; }
@@ -534,13 +534,13 @@ const CardContent = styled.div`
 
 const TradeTypeChip = styled.div`
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: ${props => props.tradetype === 'BUY' ? '#22c55e' : '#ef4444'};
   width: 36px;
   @media (max-width: 640px) {
-    font-size: 13px;
-    font-weight: 600;
-    width: 42px;
+    font-size: 12px;
+    font-weight: 500;
+    width: 40px;
   }
 `;
 
@@ -643,14 +643,14 @@ const Table = styled.table`
 
 const TableHeader = styled.div`
   display: flex;
-  padding: 10px 0;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  padding: 8px 0;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   & > div {
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 9px;
+    font-weight: 400;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+    letter-spacing: 0.04em;
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)'};
   }
 `;
 
@@ -658,9 +658,9 @@ const TableHead = styled.thead``;
 const TableBody = styled.tbody``;
 const TableRow = styled.tr`
   &:hover {
-    background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+    background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'};
   }
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
 `;
 
 const TableCell = styled.td`
@@ -674,8 +674,9 @@ const TableCell = styled.td`
 
 const TableContainer = styled.div`
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   overflow: auto;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
 `;
 
 const Link = styled.a`
@@ -742,11 +743,11 @@ const FormControlLabel = styled.label`
 
 const Tabs = styled.div`
   display: inline-flex;
-  gap: 0;
-  padding: 0;
-  background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 12px;
+  gap: 2px;
+  padding: 3px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+  border: none;
+  border-radius: 10px;
   margin-bottom: 12px;
   overflow: hidden;
   @media (max-width: 640px) {
@@ -759,49 +760,52 @@ const Tab = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 10px 16px;
-  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent'};
+  gap: 5px;
+  font-size: 12px;
+  font-weight: ${props => props.selected ? 500 : 400};
+  padding: 8px 14px;
+  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
   border: none;
-  border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+  border-radius: 8px;
+  color: ${props => props.selected ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
-  transition: all 0.15s;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+  text-transform: none;
+  letter-spacing: 0;
   white-space: nowrap;
   flex-shrink: 0;
-  &:last-child { border-right: none; }
+  box-shadow: ${props => props.selected ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+    background: ${props => props.selected ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.selected ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   @media (max-width: 640px) {
     flex: 1;
-    padding: 14px 8px;
-    font-size: 11px;
-    gap: 6px;
-    & svg { width: 24px; height: 24px; }
+    padding: 10px 6px;
+    font-size: 10px;
+    gap: 4px;
+    & svg { width: 18px; height: 18px; }
     & > span { display: ${props => props.selected ? 'inline' : 'none'}; }
   }
 `;
 
 const Button = styled.button`
-  padding: ${props => props.size === 'small' ? '4px 10px' : '8px 16px'};
+  padding: ${props => props.size === 'small' ? '4px 10px' : '6px 12px'};
   font-size: 11px;
   font-weight: 400;
-  border-radius: 8px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 6px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
   background: transparent;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: border-color 0.15s;
-  &:hover { border-color: #3b82f6; }
+  transition: all 0.15s ease;
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'};
+  }
 `;
 
 const Dialog = styled.div`
@@ -812,7 +816,7 @@ const Dialog = styled.div`
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.4);
   backdrop-filter: blur(4px);
   display: ${props => props.open ? 'flex' : 'none'};
   align-items: center;
@@ -823,9 +827,8 @@ const Dialog = styled.div`
 `;
 
 const DialogPaper = styled.div`
-  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#ffffff'};
-  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.isDark ? '#0a0f16' : '#ffffff'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
   max-width: 420px;
   width: 100%;
@@ -850,14 +853,15 @@ const DialogContent = styled.div`
 
 const TextField = styled.input`
   width: 100%;
-  padding: 12px 14px;
-  font-size: 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  padding: 10px 12px;
+  font-size: 13px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)'};
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
-  &:focus { outline: none; border-color: rgba(66,133,244,0.5); }
-  &::placeholder { color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)'}; }
+  transition: border-color 0.15s ease;
+  &:focus { outline: none; border-color: rgba(59,130,246,0.4); }
+  &::placeholder { color: ${props => props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)'}; }
 `;
 
 const FormControl = styled.div`

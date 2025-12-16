@@ -227,7 +227,7 @@ const Button = styled.button`
   text-transform: ${props => props.sx?.textTransform || 'none'};
   font-weight: 400;
   border: 1px solid ${props => {
-    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)');
+    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)');
     return 'transparent';
   }};
   background: ${props => {
@@ -247,6 +247,7 @@ const Button = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s ease;
   &:hover {
     background: ${props => {
       if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
@@ -254,8 +255,8 @@ const Button = styled.button`
       return '#2563eb';
     }};
     border-color: ${props => {
-      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)') : 'transparent';
-      if (props.variant === 'outlined' || props.variant === 'text') return '#3b82f6';
+      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') : 'transparent';
+      if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.4)';
       return 'transparent';
     }};
   }
@@ -348,9 +349,11 @@ const IconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.sx?.['&:hover']?.backgroundColor || 'transparent'};
+    background: ${props => props.sx?.['&:hover']?.backgroundColor || (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
   }
   @media (min-width: 600px) {
     padding: ${props => {
@@ -378,14 +381,14 @@ const Alert = styled.div`
   padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 10px` : '6px 10px'};
   border-radius: 8px;
   border: 1px solid ${props => {
-    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.2)';
-    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.2)';
-    return 'rgba(59, 130, 246, 0.2)';
+    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
+    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
+    return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   }};
   background: ${props => {
-    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.05)';
-    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.05)';
-    return 'rgba(59, 130, 246, 0.05)';
+    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.04)';
+    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.04)';
+    return props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)';
   }};
   margin-top: ${props => props.sx?.mt ? `${props.sx.mt * 8}px` : '0'};
 `;
@@ -393,36 +396,37 @@ const Alert = styled.div`
 const Tabs = styled.div`
   display: flex;
   width: fit-content;
-  gap: 4px;
-  padding: 4px;
+  gap: 2px;
+  padding: 3px;
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+  border: none;
   @media (max-width: 600px) {
-    padding: 4px;
-    gap: 4px;
+    padding: 3px;
+    gap: 2px;
   }
 `;
 
 const Tab = styled.button`
-  padding: 6px 16px;
-  font-size: 13px;
+  padding: 6px 14px;
+  font-size: 12px;
   text-transform: none;
-  border: 1px solid transparent;
+  border: none;
   border-radius: 6px;
-  background: ${props => props.isActive ? '#4285f4' : 'transparent'};
-  color: ${props => props.isActive ? '#fff' : (props.isDark ? 'rgba(66,133,244,0.6)' : 'rgba(66,133,244,0.7)')};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
+  color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  box-shadow: ${props => props.isActive ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    background: ${props => props.isActive ? '#4285f4' : 'rgba(66,133,244,0.1)'};
-    border-color: ${props => props.isActive ? 'transparent' : 'rgba(66,133,244,0.2)'};
+    background: ${props => props.isActive ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   @media (max-width: 600px) {
-    padding: 10px 20px;
-    font-size: 15px;
-    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 6px;
   }
 `;
 
@@ -433,12 +437,19 @@ const Select = styled.select`
   }};
   font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '11px'};
   height: ${props => props.sx?.height || 'auto'};
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   border-radius: 6px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#ffffff'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : '#fff'};
   color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#212B36'};
   cursor: pointer;
   outline: none;
+  transition: border-color 0.15s ease;
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  }
+  &:focus {
+    border-color: rgba(59,130,246,0.4);
+  }
 `;
 
 const MenuItem = styled.option`
@@ -485,18 +496,19 @@ const CurrencyContent = styled.div`
   padding: 12px 14px;
   border-radius: 10px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.03)' : 'rgba(59,130,246,0.02)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)'};
   width: 100%;
   justify-content: space-between;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'};
-  transition: border-color 0.2s;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  transition: all 0.15s ease;
   &:focus-within {
-    border-color: #3b82f6;
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+    background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
   }
   @media (max-width: 600px) {
     padding: 14px 16px;
-    margin: 6px 0;
-    border-radius: 12px;
+    margin: 5px 0;
+    border-radius: 10px;
   }
 `;
 
@@ -515,16 +527,16 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
-  padding: 16px;
+  padding: 14px;
   width: 100%;
   min-width: 0;
-  background: transparent;
-  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   @media (max-width: 600px) {
     border-radius: 12px;
-    padding: 16px;
+    padding: 14px;
   }
 `;
 
@@ -546,15 +558,15 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.06)' : '#fff'};
   border-radius: 50%;
   padding: 8px;
   z-index: 1;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'};
-  transition: all 0.2s;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
+  transition: all 0.15s ease;
   &:hover {
-    border-color: #3b82f6;
-    background: rgba(59,130,246,0.15);
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)'};
+    background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)'};
     svg {
       color: #3b82f6 !important;
     }
@@ -566,35 +578,31 @@ const ExchangeButton = styled(Button)`
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  background: #4285f4;
+  background: #3b82f6;
   color: #ffffff;
   font-weight: 500;
-  border: 1.5px solid #4285f4;
+  border: none;
   padding: 12px 16px;
   font-size: 14px;
   text-transform: none;
   margin: 0;
-  letter-spacing: 0.3px;
-  box-shadow: 0 0 20px rgba(66,133,244,0.3);
-  transition: all 0.2s;
+  letter-spacing: 0;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: #3b78e7;
-    border-color: #3b78e7;
-    filter: brightness(1.1);
+    background: #2563eb;
   }
 
   &:disabled {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-    box-shadow: none;
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'};
+    border: none;
   }
 
   @media (max-width: 600px) {
-    padding: 16px 18px;
-    font-size: 16px;
-    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    border-radius: 10px;
   }
 `;
 
@@ -611,15 +619,15 @@ const TokenImage = styled(Image)`
 
 const SummaryBox = styled.div`
   padding: 10px 12px;
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'};
   border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   margin-top: 8px;
   margin-bottom: 4px;
   @media (max-width: 600px) {
-    padding: 14px 16px;
-    border-radius: 12px;
-    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-top: 10px;
   }
 `;
 

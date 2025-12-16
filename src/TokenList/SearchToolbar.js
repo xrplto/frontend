@@ -18,17 +18,16 @@ function getTagValue(tags, tagName) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   border-radius: 12px;
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
-  padding: 8px 12px;
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)')};
+  padding: 10px 14px;
   position: relative;
-  transition: border-color 0.2s ease, background 0.2s ease;
 
   @media (max-width: 600px) {
-    padding: 6px 8px;
-    gap: 6px;
+    padding: 8px 10px;
+    gap: 8px;
   }
 `;
 
@@ -98,12 +97,12 @@ const AllButtonWrapper = styled.div`
 const RowContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
   flex: 1 1 auto;
 
   @media (max-width: 600px) {
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -116,59 +115,58 @@ const RowContent = styled.div`
 `;
 
 const RowsSelector = styled.select`
-  padding: 3px 6px;
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 8px;
+  padding: 0 24px 0 10px;
+  border: none;
+  border-radius: 6px;
   background: ${(props) =>
-    props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
-  color: ${(props) => (props.darkMode ? '#fff' : '#1a1a1a')};
-  font-size: 0.68rem;
+    props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)'};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')};
+  font-size: 0.72rem;
   font-weight: 400;
   cursor: pointer;
-  height: 26px;
-  min-width: 70px;
+  height: 30px;
+  min-width: 60px;
   margin-left: ${(props) => (props.noMargin ? '0' : 'auto')};
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   background-image: ${(props) =>
-    `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
+    props.darkMode
+      ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
+      : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
   background-repeat: no-repeat;
-  background-position: right 6px center;
+  background-position: right 8px center;
   background-size: 12px;
-  padding-right: 24px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
-    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+    background-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)'};
   }
 
   &:focus {
     outline: none;
-    border-color: rgba(59, 130, 246, 0.5);
   }
 
   option {
-    background: ${(props) => (props.darkMode ? '#111827' : '#ffffff')};
+    background: ${(props) => (props.darkMode ? '#1a1a1a' : '#ffffff')};
     color: ${(props) => (props.darkMode ? '#fff' : '#333')};
-    padding: 6px;
+    padding: 8px;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     height: 28px;
-    min-width: 55px;
-    padding-right: 20px;
+    min-width: 50px;
+    padding: 0 20px 0 8px;
     background-size: 10px;
-    background-position: right 4px center;
+    background-position: right 6px center;
   }
 `;
 
 const Stack = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   flex-shrink: 0;
   position: relative;
@@ -235,128 +233,127 @@ const StyledIconButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   padding: 0;
-  border: 1px solid ${(props) =>
-    props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)') : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  border: none;
   border-radius: 8px;
-  background: ${(props) => (props.selected ? (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent')};
-  color: inherit;
+  background: ${(props) => (props.selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent')};
+  color: ${(props) => (props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'))};
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
   flex-shrink: 0;
 
   &:hover {
-    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
   }
 
   @media (max-width: 600px) {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 1px;
+  gap: 2px;
   flex-shrink: 0;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
-  padding: 2px;
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)'};
+  padding: 3px;
   border-radius: 8px;
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border: none;
 
   & > button {
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
-    min-width: 32px;
-    height: 26px;
-    padding: 0 8px;
-    font-size: 0.7rem;
+    min-width: 36px;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 0.72rem;
     font-weight: 400;
     background: transparent;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    color: inherit;
+    gap: 4px;
+    color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: background 0.2s ease;
+    transition: all 0.15s ease;
 
     &:hover {
-      background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
+      color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
+      background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
     }
   }
 
   & > button.selected {
-    background: rgba(59, 130, 246, 0.12);
-    color: #3b82f6;
+    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.95)' : '#fff'};
+    color: ${(props) => props.darkMode ? '#111' : '#333'};
     font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 
     &:hover {
-      background: rgba(59, 130, 246, 0.18);
+      background: ${(props) => props.darkMode ? '#fff' : '#fff'};
     }
   }
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
-    padding: 2px;
+    padding: 3px;
 
     & > button {
       min-width: 32px;
-      height: 26px;
-      padding: 0 6px;
-      font-size: 0.7rem;
-      gap: 2px;
+      height: 24px;
+      padding: 0 8px;
+      font-size: 0.68rem;
+      gap: 3px;
     }
   }
 `;
 
 const Divider = styled.div`
   width: 1px;
-  height: 18px;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  margin: 0 6px;
+  height: 16px;
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  margin: 0 4px;
   flex-shrink: 0;
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
-    margin: 0 4px;
-    height: 16px;
+    margin: 0 2px;
+    height: 14px;
   }
 `;
 
 const Chip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 10px;
-  border: 1px solid;
-  border-color: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
-  color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
-  font-size: 0.7rem;
+  gap: 4px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent'};
+  color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
+  font-size: 0.72rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
   white-space: nowrap;
-  height: 26px;
+  height: 28px;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.1);
     color: #3b82f6;
   }
 
   @media (max-width: 600px) {
-    padding: 4px 8px;
+    padding: 0 8px;
     font-size: 0.7rem;
-    height: 28px;
+    height: 26px;
     gap: 3px;
     display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
@@ -365,32 +362,31 @@ const Chip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 10px;
-  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.4)' : (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};
+  gap: 4px;
+  padding: 0 10px;
+  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 16px;
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
   white-space: nowrap;
-  height: 24px;
+  height: 26px;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
     background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.25);
     color: #3b82f6;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    height: 28px;
-    padding: 4px 10px;
-    gap: 4px;
-    min-width: fit-content;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 0 10px;
+    gap: 3px;
   }
 `;
 
@@ -398,10 +394,10 @@ const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 8px;
-  background: rgba(59, 130, 246, 0.08);
+  padding: 0 12px;
+  border: none;
+  border-radius: 16px;
+  background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
   color: #3b82f6;
   font-size: 0.7rem;
   font-weight: 500;
@@ -410,18 +406,17 @@ const AllTagsButton = styled.button`
   height: 26px;
   flex-shrink: 0;
   margin-left: auto;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(59, 130, 246, 0.2);
   }
 
   @media (max-width: 600px) {
-    font-size: 0.72rem;
-    height: 28px;
-    padding: 4px 12px;
-    gap: 4px;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 0 10px;
+    gap: 3px;
   }
 `;
 

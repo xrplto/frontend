@@ -34,17 +34,17 @@ const Wrapper = styled.div`
 const Controls = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 20px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px;
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   width: 100%;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   }
 `;
 
@@ -89,45 +89,51 @@ const MobileButtonGrid = styled.div`
 `;
 
 const Button = styled.button`
-  padding: 10px 18px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(59,130,246,0.3)' : 'rgba(145,158,171,0.15)'};
-  border-radius: 12px;
-  background: ${p => p.selected ? 'rgba(59,130,246,0.1)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
-  color: ${p => p.selected ? '#3b82f6' : p.darkMode ? '#fff' : '#333'};
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 
-  &:hover {
-    background: ${p => p.selected ? 'rgba(59,130,246,0.15)' : p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
+  &:hover:not(:disabled) {
+    background: ${p => p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
+    color: ${p => p.darkMode ? '#fff' : '#333'};
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 `;
 
 const Select = styled.select`
-  padding: 10px 16px;
-  padding-right: 32px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(59,130,246,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
-  border-radius: 12px;
-  background: ${p => p.selected ? 'rgba(59,130,246,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
-  color: ${p => p.selected ? '#3b82f6' : p.darkMode ? '#fff' : '#333'};
-  font-size: 14px;
-  font-weight: ${p => p.selected ? '600' : '400'};
+  padding: 8px 14px;
+  padding-right: 30px;
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-radius: 8px;
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-  transition: all 0.2s;
+  background-position: right 8px center;
+  background-size: 14px;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${p => p.selected ? 'rgba(59,130,246,0.4)' : p.darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(145,158,171,0.3)'};
+    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
   }
 `;
 

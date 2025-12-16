@@ -31,8 +31,8 @@ import { format } from 'date-fns';
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: 12px;
+  margin-bottom: 12px;
   width: 100%;
   max-width: 100%;
   background: transparent;
@@ -56,7 +56,7 @@ const Stack = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr) 1.5fr;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 
   @media (max-width: 1400px) {
@@ -75,7 +75,7 @@ const Grid = styled.div`
     display: flex;
     overflow-x: auto;
     gap: 8px;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -85,45 +85,44 @@ const Grid = styled.div`
 `;
 
 const MetricBox = styled.div`
-  padding: 14px 16px;
-  height: 88px;
+  padding: 12px 14px;
+  height: 82px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  border-radius: 12px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0, 0, 0, 0.08)'};
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.018)'};
+  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  transition: all 0.15s ease;
 
   &:hover {
     border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.3)'};
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.03)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.04)'};
   }
 
   @media (max-width: 600px) {
     padding: 10px 12px;
-    height: 72px;
+    height: 68px;
     flex: 0 0 auto;
-    min-width: 100px;
-    border-radius: 12px;
+    min-width: 95px;
+    border-radius: 10px;
   }
 `;
 
 const MetricTitle = styled.span`
-  font-size: 0.65rem;
-  font-weight: 500;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.55)'};
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  letter-spacing: 0.02em;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.58rem;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
   line-height: 1;
@@ -131,38 +130,35 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.7rem;
-  color: ${(props) => props.isPositive ? '#22c55e' : '#ef4444'};
+  font-size: 0.68rem;
+  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
   display: inline-flex;
   align-items: center;
   gap: 2px;
   font-weight: 500;
   letter-spacing: -0.01em;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: ${(props) => props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
+    padding: 1px 3px;
   }
 `;
 
 const VolumePercentage = styled.span`
-  font-size: 0.6rem;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)'};
+  font-size: 0.58rem;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)'};
   font-weight: 400;
-  letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.48rem;
-    line-height: 1;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.48rem;
-    line-height: 1;
+    font-size: 0.5rem;
   }
 `;
 
@@ -240,7 +236,7 @@ const CircularProgress = styled.div`
 const ChartMetricBox = styled(MetricBox)`
   grid-column: span 1;
   overflow: visible;
-  height: 88px;
+  height: 82px;
 
   @media (max-width: 1400px) {
     grid-column: span 4;
@@ -408,71 +404,64 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           position: 'fixed',
           left: tooltip.x + 15,
           top: tooltip.y - 60,
-          background: darkMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
+          background: darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(16px)',
           color: darkMode ? '#fff' : '#000',
-          border: darkMode ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(59, 130, 246, 0.3)',
-          borderRadius: '12px',
-          padding: '12px',
-          boxShadow: darkMode ? '0 4px 20px rgba(59, 130, 246, 0.1)' : '0 4px 20px rgba(59, 130, 246, 0.15)',
-          minWidth: '200px',
+          border: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          boxShadow: darkMode ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
+          minWidth: '180px',
           zIndex: 999999,
           pointerEvents: 'none',
-          fontSize: '12px'
+          fontSize: '11px'
         }}
       >
         <div
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             fontWeight: 500,
             marginBottom: '8px',
-            color: '#3b82f6',
-            paddingBottom: '8px',
-            borderBottom: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)'
+            color: darkMode ? 'rgba(255,255,255,0.9)' : '#333',
+            paddingBottom: '6px',
+            borderBottom: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)'
           }}
         >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
-          <span>New Tokens</span>
-          <strong>{tooltip.data.Tokens || 0}</strong>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>New Tokens</span>
+          <span style={{ fontWeight: 500 }}>{tooltip.data.Tokens || 0}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
-          <span>Market Cap</span>
-          <strong>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Market Cap</span>
+          <span style={{ fontWeight: 500 }}>
             {currencySymbols[activeFiatCurrency]}
             {formatNumberWithDecimals(tooltip.data.totalMarketcap || 0)}
-          </strong>
+          </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
-          <span>Avg Holders</span>
-          <strong>{Math.round(tooltip.data.avgHolders || 0)}</strong>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Avg Holders</span>
+          <span style={{ fontWeight: 500 }}>{Math.round(tooltip.data.avgHolders || 0)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
-          <span>Volume 24h</span>
-          <strong>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Volume 24h</span>
+          <span style={{ fontWeight: 500 }}>
             {currencySymbols[activeFiatCurrency]}
             {formatNumberWithDecimals(tooltip.data.totalVolume24h || 0)}
-          </strong>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
-          <span>Avg Market Cap</span>
-          <strong>
-            {currencySymbols[activeFiatCurrency]}
-            {formatNumberWithDecimals(tooltip.data.avgMarketcap || 0)}
-          </strong>
+          </span>
         </div>
         {tooltip.data.platforms &&
           Object.entries(tooltip.data.platforms).filter(([, v]) => v > 0).length > 0 && (
             <>
               <div
                 style={{
-                  borderTop: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)',
-                  margin: '8px 0 4px',
+                  borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                  margin: '6px 0 4px',
                   paddingTop: '6px'
                 }}
               >
-                <strong style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 500 }}>Platforms</strong>
+                <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Platforms</span>
               </div>
               {Object.entries(tooltip.data.platforms)
                 .filter(([, v]) => v > 0)
@@ -483,8 +472,8 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                       display: 'flex',
                       justifyContent: 'space-between',
                       margin: '2px 0',
-                      fontSize: '11px',
-                      opacity: 0.8
+                      fontSize: '10px',
+                      opacity: 0.7
                     }}
                   >
                     <span>{platform}</span>
@@ -497,12 +486,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           <>
             <div
               style={{
-                borderTop: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)',
-                margin: '8px 0 4px',
+                borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                margin: '6px 0 4px',
                 paddingTop: '6px'
               }}
             >
-              <strong style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 500 }}>Top Tokens</strong>
+              <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Top Tokens</span>
             </div>
             {[...tooltip.data.tokensInvolved]
               .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0))
@@ -513,21 +502,19 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  margin: '2px 0',
-                  fontSize: '11px',
-                  opacity: 0.8
+                  margin: '3px 0',
+                  fontSize: '10px'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <div style={{
-                    width: '16px',
-                    height: '16px',
-                    minWidth: '16px',
-                    minHeight: '16px',
-                    borderRadius: '4px',
+                    width: '14px',
+                    height: '14px',
+                    minWidth: '14px',
+                    minHeight: '14px',
+                    borderRadius: '3px',
                     overflow: 'hidden',
-                    background: 'rgba(59, 130, 246, 0.1)',
-                    border: '1px solid rgba(59, 130, 246, 0.2)'
+                    background: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
                   }}>
                     <img
                       src={`https://s1.xrpl.to/token/${token.md5}`}
@@ -542,9 +529,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                       }}
                     />
                   </div>
-                  <span>{token.name}</span>
+                  <span style={{ opacity: 0.8 }}>{token.name}</span>
                 </div>
-                <span>
+                <span style={{ fontWeight: 500 }}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(token.marketcap || 0)}
                 </span>
@@ -957,32 +944,32 @@ export default function Summary() {
                   const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                       <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                         {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
-                        {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
+                        {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                       {!isMobile && (
                         <>
                           <span style={{
-                            fontSize: '9px',
-                            fontWeight: 400,
-                            padding: '0px 3px',
-                            borderRadius: '2px',
-                            background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                            fontSize: '0.58rem',
+                            fontWeight: 500,
+                            padding: '1px 4px',
+                            borderRadius: '4px',
+                            background: 'rgba(16, 185, 129, 0.1)',
                             color: '#10b981'
                           }}>
-                            Stable {stablePercent.toFixed(0)}%
+                            {stablePercent.toFixed(0)}% Stable
                           </span>
                           <span style={{
-                            fontSize: '9px',
-                            fontWeight: 400,
-                            padding: '0px 3px',
-                            borderRadius: '2px',
-                            background: darkMode ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
+                            fontSize: '0.58rem',
+                            fontWeight: 500,
+                            padding: '1px 4px',
+                            borderRadius: '4px',
+                            background: 'rgba(245, 158, 11, 0.1)',
                             color: '#f59e0b'
                           }}>
-                            Meme {memePercent.toFixed(0)}%
+                            {memePercent.toFixed(0)}% Meme
                           </span>
                         </>
                       )}
@@ -1018,24 +1005,24 @@ export default function Summary() {
                   return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{
-                        fontSize: '9px',
-                        fontWeight: 400,
-                        padding: '0px 3px',
-                        borderRadius: '2px',
-                        background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                        fontSize: '0.58rem',
+                        fontWeight: 500,
+                        padding: '1px 4px',
+                        borderRadius: '4px',
+                        background: 'rgba(16, 185, 129, 0.1)',
                         color: '#10b981'
                       }}>
-                        Buy {buyPercent.toFixed(0)}%
+                        {buyPercent.toFixed(0)}% Buy
                       </span>
                       <span style={{
-                        fontSize: '9px',
-                        fontWeight: 400,
-                        padding: '0px 3px',
-                        borderRadius: '2px',
-                        background: darkMode ? 'rgba(239, 68, 68, 0.12)' : 'rgba(239, 68, 68, 0.08)',
+                        fontSize: '0.58rem',
+                        fontWeight: 500,
+                        padding: '1px 4px',
+                        borderRadius: '4px',
+                        background: 'rgba(239, 68, 68, 0.1)',
                         color: '#ef4444'
                       }}>
-                        Sell {(100 - buyPercent).toFixed(0)}%
+                        {(100 - buyPercent).toFixed(0)}% Sell
                       </span>
                     </div>
                   );
@@ -1044,38 +1031,40 @@ export default function Summary() {
 
               <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '16px' : '28px', alignItems: 'baseline' }}>
-                  <MetricValue
-                    style={{
-                      fontSize: isMobile ? '0.95rem' : '1.4rem',
-                      color:
-                        metrics.global?.sentimentScore >= 60
-                          ? '#10b981'
-                          : metrics.global?.sentimentScore >= 40
-                            ? '#fbbf24'
-                            : '#ef4444'
-                    }}
-                  >
-                    {(metrics.global?.sentimentScore || 0).toFixed(0)}
-                  </MetricValue>
-                  <MetricValue
-                    isDark={darkMode}
-                    style={{
-                      fontSize: isMobile ? '0.95rem' : '1.4rem',
-                      color:
-                        (metrics.global?.avgRSI || 50) <= 30
-                          ? '#ef4444'
-                          : (metrics.global?.avgRSI || 50) >= 70
+                <div style={{ display: 'flex', gap: isMobile ? '12px' : '20px', alignItems: 'baseline' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <MetricValue
+                      style={{
+                        fontSize: isMobile ? '0.92rem' : '1.25rem',
+                        color:
+                          metrics.global?.sentimentScore >= 60
                             ? '#10b981'
-                            : darkMode ? '#FFFFFF' : '#212B36'
-                    }}
-                  >
-                    {(metrics.global?.avgRSI || 50).toFixed(0)}
-                  </MetricValue>
-                </div>
-                <div style={{ display: 'flex', gap: isMobile ? '16px' : '28px' }}>
-                  <VolumePercentage isDark={darkMode} style={{ fontSize: isMobile ? '0.5rem' : '0.6rem' }}>Sent</VolumePercentage>
-                  <VolumePercentage isDark={darkMode} style={{ fontSize: isMobile ? '0.5rem' : '0.6rem' }}>RSI</VolumePercentage>
+                            : metrics.global?.sentimentScore >= 40
+                              ? '#fbbf24'
+                              : '#ef4444'
+                      }}
+                    >
+                      {(metrics.global?.sentimentScore || 0).toFixed(0)}
+                    </MetricValue>
+                    <VolumePercentage isDark={darkMode}>Sent</VolumePercentage>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <MetricValue
+                      isDark={darkMode}
+                      style={{
+                        fontSize: isMobile ? '0.92rem' : '1.25rem',
+                        color:
+                          (metrics.global?.avgRSI || 50) <= 30
+                            ? '#ef4444'
+                            : (metrics.global?.avgRSI || 50) >= 70
+                              ? '#10b981'
+                              : darkMode ? '#FFFFFF' : '#212B36'
+                      }}
+                    >
+                      {(metrics.global?.avgRSI || 50).toFixed(0)}
+                    </MetricValue>
+                    <VolumePercentage isDark={darkMode}>RSI</VolumePercentage>
+                  </div>
                 </div>
               </MetricBox>
 

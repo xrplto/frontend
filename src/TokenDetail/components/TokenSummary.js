@@ -330,22 +330,22 @@ const TokenSummary = memo(({ token }) => {
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
+    <div className={cn("rounded-xl border p-4", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
       {/* Row 1: Token Info + Price */}
       <div className="flex items-center justify-between gap-4">
         {/* Left: Token Image + Info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="relative group cursor-pointer flex-shrink-0" onClick={handleGoogleLensSearch}>
             <Image src={tokenImageUrl} alt={name} width={44} height={44} priority unoptimized
-              className="rounded-xl object-cover border-2 border-primary/30"
+              className={cn("rounded-xl object-cover border", isDark ? "border-white/10" : "border-black/[0.08]")}
               onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className={cn("text-[17px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-              {verified && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600")}>Verified</span>}
-              {id && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-600")}>#{id}</span>}
-              <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px]", isDark ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-600")}>
+              {verified && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+              {id && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-white/[0.06] text-white/50" : "bg-black/[0.04] text-gray-500")}>#{id}</span>}
+              <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-white/[0.04] text-white/50" : "bg-black/[0.03] text-gray-500")}>
                 <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />{origin || 'XRPL'}
               </span>
             </div>
@@ -373,50 +373,50 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Row 2: Stats Grid */}
-      <div className={cn("grid grid-cols-4 gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className={cn("grid grid-cols-4 gap-2 mt-4 pt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
         {[
-          { label: 'MCAP', value: formatValue(convertedMarketCap), color: 'text-green-500' },
-          { label: 'VOL 24H', value: formatValue(convertedVolume), color: 'text-red-500' },
-          { label: 'TVL', value: formatValue(convertedTvl), color: 'text-blue-500' },
-          { label: 'HOLDERS', value: formatValue(holders || 0), color: 'text-orange-500', noSymbol: true }
+          { label: 'MCAP', value: formatValue(convertedMarketCap), color: isDark ? 'text-white/90' : 'text-gray-800' },
+          { label: 'VOL 24H', value: formatValue(convertedVolume), color: isDark ? 'text-white/90' : 'text-gray-800' },
+          { label: 'TVL', value: formatValue(convertedTvl), color: isDark ? 'text-white/90' : 'text-gray-800' },
+          { label: 'HOLDERS', value: formatValue(holders || 0), color: isDark ? 'text-white/90' : 'text-gray-800', noSymbol: true }
         ].map((stat) => (
-          <div key={stat.label} className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
-            <div className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>{stat.label}</div>
-            <div className={cn("text-[14px] font-semibold", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
+          <div key={stat.label} className={cn("text-center py-2 px-1 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+            <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{stat.label}</div>
+            <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
           </div>
         ))}
       </div>
 
       {/* Row 3: Price Changes */}
-      <div className="grid grid-cols-4 gap-3 mt-3">
+      <div className="grid grid-cols-4 gap-2 mt-2">
         {priceChanges.map((item) => (
-          <div key={item.label} className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
-            <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>{item.label}</span>
-            <span className={cn("text-[13px] font-semibold ml-1.5", item.value >= 0 ? "text-green-500" : "text-red-500")}>{formatPct(item.value)}</span>
+          <div key={item.label} className="flex items-center justify-center gap-1 py-1.5">
+            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</span>
+            <span className={cn("text-[12px] font-medium px-1.5 py-0.5 rounded", item.value >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10")}>{formatPct(item.value)}</span>
           </div>
         ))}
       </div>
 
       {/* Row 4: 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
-          <span className={cn("text-[10px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/40" : "text-gray-500")}>24H</span>
-          <span className="text-[10px] text-green-500 flex-shrink-0">
+        <div className={cn("flex items-center gap-2.5 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+          <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/35" : "text-gray-400")}>24H</span>
+          <span className="text-[10px] text-green-500/80 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
             {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
           </span>
-          <div className="flex-1 relative py-2">
-            <div className={cn("h-2 rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
-              <div className="absolute inset-x-0 top-2 h-2 rounded-full bg-gradient-to-r from-green-500/40 via-yellow-500/30 to-red-500/40" />
+          <div className="flex-1 relative py-1.5">
+            <div className={cn("h-1.5 rounded-full", isDark ? "bg-white/[0.06]" : "bg-black/[0.04]")}>
+              <div className={cn("absolute inset-x-0 top-1.5 h-1.5 rounded-full", isDark ? "bg-gradient-to-r from-green-500/20 via-white/10 to-red-500/20" : "bg-gradient-to-r from-green-500/15 via-gray-200 to-red-500/15")} />
             </div>
             <div
               className="absolute top-1/2 -translate-y-1/2 z-10"
-              style={{ left: `clamp(0px, calc(${range24h.percent}% - 5px), calc(100% - 10px))` }}
+              style={{ left: `clamp(0px, calc(${range24h.percent}% - 4px), calc(100% - 8px))` }}
             >
-              <div className={cn("w-2.5 h-2.5 rounded-full ring-2", isDark ? "bg-white ring-white/30" : "bg-primary ring-primary/30")} />
+              <div className={cn("w-2 h-2 rounded-full", isDark ? "bg-white/90" : "bg-gray-700")} />
             </div>
           </div>
-          <span className="text-[10px] text-red-500 flex-shrink-0">
+          <span className="text-[10px] text-red-500/80 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
             {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
           </span>
@@ -424,10 +424,10 @@ const TokenSummary = memo(({ token }) => {
       )}
 
       {/* Row 5: Actions */}
-      <div className={cn("flex items-center justify-between gap-3 mt-4 pt-4 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className={cn("flex items-center justify-between gap-2 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
         <div className="flex items-center gap-1.5 relative">
           {trustStatus && trustStatus !== 'loading' && (
-            <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
+            <div className={cn("absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap z-50", isDark ? "bg-white/10 text-white" : "bg-gray-800 text-white")}>
               {trustStatus}
             </div>
           )}
@@ -435,36 +435,36 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleSetTrust}
             disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
             className={cn(
-              "px-4 py-2 rounded-lg text-[12px] font-medium transition-all flex items-center gap-1.5",
+              "px-3 py-1.5 rounded-lg text-[11px] font-normal transition-all flex items-center gap-1.5",
               isRemove
-                ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                : "bg-green-500/10 text-green-500 hover:bg-green-500/20",
+                ? isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/15" : "bg-red-50 text-red-500 hover:bg-red-100"
+                : isDark ? "bg-green-500/10 text-green-400 hover:bg-green-500/15" : "bg-green-50 text-green-500 hover:bg-green-100",
               (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
             )}
           >
-            {trustStatus === 'loading' ? <Loader2 size={14} className="animate-spin" /> : null}
+            {trustStatus === 'loading' ? <Loader2 size={12} className="animate-spin" /> : null}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
           <button
             onClick={() => setShowInfo(true)}
             className={cn(
-              "p-2 rounded-lg transition-all",
-              isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              "p-1.5 rounded-lg transition-all",
+              isDark ? "hover:bg-white/[0.06] text-white/40 hover:text-white/70" : "hover:bg-black/[0.04] text-gray-400 hover:text-gray-600"
             )}
             title="Technical Info"
           >
-            <Info size={16} />
+            <Info size={14} />
           </button>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Share token={token} />
           <Watch token={token} />
           {accountProfile?.admin && (
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
-                isDark ? "border-amber-500/30 text-amber-500 hover:bg-amber-500/10" : "border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                "px-2 py-1 rounded-lg border text-[10px] font-normal transition-all",
+                isDark ? "border-amber-500/20 text-amber-400 hover:bg-amber-500/10" : "border-amber-200 text-amber-600 hover:bg-amber-50"
               )}
             >
               Edit
@@ -475,31 +475,31 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Debug Panel */}
       {debugInfo && (
-        <div className={cn("mt-2 p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
-          <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
+        <div className={cn("mt-2 p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/20 bg-yellow-500/[0.06]" : "border-yellow-200 bg-yellow-50/50")}>
+          <div className={cn("font-medium mb-1 text-[10px]", isDark ? "text-yellow-400/80" : "text-yellow-600")}>Debug:</div>
           <div className="space-y-0.5">
-            <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
-            <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-            <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-            <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
+            <div className={isDark ? "text-white/50" : "text-gray-600"}>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+            <div className={isDark ? "text-white/50" : "text-gray-600"}>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+            <div className={isDark ? "text-white/50" : "text-gray-600"}>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+            <div className={isDark ? "text-white/50" : "text-gray-600"}>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
           </div>
         </div>
       )}
 
       {/* Technical Info Modal */}
       {showInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInfo(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
           <div
             className={cn(
-              "w-full max-w-lg rounded-xl border-[1.5px] p-5 max-h-[80vh] overflow-y-auto",
-              isDark ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50"
+              "w-full max-w-lg rounded-xl border p-5 max-h-[80vh] overflow-y-auto",
+              isDark ? "bg-[#0a0f16] border-white/[0.08]" : "bg-white border-black/[0.08]"
             )}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
               <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>Technical Information</span>
-              <button onClick={() => setShowInfo(false)} className={cn("p-1 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
-                <X size={16} className={isDark ? "text-white/60" : "text-gray-500"} />
+              <button onClick={() => setShowInfo(false)} className={cn("p-1.5 rounded-lg transition-all", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-black/[0.04] text-gray-400")}>
+                <X size={14} />
               </button>
             </div>
             <div className="space-y-3">
@@ -510,28 +510,28 @@ const TokenSummary = memo(({ token }) => {
                 { label: 'Trustlines', value: trustlines ? fNumber(trustlines) : '0', noCopy: true }
               ].map((item) => (
                 <div key={item.label}>
-                  <div className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>{item.label}</div>
-                  <div className={cn("flex items-center gap-2 font-mono text-[12px] p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
-                    <span className={cn("flex-1 break-all", isDark ? "text-white/80" : "text-gray-700")}>{item.value}</span>
+                  <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</div>
+                  <div className={cn("flex items-center gap-2 font-mono text-[11px] p-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-black/[0.02]")}>
+                    <span className={cn("flex-1 break-all", isDark ? "text-white/70" : "text-gray-600")}>{item.value}</span>
                     {!item.noCopy && (
                       <button
                         onClick={() => { navigator.clipboard.writeText(item.value); }}
-                        className={cn("p-1 rounded hover:bg-white/10 flex-shrink-0", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                        className={cn("p-1 rounded transition-all flex-shrink-0", isDark ? "text-white/30 hover:text-white/60 hover:bg-white/[0.06]" : "text-gray-300 hover:text-gray-500 hover:bg-black/[0.04]")}
                       >
-                        <Copy size={12} />
+                        <Copy size={11} />
                       </button>
                     )}
                   </div>
                 </div>
               ))}
               {/* API Section */}
-              <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
                 <button
                   onClick={() => setShowApi(!showApi)}
-                  className={cn("flex items-center justify-between w-full text-left", isDark ? "text-white/60 hover:text-white" : "text-gray-600 hover:text-gray-900")}
+                  className={cn("flex items-center justify-between w-full text-left transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
                 >
-                  <span className="text-[10px] uppercase tracking-wide">API Endpoints</span>
-                  <span className="text-[10px]">{showApi ? '▲' : '▼'}</span>
+                  <span className="text-[9px] uppercase tracking-wide">API Endpoints</span>
+                  <span className="text-[9px]">{showApi ? '▲' : '▼'}</span>
                 </button>
                 {showApi && (
                   <div className="space-y-2 mt-3">
@@ -546,14 +546,14 @@ const TokenSummary = memo(({ token }) => {
                       { label: 'Swap Quote (POST)', url: `https://api.xrpl.to/api/dex/quote` },
                       { label: 'Pair Rates', url: `https://api.xrpl.to/api/pair-rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
                     ].map((endpoint) => (
-                      <div key={endpoint.label} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                      <div key={endpoint.label} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.015]")}>
                         <div className="flex-1 min-w-0">
-                          <div className={cn("text-[9px] uppercase mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>{endpoint.label}</div>
-                          <div className={cn("font-mono text-[11px] break-all", isDark ? "text-primary" : "text-blue-600")}>{endpoint.url}</div>
+                          <div className={cn("text-[8px] uppercase mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{endpoint.label}</div>
+                          <div className={cn("font-mono text-[10px] break-all", isDark ? "text-blue-400/80" : "text-blue-600")}>{endpoint.url}</div>
                         </div>
                         <button
                           onClick={() => { navigator.clipboard.writeText(endpoint.url); }}
-                          className={cn("p-1 rounded hover:bg-white/10 flex-shrink-0", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                          className={cn("p-1 rounded transition-all flex-shrink-0", isDark ? "text-white/25 hover:text-white/50 hover:bg-white/[0.06]" : "text-gray-300 hover:text-gray-500 hover:bg-black/[0.04]")}
                         >
                           <Copy size={10} />
                         </button>
@@ -563,7 +563,7 @@ const TokenSummary = memo(({ token }) => {
                       href="/docs"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={cn("block text-center text-[11px] mt-3 py-2 rounded-lg transition-colors", isDark ? "text-primary hover:bg-primary/10" : "text-blue-600 hover:bg-blue-50")}
+                      className={cn("block text-center text-[11px] mt-3 py-2 rounded-lg transition-all", isDark ? "text-blue-400/70 hover:text-blue-400 hover:bg-blue-500/10" : "text-blue-600 hover:bg-blue-50")}
                     >
                       Read API Docs →
                     </a>
