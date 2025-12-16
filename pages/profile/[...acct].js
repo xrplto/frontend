@@ -171,9 +171,28 @@ const OverView = ({ account }) => {
         <Header />
         {!isMobile && <TokenTabs currentMd5={account} />}
         <div className="mx-auto max-w-[1920px] px-4 mt-4">
-          <div className="flex flex-col">
-            <div className="w-full flex justify-center items-center py-20">
-              <p className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
+          <div className="flex flex-col gap-4">
+            {/* Header skeleton */}
+            <div className="flex items-center gap-3">
+              <div className={cn("h-6 w-48 rounded animate-pulse", isDark ? "bg-white/10" : "bg-gray-200")} />
+              <div className={cn("h-5 w-5 rounded animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+            </div>
+            {/* Metrics skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="space-y-2">
+                  <div className={cn("h-3 w-16 rounded animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+                  <div className={cn("h-7 w-24 rounded animate-pulse", isDark ? "bg-white/10" : "bg-gray-200")} />
+                  <div className={cn("h-3 w-20 rounded animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+                </div>
+              ))}
+            </div>
+            {/* Holdings skeleton */}
+            <div className={cn("rounded-xl border p-4", isDark ? "border-white/10" : "border-gray-200")}>
+              <div className={cn("h-4 w-32 rounded animate-pulse mb-3", isDark ? "bg-white/10" : "bg-gray-200")} />
+              {[1,2,3].map(i => (
+                <div key={i} className={cn("h-10 rounded animate-pulse mb-2", isDark ? "bg-white/5" : "bg-gray-100")} />
+              ))}
             </div>
           </div>
         </div>
@@ -200,42 +219,45 @@ const OverView = ({ account }) => {
         <div className="flex flex-col">
           <div className="w-full">
         {/* Account Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <h2 className={cn("text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
-            {account.substring(0, 10)}...{account.substring(account.length - 8)}
-          </h2>
-          <button
-            onClick={() => navigator.clipboard.writeText(account)}
-            className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}
-            title="Copy address"
-          >
-            <Copy size={14} />
-          </button>
-          <a
-            href={`https://xrpscan.com/account/${account}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}
-            title="View on XRPScan"
-          >
-            <ExternalLink size={14} />
-          </a>
-          {data?.isAMM && (
-            <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
-              AMM
-            </span>
-          )}
-          {isOwnAccount && (
+        <div className="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className={cn("text-lg md:text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+              <span className="hidden md:inline">{account.substring(0, 10)}...{account.substring(account.length - 8)}</span>
+              <span className="md:hidden">{account.substring(0, 6)}...{account.substring(account.length - 4)}</span>
+            </h2>
             <button
-              onClick={() => setOpenWalletModal(true)}
-              className="flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              onClick={() => navigator.clipboard.writeText(account)}
+              className={cn("p-1.5 rounded-lg transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/5" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}
+              title="Copy address"
             >
-              <Wallet size={14} />
-              Manage
+              <Copy size={14} />
             </button>
-          )}
+            <a
+              href={`https://xrpscan.com/account/${account}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn("p-1.5 rounded-lg transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/5" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}
+              title="View on XRPScan"
+            >
+              <ExternalLink size={14} />
+            </a>
+            {data?.isAMM && (
+              <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
+                AMM
+              </span>
+            )}
+            {isOwnAccount && (
+              <button
+                onClick={() => setOpenWalletModal(true)}
+                className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              >
+                <Wallet size={14} />
+                Manage
+              </button>
+            )}
+          </div>
           {data?.firstTradeDate && (
-            <span className={cn("text-[0.9rem] ml-auto", isDark ? "text-white/50" : "text-gray-500")}>
+            <span className={cn("text-[12px] md:text-[13px] md:ml-auto", isDark ? "text-white/40" : "text-gray-400")}>
               {fDateTime(data.firstTradeDate)} → {fDateTime(data.lastTradeDate)}
             </span>
           )}
@@ -243,7 +265,10 @@ const OverView = ({ account }) => {
 
         {/* Account Not Activated */}
         {holdings?.accountActive === false && (
-          <div className={cn("text-center py-8 mb-4 rounded-xl border", isDark ? "border-[#ef4444]/20 bg-[#ef4444]/5" : "border-red-200 bg-red-50")}>
+          <div className={cn("text-center py-10 mb-4 rounded-xl border", isDark ? "border-[#ef4444]/20 bg-[#ef4444]/5" : "border-red-200 bg-red-50")}>
+            <div className={cn("w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center", isDark ? "bg-[#ef4444]/10" : "bg-red-100")}>
+              <Wallet size={20} className="text-[#ef4444]" />
+            </div>
             <p className={cn("text-[15px] font-medium", "text-[#ef4444]")}>
               Account not activated
             </p>
@@ -255,7 +280,7 @@ const OverView = ({ account }) => {
 
         {/* XRP Balance for accounts with no trading data */}
         {hasNoTradingData && holdings?.accountActive !== false && holdings?.accountData && (
-          <div className={cn("mb-4 pb-4 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
+          <div className={cn("mb-4 pb-4 border-b", isDark ? "border-white/10" : "border-gray-200")}>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
               {fCurrency5(holdings.accountData.balanceDrops / 1000000)}
@@ -268,7 +293,12 @@ const OverView = ({ account }) => {
 
         {/* No Trading Data Message */}
         {hasNoTradingData && holdings?.accountActive !== false && (
-          <div className={cn("text-center py-6 mb-4 rounded-xl border", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(59,130,246,0.02)]" : "border-gray-200 bg-gray-50")}>
+          <div className={cn("text-center py-8 mb-4 rounded-xl border", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+            <div className={cn("w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-100")}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isDark ? "text-white/30" : "text-gray-400"}>
+                <path d="M3 3v18h18M7 16l4-4 4 4 6-6" />
+              </svg>
+            </div>
             <p className={cn("text-[14px]", isDark ? "text-white/50" : "text-gray-500")}>
               No trading history
             </p>
@@ -278,7 +308,7 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <div className={cn("grid grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+        <div className={cn("grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-white/10" : "border-gray-200")}>
           <div>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
@@ -320,7 +350,7 @@ const OverView = ({ account }) => {
         </div>
 
         {/* Period P&L Summary */}
-        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+        <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-white/10" : "border-gray-200")}>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>7d P&L</p>
             <p className={cn("text-[14px] font-medium", (data.profit7d || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
@@ -365,50 +395,52 @@ const OverView = ({ account }) => {
           const zeroCount = (holdings.lines?.length || 0) - filteredLines.length;
 
           return (
-          <div className="mb-3">
+          <div className="mb-5">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <p className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
-                  Token Holdings ({holdings.total})
+              <div className="flex items-center gap-2">
+                <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>
+                  Holdings ({holdings.total})
                 </p>
-                <button
-                  onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
-                  className={cn("text-[11px]", hideZeroHoldings ? "text-primary" : (isDark ? "text-white/30" : "text-gray-400"))}
-                >
-                  {hideZeroHoldings ? `+${zeroCount} hidden` : 'Hide zeros'}
-                </button>
+                {zeroCount > 0 && (
+                  <button
+                    onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
+                    className={cn("text-[9px] px-1.5 py-0.5 rounded transition-colors", hideZeroHoldings ? "text-green-500 bg-green-500/10" : (isDark ? "text-white/35 hover:text-white/50" : "text-gray-400 hover:text-gray-500"))}
+                  >
+                    {hideZeroHoldings ? `+${zeroCount}` : 'Hide 0'}
+                  </button>
+                )}
               </div>
               {filteredLines.length > 0 && (
-                <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
-                  Total: {fCurrency5(filteredLines.reduce((sum, l) => sum + (l.value || 0), 0))} XRP
+                <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
+                  {fCurrency5(filteredLines.reduce((sum, l) => sum + (l.value || 0), 0))} XRP
                 </p>
               )}
             </div>
             {filteredLines.length > 0 ? (
               <>
-                <div className={cn("rounded-xl border overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-gray-200")}>
-                  <div className="grid px-3 py-1.5" style={{ gridTemplateColumns: '1fr 100px 100px' }}>
-                    <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Token</span>
-                    <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/30" : "text-gray-400")}>Balance</span>
-                    <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/30" : "text-gray-400")}>Value</span>
+                <div className={cn("rounded-xl border overflow-hidden", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+                  <div className={cn("grid px-4 py-2.5", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                    <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>Token</span>
+                    <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Balance</span>
+                    <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Value</span>
                   </div>
                   {filteredLines.map((line, idx) => (
-                    <div key={idx} className={cn("grid px-3 py-1.5 items-center", isDark ? "border-t border-white/[0.04] hover:bg-white/[0.02]" : "border-t border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '1fr 100px 100px' }}>
-                      <div className="flex items-center gap-2">
-                        <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-4 h-4 rounded" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
-                        <span className={cn("text-[12px]", isDark ? "text-white/80" : "text-gray-800")}>{line.token?.name || line.currency}</span>
+                    <div key={idx} className={cn("grid px-4 py-2.5 items-center transition-colors", isDark ? "border-t border-white/[0.06] hover:bg-white/[0.02]" : "border-t border-black/[0.04] hover:bg-black/[0.01]")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                      <div className="flex items-center gap-2.5">
+                        <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-5 h-5 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
+                        <span className={cn("text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>{line.token?.name || line.currency}</span>
                       </div>
-                      <span className={cn("text-[12px] text-right", isDark ? "text-white/60" : "text-gray-600")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
-                      <span className={cn("text-[12px] text-right", isDark ? "text-white/80" : "text-gray-800")}>{fCurrency5(line.value)} XRP</span>
+                      <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
+                      <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/90" : "text-gray-800")}>{fCurrency5(line.value)} XRP</span>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-end gap-1 mt-2">
-                  <button onClick={() => setHoldingsPage(0)} disabled={holdingsPage === 0} className={cn("px-1 text-[11px]", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>«</button>
-                  <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("px-1 text-[11px]", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>‹</button>
-                  <span className={cn("text-[11px] px-2", isDark ? "text-white/40" : "text-gray-400")}>Page {holdingsPage + 1}</span>
-                  <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("px-1 text-[11px]", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>›</button>
-                  <button onClick={() => setHoldingsPage(Math.ceil(holdings.total / 20) - 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("px-1 text-[11px]", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>»</button>
+                <div className="flex items-center justify-end gap-0.5 mt-2">
+                  <button onClick={() => setHoldingsPage(0)} disabled={holdingsPage === 0} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>«</button>
+                  <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>‹</button>
+                  <span className={cn("text-[9px] px-2 py-1 rounded", isDark ? "text-white/35 bg-white/[0.025]" : "text-gray-400 bg-black/[0.02]")}>{holdingsPage + 1}</span>
+                  <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>›</button>
+                  <button onClick={() => setHoldingsPage(Math.ceil(holdings.total / 20) - 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>»</button>
                 </div>
               </>
             ) : (
@@ -429,71 +461,71 @@ const OverView = ({ account }) => {
           const totalCount = data.totalTokensTraded || data.tokenPerformance.length;
 
           return (
-          <div className="mb-3">
+          <div className="mb-5">
             <div className="flex items-center justify-between mb-2">
-              <p className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
-                Trading Performance by Token ({totalCount})
+              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>
+                Trading Performance ({totalCount})
               </p>
               <input
                 type="text"
-                placeholder="Search tokens..."
+                placeholder="Search..."
                 value={tokenSearch}
                 onChange={(e) => setTokenSearch(e.target.value)}
                 className={cn(
-                  "text-[12px] px-2 py-1 rounded border outline-none w-32",
-                  isDark ? "bg-transparent border-white/10 text-white placeholder:text-white/30" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+                  "text-[11px] px-2.5 py-1.5 rounded-lg border outline-none w-28",
+                  isDark ? "bg-white/[0.03] border-white/[0.06] text-white/70 placeholder:text-white/30" : "bg-black/[0.02] border-black/[0.06] text-gray-600 placeholder:text-gray-400"
                 )}
               />
             </div>
             <div className={cn(
               "rounded-xl border overflow-hidden",
-              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]"
+              isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]"
             )}>
               <div className={cn(
-                "grid gap-2 px-2 py-1 border-b",
-                isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
-              )} style={{ gridTemplateColumns: '120px repeat(4, 1fr)' }}>
-                <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Token</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Volume (XRP)</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Trades</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Return %</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Profit (XRP)</span>
+                "grid gap-3 px-4 py-2.5",
+                isDark ? "bg-white/[0.025]" : "bg-black/[0.02]"
+              )} style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}>
+                <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>Token</span>
+                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Volume</span>
+                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Trades</span>
+                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Return</span>
+                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Profit</span>
               </div>
               {displayTokens.map((token, idx) => (
                 <div
                   key={idx}
                   className={cn(
-                    "grid gap-2 px-2 py-1",
-                    idx < data.tokenPerformance.length - 1 && (isDark ? "border-b border-[rgba(59,130,246,0.04)]" : "border-b border-gray-100")
+                    "grid gap-3 px-4 py-2.5 transition-colors",
+                    isDark ? "border-t border-white/[0.06] hover:bg-white/[0.02]" : "border-t border-black/[0.04] hover:bg-black/[0.01]"
                   )}
-                  style={{ gridTemplateColumns: '120px repeat(4, 1fr)' }}
+                  style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}
                 >
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2.5">
                     <img
                       src={`https://s1.xrpl.to/token/${token.tokenId}`}
-                      className="w-4 h-4 rounded"
+                      className="w-5 h-5 rounded-full"
                       onError={(e) => { e.target.style.display = 'none'; }}
                       alt=""
                     />
-                    <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <span className={cn("text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>
                       {token.name}
                     </span>
                   </div>
-                  <span className={cn("text-[12px] text-right", isDark ? "text-white/70" : "text-gray-700")}>
+                  <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>
                     {fCurrency5(token.volume || 0)}
                   </span>
-                  <span className={cn("text-[12px] text-right", isDark ? "text-white/70" : "text-gray-700")}>
+                  <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>
                     {fCurrency5(token.trades || 0)}
                   </span>
                   <span className={cn(
-                    "text-[12px] text-right font-medium",
-                    (token.roi || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]"
+                    "text-[12px] text-right font-medium px-1.5 py-0.5 rounded",
+                    (token.roi || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
                   )}>
                     {(token.roi || 0) >= 0 ? '+' : ''}{fCurrency5(token.roi || 0)}%
                   </span>
                   <span className={cn(
-                    "text-[12px] text-right font-medium",
-                    (token.profit || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]"
+                    "text-[12px] text-right font-medium px-1.5 py-0.5 rounded",
+                    (token.profit || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
                   )}>
                     {(token.profit || 0) >= 0 ? '+' : ''}{fCurrency5(token.profit || 0)}
                   </span>
@@ -518,7 +550,7 @@ const OverView = ({ account }) => {
         {/* Transaction History */}
         {txHistory.length > 0 && (
           <div className="mt-4">
-            <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3 px-1">
               <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-800")}>
                 Account transactions ({filteredTxHistory.length})
               </p>
@@ -529,26 +561,26 @@ const OverView = ({ account }) => {
                   value={txSearch}
                   onChange={(e) => setTxSearch(e.target.value)}
                   className={cn(
-                    "text-[11px] px-2 py-1 rounded border outline-none w-32",
+                    "text-[12px] px-3 py-1.5 rounded-lg border outline-none flex-1 md:w-40",
                     isDark
-                      ? "bg-[#0d0d0d] border-white/10 text-white/70 placeholder:text-white/30"
-                      : "bg-white border-gray-200 text-gray-600 placeholder:text-gray-400"
+                      ? "bg-transparent border-white/10 text-white/70 placeholder:text-white/30 focus:border-white/20"
+                      : "bg-white border-gray-200 text-gray-600 placeholder:text-gray-400 focus:border-gray-300"
                   )}
                 />
                 <select
                   value={txFilter}
                   onChange={(e) => setTxFilter(e.target.value)}
                   className={cn(
-                    "text-[11px] px-2 py-1 rounded border cursor-pointer outline-none",
+                    "text-[12px] px-3 py-1.5 rounded-lg border cursor-pointer outline-none",
                     isDark
-                      ? "bg-[#0d0d0d] border-white/10 text-white/60"
+                      ? "bg-transparent border-white/10 text-white/60"
                       : "bg-white border-gray-200 text-gray-500"
                   )}
                   style={isDark ? { colorScheme: 'dark' } : {}}
                 >
                   {getAvailableTxTypes().map(filter => (
                     <option key={filter} value={filter}>
-                      {filter === 'all' ? 'All' : filter}
+                      {filter === 'all' ? 'All types' : filter}
                     </option>
                   ))}
                 </select>
@@ -556,9 +588,9 @@ const OverView = ({ account }) => {
             </div>
 
             {/* Table */}
-            <div className={cn("overflow-hidden", isDark ? "bg-transparent" : "bg-white border border-gray-200 rounded-lg")}>
+            <div className={cn("overflow-hidden rounded-xl", isDark ? "bg-transparent" : "bg-white border border-gray-200")}>
               {/* Header */}
-              <div className="grid items-center px-4 py-2" style={{ gridTemplateColumns: '0.8fr 4fr 1fr 1.5fr' }}>
+              <div className="hidden md:grid items-center px-4 py-2" style={{ gridTemplateColumns: '0.8fr 4fr 1fr 1.5fr' }}>
                 <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/25" : "text-gray-400")}>Type</span>
                 <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/25" : "text-gray-400")}>Info</span>
                 <span className={cn("text-[11px] uppercase tracking-wide text-right", isDark ? "text-white/25" : "text-gray-400")}>Time</span>
@@ -720,54 +752,91 @@ const OverView = ({ account }) => {
                     <div
                       onClick={() => setExpandedTx(isExpanded ? null : txHash)}
                       className={cn(
-                        "grid items-center px-4 py-2.5 transition-colors cursor-pointer",
+                        "px-4 py-2.5 transition-colors cursor-pointer",
                         isDark ? "hover:bg-white/[0.02] border-t border-white/[0.04]" : "hover:bg-gray-50 border-t border-gray-100",
                         isExpanded && (isDark ? "bg-white/[0.02]" : "bg-gray-50")
                       )}
-                      style={{ gridTemplateColumns: '0.8fr 4fr 1fr 1.5fr' }}
                     >
-                      {/* TYPE */}
-                      <div className="flex items-center gap-1.5">
-                        <span className={isSuccess ? "text-[#22c55e] text-[12px]" : "text-[#ef4444] text-[12px]"}>
-                          {isSuccess ? '✓' : '✗'}
+                      {/* Desktop layout */}
+                      <div className="hidden md:grid items-center" style={{ gridTemplateColumns: '0.8fr 4fr 1fr 1.5fr' }}>
+                        {/* TYPE */}
+                        <div className="flex items-center gap-1.5">
+                          <span className={isSuccess ? "text-[#22c55e] text-[12px]" : "text-[#ef4444] text-[12px]"}>
+                            {isSuccess ? '✓' : '✗'}
+                          </span>
+                          <span className={cn(
+                            "text-[12px]",
+                            typeLabel === 'Swap' && "text-[#a78bfa]",
+                            typeLabel === 'Transfer' && "text-[#60a5fa]",
+                            typeLabel === 'Payment' && "text-[#60a5fa]",
+                            typeLabel === 'TrustSet' && "text-[#34d399]",
+                            !['Swap', 'Transfer', 'Payment', 'TrustSet'].includes(typeLabel) && (isDark ? "text-white/60" : "text-gray-600")
+                          )}>{typeLabel}</span>
+                        </div>
+
+                        {/* INFO */}
+                        <div className="text-[12px] truncate flex items-center gap-2">
+                          {info}
+                          {sourceTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>ST:{sourceTag}</span>}
+                          {destTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>DT:{destTag}</span>}
+                        </div>
+
+                        {/* TIME */}
+                        <span className={cn("text-[12px] text-right", isDark ? "text-white/40" : "text-gray-400")}>
+                          {formatDistanceToNow(date, { addSuffix: false })}
                         </span>
-                        <span className={cn(
-                          "text-[12px]",
-                          typeLabel === 'Swap' && "text-[#a78bfa]",
-                          typeLabel === 'Transfer' && "text-[#60a5fa]",
-                          typeLabel === 'Payment' && "text-[#60a5fa]",
-                          typeLabel === 'TrustSet' && "text-[#34d399]",
-                          !['Swap', 'Transfer', 'Payment', 'TrustSet'].includes(typeLabel) && (isDark ? "text-white/60" : "text-gray-600")
-                        )}>{typeLabel}</span>
+
+                        {/* SIGNATURE */}
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/tx/${txHash}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className={cn("text-[12px] hover:underline", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}
+                          >
+                            {shortHash}
+                          </Link>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(txHash); }}
+                            className={cn("p-0.5", isDark ? "text-white/20 hover:text-white/40" : "text-gray-300 hover:text-gray-400")}
+                          >
+                            <Copy size={11} />
+                          </button>
+                        </div>
                       </div>
 
-                      {/* INFO */}
-                      <div className="text-[12px] truncate flex items-center gap-2">
-                        {info}
-                        {sourceTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>ST:{sourceTag}</span>}
-                        {destTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>DT:{destTag}</span>}
-                      </div>
-
-                      {/* TIME */}
-                      <span className={cn("text-[12px] text-right", isDark ? "text-white/40" : "text-gray-400")}>
-                        {formatDistanceToNow(date, { addSuffix: false })}
-                      </span>
-
-                      {/* SIGNATURE */}
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/tx/${txHash}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className={cn("text-[12px] hover:underline", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}
-                        >
-                          {shortHash}
-                        </Link>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(txHash); }}
-                          className={cn("p-0.5", isDark ? "text-white/20 hover:text-white/40" : "text-gray-300 hover:text-gray-400")}
-                        >
-                          <Copy size={11} />
-                        </button>
+                      {/* Mobile layout */}
+                      <div className="md:hidden space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className={isSuccess ? "text-[#22c55e] text-[12px]" : "text-[#ef4444] text-[12px]"}>
+                              {isSuccess ? '✓' : '✗'}
+                            </span>
+                            <span className={cn(
+                              "text-[12px] font-medium",
+                              typeLabel === 'Swap' && "text-[#a78bfa]",
+                              typeLabel === 'Payment' && "text-[#60a5fa]",
+                              typeLabel === 'TrustSet' && "text-[#34d399]",
+                              !['Swap', 'Payment', 'TrustSet'].includes(typeLabel) && (isDark ? "text-white/70" : "text-gray-700")
+                            )}>{typeLabel}</span>
+                          </div>
+                          <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                            {formatDistanceToNow(date, { addSuffix: false })}
+                          </span>
+                        </div>
+                        <div className="text-[12px] truncate">{info}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            {sourceTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>ST:{sourceTag}</span>}
+                            {destTag && <span className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>DT:{destTag}</span>}
+                          </div>
+                          <Link
+                            href={`/tx/${txHash}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}
+                          >
+                            {shortHash}
+                          </Link>
+                        </div>
                       </div>
                     </div>
 
@@ -848,27 +917,27 @@ const OverView = ({ account }) => {
                         )}
 
                         {/* Action Row */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2">
                           <Link
                             href={`/tx/${txHash}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-md bg-[#c53030] hover:bg-[#b91c1c] transition-colors"
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#c53030] hover:bg-[#b91c1c] transition-colors"
                           >
                             <span className="text-[13px] text-white font-medium">See advanced details</span>
-                            <span className="text-white">↗</span>
+                            <ExternalLink size={14} className="text-white" />
                           </Link>
 
                           {!aiLoading[txHash] && !aiExplanation[txHash] ? (
                             <button
                               onClick={handleExplainWithAI}
-                              className="flex items-center gap-1.5 px-4 py-2.5 rounded-md bg-[#f97316] hover:bg-[#ea580c] transition-colors"
+                              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#f97316] hover:bg-[#ea580c] transition-colors"
                             >
                               <span className="text-[13px] text-white font-medium">Explain with AI</span>
                             </button>
                           ) : (
                             <button
                               onClick={(e) => { e.stopPropagation(); setAiExplanation(prev => { const n = {...prev}; delete n[txHash]; return n; }); setAiLoading(prev => { const n = {...prev}; delete n[txHash]; return n; }); }}
-                              className={cn("w-10 h-10 flex items-center justify-center rounded-md transition-colors", isDark ? "bg-white/[0.05] hover:bg-white/[0.1] text-white/60" : "bg-gray-100 hover:bg-gray-200 text-gray-500")}
+                              className={cn("w-full md:w-10 h-10 flex items-center justify-center rounded-lg transition-colors", isDark ? "bg-white/[0.05] hover:bg-white/[0.1] text-white/60" : "bg-gray-100 hover:bg-gray-200 text-gray-500")}
                             >
                               <span className="text-[16px]">×</span>
                             </button>
