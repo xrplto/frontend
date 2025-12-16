@@ -308,80 +308,92 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <div className={cn("grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-white/10" : "border-gray-200")}>
-          <div>
-            <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
-            <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'}
-            </p>
-            {holdings?.accountData && (
-              <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
-                {fCurrency5(holdings.accountData.spendableDrops / 1000000)} spendable
-              </span>
-            )}
+        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+          {/* Main Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Balance</p>
+              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'}
+              </p>
+            </div>
+            <div>
+              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>P&L</p>
+              <p className={cn("text-[20px] font-semibold tabular-nums", totalPnL >= 0 ? "text-green-500" : "text-red-500")}>
+                {totalPnL >= 0 ? '+' : ''}{fCurrency5(totalPnL)}
+              </p>
+            </div>
+            <div>
+              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Trades</p>
+              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                {fCurrency5(data.totalTrades)}
+              </p>
+            </div>
+            <div>
+              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Volume</p>
+              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                {fCurrency5(data.totalVolume)}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>Profit / Loss</p>
-            <p className={cn("text-[1.3rem] font-medium", totalPnL >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
-              {fCurrency5(totalPnL)} XRP
-            </p>
-            <span className={cn("text-[12px]", (data.roi || 0) >= 0 ? "text-[#10b981]/60" : "text-[#ef4444]/60")}>
-              {(data.roi || 0) >= 0 ? '+' : ''}{fCurrency5(data.roi || 0)}% return
-            </span>
-          </div>
-          <div>
-            <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total Trades</p>
-            <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {fCurrency5(data.totalTrades)}
-            </p>
-            <span className={cn("text-[12px]", winRate >= 50 ? "text-[#10b981]/60" : "text-[#ef4444]/60")}>
-              {fCurrency5(winRate)}% winners
-            </span>
-          </div>
-          <div>
-            <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total Volume</p>
-            <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {fCurrency5(data.totalVolume)} <span className={cn("text-[11px] font-normal", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
-            </p>
-            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
-              <span className="text-[#ef4444]/70">{fCurrency5(data.buyVolume || 0)}</span> spent · <span className="text-[#10b981]/70">{fCurrency5(data.sellVolume || 0)}</span> received
-            </span>
-          </div>
-        </div>
 
-        {/* Period P&L Summary */}
-        <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-white/10" : "border-gray-200")}>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>7d P&L</p>
-            <p className={cn("text-[14px] font-medium", (data.profit7d || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
-              {fCurrency5(data.profit7d || 0)}
-            </p>
+          {/* Secondary Stats */}
+          <div className={cn("grid grid-cols-4 md:grid-cols-8 gap-2 pt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.04]")}>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Win Rate</p>
+              <p className={cn("text-[12px] font-medium", winRate >= 50 ? "text-green-500" : "text-red-500")}>{fCurrency5(winRate)}%</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Buys</p>
+              <p className={cn("text-[12px] font-medium text-red-500")}>{fCurrency5(data.buyCount || 0)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Sells</p>
+              <p className={cn("text-[12px] font-medium text-green-500")}>{fCurrency5(data.sellCount || 0)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Sharpe</p>
+              <p className={cn("text-[12px] font-medium", isDark ? "text-white/80" : "text-gray-700")}>{(data.sharpeRatio || 0).toFixed(2)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>DEX P&L</p>
+              <p className={cn("text-[12px] font-medium", (data.dexProfit || 0) >= 0 ? "text-green-500" : "text-red-500")}>{fCurrency5(data.dexProfit || 0)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>AMM P&L</p>
+              <p className={cn("text-[12px] font-medium", (data.ammProfit || 0) >= 0 ? "text-green-500" : "text-red-500")}>{fCurrency5(data.ammProfit || 0)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Best</p>
+              <p className="text-[12px] font-medium text-green-500">+{fCurrency5(data.maxProfitTrade || 0)}</p>
+            </div>
+            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Worst</p>
+              <p className="text-[12px] font-medium text-red-500">{fCurrency5(data.maxLossTrade || 0)}</p>
+            </div>
           </div>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>30d P&L</p>
-            <p className={cn("text-[14px] font-medium", (data.profit1m || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
-              {fCurrency5(data.profit1m || 0)}
-            </p>
-          </div>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>90d P&L</p>
-            <p className={cn("text-[14px] font-medium", (data.profit3m || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
-              {fCurrency5(data.profit3m || 0)}
-            </p>
-          </div>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Best</p>
-            <p className="text-[14px] font-medium text-[#10b981]">{fCurrency5(data.maxProfitTrade || 0)}</p>
-          </div>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Worst</p>
-            <p className="text-[14px] font-medium text-[#ef4444]">-{fCurrency5(Math.abs(data.maxLossTrade || 0))}</p>
-          </div>
-          <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Avg Hold</p>
-            <p className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {data.avgHoldingTime ? `${Math.round(data.avgHoldingTime / 86400)}d` : '—'}
-            </p>
+
+          {/* Period P&L */}
+          <div className={cn("flex items-center justify-between gap-2 pt-4 mt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.04]")}>
+            {[
+              { label: '7d', value: data.profit7d },
+              { label: '30d', value: data.profit1m },
+              { label: '90d', value: data.profit3m }
+            ].map(p => (
+              <div key={p.label} className="flex items-center gap-1.5">
+                <span className={cn("text-[9px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>{p.label}</span>
+                <span className={cn("text-[11px] font-medium px-1.5 py-0.5 rounded", (p.value || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10")}>
+                  {(p.value || 0) >= 0 ? '+' : ''}{fCurrency5(p.value || 0)}
+                </span>
+              </div>
+            ))}
+            <div className={cn("hidden md:block h-4 w-px", isDark ? "bg-white/10" : "bg-black/10")} />
+            <div className="hidden md:flex items-center gap-1.5">
+              <span className={cn("text-[9px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>Gross</span>
+              <span className="text-[11px] font-medium text-green-500">+{fCurrency5(data.grossProfit || 0)}</span>
+              <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-300")}>/</span>
+              <span className="text-[11px] font-medium text-red-500">-{fCurrency5(data.grossLoss || 0)}</span>
+            </div>
           </div>
         </div>
         </>
