@@ -1401,8 +1401,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'absolute right-0 top-10 z-[2147483647] w-[200px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
                       isDark
-                        ? 'border-[rgba(63,150,254,20 bg-[#070b12]/98 backdrop-blur-xl shadow-2xl shadow-[rgba(63,150,254,10'
-                        : 'border-blue-200 bg-white backdrop-blur-2xl shadow-xl shadow-blue-200/50'
+                        ? 'border-gray-700 bg-black shadow-2xl'
+                        : 'border-gray-200 bg-white shadow-xl'
                     )}
                                       >
                     <div className="p-3">
@@ -1410,7 +1410,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <p className={cn('text-[10px] font-medium uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>
                         Currency
                       </p>
-                      <div className="grid grid-cols-5 gap-1 mb-3">
+                      <div className={cn("grid grid-cols-5 gap-1 mb-3 p-2 rounded-lg border", isDark ? "bg-black border-gray-700" : "bg-gray-50 border-gray-200")}>
                         {currencyConfig.availableFiatCurrencies.map((currency) => (
                           <button
                             key={currency}
@@ -1890,7 +1890,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <p className={cn('mb-2 px-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
                   Currency
                 </p>
-                <div className="grid grid-cols-5 gap-1.5 px-1">
+                <div className={cn("grid grid-cols-5 gap-1.5 p-2 rounded-lg border", isDark ? "bg-black border-gray-700" : "bg-gray-50 border-gray-200")}>
                   {currencyConfig.availableFiatCurrencies.map((currency) => (
                     <button
                       key={currency}

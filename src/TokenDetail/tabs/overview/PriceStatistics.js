@@ -924,25 +924,44 @@ export default function PriceStatistics({ token, isDark = false }) {
                       size="small"
                       onClick={() => setActivityOpen(!activityOpen)}
                       style={{
+                        position: 'relative',
                         paddingLeft: '8px',
                         paddingRight: '8px',
                         borderRadius: '8px',
                         height: '28px',
-                        background: activityOpen ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.08)',
-                        border: `1px solid ${activityOpen ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.15)'}`,
-                        color: '#8b5cf6',
+                        background: isDark ? '#0d0d1a' : 'rgba(139,92,246,0.08)',
+                        border: `1px solid ${activityOpen ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.3)'}`,
+                        color: isDark ? '#c4b5fd' : '#8b5cf6',
                         fontWeight: 400,
                         minWidth: 0,
                         maxWidth: isMobile ? '100px' : '200px',
                         overflow: 'hidden',
                         flexShrink: 1,
                         cursor: 'pointer',
-                        transition: 'all 0.15s ease'
+                        transition: 'all 0.3s ease',
+                        boxShadow: activityOpen ? '0 0 15px rgba(168,85,247,0.3)' : 'none'
                       }}
                     >
+                      {isDark && (
+                        <>
+                          <span style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(90deg, rgba(147,51,234,0.2), rgba(217,70,239,0.2), rgba(34,211,238,0.2))',
+                            animation: 'shimmer 3s ease-in-out infinite',
+                            borderRadius: '8px'
+                          }} />
+                          <span style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'radial-gradient(ellipse at top, rgba(168,85,247,0.15), transparent 50%)',
+                            borderRadius: '8px'
+                          }} />
+                        </>
+                      )}
                       <Typography
                         variant="caption"
-                        style={{ fontWeight: 500, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        style={{ position: 'relative', zIndex: 1, fontWeight: 500, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isDark ? '#fff' : '#8b5cf6' }}
                       >
                         {creator}
                       </Typography>
