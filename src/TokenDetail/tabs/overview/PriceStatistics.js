@@ -103,7 +103,8 @@ const Dialog = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
   display: ${props => props.open ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
@@ -111,45 +112,47 @@ const Dialog = styled.div`
 `;
 const DialogPaper = styled.div`
   background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
-  border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-radius: 14px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   padding: 0;
-  max-width: 600px;
-  width: 100%;
+  max-width: 400px;
+  width: 90%;
+  margin: 0 auto;
 `;
 const DialogContent = styled.div`
   padding: 16px;
   text-align: ${props => props.textAlign || 'left'};
 `;
 const Button = styled.button`
-  padding: 8px 20px;
+  padding: 10px 24px;
   font-size: 13px;
-  font-weight: 400;
-  border-radius: 12px;
-  border: 1.5px solid rgba(244, 67, 54, 0.3);
+  font-weight: 500;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   cursor: pointer;
-  background: rgba(244, 67, 54, 0.1);
-  color: #f44336;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  transition: all 0.15s ease;
   &:hover {
-    background: rgba(244, 67, 54, 0.15);
-    border-color: rgba(244, 67, 54, 0.4);
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
   }
 `;
 
 const StyledTable = styled(Table)`
-  margin-top: 4px;
+  margin-top: 0;
   table-layout: fixed;
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-bottom: none;
   vertical-align: middle;
   &:first-of-type {
-    width: 50%;
+    width: 48%;
   }
   &:last-of-type {
-    width: 50%;
+    width: 52%;
     text-align: right;
   }
 `;
@@ -211,12 +214,26 @@ export default function PriceStatistics({ token, isDark = false }) {
     withdraw24hxrp,
     withdraw24htx,
     date,
-    dateon
+    dateon,
+    creatorLastAction
   } = token;
 
   // Use creatorTokenCount and creatorExchange from token
   const creatorTokens = creatorTokenCount || 0;
   const creatorExchange = token.creatorExchange || null;
+
+  // Format creator last action time
+  const formatLastActionTime = (timestamp) => {
+    if (!timestamp) return '';
+    const diff = Date.now() - timestamp;
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (mins > 0) return `${mins}m ago`;
+    return 'just now';
+  };
 
   // Fetch creator activity when expanded
   const [hasWarning, setHasWarning] = useState(false);
@@ -362,11 +379,11 @@ export default function PriceStatistics({ token, isDark = false }) {
   return (
     <Box
       style={{
-        borderRadius: '12px',
-        background: 'transparent',
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+        borderRadius: '14px',
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+        border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
         width: '100%',
-        marginBottom: '6px',
+        marginBottom: '8px',
         overflow: 'hidden'
       }}
     >
@@ -374,15 +391,16 @@ export default function PriceStatistics({ token, isDark = false }) {
       {openScamWarning && (
         <Dialog open>
           <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()}>
-            <DialogContent style={{ textAlign: 'center', padding: '16px' }}>
-              <AlertTriangle size={32} color="#f44336" style={{ marginBottom: '8px' }} />
+            <DialogContent style={{ textAlign: 'center', padding: '24px' }}>
+              <AlertTriangle size={28} color="#ef4444" strokeWidth={1.5} style={{ marginBottom: '12px' }} />
               <Typography
                 variant="h6"
                 style={{
-                  color: '#f44336',
-                  fontWeight: 400,
-                  marginBottom: '8px',
-                  letterSpacing: '-0.02em'
+                  color: '#ef4444',
+                  fontWeight: 500,
+                  marginBottom: '10px',
+                  fontSize: '16px',
+                  letterSpacing: '-0.01em'
                 }}
               >
                 Scam Warning
@@ -391,8 +409,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                 isDark={isDark}
                 variant="body2"
                 style={{
-                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                  marginBottom: '16px'
+                  color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                  marginBottom: '20px',
+                  fontSize: '13px',
+                  lineHeight: '1.5'
                 }}
               >
                 This token has been flagged as a potential scam. Please exercise extreme caution.
@@ -411,25 +431,26 @@ export default function PriceStatistics({ token, isDark = false }) {
       {/* Header */}
       <Box
         style={{
-          padding: '8px 10px 4px'
+          padding: '12px 14px 8px',
+          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
         }}
       >
         <Typography
           variant="h6"
           isDark={isDark}
           style={{
-            fontSize: '10px',
+            fontSize: '11px',
             fontWeight: 500,
-            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)',
-            letterSpacing: '0.5px',
+            color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(33,43,54,0.5)',
+            letterSpacing: '0.8px',
             textTransform: 'uppercase'
           }}
         >
-          Additional Details
+          Token Stats
         </Typography>
       </Box>
 
-      <StyledTable size="small" style={{ marginTop: '4px' }}>
+      <StyledTable size="small" style={{ marginTop: '6px' }}>
         <TableBody>
           {/* ========== MARKET METRICS GROUP ========== */}
 
@@ -441,12 +462,12 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
                 }}
                 noWrap
               >
-                Fully Diluted Market Cap
+                FDV Market Cap
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
@@ -454,9 +475,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                 isDark={isDark}
                 variant="body2"
                 style={{
-                  fontWeight: 400,
-                  color: '#3b82f6',
-                  fontSize: '12px'
+                  fontWeight: 500,
+                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                  fontSize: '13px'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
@@ -473,8 +494,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
                 }}
                 noWrap
               >
@@ -486,12 +507,12 @@ export default function PriceStatistics({ token, isDark = false }) {
                 isDark={isDark}
                 variant="body2"
                 style={{
-                  fontWeight: 400,
-                  color: '#22c55e',
-                  fontSize: '12px'
+                  fontWeight: 500,
+                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                  fontSize: '13px'
                 }}
               >
-                {(dom || 0).toFixed(6)} %
+                {(dom || 0).toFixed(6)}%
               </Typography>
             </ModernTableCell>
           </TableRow>
@@ -508,8 +529,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -521,9 +542,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: '#FF9800',
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                    fontSize: '13px'
                   }}
                 >
                   {fNumber(amount)}
@@ -544,8 +565,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -557,9 +578,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: '#F57C00',
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                    fontSize: '13px'
                   }}
                 >
                   {fNumber(txns24h || vol24htx)}
@@ -577,8 +598,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -590,9 +611,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: '#FF9800',
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
+                    fontSize: '13px'
                   }}
                 >
                   {fNumber(uniqueTraders24h)}
@@ -612,8 +633,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -621,14 +642,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                   <Typography
                     isDark={isDark}
                     variant="body2"
                     style={{
-                      fontWeight: 400,
-                      color: '#22c55e',
-                      fontSize: '12px'
+                      fontWeight: 500,
+                      color: '#10b981',
+                      fontSize: '13px'
                     }}
                   >
                     {fNumber(buy24hxrp || 0)} XRP
@@ -636,11 +657,11 @@ export default function PriceStatistics({ token, isDark = false }) {
                   <Typography
                     variant="caption"
                     style={{
-                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                      fontSize: '10px'
+                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                      fontSize: '11px'
                     }}
                   >
-                    ({fNumber(buyTxns24h || buy24htx || 0)} tx)
+                    {fNumber(buyTxns24h || buy24htx || 0)} tx
                   </Typography>
                 </Stack>
               </ModernTableCell>
@@ -654,8 +675,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -667,9 +688,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: '#22c55e',
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: '#10b981',
+                    fontSize: '13px'
                   }}
                 >
                   {fNumber(uniqueBuyers24h || 0)}
@@ -685,8 +706,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -694,14 +715,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                   <Typography
                     isDark={isDark}
                     variant="body2"
                     style={{
-                      fontWeight: 400,
-                      color: '#ef4444',
-                      fontSize: '12px'
+                      fontWeight: 500,
+                      color: '#f43f5e',
+                      fontSize: '13px'
                     }}
                   >
                     {fNumber(sell24hxrp || 0)} XRP
@@ -709,11 +730,11 @@ export default function PriceStatistics({ token, isDark = false }) {
                   <Typography
                     variant="caption"
                     style={{
-                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                      fontSize: '10px'
+                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                      fontSize: '11px'
                     }}
                   >
-                    ({fNumber(sellTxns24h || sell24htx || 0)} tx)
+                    {fNumber(sellTxns24h || sell24htx || 0)} tx
                   </Typography>
                 </Stack>
               </ModernTableCell>
@@ -727,8 +748,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -740,9 +761,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: '#ef4444',
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: '#f43f5e',
+                    fontSize: '13px'
                   }}
                 >
                   {fNumber(uniqueSellers24h || 0)}
@@ -761,8 +782,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -770,14 +791,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                   <Typography
                     isDark={isDark}
                     variant="body2"
                     style={{
-                      fontWeight: 400,
-                      color: '#22c55e',
-                      fontSize: '12px'
+                      fontWeight: 500,
+                      color: '#10b981',
+                      fontSize: '13px'
                     }}
                   >
                     {fNumber(deposit24hxrp)} XRP
@@ -786,11 +807,11 @@ export default function PriceStatistics({ token, isDark = false }) {
                     <Typography
                       variant="caption"
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
+                        color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                        fontSize: '11px'
                       }}
                     >
-                      ({fNumber(deposit24htx)} tx)
+                      {fNumber(deposit24htx)} tx
                     </Typography>
                   ) : null}
                 </Stack>
@@ -807,8 +828,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -816,14 +837,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                   <Typography
                     isDark={isDark}
                     variant="body2"
                     style={{
-                      fontWeight: 400,
+                      fontWeight: 500,
                       color: '#f59e0b',
-                      fontSize: '12px'
+                      fontSize: '13px'
                     }}
                   >
                     {fNumber(withdraw24hxrp)} XRP
@@ -832,11 +853,11 @@ export default function PriceStatistics({ token, isDark = false }) {
                     <Typography
                       variant="caption"
                       style={{
-                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                        fontSize: '10px'
+                        color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                        fontSize: '11px'
                       }}
                     >
-                      ({fNumber(withdraw24htx)} tx)
+                      {fNumber(withdraw24htx)} tx
                     </Typography>
                   ) : null}
                 </Stack>
@@ -855,8 +876,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -868,9 +889,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)",
+                    fontSize: '13px'
                   }}
                 >
                   {fDate(date || dateon)}
@@ -888,8 +909,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                    fontSize: '12px'
                   }}
                   noWrap
                 >
@@ -903,24 +924,25 @@ export default function PriceStatistics({ token, isDark = false }) {
                       size="small"
                       onClick={() => setActivityOpen(!activityOpen)}
                       style={{
-                        paddingLeft: '6px',
-                        paddingRight: '6px',
+                        paddingLeft: '8px',
+                        paddingRight: '8px',
                         borderRadius: '8px',
-                        height: '26px',
-                        background: activityOpen ? alpha('rgba(156,39,176,1)', 0.15) : alpha('rgba(156,39,176,1)', 0.08),
-                        border: `1.5px solid ${activityOpen ? 'rgba(156,39,176,0.4)' : alpha('rgba(156,39,176,1)', 0.15)}`,
-                        color: '#9C27B0',
+                        height: '28px',
+                        background: activityOpen ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.08)',
+                        border: `1px solid ${activityOpen ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.15)'}`,
+                        color: '#8b5cf6',
                         fontWeight: 400,
                         minWidth: 0,
                         maxWidth: isMobile ? '100px' : '200px',
                         overflow: 'hidden',
                         flexShrink: 1,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       <Typography
                         variant="caption"
-                        style={{ fontWeight: 400, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        style={{ fontWeight: 500, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       >
                         {creator}
                       </Typography>
@@ -936,15 +958,16 @@ export default function PriceStatistics({ token, isDark = false }) {
                       size="small"
                       style={{
                         padding: '4px',
-                        width: isMobile ? '22px' : '24px',
-                        height: isMobile ? '22px' : '24px',
+                        width: isMobile ? '24px' : '26px',
+                        height: isMobile ? '24px' : '26px',
                         borderRadius: '8px',
                         background: 'transparent',
-                        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
-                        flexShrink: 0
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        flexShrink: 0,
+                        transition: 'all 0.15s ease'
                       }}
                     >
-                      <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
+                      <Copy size={isMobile ? 11 : 13} color="#8b5cf6" />
                     </IconButton>
                   </Tooltip>
                 </Stack>
@@ -952,29 +975,112 @@ export default function PriceStatistics({ token, isDark = false }) {
             </TableRow>
           )}
 
+          {/* Creator Last Action */}
+          {creator && creatorLastAction && (
+            <>
+              <TableRow>
+                <ModernTableCell>
+                  <Typography
+                    isDark={isDark}
+                    variant="body2"
+                    style={{
+                      fontWeight: 400,
+                      color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                      fontSize: '12px'
+                    }}
+                    noWrap
+                  >
+                    Creator Last Action
+                  </Typography>
+                </ModernTableCell>
+                <ModernTableCell>
+                  <Tooltip title={`${creatorLastAction.type} - ${creatorLastAction.result}\nClick to view tx`}>
+                    <Link
+                      href={`/tx/${creatorLastAction.hash}`}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                        <Typography
+                          variant="body2"
+                          style={{
+                            fontWeight: 500,
+                            color: creatorLastAction.side === 'buy' ? '#10b981' : creatorLastAction.side === 'sell' ? '#f43f5e' : '#8b5cf6',
+                            fontSize: '12px',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {creatorLastAction.side || creatorLastAction.type}
+                        </Typography>
+                        {creatorLastAction.xrp > 0 && (
+                          <Typography
+                            variant="caption"
+                            style={{
+                              color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+                              fontSize: '11px'
+                            }}
+                          >
+                            {fNumber(creatorLastAction.xrp)} XRP
+                          </Typography>
+                        )}
+                        <Typography
+                          variant="caption"
+                          style={{
+                            color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                            fontSize: '10px'
+                          }}
+                        >
+                          {formatLastActionTime(creatorLastAction.time)}
+                        </Typography>
+                      </Stack>
+                    </Link>
+                  </Tooltip>
+                </ModernTableCell>
+              </TableRow>
+              {/* Creator Sell Warning */}
+              {creatorLastAction.side === 'sell' && (
+                <TableRow>
+                  <ModernTableCell colSpan={2} style={{ padding: '4px 12px 8px' }}>
+                    <Stack direction="row" alignItems="center" style={{
+                      gap: '8px',
+                      padding: '8px 12px',
+                      background: 'rgba(239,68,68,0.08)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(239,68,68,0.15)'
+                    }}>
+                      <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
+                      <Typography style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
+                        Creator sold {creatorLastAction.xrp > 0 ? `${fNumber(creatorLastAction.xrp)} XRP` : 'tokens'} {formatLastActionTime(creatorLastAction.time)}
+                      </Typography>
+                    </Stack>
+                  </ModernTableCell>
+                </TableRow>
+              )}
+            </>
+          )}
+
           {/* Creator Token Count - Full Width Warning Banner */}
           {creator && creatorTokens > 0 && (
             <TableRow>
-              <ModernTableCell colSpan={2} style={{ padding: '8px 10px' }}>
+              <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                 <Box
                   style={{
-                    borderRadius: '8px',
-                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
                     background: creatorTokens >= 10
-                      ? alpha('rgba(239,68,68,1)', 0.1)
+                      ? 'rgba(239,68,68,0.08)'
                       : creatorTokens >= 5
-                      ? alpha('rgba(245,158,11,1)', 0.08)
+                      ? 'rgba(245,158,11,0.06)'
                       : creatorTokens >= 2
-                      ? alpha('rgba(59,130,246,1)', 0.06)
-                      : alpha('rgba(34,197,94,1)', 0.06),
-                    border: `1.5px solid ${
+                      ? (isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.04)')
+                      : (isDark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.04)'),
+                    border: `1px solid ${
                       creatorTokens >= 10
-                        ? alpha('rgba(239,68,68,1)', 0.3)
+                        ? 'rgba(239,68,68,0.2)'
                         : creatorTokens >= 5
-                        ? alpha('rgba(245,158,11,1)', 0.25)
+                        ? 'rgba(245,158,11,0.18)'
                         : creatorTokens >= 2
-                        ? alpha('rgba(59,130,246,1)', 0.15)
-                        : alpha('rgba(34,197,94,1)', 0.15)
+                        ? 'rgba(59,130,246,0.12)'
+                        : 'rgba(34,197,94,0.12)'
                     }`
                   }}
                 >
@@ -982,17 +1088,17 @@ export default function PriceStatistics({ token, isDark = false }) {
                     {/* Left - Icon + Text */}
                     <Stack direction="row" alignItems="center" style={{ gap: '10px', flex: 1 }}>
                       {creatorTokens >= 5 ? (
-                        <AlertTriangle size={18} color={creatorTokens >= 10 ? '#ef4444' : '#f59e0b'} />
+                        <AlertTriangle size={16} color={creatorTokens >= 10 ? '#ef4444' : '#f59e0b'} strokeWidth={1.5} />
                       ) : creatorTokens >= 2 ? (
-                        <Layers size={16} color="#3b82f6" />
+                        <Layers size={15} color="#3b82f6" strokeWidth={1.5} />
                       ) : (
-                        <CheckCircle size={16} color="#22c55e" />
+                        <CheckCircle size={15} color="#10b981" strokeWidth={1.5} />
                       )}
                       <Typography
                         style={{
                           fontSize: '12px',
                           fontWeight: 500,
-                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.6)'
                         }}
                       >
                         {creatorTokens >= 10 ? 'Serial launcher' : creatorTokens >= 5 ? 'Multiple tokens' : creatorTokens >= 2 ? 'Has other tokens' : 'First token'}
@@ -1003,9 +1109,9 @@ export default function PriceStatistics({ token, isDark = false }) {
                     <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
                       <Typography
                         style={{
-                          fontSize: '18px',
+                          fontSize: '16px',
                           fontWeight: 600,
-                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : creatorTokens >= 2 ? '#3b82f6' : '#22c55e'
+                          color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : creatorTokens >= 2 ? '#3b82f6' : '#10b981'
                         }}
                       >
                         {creatorTokens}
@@ -1014,16 +1120,17 @@ export default function PriceStatistics({ token, isDark = false }) {
                         <Chip
                           size="small"
                           style={{
-                            height: '24px',
+                            height: '22px',
                             borderRadius: '6px',
-                            background: creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.12) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.1) : alpha('rgba(59,130,246,1)', 0.08),
-                            border: `1.5px solid ${creatorTokens >= 10 ? alpha('rgba(239,68,68,1)', 0.3) : creatorTokens >= 5 ? alpha('rgba(245,158,11,1)', 0.25) : alpha('rgba(59,130,246,1)', 0.15)}`,
+                            background: creatorTokens >= 10 ? 'rgba(239,68,68,0.1)' : creatorTokens >= 5 ? 'rgba(245,158,11,0.08)' : 'rgba(59,130,246,0.06)',
+                            border: `1px solid ${creatorTokens >= 10 ? 'rgba(239,68,68,0.2)' : creatorTokens >= 5 ? 'rgba(245,158,11,0.18)' : 'rgba(59,130,246,0.12)'}`,
                             color: creatorTokens >= 10 ? '#ef4444' : creatorTokens >= 5 ? '#f59e0b' : '#3b82f6',
                             fontSize: '9px',
                             fontWeight: 600,
                             paddingLeft: '8px',
                             paddingRight: '8px',
-                            textTransform: 'uppercase'
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px'
                           }}
                         >
                           {creatorTokens >= 10 ? 'HIGH RISK' : creatorTokens >= 5 ? 'CAUTION' : 'MODERATE'}
@@ -1033,11 +1140,11 @@ export default function PriceStatistics({ token, isDark = false }) {
                         <Chip
                           size="small"
                           style={{
-                            height: '24px',
+                            height: '22px',
                             borderRadius: '6px',
-                            background: alpha('rgba(34,197,94,1)', 0.08),
-                            border: `1.5px solid ${alpha('rgba(34,197,94,1)', 0.15)}`,
-                            color: '#22c55e',
+                            background: 'rgba(34,197,94,0.06)',
+                            border: '1px solid rgba(34,197,94,0.12)',
+                            color: '#10b981',
                             fontSize: '9px',
                             fontWeight: 600,
                             paddingLeft: '8px',
@@ -1057,18 +1164,18 @@ export default function PriceStatistics({ token, isDark = false }) {
           {/* Creator Activity - Inline */}
           {creator && activityOpen && (
             <TableRow>
-              <ModernTableCell colSpan={2} style={{ padding: '8px' }}>
+              <ModernTableCell colSpan={2} style={{ padding: '4px 12px 10px' }}>
                 <Box style={{
-                  background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)',
-                  borderRadius: '8px',
-                  padding: '10px',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`
+                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                  borderRadius: '10px',
+                  padding: '12px',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`
                 }}>
                   {/* Filter Tabs */}
-                  <Stack direction="row" style={{ gap: '4px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  <Stack direction="row" style={{ gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
                     {[
                       { key: 'all', label: 'All' },
-                      { key: 'exits', label: '🚨 Exits', color: '#ef4444' },
+                      { key: 'exits', label: 'Exits', color: '#ef4444' },
                       { key: 'sells', label: 'Sells' },
                       { key: 'buys', label: 'Buys' },
                       { key: 'amm', label: 'AMM' }
@@ -1078,19 +1185,19 @@ export default function PriceStatistics({ token, isDark = false }) {
                         variant="caption"
                         onClick={() => setActivityFilter(f.key)}
                         style={{
-                          padding: '4px 10px',
-                          fontSize: '10px',
-                          fontWeight: activityFilter === f.key ? 600 : 400,
+                          padding: '5px 12px',
+                          fontSize: '11px',
+                          fontWeight: activityFilter === f.key ? 500 : 400,
                           borderRadius: '6px',
                           cursor: 'pointer',
                           background: activityFilter === f.key
-                            ? (f.color ? alpha(f.color, 0.15) : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'))
+                            ? (f.color ? `${f.color}15` : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'))
                             : 'transparent',
                           color: activityFilter === f.key
-                            ? (f.color || (isDark ? '#fff' : '#000'))
-                            : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'),
-                          border: `1px solid ${activityFilter === f.key ? (f.color ? alpha(f.color, 0.3) : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)')) : 'transparent'}`,
-                          transition: 'all 0.15s'
+                            ? (f.color || (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)'))
+                            : (isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'),
+                          border: `1px solid ${activityFilter === f.key ? (f.color ? `${f.color}25` : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')) : 'transparent'}`,
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         {f.label}
@@ -1100,41 +1207,41 @@ export default function PriceStatistics({ token, isDark = false }) {
 
                   {/* Warning Banner */}
                   {hasWarning && (
-                    <Stack direction="row" alignItems="center" style={{ gap: '6px', marginBottom: '10px', padding: '8px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)' }}>
-                      <AlertTriangle size={14} color="#ef4444" />
+                    <Stack direction="row" alignItems="center" style={{ gap: '8px', marginBottom: '12px', padding: '10px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.15)' }}>
+                      <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
                       <Stack style={{ flex: 1 }}>
-                        <Typography variant="caption" style={{ color: '#ef4444', fontSize: '11px', fontWeight: 600 }}>⚠️ Exit Signal Detected</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '9px' }}>Creator has failed transactions in the last 24 hours</Typography>
+                        <Typography variant="caption" style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>Exit Signal Detected</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '10px' }}>Creator has failed transactions in the last 24 hours</Typography>
                       </Stack>
                     </Stack>
                   )}
 
                   {/* No token activity notice */}
                   {noTokenActivity && transactions.length > 0 && (
-                    <Stack direction="row" alignItems="center" style={{ gap: '6px', marginBottom: '8px', padding: '6px 8px', background: isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.2)' }}>
-                      <Typography variant="caption" style={{ color: '#3b82f6', fontSize: '9px' }}>
-                        ℹ️ No token trades found. Showing general account activity.
+                    <Stack direction="row" alignItems="center" style={{ gap: '8px', marginBottom: '10px', padding: '8px 10px', background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.04)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.12)' }}>
+                      <Typography variant="caption" style={{ color: '#3b82f6', fontSize: '10px' }}>
+                        No token trades found — showing general account activity
                       </Typography>
                     </Stack>
                   )}
 
                   {/* Loading / Empty / List */}
                   {(loadingTx || filterLoading) ? (
-                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
+                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', padding: '8px 0' }}>
                       Loading...
                     </Typography>
                   ) : transactions.length === 0 ? (
-                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '10px' }}>
+                    <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '11px', padding: '8px 0' }}>
                       No activity found
                     </Typography>
                   ) : (
                     <Stack spacing={0}>
                       {/* Header */}
-                      <Stack direction="row" style={{ padding: '0 0 6px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`, marginBottom: '4px' }}>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '70px', textTransform: 'uppercase' }}>Action</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, flex: 1, textAlign: 'right', textTransform: 'uppercase' }}>Token Amt</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '70px', textAlign: 'right', textTransform: 'uppercase' }}>XRP</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px', fontWeight: 600, width: '50px', textAlign: 'right', textTransform: 'uppercase' }}>Time</Typography>
+                      <Stack direction="row" style={{ padding: '0 0 8px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`, marginBottom: '6px' }}>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '70px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Action</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, flex: 1, textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Amount</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '70px', textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>XRP</Typography>
+                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '50px', textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time</Typography>
                       </Stack>
 
                       {transactions.map((event, i) => {
@@ -1185,30 +1292,28 @@ export default function PriceStatistics({ token, isDark = false }) {
                             direction="row"
                             alignItems="center"
                             style={{
-                              padding: '6px 0',
-                              borderBottom: i < transactions.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'}` : 'none',
-                              opacity: isFailed ? 0.6 : 1
+                              padding: '8px 0',
+                              borderBottom: i < transactions.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none',
+                              opacity: isFailed ? 0.5 : 1
                             }}
                           >
                             {/* Action */}
-                            <Stack direction="row" alignItems="center" style={{ width: '70px', gap: '4px' }}>
+                            <Stack direction="row" alignItems="center" style={{ width: '70px', gap: '5px' }}>
                               <Tooltip title={`${type}\n${result}\nLedger: ${ledger}`}>
                                 <Link
-                                  href={`https://xrpscan.com/tx/${hash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                  href={`/tx/${hash}`}
                                   onClick={(e) => e.stopPropagation()}
-                                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
                                 >
-                                  <span style={{ fontSize: '10px' }}>{cfg.icon}</span>
+                                  <span style={{ fontSize: '11px' }}>{cfg.icon}</span>
                                   <Typography variant="caption" style={{
                                     color: displayColor,
-                                    fontSize: '9px',
-                                    fontWeight: 600
+                                    fontSize: '10px',
+                                    fontWeight: 500
                                   }}>{cfg.label}</Typography>
                                 </Link>
                               </Tooltip>
-                              {isFailed && <span style={{ fontSize: '8px' }}>❌</span>}
+                              {isFailed && <span style={{ fontSize: '9px' }}>✕</span>}
                             </Stack>
 
                             {/* Token Amount */}
@@ -1216,15 +1321,15 @@ export default function PriceStatistics({ token, isDark = false }) {
                               <Typography variant="caption" style={{
                                 flex: 1,
                                 textAlign: 'right',
-                                color: hasToken ? (isDark ? '#fff' : '#000') : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
+                                color: hasToken ? (isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)') : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
                                 fontSize: '11px',
-                                fontWeight: hasToken ? 600 : 400,
+                                fontWeight: hasToken ? 500 : 400,
                                 fontFamily: 'monospace',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
                               }}>
-                                {hasToken ? `${fNumber(tokenAmount)}` : '-'}
+                                {hasToken ? `${fNumber(tokenAmount)}` : '—'}
                               </Typography>
                             </Tooltip>
 
@@ -1233,12 +1338,12 @@ export default function PriceStatistics({ token, isDark = false }) {
                               <Typography variant="caption" style={{
                                 width: '70px',
                                 textAlign: 'right',
-                                color: hasXrp ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'),
-                                fontSize: '10px',
+                                color: hasXrp ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
+                                fontSize: '11px',
                                 fontWeight: hasXrp ? 500 : 400,
                                 fontFamily: 'monospace'
                               }}>
-                                {hasXrp ? `${fNumber(xrpAmount)}` : '-'}
+                                {hasXrp ? `${fNumber(xrpAmount)}` : '—'}
                               </Typography>
                             </Tooltip>
 
@@ -1246,8 +1351,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                             <Typography variant="caption" style={{
                               width: '50px',
                               textAlign: 'right',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                              fontSize: '9px'
+                              color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                              fontSize: '10px'
                             }}>
                               {timeAgo}
                             </Typography>
@@ -1266,8 +1371,8 @@ export default function PriceStatistics({ token, isDark = false }) {
 
       {/* Social Links & Tags Section */}
       {(social || enhancedTags.length > 0) && (
-        <Box style={{ padding: '10px' }}>
-          <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '6px' }}>
+        <Box style={{ padding: '10px 14px 14px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+          <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '8px' }}>
             <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 4 : 6} isDark={isDark} />
             <CompactSocialLinks social={social} size="small" isDark={isDark} />
           </Stack>
@@ -1430,12 +1535,13 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              transition: 'all 0.15s ease'
             }}
           >
             {getIcon(platform)}
@@ -1459,17 +1565,18 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: '4px 8px',
+            gap: '5px',
+            padding: '5px 10px',
             borderRadius: '6px',
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
             textDecoration: 'none',
             fontSize: '10px',
             fontWeight: 500,
-            color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+            color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
             textTransform: 'uppercase',
-            letterSpacing: '0.3px'
+            letterSpacing: '0.4px',
+            transition: 'all 0.15s ease'
           }}
           rel="noreferrer noopener nofollow"
         >
@@ -1482,13 +1589,13 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
       {enhancedTags.length > maxTags && (
         <Typography
           style={{
-            padding: '4px 8px',
+            padding: '5px 10px',
             borderRadius: '6px',
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
             fontSize: '10px',
             fontWeight: 500,
-            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
             cursor: toggleTagsDrawer ? 'pointer' : 'default'
           }}
           onClick={() => toggleTagsDrawer && toggleTagsDrawer(true)}
