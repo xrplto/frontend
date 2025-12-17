@@ -919,6 +919,15 @@ const getTradeSizeInfo = (value) => {
 const formatTradeValue = (value) => {
   const numValue = typeof value === 'string' ? Number(value) : value;
 
+  // Handle very small values with more decimal places
+  if (Math.abs(numValue) < 0.000001) {
+    return numValue.toFixed(12);
+  }
+
+  if (Math.abs(numValue) < 0.00001) {
+    return numValue.toFixed(10);
+  }
+
   if (Math.abs(numValue) < 0.0001) {
     return numValue.toFixed(8);
   }

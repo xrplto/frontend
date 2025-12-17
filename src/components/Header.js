@@ -415,11 +415,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       return;
     }
 
-    if (detectedAddress) {
-      setSearchResults({ tokens: [], collections: [], txHash: null, nft: null, address: detectedAddress, ledger: null });
-      return;
-    }
-
     if (detectedHexId) {
       const controller = new AbortController();
       axios.post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
@@ -448,7 +443,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           collections: res.data?.collections?.slice(0, 3) || [],
           txHash: null,
           nft: null,
-          address: null,
+          address: detectedAddress,
           ledger: null
         });
       } catch {}
