@@ -72,7 +72,7 @@ const RichList = ({ token, amm }) => {
       return;
     }
 
-    const wsUrl = `wss://api.xrpl.to/ws/richlist/${token.md5}?limit=${rowsPerPage}`;
+    const wsUrl = `wss://api.xrpl.to/ws/holders/list/${token.md5}?limit=${rowsPerPage}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -121,7 +121,7 @@ const RichList = ({ token, amm }) => {
 
       setLoading(true);
       try {
-        let url = `https://api.xrpl.to/api/rich-list/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
+        let url = `https://api.xrpl.to/api/holders/list/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
         if (searchTerm.length >= 3) {
           url += `&search=${encodeURIComponent(searchTerm)}`;
         }

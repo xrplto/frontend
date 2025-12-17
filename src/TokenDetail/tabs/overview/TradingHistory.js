@@ -930,6 +930,15 @@ const formatTradeValue = (value) => {
   return abbreviateNumber(numValue);
 };
 
+const formatXRPAmount = (value) => {
+  const numValue = typeof value === 'string' ? Number(value) : value;
+  if (!Number.isFinite(numValue)) return '-';
+  if (Math.abs(numValue) < 0.01) return numValue.toFixed(4);
+  if (Math.abs(numValue) < 1) return numValue.toFixed(4);
+  if (Math.abs(numValue) < 100) return numValue.toFixed(2);
+  return abbreviateNumber(numValue);
+};
+
 const formatPrice = (value) => {
   // Handle null, undefined, NaN, Infinity
   if (value == null || !Number.isFinite(value)) {
@@ -1284,7 +1293,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                           {formatTradeValue(trade.amount)} {tokenCurrency}
                         </span>
                         <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                          {trade.total.toFixed(2)} XRP
+                          {formatXRPAmount(trade.total)} XRP
                         </span>
                       </Box>
                     ) : (
@@ -1302,7 +1311,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                           {formatPrice(trade.price)}
                         </span>
                         <span style={{ flex: '0.8', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {trade.total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
+                          {formatXRPAmount(trade.total)} <span style={{ opacity: 0.5 }}>XRP</span>
                         </span>
                         <span style={{ flex: '0.6', fontSize: '10px', color: '#22c55e', textTransform: 'uppercase' }}>
                           {trade.status}
@@ -1376,7 +1385,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
                         <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
                           <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                            {total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
+                            {formatXRPAmount(total)} <span style={{ opacity: 0.5 }}>XRP</span>
                           </span>
                           <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                             Total value
@@ -1645,7 +1654,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       setAmmLoading(true);
       try {
         const res = await fetch(
-          `https://api.xrpl.to/api/amm-pools?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
+          `https://api.xrpl.to/api/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
         );
         const data = await res.json();
         setAmmPools(data.pools || []);

@@ -326,7 +326,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
       if (isDevelopment) {
         try {
-          const res = await axios.get(`${BASE_URL}/testnet-balance/${account}`);
+          const res = await axios.get(`${BASE_URL}/testnet/${account}`);
           if (res.status === 200 && res.data) {
             setAccountBalance({
               curr1: {

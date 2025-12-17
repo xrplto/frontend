@@ -79,9 +79,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `/gainers/[period]` - Get top gainers
 - `/new` - Get new tokens
 - `/most-viewed` - Get most viewed tokens
-- `/api/amm-pools` - Get AMM pools with APY, volume, fees, liquidity metrics
+- `/api/amm` - Get AMM pools with APY, volume, fees, liquidity metrics
 
-#### AMM Pools API (`/api/amm-pools`)
+#### AMM Pools API (`/api/amm`)
 Returns all Automated Market Maker pools with pre-calculated APY metrics, trading volumes, fees earned, and liquidity data. APY calculations are updated every minute.
 
 **Query Parameters:**
@@ -113,19 +113,19 @@ Returns all Automated Market Maker pools with pre-calculated APY metrics, tradin
 **Usage Examples:**
 ```javascript
 // Top pools by fees earned (most reliable)
-GET /api/amm-pools?sortBy=fees
+GET /api/amm?sortBy=fees
 
 // Highest APY pools
-GET /api/amm-pools?sortBy=apy
+GET /api/amm?sortBy=apy
 
 // All pools for a specific token
-GET /api/amm-pools?issuer=rXXX&currency=MTG
+GET /api/amm?issuer=rXXX&currency=MTG
 
 // Most liquid XRP pools
-GET /api/amm-pools?currency=XRP&sortBy=liquidity
+GET /api/amm?currency=XRP&sortBy=liquidity
 
 // Recently created pools
-GET /api/amm-pools?sortBy=created
+GET /api/amm?sortBy=created
 ```
 
 **Important Notes:**

@@ -170,8 +170,8 @@ Response: { result, tokens[], pagination: { page, limit, total, hasMore } }
 
 GET /slugs - Get all token slugs
 GET /tags - Get all token tags with counts
-GET /other-tokens/{issuer} - Get other tokens from same issuer (md5, page, limit)
-GET /token-traders/{tokenId} - Get top traders with P&L stats (sortBy: volume|pnl|trades, minVolume)`,
+GET /issuer/{issuer} - Get other tokens from same issuer (md5, page, limit)
+GET /traders/token-traders/{tokenId} - Get top traders with P&L stats (sortBy: volume|pnl|trades, minVolume)`,
 
     market: `## Market Data API
 Base URL: https://api.xrpl.to/api
@@ -186,18 +186,18 @@ Response: { result, source, took, length, range, interval, interval_seconds, vs_
 GET /sparkline/{md5} - Sparkline price data for mini charts
 Params: period (24h|7d, default:7d), lightweight (bool, default:false), maxPoints (int, default:20)
 
-GET /rich-list/{md5} - Top token holders (start, limit)
-GET /rich-info/{md5} - Holder distribution statistics
-GET /graph-rich/{md5} - Holder distribution graph data
+GET /holders/list/{md5} - Top token holders (start, limit)
+GET /holders/info/{md5} - Holder distribution statistics
+GET /holders/graph/{md5} - Holder distribution graph data
 
 GET /rsi - RSI technical indicators with filtering
 Params: start, limit (max:100), sortBy (rsi15m|rsi1h|rsi4h|rsi24h|rsi7d), sortType, timeframe, filter, tag, origin, minMarketCap, maxMarketCap, minVolume24h, maxVolume24h, minPriceChange24h, maxPriceChange24h, minRsi15m, maxRsi15m, minRsi1h, maxRsi1h, minRsi4h, maxRsi4h, minRsi24h, maxRsi24h, minRsi7d, maxRsi7d
 Example: GET /api/rsi?minRsi24h=70&sortBy=rsi24h&limit=20
 
-POST /historical-metrics - Get historical token metrics (body: { md5, range })
+POST /metrics - Get historical token metrics (body: { md5, range })
 GET /news - XRPL news with sentiment (5min cache, page, limit, source filter)
 GET /news/search?q={query} - Search news articles by title/summary/body
-GET /platform-status - Global platform metrics (30s cache)`,
+GET /stats - Global platform metrics (30s cache)`,
 
     trading: `## Trading API
 Base URL: https://api.xrpl.to/api
@@ -208,12 +208,12 @@ Notes: Limit defaults: 10 (no filter), 20 (md5/account), 50 (both), 100 (time ra
 Example: GET /api/history?md5=0413ca7cfc258dfaf698c02fe304e607&xrpAmount=100&limit=50
 Response: { result, took, hists[], recordsReturned, totalRecords, page, limit, timeRange }
 
-GET /amm-pools - AMM liquidity pools with metrics
+GET /amm - AMM liquidity pools with metrics
 Params: page, limit (default:25, max:100), status (active|all), issuer, currency, sortBy (fees|apy|liquidity|volume|created)
 Response: { result, took, summary: { totalLiquidity, totalVolume24h, totalFees7d, avgFee }, pools[], page, limit, totalCount, totalPages }
 
 GET /pairs/{md5} - Trading pairs for token
-GET /pair-rates - Exchange rates (base, quote)`,
+GET /rates - Exchange rates (base, quote)`,
 
     account: `## Account API
 Base URL: https://api.xrpl.to/api
@@ -228,7 +228,7 @@ GET /account/info/{account} - Pair balance info (curr1, issuer1, curr2, issuer2)
 GET /account/tx/{account} - Trade history by pair (curr1, issuer1, curr2, issuer2)
 GET /account/offers/{account} - Open DEX offers (pair, page, limit max:50)
 
-GET /trader/{address} - Trader profile with stats
+GET /traders/{address} - Trader profile with stats
 GET /watchlist?account={account} - User watchlist
 POST /watchlist - Add/remove token (body: { account, md5, action: "add"|"remove" })
 
@@ -328,9 +328,9 @@ Final State: issuer ~1 XRP locked (blackholed), holder ~1.4 XRP locked (base + L
 Base URL: https://api.xrpl.to/api
 
 GET /health - API health check (returns "success")
-GET /testnet-balance/{address} - Get XRP balance on testnet
-GET /xrpnft/tokens - Get tokens in XRPNFT format (filter param)
-GET /xrpnft/filter-by-account/{account} - Get NFTs owned by account (XRPNFT format)`,
+GET /testnet/{address} - Get XRP balance on testnet
+GET /integrations/xrpnft/tokens - Get tokens in XRPNFT format (filter param)
+GET /integrations/xrpnft/filter-by-account/{account} - Get NFTs owned by account (XRPNFT format)`,
 
     reference: `## Reference
 Token Identifiers:
@@ -669,8 +669,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 {[
                   ['GET', '/api/slugs', 'Get all token slugs'],
                   ['GET', '/api/tags', 'Get all token tags with counts'],
-                  ['GET', '/api/other-tokens/{issuer}', 'Get tokens from same issuer (md5, page, limit)'],
-                  ['GET', '/api/token-traders/{tokenId}', 'Top traders with P&L (sortBy: volume|pnl|trades, minVolume)']
+                  ['GET', '/api/issuer/{issuer}', 'Get tokens from same issuer (md5, page, limit)'],
+                  ['GET', '/api/traders/token-traders/{tokenId}', 'Top traders with P&L (sortBy: volume|pnl|trades, minVolume)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -738,12 +738,12 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/api/sparkline/{md5}', 'Sparkline data (period: 24h|7d, lightweight, maxPoints)'],
-                  ['GET', '/api/rich-list/{md5}', 'Top token holders (start, limit)'],
-                  ['GET', '/api/rich-info/{md5}', 'Holder distribution statistics'],
-                  ['GET', '/api/graph-rich/{md5}', 'Holder distribution graph'],
+                  ['GET', '/api/holders/list/{md5}', 'Top token holders (start, limit)'],
+                  ['GET', '/api/holders/info/{md5}', 'Holder distribution statistics'],
+                  ['GET', '/api/holders/graph/{md5}', 'Holder distribution graph'],
                   ['GET', '/api/rsi', 'RSI indicators with filtering (all timeframes, market/volume/price filters)'],
-                  ['POST', '/api/historical-metrics', 'Historical token metrics (body: { md5, range })'],
-                  ['GET', '/api/platform-status', 'Global platform metrics (30s cache)'],
+                  ['POST', '/api/metrics', 'Historical token metrics (body: { md5, range })'],
+                  ['GET', '/api/stats', 'Global platform metrics (30s cache)'],
                   ['GET', '/api/news', 'XRPL news with sentiment (5min cache, source filter)'],
                   ['GET', '/api/news/search?q={query}', 'Search news by title/summary/body']
                 ].map(([method, path, desc]) => (
@@ -816,9 +816,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/amm-pools', 'AMM pools with metrics (sortBy: fees|apy|liquidity|volume|created)'],
+                  ['GET', '/api/amm', 'AMM pools with metrics (sortBy: fees|apy|liquidity|volume|created)'],
                   ['GET', '/api/pairs/{md5}', 'Trading pairs for token'],
-                  ['GET', '/api/pair-rates', 'Exchange rates (base, quote)']
+                  ['GET', '/api/rates', 'Exchange rates (base, quote)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -848,7 +848,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   ['GET', '/api/account/info/{account}', 'Pair balance info (curr1, issuer1, curr2, issuer2)'],
                   ['GET', '/api/account/tx/{account}', 'Trade history by pair (curr1, issuer1, curr2, issuer2)'],
                   ['GET', '/api/account/offers/{account}', 'Open DEX offers (pair, page, limit max:50)'],
-                  ['GET', '/api/trader/{address}', 'Trader profile with stats'],
+                  ['GET', '/api/traders/{address}', 'Trader profile with stats'],
                   ['GET', '/api/watchlist?account={account}', 'User watchlist'],
                   ['POST', '/api/watchlist', 'Add/remove token (body: { account, md5, action })'],
                   ['POST', '/api/oauth/twitter/oauth1/request', 'Twitter OAuth request token (body: { callbackUrl })'],
@@ -1205,9 +1205,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/api/health', 'API health check (returns "success")'],
-                  ['GET', '/api/testnet-balance/{address}', 'Get XRP balance on testnet'],
-                  ['GET', '/api/xrpnft/tokens', 'Get tokens in XRPNFT format (filter param)'],
-                  ['GET', '/api/xrpnft/filter-by-account/{account}', 'Get NFTs owned by account (XRPNFT format)']
+                  ['GET', '/api/testnet/{address}', 'Get XRP balance on testnet'],
+                  ['GET', '/api/integrations/xrpnft/tokens', 'Get tokens in XRPNFT format (filter param)'],
+                  ['GET', '/api/integrations/xrpnft/filter-by-account/{account}', 'Get NFTs owned by account (XRPNFT format)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -1335,8 +1335,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </p>
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /api/api-keys</span>
-                  <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/api/api-keys', {
+                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /api/keys</span>
+                  <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/api/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1350,7 +1350,7 @@ const { apiKey, keyPrefix } = await response.json();
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`const response = await fetch('https://api.xrpl.to/api/api-keys', {
+{`const response = await fetch('https://api.xrpl.to/api/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1505,7 +1505,7 @@ const { apiKey, keyPrefix } = await response.json();
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>XRP Payment Flow</span>
                   <button onClick={() => copyToClipboard(`// 1. Get payment details
-const res = await fetch('https://api.xrpl.to/api/api-keys/purchase', {
+const res = await fetch('https://api.xrpl.to/api/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1527,7 +1527,7 @@ const payment = {
 const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
 // 3. Verify (auto-polls for 30s)
-await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
+await fetch('https://api.xrpl.to/api/keys/verify-payment', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ txHash: result.result.hash })
@@ -1537,7 +1537,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
 {`// 1. Get payment details
-const res = await fetch('https://api.xrpl.to/api/api-keys/purchase', {
+const res = await fetch('https://api.xrpl.to/api/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1559,7 +1559,7 @@ const payment = {
 const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
 // 3. Verify (auto-polls for 30s)
-await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
+await fetch('https://api.xrpl.to/api/keys/verify-payment', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ txHash: result.result.hash })
@@ -1574,7 +1574,7 @@ await fetch('https://api.xrpl.to/api/api-keys/verify-payment', {
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Stripe Checkout</span>
                   <button onClick={() => copyToClipboard(`// 1. Create checkout session
-const res = await fetch('https://api.xrpl.to/api/api-keys/stripe/checkout', {
+const res = await fetch('https://api.xrpl.to/api/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1590,7 +1590,7 @@ window.location.href = res.checkoutUrl;
 
 // 3. Check status (after redirect back)
 const status = await fetch(
-  \`https://api.xrpl.to/api/api-keys/stripe/status/\${sessionId}\`
+  \`https://api.xrpl.to/api/keys/stripe/status/\${sessionId}\`
 ).then(r => r.json());
 // status: 'unpaid' | 'paid' | 'completed'`, 'stripe-code')} className="p-1.5 rounded hover:bg-white/10">
                     {copiedBlock === 'stripe-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
@@ -1598,7 +1598,7 @@ const status = await fetch(
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
 {`// 1. Create checkout session
-const res = await fetch('https://api.xrpl.to/api/api-keys/stripe/checkout', {
+const res = await fetch('https://api.xrpl.to/api/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1614,7 +1614,7 @@ window.location.href = res.checkoutUrl;
 
 // 3. Check status (after redirect back)
 const status = await fetch(
-  \`https://api.xrpl.to/api/api-keys/stripe/status/\${sessionId}\`
+  \`https://api.xrpl.to/api/keys/stripe/status/\${sessionId}\`
 ).then(r => r.json());
 // status: 'unpaid' | 'paid' | 'completed'`}
                 </pre>
@@ -1627,7 +1627,7 @@ const status = await fetch(
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /:wallet/credits & /:wallet/subscription</span>
                   <button onClick={() => copyToClipboard(`// Get credits with billing cycle
-GET /api/api-keys/:wallet/credits
+GET /api/keys/:wallet/credits
 {
   "balance": 1000000,
   "billingCycle": {
@@ -1640,7 +1640,7 @@ GET /api/api-keys/:wallet/credits
 }
 
 // Get subscription details
-GET /api/api-keys/:wallet/subscription
+GET /api/keys/:wallet/subscription
 {
   "subscription": {
     "tier": "developer",
@@ -1658,7 +1658,7 @@ GET /api/api-keys/:wallet/subscription
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
 {`// Get credits with billing cycle
-GET /api/api-keys/:wallet/credits
+GET /api/keys/:wallet/credits
 {
   "balance": 1000000,
   "billingCycle": {
@@ -1671,7 +1671,7 @@ GET /api/api-keys/:wallet/credits
 }
 
 // Get subscription details
-GET /api/api-keys/:wallet/subscription
+GET /api/keys/:wallet/subscription
 {
   "subscription": {
     "tier": "developer",

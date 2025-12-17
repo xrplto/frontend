@@ -1466,7 +1466,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       }
 
       setLoadingPrice(true);
-      const promise = axios.get(`${BASE_URL}/pair-rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
+      const promise = axios.get(`${BASE_URL}/rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
       fetchInFlight.set(pairKey, promise);
 
       try {

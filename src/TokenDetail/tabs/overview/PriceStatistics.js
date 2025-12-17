@@ -251,7 +251,7 @@ export default function PriceStatistics({ token, isDark = false }) {
 
     try {
       // First try creator-activity API (token-specific)
-      let url = `https://api.xrpl.to/api/creator-activity/${creator}?limit=12`;
+      let url = `https://api.xrpl.to/api/creators/${creator}?limit=12`;
       if (filter === 'sells') url += '&side=sell';
       else if (filter === 'buys') url += '&side=buy';
       else if (filter === 'amm') url += '&type=AMMDeposit,AMMWithdraw';
@@ -997,6 +997,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                   <Tooltip title={`${creatorLastAction.type} - ${creatorLastAction.result}\nClick to view tx`}>
                     <Link
                       href={`/tx/${creatorLastAction.hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{ textDecoration: 'none' }}
                     >
                       <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>

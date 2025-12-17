@@ -60,7 +60,7 @@ const OverView = ({ account }) => {
       try {
         // Fetch profile data and holdings
         const [profileRes, holdingsRes] = await Promise.all([
-          axios.get(`https://api.xrpl.to/api/trader/${account}`).catch(() => ({ data: null })),
+          axios.get(`https://api.xrpl.to/api/traders/${account}`).catch(() => ({ data: null })),
           axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0&format=full`)
             .catch(() => axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0`))
             .catch(() => ({ data: null }))

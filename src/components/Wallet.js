@@ -2455,7 +2455,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (isDevelopment) {
         // Use backend testnet endpoint
-        const response = await fetch(`https://api.xrpl.to/api/testnet-balance/${address}`);
+        const response = await fetch(`https://api.xrpl.to/api/testnet/${address}`);
         if (response.ok) {
           const data = await response.json();
           if (data.balanceXRP) {

@@ -174,8 +174,8 @@ const DashboardPage = () => {
 
     try {
       const [keysRes, usageRes] = await Promise.all([
-        axios.get(`${BASE_URL}/api-keys/${walletAddress}`),
-        axios.get(`${BASE_URL}/api-keys/${walletAddress}/usage`)
+        axios.get(`${BASE_URL}/keys/${walletAddress}`),
+        axios.get(`${BASE_URL}/keys/${walletAddress}/usage`)
       ]);
 
       setApiKeys(keysRes.data.keys || []);
@@ -197,8 +197,8 @@ const DashboardPage = () => {
     if (!walletAddress) return;
     try {
       const [creditsRes, subRes] = await Promise.all([
-        axios.get(`${BASE_URL}/api-keys/${walletAddress}/credits`),
-        axios.get(`${BASE_URL}/api-keys/${walletAddress}/subscription`).catch(() => null)
+        axios.get(`${BASE_URL}/keys/${walletAddress}/credits`),
+        axios.get(`${BASE_URL}/keys/${walletAddress}/subscription`).catch(() => null)
       ]);
       setCredits(creditsRes.data);
       if (subRes?.data) setSubscription(subRes.data);
@@ -228,7 +228,7 @@ const DashboardPage = () => {
     }
 
     if (sessionId) {
-      axios.get(`${BASE_URL}/api-keys/stripe/status/${sessionId}`)
+      axios.get(`${BASE_URL}/keys/stripe/status/${sessionId}`)
         .then(res => {
           if (res.data.status === 'complete' || res.data.status === 'paid') {
             setStripeSuccess({
@@ -264,7 +264,7 @@ const DashboardPage = () => {
         payload.billing = billingPeriod;
       }
 
-      const res = await axios.post(`${BASE_URL}/api-keys/stripe/checkout`, payload);
+      const res = await axios.post(`${BASE_URL}/keys/stripe/checkout`, payload);
 
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
@@ -296,7 +296,7 @@ const DashboardPage = () => {
         payload.billing = billingPeriod;
       }
 
-      const res = await axios.post(`${BASE_URL}/api-keys/purchase`, payload);
+      const res = await axios.post(`${BASE_URL}/keys/purchase`, payload);
 
       if (res.data.payment) {
         setXrpPayment({
@@ -362,7 +362,7 @@ const DashboardPage = () => {
 
         // Verify payment (backend auto-polls)
         setPaymentStatus('verifying');
-        const verifyRes = await axios.post(`${BASE_URL}/api-keys/verify-payment`, {
+        const verifyRes = await axios.post(`${BASE_URL}/keys/verify-payment`, {
           txHash: signed.hash
         });
 
@@ -399,7 +399,7 @@ const DashboardPage = () => {
     setError(null);
 
     try {
-      const res = await axios.post(`${BASE_URL}/api-keys/verify-payment`, {
+      const res = await axios.post(`${BASE_URL}/keys/verify-payment`, {
         txHash: txHash.trim()
       });
 
@@ -452,7 +452,7 @@ const DashboardPage = () => {
       }
 
       const res = await axios.post(
-        `${BASE_URL}/api-keys`,
+        `${BASE_URL}/keys`,
         { name: newKeyName.trim() },
         { headers }
       );
@@ -487,7 +487,7 @@ const DashboardPage = () => {
       }
 
       await axios.delete(
-        `${BASE_URL}/api-keys/${walletAddress}/${keyId}`,
+        `${BASE_URL}/keys/${walletAddress}/${keyId}`,
         { headers }
       );
       fetchApiKeys();

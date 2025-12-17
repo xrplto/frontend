@@ -346,7 +346,7 @@ function AMMPoolsPage({ data }) {
         return acc;
       }, {});
 
-      const response = await axios.get(`${BASE_URL}/api/amm-pools`, { params: cleanParams });
+      const response = await axios.get(`${BASE_URL}/api/amm`, { params: cleanParams });
 
       if (response.data?.pools) {
         setPools(response.data.pools);
@@ -644,7 +644,7 @@ export async function getStaticProps() {
   const BASE_URL = 'https://api.xrpl.to';
 
   try {
-    const res = await axios.get(`${BASE_URL}/api/amm-pools`, {
+    const res = await axios.get(`${BASE_URL}/api/amm`, {
       params: {
         sortBy: 'fees',
         limit: 50,
