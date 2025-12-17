@@ -278,8 +278,8 @@ export function TokenShareModal({ token }) {
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1 px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors ${
           isDark
-            ? 'border-blue-500/20 text-white/50 hover:border-blue-500/40 hover:text-blue-400'
-            : 'border-blue-200 text-gray-500 hover:border-blue-400 hover:text-blue-600'
+            ? 'border-[#3f96fe]/20 text-white/50 hover:border-[#3f96fe]/40 hover:text-[#3f96fe]'
+            : 'border-gray-200 text-gray-500 hover:border-[#3f96fe] hover:text-[#3f96fe]'
         }`}
       >
         <ShareIcon size={12} />
@@ -293,8 +293,8 @@ export function TokenShareModal({ token }) {
         >
           <div
             onClick={e => e.stopPropagation()}
-            className={`w-[90%] max-w-[400px] rounded-xl border-[1.5px] overflow-hidden ${
-              isDark ? 'bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10' : 'bg-white backdrop-blur-2xl border-blue-200 shadow-xl shadow-blue-200/50'
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
+              isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
             }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
@@ -310,14 +310,14 @@ export function TokenShareModal({ token }) {
               <img
                 src={imgUrl}
                 alt={name}
-                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-blue-500/20' : 'border-blue-200'}`}
+                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-[#3f96fe]/20' : 'border-gray-200'}`}
               />
               <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {user} {name}
               </span>
 
               <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                isDark ? 'border-blue-500/20 bg-white/[0.04]' : 'border-blue-200 bg-blue-50/50'
+                isDark ? 'border-[#3f96fe]/20 bg-white/[0.04]' : 'border-gray-200 bg-gray-50/50'
               }`}>
                 <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Current Price</p>
                 <p className="text-[18px] font-medium text-primary">
@@ -328,16 +328,10 @@ export function TokenShareModal({ token }) {
 
               <div className="w-full">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                  <span className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}>
                     Share on
                   </span>
-                  <div
-                    className="flex-1 h-px"
-                    style={{
-                      backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                      backgroundSize: '6px 1px'
-                    }}
-                  />
+                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                 </div>
                 <div className="flex flex-wrap gap-2.5 justify-center">
                   {socialPlatforms.map(({ Component, Icon, props }, i) => (
@@ -352,19 +346,13 @@ export function TokenShareModal({ token }) {
 
               <div className="w-full">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                  <span className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}>
                     Copy Link
                   </span>
-                  <div
-                    className="flex-1 h-px"
-                    style={{
-                      backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                      backgroundSize: '6px 1px'
-                    }}
-                  />
+                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                 </div>
                 <div className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-blue-500/20 bg-white/[0.04]' : 'border-blue-200 bg-blue-50/50'
+                  isDark ? 'border-[#3f96fe]/20 bg-white/[0.04]' : 'border-gray-200 bg-gray-50/50'
                 }`}>
                   <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
                     {url}

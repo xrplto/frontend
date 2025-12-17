@@ -491,8 +491,8 @@ const TokenSummary = memo(({ token }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
           <div
             className={cn(
-              "w-full max-w-lg rounded-xl border p-5 max-h-[80vh] overflow-y-auto",
-              isDark ? "bg-[#0a0f16] border-white/[0.08]" : "bg-white border-black/[0.08]"
+              "w-full max-w-lg rounded-2xl border p-5 max-h-[80vh] overflow-y-auto",
+              isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
             )}
             onClick={(e) => e.stopPropagation()}
           >

@@ -210,8 +210,8 @@ const DialogContent = ({ children, sx }) => (
 // StyledPopoverPaper component - Glass effect styling with mobile support
 const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
   <div className={cn(
-    "overflow-hidden max-h-[80vh] overflow-y-auto rounded-xl border-[1.5px]",
-    isDark ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border-blue-200 shadow-xl shadow-blue-200/50"
+    "overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border",
+    isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
   )}>
     {children}
   </div>
@@ -696,14 +696,14 @@ const WalletContent = ({
               "w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all",
               backupAgreed
                 ? "border-primary bg-primary/5"
-                : isDark ? "border-blue-500/20 hover:border-blue-500/30" : "border-blue-200 hover:border-blue-300"
+                : isDark ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/30" : "border-blue-200 hover:border-blue-300"
             )}
           >
             <div className={cn(
               "w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
               backupAgreed
                 ? "bg-primary"
-                : isDark ? "border-2 border-blue-500/30" : "border-2 border-blue-300"
+                : isDark ? "border-2 border-[#3f96fe]/30" : "border-2 border-blue-300"
             )}>
               {backupAgreed && <Check size={12} className="text-white" />}
             </div>
@@ -728,8 +728,8 @@ const WalletContent = ({
               className={cn(
                 "w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all",
                 isDark
-                  ? "bg-white/[0.04] border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50 disabled:opacity-40"
-                  : "bg-gray-50 border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 disabled:opacity-40"
+                  ? "bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50 disabled:opacity-40"
+                  : "bg-gray-50 border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe] disabled:opacity-40"
               )}
             />
             <button
@@ -756,7 +756,7 @@ const WalletContent = ({
               className={cn(
                 "flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all",
                 isDark
-                  ? "border-blue-500/20 text-white/70 hover:bg-blue-500/5"
+                  ? "border-[#3f96fe]/20 text-white/70 hover:bg-[#3f96fe]/5"
                   : "border-blue-200 text-gray-600 hover:bg-blue-50"
               )}
             >
@@ -3561,7 +3561,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             newAccountMode === 'new'
                               ? "border-primary bg-primary text-white"
                               : isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40"
                               : "border-blue-200 text-gray-900 hover:bg-blue-50"
                           )}
                         >
@@ -3574,7 +3574,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             newAccountMode === 'import'
                               ? "border-primary bg-primary text-white"
                               : isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40"
                               : "border-blue-200 text-gray-900 hover:bg-blue-50"
                           )}
                         >
@@ -3605,8 +3605,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       : hasInput && validation.valid
                                       ? "border-green-500/50 focus:border-green-500"
                                       : isDark
-                                      ? "border-blue-500/20 focus:border-blue-500/50"
-                                      : "border-blue-200 focus:border-blue-500",
+                                      ? "border-[#3f96fe]/20 focus:border-[#3f96fe]/50"
+                                      : "border-blue-200 focus:border-[#3f96fe]",
                                     isDark
                                       ? "bg-white/[0.03] border text-white placeholder:text-white/30"
                                       : "bg-white border text-gray-900 placeholder:text-gray-400"
@@ -3638,8 +3638,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
                               isDark
-                                ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                             )}
                           />
                           <button
@@ -3718,7 +3718,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "w-full flex items-center justify-between p-3 rounded-lg border-[1.5px] transition-colors",
                               isDark
-                                ? "border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/5"
+                                ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
                                 : "border-blue-200 hover:border-blue-400 hover:bg-blue-50"
                             )}
                           >
@@ -3756,7 +3756,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               "w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors",
                               seedWarningAgreed
                                 ? "border-primary bg-primary/5"
-                                : isDark ? "border-blue-500/20 hover:border-blue-500/40" : "border-blue-200 hover:border-blue-400"
+                                : isDark ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/40" : "border-blue-200 hover:border-blue-400"
                             )}
                           >
                             <div className={cn(
@@ -3786,8 +3786,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors",
                                   isDark
-                                    ? "bg-white/[0.04] border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500"
-                                    : "bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]"
+                                    : "bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                               <button
@@ -3811,7 +3811,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
-                                isDark ? "border-blue-500/20 text-white hover:bg-blue-500/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
+                                isDark ? "border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
                               )}
                             >
                               Cancel
@@ -3834,7 +3834,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'success' && (
                         <div className="space-y-3">
-                          <div className={cn("p-3 rounded-lg", isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-200")}>
+                          <div className={cn("p-3 rounded-lg", isDark ? "bg-[#3f96fe]/10 border border-[#3f96fe]/20" : "bg-blue-50 border border-blue-200")}>
                             <p className={cn("text-[11px]", isDark ? "text-blue-400" : "text-blue-700")}>
                               Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
                             </p>
@@ -3848,7 +3848,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             title={seedBlurred ? 'Click to reveal' : ''}
                             className={cn(
                               "p-3 rounded-lg font-mono text-[11px] break-all leading-relaxed",
-                              isDark ? "bg-white/[0.04] border border-blue-500/20" : "bg-gray-50 border border-blue-200",
+                              isDark ? "bg-white/[0.04] border border-[#3f96fe]/20" : "bg-gray-50 border border-blue-200",
                               seedBlurred && "blur-[5px] cursor-pointer select-none"
                             )}
                           >
@@ -3870,7 +3870,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               onClick={() => setSeedBlurred(!seedBlurred)}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors",
-                                isDark ? "border-blue-500/20 text-white hover:bg-blue-500/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
+                                isDark ? "border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
                               )}
                             >
                               {seedBlurred ? 'Show' : 'Hide'}
@@ -3919,7 +3919,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
                               : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
@@ -3938,7 +3938,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
                               : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
@@ -3952,7 +3952,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
                               : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
@@ -3968,7 +3968,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg border-[1.5px] px-4 py-3 text-[13px] font-normal transition-colors group",
                             isDark
-                              ? "border-blue-500/20 text-white hover:border-blue-500/40 hover:bg-blue-500/5"
+                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
                               : "border-blue-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                           )}
                         >
@@ -4030,8 +4030,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4067,8 +4067,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm text-center font-mono tracking-[0.5em] outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4104,8 +4104,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
                                   isDark
-                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                               <div className="flex gap-2">
@@ -4282,7 +4282,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             className={cn(
                               "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-[1.5px] text-xs font-normal transition-all",
                               isDark
-                                ? "border-blue-500/20 text-white/60 hover:border-blue-500/40 hover:text-blue-400"
+                                ? "border-[#3f96fe]/20 text-white/60 hover:border-[#3f96fe]/40 hover:text-[#3f96fe]"
                                 : "border-blue-200 text-gray-500 hover:border-blue-400 hover:text-blue-600"
                             )}
                           >
@@ -4343,8 +4343,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
                                   isDark
-                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                               <button
@@ -4369,8 +4369,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "w-full px-4 py-3 rounded-xl text-sm outline-none transition-all",
                                   isDark
-                                    ? "bg-white/[0.04] border border-blue-500/20 text-white placeholder:text-white/30 focus:border-blue-500/50"
-                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
+                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
+                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
                                 )}
                               />
                             )}
@@ -4387,7 +4387,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 className={cn(
                                   "flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all",
                                   isDark
-                                    ? "border-blue-500/20 text-white/70 hover:bg-blue-500/5"
+                                    ? "border-[#3f96fe]/20 text-white/70 hover:bg-[#3f96fe]/5"
                                     : "border-blue-200 text-gray-600 hover:bg-blue-50"
                                 )}
                               >
