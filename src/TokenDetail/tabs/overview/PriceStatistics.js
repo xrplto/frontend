@@ -618,6 +618,15 @@ export default function PriceStatistics({ token, isDark = false }) {
           ) : null}
 
           {/* ========== BUY/SELL METRICS GROUP ========== */}
+          {(buy24hxrp > 0 || sell24hxrp > 0) && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
+                <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  24h Trading
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
 
           {/* Buy/Sell Ratio Visual Bar */}
           {(buy24hxrp > 0 || sell24hxrp > 0) && (() => {
@@ -798,6 +807,15 @@ export default function PriceStatistics({ token, isDark = false }) {
             </TableRow>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
+          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
+                <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  AMM Liquidity
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
 
           {/* AMM Flow Visual Bar */}
           {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (() => {
@@ -825,10 +843,10 @@ export default function PriceStatistics({ token, isDark = false }) {
                     </Stack>
                     <Stack direction="row" style={{ justifyContent: 'space-between', marginTop: '4px' }}>
                       <Typography style={{ fontSize: '10px', color: '#10b981', fontWeight: 500 }}>
-                        {formatPct(inRaw)}% In
+                        {formatPct(inRaw)}% Deposit
                       </Typography>
                       <Typography style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 500 }}>
-                        {formatPct(outRaw)}% Out
+                        {formatPct(outRaw)}% Withdraw
                       </Typography>
                     </Stack>
                   </Box>
@@ -962,6 +980,15 @@ export default function PriceStatistics({ token, isDark = false }) {
           )}
 
           {/* ========== TOKEN INFO GROUP ========== */}
+          {(date || dateon || creator) && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
+                <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Token Info
+                </Typography>
+              </ModernTableCell>
+            </TableRow>
+          )}
 
           {/* Created Date Row */}
           {date || dateon ? (
