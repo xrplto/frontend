@@ -582,9 +582,9 @@ const StyledTableCell = styled.th`
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: 12px 8px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
+  padding: 14px 4px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -599,12 +599,12 @@ const StyledTableCell = styled.th`
   }
 
   &:last-of-type {
-    padding-right: 4px;
+    padding-right: 12px;
   }
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') : 'inherit'};
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
   }
 `;
 
@@ -632,14 +632,15 @@ const MobileContainer = styled.div`
 const StyledMobileHeader = styled.div`
   display: flex;
   width: 100%;
-  padding: 10px 12px;
-  background: ${(props) => props.isDark ? 'rgba(10, 10, 10, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
+  padding: 12px 16px;
+  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)'};
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'};
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   position: sticky;
   top: 0;
   z-index: 10;
@@ -671,10 +672,10 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '220px', order: false },
   { id: 'floor.amount', label: 'FLOOR', align: 'right', width: 'auto', order: true, tooltip: 'Floor price in XRP' },
   { id: 'floor1dPercent', label: '24H %', align: 'right', width: 'auto', order: true, tooltip: '24h floor price change' },
-  { id: 'totalVol24h', label: 'VOL (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
-  { id: 'totalVolume', label: 'VOL (ALL)', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
+  { id: 'totalVol24h', label: 'VOL 24H', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
+  { id: 'totalVolume', label: 'VOL ALL', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
   { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
-  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
+  { id: 'sales24h', label: 'SALES 24H', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
   { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: 'auto', order: true, tooltip: 'Floor price × supply' },
   { id: 'listedCount', label: 'LISTED', align: 'right', width: 'auto', order: true, tooltip: 'NFTs listed for sale' },
   { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
@@ -694,6 +695,26 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, dar
 
   const TABLE_HEAD = isMobile ? TABLE_HEAD_MOBILE : TABLE_HEAD_DESKTOP;
 
+  // Render label with badge style for time periods
+  const renderLabel = (headCell) => {
+    const badgeStyle = { opacity: 0.5, fontSize: '10px' };
+
+    switch (headCell.id) {
+      case 'totalVol24h':
+        return <>Volume <span style={badgeStyle}>24h</span></>;
+      case 'totalVolume':
+        return <>Volume <span style={badgeStyle}>All</span></>;
+      case 'sales24h':
+        return <>Sales <span style={badgeStyle}>24h</span></>;
+      case 'sparkline':
+        return <>Trendline <span style={badgeStyle}>30d</span></>;
+      case 'floor1dPercent':
+        return <>Change <span style={badgeStyle}>24h</span></>;
+      default:
+        return headCell.label;
+    }
+  };
+
   return (
     <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
       <tr>
@@ -710,7 +731,7 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, dar
           >
             {headCell.order ? (
               <span>
-                {headCell.label}
+                {renderLabel(headCell)}
                 {orderBy === headCell.id && (
                   <SortIndicator active={true} direction={order} darkMode={darkMode}>
                     ▼
@@ -718,7 +739,7 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, dar
                 )}
               </span>
             ) : (
-              headCell.label
+              renderLabel(headCell)
             )}
           </StyledTableCell>
         ))}
@@ -1255,7 +1276,7 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
               FLOOR
             </StyledHeaderCell>
             <StyledHeaderCell flex={0.9} align="right">
-              24H
+              24H %
             </StyledHeaderCell>
             <StyledHeaderCell flex={1} align="right">
               VOL

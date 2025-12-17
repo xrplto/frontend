@@ -365,8 +365,10 @@ const TagChip = styled.button`
   gap: 4px;
   padding: 0 10px;
   border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 16px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.1)' : (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
+  border-radius: 6px;
+  background: ${(props) => props.selected
+    ? 'rgba(59, 130, 246, 0.1)'
+    : (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.7rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
@@ -374,12 +376,32 @@ const TagChip = styled.button`
   white-space: nowrap;
   height: 26px;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.3s ease, border-color 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+    border-radius: 6px;
+  }
 
   &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.25);
-    color: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
+  &:hover::before {
+    transform: translateX(0);
   }
 
   @media (max-width: 600px) {
