@@ -101,7 +101,6 @@ const StyledCell = styled.td`
   font-weight: ${(props) => props.fontWeight || 400};
   color: ${(props) => props.color || (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
   vertical-align: middle;
-  /* DEBUG */ outline: 1px solid rgba(255, 0, 0, 0.4);
 
   &:first-of-type {
     padding-left: 12px;
@@ -1030,7 +1029,7 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             {/* Trendline after price */}
-            <td style={{ padding: '14px 4px', width: 128, maxWidth: 128, outline: '1px solid rgba(0, 255, 0, 0.5)' }}>
+            <td style={{ padding: '14px 4px', width: 128, maxWidth: 128 }}>
               {sparklineUrl ? (
                 <SparklineChart url={sparklineUrl} darkMode={darkMode} />
               ) : (

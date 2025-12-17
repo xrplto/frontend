@@ -36,9 +36,15 @@ export const untrackExchange = (id) => {
   savePending(pending);
 };
 
-// Send browser notification
-const sendNotification = (title, body, onClick) => {
-  if ('Notification' in window && Notification.permission === 'granted') {
+// Send browser notification (requests permission lazily on first use)
+const sendNotification = async (title, body, onClick) => {
+  if (!('Notification' in window)) return;
+  let permission = Notification.permission;
+  if (permission === 'default') {
+    // This will only work if called from a user-gesture context, otherwise silently fails
+    permission = await Notification.requestPermission().catch(() => 'denied');
+  }
+  if (permission === 'granted') {
     const n = new Notification(title, { body, icon: '/static/xrp.svg', tag: 'bridge' });
     if (onClick) n.onclick = onClick;
   }
@@ -48,12 +54,6 @@ export default function BridgeTracker() {
   const router = useRouter();
   const statusRef = useRef({});
 
-  // Request notification permission once
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
 
   const pollExchanges = useCallback(async () => {
     const pending = getPending();

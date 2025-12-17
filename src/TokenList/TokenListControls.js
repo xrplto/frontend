@@ -36,7 +36,6 @@ const StyledTableCell = styled.th`
   transition: color 0.15s ease;
   width: ${(props) => (props.width ? `${props.width}px` : 'auto')};
   max-width: ${(props) => (props.width ? `${props.width}px` : 'none')};
-  /* DEBUG */ outline: 1px solid rgba(255, 255, 0, 0.5);
 
   &:first-of-type {
     padding-left: 12px;
@@ -78,7 +77,6 @@ const Tooltip = styled.div`
     z-index: 99999999 !important;
     transition: none !important;
     pointer-events: none;
-    border: 2px solid yellow !important;
 
     &:after {
       content: '';

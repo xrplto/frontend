@@ -831,7 +831,6 @@ function TokenListComponent({
                                       : col;
                 handleRequestSort(null, sortCol);
               }}
-              debugColor="yellow"
             >
               {(() => {
                 const col = customColumns && customColumns[0] ? customColumns[0] : 'price';
