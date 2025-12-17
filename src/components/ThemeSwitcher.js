@@ -59,10 +59,10 @@ export default function ThemeSwitcher() {
             onClick={handleClose}
           />
           <div className={cn(
-            "absolute mt-1 min-w-[160px] rounded-xl border-[1.5px] z-50 right-0",
+            "absolute mt-1 min-w-[160px] rounded-2xl border z-50 right-0",
             isDark
-              ? "bg-black/95 border-white/[0.12] backdrop-blur-xl"
-              : "bg-white/95 border-gray-200 backdrop-blur-xl"
+              ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]"
+              : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
           )}>
             <div className="p-1">
               {themes.map((theme) => (

@@ -49,19 +49,12 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[1300] bg-black/50"
-        style={{ backdropFilter: 'blur(1px)' }}
-        onClick={handleClose}
-      />
-
       {/* Dialog */}
-      <div className="fixed inset-0 z-[1301] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[1301] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={handleClose}>
         <div
           className={cn(
-            'w-full max-w-xs rounded-xl border-[1.5px]',
-            isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+            'w-full max-w-xs rounded-2xl border',
+            isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >

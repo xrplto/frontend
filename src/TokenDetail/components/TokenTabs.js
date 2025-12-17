@@ -208,8 +208,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
             ref={searchRef}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'relative w-full max-w-lg rounded-xl border overflow-hidden',
-              isDark ? 'bg-[#0a0f1a] border-[rgba(59,130,246,0.3)] shadow-2xl' : 'bg-white border-[rgba(59,130,246,0.2)] shadow-2xl'
+              'relative w-full max-w-lg rounded-2xl border overflow-hidden',
+              isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
             )}
           >
             <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
@@ -230,8 +230,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
               {(query ? results.tokens : suggested.tokens).length > 0 && (
                 <>
                   <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
-                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Tokens</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {(query ? results.tokens : suggested.tokens).map((token) => (
                     <div
@@ -261,8 +261,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
               {(query ? results.collections : suggested.collections).length > 0 && (
                 <>
                   <div className="flex items-center gap-3 px-2 py-2 mt-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
-                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>NFTs</span>
+                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
                   {(query ? results.collections : suggested.collections).map((col) => (
                     <div

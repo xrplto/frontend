@@ -657,8 +657,8 @@ const NFTGrid = React.memo(({ collection }) => {
 
             {showSortDropdown && (
               <div className={cn(
-                'absolute top-full right-0 mt-1 min-w-[160px] rounded-lg border-[1.5px] p-1 z-50',
-                isDark ? 'bg-black/95 border-white/[0.08]' : 'bg-white border-gray-200 shadow-lg'
+                'absolute top-full right-0 mt-1 min-w-[160px] rounded-2xl border p-1 z-50',
+                isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
               )}>
                 {SORT_OPTIONS.map((option) => (
                   <div
@@ -693,8 +693,8 @@ const NFTGrid = React.memo(({ collection }) => {
 
             {showListedDropdown && (
               <div className={cn(
-                'absolute top-full right-0 mt-1 min-w-[140px] rounded-lg border-[1.5px] p-1 z-50',
-                isDark ? 'bg-black/95 border-white/[0.08]' : 'bg-white border-gray-200 shadow-lg'
+                'absolute top-full right-0 mt-1 min-w-[140px] rounded-2xl border p-1 z-50',
+                isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
               )}>
                 {LISTING_OPTIONS.map((option) => (
                   <div
@@ -1536,7 +1536,7 @@ export default function CollectionView({ collection }) {
             <div className="relative" ref={infoDropdownRef}>
               <button onClick={() => setOpenInfo(!openInfo)} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Info</button>
               {openInfo && (
-                <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-lg border z-50 w-[280px]', isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg')}>
+                <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[280px]', isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]')}>
                   {description && <p className={cn("text-[11px] mb-2", isDark ? "text-white/70" : "text-gray-600")}>{description}</p>}
                   <div className="space-y-1 text-[10px]">
                     {royaltyPercent !== null && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Royalty</span><span className="text-primary font-medium">{royaltyPercent}%</span></div>}
@@ -1565,7 +1565,7 @@ export default function CollectionView({ collection }) {
             <div className="relative" ref={shareDropdownRef}>
               <button onClick={() => setOpenShare(!openShare)} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Share</button>
               {openShare && (
-                <div className={cn('absolute top-full right-0 mt-2 p-2 rounded-lg border z-50 flex gap-2', isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg')}>
+                <div className={cn('absolute top-full right-0 mt-2 p-2 rounded-2xl border z-50 flex gap-2', isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]')}>
                   <FacebookShareButton url={shareUrl} quote={shareTitle}><FacebookIcon size={24} round /></FacebookShareButton>
                   <TwitterShareButton title={`Check out ${shareTitle} on XRPNFT`} url={shareUrl}><TwitterIcon size={24} round /></TwitterShareButton>
                 </div>

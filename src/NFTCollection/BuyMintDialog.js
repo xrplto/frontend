@@ -155,19 +155,12 @@ export default function BuyMintDialog({
         </div>
       )}
 
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[1302] bg-black/50"
-        style={{ backdropFilter: 'blur(1px)' }}
-        onClick={handleClose}
-      />
-
       {/* Dialog */}
-      <div className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
         <div
           className={cn(
-            'w-full max-w-md rounded-xl border-[1.5px] my-8',
-            isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+            'w-full max-w-md rounded-2xl border my-8',
+            isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >

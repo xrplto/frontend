@@ -32,10 +32,10 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className={cn(
-        'relative w-full max-w-md rounded-xl border-[1.5px] overflow-hidden',
-        isDark ? 'border-white/30 bg-black' : 'border-gray-200 bg-white'
+        'relative w-full max-w-md rounded-2xl border overflow-hidden',
+        isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
       )}>
         {/* Dialog Title */}
         <div className={cn(

@@ -497,8 +497,11 @@ const TokenSummary = memo(({ token }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>Technical Information</span>
-              <button onClick={() => setShowInfo(false)} className={cn("p-1.5 rounded-lg transition-all", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-black/[0.04] text-gray-400")}>
+              <div className="flex items-center gap-3 flex-1">
+                <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Technical Information</span>
+                <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+              </div>
+              <button onClick={() => setShowInfo(false)} className={cn("p-1.5 rounded-lg transition-all ml-2", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-black/[0.04] text-gray-400")}>
                 <X size={14} />
               </button>
             </div>
@@ -528,10 +531,11 @@ const TokenSummary = memo(({ token }) => {
               <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
                 <button
                   onClick={() => setShowApi(!showApi)}
-                  className={cn("flex items-center justify-between w-full text-left transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
+                  className={cn("flex items-center gap-3 w-full text-left transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
                 >
-                  <span className="text-[9px] uppercase tracking-wide">API Endpoints</span>
-                  <span className="text-[9px]">{showApi ? '▲' : '▼'}</span>
+                  <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>API Endpoints</span>
+                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{showApi ? '▲' : '▼'}</span>
                 </button>
                 {showApi && (
                   <div className="space-y-2 mt-3">

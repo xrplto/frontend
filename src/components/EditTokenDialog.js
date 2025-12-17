@@ -49,10 +49,10 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className={cn(
-            "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
+            "rounded-2xl border p-6 w-[400px] max-w-[90vw]",
+            isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
           )}>
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
@@ -365,10 +365,10 @@ export default function EditTokenDialog({ token, setToken }) {
         </div>
       )}
 
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
         <div className={cn(
-          "rounded-xl border-[1.5px] w-full max-w-4xl my-8",
-          isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
+          "rounded-2xl border w-full max-w-4xl my-8",
+          isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
         )}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
@@ -744,10 +744,10 @@ export default function EditTokenDialog({ token, setToken }) {
 
       {/* Inline AddTag Dialog */}
       {addTagOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className={cn(
-            "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
+            "rounded-2xl border p-6 w-[400px] max-w-[90vw]",
+            isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
           )}>
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
