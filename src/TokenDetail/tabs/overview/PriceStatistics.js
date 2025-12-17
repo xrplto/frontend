@@ -216,6 +216,7 @@ export default function PriceStatistics({ token, isDark = false }) {
     lpBurnedPercent,
     lpBurnedAmount,
     lpHolderCount,
+    lpBurnedHolders,
     date,
     dateon,
     creatorLastAction
@@ -948,7 +949,7 @@ export default function PriceStatistics({ token, isDark = false }) {
           ) : null}
 
           {/* LP Burned Percentage Row */}
-          {lpBurnedPercent != null && lpBurnedPercent > 0 && (
+          {(lpBurnedPercent != null || lpHolderCount > 0) && (
             <TableRow>
               <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                 <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -956,22 +957,27 @@ export default function PriceStatistics({ token, isDark = false }) {
                     LP Burned
                   </Typography>
                   <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
-                    <Typography style={{ fontSize: '13px', fontWeight: 500, color: lpBurnedPercent >= 50 ? '#10b981' : lpBurnedPercent >= 20 ? '#f59e0b' : '#f43f5e' }}>
-                      {lpBurnedPercent.toFixed(2)}%
+                    <Typography style={{ fontSize: '13px', fontWeight: 500, color: (lpBurnedPercent || 0) >= 50 ? '#10b981' : (lpBurnedPercent || 0) >= 20 ? '#f59e0b' : '#f43f5e' }}>
+                      {(lpBurnedPercent || 0).toFixed(2)}%
                     </Typography>
+                    {lpBurnedHolders > 0 && (
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
+                        {lpBurnedHolders} burned
+                      </Typography>
+                    )}
                     {lpHolderCount > 0 && (
                       <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
-                        {lpHolderCount} holders
+                        {lpHolderCount} total
                       </Typography>
                     )}
                   </Stack>
                 </Stack>
                 <Box style={{ height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
                   <div style={{
-                    width: `${Math.min(lpBurnedPercent, 100)}%`,
+                    width: `${Math.min(lpBurnedPercent || 0, 100)}%`,
                     height: '100%',
                     borderRadius: '3px',
-                    background: lpBurnedPercent >= 50 ? '#10b981' : lpBurnedPercent >= 20 ? '#f59e0b' : '#f43f5e',
+                    background: (lpBurnedPercent || 0) >= 50 ? '#10b981' : (lpBurnedPercent || 0) >= 20 ? '#f59e0b' : '#f43f5e',
                     transition: 'width 0.3s ease'
                   }} />
                 </Box>
