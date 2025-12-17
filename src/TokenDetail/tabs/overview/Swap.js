@@ -1432,15 +1432,36 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     const pairKey = `pr-${token1Md5}-${token2Md5}`;
 
+    // Fallback to token.exch when pair-rates API fails or returns no data
+    const applyFallbackRates = () => {
+      const token1IsXRP = token1?.currency === 'XRP';
+      const token2IsXRP = token2?.currency === 'XRP';
+      if (token1IsXRP && !token2IsXRP && token2?.exch) {
+        setTokenExch1(1);
+        setTokenExch2(token2.exch);
+      } else if (!token1IsXRP && token2IsXRP && token1?.exch) {
+        setTokenExch1(token1.exch);
+        setTokenExch2(1);
+      }
+    };
+
     async function getTokenPrice() {
       if (fetchInFlight.has(pairKey)) {
         try {
           const data = await fetchInFlight.get(pairKey);
           if (mounted && data) {
-            setTokenExch1(data.rate1 || 0);
-            setTokenExch2(data.rate2 || 0);
+            const r1 = data.rate1 || 0;
+            const r2 = data.rate2 || 0;
+            if (r1 > 0 || r2 > 0) {
+              setTokenExch1(r1);
+              setTokenExch2(r2);
+            } else {
+              applyFallbackRates();
+            }
           }
-        } catch {}
+        } catch {
+          applyFallbackRates();
+        }
         return;
       }
 
@@ -1451,13 +1472,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       try {
         const data = await promise;
         if (mounted && data) {
-          setTokenExch1(data.rate1 || 0);
-          setTokenExch2(data.rate2 || 0);
+          const r1 = data.rate1 || 0;
+          const r2 = data.rate2 || 0;
+          if (r1 > 0 || r2 > 0) {
+            setTokenExch1(r1);
+            setTokenExch2(r2);
+          } else {
+            applyFallbackRates();
+          }
         }
         fetchInFlight.delete(pairKey);
       } catch (err) {
         fetchInFlight.delete(pairKey);
-        console.error('Token price fetch error:', err);
+        if (mounted) applyFallbackRates();
       } finally {
         if (mounted) setLoadingPrice(false);
       }
@@ -1466,7 +1493,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     getTokenPrice();
 
     return () => { mounted = false; fetchInFlight.delete(pairKey); };
-  }, [token1Md5, token2Md5]);
+  }, [token1Md5, token2Md5, token1, token2]);
 
   useEffect(() => {
     const pair = {
@@ -2632,12 +2659,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             }
             const token1IsXRP = token1?.currency === 'XRP';
             const token2IsXRP = token2?.currency === 'XRP';
+            // Guard against division by zero
+            if ((!token1IsXRP && tokenExch1 <= 0) || (!token2IsXRP && tokenExch2 <= 0)) {
+              return '--';
+            }
             let rate;
             if (revert) {
               rate = token1IsXRP && !token2IsXRP ? tokenExch2 : !token1IsXRP && token2IsXRP ? 1 / tokenExch1 : tokenExch2 / tokenExch1;
             } else {
               rate = token1IsXRP && !token2IsXRP ? 1 / tokenExch2 : !token1IsXRP && token2IsXRP ? tokenExch1 : tokenExch1 / tokenExch2;
             }
+            if (!isFinite(rate) || isNaN(rate)) return '--';
             return rate.toFixed(6);
           })()} {curr2.name}
         </Typography>
