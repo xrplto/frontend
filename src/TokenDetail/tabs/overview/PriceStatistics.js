@@ -213,6 +213,9 @@ export default function PriceStatistics({ token, isDark = false }) {
     deposit24htx,
     withdraw24hxrp,
     withdraw24htx,
+    lpBurnedPercent,
+    lpBurnedAmount,
+    lpHolderCount,
     date,
     dateon,
     creatorLastAction
@@ -503,16 +506,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 500,
-                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                  fontSize: '13px'
-                }}
-              >
-                {(dom || 0).toFixed(6)}%
+              <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px' }}>
+                {(dom || 0).toFixed(4)}%
               </Typography>
             </ModernTableCell>
           </TableRow>
@@ -624,6 +619,45 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* ========== BUY/SELL METRICS GROUP ========== */}
 
+          {/* Buy/Sell Ratio Visual Bar */}
+          {(buy24hxrp > 0 || sell24hxrp > 0) && (() => {
+            const total = (buy24hxrp || 0) + (sell24hxrp || 0);
+            const buyRaw = total > 0 ? ((buy24hxrp || 0) / total) * 100 : 0;
+            const sellRaw = total > 0 ? ((sell24hxrp || 0) / total) * 100 : 0;
+            // Ensure minimum 3% visual width if there's any activity
+            const buyPct = buy24hxrp > 0 ? Math.max(buyRaw, 3) : 0;
+            const sellPct = sell24hxrp > 0 ? Math.max(sellRaw, 3) : 0;
+            // Format: show 1 decimal if < 1%, otherwise whole number
+            const formatPct = (val) => val > 0 && val < 1 ? '<1' : val.toFixed(0);
+            return (
+              <TableRow>
+                <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
+                  <Box style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                    <Stack direction="row" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <div style={{
+                        width: `${buyPct}%`,
+                        background: '#10b981',
+                        transition: 'width 0.3s ease'
+                      }} />
+                      <div style={{
+                        width: `${sellPct}%`,
+                        background: '#f43f5e',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </Stack>
+                    <Stack direction="row" style={{ justifyContent: 'space-between', marginTop: '4px' }}>
+                      <Typography style={{ fontSize: '10px', color: '#10b981', fontWeight: 500 }}>
+                        {formatPct(buyRaw)}% Buy
+                      </Typography>
+                      <Typography style={{ fontSize: '10px', color: '#f43f5e', fontWeight: 500 }}>
+                        {formatPct(sellRaw)}% Sell
+                      </Typography>
+                    </Stack>
+                  </Box>
+                </ModernTableCell>
+              </TableRow>
+            );
+          })()}
 
           {/* Buys (24h) Row - Always show */}
           <TableRow>
@@ -684,17 +718,20 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: '#10b981',
-                    fontSize: '13px'
-                  }}
-                >
-                  {fNumber(uniqueBuyers24h || 0)}
-                </Typography>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                  <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
+                    {fNumber(uniqueBuyers24h || 0)}
+                  </Typography>
+                  {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
+                    const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
+                    const pct = Math.max(((uniqueBuyers24h || 0) / total) * 100, 15);
+                    return (
+                      <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
+                      </Box>
+                    );
+                  })()}
+                </Stack>
               </ModernTableCell>
             </TableRow>
 
@@ -716,24 +753,10 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell>
                 <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 500,
-                      color: '#f43f5e',
-                      fontSize: '13px'
-                    }}
-                  >
+                  <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
                     {fNumber(sell24hxrp || 0)} XRP
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    style={{
-                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      fontSize: '11px'
-                    }}
-                  >
+                  <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '11px' }}>
                     {fNumber(sellTxns24h || sell24htx || 0)} tx
                   </Typography>
                 </Stack>
@@ -757,21 +780,62 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: '#f43f5e',
-                    fontSize: '13px'
-                  }}
-                >
-                  {fNumber(uniqueSellers24h || 0)}
-                </Typography>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                  <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
+                    {fNumber(uniqueSellers24h || 0)}
+                  </Typography>
+                  {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
+                    const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
+                    const pct = Math.max(((uniqueSellers24h || 0) / total) * 100, 15);
+                    return (
+                      <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: '#f43f5e', marginLeft: 'auto' }} />
+                      </Box>
+                    );
+                  })()}
+                </Stack>
               </ModernTableCell>
             </TableRow>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
+
+          {/* AMM Flow Visual Bar */}
+          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (() => {
+            const total = (deposit24hxrp || 0) + (withdraw24hxrp || 0);
+            const inRaw = total > 0 ? ((deposit24hxrp || 0) / total) * 100 : 0;
+            const outRaw = total > 0 ? ((withdraw24hxrp || 0) / total) * 100 : 0;
+            const inPct = deposit24hxrp > 0 ? Math.max(inRaw, 3) : 0;
+            const outPct = withdraw24hxrp > 0 ? Math.max(outRaw, 3) : 0;
+            const formatPct = (val) => val > 0 && val < 1 ? '<1' : val.toFixed(0);
+            return (
+              <TableRow>
+                <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
+                  <Box style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                    <Stack direction="row" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                      <div style={{
+                        width: `${inPct}%`,
+                        background: '#10b981',
+                        transition: 'width 0.3s ease'
+                      }} />
+                      <div style={{
+                        width: `${outPct}%`,
+                        background: '#f59e0b',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </Stack>
+                    <Stack direction="row" style={{ justifyContent: 'space-between', marginTop: '4px' }}>
+                      <Typography style={{ fontSize: '10px', color: '#10b981', fontWeight: 500 }}>
+                        {formatPct(inRaw)}% In
+                      </Typography>
+                      <Typography style={{ fontSize: '10px', color: '#f59e0b', fontWeight: 500 }}>
+                        {formatPct(outRaw)}% Out
+                      </Typography>
+                    </Stack>
+                  </Box>
+                </ModernTableCell>
+              </TableRow>
+            );
+          })()}
 
           {/* AMM Deposits (24h) Row */}
           {deposit24hxrp ? (
@@ -864,6 +928,38 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
             </TableRow>
           ) : null}
+
+          {/* LP Burned Percentage Row */}
+          {lpBurnedPercent != null && lpBurnedPercent > 0 && (
+            <TableRow>
+              <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <Typography style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(33,43,54,0.6)' }}>
+                    LP Burned
+                  </Typography>
+                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+                    <Typography style={{ fontSize: '13px', fontWeight: 500, color: lpBurnedPercent >= 50 ? '#10b981' : lpBurnedPercent >= 20 ? '#f59e0b' : '#f43f5e' }}>
+                      {lpBurnedPercent.toFixed(2)}%
+                    </Typography>
+                    {lpHolderCount > 0 && (
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
+                        {lpHolderCount} holders
+                      </Typography>
+                    )}
+                  </Stack>
+                </Stack>
+                <Box style={{ height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                  <div style={{
+                    width: `${Math.min(lpBurnedPercent, 100)}%`,
+                    height: '100%',
+                    borderRadius: '3px',
+                    background: lpBurnedPercent >= 50 ? '#10b981' : lpBurnedPercent >= 20 ? '#f59e0b' : '#f43f5e',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </Box>
+              </ModernTableCell>
+            </TableRow>
+          )}
 
           {/* ========== TOKEN INFO GROUP ========== */}
 
