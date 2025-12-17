@@ -45,7 +45,8 @@ import {
   Mail,
   Loader2,
   ArrowRight,
-  Layers
+  Layers,
+  Rocket
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -1476,13 +1477,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/launch"
                 className={cn(
-                  'flex h-8 items-center rounded-lg px-4 text-[13px] font-medium transition-all duration-200 border',
+                  'group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-all duration-300 overflow-hidden',
                   isDark
-                    ? 'bg-[rgba(63,150,254,10 text-[#3f96fe] border-[rgba(63,150,254,30 hover:bg-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,50'
-                    : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                    ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
+                    : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
                 )}
               >
-                Launch
+                {isDark && (
+                  <>
+                    <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
+                    <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)]" />
+                  </>
+                )}
+                <Rocket size={14} className="relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+                <span className="relative z-10">Launch</span>
               </a>
 
               <button
@@ -1494,8 +1502,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,40 hover:bg-[rgba(63,150,254,5'
                       : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                     : isDark
-                      ? 'bg-[rgba(63,150,254,10 text-[#3f96fe] border-[rgba(63,150,254,30 hover:bg-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,50'
-                      : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                      ? 'bg-white/[0.06] text-white/60 border-white/10 hover:bg-white/[0.1] hover:text-white hover:border-white/20'
+                      : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
                 )}
               >
                 {accountProfile ? (
@@ -1533,8 +1541,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20'
                       : 'bg-gray-50 text-gray-900 border-gray-200'
                     : isDark
-                      ? 'bg-[rgba(63,150,254,10 text-[#3f96fe] border-[rgba(63,150,254,30'
-                      : 'bg-blue-500 text-white border-blue-500'
+                      ? 'bg-white/[0.06] text-white/60 border-white/10'
+                      : 'bg-gray-100 text-gray-500 border-gray-200'
                 )}
               >
                 {accountProfile ? (
@@ -1735,13 +1743,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   href="/launch"
                   onClick={() => toggleDrawer(false)}
                   className={cn(
-                    'flex items-center justify-center rounded-lg px-4 py-2 text-[13px] font-medium transition-all duration-200 border',
+                    'group relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-medium transition-all duration-300 overflow-hidden',
                     isDark
-                      ? 'bg-[rgba(63,150,254,10 text-[#3f96fe] border-[rgba(63,150,254,30 hover:bg-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,50'
-                      : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                      ? 'bg-[#0d0d1a] text-purple-300 border border-purple-500/30 hover:border-purple-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]'
+                      : 'bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-fuchsia-100 hover:border-violet-300'
                   )}
                 >
-                  Launch
+                  {isDark && (
+                    <>
+                      <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-cyan-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
+                      <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)]" />
+                    </>
+                  )}
+                  <Rocket size={14} className="relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+                  <span className="relative z-10">Launch</span>
                 </a>
               </nav>
 
@@ -1777,8 +1792,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       className={cn(
                         'flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
                         isDark
-                          ? 'bg-[rgba(63,150,254,10 text-[#3f96fe] border-[rgba(63,150,254,30'
-                          : 'bg-blue-500 text-white border-blue-500'
+                          ? 'bg-white/[0.06] text-white/60 border-white/10 hover:bg-white/[0.1] hover:text-white'
+                          : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
                       )}
                     >
                       <div className="flex items-center gap-2">

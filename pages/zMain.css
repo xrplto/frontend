@@ -60,6 +60,26 @@
   }
 }
 
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes nebula {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 /* Critical CSS - loaded immediately */
 .visually-hidden {
   position: absolute !important;
