@@ -2823,22 +2823,48 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </>
             )}
 
-            {/* Limit Order UI - Futuristic */}
+            {/* Limit Order UI */}
             {orderType === 'limit' && (
-              <div className="space-y-4 mb-4">
+              <div className="space-y-3 mb-4">
                 {/* Limit Price Section */}
                 <div className={cn(
-                  "rounded-lg p-4",
-                  darkMode ? "bg-white/5" : "bg-gray-100"
+                  "rounded-xl p-3",
+                  darkMode ? "bg-white/[0.03]" : "bg-gray-50"
                 )}
-                style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={cn("text-[11px] uppercase tracking-wide font-mono", darkMode ? "text-primary/60" : "text-primary/60")}>
-                      Limit Price
+                style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-white/40" : "text-gray-500")}>
+                      Limit Price ({token2?.name || token2?.currency} per {token1?.name || token1?.currency})
                     </span>
-                    <span className={cn("text-[10px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
-                      {token2?.name || token2?.currency} / {token1?.name || token1?.currency}
-                    </span>
+                    {/* Quick adjust buttons inline */}
+                    <div className="flex items-center gap-1">
+                      {[
+                        { label: '-1%', mult: 0.99 },
+                        { label: 'Mid', mult: 'mid' },
+                        { label: '+1%', mult: 1.01 }
+                      ].map((adj) => (
+                        <button
+                          key={adj.label}
+                          onClick={() => {
+                            const midPrice = (bids[0]?.price + asks[0]?.price) / 2;
+                            if (adj.mult === 'mid') {
+                              setLimitPrice(midPrice.toFixed(6));
+                            } else {
+                              const basePrice = parseFloat(limitPrice) || midPrice;
+                              setLimitPrice((basePrice * adj.mult).toFixed(6));
+                            }
+                          }}
+                          className={cn(
+                            "px-2 py-0.5 rounded text-[10px] transition-colors",
+                            darkMode
+                              ? "text-primary/60 hover:text-primary hover:bg-primary/10"
+                              : "text-primary/70 hover:text-primary hover:bg-primary/10"
+                          )}
+                        >
+                          {adj.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <input
@@ -2852,41 +2878,44 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       if (!isNaN(Number(val)) || val === '') setLimitPrice(val);
                     }}
                     className={cn(
-                      "w-full px-4 py-3 rounded-lg text-[20px] font-mono bg-transparent outline-none transition-colors text-center",
+                      "w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center",
                       darkMode
                         ? "text-white placeholder:text-white/20"
                         : "text-gray-900 placeholder:text-gray-400"
                     )}
-                    style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}` }}
+                    style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}
                   />
 
-                  {/* Quick Price Buttons */}
-                  <div className="flex items-center justify-center gap-2 mt-3">
-                    {bids[0] && (
+                  {/* Best Bid / Spread / Best Ask - Compact Row */}
+                  {(bids[0] || asks[0]) && (
+                    <div className="flex items-center justify-between mt-2 text-[11px] font-mono">
                       <button
-                        onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
+                        onClick={() => bids[0] && setLimitPrice(bids[0].price.toFixed(6))}
                         className={cn(
-                          "flex-1 px-3 py-2 rounded-lg text-[11px] font-normal transition-colors border-[1.5px]",
-                          "border-green-500/20 text-green-500 bg-green-500/5 hover:bg-green-500/10"
+                          "flex items-center gap-1 px-2 py-1 rounded transition-colors",
+                          bids[0] ? "hover:bg-green-500/10 cursor-pointer" : "opacity-40 cursor-default"
                         )}
                       >
-                        <span className="block text-[9px] uppercase tracking-wide opacity-60 mb-0.5">Best Bid</span>
-                        {bids[0].price.toFixed(4)}
+                        <span className={cn("text-[9px] uppercase", darkMode ? "text-white/30" : "text-gray-400")}>Bid</span>
+                        <span className="text-green-500">{bids[0]?.price.toFixed(4) || '-'}</span>
                       </button>
-                    )}
-                    {asks[0] && (
+
+                      <span className={cn("text-[10px]", darkMode ? "text-white/30" : "text-gray-400")}>
+                        {bids[0] && asks[0] ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%` : '-'}
+                      </span>
+
                       <button
-                        onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
+                        onClick={() => asks[0] && setLimitPrice(asks[0].price.toFixed(6))}
                         className={cn(
-                          "flex-1 px-3 py-2 rounded-lg text-[11px] font-normal transition-colors border-[1.5px]",
-                          "border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10"
+                          "flex items-center gap-1 px-2 py-1 rounded transition-colors",
+                          asks[0] ? "hover:bg-red-500/10 cursor-pointer" : "opacity-40 cursor-default"
                         )}
                       >
-                        <span className="block text-[9px] uppercase tracking-wide opacity-60 mb-0.5">Best Ask</span>
-                        {asks[0].price.toFixed(4)}
+                        <span className="text-red-500">{asks[0]?.price.toFixed(4) || '-'}</span>
+                        <span className={cn("text-[9px] uppercase", darkMode ? "text-white/30" : "text-gray-400")}>Ask</span>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Price difference indicator */}
                   {limitPrice && parseFloat(limitPrice) > 0 && (() => {
@@ -2895,10 +2924,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     if (currentPrice <= 0) return null;
                     const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
                     const isAbove = priceDiff > 0;
+                    if (Math.abs(priceDiff) < 0.01) return null;
                     return (
                       <div className={cn(
-                        "mt-3 px-3 py-2 rounded-lg text-[11px] text-center",
-                        isAbove ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10"
+                        "mt-2 py-1.5 rounded text-[10px] text-center",
+                        isAbove ? "text-red-400 bg-red-500/10" : "text-green-400 bg-green-500/10"
                       )}>
                         {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} market
                       </div>
@@ -2906,57 +2936,56 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   })()}
                 </div>
 
-                {/* Order Expiration Section - Futuristic */}
-                <div className={cn(
-                  "rounded-lg p-4",
-                  darkMode ? "bg-white/5" : "bg-gray-100"
-                )}
-                style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
-                  <span className={cn("text-[11px] uppercase tracking-wide font-mono block mb-3", darkMode ? "text-primary/60" : "text-primary/60")}>
-                    Order Expires In
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { value: 'never', label: 'Never', desc: '∞' },
-                      { value: '1h', label: '1 Hour', desc: '1h' },
-                      { value: '24h', label: '1 Day', desc: '24h' },
-                      { value: '7d', label: '7 Days', desc: '7d' }
-                    ].map((exp) => (
-                      <button
-                        key={exp.value}
-                        onClick={() => setOrderExpiry(exp.value)}
-                        className={cn(
-                          "px-2 py-2.5 rounded-lg text-center transition-colors font-mono",
-                          orderExpiry === exp.value
-                            ? "bg-primary text-white"
-                            : darkMode
-                              ? "text-primary/50 hover:text-primary hover:bg-primary/10"
-                              : "text-primary/50 hover:text-primary hover:bg-primary/10"
-                        )}
-                        style={{ border: `1px solid ${orderExpiry === exp.value ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
-                      >
-                        <span className="block text-[13px] font-normal">{exp.desc}</span>
-                        <span className={cn("block text-[9px] mt-0.5", orderExpiry === exp.value ? "opacity-80" : "opacity-50")}>{exp.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                {/* Order Expiration - Segmented Control */}
+                <div
+                  className={cn(
+                    "flex rounded-lg overflow-hidden",
+                    darkMode ? "bg-white/[0.03]" : "bg-gray-100"
+                  )}
+                  style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
+                >
+                  {[
+                    { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
+                    { value: '1h', label: '1H', title: '1 Hour' },
+                    { value: '24h', label: '24H', title: '24 Hours' },
+                    { value: '7d', label: '7D', title: '7 Days' }
+                  ].map((exp, idx) => (
+                    <button
+                      key={exp.value}
+                      title={exp.title}
+                      onClick={() => setOrderExpiry(exp.value)}
+                      className={cn(
+                        "flex-1 py-2 text-[11px] font-medium transition-all relative",
+                        orderExpiry === exp.value
+                          ? "text-primary"
+                          : darkMode
+                            ? "text-white/40 hover:text-white/70"
+                            : "text-gray-400 hover:text-gray-600"
+                      )}
+                    >
+                      {exp.label}
+                      {orderExpiry === exp.value && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-primary" />
+                      )}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Toggle Order Book - Futuristic */}
+                {/* Toggle Order Book */}
                 <button
                   onClick={() => setShowOrderbook(!showOrderbook)}
                   className={cn(
-                    "w-full py-2.5 rounded-lg text-[12px] font-mono transition-colors flex items-center justify-center gap-2",
+                    "w-full py-2 rounded-lg text-[11px] transition-colors flex items-center justify-center gap-1.5",
                     showOrderbook
                       ? "bg-primary/10 text-primary"
                       : darkMode
-                        ? "text-primary/50 hover:text-primary hover:bg-primary/10"
-                        : "text-primary/50 hover:text-primary hover:bg-primary/10"
+                        ? "text-white/40 hover:text-white/60 hover:bg-white/5"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   )}
-                  style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                  style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
                 >
-                  <List size={14} />
-                  {showOrderbook ? 'Hide Order Book' : 'Show Order Book'}
+                  <List size={12} />
+                  {showOrderbook ? 'Hide' : 'Show'} Order Book
                 </button>
               </div>
             )}
@@ -3038,7 +3067,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             zIndex: 9999,
             width: 320,
             borderRadius: 8,
-            border: `1.5px solid ${darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+            border: `1px solid ${darkMode ? 'rgba(255,255,255,0.12)' : '#e5e7eb'}`,
             background: darkMode ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             overflow: 'hidden',

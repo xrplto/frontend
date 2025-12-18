@@ -808,7 +808,7 @@ export default function PriceStatistics({ token, isDark = false }) {
             </TableRow>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
-          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
+          {(deposit24hxrp > 0 || withdraw24hxrp) && (
             <TableRow>
               <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -819,12 +819,14 @@ export default function PriceStatistics({ token, isDark = false }) {
           )}
 
           {/* AMM Flow Visual Bar */}
-          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (() => {
-            const total = (deposit24hxrp || 0) + (withdraw24hxrp || 0);
-            const inRaw = total > 0 ? ((deposit24hxrp || 0) / total) * 100 : 0;
-            const outRaw = total > 0 ? ((withdraw24hxrp || 0) / total) * 100 : 0;
-            const inPct = deposit24hxrp > 0 ? Math.max(inRaw, 3) : 0;
-            const outPct = withdraw24hxrp > 0 ? Math.max(outRaw, 3) : 0;
+          {(deposit24hxrp > 0 || withdraw24hxrp) && (() => {
+            const depositAbs = Math.abs(deposit24hxrp || 0);
+            const withdrawAbs = Math.abs(withdraw24hxrp || 0);
+            const total = depositAbs + withdrawAbs;
+            const inRaw = total > 0 ? (depositAbs / total) * 100 : 0;
+            const outRaw = total > 0 ? (withdrawAbs / total) * 100 : 0;
+            const inPct = depositAbs > 0 ? Math.max(inRaw, 3) : 0;
+            const outPct = withdrawAbs > 0 ? Math.max(outRaw, 3) : 0;
             const formatPct = (val) => val > 0 && val < 1 ? '<1' : val.toFixed(0);
             return (
               <TableRow>
@@ -930,7 +932,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                       fontSize: '13px'
                     }}
                   >
-                    {fNumber(withdraw24hxrp)} XRP
+                    {fNumber(Math.abs(withdraw24hxrp))} XRP
                   </Typography>
                   {withdraw24htx ? (
                     <Typography

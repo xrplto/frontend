@@ -2506,55 +2506,58 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     return null;
                   })()}
 
-                {/* Order Expiration - Grid Style */}
+                {/* Order Expiration - Segmented Control */}
                 <div style={{
                   marginTop: '12px',
-                  padding: '12px',
+                  display: 'flex',
                   borderRadius: '8px',
-                  background: isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)',
-                  border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+                  overflow: 'hidden',
+                  background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
                 }}>
-                  <span style={{
-                    display: 'block',
-                    fontSize: '11px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    marginBottom: '10px',
-                    color: isDark ? 'rgba(66,133,244,0.6)' : 'rgba(66,133,244,0.7)'
-                  }}>
-                    Order Expires In
-                  </span>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                    {[
-                      { value: 'never', label: 'Never', desc: '∞' },
-                      { value: '1h', label: '1 Hour', desc: '1h' },
-                      { value: '24h', label: '1 Day', desc: '24h' },
-                      { value: '7d', label: '7 Days', desc: '7d' }
-                    ].map((exp) => (
-                      <button
-                        key={exp.value}
-                        onClick={() => {
-                          setOrderExpiry(exp.value);
-                          if (exp.value === '1h') setExpiryHours(1);
-                          else if (exp.value === '24h') setExpiryHours(24);
-                          else if (exp.value === '7d') setExpiryHours(168);
-                        }}
-                        style={{
-                          padding: '10px 4px',
-                          borderRadius: '8px',
-                          border: `1px solid ${orderExpiry === exp.value ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)')}`,
-                          background: orderExpiry === exp.value ? '#4285f4' : 'transparent',
-                          color: orderExpiry === exp.value ? '#fff' : (isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.6)'),
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span style={{ display: 'block', fontSize: '13px', fontWeight: 400 }}>{exp.desc}</span>
-                        <span style={{ display: 'block', fontSize: '9px', opacity: orderExpiry === exp.value ? 0.8 : 0.5, marginTop: '2px' }}>{exp.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {[
+                    { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
+                    { value: '1h', label: '1H', title: '1 Hour' },
+                    { value: '24h', label: '24H', title: '24 Hours' },
+                    { value: '7d', label: '7D', title: '7 Days' }
+                  ].map((exp) => (
+                    <button
+                      key={exp.value}
+                      title={exp.title}
+                      onClick={() => {
+                        setOrderExpiry(exp.value);
+                        if (exp.value === '1h') setExpiryHours(1);
+                        else if (exp.value === '24h') setExpiryHours(24);
+                        else if (exp.value === '7d') setExpiryHours(168);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 0',
+                        border: 'none',
+                        background: 'transparent',
+                        color: orderExpiry === exp.value ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        position: 'relative',
+                        transition: 'color 0.15s'
+                      }}
+                    >
+                      {exp.label}
+                      {orderExpiry === exp.value && (
+                        <span style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '16px',
+                          height: '2px',
+                          borderRadius: '1px',
+                          background: '#4285f4'
+                        }} />
+                      )}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Show Order Book Toggle */}
@@ -2563,22 +2566,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   style={{
                     marginTop: '12px',
                     width: '100%',
-                    padding: '10px 12px',
+                    padding: '8px 12px',
                     borderRadius: '8px',
-                    border: `1px solid ${showOrderbook ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)')}`,
+                    border: `1px solid ${showOrderbook ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')}`,
                     background: showOrderbook ? 'rgba(66,133,244,0.1)' : 'transparent',
-                    color: showOrderbook ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.6)'),
+                    color: showOrderbook ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: 400,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s'
+                    gap: '5px',
+                    transition: 'all 0.15s'
                   }}
                 >
-                  {showOrderbook ? 'Hide Order Book' : 'Show Order Book'}
+                  {showOrderbook ? 'Hide' : 'Show'} Order Book
                 </button>
 
               </Stack>
@@ -2685,7 +2688,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             zIndex: 9999,
             width: 320,
             borderRadius: 8,
-            border: `1.5px solid ${isDark ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb'}`,
             background: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.98)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             overflow: 'hidden',
