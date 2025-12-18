@@ -970,10 +970,10 @@ const WalletContent = ({
             {profiles.length}
           </span>
           <div
-            className="flex-1 h-px"
+            className="flex-1 h-[14px]"
             style={{
-              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-              backgroundSize: '6px 1px'
+              backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+              backgroundSize: '8px 5px'
             }}
           />
           <ChevronDown
@@ -3983,20 +3983,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Divider */}
                       <div className="flex items-center gap-3 my-4">
                         <div
-                          className="flex-1 h-px"
+                          className="flex-1 h-[14px]"
                           style={{
-                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                            backgroundSize: '6px 1px'
+                            backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                            backgroundSize: '8px 5px'
                           }}
                         />
                         <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
                           or
                         </span>
                         <div
-                          className="flex-1 h-px"
+                          className="flex-1 h-[14px]"
                           style={{
-                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                            backgroundSize: '6px 1px'
+                            backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                            backgroundSize: '8px 5px'
                           }}
                         />
                       </div>
@@ -4291,10 +4291,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Back
                           </button>
                           <div
-                            className="flex-1 h-px"
+                            className="flex-1 h-[14px]"
                             style={{
-                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
-                              backgroundSize: '6px 1px'
+                              backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                              backgroundSize: '8px 5px'
                             }}
                           />
                           <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Passkey</span>
