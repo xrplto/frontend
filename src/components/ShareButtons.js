@@ -278,8 +278,8 @@ export function TokenShareModal({ token }) {
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1 px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors ${
           isDark
-            ? 'border-[#3f96fe]/20 text-white/50 hover:border-[#3f96fe]/40 hover:text-[#3f96fe]'
-            : 'border-gray-200 text-gray-500 hover:border-[#3f96fe] hover:text-[#3f96fe]'
+            ? 'border-gray-600/40 text-white/50 hover:border-gray-500 hover:text-white/70'
+            : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700'
         }`}
       >
         <ShareIcon size={12} />
@@ -294,7 +294,7 @@ export function TokenShareModal({ token }) {
           <div
             onClick={e => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
-              isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+              isDark ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
             }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
@@ -310,14 +310,14 @@ export function TokenShareModal({ token }) {
               <img
                 src={imgUrl}
                 alt={name}
-                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-[#3f96fe]/20' : 'border-gray-200'}`}
+                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-gray-600/40' : 'border-gray-200'}`}
               />
               <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {user} {name}
               </span>
 
               <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                isDark ? 'border-[#3f96fe]/20 bg-white/[0.04]' : 'border-gray-200 bg-gray-50/50'
+                isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
               }`}>
                 <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Current Price</p>
                 <p className="text-[18px] font-medium text-primary">
@@ -352,7 +352,7 @@ export function TokenShareModal({ token }) {
                   <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                 </div>
                 <div className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-[#3f96fe]/20 bg-white/[0.04]' : 'border-gray-200 bg-gray-50/50'
+                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
                 }`}>
                   <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
                     {url}

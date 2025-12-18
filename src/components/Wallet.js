@@ -211,7 +211,7 @@ const DialogContent = ({ children, sx }) => (
 const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
   <div className={cn(
     "overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border",
-    isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+    isDark ? "bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
   )}>
     {children}
   </div>
@@ -256,7 +256,7 @@ const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick
     fontWeight: 400,
     cursor: disabled ? 'not-allowed' : 'pointer',
     width: fullWidth ? '100%' : 'auto',
-    border: variant === 'outlined' ? '1.5px solid rgba(59,130,246,0.2)' : 'none',
+    border: variant === 'outlined' ? '1.5px solid rgba(156,163,175,0.3)' : 'none',
     background: variant === 'contained' ? (disabled ? '#94a3b8' : '#4285f4') : 'transparent',
     color: variant === 'contained' ? '#fff' : '#4285f4',
     opacity: disabled && variant !== 'contained' ? 0.5 : 1,
@@ -278,7 +278,7 @@ const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress,
     padding: size === 'small' ? '8px 12px' : '12px 14px',
     fontSize: 14,
     borderRadius: 12,
-    border: isDark ? '1.5px solid rgba(59,130,246,0.2)' : '1.5px solid rgba(59,130,246,0.3)',
+    border: isDark ? '1.5px solid rgba(156,163,175,0.25)' : '1.5px solid rgba(156,163,175,0.4)',
     background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(249,250,251,1)',
     color: isDark ? '#fff' : '#000',
     outline: 'none',
@@ -696,14 +696,14 @@ const WalletContent = ({
               "w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all",
               backupAgreed
                 ? "border-primary bg-primary/5"
-                : isDark ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/30" : "border-blue-200 hover:border-blue-300"
+                : isDark ? "border-gray-600/40 hover:border-gray-500/50" : "border-gray-300 hover:border-gray-400"
             )}
           >
             <div className={cn(
               "w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
               backupAgreed
                 ? "bg-primary"
-                : isDark ? "border-2 border-[#3f96fe]/30" : "border-2 border-blue-300"
+                : isDark ? "border-2 border-gray-600/50" : "border-2 border-gray-300"
             )}>
               {backupAgreed && <Check size={12} className="text-white" />}
             </div>
@@ -728,8 +728,8 @@ const WalletContent = ({
               className={cn(
                 "w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all",
                 isDark
-                  ? "bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50 disabled:opacity-40"
-                  : "bg-gray-50 border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe] disabled:opacity-40"
+                  ? "bg-white/[0.04] border-gray-600/40 text-white placeholder:text-white/30 focus:border-gray-500 disabled:opacity-40"
+                  : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400 disabled:opacity-40"
               )}
             />
             <button
@@ -756,8 +756,8 @@ const WalletContent = ({
               className={cn(
                 "flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all",
                 isDark
-                  ? "border-[#3f96fe]/20 text-white/70 hover:bg-[#3f96fe]/5"
-                  : "border-blue-200 text-gray-600 hover:bg-blue-50"
+                  ? "border-gray-600/40 text-white/70 hover:bg-gray-700/30"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-100"
               )}
             >
               Cancel

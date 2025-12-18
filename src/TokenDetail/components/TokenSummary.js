@@ -132,7 +132,7 @@ const TokenSummary = memo(({ token }) => {
     loadDebugInfo();
   }, [accountProfile]);
 
-  const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator, trustlines } = token;
+  const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator, trustlines, AMM } = token;
 
   // Trustline handler
   const handleSetTrust = async () => {
@@ -492,7 +492,7 @@ const TokenSummary = memo(({ token }) => {
           <div
             className={cn(
               "w-full max-w-lg rounded-2xl border p-5 max-h-[80vh] overflow-y-auto",
-              isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+              isDark ? "bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -510,7 +510,8 @@ const TokenSummary = memo(({ token }) => {
                 { label: 'MD5 Hash', value: md5 },
                 { label: 'Currency Code', value: currency },
                 { label: 'Issuer Address', value: issuer },
-                { label: 'Trustlines', value: trustlines ? fNumber(trustlines) : '0', noCopy: true }
+                { label: 'Trustlines', value: trustlines ? fNumber(trustlines) : '0', noCopy: true },
+                ...(AMM ? [{ label: 'AMM Account', value: AMM }] : [])
               ].map((item) => (
                 <div key={item.label}>
                   <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</div>
