@@ -1158,15 +1158,16 @@ export const ConnectWallet = ({
     <button
       onClick={() => setOpenWalletModal(true)}
       className={cn(
-        'my-2 rounded-xl border-[1.5px] px-4 py-2 text-[0.9rem] font-medium transition-all duration-150',
+        'group relative my-2 rounded-xl border-[1.5px] px-4 py-2 text-[0.9rem] font-medium transition-all duration-300 overflow-hidden',
+        'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
         fullWidth ? 'w-full' : 'w-auto',
         isDark
-          ? 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
-          : 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+          ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
+          : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)]'
       )}
       {...otherProps}
     >
-      {text}
+      <span className="relative z-10">{text}</span>
     </button>
   );
 };

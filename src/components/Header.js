@@ -1496,14 +1496,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <button
                 onClick={() => setOpenWalletModal(true)}
                 className={cn(
-                  'flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
+                  'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-300 border overflow-hidden',
+                  'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
                   accountProfile
                     ? isDark
-                      ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,40 hover:bg-[rgba(63,150,254,5'
-                      : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,40 hover:bg-[rgba(63,150,254,5 before:bg-none'
+                      : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50 before:bg-none'
                     : isDark
-                      ? 'bg-white/[0.06] text-white/60 border-white/10 hover:bg-white/[0.1] hover:text-white hover:border-white/20'
-                      : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
+                      ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
+                      : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)]'
                 )}
               >
                 {accountProfile ? (
@@ -1520,8 +1521,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   </>
                 ) : (
                   <>
-                    <Wallet size={14} />
-                    <span>Connect</span>
+                    <Wallet size={14} className="relative z-10" />
+                    <span className="relative z-10">Connect</span>
                   </>
                 )}
               </button>
@@ -1790,17 +1791,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <button
                       onClick={() => setWalletExpanded(!walletExpanded)}
                       className={cn(
-                        'flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
+                        'relative flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-300 border overflow-hidden',
+                        'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
                         isDark
-                          ? 'bg-white/[0.06] text-white/60 border-white/10 hover:bg-white/[0.1] hover:text-white'
-                          : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:text-gray-700'
+                          ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
+                          : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)]'
                       )}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="relative z-10 flex items-center gap-2">
                         <Wallet size={14} />
                         <span>Connect Wallet</span>
                       </div>
-                      <ChevronDown size={14} className={cn('transition-transform duration-150', walletExpanded && 'rotate-180')} />
+                      <ChevronDown size={14} className={cn('relative z-10 transition-transform duration-150', walletExpanded && 'rotate-180')} />
                     </button>
                     {walletExpanded && (
                       <div className={cn('mt-2 rounded-lg border p-3', isDark ? 'border-[rgba(63,150,254,20 bg-white/[0.02]' : 'border-gray-200 bg-gray-50')}>
