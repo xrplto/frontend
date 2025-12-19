@@ -45,8 +45,9 @@ export default function HistoryList({ nft }) {
   }, [nft?.NFTokenID]);
 
   const keyEvents = ['SALE', 'MINT', 'TRANSFER', 'BURN'];
-  const filtered = showAll ? history : history.filter(h => keyEvents.includes(h.type));
-  const hasHidden = history.length > filtered.length;
+  const keyOnly = history.filter(h => keyEvents.includes(h.type));
+  const hasOtherEvents = history.length > keyOnly.length;
+  const filtered = showAll ? history : keyOnly;
 
   if (loading) {
     return (
@@ -83,12 +84,12 @@ export default function HistoryList({ nft }) {
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-gray-500">{filtered.length} events</span>
         </div>
-        {hasHidden && (
+        {hasOtherEvents && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="text-[11px] text-gray-400 hover:text-gray-300 transition-colors"
           >
-            {showAll ? 'Show Less' : 'Show All'}
+            {showAll ? 'Key Events' : 'Show All'}
           </button>
         )}
       </div>

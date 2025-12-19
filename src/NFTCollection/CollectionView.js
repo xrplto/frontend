@@ -44,7 +44,8 @@ import {
   Activity,
   Grid2X2,
   Grid3X3,
-  LayoutGrid
+  LayoutGrid,
+  CandlestickChart
 } from 'lucide-react';
 
 // Utils & Context
@@ -918,6 +919,180 @@ const WhaleIcon = ({ size = 18, isDark }) => (
   </TierIconBox>
 );
 
+// Price Chart Component using lightweight-charts
+const PriceChart = React.memo(({ slug }) => {
+  const BASE_URL = 'https://api.xrpl.to/api';
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const chartContainerRef = useRef(null);
+  const chartRef = useRef(null);
+  const dataMapRef = useRef({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [legend, setLegend] = useState(null);
+
+  useEffect(() => {
+    if (!slug || !chartContainerRef.current) return;
+    let chart = null;
+
+    const initChart = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { createChart, CandlestickSeries, HistogramSeries, AreaSeries } = await import('lightweight-charts');
+        const res = await axios.get(`${BASE_URL}/nft/collections/${slug}/ohlc`);
+        const rawData = (res.data?.ohlc || []).filter(d => d.o != null && d.h != null && d.l != null && d.c != null);
+
+        // Store data map for legend lookup
+        dataMapRef.current = {};
+        rawData.forEach(d => { dataMapRef.current[d.t] = d; });
+
+        const ohlcData = rawData.map(d => ({ time: d.t, open: d.o, high: d.h, low: d.l, close: d.c }));
+        const volumeData = rawData.map(d => ({
+          time: d.t,
+          value: d.v || 0,
+          color: d.c >= d.o ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'
+        }));
+        const salesData = rawData.map(d => ({ time: d.t, value: d.s || 0 }));
+        const listingsData = rawData.map(d => ({ time: d.t, value: d.lo || 0 }));
+        const bidsData = rawData.map(d => ({ time: d.t, value: d.bo || 0 }));
+
+        if (ohlcData.length === 0) {
+          setError('No price data available');
+          setLoading(false);
+          return;
+        }
+
+        // Set initial legend to latest data
+        if (rawData.length > 0) setLegend(rawData[rawData.length - 1]);
+
+        chart = createChart(chartContainerRef.current, {
+          width: chartContainerRef.current.clientWidth,
+          height: 350,
+          layout: {
+            background: { type: 'solid', color: 'transparent' },
+            textColor: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+          },
+          grid: {
+            vertLines: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+            horzLines: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+          },
+          crosshair: { mode: 1 },
+          rightPriceScale: { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+          timeScale: { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', timeVisible: true }
+        });
+
+        const candleSeries = chart.addSeries(CandlestickSeries, {
+          upColor: '#22c55e',
+          downColor: '#ef4444',
+          borderUpColor: '#22c55e',
+          borderDownColor: '#ef4444',
+          wickUpColor: '#22c55e',
+          wickDownColor: '#ef4444'
+        });
+        candleSeries.setData(ohlcData);
+        candleSeries.priceScale().applyOptions({
+          scaleMargins: { top: 0.02, bottom: 0.3 }
+        });
+
+        // Volume histogram - subtle background
+        const volumeSeries = chart.addSeries(HistogramSeries, {
+          priceFormat: { type: 'volume' },
+          priceScaleId: 'volume',
+          lastValueVisible: false,
+          priceLineVisible: false
+        });
+        volumeSeries.setData(volumeData);
+        chart.priceScale('volume').applyOptions({
+          scaleMargins: { top: 0.75, bottom: 0.02 },
+          visible: false
+        });
+
+        // Activity area series - stacked visual
+        const areaOpts = (lineColor, topColor, bottomColor) => ({
+          priceScaleId: 'activity',
+          lineColor,
+          topColor,
+          bottomColor,
+          lineWidth: 1,
+          priceFormat: { type: 'volume' },
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false
+        });
+
+        chart.addSeries(AreaSeries, areaOpts('#3b82f6', 'rgba(59,130,246,0.4)', 'rgba(59,130,246,0)')).setData(salesData);
+        chart.addSeries(AreaSeries, areaOpts('#eab308', 'rgba(234,179,8,0.3)', 'rgba(234,179,8,0)')).setData(listingsData);
+        chart.addSeries(AreaSeries, areaOpts('#a855f7', 'rgba(168,85,247,0.3)', 'rgba(168,85,247,0)')).setData(bidsData);
+
+        chart.priceScale('activity').applyOptions({
+          scaleMargins: { top: 0.72, bottom: 0.02 },
+          visible: false
+        });
+
+        // Crosshair move handler for legend
+        chart.subscribeCrosshairMove(param => {
+          if (param.time) {
+            const d = dataMapRef.current[param.time];
+            if (d) setLegend(d);
+          }
+        });
+
+        chart.timeScale().fitContent();
+        chartRef.current = chart;
+
+        const handleResize = () => chart?.applyOptions({ width: chartContainerRef.current?.clientWidth || 0 });
+        window.addEventListener('resize', handleResize);
+        chartRef.current.resizeHandler = handleResize;
+      } catch (err) {
+        setError('Failed to load chart');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initChart();
+    return () => {
+      if (chartRef.current?.resizeHandler) window.removeEventListener('resize', chartRef.current.resizeHandler);
+      chartRef.current?.remove();
+      chartRef.current = null;
+    };
+  }, [slug, isDark]);
+
+  return (
+    <div className="w-full">
+      {legend && (
+        <div className={cn("flex flex-wrap gap-x-3 gap-y-1.5 px-3 py-2", isDark ? "text-white/80" : "text-gray-700")}>
+          <span className={cn("text-[11px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>{legend.t}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-green-500">▲ High</span>
+            <span className="text-[12px] font-medium text-green-500">{legend.h?.toFixed(2)} XRP</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-red-500">▼ Low</span>
+            <span className="text-[12px] font-medium text-red-500">{legend.l?.toFixed(2)} XRP</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>Close</span>
+            <span className={cn("text-[12px] font-medium", legend.c >= legend.o ? "text-green-500" : "text-red-500")}>{legend.c?.toFixed(2)}</span>
+          </div>
+          <span className={cn("text-[10px] px-1.5 py-0.5 rounded", isDark ? "bg-white/5" : "bg-gray-100")}>Vol <span className="font-medium">{(legend.v || 0).toFixed(0)} XRP</span></span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">Sales <span className="font-medium">{legend.s || 0}</span></span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500">Listings <span className="font-medium">{legend.lo || 0}</span></span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-500">Bids <span className="font-medium">{legend.bo || 0}</span></span>
+          {legend.ho > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500">Holders <span className="font-medium">{legend.ho}</span></span>}
+        </div>
+      )}
+      <div className="relative w-full h-[350px]">
+        <div ref={chartContainerRef} className="w-full h-full" />
+        {loading && <div className="absolute inset-0 flex justify-center items-center"><Loader2 className="animate-spin text-primary" size={32} /></div>}
+        {error && <div className={cn("absolute inset-0 flex justify-center items-center text-sm", isDark ? "text-white/40" : "text-gray-400")}>{error}</div>}
+      </div>
+    </div>
+  );
+});
+
 // Holders Tab Component
 const HoldersTab = React.memo(({ slug }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
@@ -1675,6 +1850,7 @@ export default function CollectionView({ collection }) {
             >
               {[
                 { id: 'tab-nfts', label: 'NFTs', icon: <Package size={14} /> },
+                { id: 'tab-chart', label: 'Chart', icon: <CandlestickChart size={14} /> },
                 { id: 'tab-holders', label: 'Holders', icon: <Users size={14} /> },
                 { id: 'tab-creator-transactions', label: 'Activity', icon: <Activity size={14} /> }
               ].map((tab, idx, arr) => (
@@ -1715,6 +1891,9 @@ export default function CollectionView({ collection }) {
 
           <TabPanel value="tab-nfts" className="px-2.5 pb-2.5">
             <NFTGrid collection={collection} />
+          </TabPanel>
+          <TabPanel value="tab-chart" className="px-2.5 pb-2.5">
+            <PriceChart slug={slug} />
           </TabPanel>
           <TabPanel value="tab-holders" className="px-2.5 pb-2.5">
             <HoldersTab slug={slug} />

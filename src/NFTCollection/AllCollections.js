@@ -551,9 +551,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                 <MetricValue isDark={isDark}>
                   ✕{formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
                 </MetricValue>
-                <PercentageChange isPositive={(globalMetrics.volume24hChange || 0) >= 0}>
-                  {(globalMetrics.volume24hChange || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(globalMetrics.volume24hChange || 0).toFixed(1)}%
+                <PercentageChange isPositive={(globalMetrics.volumePct || 0) >= 0}>
+                  {(globalMetrics.volumePct || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.volumePct || 0).toFixed(1)}%
                 </PercentageChange>
               </MetricBox>
 
@@ -562,9 +562,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                 <MetricValue isDark={isDark}>
                   {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
                 </MetricValue>
-                <PercentageChange isPositive={(globalMetrics.sales24hChange || 0) >= 0}>
-                  {(globalMetrics.sales24hChange || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(globalMetrics.sales24hChange || 0).toFixed(1)}%
+                <PercentageChange isPositive={(globalMetrics.salesPct || 0) >= 0}>
+                  {(globalMetrics.salesPct || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.salesPct || 0).toFixed(1)}%
                 </PercentageChange>
               </MetricBox>
 
@@ -573,9 +573,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                 <MetricValue isDark={isDark}>
                   {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
                 </MetricValue>
-                <PercentageChange isPositive={(globalMetrics.traders24hChange || 0) >= 0}>
-                  {(globalMetrics.traders24hChange || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(globalMetrics.traders24hChange || 0).toFixed(1)}%
+                <PercentageChange isPositive={(globalMetrics.activeTradersPct || 0) >= 0}>
+                  {(globalMetrics.activeTradersPct || 0) >= 0 ? '↑' : '↓'}
+                  {Math.abs(globalMetrics.activeTradersPct || 0).toFixed(1)}%
                 </PercentageChange>
               </MetricBox>
 
