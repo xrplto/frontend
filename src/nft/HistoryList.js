@@ -1,31 +1,46 @@
 import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, TrendingUp, Users, Zap, Award, DollarSign, Sparkles, ArrowUpRight, Flame, Tag, List, X } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 const TYPE_CONFIG = {
-  SALE: { label: 'Sale', color: '#10b981' },
-  MINT: { label: 'Mint', color: '#8b5cf6' },
-  TRANSFER: { label: 'Transfer', color: '#3b82f6' },
-  BURN: { label: 'Burn', color: '#ef4444' },
-  CREATE_BUY_OFFER: { label: 'Bid', color: '#f59e0b' },
-  CREATE_SELL_OFFER: { label: 'List', color: '#06b6d4' },
-  CANCEL_BUY_OFFER: { label: 'Cancel Bid', color: '#6b7280' },
-  CANCEL_SELL_OFFER: { label: 'Delist', color: '#6b7280' }
+  SALE: { label: 'Sale', color: '#e5e5e5', Icon: DollarSign },
+  MINT: { label: 'Mint', color: '#a3a3a3', Icon: Sparkles },
+  TRANSFER: { label: 'Transfer', color: '#a3a3a3', Icon: ArrowUpRight },
+  BURN: { label: 'Burn', color: '#737373', Icon: Flame },
+  CREATE_BUY_OFFER: { label: 'Bid', color: '#a3a3a3', Icon: Tag },
+  CREATE_SELL_OFFER: { label: 'List', color: '#a3a3a3', Icon: List },
+  CANCEL_BUY_OFFER: { label: 'Cancel', color: '#525252', Icon: X },
+  CANCEL_SELL_OFFER: { label: 'Delist', color: '#525252', Icon: X }
 };
 
 const formatAddr = (addr) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
 
-const formatTime = (ts) => {
+const getDateGroup = (timestamp) => {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return 'This Week';
+  if (diffDays < 30) return 'This Month';
+  if (diffDays < 90) return 'Last 3 Months';
+  return 'Older';
+};
+
+const formatRelativeTime = (ts) => {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
+  if (days < 7) return `${days}d ago`;
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
@@ -45,28 +60,80 @@ export default function HistoryList({ nft }) {
       .finally(() => setLoading(false));
   }, [nft?.NFTokenID]);
 
+  // Calculate stats
+  const stats = useMemo(() => {
+    const sales = history.filter(h => h.type === 'SALE');
+    const totalVolume = sales.reduce((sum, h) => sum + (h.costXRP || 0), 0);
+    const highestSale = Math.max(...sales.map(h => h.costXRP || 0), 0);
+
+    // Count unique owners - only people who actually held the NFT
+    const owners = new Set();
+    history.forEach(h => {
+      if (h.type === 'MINT' && h.account) {
+        owners.add(h.account); // Minter is first owner
+      } else if (h.type === 'SALE' && h.buyer) {
+        owners.add(h.buyer); // Sale buyer becomes owner
+      } else if (h.type === 'TRANSFER' && h.buyer) {
+        owners.add(h.buyer); // Transfer recipient becomes owner
+      }
+    });
+
+    // Current owner is from most recent SALE/TRANSFER, or minter if never sold
+    let currentOwner = null;
+    for (const h of history) {
+      if ((h.type === 'SALE' || h.type === 'TRANSFER') && h.buyer) {
+        currentOwner = h.buyer;
+        break;
+      }
+      if (h.type === 'MINT') currentOwner = h.account;
+    }
+
+    // Last list price vs last sale
+    const lastList = history.find(h => h.type === 'CREATE_SELL_OFFER');
+    const lastSale = history.find(h => h.type === 'SALE');
+    const listPrice = lastList?.costXRP || lastList?.amountXRP || 0;
+    const salePrice = lastSale?.costXRP || 0;
+    const priceDiff = salePrice > 0 ? ((listPrice - salePrice) / salePrice) * 100 : 0;
+
+    return { salesCount: sales.length, totalVolume, highestSale, uniqueOwners: owners.size, currentOwner, listPrice, salePrice, priceDiff };
+  }, [history]);
+
   // Get unique event types present in history
   const availableTypes = useMemo(() => {
     const types = new Set(history.map(h => h.type));
     return Array.from(types);
   }, [history]);
 
-  // Filter history based on active filter
-  const filtered = useMemo(() => {
-    if (activeFilter === 'all') return history;
-    return history.filter(h => h.type === activeFilter);
+  // Filter and group history
+  const { filtered, grouped } = useMemo(() => {
+    const filteredItems = activeFilter === 'all' ? history : history.filter(h => h.type === activeFilter);
+
+    const groups = {};
+    filteredItems.forEach(item => {
+      const group = getDateGroup(item.time);
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(item);
+    });
+
+    return { filtered: filteredItems, grouped: groups };
   }, [history, activeFilter]);
+
+  const groupOrder = ['Today', 'Yesterday', 'This Week', 'This Month', 'Last 3 Months', 'Older'];
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-700/30 bg-white/[0.02]">
-          <div className="h-4 w-16 rounded bg-white/5 animate-pulse" />
-        </div>
-        <div className="p-2">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-10 rounded-lg animate-pulse bg-white/[0.03] mb-1 last:mb-0" />
-          ))}
+      <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+        <div className="p-4">
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-white/[0.03] animate-pulse" />
+            ))}
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-14 rounded-xl animate-pulse bg-white/[0.02]" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -74,36 +141,84 @@ export default function HistoryList({ nft }) {
 
   if (!history.length) {
     return (
-      <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-gray-700/30 bg-white/[0.02]">
-          <span className="text-[11px] text-gray-500">0 events</span>
-        </div>
-        <div className="py-6 text-center">
-          <p className="text-sm text-gray-500">No history yet</p>
+      <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+        <div className="py-12 text-center">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+            <Zap size={20} className="text-gray-600" />
+          </div>
+          <p className="text-sm text-gray-500">No activity yet</p>
+          <p className="text-xs text-gray-600 mt-1">History will appear here</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-      {/* Header with Filter Chips */}
-      <div className="px-4 py-2.5 border-b border-gray-700/30 bg-white/[0.02]">
-        <div className="mb-2">
-          <span className="text-[11px] text-gray-500">{filtered.length} of {history.length} events</span>
+    <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+      {/* Stats Summary */}
+      {stats.salesCount > 0 && (
+        <div className="p-3 border-b border-white/[0.06]">
+          <div className="grid grid-cols-4 gap-1.5">
+            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+              <div className="flex items-center justify-center gap-1 mb-0.5">
+                <Zap size={11} className="text-gray-400" />
+                <span className="text-sm font-medium text-white tabular-nums">{stats.salesCount}</span>
+              </div>
+              <p className="text-[9px] uppercase tracking-wide text-gray-600">Sales</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+              <div className="flex items-center justify-center gap-1 mb-0.5">
+                <TrendingUp size={11} className="text-gray-400" />
+                <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.totalVolume)}</span>
+              </div>
+              <p className="text-[9px] uppercase tracking-wide text-gray-600">Volume</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+              <div className="flex items-center justify-center gap-1 mb-0.5">
+                <Award size={11} className="text-gray-400" />
+                <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.highestSale)}</span>
+              </div>
+              <p className="text-[9px] uppercase tracking-wide text-gray-600">ATH</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+              <div className="flex items-center justify-center gap-1 mb-0.5">
+                <Users size={11} className="text-gray-400" />
+                <span className="text-sm font-medium text-white tabular-nums">{stats.uniqueOwners}</span>
+              </div>
+              <p className="text-[9px] uppercase tracking-wide text-gray-600">Owners</p>
+            </div>
+          </div>
+          {/* List vs Last Sale */}
+          {stats.listPrice > 0 && stats.salePrice > 0 && (
+            <div className="mt-2 flex items-center justify-between px-2 py-1.5 rounded-lg bg-white/[0.03]">
+              <span className="text-[10px] text-gray-500">List vs Last Sale</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-400 tabular-nums">{fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}</span>
+                <span className={cn(
+                  "text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded",
+                  stats.priceDiff >= 0 ? "text-emerald-400 bg-emerald-500/10" : "text-red-400 bg-red-500/10"
+                )}>
+                  {stats.priceDiff >= 0 ? '+' : ''}{stats.priceDiff.toFixed(0)}%
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-        {/* Filter Chips */}
-        <div className="flex flex-wrap gap-1.5">
+      )}
+
+      {/* Filter Pills */}
+      <div className="px-3 py-2 border-b border-white/[0.06]">
+        <div className="flex items-center gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
-              "px-2 py-0.5 rounded text-[10px] font-normal transition-colors",
+              "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap",
               activeFilter === 'all'
-                ? "bg-white/10 text-white"
-                : "bg-white/5 text-gray-500 hover:text-gray-400"
+                ? "bg-white/90 text-black"
+                : "text-gray-400 hover:text-white hover:bg-white/[0.08]"
             )}
           >
-            All
+            All {history.length}
           </button>
           {availableTypes.map(type => {
             const config = TYPE_CONFIG[type] || { label: type, color: '#6b7280' };
@@ -112,91 +227,144 @@ export default function HistoryList({ nft }) {
               <button
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
-                className={cn(
-                  "px-2 py-0.5 rounded text-[10px] font-normal transition-colors flex items-center gap-1",
-                  activeFilter === type
-                    ? "text-white"
-                    : "text-gray-500 hover:text-gray-400"
-                )}
+                className="px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap"
                 style={{
-                  backgroundColor: activeFilter === type ? `${config.color}30` : 'rgba(255,255,255,0.03)'
+                  backgroundColor: activeFilter === type ? config.color : 'transparent',
+                  color: activeFilter === type ? '#fff' : '#9ca3af',
                 }}
               >
-                <span style={{ color: activeFilter === type ? config.color : undefined }}>{config.label}</span>
-                <span className="text-gray-600">{count}</span>
+                {config.label} {count}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* List View */}
-      <div className="max-h-[400px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+      {/* Timeline List */}
+      <div className="max-h-[420px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         {filtered.length === 0 ? (
-          <div className="py-6 text-center">
+          <div className="py-10 text-center">
             <p className="text-sm text-gray-500">No {TYPE_CONFIG[activeFilter]?.label || activeFilter} events</p>
             <button
               onClick={() => setActiveFilter('all')}
-              className="mt-2 text-[11px] text-gray-400 hover:text-gray-300"
+              className="mt-2 text-[11px] text-primary hover:underline"
             >
               Show all events
             </button>
           </div>
-        ) : filtered.map((item) => {
-          const config = TYPE_CONFIG[item.type] || { label: item.type, color: '#6b7280' };
-          const from = item.seller || item.account;
-          const to = item.buyer;
+        ) : (
+          <div className="p-3 space-y-3">
+            {groupOrder.map(groupName => {
+              const items = grouped[groupName];
+              if (!items || items.length === 0) return null;
 
-          return (
-            <div
-              key={item._id || item.hash}
-              className="px-4 py-2.5 border-b last:border-b-0 border-gray-700/30"
-            >
-              <div className="flex items-center justify-between gap-3">
-                {/* Left: Type + Address */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span
-                    className="text-[10px] px-2 py-0.5 rounded shrink-0 font-normal min-w-[48px] text-center"
-                    style={{ backgroundColor: `${config.color}20`, color: config.color }}
-                  >
-                    {config.label}
-                  </span>
-                  <span className="text-[12px] font-mono text-gray-400 truncate">
-                    {from && formatAddr(from)}
-                    {to && <span className="text-gray-600"> → {formatAddr(to)}</span>}
-                  </span>
-                </div>
+              return (
+                <div key={groupName}>
+                  {/* Date Group Header */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-gray-600">{groupName}</span>
+                    <div className="flex-1 h-px bg-white/[0.04]" />
+                  </div>
 
-                {/* Right: Price + Time + Link */}
-                <div className="flex items-center gap-3 shrink-0">
-                  {item.type === 'SALE' && item.costXRP > 0 && (
-                    <span className="text-[13px] font-mono text-white tabular-nums">
-                      {fNumber(item.costXRP)} XRP
-                    </span>
-                  )}
-                  {(item.type === 'CREATE_BUY_OFFER' || item.type === 'CREATE_SELL_OFFER') && item.amountXRP > 0 && (
-                    <span className="text-[13px] font-mono text-gray-400 tabular-nums">
-                      {fNumber(item.amountXRP)} XRP
-                    </span>
-                  )}
-                  {(item.type === 'CANCEL_BUY_OFFER' || item.type === 'CANCEL_SELL_OFFER') && item.amountXRP > 0 && (
-                    <span className="text-[12px] font-mono line-through text-gray-600 tabular-nums">
-                      {fNumber(item.amountXRP)} XRP
-                    </span>
-                  )}
-                  <span className="text-[11px] w-8 text-right text-gray-500 tabular-nums">
-                    {formatTime(item.time)}
-                  </span>
-                  {item.hash && (
-                    <Link href={`/tx/${item.hash}`} className="text-gray-600 hover:text-gray-400 transition-colors">
-                      <ExternalLink size={12} />
-                    </Link>
-                  )}
+                  {/* Items */}
+                  <div className="space-y-1">
+                    {items.map((item, idx) => {
+                      const config = TYPE_CONFIG[item.type] || { label: item.type, color: '#6b7280', Icon: Zap };
+                      const from = item.seller || item.account;
+                      const to = item.buyer;
+                      const price = item.costXRP || item.amountXRP;
+                      const isCancelled = item.type === 'CANCEL_BUY_OFFER' || item.type === 'CANCEL_SELL_OFFER';
+                      const isOwnershipChange = item.type === 'SALE' || item.type === 'TRANSFER' || item.type === 'MINT';
+
+                      return (
+                        <div
+                          key={item._id || item.hash || idx}
+                          className={cn(
+                            "group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all",
+                            isOwnershipChange
+                              ? "bg-white/[0.03] border-l-2 hover:bg-white/[0.06]"
+                              : "hover:bg-white/[0.03]"
+                          )}
+                          style={isOwnershipChange ? { borderLeftColor: config.color } : undefined}
+                        >
+                          {/* Icon */}
+                          <div
+                            className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${config.color}20` }}
+                          >
+                            <config.Icon size={14} style={{ color: config.color }} />
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              {/* Event + Price */}
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-medium" style={{ color: config.color }}>
+                                  {config.label}
+                                </span>
+                                {price > 0 && (
+                                  <span className={cn(
+                                    "text-[12px] font-medium tabular-nums",
+                                    isCancelled ? "text-gray-600 line-through" : "text-white"
+                                  )}>
+                                    {fNumber(price)} XRP
+                                  </span>
+                                )}
+                              </div>
+                              {/* Address */}
+                              <div className="flex items-center gap-1 text-[10px] mt-0.5">
+                                {from && (
+                                  <Link
+                                    href={`/profile/${from}`}
+                                    className={cn(
+                                      "hover:text-primary transition-colors font-mono",
+                                      from === stats.currentOwner ? "text-primary" : "text-gray-500"
+                                    )}
+                                  >
+                                    {formatAddr(from)}{from === stats.currentOwner && ' ·owner'}
+                                  </Link>
+                                )}
+                                {to && (
+                                  <>
+                                    <span className="text-gray-600">→</span>
+                                    <Link
+                                      href={`/profile/${to}`}
+                                      className={cn(
+                                        "hover:text-primary transition-colors font-mono",
+                                        to === stats.currentOwner ? "text-primary" : "text-gray-500"
+                                      )}
+                                    >
+                                      {formatAddr(to)}{to === stats.currentOwner && ' ·owner'}
+                                    </Link>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            {/* Time */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-[10px] text-gray-600 tabular-nums">
+                                {formatRelativeTime(item.time)}
+                              </span>
+                              {item.hash && (
+                                <Link
+                                  href={`/tx/${item.hash}`}
+                                  className="p-1 rounded text-gray-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                >
+                                  <ExternalLink size={11} />
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

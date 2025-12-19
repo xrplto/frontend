@@ -373,10 +373,17 @@ Create `.env` file based on `.env.example`:
    </button>
    ```
 
-7. **Icons**
-   - Use Lucide React: `import { Icon } from 'lucide-react'`
+7. **Icons - NEVER USE EMOJIS**
+   - **NEVER use emojis in the UI** - Always use Lucide React icons instead
+   - Emojis are inconsistent across platforms and look unprofessional
+   - Use Lucide React: `import { TrendingUp, Star, AlertCircle } from 'lucide-react'`
    - Size: `<Icon size={14} />` or `<Icon size={16} />`
-   - NO emoji icons
+   - Common replacements:
+     - Fire/trending: `<TrendingUp size={14} />`
+     - Star/favorite: `<Star size={14} />`
+     - Warning: `<AlertCircle size={14} />`
+     - Check: `<Check size={14} />`
+     - Arrow: `<ArrowUp size={14} />` or `<ArrowDown size={14} />`
 
 8. **Hover States**
    - Subtle only: `hover:border-primary hover:bg-primary/5`
