@@ -12,7 +12,7 @@ import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Wallet, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, Copy, ExternalLink, Coins, Image, Clock } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 
 // Same wrapper as index.js for consistent width
@@ -309,91 +309,98 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+        <div className="mb-6">
           {/* Main Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
             <div>
-              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Balance</p>
-              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#1e3a5f] to-[#0f172a] border border-[#3b82f6]/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#60a5fa]">Balance</span>
+              </div>
+              <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
                 {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'}
               </p>
-            </div>
-            <div>
-              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>P&L</p>
-              <p className={cn("text-[20px] font-semibold tabular-nums", totalPnL >= 0 ? "text-green-500" : "text-red-500")}>
-                {totalPnL >= 0 ? '+' : ''}{fCurrency5(totalPnL)}
+              <p className={cn("text-[13px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+                ≈ {holdings?.accountData ? fCurrency5(holdings.accountData.spendableDrops / 1000000) : '—'} spendable
               </p>
             </div>
             <div>
-              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Trades</p>
-              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+              <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", totalPnL >= 0 ? "bg-gradient-to-r from-[#14532d]/50 to-[#052e16]/50 border-[#22c55e]/30" : "bg-gradient-to-r from-[#450a0a]/50 to-[#1c0606]/50 border-[#ef4444]/30")}>
+                <div className={cn("w-1.5 h-1.5 rounded-full", totalPnL >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} />
+                <span className={cn("text-[10px] font-medium uppercase tracking-wider", totalPnL >= 0 ? "text-[#4ade80]" : "text-[#f87171]")}>P&L</span>
+              </div>
+              <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", totalPnL >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
+                {fCurrency5(totalPnL)}
+              </p>
+              <p className={cn("text-[13px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+                XRP
+              </p>
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#1e293b] to-[#0f172a] border border-white/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/60" : "text-gray-500")}>Trades</span>
+              </div>
+              <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
                 {fCurrency5(data.totalTrades)}
               </p>
+              <p className={cn("text-[13px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+                total executions
+              </p>
             </div>
             <div>
-              <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>Volume</p>
-              <p className={cn("text-[20px] font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#312e81]/50 to-[#1e1b4b]/50 border border-[#8b5cf6]/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#a78bfa]">Volume</span>
+              </div>
+              <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
                 {fCurrency5(data.totalVolume)}
+              </p>
+              <p className={cn("text-[13px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+                XRP traded
               </p>
             </div>
           </div>
 
           {/* Secondary Stats */}
-          <div className={cn("grid grid-cols-4 md:grid-cols-8 gap-2 pt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.04]")}>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Win Rate</p>
-              <p className={cn("text-[12px] font-medium", winRate >= 50 ? "text-green-500" : "text-red-500")}>{fCurrency5(winRate)}%</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Buys</p>
-              <p className={cn("text-[12px] font-medium text-red-500")}>{fCurrency5(data.buyCount || 0)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Sells</p>
-              <p className={cn("text-[12px] font-medium text-green-500")}>{fCurrency5(data.sellCount || 0)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Sharpe</p>
-              <p className={cn("text-[12px] font-medium", isDark ? "text-white/80" : "text-gray-700")}>{(data.sharpeRatio || 0).toFixed(2)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>DEX P&L</p>
-              <p className={cn("text-[12px] font-medium", (data.dexProfit || 0) >= 0 ? "text-green-500" : "text-red-500")}>{fCurrency5(data.dexProfit || 0)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>AMM P&L</p>
-              <p className={cn("text-[12px] font-medium", (data.ammProfit || 0) >= 0 ? "text-green-500" : "text-red-500")}>{fCurrency5(data.ammProfit || 0)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Best</p>
-              <p className="text-[12px] font-medium text-green-500">+{fCurrency5(data.maxProfitTrade || 0)}</p>
-            </div>
-            <div className={cn("text-center py-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-              <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Worst</p>
-              <p className="text-[12px] font-medium text-red-500">{fCurrency5(data.maxLossTrade || 0)}</p>
-            </div>
+          <div className={cn("flex items-center divide-x py-3 mb-4", isDark ? "divide-white/10" : "divide-gray-200")}>
+            {[
+              { label: 'WIN RATE', value: `${fCurrency5(winRate)}%`, color: winRate >= 50 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+              { label: 'BUYS', value: fCurrency5(data.buyCount || 0), color: 'text-[#ef4444]' },
+              { label: 'SELLS', value: fCurrency5(data.sellCount || 0), color: 'text-[#22c55e]' },
+              { label: 'SHARPE', value: (data.sharpeRatio || 0).toFixed(2), color: isDark ? 'text-white/70' : 'text-gray-600' },
+              { label: 'DEX P&L', value: fCurrency5(data.dexProfit || 0), color: (data.dexProfit || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+              { label: 'AMM P&L', value: fCurrency5(data.ammProfit || 0), color: (data.ammProfit || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+              { label: 'BEST', value: `+${fCurrency5(data.maxProfitTrade || 0)}`, color: 'text-[#22c55e]' },
+              { label: 'WORST', value: fCurrency5(data.maxLossTrade || 0), color: 'text-[#ef4444]' }
+            ].map((stat, idx) => (
+              <div key={stat.label} className={cn("flex-1 text-center", idx === 0 ? "pl-0" : "pl-3")}>
+                <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</p>
+                <p className={cn("text-[14px] font-medium tabular-nums", stat.color)}>{stat.value}</p>
+              </div>
+            ))}
           </div>
 
           {/* Period P&L */}
-          <div className={cn("flex items-center justify-between gap-2 pt-4 mt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.04]")}>
+          <div className={cn("flex items-center gap-6 py-3", isDark ? "border-t border-white/10" : "border-t border-gray-200")}>
             {[
-              { label: '7d', value: data.profit7d },
-              { label: '30d', value: data.profit1m },
-              { label: '90d', value: data.profit3m }
+              { label: '7D', value: data.profit7d },
+              { label: '30D', value: data.profit1m },
+              { label: '90D', value: data.profit3m }
             ].map(p => (
-              <div key={p.label} className="flex items-center gap-1.5">
-                <span className={cn("text-[9px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>{p.label}</span>
-                <span className={cn("text-[11px] font-medium px-1.5 py-0.5 rounded", (p.value || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10")}>
+              <div key={p.label} className="flex items-center gap-2">
+                <span className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{p.label}</span>
+                <span className={cn("text-[13px] font-medium tabular-nums", (p.value || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
                   {(p.value || 0) >= 0 ? '+' : ''}{fCurrency5(p.value || 0)}
                 </span>
               </div>
             ))}
-            <div className={cn("hidden md:block h-4 w-px", isDark ? "bg-white/10" : "bg-black/10")} />
-            <div className="hidden md:flex items-center gap-1.5">
-              <span className={cn("text-[9px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>Gross</span>
-              <span className="text-[11px] font-medium text-green-500">+{fCurrency5(data.grossProfit || 0)}</span>
-              <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-300")}>/</span>
-              <span className="text-[11px] font-medium text-red-500">-{fCurrency5(data.grossLoss || 0)}</span>
+            <div className="flex-1" />
+            <div className="hidden md:flex items-center gap-2">
+              <span className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>GROSS</span>
+              <span className="text-[13px] font-medium text-[#22c55e] tabular-nums">+{fCurrency5(data.grossProfit || 0)}</span>
+              <span className={cn("text-[13px]", isDark ? "text-white/20" : "text-gray-300")}>/</span>
+              <span className="text-[13px] font-medium text-[#ef4444] tabular-nums">-{fCurrency5(data.grossLoss || 0)}</span>
             </div>
           </div>
         </div>
@@ -401,26 +408,25 @@ const OverView = ({ account }) => {
         )}
 
         {/* Tabs */}
-        <div className={cn("flex items-center gap-1 mb-4 border-b", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+        <div className={cn("flex items-center gap-8 border-b mb-6", isDark ? "border-white/10" : "border-gray-200")}>
           {[
-            { id: 'tokens', label: 'Tokens' },
-            { id: 'nfts', label: 'NFTs' },
-            { id: 'activity', label: 'Activity' }
+            { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
+            { id: 'nfts', label: 'NFTS', icon: Image, count: 0 },
+            { id: 'activity', label: 'HISTORY', icon: Clock, count: txHistory.length }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "px-4 py-2.5 text-[13px] font-medium transition-colors relative",
+                "flex items-center gap-2 py-3 text-[13px] font-medium tracking-wider border-b-2 -mb-px transition-colors",
                 activeTab === tab.id
-                  ? (isDark ? "text-white" : "text-gray-900")
-                  : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
+                  ? "text-[#c53030] border-[#c53030]"
+                  : cn("border-transparent", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
               )}
             >
+              <tab.icon size={16} strokeWidth={1.5} />
               {tab.label}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
+              <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>{tab.count}</span>
             </button>
           ))}
         </div>
@@ -434,58 +440,58 @@ const OverView = ({ account }) => {
             ? holdings.lines?.filter(l => parseFloat(l.balance) !== 0) || []
             : holdings.lines || [];
           const zeroCount = (holdings.lines?.length || 0) - filteredLines.length;
+          const totalValue = filteredLines.reduce((sum, l) => sum + (l.value || 0), 0);
 
           return (
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>
-                  Holdings ({holdings.total})
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <p className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
+                  HOLDINGS ({holdings.total})
                 </p>
                 {zeroCount > 0 && (
                   <button
                     onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
-                    className={cn("text-[9px] px-1.5 py-0.5 rounded transition-colors", hideZeroHoldings ? "text-green-500 bg-green-500/10" : (isDark ? "text-white/35 hover:text-white/50" : "text-gray-400 hover:text-gray-500"))}
+                    className={cn("text-[10px] px-2 py-0.5 rounded transition-colors", hideZeroHoldings ? "text-[#22c55e]" : (isDark ? "text-white/30" : "text-gray-400"))}
                   >
-                    {hideZeroHoldings ? `+${zeroCount}` : 'Hide 0'}
+                    {hideZeroHoldings ? `+${zeroCount} hidden` : 'Hide empty'}
                   </button>
                 )}
               </div>
               {filteredLines.length > 0 && (
-                <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
-                  {fCurrency5(filteredLines.reduce((sum, l) => sum + (l.value || 0), 0))} XRP
+                <p className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                  {fCurrency5(totalValue)} XRP
                 </p>
               )}
             </div>
             {filteredLines.length > 0 ? (
               <>
-                <div className={cn("rounded-xl border overflow-hidden", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
-                  <div className={cn("grid px-4 py-2.5", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
-                    <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>Token</span>
-                    <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Balance</span>
-                    <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Value</span>
-                  </div>
-                  {filteredLines.map((line, idx) => (
-                    <div key={idx} className={cn("grid px-4 py-2.5 items-center transition-colors", isDark ? "border-t border-white/[0.06] hover:bg-white/[0.02]" : "border-t border-black/[0.04] hover:bg-black/[0.01]")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
-                      <div className="flex items-center gap-2.5">
-                        <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-5 h-5 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
-                        <span className={cn("text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>{line.token?.name || line.currency}</span>
-                      </div>
-                      <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
-                      <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/90" : "text-gray-800")}>{fCurrency5(line.value)} XRP</span>
-                    </div>
-                  ))}
+                {/* Table Header */}
+                <div className={cn("grid px-0 py-2 border-b", isDark ? "border-white/10" : "border-gray-200")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                  <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>TOKEN</span>
+                  <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>BALANCE</span>
+                  <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>VALUE</span>
                 </div>
-                <div className="flex items-center justify-end gap-0.5 mt-2">
-                  <button onClick={() => setHoldingsPage(0)} disabled={holdingsPage === 0} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>«</button>
-                  <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>‹</button>
-                  <span className={cn("text-[9px] px-2 py-1 rounded", isDark ? "text-white/35 bg-white/[0.025]" : "text-gray-400 bg-black/[0.02]")}>{holdingsPage + 1}</span>
-                  <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>›</button>
-                  <button onClick={() => setHoldingsPage(Math.ceil(holdings.total / 20) - 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-6 h-6 flex items-center justify-center rounded text-[11px] transition-colors", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/35 hover:bg-white/[0.04]" : "text-gray-400 hover:bg-black/[0.04]"))}>»</button>
+                {/* Table Rows */}
+                {filteredLines.map((line, idx) => (
+                  <div key={idx} className={cn("grid py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                    <div className="flex items-center gap-3">
+                      <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-6 h-6 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
+                      <span className={cn("text-[14px]", isDark ? "text-white" : "text-gray-900")}>{line.token?.name || line.currency}</span>
+                    </div>
+                    <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
+                    <span className={cn("text-[14px] text-right tabular-nums font-medium", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(line.value)} XRP</span>
+                  </div>
+                ))}
+                {/* Pagination */}
+                <div className="flex items-center justify-end gap-2 mt-4">
+                  <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("text-[12px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>‹</button>
+                  <span className={cn("text-[12px] tabular-nums", isDark ? "text-white/40" : "text-gray-400")}>{holdingsPage + 1}</span>
+                  <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("text-[12px] transition-colors", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>›</button>
                 </div>
               </>
             ) : (
-              <p className={cn("text-[12px] py-4 text-center", isDark ? "text-white/30" : "text-gray-400")}>
+              <p className={cn("text-[13px] py-8 text-center", isDark ? "text-white/30" : "text-gray-400")}>
                 {hideZeroHoldings ? 'No tokens with balance' : 'No token holdings'}
               </p>
             )}
@@ -493,19 +499,21 @@ const OverView = ({ account }) => {
           );
         })()}
 
-        {/* Tokens Table */}
+        {/* Trading Performance */}
         {data?.tokenPerformance?.length > 0 && (() => {
           const filteredTokens = data.tokenPerformance.filter(t =>
             !tokenSearch || t.name?.toLowerCase().includes(tokenSearch.toLowerCase())
           );
           const displayTokens = showAllTokens ? filteredTokens : filteredTokens.slice(0, 10);
           const totalCount = data.totalTokensTraded || data.tokenPerformance.length;
+          const maxRoi = Math.max(...filteredTokens.map(t => Math.abs(t.roi || 0)), 100);
+          const maxProfit = Math.max(...filteredTokens.map(t => Math.abs(t.profit || 0)), 1);
 
           return (
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-2">
-              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>
-                Trading Performance ({totalCount})
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <p className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
+                TRADING PERFORMANCE ({totalCount})
               </p>
               <input
                 type="text"
@@ -513,74 +521,57 @@ const OverView = ({ account }) => {
                 value={tokenSearch}
                 onChange={(e) => setTokenSearch(e.target.value)}
                 className={cn(
-                  "text-[11px] px-2.5 py-1.5 rounded-lg border outline-none w-28",
-                  isDark ? "bg-white/[0.03] border-white/[0.06] text-white/70 placeholder:text-white/30" : "bg-black/[0.02] border-black/[0.06] text-gray-600 placeholder:text-gray-400"
+                  "text-[12px] px-3 py-1.5 rounded border-none outline-none w-32",
+                  isDark ? "bg-white/[0.05] text-white/70 placeholder:text-white/30" : "bg-gray-100 text-gray-600 placeholder:text-gray-400"
                 )}
               />
             </div>
-            <div className={cn(
-              "rounded-xl border overflow-hidden",
-              isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]"
-            )}>
-              <div className={cn(
-                "grid gap-3 px-4 py-2.5",
-                isDark ? "bg-white/[0.025]" : "bg-black/[0.02]"
-              )} style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}>
-                <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>Token</span>
-                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Volume</span>
-                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Trades</span>
-                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Return</span>
-                <span className={cn("text-[9px] uppercase tracking-wide text-right", isDark ? "text-white/35" : "text-gray-400")}>Profit</span>
-              </div>
-              {displayTokens.map((token, idx) => (
-                <div
-                  key={idx}
-                  className={cn(
-                    "grid gap-3 px-4 py-2.5 transition-colors",
-                    isDark ? "border-t border-white/[0.06] hover:bg-white/[0.02]" : "border-t border-black/[0.04] hover:bg-black/[0.01]"
-                  )}
-                  style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src={`https://s1.xrpl.to/token/${token.tokenId}`}
-                      className="w-5 h-5 rounded-full"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                      alt=""
-                    />
-                    <span className={cn("text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>
-                      {token.name}
+            {/* Table Header */}
+            <div className={cn("grid gap-4 py-2 border-b", isDark ? "border-white/10" : "border-gray-200")} style={{ gridTemplateColumns: '180px 100px 80px 1fr 1fr' }}>
+              <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>TOKEN</span>
+              <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>VOLUME</span>
+              <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>TRADES</span>
+              <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>RETURN</span>
+              <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>PROFIT</span>
+            </div>
+            {/* Table Rows */}
+            {displayTokens.map((token, idx) => {
+              const roi = token.roi || 0;
+              const profit = token.profit || 0;
+              const roiWidth = Math.min(Math.abs(roi) / maxRoi * 100, 100);
+              const profitWidth = Math.min(Math.abs(profit) / maxProfit * 100, 100);
+
+              return (
+                <div key={idx} className={cn("grid gap-4 py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '180px 100px 80px 1fr 1fr' }}>
+                  <div className="flex items-center gap-3">
+                    <img src={`https://s1.xrpl.to/token/${token.tokenId}`} className="w-6 h-6 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
+                    <span className={cn("text-[14px]", isDark ? "text-white" : "text-gray-900")}>{token.name}</span>
+                  </div>
+                  <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(token.volume || 0)}</span>
+                  <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(token.trades || 0)}</span>
+                  {/* Return with progress bar */}
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className={cn("h-2 rounded-sm", roi >= 0 ? "bg-[#22c55e]/20" : "bg-[#ef4444]/20")} style={{ width: '60px' }}>
+                      <div className={cn("h-full rounded-sm", roi >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} style={{ width: `${roiWidth}%` }} />
+                    </div>
+                    <span className={cn("text-[13px] tabular-nums font-medium min-w-[70px] text-right", roi >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
+                      {roi >= 0 ? '+' : ''}{fCurrency5(roi)}%
                     </span>
                   </div>
-                  <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>
-                    {fCurrency5(token.volume || 0)}
-                  </span>
-                  <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>
-                    {fCurrency5(token.trades || 0)}
-                  </span>
-                  <span className={cn(
-                    "text-[12px] text-right font-medium px-1.5 py-0.5 rounded",
-                    (token.roi || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
-                  )}>
-                    {(token.roi || 0) >= 0 ? '+' : ''}{fCurrency5(token.roi || 0)}%
-                  </span>
-                  <span className={cn(
-                    "text-[12px] text-right font-medium px-1.5 py-0.5 rounded",
-                    (token.profit || 0) >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
-                  )}>
-                    {(token.profit || 0) >= 0 ? '+' : ''}{fCurrency5(token.profit || 0)}
-                  </span>
+                  {/* Profit with progress bar */}
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className={cn("h-2 rounded-sm", profit >= 0 ? "bg-[#22c55e]/20" : "bg-[#ef4444]/20")} style={{ width: '60px' }}>
+                      <div className={cn("h-full rounded-sm", profit >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} style={{ width: `${profitWidth}%` }} />
+                    </div>
+                    <span className={cn("text-[13px] tabular-nums font-medium min-w-[70px] text-right", profit >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
+                      {profit >= 0 ? '+' : ''}{fCurrency5(profit)}
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
             {filteredTokens.length > 10 && (
-              <button
-                onClick={() => setShowAllTokens(!showAllTokens)}
-                className={cn(
-                  "w-full text-center py-2 text-[12px] mt-2 rounded-lg border",
-                  isDark ? "border-white/10 text-white/50 hover:text-white/70" : "border-gray-200 text-gray-500 hover:text-gray-700"
-                )}
-              >
+              <button onClick={() => setShowAllTokens(!showAllTokens)} className={cn("w-full text-center py-3 text-[12px] mt-4 transition-colors", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}>
                 {showAllTokens ? 'Show less' : `Show all ${filteredTokens.length} tokens`}
               </button>
             )}
