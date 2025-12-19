@@ -95,7 +95,11 @@ export default function HistoryList({ nft }) {
     const salePrice = lastSale?.costXRP || 0;
     const priceDiff = salePrice > 0 ? ((listPrice - salePrice) / salePrice) * 100 : 0;
 
-    return { salesCount: sales.length, totalVolume, highestSale, uniqueOwners: owners.size, currentOwner, listPrice, salePrice, priceDiff };
+    // Mint date
+    const mintEvent = [...history].reverse().find(h => h.type === 'MINT');
+    const mintDate = mintEvent?.time || null;
+
+    return { salesCount: sales.length, totalVolume, highestSale, uniqueOwners: owners.size, currentOwner, listPrice, salePrice, priceDiff, mintDate };
   }, [history]);
 
   // Get unique event types present in history
@@ -154,84 +158,91 @@ export default function HistoryList({ nft }) {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+    <div className="rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-950">
       {/* Stats Summary */}
       {stats.salesCount > 0 && (
-        <div className="p-3 border-b border-white/[0.06]">
+        <div className="p-3 border-b border-neutral-800">
           <div className="grid grid-cols-4 gap-1.5">
-            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+            <div className="text-center p-2 rounded-lg bg-neutral-900">
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Zap size={11} className="text-gray-400" />
+                <Zap size={11} className="text-neutral-500" />
                 <span className="text-sm font-medium text-white tabular-nums">{stats.salesCount}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-gray-600">Sales</p>
+              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Sales</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+            <div className="text-center p-2 rounded-lg bg-neutral-900">
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <TrendingUp size={11} className="text-gray-400" />
+                <TrendingUp size={11} className="text-neutral-500" />
                 <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.totalVolume)}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-gray-600">Volume</p>
+              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Volume</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+            <div className="text-center p-2 rounded-lg bg-neutral-900">
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Award size={11} className="text-gray-400" />
+                <Award size={11} className="text-neutral-500" />
                 <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.highestSale)}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-gray-600">ATH</p>
+              <p className="text-[9px] uppercase tracking-wide text-neutral-600">ATH</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/[0.04]">
+            <div className="text-center p-2 rounded-lg bg-neutral-900">
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Users size={11} className="text-gray-400" />
+                <Users size={11} className="text-neutral-500" />
                 <span className="text-sm font-medium text-white tabular-nums">{stats.uniqueOwners}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-gray-600">Owners</p>
+              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Owners</p>
             </div>
           </div>
-          {/* List vs Last Sale */}
-          {stats.listPrice > 0 && stats.salePrice > 0 && (
-            <div className="mt-2 flex items-center justify-between px-2 py-1.5 rounded-lg bg-white/[0.03]">
-              <span className="text-[10px] text-gray-500">List vs Last Sale</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-gray-400 tabular-nums">{fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}</span>
-                <span className={cn(
-                  "text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded",
-                  stats.priceDiff >= 0 ? "text-emerald-400 bg-emerald-500/10" : "text-red-400 bg-red-500/10"
-                )}>
-                  {stats.priceDiff >= 0 ? '+' : ''}{stats.priceDiff.toFixed(0)}%
-                </span>
+          {/* List vs Last Sale + Mint Date */}
+          <div className="mt-2 flex items-center gap-2">
+            {stats.listPrice > 0 && stats.salePrice > 0 && (
+              <div className="flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg bg-neutral-900">
+                <span className="text-[10px] text-neutral-500">List vs Sale</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-neutral-400 tabular-nums">{fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}</span>
+                  <span className={cn(
+                    "text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded",
+                    stats.priceDiff >= 0 ? "text-emerald-400 bg-emerald-500/10" : "text-red-400 bg-red-500/10"
+                  )}>
+                    {stats.priceDiff >= 0 ? '+' : ''}{stats.priceDiff.toFixed(0)}%
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            {stats.mintDate && (
+              <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-neutral-900">
+                <span className="text-[10px] text-neutral-500 mr-2">Minted</span>
+                <span className="text-[11px] text-neutral-400">{new Date(stats.mintDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Filter Pills */}
-      <div className="px-3 py-2 border-b border-white/[0.06]">
+      <div className="px-3 py-2 border-b border-neutral-800">
         <div className="flex items-center gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
               "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap",
               activeFilter === 'all'
-                ? "bg-white/90 text-black"
-                : "text-gray-400 hover:text-white hover:bg-white/[0.08]"
+                ? "bg-white text-black"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800"
             )}
           >
             All {history.length}
           </button>
           {availableTypes.map(type => {
-            const config = TYPE_CONFIG[type] || { label: type, color: '#6b7280' };
+            const config = TYPE_CONFIG[type] || { label: type, color: '#737373' };
             const count = history.filter(h => h.type === type).length;
             return (
               <button
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
-                className="px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap"
-                style={{
-                  backgroundColor: activeFilter === type ? config.color : 'transparent',
-                  color: activeFilter === type ? '#fff' : '#9ca3af',
-                }}
+                className={cn(
+                  "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap",
+                  activeFilter === type ? "bg-neutral-700 text-white" : "text-neutral-500 hover:text-white hover:bg-neutral-800"
+                )}
               >
                 {config.label} {count}
               </button>
@@ -262,8 +273,8 @@ export default function HistoryList({ nft }) {
                 <div key={groupName}>
                   {/* Date Group Header */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-gray-600">{groupName}</span>
-                    <div className="flex-1 h-px bg-white/[0.04]" />
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-neutral-600">{groupName}</span>
+                    <div className="flex-1 h-px bg-neutral-800" />
                   </div>
 
                   {/* Items */}
@@ -282,17 +293,13 @@ export default function HistoryList({ nft }) {
                           className={cn(
                             "group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all",
                             isOwnershipChange
-                              ? "bg-white/[0.03] border-l-2 hover:bg-white/[0.06]"
-                              : "hover:bg-white/[0.03]"
+                              ? "bg-neutral-900/50 border-l-2 border-l-neutral-600 hover:bg-neutral-800/50"
+                              : "hover:bg-neutral-900/50"
                           )}
-                          style={isOwnershipChange ? { borderLeftColor: config.color } : undefined}
                         >
                           {/* Icon */}
-                          <div
-                            className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: `${config.color}20` }}
-                          >
-                            <config.Icon size={14} style={{ color: config.color }} />
+                          <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 bg-neutral-800">
+                            <config.Icon size={14} className="text-neutral-400" />
                           </div>
 
                           {/* Content */}
@@ -300,13 +307,13 @@ export default function HistoryList({ nft }) {
                             <div className="min-w-0">
                               {/* Event + Price */}
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-medium" style={{ color: config.color }}>
+                                <span className="text-[11px] font-medium text-neutral-400">
                                   {config.label}
                                 </span>
                                 {price > 0 && (
                                   <span className={cn(
                                     "text-[12px] font-medium tabular-nums",
-                                    isCancelled ? "text-gray-600 line-through" : "text-white"
+                                    isCancelled ? "text-neutral-600 line-through" : "text-white"
                                   )}>
                                     {fNumber(price)} XRP
                                   </span>
@@ -318,8 +325,8 @@ export default function HistoryList({ nft }) {
                                   <Link
                                     href={`/profile/${from}`}
                                     className={cn(
-                                      "hover:text-primary transition-colors font-mono",
-                                      from === stats.currentOwner ? "text-primary" : "text-gray-500"
+                                      "hover:text-white transition-colors font-mono",
+                                      from === stats.currentOwner ? "text-white" : "text-neutral-500"
                                     )}
                                   >
                                     {formatAddr(from)}{from === stats.currentOwner && ' ·owner'}
@@ -327,12 +334,12 @@ export default function HistoryList({ nft }) {
                                 )}
                                 {to && (
                                   <>
-                                    <span className="text-gray-600">→</span>
+                                    <span className="text-neutral-700">→</span>
                                     <Link
                                       href={`/profile/${to}`}
                                       className={cn(
-                                        "hover:text-primary transition-colors font-mono",
-                                        to === stats.currentOwner ? "text-primary" : "text-gray-500"
+                                        "hover:text-white transition-colors font-mono",
+                                        to === stats.currentOwner ? "text-white" : "text-neutral-500"
                                       )}
                                     >
                                       {formatAddr(to)}{to === stats.currentOwner && ' ·owner'}
@@ -343,13 +350,13 @@ export default function HistoryList({ nft }) {
                             </div>
                             {/* Time */}
                             <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[10px] text-gray-600 tabular-nums">
+                              <span className="text-[10px] text-neutral-600 tabular-nums">
                                 {formatRelativeTime(item.time)}
                               </span>
                               {item.hash && (
                                 <Link
                                   href={`/tx/${item.hash}`}
-                                  className="p-1 rounded text-gray-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                  className="p-1 rounded text-neutral-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                                 >
                                   <ExternalLink size={11} />
                                 </Link>
