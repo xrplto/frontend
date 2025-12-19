@@ -356,6 +356,7 @@ export default function HistoryList({ nft }) {
                               {item.hash && (
                                 <Link
                                   href={`/tx/${item.hash}`}
+                                  target="_blank"
                                   className="p-1 rounded text-neutral-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                                 >
                                   <ExternalLink size={11} />

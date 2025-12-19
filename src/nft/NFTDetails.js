@@ -17,7 +17,8 @@ import {
   ChevronRight,
   X,
   Share,
-  Loader2
+  Loader2,
+  Star
 } from 'lucide-react';
 
 // Context
@@ -329,8 +330,52 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
 // Main NFTDetails Component
 const NFTDetails = memo(function NFTDetails({ nft }) {
-  const { openSnackbar, themeName } = useContext(AppContext);
+  const { openSnackbar, themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const accountLogin = accountProfile?.account;
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+
+  // Check if NFT is in watchlist
+  React.useEffect(() => {
+    if (!accountLogin || !nft?.NFTokenID) return;
+    import('axios').then(({ default: axios }) => {
+      axios.get(`https://api.xrpl.to/api/watchlist/nft?account=${accountLogin}`)
+        .then((res) => {
+          if (res.data?.result === 'success' && res.data.watchlist) {
+            const allItems = Object.values(res.data.watchlist).flatMap(col => col.items || []);
+            setIsSaved(allItems.some(item => item.nftokenId === nft.NFTokenID));
+          }
+        })
+        .catch(() => {});
+    });
+  }, [accountLogin, nft?.NFTokenID]);
+
+  const handleSave = async () => {
+    if (!accountLogin) {
+      setOpenWalletModal(true);
+      return;
+    }
+    setSaveLoading(true);
+    try {
+      const { default: axios } = await import('axios');
+      const action = isSaved ? 'remove' : 'add';
+      const res = await axios.post('https://api.xrpl.to/api/watchlist/nft', {
+        account: accountLogin,
+        nftokenId: nft?.NFTokenID,
+        action
+      });
+      if (res.data?.result === 'success') {
+        setIsSaved(!isSaved);
+        openSnackbar(isSaved ? 'Removed from watchlist' : 'Added to watchlist', 'success');
+      } else {
+        openSnackbar(res.data?.message || 'Failed to update', 'error');
+      }
+    } catch (e) {
+      openSnackbar('Failed to update watchlist', 'error');
+    }
+    setSaveLoading(false);
+  };
 
   const handleCopy = (text, label) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -388,17 +433,33 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       </div>
 
       {/* Title and Collection */}
-      <div className="mb-3">
-        <h1 className={cn("text-xl font-medium mb-1.5", isDark ? "text-white" : "text-gray-900")}>
-          {nft.name || meta?.name || 'Untitled'}
-        </h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          {cslug && (
-            <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
-              {collectionName}
-            </Link>
-          )}
+      <div className="mb-4">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h1 className={cn("text-xl font-medium", isDark ? "text-white" : "text-gray-900")}>
+            {nft.name || meta?.name || 'Untitled'}
+          </h1>
+          <button
+            onClick={handleSave}
+            disabled={saveLoading}
+            className={cn(
+              "flex-shrink-0 p-2 rounded-lg border-[1.5px] transition-all",
+              isSaved
+                ? "border-primary bg-primary/10 text-primary"
+                : isDark
+                  ? "border-white/10 text-gray-400 hover:border-primary hover:text-primary"
+                  : "border-gray-200 text-gray-400 hover:border-primary hover:text-primary",
+              saveLoading && "opacity-50 cursor-not-allowed"
+            )}
+            title={isSaved ? "Remove from watchlist" : "Add to watchlist"}
+          >
+            {saveLoading ? <Loader2 size={18} className="animate-spin" /> : <Star size={18} fill={isSaved ? "currentColor" : "none"} />}
+          </button>
         </div>
+        {cslug && (
+          <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
+            {collectionName}
+          </Link>
+        )}
       </div>
 
       {/* Properties */}

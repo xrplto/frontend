@@ -18,9 +18,7 @@ import {
   RefreshCw,
   ExternalLink,
   Hand,
-  Tag,
-  Loader2,
-  Star
+  Tag
 } from 'lucide-react';
 
 // Utils & Context
@@ -128,8 +126,6 @@ export default function NFTActions({ nft }) {
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
-  const [isWatchlisted, setIsWatchlisted] = useState(false);
-  const [watchlistLoading, setWatchlistLoading] = useState(false);
 
   const {
     name,
@@ -217,46 +213,6 @@ export default function NFTActions({ nft }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Check if NFT is in watchlist
-  useEffect(() => {
-    if (!accountLogin || !NFTokenID) return;
-    axios
-      .get(`https://api.xrpl.to/api/watchlist/nft?account=${accountLogin}`)
-      .then((res) => {
-        if (res.data?.result === 'success' && res.data.watchlist) {
-          const allItems = Object.values(res.data.watchlist).flatMap(col => col.items || []);
-          setIsWatchlisted(allItems.some(item => item.nftokenId === NFTokenID));
-        }
-      })
-      .catch(() => {});
-  }, [accountLogin, NFTokenID]);
-
-  const toggleWatchlist = async () => {
-    if (!accountLogin) {
-      setOpenWalletModal(true);
-      return;
-    }
-    setWatchlistLoading(true);
-    try {
-      const action = isWatchlisted ? 'remove' : 'add';
-      const res = await axios.post(`https://api.xrpl.to/api/watchlist/nft`, {
-        account: accountLogin,
-        nftokenId: NFTokenID,
-        action
-      });
-      if (res.data?.result === 'success') {
-        setIsWatchlisted(!isWatchlisted);
-        openSnackbar(isWatchlisted ? 'Removed from watchlist' : 'Added to watchlist', 'success');
-      } else {
-        openSnackbar(res.data?.message || 'Failed to update watchlist', 'error');
-      }
-    } catch (err) {
-      console.error('Watchlist error:', err);
-      openSnackbar(err.response?.data?.message || 'Failed to update watchlist', 'error');
-    }
-    setWatchlistLoading(false);
-  };
 
   const handleOfferCreated = () => {
     setSync((prev) => prev + 1);
@@ -505,21 +461,8 @@ export default function NFTActions({ nft }) {
                 </div>
               </div>
 
-              {/* Watchlist & Share Buttons */}
+              {/* Share Button */}
               <div className="flex gap-2">
-                <button
-                  onClick={toggleWatchlist}
-                  disabled={watchlistLoading}
-                  className={cn(
-                    'px-3 py-2 rounded-lg border border-gray-700/50 text-[13px] font-normal transition-colors flex items-center gap-1.5',
-                    isWatchlisted
-                      ? 'bg-yellow-500/10 border-yellow-500/40 text-yellow-400'
-                      : 'text-gray-400 hover:border-gray-600 hover:text-gray-300'
-                  )}
-                >
-                  {watchlistLoading ? <Loader2 size={14} className="animate-spin" /> : null}
-                  {isWatchlisted ? 'Saved' : 'Save'}
-                </button>
                 <div className="relative" ref={shareDropdownRef}>
                   <button
                     onClick={() => setOpenShare(!openShare)}
@@ -561,25 +504,6 @@ export default function NFTActions({ nft }) {
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Watchlist Button (non-self view) */}
-          {!self && (
-            <div className="flex justify-end mb-1">
-              <button
-                onClick={toggleWatchlist}
-                disabled={watchlistLoading}
-                className={cn(
-                  'px-4 py-2 rounded-lg border border-gray-700/50 text-[13px] font-normal transition-colors flex items-center gap-1.5',
-                  isWatchlisted
-                    ? 'bg-yellow-500/10 border-yellow-500/40 text-yellow-400'
-                    : 'text-gray-400 hover:border-gray-600 hover:text-gray-300'
-                )}
-              >
-                {watchlistLoading ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
-                {isWatchlisted ? 'Saved' : 'Save'}
-              </button>
             </div>
           )}
 
