@@ -44,8 +44,7 @@ import {
   Activity,
   Grid2X2,
   Grid3X3,
-  LayoutGrid,
-  CandlestickChart
+  LayoutGrid
 } from 'lucide-react';
 
 // Utils & Context
@@ -355,21 +354,6 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
             </div>
           )}
 
-          {/* Price badges - bottom left */}
-          {(listPrice || bestOffer) && (
-            <div className="absolute bottom-2 left-2 flex flex-col gap-1">
-              {listPrice && (
-                <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-primary/90 text-white backdrop-blur-sm">
-                  {fNumber(listPrice)} XRP
-                </div>
-              )}
-              {bestOffer && (
-                <div className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-black/70 text-green-400 backdrop-blur-sm">
-                  Offer: {fNumber(bestOffer)}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Like button - top right */}
           <button onClick={handleLike} disabled={liking} className={cn(
@@ -393,10 +377,16 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
             </button>
           )}
         </div>
-        <div className="px-1 pt-2 pb-1">
-          <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-800')}>
+        <div className="px-1 pt-1.5 pb-1">
+          <p className={cn('text-[11px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
             {name}
           </p>
+          {(listPrice || bestOffer) && (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {listPrice && <span className="text-[11px] font-medium text-primary">{fNumber(listPrice)} XRP</span>}
+              {bestOffer && <span className={cn('text-[10px]', isDark ? 'text-green-400' : 'text-green-600')}>{fNumber(bestOffer)}</span>}
+            </div>
+          )}
         </div>
       </div>
     </Link>
@@ -1530,9 +1520,21 @@ export default function CollectionView({ collection }) {
   const [openInfo, setOpenInfo] = useState(false);
   const [value, setValue] = useState('tab-nfts');
   const [debugInfo, setDebugInfo] = useState(null);
+  const [showChart, setShowChart] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('nft_show_chart');
+      return saved !== 'false';
+    }
+    return true;
+  });
   const infoDropdownRef = useRef(null);
 
   const BASE_URL = 'https://api.xrpl.to/api';
+
+  // Persist chart visibility
+  useEffect(() => {
+    localStorage.setItem('nft_show_chart', showChart.toString());
+  }, [showChart]);
 
   // Add current collection to tabs on mount
   const collectionData = collection?.collection || collection;
@@ -1837,6 +1839,28 @@ export default function CollectionView({ collection }) {
         </div>
       </div>
 
+      {/* Price Chart */}
+      <div className="mb-4">
+        <button
+          onClick={() => setShowChart(!showChart)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium mb-2 transition-colors',
+            isDark ? 'bg-white/5 hover:bg-white/10 text-white/70' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+          )}
+        >
+          <BarChart3 size={14} />
+          {showChart ? 'Hide Chart' : 'Show Chart'}
+        </button>
+        {showChart && (
+          <div
+            className="rounded-[10px] overflow-hidden"
+            style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
+          >
+            <PriceChart slug={slug} />
+          </div>
+        )}
+      </div>
+
       {/* NFTs and Activity Tabs */}
       <div
         className="rounded-[10px] overflow-hidden"
@@ -1850,7 +1874,6 @@ export default function CollectionView({ collection }) {
             >
               {[
                 { id: 'tab-nfts', label: 'NFTs', icon: <Package size={14} /> },
-                { id: 'tab-chart', label: 'Chart', icon: <CandlestickChart size={14} /> },
                 { id: 'tab-holders', label: 'Holders', icon: <Users size={14} /> },
                 { id: 'tab-creator-transactions', label: 'Activity', icon: <Activity size={14} /> }
               ].map((tab, idx, arr) => (
@@ -1891,9 +1914,6 @@ export default function CollectionView({ collection }) {
 
           <TabPanel value="tab-nfts" className="px-2.5 pb-2.5">
             <NFTGrid collection={collection} />
-          </TabPanel>
-          <TabPanel value="tab-chart" className="px-2.5 pb-2.5">
-            <PriceChart slug={slug} />
           </TabPanel>
           <TabPanel value="tab-holders" className="px-2.5 pb-2.5">
             <HoldersTab slug={slug} />

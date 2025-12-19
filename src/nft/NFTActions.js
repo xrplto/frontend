@@ -814,10 +814,11 @@ export default function NFTActions({ nft }) {
                     const offerPercent = askingPrice > 0 ? Math.round((amount.amount / askingPrice) * 100) : 0;
                     const isLowBall = offerPercent > 0 && offerPercent < 50;
                     const isReasonable = offerPercent >= 80;
+                    const isFunded = offer.funded !== false; // true or undefined = funded
                     return (
-                      <div key={index} className={cn('px-4 py-2.5', !isLast && 'border-b border-gray-700/30')}>
+                      <div key={index} className={cn('px-4 py-2.5', !isLast && 'border-b border-gray-700/30', !isFunded && 'opacity-60')}>
                         <div className="flex items-center justify-between gap-3">
-                          {/* Left: Address + Broker */}
+                          {/* Left: Address + Broker + Funded Status */}
                           <div className="flex items-center gap-2 min-w-0">
                             <Link href={`/profile/${offer.owner}`} className="text-[12px] font-mono text-gray-400 hover:text-gray-300 transition-colors">
                               {truncate(offer.owner, 12)}
@@ -827,6 +828,11 @@ export default function NFTActions({ nft }) {
                                 <span className="text-gray-700">·</span>
                                 <span className="text-[11px] text-gray-500">{BROKER_ADDRESSES[offer.destination]?.name || 'Broker'}</span>
                               </>
+                            )}
+                            {!isFunded && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide bg-red-500/20 text-red-400">
+                                Unfunded
+                              </span>
                             )}
                           </div>
                           {/* Right: Amount + % + Action */}
