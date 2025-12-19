@@ -1,16 +1,17 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
+import { cn } from 'src/utils/cn';
 
 const TYPE_CONFIG = {
   SALE: { label: 'Sale', color: '#10b981' },
   MINT: { label: 'Mint', color: '#8b5cf6' },
   TRANSFER: { label: 'Transfer', color: '#3b82f6' },
   BURN: { label: 'Burn', color: '#ef4444' },
-  CREATE_BUY_OFFER: { label: 'Bid', color: '#6b7280' },
-  CREATE_SELL_OFFER: { label: 'List', color: '#6b7280' },
+  CREATE_BUY_OFFER: { label: 'Bid', color: '#f59e0b' },
+  CREATE_SELL_OFFER: { label: 'List', color: '#06b6d4' },
   CANCEL_BUY_OFFER: { label: 'Cancel Bid', color: '#6b7280' },
   CANCEL_SELL_OFFER: { label: 'Delist', color: '#6b7280' }
 };
@@ -31,12 +32,12 @@ const formatTime = (ts) => {
 export default function HistoryList({ nft }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     if (!nft?.NFTokenID) return;
     setLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/history?NFTokenID=${nft.NFTokenID}&limit=50`)
+    axios.get(`https://api.xrpl.to/api/nft/history?NFTokenID=${nft.NFTokenID}&limit=200`)
       .then(res => {
         if (res.data?.result === 'success') setHistory(res.data.histories || []);
       })
@@ -44,10 +45,17 @@ export default function HistoryList({ nft }) {
       .finally(() => setLoading(false));
   }, [nft?.NFTokenID]);
 
-  const keyEvents = ['SALE', 'MINT', 'TRANSFER', 'BURN'];
-  const keyOnly = history.filter(h => keyEvents.includes(h.type));
-  const hasOtherEvents = history.length > keyOnly.length;
-  const filtered = showAll ? history : keyOnly;
+  // Get unique event types present in history
+  const availableTypes = useMemo(() => {
+    const types = new Set(history.map(h => h.type));
+    return Array.from(types);
+  }, [history]);
+
+  // Filter history based on active filter
+  const filtered = useMemo(() => {
+    if (activeFilter === 'all') return history;
+    return history.filter(h => h.type === activeFilter);
+  }, [history, activeFilter]);
 
   if (loading) {
     return (
@@ -79,24 +87,62 @@ export default function HistoryList({ nft }) {
 
   return (
     <div className="rounded-xl border border-gray-700/50 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-700/30 bg-white/[0.02]">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-gray-500">{filtered.length} events</span>
+      {/* Header with Filter Chips */}
+      <div className="px-4 py-2.5 border-b border-gray-700/30 bg-white/[0.02]">
+        <div className="mb-2">
+          <span className="text-[11px] text-gray-500">{filtered.length} of {history.length} events</span>
         </div>
-        {hasOtherEvents && (
+        {/* Filter Chips */}
+        <div className="flex flex-wrap gap-1.5">
           <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-[11px] text-gray-400 hover:text-gray-300 transition-colors"
+            onClick={() => setActiveFilter('all')}
+            className={cn(
+              "px-2 py-0.5 rounded text-[10px] font-normal transition-colors",
+              activeFilter === 'all'
+                ? "bg-white/10 text-white"
+                : "bg-white/5 text-gray-500 hover:text-gray-400"
+            )}
           >
-            {showAll ? 'Key Events' : 'Show All'}
+            All
           </button>
-        )}
+          {availableTypes.map(type => {
+            const config = TYPE_CONFIG[type] || { label: type, color: '#6b7280' };
+            const count = history.filter(h => h.type === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
+                className={cn(
+                  "px-2 py-0.5 rounded text-[10px] font-normal transition-colors flex items-center gap-1",
+                  activeFilter === type
+                    ? "text-white"
+                    : "text-gray-500 hover:text-gray-400"
+                )}
+                style={{
+                  backgroundColor: activeFilter === type ? `${config.color}30` : 'rgba(255,255,255,0.03)'
+                }}
+              >
+                <span style={{ color: activeFilter === type ? config.color : undefined }}>{config.label}</span>
+                <span className="text-gray-600">{count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* List */}
-      <div className="max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
-        {filtered.map((item) => {
+      {/* List View */}
+      <div className="max-h-[400px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+        {filtered.length === 0 ? (
+          <div className="py-6 text-center">
+            <p className="text-sm text-gray-500">No {TYPE_CONFIG[activeFilter]?.label || activeFilter} events</p>
+            <button
+              onClick={() => setActiveFilter('all')}
+              className="mt-2 text-[11px] text-gray-400 hover:text-gray-300"
+            >
+              Show all events
+            </button>
+          </div>
+        ) : filtered.map((item) => {
           const config = TYPE_CONFIG[item.type] || { label: item.type, color: '#6b7280' };
           const from = item.seller || item.account;
           const to = item.buyer;
