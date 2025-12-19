@@ -540,7 +540,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   <Copy size={10} />
                 </button>
               </div>
-              <Link href={`/profile/${account}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{account}</Link>
+              <Link href={`/address/${account}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{account}</Link>
             </div>
             <div className="text-right">
               <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-0.5", isDark ? "text-gray-500" : "text-gray-400")}>Royalties</p>
@@ -556,7 +556,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 <Copy size={10} />
               </button>
             </div>
-            <Link href={`/profile/${issuer}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{issuer}</Link>
+            <Link href={`/address/${issuer}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{issuer}</Link>
           </div>
 
           {/* Token ID */}

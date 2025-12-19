@@ -3374,7 +3374,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   let logoImageUrl = null;
   if (accountProfile) {
     logoImageUrl = accountLogo
-      ? `https://s1.xrpl.to/profile/${accountLogo}`
+      ? `https://s1.xrpl.to/address/${accountLogo}`
       : getHashIcon(accountLogin);
   }
 

@@ -304,7 +304,7 @@ export default function TopTraders({ token }) {
                         )}>{rank}</span>
                       </td>
                       <td className="py-2.5 px-2">
-                        <Link href={`/profile/${trader.address}`} className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
+                        <Link href={`/address/${trader.address}`} className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
                           {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>

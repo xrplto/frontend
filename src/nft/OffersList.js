@@ -69,7 +69,7 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
                       {priceAmount} {price.name}
                     </div>
                     <a
-                      href={`https://xrpl.to/profile/${offer.owner}`}
+                      href={`https://xrpl.to/address/${offer.owner}`}
                       rel="noreferrer noopener nofollow"
                       className={cn(
                         "break-all text-[11px] font-normal hover:underline",

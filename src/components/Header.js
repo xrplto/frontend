@@ -468,7 +468,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       setSearchOpen(false);
       setFullSearch(false);
       setSearchQuery('');
-      window.location.href = `/profile/${item}`;
+      window.location.href = `/address/${item}`;
       return;
     }
     // NFT navigation

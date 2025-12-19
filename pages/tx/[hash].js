@@ -2815,7 +2815,7 @@ const TransactionDetails = ({ txData }) => {
                       <DetailRow label="Account">
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <AccountAvatar account={Account} />
-                          <Link href={`/profile/${Account}`} passHref>
+                          <Link href={`/address/${Account}`} passHref>
                             <Typography
                               component="span"
                               variant="body2"
@@ -2837,7 +2837,7 @@ const TransactionDetails = ({ txData }) => {
                         <DetailRow label="From">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <AccountAvatar account={Account} />
-                            <Link href={`/profile/${Account}`} passHref>
+                            <Link href={`/address/${Account}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body2"
@@ -2857,7 +2857,7 @@ const TransactionDetails = ({ txData }) => {
                         <DetailRow label="To">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <AccountAvatar account={Destination} />
-                            <Link href={`/profile/${Destination}`} passHref>
+                            <Link href={`/address/${Destination}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body2"
@@ -2990,7 +2990,7 @@ const TransactionDetails = ({ txData }) => {
                         <DetailRow label="Token Issuer">
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <AccountAvatar account={LimitAmount.issuer} />
-                            <Link href={`/profile/${LimitAmount.issuer}`} passHref>
+                            <Link href={`/address/${LimitAmount.issuer}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body1"
@@ -3085,7 +3085,7 @@ const TransactionDetails = ({ txData }) => {
                                 >
                                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                     <AccountAvatar account={offer.Destination} />
-                                    <Link href={`/profile/${offer.Destination}`} passHref>
+                                    <Link href={`/address/${offer.Destination}`} passHref>
                                       <Typography
                                         component="span"
                                         variant="body1"
@@ -3184,7 +3184,7 @@ const TransactionDetails = ({ txData }) => {
                     <DetailRow label="Transfer from">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <AccountAvatar account={acceptedOfferDetails.seller} />
-                        <Link href={`/profile/${acceptedOfferDetails.seller}`} passHref>
+                        <Link href={`/address/${acceptedOfferDetails.seller}`} passHref>
                           <Typography
                             component="span"
                             variant="body1"
@@ -3202,7 +3202,7 @@ const TransactionDetails = ({ txData }) => {
                     <DetailRow label="Transfer to">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <AccountAvatar account={acceptedOfferDetails.buyer} />
-                        <Link href={`/profile/${acceptedOfferDetails.buyer}`} passHref>
+                        <Link href={`/address/${acceptedOfferDetails.buyer}`} passHref>
                           <Typography
                             component="span"
                             variant="body1"
@@ -3274,7 +3274,7 @@ const TransactionDetails = ({ txData }) => {
                                 <span className={cn("text-[11px] uppercase w-16", isDark ? "text-white/40" : "text-gray-400")}>Issuer</span>
                                 <div className="flex items-center gap-1">
                                   <AccountAvatar account={acceptedNftInfo.issuer} />
-                                  <Link href={`/profile/${acceptedNftInfo.issuer}`}>
+                                  <Link href={`/address/${acceptedNftInfo.issuer}`}>
                                     <span className="text-[12px] text-[#4285f4] hover:underline font-mono">
                                       {acceptedNftInfo.issuer.slice(0, 8)}...{acceptedNftInfo.issuer.slice(-4)}
                                     </span>
@@ -3343,7 +3343,7 @@ const TransactionDetails = ({ txData }) => {
                             <DetailRow label="Issuer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AccountAvatar account={offerNftInfo.issuer} />
-                                <Link href={`/profile/${offerNftInfo.issuer}`}>
+                                <Link href={`/address/${offerNftInfo.issuer}`}>
                                   <span className="text-[#4285f4] hover:underline">
                                     {offerNftInfo.issuer}
                                   </span>
@@ -3399,7 +3399,7 @@ const TransactionDetails = ({ txData }) => {
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AccountAvatar account={Destination} />
-                                <Link href={`/profile/${Destination}`} passHref>
+                                <Link href={`/address/${Destination}`} passHref>
                                   <Typography
                                     component="span"
                                     variant="body1"
@@ -3661,7 +3661,7 @@ const TransactionDetails = ({ txData }) => {
                 {/* SetRegularKey Details */}
                 {TransactionType === 'SetRegularKey' && txData.RegularKey && (
                   <DetailRow label="Regular Key">
-                    <Link href={`/profile/${txData.RegularKey}`} passHref>
+                    <Link href={`/address/${txData.RegularKey}`} passHref>
                       <Typography
                         component="span"
                         variant="body1"
@@ -3794,7 +3794,7 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     {txData.Issuer && (
                       <DetailRow label="Issuer">
-                        <Link href={`/profile/${txData.Issuer}`} passHref>
+                        <Link href={`/address/${txData.Issuer}`} passHref>
                           <Typography
                             component="span"
                             variant="body1"
@@ -3811,7 +3811,7 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     {txData.Subject && (
                       <DetailRow label="Subject">
-                        <Link href={`/profile/${txData.Subject}`} passHref>
+                        <Link href={`/address/${txData.Subject}`} passHref>
                           <Typography
                             component="span"
                             variant="body1"
@@ -4090,7 +4090,7 @@ const TransactionDetails = ({ txData }) => {
                 >
                   <div className="flex items-center gap-2 min-w-[280px] flex-1">
                     <AccountAvatar account={account} />
-                    <Link href={`/profile/${account}`} passHref>
+                    <Link href={`/address/${account}`} passHref>
                       <span className="text-primary text-[13px] font-mono hover:underline break-all">
                         {account}
                       </span>

@@ -72,8 +72,8 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     const addr = profile.address || profile;
     title = customTitle || `${addr.slice(0, 8)}... - XRPL.to`;
     desc = customDesc || `XRPL wallet profile and holdings.`;
-    image = customImage || `${OG_API}/profile/${addr}`;
-    url = `${BASE}/profile/${addr}`;
+    image = customImage || `${OG_API}/address/${addr}`;
+    url = `${BASE}/address/${addr}`;
   } else if (type === 'tx' && tx) {
     title = customTitle || `Transaction - XRPL.to`;
     desc = customDesc || `XRPL transaction ${tx.slice(0, 16)}...`;

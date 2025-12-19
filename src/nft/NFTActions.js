@@ -744,7 +744,7 @@ export default function NFTActions({ nft }) {
                         <div className="flex items-center justify-between gap-3">
                           {/* Left: Address + Broker + Funded Status */}
                           <div className="flex items-center gap-2 min-w-0">
-                            <Link href={`/profile/${offer.owner}`} className="text-[12px] font-mono text-gray-400 hover:text-gray-300 transition-colors">
+                            <Link href={`/address/${offer.owner}`} className="text-[12px] font-mono text-gray-400 hover:text-gray-300 transition-colors">
                               {truncate(offer.owner, 12)}
                             </Link>
                             {offer.destination && (

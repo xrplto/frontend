@@ -353,7 +353,7 @@ const RichList = ({ token, amm }) => {
                   </td>
                   <td className="py-2.5 px-2">
                     <Link
-                      href={`/profile/${holder.account}`}
+                      href={`/address/${holder.account}`}
                       className={cn(
                         'text-[12px] font-mono hover:text-primary transition-colors',
                         isDark ? 'text-white/80' : 'text-gray-700'

@@ -352,7 +352,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                         </StyledTd>
                         <StyledTd darkMode={darkMode}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <TraderLink href={`/profile/${addr}`}>
+                            <TraderLink href={`/address/${addr}`}>
                               {addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-'}
                             </TraderLink>
                             {trader.traderType && <Badge type={trader.traderType}>{trader.traderType}</Badge>}

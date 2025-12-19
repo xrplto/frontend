@@ -295,7 +295,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         <td className="px-4 py-3">
                           {item.seller || item.account ? (
                             <a
-                              href={`/profile/${item.seller || item.account}`}
+                              href={`/address/${item.seller || item.account}`}
                               className="text-[11px] text-gray-500 hover:text-primary"
                             >
                               {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
@@ -307,7 +307,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         <td className="px-4 py-3">
                           {item.buyer || item.destination ? (
                             <a
-                              href={`/profile/${item.buyer || item.destination}`}
+                              href={`/address/${item.buyer || item.destination}`}
                               className="text-[11px] text-gray-500 hover:text-primary"
                             >
                               {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}

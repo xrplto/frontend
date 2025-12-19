@@ -119,7 +119,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
                   <div className="flex items-center">
                     <AccountAvatar account={tx.Account} />
                     <span
-                      onClick={() => (window.location.href = `/profile/${tx.Account}`)}
+                      onClick={() => (window.location.href = `/address/${tx.Account}`)}
                       className="cursor-pointer text-[13px] text-primary hover:underline"
                     >
                       {shortenAddress(tx.Account)}

@@ -123,7 +123,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
         const isAccount = tab.type === 'account';
         const tabId = tab.md5 || tab.slug;
         const isActive = tab.md5 === currentMd5 || tab.slug === currentMd5;
-        const href = isAccount ? `/profile/${tab.slug}` : isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
+        const href = isAccount ? `/address/${tab.slug}` : isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
         const imgSrc = isAccount
           ? getHashIcon(tab.slug)
           : isNft

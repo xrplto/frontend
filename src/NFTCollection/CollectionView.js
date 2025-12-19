@@ -1217,7 +1217,7 @@ const HoldersTab = React.memo(({ slug }) => {
               </div>
               <div className="space-y-1">
                 {changes.gainers.slice(0, 5).map((g, i) => (
-                  <Link key={g.address} href={`/profile/${g.address}`} className="flex items-center gap-2 group">
+                  <Link key={g.address} href={`/address/${g.address}`} className="flex items-center gap-2 group">
                     <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
                       {g.address.slice(0, 6)}...{g.address.slice(-4)}
                     </span>
@@ -1237,7 +1237,7 @@ const HoldersTab = React.memo(({ slug }) => {
               </div>
               <div className="space-y-1">
                 {changes.losers.slice(0, 5).map((l, i) => (
-                  <Link key={l.address} href={`/profile/${l.address}`} className="flex items-center gap-2 group">
+                  <Link key={l.address} href={`/address/${l.address}`} className="flex items-center gap-2 group">
                     <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
                       {l.address.slice(0, 6)}...{l.address.slice(-4)}
                     </span>
@@ -1257,7 +1257,7 @@ const HoldersTab = React.memo(({ slug }) => {
               </div>
               <div className="space-y-1">
                 {changes.newOwners.slice(0, 5).map((n, i) => (
-                  <Link key={n.address} href={`/profile/${n.address}`} className="flex items-center gap-2 group">
+                  <Link key={n.address} href={`/address/${n.address}`} className="flex items-center gap-2 group">
                     <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
                       {n.address.slice(0, 6)}...{n.address.slice(-4)}
                     </span>
@@ -1276,7 +1276,7 @@ const HoldersTab = React.memo(({ slug }) => {
               </div>
               <div className="space-y-1">
                 {changes.exitedOwners.slice(0, 5).map((e, i) => (
-                  <Link key={e.address} href={`/profile/${e.address}`} className="flex items-center gap-2 group">
+                  <Link key={e.address} href={`/address/${e.address}`} className="flex items-center gap-2 group">
                     <span className={cn('flex-1 text-[10px] font-mono truncate', isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900')}>
                       {e.address.slice(0, 6)}...{e.address.slice(-4)}
                     </span>
@@ -1400,7 +1400,7 @@ const HoldersTab = React.memo(({ slug }) => {
               ) : (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Link href={`/profile/${searchResult.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
+                    <Link href={`/address/${searchResult.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
                       <span className="hidden sm:inline">{searchResult.address}</span>
                       <span className="sm:hidden">{searchResult.address?.slice(0, 6)}...{searchResult.address?.slice(-4)}</span>
                     </Link>
@@ -1452,7 +1452,7 @@ const HoldersTab = React.memo(({ slug }) => {
                         )}>{rank}</span>
                       </td>
                       <td className="px-4 py-2.5">
-                        <Link href={`/profile/${holder.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
+                        <Link href={`/address/${holder.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
                           <span className="hidden sm:inline">{holder.address}</span>
                           <span className="sm:hidden">{holder.address.slice(0, 6)}...{holder.address.slice(-4)}</span>
                         </Link>

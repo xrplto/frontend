@@ -44,6 +44,19 @@ const OverView = ({ account }) => {
   const [hideZeroHoldings, setHideZeroHoldings] = useState(true);
   const [txSearch, setTxSearch] = useState('');
   const [activeTab, setActiveTab] = useState('tokens');
+  const [xrpPrice, setXrpPrice] = useState(null);
+
+  // Fetch XRP price from /api/rates
+  useEffect(() => {
+    axios.get('https://api.xrpl.to/api/rates')
+      .then(res => {
+        // exch.USD is the conversion rate (USD per XRP)
+        if (res.data?.exch?.USD) {
+          setXrpPrice(1 / res.data.exch.USD);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Reset data and loading state when account changes
@@ -447,7 +460,7 @@ const OverView = ({ account }) => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <p className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
-                  HOLDINGS ({holdings.total})
+                  HOLDINGS <span className={isDark ? "text-white/20" : "text-gray-300"}>({holdings.total})</span>
                 </p>
                 {zeroCount > 0 && (
                   <button
@@ -459,30 +472,59 @@ const OverView = ({ account }) => {
                 )}
               </div>
               {filteredLines.length > 0 && (
-                <p className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
-                  {fCurrency5(totalValue)} XRP
-                </p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-[18px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(totalValue + (holdings.accountData?.balanceDrops || 0) / 1000000)}</span>
+                    <span className={cn("text-[12px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                  </div>
+                  {xrpPrice && (
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-[11px]", isDark ? "bg-white/5" : "bg-gray-100")}>
+                      <span className={isDark ? "text-white/40" : "text-gray-400"}>XRP</span>
+                      <span className={cn("font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>${parseFloat(xrpPrice).toFixed(4)}</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             {filteredLines.length > 0 ? (
               <>
                 {/* Table Header */}
-                <div className={cn("grid px-0 py-2 border-b", isDark ? "border-white/10" : "border-gray-200")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                <div className={cn("grid px-0 py-2 border-b", isDark ? "border-white/10" : "border-gray-200")} style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
                   <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>TOKEN</span>
+                  <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>PRICE</span>
                   <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>BALANCE</span>
                   <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>VALUE</span>
                 </div>
+                {/* XRP Row */}
+                {holdings.accountData?.balanceDrops > 0 && (
+                  <div className={cn("grid py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
+                    <div className="flex items-center gap-3">
+                      <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" className="w-6 h-6 rounded-full" alt="" />
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>XRP</span>
+                    </div>
+                    <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{xrpPrice ? `$${parseFloat(xrpPrice).toFixed(4)}` : '—'}</span>
+                    <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(holdings.accountData.balanceDrops / 1000000)}</span>
+                    <span className={cn("text-[14px] text-right tabular-nums font-medium", isDark ? "text-white" : "text-gray-900")}>{xrpPrice ? `$${fCurrency5((holdings.accountData.balanceDrops / 1000000) * xrpPrice)}` : `${fCurrency5(holdings.accountData.balanceDrops / 1000000)} XRP`}</span>
+                  </div>
+                )}
                 {/* Table Rows */}
-                {filteredLines.map((line, idx) => (
-                  <div key={idx} className={cn("grid py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
+                {filteredLines.map((line, idx) => {
+                  const balance = Math.abs(parseFloat(line.balance) || 0);
+                  const xrpValue = line.value || 0;
+                  const priceInXrp = balance > 0 ? xrpValue / balance : 0;
+                  const usdPrice = priceInXrp && xrpPrice ? priceInXrp * xrpPrice : 0;
+                  return (
+                  <div key={idx} className={cn("grid py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}>
                     <div className="flex items-center gap-3">
                       <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-6 h-6 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
                       <span className={cn("text-[14px]", isDark ? "text-white" : "text-gray-900")}>{line.token?.name || line.currency}</span>
                     </div>
+                    <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{usdPrice ? `$${fCurrency5(usdPrice)}` : '—'}</span>
                     <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
-                    <span className={cn("text-[14px] text-right tabular-nums font-medium", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(line.value)} XRP</span>
+                    <span className={cn("text-[14px] text-right tabular-nums font-medium", isDark ? "text-white" : "text-gray-900")}>{line.value && xrpPrice ? `$${fCurrency5(line.value * xrpPrice)}` : `${fCurrency5(line.value)} XRP`}</span>
                   </div>
-                ))}
+                  );
+                })}
                 {/* Pagination */}
                 <div className="flex items-center justify-end gap-2 mt-4">
                   <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("text-[12px] transition-colors", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>‹</button>
@@ -1075,9 +1117,9 @@ export async function getServerSideProps(ctx) {
 
     // Add OGP metadata for better SEO and social sharing
     const ogp = {
-      canonical: `https://xrpl.to/profile/${account}`,
+      canonical: `https://xrpl.to/address/${account}`,
       title: `Profile - ${account.substring(0, 8)}...${account.substring(account.length - 6)}`,
-      url: `https://xrpl.to/profile/${account}`,
+      url: `https://xrpl.to/address/${account}`,
       imgUrl: 'https://xrpl.to/static/ogp.png',
       desc: `View portfolio, NFT collections, and trading activity for XRP Ledger account ${account.substring(0, 12)}...`
     };

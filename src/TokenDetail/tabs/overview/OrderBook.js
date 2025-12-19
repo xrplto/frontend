@@ -482,7 +482,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                 <Maker
                   isDark={isDark}
                   title={acc || ''}
-                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/profile/${acc}`, '_blank'); }}
+                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/address/${acc}`, '_blank'); }}
                 >
                   {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                 </Maker>
@@ -526,7 +526,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                 <Maker
                   isDark={isDark}
                   title={acc || ''}
-                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/profile/${acc}`, '_blank'); }}
+                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/address/${acc}`, '_blank'); }}
                 >
                   {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                 </Maker>

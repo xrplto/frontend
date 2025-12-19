@@ -323,7 +323,7 @@ export default function HistoryList({ nft }) {
                               <div className="flex items-center gap-1 text-[10px] mt-0.5">
                                 {from && (
                                   <Link
-                                    href={`/profile/${from}`}
+                                    href={`/address/${from}`}
                                     className={cn(
                                       "hover:text-white transition-colors font-mono",
                                       from === stats.currentOwner ? "text-white" : "text-neutral-500"
@@ -336,7 +336,7 @@ export default function HistoryList({ nft }) {
                                   <>
                                     <span className="text-neutral-700">→</span>
                                     <Link
-                                      href={`/profile/${to}`}
+                                      href={`/address/${to}`}
                                       className={cn(
                                         "hover:text-white transition-colors font-mono",
                                         to === stats.currentOwner ? "text-white" : "text-neutral-500"

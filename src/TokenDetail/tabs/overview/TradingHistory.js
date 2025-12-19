@@ -1526,7 +1526,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
             <div style={{ minWidth: '120px', maxWidth: '180px', overflow: 'hidden' }}>
               <div style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Trader</div>
               <a
-                href={`/profile/${account}`}
+                href={`/address/${account}`}
                 style={{
                   fontSize: '11px',
                   fontFamily: 'monospace',
@@ -2229,7 +2229,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
               {/* Trader Address */}
               <a
-                href={`/profile/${addressToShow}`}
+                href={`/address/${addressToShow}`}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
