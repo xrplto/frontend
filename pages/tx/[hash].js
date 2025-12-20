@@ -1879,19 +1879,22 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
           {(aiExplanation || aiLoading) ? (
             <button
               onClick={onCloseAI}
-              className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-md transition-colors",
-                isDark ? "bg-[rgba(59,130,246,0.08)] hover:bg-[rgba(59,130,246,0.15)] border border-[rgba(59,130,246,0.15)]" : "bg-gray-100 hover:bg-gray-200 border border-gray-200"
-              )}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200"
             >
-              <span className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-500")}>✕</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
             </button>
           ) : (
             <button
               onClick={onExplainWithAI}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-md bg-[#3b82f6] text-white hover:bg-[#2563eb] transition-colors border border-[#3b82f6]"
+              className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
             >
-              Explain with AI
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors">
+                <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
+                <path d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z" fill="currentColor"/>
+              </svg>
+              <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">Explain with AI</span>
             </button>
           )}
         </div>
@@ -1927,7 +1930,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                 <div
                   className="absolute inset-0 rounded-sm"
                   style={{
-                    background: i === 5 ? 'rgba(59,130,246,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                    background: i === 5 ? 'rgba(139,92,246,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
                     animation: `pulse-bar 2s ease-in-out infinite`,
                     animationDelay: `${i * 0.15}s`
                   }}
@@ -1936,7 +1939,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                   className="absolute inset-0 rounded-sm"
                   style={{
                     background: i === 5
-                      ? 'linear-gradient(90deg, transparent, #3b82f6, transparent)'
+                      ? 'linear-gradient(90deg, transparent, #8b5cf6, transparent)'
                       : `linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}, transparent)`,
                     animation: `scanline 1.5s ease-in-out infinite`,
                     animationDelay: `${i * 0.1}s`
@@ -1947,7 +1950,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
           </div>
           <div className={cn("mt-5 text-[13px] font-mono flex items-center gap-2", isDark ? "text-white/40" : "text-gray-400")}>
             <span
-              className="inline-block w-2 h-2 rounded-full bg-[#3b82f6]"
+              className="inline-block w-2 h-2 rounded-full bg-[#8b5cf6]"
               style={{ animation: 'glow 1s ease-in-out infinite' }}
             />
             Analyzing
@@ -1991,11 +1994,11 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
         return (
         <div className={cn(
           "px-6 py-5",
-          isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+          isDark ? "border-b border-[rgba(139,92,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
         )}>
           {/* Title with summary */}
           <h3 className="text-[15px] mb-5">
-            <span className="text-[#3b82f6] font-medium">{aiExplanation.extracted?.type || 'Transaction'}:</span>{' '}
+            <span className="text-[#a78bfa] font-medium">{aiExplanation.extracted?.type || 'Transaction'}:</span>{' '}
             <span className={isDark ? "text-white" : "text-gray-900"}>
               {summaryText}
             </span>
@@ -2010,7 +2013,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               <ul className="space-y-2">
                 {keyPoints.map((point, idx) => (
                   <li key={idx} className={cn("flex items-start gap-2 text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
-                    <span className="text-[#3b82f6]">•</span>
+                    <span className="text-[#8b5cf6]">•</span>
                     <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
                   </li>
                 ))}
@@ -2025,7 +2028,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                 Additional Information
               </h4>
               <p className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
-                Transaction via <span className="text-[#3b82f6]">{aiExplanation.extracted.platform}</span>
+                Transaction via <span className="text-[#a78bfa]">{aiExplanation.extracted.platform}</span>
               </p>
             </div>
           )}

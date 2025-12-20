@@ -23,8 +23,8 @@ const Stack = styled.div`
 const Typography = styled.div`
   font-size: ${props =>
     props.variant === 'h6' ? '1.25rem' :
-    props.variant === 'body2' ? '0.875rem' :
-    props.variant === 'caption' ? '0.75rem' : '1rem'};
+      props.variant === 'body2' ? '0.875rem' :
+        props.variant === 'caption' ? '0.75rem' : '1rem'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props => props.color || (props.isDark ? '#FFFFFF' : '#212B36')};
   white-space: ${props => props.noWrap ? 'nowrap' : 'normal'};
@@ -269,9 +269,9 @@ export default function PriceStatistics({ token, isDark = false }) {
         setTransactions(data.events);
         setHasWarning(data.warning || false);
       } else if (filter === 'all') {
-        // Fallback to account_tx for general activity
+        // Fallback to tx for general activity
         setNoTokenActivity(true);
-        const txRes = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=12`, { signal });
+        const txRes = await fetch(`https://api.xrpl.to/api/tx/${creator}?limit=12`, { signal });
         if (signal?.aborted) return;
         const txData = await txRes.json();
         if (txData?.result === 'success' && txData?.transactions) {
@@ -671,141 +671,141 @@ export default function PriceStatistics({ token, isDark = false }) {
 
           {/* Buys (24h) Row - Always show */}
           <TableRow>
-              <ModernTableCell>
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
+                }}
+                noWrap
+              >
+                Buys (24h)
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                 <Typography
                   isDark={isDark}
                   variant="body2"
                   style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
+                    fontWeight: 500,
+                    color: '#10b981',
+                    fontSize: '13px'
                   }}
-                  noWrap
                 >
-                  Buys (24h)
+                  {fNumber(buy24hxrp || 0)} XRP
                 </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 500,
-                      color: '#10b981',
-                      fontSize: '13px'
-                    }}
-                  >
-                    {fNumber(buy24hxrp || 0)} XRP
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    style={{
-                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      fontSize: '11px'
-                    }}
-                  >
-                    {fNumber(buyTxns24h || buy24htx || 0)} tx
-                  </Typography>
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
+                <Typography
+                  variant="caption"
+                  style={{
+                    color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                    fontSize: '11px'
+                  }}
+                >
+                  {fNumber(buyTxns24h || buy24htx || 0)} tx
+                </Typography>
+              </Stack>
+            </ModernTableCell>
+          </TableRow>
 
           {/* Unique Buyers (24h) Row - Always show */}
           <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
-                  Unique Buyers (24h)
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
+                }}
+                noWrap
+              >
+                Unique Buyers (24h)
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
+                  {fNumber(uniqueBuyers24h || 0)}
                 </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
-                    {fNumber(uniqueBuyers24h || 0)}
-                  </Typography>
-                  {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
-                    const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
-                    const pct = Math.max(((uniqueBuyers24h || 0) / total) * 100, 15);
-                    return (
-                      <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
-                      </Box>
-                    );
-                  })()}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
+                {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
+                  const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
+                  const pct = Math.max(((uniqueBuyers24h || 0) / total) * 100, 15);
+                  return (
+                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
+                    </Box>
+                  );
+                })()}
+              </Stack>
+            </ModernTableCell>
+          </TableRow>
 
           {/* Sells (24h) Row - Always show */}
           <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
-                  Sells (24h)
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
+                }}
+                noWrap
+              >
+                Sells (24h)
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
+                  {fNumber(sell24hxrp || 0)} XRP
                 </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
-                    {fNumber(sell24hxrp || 0)} XRP
-                  </Typography>
-                  <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '11px' }}>
-                    {fNumber(sellTxns24h || sell24htx || 0)} tx
-                  </Typography>
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
+                <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '11px' }}>
+                  {fNumber(sellTxns24h || sell24htx || 0)} tx
+                </Typography>
+              </Stack>
+            </ModernTableCell>
+          </TableRow>
 
           {/* Unique Sellers (24h) Row - Always show */}
           <TableRow>
-              <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
-                  Unique Sellers (24h)
+            <ModernTableCell>
+              <Typography
+                isDark={isDark}
+                variant="body2"
+                style={{
+                  fontWeight: 400,
+                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
+                  fontSize: '12px'
+                }}
+                noWrap
+              >
+                Unique Sellers (24h)
+              </Typography>
+            </ModernTableCell>
+            <ModernTableCell>
+              <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+                <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
+                  {fNumber(uniqueSellers24h || 0)}
                 </Typography>
-              </ModernTableCell>
-              <ModernTableCell>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
-                    {fNumber(uniqueSellers24h || 0)}
-                  </Typography>
-                  {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
-                    const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
-                    const pct = Math.max(((uniqueSellers24h || 0) / total) * 100, 15);
-                    return (
-                      <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: '#f43f5e', marginLeft: 'auto' }} />
-                      </Box>
-                    );
-                  })()}
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
+                {(uniqueBuyers24h || 0) > 0 && (uniqueSellers24h || 0) > 0 && (() => {
+                  const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
+                  const pct = Math.max(((uniqueSellers24h || 0) / total) * 100, 15);
+                  return (
+                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: '#f43f5e', marginLeft: 'auto' }} />
+                    </Box>
+                  );
+                })()}
+              </Stack>
+            </ModernTableCell>
+          </TableRow>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
           {(deposit24hxrp > 0 || withdraw24hxrp) && (
@@ -1221,19 +1221,18 @@ export default function PriceStatistics({ token, isDark = false }) {
                     background: creatorTokens >= 10
                       ? 'rgba(239,68,68,0.08)'
                       : creatorTokens >= 5
-                      ? 'rgba(245,158,11,0.06)'
-                      : creatorTokens >= 2
-                      ? (isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.04)')
-                      : (isDark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.04)'),
-                    border: `1px solid ${
-                      creatorTokens >= 10
+                        ? 'rgba(245,158,11,0.06)'
+                        : creatorTokens >= 2
+                          ? (isDark ? 'rgba(59,130,246,0.06)' : 'rgba(59,130,246,0.04)')
+                          : (isDark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.04)'),
+                    border: `1px solid ${creatorTokens >= 10
                         ? 'rgba(239,68,68,0.2)'
                         : creatorTokens >= 5
-                        ? 'rgba(245,158,11,0.18)'
-                        : creatorTokens >= 2
-                        ? 'rgba(59,130,246,0.12)'
-                        : 'rgba(34,197,94,0.12)'
-                    }`
+                          ? 'rgba(245,158,11,0.18)'
+                          : creatorTokens >= 2
+                            ? 'rgba(59,130,246,0.12)'
+                            : 'rgba(34,197,94,0.12)'
+                      }`
                   }}
                 >
                   <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', gap: '12px' }}>
@@ -1423,7 +1422,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                           AccountSet: { label: 'SETTINGS', color: '#6b7280', icon: '⚙️' },
                           Clawback: { label: 'CLAWBACK', color: '#ef4444', icon: '⚠️' }
                         };
-                        const cfg = side ? sideConfig[side] : (typeConfig[type] || { label: type?.slice(0,8), color: '#9C27B0', icon: '•' });
+                        const cfg = side ? sideConfig[side] : (typeConfig[type] || { label: type?.slice(0, 8), color: '#9C27B0', icon: '•' });
                         const displayColor = isFailed ? '#ef4444' : cfg.color;
 
                         // Time ago
@@ -1486,7 +1485,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                             </Tooltip>
 
                             {/* XRP Amount */}
-                            <Tooltip title={hasXrp ? `${fNumber(xrpAmount)} XRP${destination ? `\nTo: ${destination.slice(0,8)}...` : ''}` : ''}>
+                            <Tooltip title={hasXrp ? `${fNumber(xrpAmount)} XRP${destination ? `\nTo: ${destination.slice(0, 8)}...` : ''}` : ''}>
                               <Typography variant="caption" style={{
                                 width: '70px',
                                 textAlign: 'right',
@@ -1606,7 +1605,7 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
   const getIcon = (platform) => {
     const iconSize = isMobile ? 14 : 14;
     const color = '#4285f4';
-    switch(platform) {
+    switch (platform) {
       case 'twitter':
       case 'x': return <Twitter size={iconSize} color={color} />;
       case 'telegram': return <Send size={iconSize} color={color} />;
@@ -1619,7 +1618,7 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
   };
 
   const getPlatformLabel = (platform) => {
-    switch(platform) {
+    switch (platform) {
       case 'twitter':
       case 'x': return 'Twitter';
       case 'telegram': return 'Telegram';

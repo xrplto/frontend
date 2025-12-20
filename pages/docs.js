@@ -273,7 +273,7 @@ Note: XRP auto-normalized to quote side. Returns simplified offers with price, a
 Example: GET /api/orderbook?base_currency=534F4C4F&base_issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&quote_currency=XRP
 Response: { success, pair, base, quote, bids[], asks[], ledger_index }
 
-GET /account_tx/{account} - Paginated transaction history (rippled: account_tx)
+GET /tx/{account} - Paginated transaction history (rippled: tx)
 Params: limit (default:200, max:400), marker (JSON string), ledger_index_min/max, tx_type, forward (bool)
 
 GET /trustlines/{account} - Account trustlines with token info (rippled: account_lines)
@@ -655,7 +655,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </p>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-{`Body: { "search": "solo", "page": 0, "limit": 20 }`}
+                  {`Body: { "search": "solo", "page": 0, "limit": 20 }`}
                 </pre>
               </div>
             </div>
@@ -863,14 +863,14 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
             </div>
 
-            {/* account_tx detail */}
+            {/* tx detail */}
             <div id="account-tx" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/account_tx/{'{account}'}</code>
+                <code className="text-[15px] font-mono">/api/tx/{'{account}'}</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
-                Get paginated transaction history (rippled: account_tx)
+                Get paginated transaction history (rippled: tx)
               </p>
               <div className={cn("rounded-lg overflow-hidden border-[1.5px]", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
@@ -1350,7 +1350,7 @@ const { apiKey, keyPrefix } = await response.json();
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`const response = await fetch('https://api.xrpl.to/api/keys', {
+                  {`const response = await fetch('https://api.xrpl.to/api/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1536,7 +1536,7 @@ await fetch('https://api.xrpl.to/api/keys/verify-payment', {
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`// 1. Get payment details
+                  {`// 1. Get payment details
 const res = await fetch('https://api.xrpl.to/api/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -1597,7 +1597,7 @@ const status = await fetch(
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`// 1. Create checkout session
+                  {`// 1. Create checkout session
 const res = await fetch('https://api.xrpl.to/api/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -1657,7 +1657,7 @@ GET /api/keys/:wallet/subscription
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-{`// Get credits with billing cycle
+                  {`// Get credits with billing cycle
 GET /api/keys/:wallet/credits
 {
   "balance": 1000000,
@@ -1876,7 +1876,7 @@ GET /api/keys/:wallet/subscription
                     )}
                   >
                     <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 opacity-60" fill="currentColor">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                     @xrplto
                     <ExternalLink size={10} className="ml-auto opacity-40" />
