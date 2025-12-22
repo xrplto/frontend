@@ -483,7 +483,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           setLoading(true);
         }
         // Holder data uses ALL range by default for maximum history
-        const endpoint = `${BASE_URL}/graphrich/${token.md5}?range=ALL`;
+        const endpoint = `${BASE_URL}/holders/graph/${token.md5}?range=ALL`;
 
         const response = await axios.get(endpoint, { signal: controller.signal });
 

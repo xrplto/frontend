@@ -735,9 +735,12 @@ export default function NFTActions({ nft }) {
                     const amount = normalizeAmount(offer.amount);
                     const isLast = index === buyOffers.length - 1;
                     const askingPrice = lowestSellOffer?.baseAmount || 0;
-                    const offerPercent = askingPrice > 0 ? Math.round((amount.amount / askingPrice) * 100) : 0;
-                    const isLowBall = offerPercent > 0 && offerPercent < 50;
-                    const isReasonable = offerPercent >= 80;
+                    const offerPercentRaw = askingPrice > 0 ? (amount.amount / askingPrice) * 100 : 0;
+                    const offerPercent = Math.round(offerPercentRaw);
+                    const isScamLevel = askingPrice > 0 && offerPercentRaw < 5; // Less than 5% of asking
+                    const isLowBall = askingPrice > 0 && offerPercentRaw >= 5 && offerPercentRaw < 50;
+                    const isReasonable = offerPercentRaw >= 80;
+                    const displayPercent = offerPercentRaw > 0 && offerPercentRaw < 1 ? '<1' : offerPercent.toString();
                     const isFunded = offer.funded !== false; // true or undefined = funded
                     return (
                       <div key={index} className={cn('px-4 py-2.5', !isLast && 'border-b border-gray-700/30', !isFunded && 'opacity-60')}>
@@ -766,31 +769,49 @@ export default function NFTActions({ nft }) {
                                 {formatXRPAmount(amount.amount, false)} XRP
                               </span>
                               {askingPrice > 0 && (
-                                <span className={cn(
-                                  'px-1.5 py-0.5 rounded text-[10px] tabular-nums',
-                                  isLowBall ? 'bg-red-500/20 text-red-400' :
-                                  isReasonable ? 'bg-green-500/20 text-green-400' :
-                                  'bg-white/10 text-gray-400'
-                                )}>
-                                  {offerPercent}%
-                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  {isScamLevel && (
+                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-red-500/30 text-red-400 border border-red-500/40">
+                                      <AlertTriangle size={10} />
+                                      Suspicious
+                                    </span>
+                                  )}
+                                  <span className={cn(
+                                    'px-1.5 py-0.5 rounded text-[10px] tabular-nums',
+                                    isScamLevel ? 'bg-red-500/30 text-red-300 border border-red-500/40' :
+                                    isLowBall ? 'bg-red-500/20 text-red-400' :
+                                    isReasonable ? 'bg-green-500/20 text-green-400' :
+                                    'bg-white/10 text-gray-400'
+                                  )}>
+                                    {displayPercent}%
+                                  </span>
+                                </div>
                               )}
                             </div>
                             {isOwner ? (
                               acceptOffer && acceptOffer.nft_offer_index === offer.nft_offer_index ? (
-                                <div className="flex gap-1.5">
-                                  <button onClick={() => setAcceptOffer(null)} className="px-2 py-1 rounded text-[11px] border border-gray-700/50 text-gray-400">No</button>
-                                  <button onClick={() => { doProcessOffer(offer, true); setAcceptOffer(null); }} className="px-2 py-1 rounded text-[11px] bg-green-500/90 text-white">Yes</button>
+                                <div className="flex items-center gap-2">
+                                  {isScamLevel && (
+                                    <span className="text-[10px] text-red-400 max-w-[100px] leading-tight">
+                                      Only {displayPercent}% of asking!
+                                    </span>
+                                  )}
+                                  <div className="flex gap-1.5">
+                                    <button onClick={() => setAcceptOffer(null)} className="px-2 py-1 rounded text-[11px] border border-gray-700/50 text-gray-400">No</button>
+                                    <button onClick={() => { doProcessOffer(offer, true); setAcceptOffer(null); }} className={cn("px-2 py-1 rounded text-[11px] text-white", isScamLevel ? "bg-red-500/90" : "bg-green-500/90")}>Yes</button>
+                                  </div>
                                 </div>
                               ) : (
                                 <button
                                   onClick={() => setAcceptOffer(offer)}
                                   className={cn(
                                     "px-2.5 py-1 rounded text-[11px] border transition-colors",
-                                    isReasonable ? "border-green-500/50 text-green-400 hover:bg-green-500/10" : "border-gray-700/50 text-gray-400 hover:text-gray-300"
+                                    isScamLevel ? "border-red-500/50 text-red-400 hover:bg-red-500/10" :
+                                    isReasonable ? "border-green-500/50 text-green-400 hover:bg-green-500/10" :
+                                    "border-gray-700/50 text-gray-400 hover:text-gray-300"
                                   )}
                                 >
-                                  Accept
+                                  {isScamLevel ? 'Review' : 'Accept'}
                                 </button>
                               )
                             ) : accountLogin === offer.owner ? (
