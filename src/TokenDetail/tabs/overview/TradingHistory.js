@@ -1501,7 +1501,10 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
       fetch(`https://api.xrpl.to/api/tx/${trade.hash}`).then(r => r.json()).catch(() => null),
       account ? fetch(`https://api.xrpl.to/api/account/info/${account}`).then(r => r.json()).catch(() => null) : Promise.resolve(null)
     ]).then(([tx, profile]) => {
-      setTxData(tx);
+      // Extract nested tx object from API response
+      const txObj = tx?.tx_json || tx?.tx || tx;
+      const meta = tx?.meta || txObj?.meta;
+      setTxData(txObj ? { ...txObj, meta } : null);
       setProfileData(profile);
       setLoading(false);
     });
@@ -1512,8 +1515,8 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
   return (
     <div style={{
       padding: '12px 8px',
-      background: isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)',
-      borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)'}`,
+      background: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(128,128,128,0.1)',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
       animation: 'expandIn 0.15s ease-out'
     }}>
       <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 200px; } }`}</style>
