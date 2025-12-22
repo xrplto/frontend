@@ -1649,20 +1649,50 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
         </div>
       )}
       {/* AI Explanation */}
-      {aiExplanation && !aiLoading && (
-        <div style={{
-          marginTop: '8px', padding: '8px 12px',
-          background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(167,139,250,0.08)',
-          borderRadius: '6px', border: `1px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.15)'}`
-        }}>
-          <div style={{ fontSize: '10px', color: '#a78bfa', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Sparkles size={10} /> AI Summary
+      {aiExplanation && !aiLoading && (() => {
+        let summaryText = 'AI analysis complete.';
+        let keyPoints = [];
+        const raw = aiExplanation.summary?.raw || aiExplanation.summary;
+        if (typeof raw === 'string') {
+          const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
+          if (summaryMatch) summaryText = summaryMatch[1];
+          const keyPointsMatch = raw.match(/"keyPoints"\s*:\s*\[([^\]]*)/);
+          if (keyPointsMatch) {
+            const points = keyPointsMatch[1].match(/"([^"]+)"/g);
+            if (points) keyPoints = points.map(p => p.replace(/"/g, ''));
+          }
+        } else if (typeof raw === 'object' && raw?.summary) {
+          summaryText = raw.summary;
+          keyPoints = raw.keyPoints || [];
+        }
+        return (
+          <div style={{
+            marginTop: '8px', padding: '12px 16px',
+            background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(167,139,250,0.05)',
+            borderTop: `1px solid ${isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)'}`
+          }}>
+            <div style={{ fontSize: '13px', marginBottom: keyPoints.length ? '12px' : 0 }}>
+              <span style={{ color: '#a78bfa', fontWeight: 500 }}>{aiExplanation.extracted?.type || 'Trade'}:</span>{' '}
+              <span style={{ color: isDark ? '#fff' : '#1a1a1a' }}>{summaryText}</span>
+            </div>
+            {keyPoints.length > 0 && (
+              <div>
+                <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginBottom: '8px' }}>
+                  Key Points
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {keyPoints.map((point, idx) => (
+                    <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', fontFamily: 'monospace', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>
+                      <span style={{ color: '#8b5cf6' }}>•</span>
+                      <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <div style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', lineHeight: 1.4 }}>
-            {aiExplanation.summary?.summary || aiExplanation.summary?.raw || 'No summary available.'}
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
@@ -1731,7 +1761,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           `https://api.xrpl.to/api/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
         );
         const data = await res.json();
-        setAmmPools(data.pools || []);
+        // Sort to ensure main XRP pool appears first
+        const pools = data.pools || [];
+        pools.sort((a, b) => {
+          const aIsMain = (a.asset1?.currency === 'XRP' && a.asset2?.issuer === token?.issuer && a.asset2?.currency === token?.currency) ||
+                          (a.asset2?.currency === 'XRP' && a.asset1?.issuer === token?.issuer && a.asset1?.currency === token?.currency);
+          const bIsMain = (b.asset1?.currency === 'XRP' && b.asset2?.issuer === token?.issuer && b.asset2?.currency === token?.currency) ||
+                          (b.asset2?.currency === 'XRP' && b.asset1?.issuer === token?.issuer && b.asset1?.currency === token?.currency);
+          if (aIsMain && !bIsMain) return -1;
+          if (!aIsMain && bIsMain) return 1;
+          return 0; // Keep API order (by fees) for non-main pools
+        });
+        setAmmPools(pools);
       } catch (error) {
         console.error('Error fetching AMM pools:', error);
       } finally {
