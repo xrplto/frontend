@@ -8,7 +8,7 @@ import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCw } from 'lucide-react';
+import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCw, Sparkles } from 'lucide-react';
 
 const currencySymbols = {
   USD: '$',
@@ -1493,6 +1493,26 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
   const [txData, setTxData] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiExplanation, setAiExplanation] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const explainWithAI = async () => {
+    if (aiLoading || aiExplanation || !trade?.hash) return;
+    setAiLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(`https://api.xrpl.to/api/ai/${trade.hash}`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!response.ok) throw new Error('API error');
+      const data = await response.json();
+      setAiExplanation(data);
+    } catch (err) {
+      setAiExplanation({ summary: { summary: err.name === 'AbortError' ? 'Request timed out. Try viewing the full transaction page.' : 'AI unavailable. View full TX for details.' } });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!trade?.hash) return;
@@ -1519,7 +1539,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
       borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
       animation: 'expandIn 0.15s ease-out'
     }}>
-      <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 200px; } }`}</style>
+      <style>{`@keyframes expandIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }`}</style>
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px' }}><Spinner size={18} /></div>
       ) : (
@@ -1592,12 +1612,54 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
               </div>
             ) : null;
           })()}
-          {/* Links */}
+          {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
-            <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '10px', color: '#3b82f6', textDecoration: 'none' }}>View TX</a>
-            <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px' }}>
-              <X size={14} style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }} />
+            <a
+              href={`/tx/${trade.hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '5px',
+                fontSize: '11px', fontWeight: 500, color: '#fff',
+                background: '#3b82f6', border: 'none', borderRadius: '6px',
+                padding: '6px 12px', textDecoration: 'none', cursor: 'pointer'
+              }}
+            >
+              <ExternalLink size={12} />
+              <span>View Details</span>
+            </a>
+            <button
+              onClick={explainWithAI}
+              disabled={aiLoading || aiExplanation}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '5px',
+                fontSize: '11px', fontWeight: 500, color: '#fff',
+                background: aiExplanation ? (isDark ? '#4b5563' : '#9ca3af') : '#a78bfa',
+                border: 'none', borderRadius: '6px',
+                padding: '6px 12px', cursor: aiLoading || aiExplanation ? 'default' : 'pointer'
+              }}
+            >
+              {aiLoading ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={12} />}
+              <span>{aiLoading ? 'Loading...' : 'Explain with AI'}</span>
             </button>
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', marginLeft: '4px' }}>
+              <X size={14} style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }} />
+            </button>
+          </div>
+        </div>
+      )}
+      {/* AI Explanation */}
+      {aiExplanation && !aiLoading && (
+        <div style={{
+          marginTop: '8px', padding: '8px 12px',
+          background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(167,139,250,0.08)',
+          borderRadius: '6px', border: `1px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.15)'}`
+        }}>
+          <div style={{ fontSize: '10px', color: '#a78bfa', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Sparkles size={10} /> AI Summary
+          </div>
+          <div style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', lineHeight: 1.4 }}>
+            {aiExplanation.summary?.summary || aiExplanation.summary?.raw || 'No summary available.'}
           </div>
         </div>
       )}
@@ -2183,7 +2245,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       return (
         <Card key={trade._id || trade.id || index} isNew={newTradeIds.has(trade._id || trade.id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
-            <Box style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`, gap: '8px', alignItems: 'center' }}>
+            <Box
+              style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`, gap: '8px', alignItems: 'center', cursor: 'pointer' }}
+              onClick={() => setExpandedTradeId(expandedTradeId === (trade._id || trade.id) ? null : (trade._id || trade.id))}
+            >
               {/* Time */}
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                 {formatRelativeTime(trade.time, true)}
@@ -2233,6 +2298,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Trader Address */}
               <a
                 href={`/address/${addressToShow}`}
+                onClick={(e) => e.stopPropagation()}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -2264,12 +2330,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 {isLiquidity ? 'AMM' : (getSourceTagName(trade.sourceTag) || '')}
               </span>
 
-              {/* Animal tier icon - toggles inline details */}
+              {/* Animal tier icon */}
               {(() => {
                 const { Icon } = getTradeSizeInfo(xrpAmount);
-                const tradeId = trade._id || trade.id;
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => setExpandedTradeId(expandedTradeId === tradeId ? null : tradeId)}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon size={16} isDark={isDark} />
                   </div>
                 );
