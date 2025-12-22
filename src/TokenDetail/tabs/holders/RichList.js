@@ -57,9 +57,15 @@ const RichList = ({ token, amm }) => {
   const [searchInput, setSearchInput] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef(null);
+  const initialFetchDone = useRef(false);
   const rowsPerPage = isMobile ? 10 : 20;
 
   const ammAccount = amm || token?.AMM;
+
+  // Reset initial fetch flag when token changes
+  useEffect(() => {
+    initialFetchDone.current = false;
+  }, [token?.md5]);
 
   // WebSocket for real-time updates (only on page 1, no search)
   useEffect(() => {
@@ -84,8 +90,20 @@ const RichList = ({ token, amm }) => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'initial' || msg.e === 'update') {
-          if (msg.holders) setRichList(msg.holders);
-          if (msg.summary) setSummary(msg.summary);
+          // Merge WS holders with existing to preserve fields WS doesn't send (balance24h, id)
+          if (msg.holders) {
+            setRichList(prev => {
+              if (!prev || prev.length === 0) return msg.holders;
+              const prevMap = new Map(prev.map(h => [h.account, h]));
+              return msg.holders.map((h, idx) => ({
+                ...prevMap.get(h.account),
+                ...h,
+                id: prevMap.get(h.account)?.id || idx + 1
+              }));
+            });
+          }
+          // Merge WS summary with existing to preserve fields WS doesn't send
+          if (msg.summary) setSummary(prev => prev ? { ...prev, ...msg.summary } : msg.summary);
           if (msg.total) {
             setTotalHolders(msg.total);
             setTotalPages(Math.ceil(msg.total / rowsPerPage));
@@ -104,11 +122,11 @@ const RichList = ({ token, amm }) => {
     };
   }, [token?.md5, mobileChecked, page, searchTerm, rowsPerPage]);
 
-  // HTTP fetch for pagination/search (skip when WS handles page 1)
+  // HTTP fetch for pagination/search (skip when WS handles page 1 after initial load)
   useEffect(() => {
     if (!mobileChecked) return;
-    // Skip HTTP fetch if WebSocket is connected and handles page 1 without search
-    if (page === 1 && !searchTerm && wsConnected) return;
+    // Skip HTTP fetch if WS connected AND initial fetch already done (for page 1 without search)
+    if (page === 1 && !searchTerm && wsConnected && initialFetchDone.current) return;
 
     const controller = new AbortController();
     let mounted = true;
@@ -133,10 +151,17 @@ const RichList = ({ token, amm }) => {
 
         if (data.result === 'success' && mounted) {
           setRichList(data.richList || []);
-          setSummary(data.summary || null);
+          // Only update summary if API returns it (preserve WS data otherwise)
+          if (data.summary) {
+            setSummary(data.summary);
+          }
           const actualHolders = data.length || data.richList?.length || 0;
           setTotalHolders(actualHolders);
           setTotalPages(Math.ceil((actualHolders || 100) / rowsPerPage));
+          // Mark initial fetch as done
+          if (page === 1 && !searchTerm) {
+            initialFetchDone.current = true;
+          }
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -283,20 +308,23 @@ const RichList = ({ token, amm }) => {
             { label: 'Top 20', value: summary.top20Hold },
             { label: 'Top 50', value: summary.top50Hold },
             { label: 'Top 100', value: summary.top100Hold }
-          ].map(({ label, value }) => (
-            <div key={label} className={cn(
-              'rounded-lg border px-3 py-2',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
-            )}>
-              <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
-              <div className={cn(
-                'text-[14px] font-medium',
-                value > 70 ? 'text-red-400' : value > 50 ? 'text-yellow-500' : isDark ? 'text-white' : 'text-gray-900'
+          ].map(({ label, value }) => {
+            const hasValue = value !== undefined && value !== null;
+            return (
+              <div key={label} className={cn(
+                'rounded-lg border px-3 py-2',
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
               )}>
-                {value}%
+                <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
+                <div className={cn(
+                  'text-[14px] font-medium',
+                  hasValue && value > 70 ? 'text-red-400' : hasValue && value > 50 ? 'text-yellow-500' : isDark ? 'text-white' : 'text-gray-900'
+                )}>
+                  {hasValue ? `${value}%` : '—'}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
