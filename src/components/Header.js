@@ -526,17 +526,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Star size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }] : [])
   ];
 
-  // Launchpads
-  const launchpadItems = [
-    { path: '/view/firstledger', name: 'FirstLedger', desc: 'Launch new tokens', icon: <ExternalLink size={16} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/view/magnetic-x', name: 'Magnetic X', desc: 'Token launchpad', icon: <Image src="/static/magneticx-logo.webp" alt="Magnetic X" width={16} height={16} className="object-contain" /> },
-    { path: '/view/xpmarket', name: 'XPmarket', desc: 'Token marketplace', icon: <XPMarketIcon size={16} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/view/aigentrun', name: 'aigent.run', desc: 'AI token platform', icon: <Image src="/static/aigentrun.gif?v=1" alt="Aigent.Run" width={16} height={16} unoptimized className="object-contain" /> },
-    { path: '/view/ledgermeme', name: 'LedgerMeme', desc: 'Meme token launcher', icon: <LedgerMemeIcon size={16} /> },
-    { path: '/view/horizon', name: 'Horizon', desc: 'Token launchpad', icon: <HorizonIcon size={16} /> },
-    { path: '/view/moonvalve', name: 'Moonvalve', desc: 'Token launchpad', icon: <MoonvalveIcon size={16} /> }
-  ];
-
   // NFT menu items
   const nftMenuItems = [
     { path: '/collections', name: 'Collections', desc: 'Browse NFT collections', icon: <PawPrint size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
@@ -697,31 +686,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </div>
                         </div>
                       ))}
-                    </div>
-                    {/* Launchpads Section */}
-                    <div className={cn('border-t px-3 py-2', isDark ? 'border-white/10' : 'border-gray-100')}>
-                      <p className={cn('mb-2 px-3 text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        Launchpads
-                      </p>
-                      <div className="grid grid-cols-2 gap-1">
-                        {launchpadItems.map((item) => (
-                          <div
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            className={cn(
-                              'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors duration-150',
-                              isActive(item.path)
-                                ? isDark ? 'bg-white/10' : 'bg-blue-50'
-                                : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
-                            )}
-                          >
-                            <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                              {item.icon}
-                            </div>
-                            <span className={cn('text-[13px]', isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 )}
@@ -1636,25 +1600,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{item.name}</span>
                           <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</span>
                         </div>
-                      </a>
-                    ))}
-                    <p className={cn('mt-2 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                      Launchpads
-                    </p>
-                    {launchpadItems.map((item) => (
-                      <a
-                        key={item.path}
-                        href={item.path}
-                        onClick={() => toggleDrawer(false)}
-                        className={cn(
-                          'flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition-colors duration-100',
-                          isActive(item.path)
-                            ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                            : isDark ? 'text-white/70 hover:bg-white/[0.05]' : 'text-gray-600 hover:bg-gray-50'
-                        )}
-                      >
-                        {item.icon}
-                        {item.name}
                       </a>
                     ))}
                   </div>

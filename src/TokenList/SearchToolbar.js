@@ -1,18 +1,10 @@
-import React, { useState, useCallback, useMemo, memo, useRef, useEffect, Fragment } from 'react';
+import React, { useState, useMemo, memo, useRef, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
-import { Flame, Gem, TrendingUp, Sparkles, Eye, Search, X, Star } from 'lucide-react';
-
-// Helper function
-function getTagValue(tags, tagName) {
-  if (!tags || tags.length < 1 || !tagName) return 0;
-  const idx = tags.indexOf(tagName);
-  if (idx < 0) return 0;
-  return idx + 1;
-}
+import { Search, X } from 'lucide-react';
 
 // Styled Components
 const Container = styled.div`
@@ -178,57 +170,6 @@ const Stack = styled.div`
   }
 `;
 
-const Button = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: ${(props) =>
-    props.variant === 'outlined' ? '1px solid rgba(59, 130, 246, 0.15)' : 'none'};
-  border-radius: 8px;
-  background: ${(props) => {
-    if (props.variant === 'contained') {
-      return props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.06)';
-    }
-    if (props.selected) return 'rgba(59, 130, 246, 0.08)';
-    return 'transparent';
-  }};
-  color: ${(props) => {
-    if (props.variant === 'contained') return props.isDark ? '#fff' : '#333';
-    if (props.selected) return '#3b82f6';
-    return 'inherit';
-  }};
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: ${(props) => (props.variant === 'contained' ? 500 : 400)};
-  text-transform: none;
-  font-family: inherit;
-  height: 36px;
-  min-width: ${(props) => props.minWidth || 'auto'};
-  transition: border-color 0.2s ease, background 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
-    color: #3b82f6;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  @media (max-width: 600px) {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    height: 30px;
-    gap: 3px;
-  }
-`;
-
 const StyledIconButton = styled.button`
   display: inline-flex;
   align-items: center;
@@ -238,8 +179,8 @@ const StyledIconButton = styled.button`
   padding: 0;
   border: none;
   border-radius: 8px;
-  background: ${(props) => (props.selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent')};
-  color: ${(props) => (props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'))};
+  background: transparent;
+  color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -314,48 +255,45 @@ const ButtonGroup = styled.div`
   }
 `;
 
-const Divider = styled.div`
-  width: 1px;
-  height: 16px;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  margin: 0 4px;
-  flex-shrink: 0;
-
-  @media (max-width: 600px) {
-    display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
-    margin: 0 2px;
-    height: 14px;
-  }
-`;
-
-const Chip = styled.button`
+const LaunchpadGroup = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 10px;
-  border: none;
+  gap: 2px;
+  padding: 3px 6px 3px 8px;
   border-radius: 6px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent'};
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
+  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  margin-left: 8px;
+`;
+
+const LaunchpadLabel = styled.span`
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)'};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+`;
+
+const LaunchpadChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.15)' : 'transparent'};
   color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
   white-space: nowrap;
-  height: 28px;
+  height: 20px;
   flex-shrink: 0;
   transition: all 0.15s ease;
 
   &:hover {
     background: rgba(59, 130, 246, 0.1);
     color: #3b82f6;
-  }
-
-  @media (max-width: 600px) {
-    padding: 0 8px;
-    font-size: 0.7rem;
-    height: 26px;
-    gap: 3px;
-    display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
 `;
 
@@ -511,45 +449,6 @@ const DrawerClose = styled.button`
   &:hover {
     border-color: ${props => props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)'};
     color: #4285f4;
-  }
-`;
-
-const Menu = styled.div`
-  position: fixed;
-  z-index: 1300;
-  display: ${props => props.open ? 'block' : 'none'};
-  top: ${props => props.top}px;
-  left: ${props => props.left}px;
-`;
-
-const MenuPaper = styled.div`
-  min-width: 130px;
-  border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(0,0,0,0.1)'};
-  background: ${props => props.isDark ? 'rgba(10,15,26,0.95)' : '#ffffff'};
-  overflow: hidden;
-  backdrop-filter: ${props => props.isDark ? 'blur(20px)' : 'none'};
-  padding: 4px;
-`;
-
-const MenuItem = styled.button`
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  font-size: 13px;
-  text-align: left;
-  cursor: pointer;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.85)' : '#333'};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: ${props => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)'};
-    color: #3b82f6;
   }
 `;
 
@@ -757,7 +656,6 @@ const SearchToolbar = memo(function SearchToolbar({
   const { darkMode } = useContext(AppContext);
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [gainersMenuAnchor, setGainersMenuAnchor] = useState(null);
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
@@ -982,137 +880,99 @@ const SearchToolbar = memo(function SearchToolbar({
         </TagsRow>
       )}
 
-      {/* Navigation buttons and chips - second row */}
+      {/* View controls - second row */}
       <Row spaceBetween>
         <RowContent>
-          <StyledIconButton
-            onClick={() => (window.location.href = '/watchlist')}
+          {/* All Tokens */}
+          <TagChip
+            onClick={() => (window.location.href = '/')}
+            selected={currentView === 'tokens'}
             darkMode={darkMode}
-            selected={router.pathname === '/watchlist'}
-            title="Watchlist"
-            aria-label="View watchlist"
           >
-            <Star size={16} />
-          </StyledIconButton>
+            All Tokens
+          </TagChip>
 
-          <ButtonGroup darkMode={darkMode}>
-            <button
-              className={currentView === 'tokens' ? 'selected' : ''}
-              onClick={() => (window.location.href = '/')}
-            >
-              Tokens
-            </button>
-            <button
-              className={router.pathname === '/view/firstledger' ? 'selected' : ''}
-              onClick={() => (window.location.href = '/view/firstledger')}
-            >
-              FirstLedger
-            </button>
-          </ButtonGroup>
-
-          <Divider darkMode={darkMode} />
+          {/* Launchpads group */}
+          <LaunchpadGroup darkMode={darkMode}>
+            <LaunchpadLabel darkMode={darkMode}>Launchpads</LaunchpadLabel>
+            {[
+              { slug: 'firstledger', name: 'FirstLedger' },
+              { slug: 'magnetic-x', name: 'Magnetic X' },
+              { slug: 'xpmarket', name: 'XPmarket' },
+              { slug: 'aigentrun', name: 'aigent.run' },
+              { slug: 'ledgermeme', name: 'LedgerMeme' },
+              { slug: 'horizon', name: 'Horizon' },
+              { slug: 'moonvalve', name: 'Moonvalve' }
+            ].map((lp) => (
+              <LaunchpadChip
+                key={lp.slug}
+                onClick={() => (window.location.href = `/view/${lp.slug}`)}
+                selected={router.query.tag === lp.slug}
+                darkMode={darkMode}
+              >
+                {lp.name}
+              </LaunchpadChip>
+            ))}
+          </LaunchpadGroup>
 
           {/* Period selector for gainers or price change sorting */}
           {(currentView === 'gainers' ||
             ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
-            <>
-              <ButtonGroup>
-                <button
-                  className={currentPeriod === '5m' ? 'selected' : ''}
-                  onClick={() => {
-                    if (currentView === 'gainers') {
-                      window.location.href = '/gainers/5m';
-                    } else {
-                      setOrderBy('pro5m');
-                      setSync((prev) => prev + 1);
-                    }
-                  }}
-                >
-                  5m
-                </button>
-                <button
-                  className={currentPeriod === '1h' ? 'selected' : ''}
-                  onClick={() => {
-                    if (currentView === 'gainers') {
-                      window.location.href = '/gainers/1h';
-                    } else {
-                      setOrderBy('pro1h');
-                      setSync((prev) => prev + 1);
-                    }
-                  }}
-                >
-                  1h
-                </button>
-                <button
-                  className={currentPeriod === '24h' ? 'selected' : ''}
-                  onClick={() => {
-                    if (currentView === 'gainers') {
-                      window.location.href = '/gainers/24h';
-                    } else {
-                      setOrderBy('pro24h');
-                      setSync((prev) => prev + 1);
-                    }
-                  }}
-                >
-                  24h
-                </button>
-                <button
-                  className={currentPeriod === '7d' ? 'selected' : ''}
-                  onClick={() => {
-                    if (currentView === 'gainers') {
-                      window.location.href = '/gainers/7d';
-                    } else {
-                      setOrderBy('pro7d');
-                      setSync((prev) => prev + 1);
-                    }
-                  }}
-                >
-                  7d
-                </button>
-              </ButtonGroup>
-              <Divider darkMode={darkMode} />
-            </>
+            <ButtonGroup darkMode={darkMode}>
+              <button
+                className={currentPeriod === '5m' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/5m';
+                  } else {
+                    setOrderBy('pro5m');
+                    setSync((prev) => prev + 1);
+                  }
+                }}
+              >
+                5m
+              </button>
+              <button
+                className={currentPeriod === '1h' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/1h';
+                  } else {
+                    setOrderBy('pro1h');
+                    setSync((prev) => prev + 1);
+                  }
+                }}
+              >
+                1h
+              </button>
+              <button
+                className={currentPeriod === '24h' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/24h';
+                  } else {
+                    setOrderBy('pro24h');
+                    setSync((prev) => prev + 1);
+                  }
+                }}
+              >
+                24h
+              </button>
+              <button
+                className={currentPeriod === '7d' ? 'selected' : ''}
+                onClick={() => {
+                  if (currentView === 'gainers') {
+                    window.location.href = '/gainers/7d';
+                  } else {
+                    setOrderBy('pro7d');
+                    setSync((prev) => prev + 1);
+                  }
+                }}
+              >
+                7d
+              </button>
+            </ButtonGroup>
           )}
-
-          <Chip
-            onClick={() => (window.location.href = '/trending')}
-            selected={currentView === 'trending'}
-            darkMode={darkMode}
-          >
-            <Flame size={12} /> Trending
-          </Chip>
-
-          <Chip
-            onClick={() => (window.location.href = '/spotlight')}
-            selected={currentView === 'spotlight'}
-            darkMode={darkMode}
-          >
-            <Gem size={12} /> Spotlight
-          </Chip>
-
-          <Chip
-            onClick={(e) => setGainersMenuAnchor(e.currentTarget)}
-            selected={currentView === 'gainers'}
-            darkMode={darkMode}
-          >
-            <TrendingUp size={12} /> Gainers
-          </Chip>
-
-          <Chip
-            onClick={() => (window.location.href = '/new')}
-            selected={currentView === 'new'}
-            darkMode={darkMode}
-          >
-            <Sparkles size={12} /> New
-          </Chip>
-
-          <Chip
-            onClick={() => (window.location.href = '/most-viewed')}
-            selected={currentView === 'most-viewed'}
-            darkMode={darkMode}
-          >
-            <Eye size={12} /> Most Viewed
-          </Chip>
         </RowContent>
 
         {/* View mode and rows selectors on the right */}
@@ -1197,69 +1057,6 @@ const SearchToolbar = memo(function SearchToolbar({
           </>
         </Stack>
       </Row>
-
-      {/* Gainers Period Menu */}
-      {Boolean(gainersMenuAnchor) && (
-        <>
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 1299,
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)'
-            }}
-            onClick={() => setGainersMenuAnchor(null)}
-          />
-          <Menu
-            open={Boolean(gainersMenuAnchor)}
-            top={gainersMenuAnchor?.getBoundingClientRect().bottom + 4}
-            left={gainersMenuAnchor?.getBoundingClientRect().left}
-          >
-            <MenuPaper isDark={darkMode}>
-              <MenuItem
-                isDark={darkMode}
-                onClick={() => {
-                  window.location.href = '/gainers/5m';
-                  setGainersMenuAnchor(null);
-                }}
-              >
-                5 Minutes
-              </MenuItem>
-              <MenuItem
-                isDark={darkMode}
-                onClick={() => {
-                  window.location.href = '/gainers/1h';
-                  setGainersMenuAnchor(null);
-                }}
-              >
-                1 Hour
-              </MenuItem>
-              <MenuItem
-                isDark={darkMode}
-                onClick={() => {
-                  window.location.href = '/gainers/24h';
-                  setGainersMenuAnchor(null);
-                }}
-              >
-                24 Hours
-              </MenuItem>
-              <MenuItem
-                isDark={darkMode}
-                onClick={() => {
-                  window.location.href = '/gainers/7d';
-                  setGainersMenuAnchor(null);
-                }}
-              >
-                7 Days
-              </MenuItem>
-            </MenuPaper>
-          </Menu>
-        </>
-      )}
 
     </Container>
 
