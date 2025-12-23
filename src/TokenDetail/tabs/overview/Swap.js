@@ -649,13 +649,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const isXRPTokenPage = token?.currency === 'XRP';
   const effectiveToken = isXRPTokenPage ? RLUSD_TOKEN : token;
 
-  const [pair, setPair] = useState({
-    curr1: XRP_TOKEN,
-    curr2: effectiveToken
-  });
+  const [revert, setRevert] = useState(false);
+  const [token1, setToken1] = useState(XRP_TOKEN);
+  const [token2, setToken2] = useState(effectiveToken);
 
-  const curr1 = pair.curr1;
-  const curr2 = pair.curr2;
+  // Derive curr1/curr2 directly to avoid extra render cycles
+  const curr1 = revert ? token2 : token1;
+  const curr2 = revert ? token1 : token2;
 
   const BASE_URL = 'https://api.xrpl.to/api';
   const QR_BLUR = '/static/blurqr.webp';
@@ -671,10 +671,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-  const [revert, setRevert] = useState(false);
-
-  const [token1, setToken1] = useState(curr1);
-  const [token2, setToken2] = useState(effectiveToken);
 
   const [amount1, setAmount1] = useState('');
   const [amount2, setAmount2] = useState('');
@@ -1060,14 +1056,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         currency: rlusdToken.currency || 'USD',
         issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
       });
-      setPair(prev => ({
-        ...prev,
-        curr2: {
-          ...rlusdToken,
-          currency: rlusdToken.currency || 'USD',
-          issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
-        }
-      }));
     }
 
     fetchRLUSD();
@@ -1080,8 +1068,16 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const token1Md5 = token1?.md5;
   const token2Md5 = token2?.md5;
 
+  // Only fetch orderbook when limit order tab is active
+  const shouldFetchOrderbook = orderType === 'limit';
+
   useEffect(() => {
+    if (!shouldFetchOrderbook) return;
     if (!token1Md5 || !token2Md5) return;
+    // Ensure tokens have required currency (and issuer for non-XRP)
+    if (!token1?.currency || !token2?.currency) return;
+    if (token1.currency !== 'XRP' && !token1.issuer) return;
+    if (token2.currency !== 'XRP' && !token2.issuer) return;
     let mounted = true;
 
     const pairKey = `swap-ob-${token1Md5}-${token2Md5}`;
@@ -1094,8 +1090,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         quote_currency: token1.currency,
         limit: '60'
       });
-      if (token2.currency !== 'XRP' && token2.issuer) params.append('base_issuer', token2.issuer);
-      if (token1.currency !== 'XRP' && token1.issuer) params.append('quote_issuer', token1.issuer);
+      if (token2.currency !== 'XRP') params.append('base_issuer', token2.issuer);
+      if (token1.currency !== 'XRP') params.append('quote_issuer', token1.issuer);
 
       // Reuse in-flight request (StrictMode protection) - only for initial load
       if (!isUpdate && fetchInFlight.has(pairKey)) {
@@ -1149,7 +1145,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       clearInterval(timer);
       fetchInFlight.delete(pairKey);
     };
-  }, [token1Md5, token2Md5]);
+  }, [token1Md5, token2Md5, shouldFetchOrderbook]);
 
   useEffect(() => {
     if (!onOrderBookData) return;
@@ -1494,14 +1490,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     return () => { mounted = false; fetchInFlight.delete(pairKey); };
   }, [token1Md5, token2Md5, token1, token2]);
-
-  useEffect(() => {
-    const pair = {
-      curr1: revert ? token2 : token1,
-      curr2: revert ? token1 : token2
-    };
-    setPair(pair);
-  }, [revert, token1, token2]);
 
   // Legacy Xaman polling code removed - feature disabled
 

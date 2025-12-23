@@ -129,7 +129,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
           : isNft
             ? `https://s1.xrpl.to/nft/${tab.thumbnail || tab.slug}`
             : isCollection
-              ? `https://s1.xrpl.to/nft-collection/${tab.logoImage || tab.slug}`
+              ? (tab.logoImage ? `https://s1.xrpl.to/nft-collection/${tab.logoImage}` : '/static/alt.webp')
               : `https://s1.xrpl.to/token/${tab.md5}`;
         const label = isAccount ? tab.name : isNft ? tab.name : isCollection ? tab.name : `${tab.name}/XRP`;
 

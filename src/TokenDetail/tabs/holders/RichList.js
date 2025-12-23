@@ -57,15 +57,9 @@ const RichList = ({ token, amm }) => {
   const [searchInput, setSearchInput] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef(null);
-  const initialFetchDone = useRef(false);
   const rowsPerPage = isMobile ? 10 : 20;
 
   const ammAccount = amm || token?.AMM;
-
-  // Reset initial fetch flag when token changes
-  useEffect(() => {
-    initialFetchDone.current = false;
-  }, [token?.md5]);
 
   // WebSocket for real-time updates (only on page 1, no search)
   useEffect(() => {
@@ -90,20 +84,8 @@ const RichList = ({ token, amm }) => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'initial' || msg.e === 'update') {
-          // Merge WS holders with existing to preserve fields WS doesn't send (balance24h, id)
-          if (msg.holders) {
-            setRichList(prev => {
-              if (!prev || prev.length === 0) return msg.holders;
-              const prevMap = new Map(prev.map(h => [h.account, h]));
-              return msg.holders.map((h, idx) => ({
-                ...prevMap.get(h.account),
-                ...h,
-                id: prevMap.get(h.account)?.id || idx + 1
-              }));
-            });
-          }
-          // Merge WS summary with existing to preserve fields WS doesn't send
-          if (msg.summary) setSummary(prev => prev ? { ...prev, ...msg.summary } : msg.summary);
+          if (msg.holders) setRichList(msg.holders);
+          if (msg.summary) setSummary(msg.summary);
           if (msg.total) {
             setTotalHolders(msg.total);
             setTotalPages(Math.ceil(msg.total / rowsPerPage));
@@ -122,11 +104,11 @@ const RichList = ({ token, amm }) => {
     };
   }, [token?.md5, mobileChecked, page, searchTerm, rowsPerPage]);
 
-  // HTTP fetch for pagination/search (skip when WS handles page 1 after initial load)
+  // HTTP fetch for pagination/search (skip when WS handles page 1)
   useEffect(() => {
     if (!mobileChecked) return;
-    // Skip HTTP fetch if WS connected AND initial fetch already done (for page 1 without search)
-    if (page === 1 && !searchTerm && wsConnected && initialFetchDone.current) return;
+    // Skip HTTP fetch if WebSocket is connected and handles page 1 without search
+    if (page === 1 && !searchTerm && wsConnected) return;
 
     const controller = new AbortController();
     let mounted = true;
@@ -151,17 +133,10 @@ const RichList = ({ token, amm }) => {
 
         if (data.result === 'success' && mounted) {
           setRichList(data.richList || []);
-          // Only update summary if API returns it (preserve WS data otherwise)
-          if (data.summary) {
-            setSummary(data.summary);
-          }
+          if (data.summary) setSummary(data.summary);
           const actualHolders = data.length || data.richList?.length || 0;
           setTotalHolders(actualHolders);
           setTotalPages(Math.ceil((actualHolders || 100) / rowsPerPage));
-          // Mark initial fetch as done
-          if (page === 1 && !searchTerm) {
-            initialFetchDone.current = true;
-          }
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
