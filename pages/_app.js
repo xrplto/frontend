@@ -262,6 +262,10 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
           }
         `}</style>
         <Head>
+          {/* Preconnect to image CDN for faster loading */}
+          <link rel="preconnect" href="https://s1.xrpl.to" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://s1.xrpl.to" />
+          <link rel="preconnect" href="https://api.xrpl.to" crossOrigin="anonymous" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta
             name="viewport"

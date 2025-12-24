@@ -259,8 +259,8 @@ const NFTSkeleton = React.memo(({ isDark }) => (
 ));
 
 // Ultra-light NFT Card - no state, no transitions, minimal DOM
-const NFTCard = React.memo(({ nft, isDark }) => {
-  const { cost, costb, meta, NFTokenID, rarity_rank } = nft;
+const NFTCard = React.memo(({ nft, isDark, priority }) => {
+  const { cost, meta, NFTokenID, rarity_rank } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = meta?.name || meta?.Name || 'No Name';
   const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
@@ -270,12 +270,21 @@ const NFTCard = React.memo(({ nft, isDark }) => {
       <div className="rounded-xl overflow-hidden">
         <div className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
           {imgUrl ? (
-            <img src={imgUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+            <Image
+              src={imgUrl}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 10vw"
+              className="object-cover"
+              loading={priority ? 'eager' : 'lazy'}
+              priority={priority}
+              unoptimized
+            />
           ) : (
             <span className="absolute inset-0 flex items-center justify-center text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>No image</span>
           )}
           {rarity_rank > 0 && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white">#{rarity_rank}</div>
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white z-10">#{rarity_rank}</div>
           )}
         </div>
         <div className="px-1 pt-1.5 pb-1">
@@ -285,7 +294,7 @@ const NFTCard = React.memo(({ nft, isDark }) => {
       </div>
     </a>
   );
-}, (prev, next) => prev.nft.NFTokenID === next.nft.NFTokenID);
+}, (prev, next) => prev.nft.NFTokenID === next.nft.NFTokenID && prev.priority === next.priority);
 
 // Virtualized Grid - only renders visible items
 const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, isDark }) => {
@@ -343,7 +352,9 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
     <div ref={containerRef} style={{ minHeight: totalHeight, position: 'relative' }}>
       <div style={{ paddingTop: topPadding }}>
         <div className={cn('grid gap-3', gridClass)}>
-          {visibleNfts.map((nft) => <NFTCard key={nft.NFTokenID} nft={nft} isDark={isDark} />)}
+          {visibleNfts.map((nft, i) => (
+            <NFTCard key={nft.NFTokenID} nft={nft} isDark={isDark} priority={visibleRange.start + i < 12} />
+          ))}
         </div>
       </div>
       {hasMore && <div ref={sentinelRef} className="h-10" />}

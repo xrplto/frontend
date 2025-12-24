@@ -49,6 +49,16 @@ const config = {
         protocol: 'https',
         hostname: 's1.xrpnft.com',
         pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.io',
+        pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.filebase.io',
+        pathname: '/**'
       }
     ]
   },
@@ -230,7 +240,14 @@ const config = {
       'axios',
       'xrpl',
       'echarts',
-      'lightweight-charts'
+      'lightweight-charts',
+      '@emotion/react',
+      '@emotion/styled',
+      'recharts',
+      'swiper',
+      'react-share',
+      'highcharts',
+      'apexcharts'
     ]
   },
   turbopack: {
