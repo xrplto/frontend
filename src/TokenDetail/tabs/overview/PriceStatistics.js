@@ -168,7 +168,7 @@ const currencySymbols = {
 
 // ----------------------------------------------------------------------
 
-export default function PriceStatistics({ token, isDark = false }) {
+export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const [isMobile, setIsMobile] = useState(false);
@@ -1526,6 +1526,56 @@ export default function PriceStatistics({ token, isDark = false }) {
           <Stack direction="row" alignItems="center" style={{ flexWrap: 'wrap', gap: '8px' }}>
             <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 4 : 6} isDark={isDark} />
             <CompactSocialLinks social={social} size="small" isDark={isDark} />
+          </Stack>
+        </Box>
+      )}
+
+      {/* Linked NFT Collections */}
+      {linkedCollections?.length > 0 && (
+        <Box style={{ padding: '10px 14px 14px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+          <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Layers size={12} /> NFT Collections
+          </Typography>
+          <Stack style={{ gap: '8px' }}>
+            {linkedCollections.map((col) => (
+              <Link
+                key={col.id}
+                href={`/collection/${col.slug}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+                  textDecoration: 'none',
+                  transition: 'border-color 0.15s'
+                }}
+              >
+                <img
+                  src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
+                  alt={col.name}
+                  style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }}
+                  onError={(e) => (e.target.src = '/static/alt.webp')}
+                />
+                <Stack style={{ flex: 1, minWidth: 0 }}>
+                  <Typography style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {col.name}
+                  </Typography>
+                  <Stack direction="row" style={{ gap: '8px' }}>
+                    <Typography style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                      {fNumber(col.items)} items
+                    </Typography>
+                    {col.floor?.amount > 0 && (
+                      <Typography style={{ fontSize: '10px', color: '#3b82f6' }}>
+                        Floor: {fNumber(col.floor.amount)} XRP
+                      </Typography>
+                    )}
+                  </Stack>
+                </Stack>
+              </Link>
+            ))}
           </Stack>
         </Box>
       )}

@@ -149,7 +149,7 @@ const Overview = memo(
           <TokenSummary token={token} />
           <Swap token={token} onOrderBookToggle={onOrderBookToggle} orderBookOpen={orderBookOpen} onOrderBookData={onOrderBookData} />
           <PriceChart token={token} />
-          <PriceStatistics token={token} isDark={isDark} />
+          <PriceStatistics token={token} isDark={isDark} linkedCollections={token.linkedCollections} />
           <TradingHistory tokenId={token.md5} amm={token.AMM} token={token} pairs={pairs} onTransactionClick={onTransactionClick} isDark={isDark} isMobile={true} />
           <TrendingTokens />
           <Description token={token} showEditor={showEditor} setShowEditor={setShowEditor} description={description} onApplyDescription={onApplyDescription} isDark={isDark} mdEditor={showEditor ? <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={cn("w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary", isDark ? "border-white/20 bg-white/5 text-white placeholder-white/40" : "border-gray-300 bg-white text-gray-900 placeholder-gray-400")} placeholder="Enter description..." /> : null} />
@@ -158,16 +158,16 @@ const Overview = memo(
     }
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {/* Main content row */}
-        <div className="flex flex-col md:flex-row items-stretch gap-2">
-          {/* Left column: Chart + Trading History */}
+        <div className="flex flex-col md:flex-row items-stretch gap-2 mb-2">
+          {/* Left column: Chart + Trading History + Trending */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
             <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
               <PriceChart token={token} />
             </section>
-            <section aria-label="Trading History" className="flex-1" style={{ position: 'relative', zIndex: 0 }}>
+            <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
               <h2 className="sr-only">Trading History</h2>
               <TradingHistory
                 tokenId={token.md5}
@@ -179,10 +179,11 @@ const Overview = memo(
                 isMobile={isTablet}
               />
             </section>
+            <TrendingTokens horizontal />
           </div>
 
           {/* Right sidebar: TokenSummary, Swap, Stats, Description */}
-          <aside className="w-full md:w-[520px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
+          <aside className="w-full md:w-[560px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
             <TokenSummary token={token} />
             <h2 className="sr-only">Swap</h2>
             <Swap
@@ -192,7 +193,7 @@ const Overview = memo(
               onOrderBookData={onOrderBookData}
             />
             <h2 className="sr-only">Price Statistics</h2>
-            <PriceStatistics token={token} isDark={isDark} />
+            <PriceStatistics token={token} isDark={isDark} linkedCollections={token.linkedCollections} />
             <Description
               token={token}
               showEditor={showEditor}
@@ -218,9 +219,6 @@ const Overview = memo(
             />
           </aside>
         </div>
-
-        {/* Trending Tokens - Full width horizontal section */}
-        <TrendingTokens horizontal />
       </div>
     );
   }

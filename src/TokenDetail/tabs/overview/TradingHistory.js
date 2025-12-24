@@ -2422,7 +2422,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   );
 
   return (
-    <Stack spacing={1} style={{ width: '100%', position: 'relative', zIndex: 0 }}>
+    <Stack spacing={1} style={{ width: '100%', flex: 1, position: 'relative', zIndex: 0 }}>
       <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
           <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}><Activity size={14} /><span>Trades</span></Tab>
@@ -2603,7 +2603,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           )}
 
           {trades.length === 0 ? emptyState : (
-            <Stack spacing={0}>
+            <Stack spacing={0} style={{ flex: 1, overflow: 'auto' }}>
               {renderedTrades}
             </Stack>
           )}

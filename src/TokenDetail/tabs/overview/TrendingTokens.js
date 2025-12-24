@@ -400,7 +400,7 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
   // Horizontal layout - grid of token cards
   if (horizontal && !isMobile) {
     return (
-      <Container isDark={darkMode} role="region" aria-label="Trending Tokens" style={{ marginBottom: 0 }}>
+      <Container isDark={darkMode} role="region" aria-label="Trending Tokens" style={{ marginTop: '-8px', marginBottom: 0 }}>
         {/* Header */}
         <Box
           style={{
@@ -430,7 +430,7 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
             padding: '0 8px 8px'
           }}
         >
-          {trendingList.slice(0, 10).map((token, index) => {
+          {trendingList.slice(0, 15).map((token, index) => {
             const rank = index + 1;
             const priceChange = token.pro24h || 0;
             const isPositive = priceChange >= 0;
