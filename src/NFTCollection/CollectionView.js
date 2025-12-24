@@ -1638,6 +1638,31 @@ export default function CollectionView({ collection }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </a>
             )}
+            {/* Related Token - Prominent Display */}
+            {linkedToken && (
+              <Link
+                href={`/token/${linkedToken}`}
+                className={cn(
+                  "flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ml-2",
+                  isDark
+                    ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                    : "bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100"
+                )}
+              >
+                <img
+                  src={`https://s1.xrpl.to/token/${linkedToken}`}
+                  alt=""
+                  className="w-4 h-4 rounded-full"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+                <span>Related Token</span>
+                {tokenMatchType && (
+                  <span className={cn("px-1 py-0.5 rounded text-[9px]", isDark ? "bg-white/10 text-white/60" : "bg-blue-100 text-blue-500")}>
+                    {tokenMatchType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </span>
+                )}
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-2 ml-auto">
             {/* Info */}

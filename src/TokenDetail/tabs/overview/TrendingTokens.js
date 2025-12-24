@@ -243,7 +243,7 @@ const Alert = styled('div')(({ severity, isDark }) => ({
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-const TrendingTokens = ({ horizontal = false }) => {
+const TrendingTokens = ({ horizontal = false, token = null }) => {
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -254,31 +254,40 @@ const TrendingTokens = ({ horizontal = false }) => {
   const [error, setError] = useState(null);
   const fetchedRef = useRef(false);
 
+  // Get primary tag from current token for related tokens
+  const primaryTag = token?.tags?.[0] || '';
+
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
 
-    const getTrendingTokens = async () => {
+    const getRelatedTokens = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch tokens with same tag, fall back to trending if no tag
+        const tagParam = primaryTag ? `&tags=${encodeURIComponent(primaryTag)}` : '';
         const res = await axios.get(
-          `${BASE_URL}/tokens?start=0&limit=15&sortBy=trendingScore&sortType=desc&filter=&tags=&showNew=false&showSlug=false`
+          `${BASE_URL}/tokens?start=0&limit=16&sortBy=trendingScore&sortType=desc&filter=${tagParam}&showNew=false&showSlug=false`
         );
         if (res.status === 200 && res.data && res.data.tokens) {
-          setTrendingList(res.data.tokens);
+          // Filter out current token from results
+          const filtered = token?.md5
+            ? res.data.tokens.filter(t => t.md5 !== token.md5)
+            : res.data.tokens;
+          setTrendingList(filtered.slice(0, 15));
         } else {
-          setError('No trending tokens available');
+          setError('No related tokens available');
         }
       } catch (err) {
-        console.error('Error fetching trending tokens:', err);
-        setError('Failed to load trending tokens');
+        console.error('Error fetching related tokens:', err);
+        setError('Failed to load related tokens');
       } finally {
         setLoading(false);
       }
     };
-    getTrendingTokens();
-  }, []);
+    getRelatedTokens();
+  }, [primaryTag, token?.md5]);
 
   // Memoize formatting functions to avoid recalculation on every render
   const formatPrice = useMemo(() => {
