@@ -8,7 +8,6 @@ import React, {
   createContext
 } from 'react';
 import axios from 'axios';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -66,15 +65,6 @@ const debounce = (func, delay) => {
   };
 };
 
-// Lazy load heavy components
-const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex justify-center py-4">
-      <Loader2 className="animate-spin text-primary" size={30} />
-    </div>
-  )
-});
 
 // Inline Tab Components
 const TabContextProvider = createContext();
@@ -296,6 +286,74 @@ const NFTCard = React.memo(({ nft, isDark }) => {
     </a>
   );
 }, (prev, next) => prev.nft.NFTokenID === next.nft.NFTokenID);
+
+// Virtualized Grid - only renders visible items
+const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, isDark }) => {
+  const containerRef = useRef(null);
+  const sentinelRef = useRef(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 60 });
+  const ITEM_HEIGHT = 180; // Approximate card height
+  const BUFFER = 24; // Extra items to render above/below
+
+  // Load more when sentinel is visible
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting && !loading) onLoadMore(); },
+      { rootMargin: '200px' }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, onLoadMore]);
+
+  // Update visible range on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const scrollTop = window.scrollY - (containerRef.current.offsetTop || 0);
+      const viewportHeight = window.innerHeight;
+      const rowHeight = ITEM_HEIGHT;
+      const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - BUFFER / gridCols);
+      const endRow = Math.ceil((scrollTop + viewportHeight) / rowHeight) + BUFFER / gridCols;
+      const start = Math.max(0, startRow * gridCols);
+      const end = Math.min(nfts.length, endRow * gridCols);
+      setVisibleRange(prev => (prev.start === start && prev.end === end) ? prev : { start, end });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [nfts.length, gridCols]);
+
+  const gridClass = GRID_OPTIONS.find(o => o.value === gridCols)?.cols || 'grid-cols-6';
+  const totalRows = Math.ceil(nfts.length / gridCols);
+  const totalHeight = totalRows * ITEM_HEIGHT;
+
+  if (loading && nfts.length === 0) {
+    return (
+      <div className={cn('grid gap-3', gridClass)}>
+        {Array.from({ length: gridCols * 3 }).map((_, i) => <NFTSkeleton key={i} isDark={isDark} />)}
+      </div>
+    );
+  }
+
+  const visibleNfts = nfts.slice(visibleRange.start, visibleRange.end);
+  const topPadding = Math.floor(visibleRange.start / gridCols) * ITEM_HEIGHT;
+
+  return (
+    <div ref={containerRef} style={{ minHeight: totalHeight, position: 'relative' }}>
+      <div style={{ paddingTop: topPadding }}>
+        <div className={cn('grid gap-3', gridClass)}>
+          {visibleNfts.map((nft) => <NFTCard key={nft.NFTokenID} nft={nft} isDark={isDark} />)}
+        </div>
+      </div>
+      {hasMore && <div ref={sentinelRef} className="h-10" />}
+      {loading && <div className="flex justify-center py-4"><Loader2 className="animate-spin text-primary" size={20} /></div>}
+      {!hasMore && nfts.length > 0 && (
+        <p className={cn('text-center py-6 text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>End of collection</p>
+      )}
+    </div>
+  );
+});
 
 // NFT Grid Component
 const NFTGrid = React.memo(({ collection, isDark }) => {
@@ -640,31 +698,15 @@ const NFTGrid = React.memo(({ collection, isDark }) => {
         )}
       </div>
 
-      {/* NFT Grid */}
-      <InfiniteScroll
-        dataLength={nfts.length}
-        next={() => !loading && setPage((prev) => prev + 1)}
+      {/* Virtualized NFT Grid */}
+      <VirtualGrid
+        nfts={nfts}
+        loading={loading}
         hasMore={hasMore}
-        scrollThreshold="200px"
-        style={{ overflow: 'visible' }}
-        loader={<div className="flex justify-center py-4"><Loader2 className="animate-spin text-primary" size={20} /></div>}
-        endMessage={
-          nfts.length > 0 && (
-            <div className="text-center py-6">
-              <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>End of collection</p>
-            </div>
-          )
-        }
-      >
-        <div className={cn('grid gap-3', GRID_OPTIONS.find(o => o.value === gridCols)?.cols || 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7')}>
-          {loading && nfts.length === 0
-            ? Array.from({ length: gridCols * 3 }).map((_, i) => <NFTSkeleton key={`skeleton-${i}`} isDark={isDark} />)
-            : nfts.map((nft) => (
-                <NFTCard key={nft.NFTokenID} nft={nft} isDark={isDark} />
-              ))
-          }
-        </div>
-      </InfiniteScroll>
+        onLoadMore={() => !loading && setPage((prev) => prev + 1)}
+        gridCols={gridCols}
+        isDark={isDark}
+      />
     </div>
   );
 }, (prev, next) => {
