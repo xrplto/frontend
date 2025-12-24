@@ -725,6 +725,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     let zoomCheckTimeout;
     let loadMoreTimeout;
+    let stateUpdateTimeout;
 
     // Subscribe and store for cleanup - optimized to avoid re-renders during zoom
     const rangeUnsubscribe = chart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
@@ -744,11 +745,12 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         const shouldPauseUpdates = isScrolledRight;
 
-        // Only update ref, avoid setState during active zooming
+        // Only update ref during scroll - defer setState until scroll settles
         if (shouldPauseUpdates !== isUserZoomedRef.current) {
           isUserZoomedRef.current = shouldPauseUpdates;
-          // Batch state update with longer delay to avoid re-render during zoom
-          setTimeout(() => setIsUserZoomed(shouldPauseUpdates), 200);
+          // Single deferred state update - clears previous to prevent stacking
+          clearTimeout(stateUpdateTimeout);
+          stateUpdateTimeout = setTimeout(() => setIsUserZoomed(shouldPauseUpdates), 600);
         }
 
         // Use ref to avoid stale closure
@@ -760,7 +762,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             }
           }, 500);
         }
-      }, 150);
+      }, 200);
     });
 
     const toolTip = document.createElement('div');
@@ -847,13 +849,13 @@ const PriceChartAdvanced = memo(({ token }) => {
             ${candle.top10 !== undefined ? sep + row('Top 10', candle.top10.toFixed(1) + '%') + row('Top 20', candle.top20.toFixed(1) + '%') + row('Top 50', candle.top50.toFixed(1) + '%') : ''}`;
         }
 
-        toolTip.innerHTML = ohlcData;
-        toolTip.style.display = 'block';
         const tipWidth = isMobile ? 115 : 130;
-        toolTip.style.left = Math.max(0, Math.min(chartContainerRef.current.clientWidth - tipWidth, param.point.x - 50)) + 'px';
-        // Dynamic vertical positioning
+        const leftPos = Math.max(0, Math.min(chartContainerRef.current.clientWidth - tipWidth, param.point.x - 50));
         const yPos = param.point.y > chartContainerRef.current.clientHeight / 2 ? 8 : param.point.y + 20;
-        toolTip.style.top = yPos + 'px';
+
+        // Batch DOM updates to reduce layout thrashing
+        toolTip.innerHTML = ohlcData;
+        Object.assign(toolTip.style, { display: 'block', left: leftPos + 'px', top: yPos + 'px' });
       });
     });
 
@@ -936,11 +938,14 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     if (chartContainerRef.current) {
       resizeObserver.observe(chartContainerRef.current);
+      // Passive wheel listener for smoother scroll performance
+      chartContainerRef.current.addEventListener('wheel', () => {}, { passive: true });
     }
 
     return () => {
       clearTimeout(zoomCheckTimeout);
       clearTimeout(loadMoreTimeout);
+      clearTimeout(stateUpdateTimeout);
       clearTimeout(resizeTimeout);
       resizeObserver.disconnect();
 
