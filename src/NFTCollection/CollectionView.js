@@ -298,11 +298,9 @@ const NFTCard = React.memo(({ nft, isDark }) => {
 }, (prev, next) => prev.nft.NFTokenID === next.nft.NFTokenID);
 
 // NFT Grid Component
-const NFTGrid = React.memo(({ collection }) => {
+const NFTGrid = React.memo(({ collection, isDark }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const router = useRouter();
-  const { themeName } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
   const dropdownRef = useRef(null);
 
   const slug = collection?.collection?.slug || collection?.slug;
@@ -333,13 +331,15 @@ const NFTGrid = React.memo(({ collection }) => {
     localStorage.setItem('nft_grid_cols', gridCols.toString());
   }, [gridCols]);
 
-  // Fetch traits for filtering
+  // Fetch traits for filtering (limit to useful traits with <100 values)
   useEffect(() => {
     if (!slug) return;
     axios.get(`${BASE_URL}/nft/collections/${slug}/traits`)
       .then(res => {
         if (res.data?.traits) {
-          const formatted = res.data.traits.map(t => ({
+          // Skip traits with too many values (performance killer)
+          const usableTraits = res.data.traits.filter(t => t.values.length <= 100);
+          const formatted = usableTraits.slice(0, 10).map(t => ({
             title: t.type,
             items: t.values.reduce((acc, v) => ({ ...acc, [v.value]: { count: v.count } }), {})
           }));
@@ -440,7 +440,12 @@ const NFTGrid = React.memo(({ collection }) => {
         const pagination = res.data.pagination;
         setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 48);
         setTotalCount(pagination?.total || 0);
-        setNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
+        setNfts(prev => {
+          if (page === 0) return newNfts;
+          const existingIds = new Set(prev.map(n => n.NFTokenID));
+          const unique = newNfts.filter(n => !existingIds.has(n.NFTokenID));
+          return [...prev, ...unique];
+        });
 
         // Prefetch first 12 images (skip empty URLs)
         newNfts.slice(0, 12).forEach(nft => {
@@ -662,6 +667,10 @@ const NFTGrid = React.memo(({ collection }) => {
       </InfiniteScroll>
     </div>
   );
+}, (prev, next) => {
+  const prevSlug = prev.collection?.collection?.slug || prev.collection?.slug;
+  const nextSlug = next.collection?.collection?.slug || next.collection?.slug;
+  return prevSlug === nextSlug && prev.isDark === next.isDark;
 });
 
 // Collection Card Component
@@ -1782,7 +1791,7 @@ export default function CollectionView({ collection }) {
           </div>
 
           <TabPanel value="tab-nfts" className="px-2.5 pb-2.5">
-            <NFTGrid collection={collection} />
+            <NFTGrid collection={collection} isDark={isDark} />
           </TabPanel>
           <TabPanel value="tab-holders" className="px-2.5 pb-2.5">
             <HoldersTab slug={slug} />

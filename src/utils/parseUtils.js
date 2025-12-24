@@ -477,7 +477,7 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
 
   // type is usually requested at page for og:*, so if no type requested showing no image
   if (!type) {
-    return '/static/nft_no_image.webp';
+    return '';
   }
 
   return '';
