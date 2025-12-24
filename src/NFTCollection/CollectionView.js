@@ -268,136 +268,40 @@ const NFTSkeleton = React.memo(({ isDark }) => (
   </div>
 ));
 
-// NFT Card Component - Matches watchlist card style
-const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike }) => {
-  const { themeName, accountProfile } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
-  const isAdmin = accountProfile?.admin;
-  const [loadingImg, setLoadingImg] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [liking, setLiking] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const { cost, costb, meta, NFTokenID, rarity_rank, amount, MasterSequence } = nft;
+// Ultra-light NFT Card - no state, no transitions, minimal DOM
+const NFTCard = React.memo(({ nft, isDark }) => {
+  const { cost, costb, meta, NFTokenID, rarity_rank } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
-  const isIPFS = imgUrl?.includes('ipfs.io');
-  const name = nft.meta?.name || meta?.Name || 'No Name';
-  const isVideo = nft?.meta?.video;
-  const isLiked = likedNfts?.includes(NFTokenID);
-
-  let videoUrl = null;
-  if (isVideo) {
-    const videoFiles = getNftFilesUrls(nft, 'video');
-    videoUrl = videoFiles?.[0]?.cachedUrl || null;
-  }
-
-  // Format prices
+  const name = meta?.name || meta?.Name || 'No Name';
   const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
-  const bestOffer = costb?.amount && costb.currency === 'XRP' ? costb.amount : null;
-
-  const handleImageLoad = () => setLoadingImg(false);
-  const handleImageError = () => { setLoadingImg(false); setImageError(true); };
-
-  const handleRemoveNft = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isAdmin) return;
-    if (!confirm(`Are you sure you want to remove "${name}"?`)) return;
-    onRemove(NFTokenID);
-  };
-
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (liking) return;
-    setLiking(true);
-    await onToggleLike(NFTokenID);
-    setLiking(false);
-  };
 
   return (
-    <Link href={`/nft/${NFTokenID}`} className="block group">
-      <div
-        className="rounded-xl overflow-hidden transition-all"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="relative aspect-square overflow-hidden rounded-xl">
-          {loadingImg && !imageError && (
-            <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-          )}
-          {!imageError ? (
-            isVideo && videoUrl && isHovered ? (
-              <video src={videoUrl} poster={imgUrl} muted autoPlay loop playsInline preload="none" onLoadedData={handleImageLoad} onError={handleImageError}
-                className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
-            ) : (
-              <img src={imgUrl} alt={name} loading="lazy" onLoad={handleImageLoad} onError={handleImageError}
-                className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
-            )
+    <a href={`/nft/${NFTokenID}`} className="block" style={{ contain: 'layout style paint' }}>
+      <div className="rounded-xl overflow-hidden">
+        <div className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+          {imgUrl ? (
+            <img src={imgUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
           ) : (
-            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
-            </div>
+            <span className="absolute inset-0 flex items-center justify-center text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>No image</span>
           )}
-
-          {/* Rarity badge - top left */}
           {rarity_rank > 0 && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white backdrop-blur-sm">
-              #{fIntNumber(rarity_rank)}
-            </div>
-          )}
-
-          {/* IPFS badge - top right */}
-          {isIPFS && (
-            <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-orange-500/90 text-white backdrop-blur-sm">
-              IPFS
-            </div>
-          )}
-
-
-          {/* Like button - top right */}
-          <button onClick={handleLike} disabled={liking} className={cn(
-            'absolute top-2 right-2 p-1.5 rounded-md transition-all backdrop-blur-sm',
-            isLiked ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover:opacity-100 bg-black/40 hover:bg-black/60'
-          )}>
-            {liking ? (
-              <Loader2 size={14} className="animate-spin text-white" />
-            ) : (
-              <Heart size={14} className={cn(isLiked ? 'fill-red-500 text-red-500' : 'text-white')} />
-            )}
-          </button>
-
-          {/* Admin remove button */}
-          {isAdmin && (
-            <button onClick={handleRemoveNft} className={cn(
-              'absolute bottom-2 right-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all',
-              'bg-black/60 hover:bg-red-500 text-white backdrop-blur-sm'
-            )}>
-              <X size={14} />
-            </button>
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white">#{rarity_rank}</div>
           )}
         </div>
         <div className="px-1 pt-1.5 pb-1">
-          <p className={cn('text-[11px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
-            {name}
-          </p>
-          {(listPrice || bestOffer) && (
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {listPrice && <span className="text-[11px] font-medium text-primary">{fNumber(listPrice)} XRP</span>}
-              {bestOffer && <span className={cn('text-[10px]', isDark ? 'text-green-400' : 'text-green-600')}>{fNumber(bestOffer)}</span>}
-            </div>
-          )}
+          <p className="text-[11px] font-medium truncate" style={{ color: isDark ? 'rgba(255,255,255,0.8)' : '#374151' }}>{name}</p>
+          {listPrice && <span className="text-[11px] font-medium text-primary">{fNumber(listPrice)} XRP</span>}
         </div>
       </div>
-    </Link>
+    </a>
   );
-});
+}, (prev, next) => prev.nft.NFTokenID === next.nft.NFTokenID);
 
 // NFT Grid Component
 const NFTGrid = React.memo(({ collection }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const router = useRouter();
-  const { themeName, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
+  const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const dropdownRef = useRef(null);
 
@@ -410,7 +314,6 @@ const NFTGrid = React.memo(({ collection }) => {
   const [showFilter, setShowFilter] = useState(false);
   const [sortBy, setSortBy] = useState('price-low');
   const [filterAttrs, setFilterAttrs] = useState([]);
-  const [likedNfts, setLikedNfts] = useState([]);
   const [traits, setTraits] = useState([]);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [listed, setListed] = useState('');
@@ -496,43 +399,6 @@ const NFTGrid = React.memo(({ collection }) => {
     }
   }, [sortBy, listed, filterAttrs, slug, router.isReady]);
 
-  // Fetch liked NFTs
-  useEffect(() => {
-    const account = accountProfile?.account;
-    if (!account) { setLikedNfts([]); return; }
-    axios.get(`${BASE_URL}/watchlist/nft?account=${account}`)
-      .then(res => {
-        if (res.data?.result === 'success') {
-          const ids = Object.values(res.data.watchlist || {}).flatMap(col => (col.items || []).map(item => item.nftokenId));
-          setLikedNfts(ids);
-        }
-      })
-      .catch(() => {});
-  }, [accountProfile]);
-
-  const handleToggleLike = useCallback(async (nftokenId) => {
-    const account = accountProfile?.account;
-    if (!account) { setOpenWalletModal(true); return; }
-
-    // Use functional update to avoid stale closure
-    setLikedNfts(prev => {
-      const isLiked = prev.includes(nftokenId);
-      const action = isLiked ? 'remove' : 'add';
-
-      // Fire API call async (don't await to keep UI responsive)
-      axios.post(`${BASE_URL}/watchlist/nft`, { account, nftokenId, action })
-        .then(res => {
-          if (res.data?.result === 'success') {
-            openSnackbar?.(action === 'add' ? 'Added to watchlist' : 'Removed from watchlist', 'success');
-          }
-        })
-        .catch(() => openSnackbar?.('Failed to update', 'error'));
-
-      // Optimistic update
-      return isLiked ? prev.filter(id => id !== nftokenId) : [...prev, nftokenId];
-    });
-  }, [accountProfile?.account, openSnackbar, setOpenWalletModal]);
-
   const currentSort = SORT_OPTIONS.find(opt => opt.value === sortBy) || SORT_OPTIONS[0];
 
   // Close dropdown on outside click or Escape key
@@ -561,7 +427,7 @@ const NFTGrid = React.memo(({ collection }) => {
     if (!slug) return;
     setLoading(true);
 
-    const params = new URLSearchParams({ page: page.toString(), limit: '100', sortBy });
+    const params = new URLSearchParams({ page: page.toString(), limit: '48', sortBy });
     if (listed) params.append('listed', listed);
     const activeTraits = filterAttrs.filter(a => a.value?.length > 0);
     if (activeTraits.length > 0) {
@@ -572,14 +438,17 @@ const NFTGrid = React.memo(({ collection }) => {
       .then(res => {
         const newNfts = res.data.nfts || [];
         const pagination = res.data.pagination;
-        setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 100);
+        setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 48);
         setTotalCount(pagination?.total || 0);
         setNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
 
-        // Prefetch images for smoother experience
-        newNfts.slice(0, 20).forEach(nft => {
-          const img = new window.Image();
-          img.src = getNftCoverUrl(nft, 'large');
+        // Prefetch first 12 images (skip empty URLs)
+        newNfts.slice(0, 12).forEach(nft => {
+          const url = getNftCoverUrl(nft, 'large');
+          if (url) {
+            const img = new window.Image();
+            img.src = url;
+          }
         });
       })
       .catch(err => console.error('Error fetching NFTs:', err))
@@ -786,7 +655,7 @@ const NFTGrid = React.memo(({ collection }) => {
           {loading && nfts.length === 0
             ? Array.from({ length: gridCols * 3 }).map((_, i) => <NFTSkeleton key={`skeleton-${i}`} isDark={isDark} />)
             : nfts.map((nft) => (
-                <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} likedNfts={likedNfts} onToggleLike={handleToggleLike} />
+                <NFTCard key={nft.NFTokenID} nft={nft} isDark={isDark} />
               ))
           }
         </div>

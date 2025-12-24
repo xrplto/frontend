@@ -337,7 +337,7 @@ const TokenSummary = memo(({ token }) => {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="relative group cursor-pointer flex-shrink-0" onClick={handleGoogleLensSearch}>
             <Image src={tokenImageUrl} alt={name} width={44} height={44} priority unoptimized
-              className={cn("rounded-xl object-cover border", isDark ? "border-white/10" : "border-black/[0.08]")}
+              className={cn("w-11 h-11 rounded-xl object-cover border", isDark ? "border-white/10" : "border-black/[0.08]")}
               onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
           </div>
           <div className="min-w-0 flex-1">
