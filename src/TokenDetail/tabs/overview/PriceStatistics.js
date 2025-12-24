@@ -2,7 +2,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef } from 'react';
 import styled from '@emotion/styled';
-import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -145,16 +145,39 @@ const StyledTable = styled(Table)`
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 10px 12px;
+  padding: 8px 14px;
   border-bottom: none;
   vertical-align: middle;
   &:first-of-type {
-    width: 48%;
+    width: 45%;
   }
   &:last-of-type {
-    width: 52%;
+    width: 55%;
     text-align: right;
   }
+`;
+
+const TableRowStyled = styled(TableRow)`
+  transition: background 0.15s ease;
+  &:hover {
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'};
+  }
+`;
+
+const SectionHeader = styled.div`
+  padding: 10px 14px 6px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const SectionLabel = styled.span`
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'};
 `;
 
 // Constants
@@ -244,6 +267,68 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [activityFilter, setActivityFilter] = useState('all');
   const [filterLoading, setFilterLoading] = useState(false);
   const [noTokenActivity, setNoTokenActivity] = useState(false);
+
+  // AI Review state
+  const [aiReview, setAiReview] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiAbortRef = useRef(null);
+
+  // Fetch AI review
+  useEffect(() => {
+    if (!token.md5) return;
+    if (aiAbortRef.current) aiAbortRef.current.abort();
+    aiAbortRef.current = new AbortController();
+
+    setAiLoading(true);
+    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.review) {
+          const review = data.review;
+          // Check if direct format (has riskScore directly)
+          if (typeof review.riskScore === 'number') {
+            setAiReview({
+              riskScore: review.riskScore,
+              risks: Array.isArray(review.risks) ? review.risks : [],
+              positives: Array.isArray(review.positives) ? review.positives : [],
+              summary: review.summary || '',
+              timestamp: data.timestamp
+            });
+          } else if (review.raw) {
+            // Parse malformed JSON: arrays have "key": "value" format
+            try {
+              const raw = review.raw;
+              const riskMatch = raw.match(/"riskScore"\s*:\s*(\d+)/);
+              const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
+              const risksMatch = raw.match(/"risks"\s*:\s*\[([\s\S]*?)\]/);
+              const positivesMatch = raw.match(/"positives"\s*:\s*\[([\s\S]*?)\]/);
+
+              const extractValues = (str) => {
+                if (!str) return [];
+                const matches = str.match(/"[^"]+"\s*:\s*"([^"]+)"/g) || [];
+                return matches.map(m => m.match(/:\s*"([^"]+)"/)?.[1]).filter(Boolean);
+              };
+
+              setAiReview({
+                riskScore: riskMatch ? parseInt(riskMatch[1]) : null,
+                risks: extractValues(risksMatch?.[1]),
+                positives: extractValues(positivesMatch?.[1]),
+                summary: summaryMatch?.[1] || '',
+                timestamp: data.timestamp
+              });
+            } catch (e) {
+              console.error('AI parse error:', e);
+            }
+          }
+        }
+        setAiLoading(false);
+      })
+      .catch(e => {
+        if (e.name !== 'AbortError') setAiLoading(false);
+      });
+
+    return () => aiAbortRef.current?.abort();
+  }, [token.md5]);
 
   // Ref for activity fetch abort controller
   const activityAbortRef = useRef(null);
@@ -383,9 +468,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   return (
     <Box
       style={{
-        borderRadius: '14px',
-        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
+        borderRadius: '12px',
+        background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa',
+        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
         width: '100%',
         marginBottom: '8px',
         overflow: 'hidden'
@@ -435,198 +520,307 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       {/* Header */}
       <Box
         style={{
-          padding: '12px 14px 8px',
-          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`
+          padding: '14px 14px 10px',
+          background: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'
         }}
       >
-        <Typography
-          variant="h6"
-          isDark={isDark}
-          style={{
-            fontSize: '11px',
-            fontWeight: 500,
-            color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(33,43,54,0.5)',
-            letterSpacing: '0.8px',
-            textTransform: 'uppercase'
-          }}
-        >
-          Token Stats
-        </Typography>
+        <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+          <div style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: '#22c55e'
+          }} />
+          <Typography
+            variant="h6"
+            isDark={isDark}
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(33,43,54,0.85)',
+              letterSpacing: '-0.01em'
+            }}
+          >
+            Token Stats
+          </Typography>
+        </Stack>
       </Box>
 
-      <StyledTable size="small" style={{ marginTop: '6px' }}>
+      {/* AI Review Section */}
+      {(aiReview || aiLoading) && (
+        <Box style={{
+          margin: '10px',
+          padding: '14px',
+          borderRadius: '12px',
+          background: isDark ? '#000' : '#0a0a0a',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Subtle glow effect */}
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            right: '-20%',
+            width: '150px',
+            height: '150px',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none'
+          }} />
+
+          <Stack direction="row" alignItems="center" justifyContent="space-between" style={{ marginBottom: '12px', position: 'relative' }}>
+            <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+              <div style={{
+                width: 28,
+                height: 28,
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(139,92,246,0.3)'
+              }}>
+                <Sparkles size={14} color="#fff" />
+              </div>
+              <Stack style={{ gap: 0 }}>
+                <Typography style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.01em' }}>
+                  AI Analysis
+                </Typography>
+                <Typography style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Powered by Groq {aiReview?.timestamp && `· ${(() => {
+                    const diff = Date.now() - new Date(aiReview.timestamp).getTime();
+                    const mins = Math.floor(diff / 60000);
+                    if (mins < 1) return 'just now';
+                    if (mins < 60) return `${mins}m ago`;
+                    const hrs = Math.floor(mins / 60);
+                    if (hrs < 24) return `${hrs}h ago`;
+                    const days = Math.floor(hrs / 24);
+                    return `${days}d ago`;
+                  })()}`}
+                </Typography>
+              </Stack>
+            </Stack>
+            {aiLoading && (
+              <div style={{
+                width: 16,
+                height: 16,
+                border: '2px solid rgba(139,92,246,0.2)',
+                borderTopColor: '#8b5cf6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+            )}
+          </Stack>
+
+          {aiReview && (
+            <>
+              {/* Risk Score Card */}
+              <Box style={{
+                padding: '12px',
+                borderRadius: '10px',
+                background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.6)',
+                marginBottom: '12px',
+                border: `1px solid ${aiReview.riskScore <= 3 ? 'rgba(34,197,94,0.2)' : aiReview.riskScore <= 6 ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)'}`
+              }}>
+                <Stack direction="row" alignItems="center" style={{ gap: '12px' }}>
+                  <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: '10px',
+                    background: aiReview.riskScore <= 3
+                      ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)'
+                      : aiReview.riskScore <= 6
+                        ? 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.05) 100%)'
+                        : 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {aiReview.riskScore <= 3 ? <ShieldCheck size={22} color="#22c55e" /> : aiReview.riskScore <= 6 ? <ShieldAlert size={22} color="#f59e0b" /> : <AlertTriangle size={22} color="#ef4444" />}
+                  </div>
+                  <Stack style={{ flex: 1 }}>
+                    <Stack direction="row" alignItems="baseline" style={{ gap: '4px' }}>
+                      <Typography style={{
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
+                        lineHeight: 1,
+                        letterSpacing: '-0.02em'
+                      }}>
+                        {aiReview.riskScore}
+                      </Typography>
+                      <Typography style={{ fontSize: '13px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 500 }}>/10</Typography>
+                    </Stack>
+                    <Typography style={{
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      color: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {aiReview.riskScore <= 3 ? 'Low Risk' : aiReview.riskScore <= 6 ? 'Medium Risk' : aiReview.riskScore <= 8 ? 'High Risk' : 'Extreme Risk'}
+                    </Typography>
+                  </Stack>
+                  {/* Risk bar */}
+                  <div style={{ width: '60px' }}>
+                    <div style={{
+                      height: '4px',
+                      borderRadius: '2px',
+                      background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${aiReview.riskScore * 10}%`,
+                        height: '100%',
+                        borderRadius: '2px',
+                        background: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
+                        transition: 'width 0.5s ease'
+                      }} />
+                    </div>
+                  </div>
+                </Stack>
+              </Box>
+
+              {/* Risks & Positives */}
+              <Stack direction="row" style={{ gap: '8px', marginBottom: '10px' }}>
+                {aiReview.risks?.length > 0 && (
+                  <Stack style={{ flex: 1, gap: '6px' }}>
+                    {aiReview.risks.slice(0, 3).map((r, i) => (
+                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef4444', marginTop: '5px', flexShrink: 0 }} />
+                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', lineHeight: 1.4 }}>{r}</Typography>
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
+                {aiReview.positives?.length > 0 && (
+                  <Stack style={{ flex: 1, gap: '6px' }}>
+                    {aiReview.positives.slice(0, 3).map((p, i) => (
+                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', marginTop: '5px', flexShrink: 0 }} />
+                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', lineHeight: 1.4 }}>{p}</Typography>
+                      </Stack>
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
+
+              {/* Summary */}
+              {aiReview.summary && (
+                <div style={{
+                  background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  marginTop: '8px',
+                  borderLeft: `2px solid ${aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444'}`
+                }}>
+                  <Typography style={{
+                    fontSize: '10px',
+                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    marginBottom: '4px',
+                    fontWeight: 500
+                  }}>
+                    Summary
+                  </Typography>
+                  <Typography style={{
+                    fontSize: '11px',
+                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                    lineHeight: 1.5
+                  }}>
+                    {aiReview.summary}
+                  </Typography>
+                </div>
+              )}
+            </>
+          )}
+        </Box>
+      )}
+
+      <StyledTable size="small">
         <TableBody>
           {/* ========== MARKET METRICS GROUP ========== */}
-
-          {/* Fully Diluted Market Cap Row */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
                 FDV Market Cap
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 500,
-                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                  fontSize: '13px'
-                }}
-              >
-                {currencySymbols[activeFiatCurrency]}{' '}
-                {fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
+              <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
+                {currencySymbols[activeFiatCurrency]}{fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
               </Typography>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
-          {/* Market Dominance Row */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
                 Volume Dominance
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
-              <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px' }}>
+              <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px' }}>
                 {(dom || 0).toFixed(4)}%
               </Typography>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
-
-          {/* ========== SUPPLY & HOLDERS GROUP ========== */}
-
-          {/* Supply Row */}
-          {amount ? (
-            <TableRow>
+          {amount && (
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
                   Supply
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                    fontSize: '13px'
-                  }}
-                >
+                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(amount)}
                 </Typography>
               </ModernTableCell>
-            </TableRow>
-          ) : null}
+            </TableRowStyled>
+          )}
 
-
-          {/* ========== 24H TRADING ACTIVITY GROUP ========== */}
-
-          {/* Trades (24h) Row */}
-          {(txns24h || vol24htx) ? (
-            <TableRow>
+          {(txns24h || vol24htx) && (
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
                   Trades (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                    fontSize: '13px'
-                  }}
-                >
+                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(txns24h || vol24htx)}
                 </Typography>
               </ModernTableCell>
-            </TableRow>
-          ) : null}
+            </TableRowStyled>
+          )}
 
-          {/* Unique Traders (24h) Row */}
-          {uniqueTraders24h ? (
-            <TableRow>
+          {uniqueTraders24h && (
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
                   Unique Traders (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
-                    fontSize: '13px'
-                  }}
-                >
+                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(uniqueTraders24h)}
                 </Typography>
               </ModernTableCell>
-            </TableRow>
-          ) : null}
+            </TableRowStyled>
+          )}
 
           {/* ========== BUY/SELL METRICS GROUP ========== */}
           {(buy24hxrp > 0 || sell24hxrp > 0) && (
-            <TableRow>
-              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
-                <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  24h Trading
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
+            <tr>
+              <td colSpan={2}>
+                <SectionHeader>
+                  <SectionLabel isDark={isDark}>24h Trading</SectionLabel>
+                </SectionHeader>
+              </td>
+            </tr>
           )}
 
           {/* Buy/Sell Ratio Visual Bar */}
@@ -640,7 +834,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             // Format: show 1 decimal if < 1%, otherwise whole number
             const formatPct = (val) => val > 0 && val < 1 ? '<1' : val.toFixed(0);
             return (
-              <TableRow>
+              <TableRowStyled isDark={isDark}>
                 <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                   <Box style={{ borderRadius: '8px', overflow: 'hidden' }}>
                     <Stack direction="row" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
@@ -665,12 +859,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </Stack>
                   </Box>
                 </ModernTableCell>
-              </TableRow>
+              </TableRowStyled>
             );
           })()}
 
           {/* Buys (24h) Row - Always show */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
               <Typography
                 isDark={isDark}
@@ -709,10 +903,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 </Typography>
               </Stack>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
           {/* Unique Buyers (24h) Row - Always show */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
               <Typography
                 isDark={isDark}
@@ -743,10 +937,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 })()}
               </Stack>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
           {/* Sells (24h) Row - Always show */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
               <Typography
                 isDark={isDark}
@@ -771,10 +965,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 </Typography>
               </Stack>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
           {/* Unique Sellers (24h) Row - Always show */}
-          <TableRow>
+          <TableRowStyled isDark={isDark}>
             <ModernTableCell>
               <Typography
                 isDark={isDark}
@@ -805,17 +999,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 })()}
               </Stack>
             </ModernTableCell>
-          </TableRow>
+          </TableRowStyled>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
           {(deposit24hxrp > 0 || withdraw24hxrp) && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   AMM Liquidity
                 </Typography>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
           {/* AMM Flow Visual Bar */}
@@ -829,7 +1023,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             const outPct = withdrawAbs > 0 ? Math.max(outRaw, 3) : 0;
             const formatPct = (val) => val > 0 && val < 1 ? '<1' : val.toFixed(0);
             return (
-              <TableRow>
+              <TableRowStyled isDark={isDark}>
                 <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                   <Box style={{ borderRadius: '8px', overflow: 'hidden' }}>
                     <Stack direction="row" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
@@ -854,13 +1048,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </Stack>
                   </Box>
                 </ModernTableCell>
-              </TableRow>
+              </TableRowStyled>
             );
           })()}
 
           {/* AMM Deposits (24h) Row */}
           {deposit24hxrp ? (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -901,12 +1095,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   ) : null}
                 </Stack>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           ) : null}
 
           {/* AMM Withdrawals (24h) Row */}
           {withdraw24hxrp ? (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -947,12 +1141,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   ) : null}
                 </Stack>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           ) : null}
 
           {/* LP Burned Percentage Row */}
           {(lpBurnedPercent != null || lpHolderCount > 0) && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                 <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', marginBottom: '6px' }}>
                   <Typography style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(33,43,54,0.6)' }}>
@@ -984,23 +1178,23 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   }} />
                 </Box>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
           {/* ========== TOKEN INFO GROUP ========== */}
           {(date || dateon || creator) && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Token Info
                 </Typography>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
           {/* Created Date Row */}
           {date || dateon ? (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -1028,12 +1222,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {fDate(date || dateon)}
                 </Typography>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           ) : null}
 
           {/* Creator Row */}
           {creator && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography
                   isDark={isDark}
@@ -1122,13 +1316,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   </Tooltip>
                 </Stack>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
           {/* Creator Last Action */}
           {creator && creatorLastAction && (
             <>
-              <TableRow>
+              <TableRowStyled isDark={isDark}>
                 <ModernTableCell>
                   <Typography
                     isDark={isDark}
@@ -1187,10 +1381,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </Link>
                   </Tooltip>
                 </ModernTableCell>
-              </TableRow>
+              </TableRowStyled>
               {/* Creator Sell Warning */}
               {creatorLastAction.side === 'sell' && (
-                <TableRow>
+                <TableRowStyled isDark={isDark}>
                   <ModernTableCell colSpan={2} style={{ padding: '4px 12px 8px' }}>
                     <Stack direction="row" alignItems="center" style={{
                       gap: '8px',
@@ -1205,14 +1399,14 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       </Typography>
                     </Stack>
                   </ModernTableCell>
-                </TableRow>
+                </TableRowStyled>
               )}
             </>
           )}
 
           {/* Creator Token Count - Full Width Warning Banner */}
           {creator && creatorTokens > 0 && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
                 <Box
                   style={{
@@ -1309,12 +1503,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   </Stack>
                 </Box>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
           {/* Creator Activity - Inline */}
           {creator && activityOpen && (
-            <TableRow>
+            <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '4px 12px 10px' }}>
                 <Box style={{
                   background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
@@ -1514,7 +1708,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   )}
                 </Box>
               </ModernTableCell>
-            </TableRow>
+            </TableRowStyled>
           )}
 
         </TableBody>
@@ -1532,11 +1726,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
       {/* Linked NFT Collections */}
       {linkedCollections?.length > 0 && (
-        <Box style={{ padding: '10px 14px 14px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
-          <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Layers size={12} /> NFT Collections
-          </Typography>
-          <Stack style={{ gap: '8px' }}>
+        <Box style={{ padding: '12px 14px 14px' }}>
+          <SectionHeader style={{ padding: 0, marginTop: 0, marginBottom: '10px' }}>
+            <Layers size={12} style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }} />
+            <SectionLabel isDark={isDark}>NFT Collections</SectionLabel>
+          </SectionHeader>
+          <Stack style={{ gap: '6px' }}>
             {linkedCollections.map((col) => (
               <Link
                 key={col.id}
@@ -1545,31 +1740,39 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  padding: '8px 10px',
-                  borderRadius: '8px',
-                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
                   textDecoration: 'none',
-                  transition: 'border-color 0.15s'
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                  e.currentTarget.style.background = isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+                  e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)';
                 }}
               >
                 <img
                   src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
                   alt={col.name}
-                  style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }}
+                  style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}
                   onError={(e) => (e.target.src = '/static/alt.webp')}
                 />
                 <Stack style={{ flex: 1, minWidth: 0 }}>
-                  <Typography style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Typography style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {col.name}
                   </Typography>
-                  <Stack direction="row" style={{ gap: '8px' }}>
-                    <Typography style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                  <Stack direction="row" style={{ gap: '10px', marginTop: '2px' }}>
+                    <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)' }}>
                       {fNumber(col.items)} items
                     </Typography>
                     {col.floor?.amount > 0 && (
-                      <Typography style={{ fontSize: '10px', color: '#3b82f6' }}>
-                        Floor: {fNumber(col.floor.amount)} XRP
+                      <Typography style={{ fontSize: '11px', color: '#22c55e', fontWeight: 500 }}>
+                        ✕{fNumber(col.floor.amount)}
                       </Typography>
                     )}
                   </Stack>
