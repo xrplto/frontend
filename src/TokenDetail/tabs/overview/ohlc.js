@@ -770,9 +770,17 @@ const PriceChartAdvanced = memo(({ token }) => {
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 
-    // Debounced crosshair handler with rAF
+    // Cache date format options outside rAF for performance
+    const dateOpts = { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' };
+    const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' };
+    let lastCrosshairTime = 0;
+
+    // Debounced crosshair handler with rAF and throttle
     const crosshairUnsubscribe = chart.subscribeCrosshairMove((param) => {
       if (crosshairRafRef.current) cancelAnimationFrame(crosshairRafRef.current);
+
+      // Throttle: skip if same candle time (prevents redundant updates)
+      if (param.time === lastCrosshairTime) return;
 
       crosshairRafRef.current = requestAnimationFrame(() => {
         if (!param.time || !param.point || param.point.x < 0 || param.point.y < 0 ||
@@ -804,9 +812,10 @@ const PriceChartAdvanced = memo(({ token }) => {
           return;
         }
 
+        lastCrosshairTime = param.time;
         const date = new Date(param.time * 1000);
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
-        const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' });
+        const dateStr = date.toLocaleDateString('en-US', dateOpts);
+        const timeStr = date.toLocaleTimeString('en-US', timeOpts);
         const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
         const isXRP = activeFiatCurrencyRef.current === 'XRP';
         const currentChartType = chartTypeRef.current;
@@ -936,10 +945,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       }, 100);
     });
 
+    const handleWheel = (e) => e.preventDefault();
+
     if (chartContainerRef.current) {
       resizeObserver.observe(chartContainerRef.current);
-      // Passive wheel listener for smoother scroll performance
-      chartContainerRef.current.addEventListener('wheel', () => {}, { passive: true });
+      chartContainerRef.current.addEventListener('wheel', handleWheel, { passive: false });
     }
 
     return () => {
@@ -948,6 +958,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       clearTimeout(stateUpdateTimeout);
       clearTimeout(resizeTimeout);
       resizeObserver.disconnect();
+      if (chartContainerRef.current) {
+        chartContainerRef.current.removeEventListener('wheel', handleWheel);
+      }
 
       // Unsubscribe from chart events
       if (rangeUnsubscribe) rangeUnsubscribe();

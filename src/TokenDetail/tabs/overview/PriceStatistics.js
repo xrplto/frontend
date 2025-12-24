@@ -767,7 +767,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </ModernTableCell>
           </TableRowStyled>
 
-          {amount && (
+          {amount > 0 && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
@@ -782,7 +782,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </TableRowStyled>
           )}
 
-          {(txns24h || vol24htx) && (
+          {(txns24h > 0 || vol24htx > 0) && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
@@ -797,7 +797,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </TableRowStyled>
           )}
 
-          {uniqueTraders24h && (
+          {uniqueTraders24h > 0 && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
                 <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
@@ -1002,7 +1002,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           </TableRowStyled>
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
-          {(deposit24hxrp > 0 || withdraw24hxrp) && (
+          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -1013,7 +1013,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           )}
 
           {/* AMM Flow Visual Bar */}
-          {(deposit24hxrp > 0 || withdraw24hxrp) && (() => {
+          {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (() => {
             const depositAbs = Math.abs(deposit24hxrp || 0);
             const withdrawAbs = Math.abs(withdraw24hxrp || 0);
             const total = depositAbs + withdrawAbs;
