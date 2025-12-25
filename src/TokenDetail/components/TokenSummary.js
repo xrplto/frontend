@@ -4,7 +4,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2, Info, X } from 'lucide-react';
+import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2, X, Link2, Unlink2, Code2 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -106,6 +106,7 @@ const TokenSummary = memo(({ token }) => {
   const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showApi, setShowApi] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
 
   // Debug info loader
   useEffect(() => {
@@ -435,25 +436,25 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleSetTrust}
             disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[11px] font-normal transition-all flex items-center gap-1.5",
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
               isRemove
-                ? isDark ? "bg-red-500/10 text-red-400 hover:bg-red-500/15" : "bg-red-50 text-red-500 hover:bg-red-100"
-                : isDark ? "bg-green-500/10 text-green-400 hover:bg-green-500/15" : "bg-green-50 text-green-500 hover:bg-green-100",
+                ? isDark ? "text-red-400 hover:bg-red-500/10" : "text-red-500 hover:bg-red-50"
+                : isDark ? "text-green-400 hover:bg-green-500/10" : "text-green-500 hover:bg-green-50",
               (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
             )}
           >
-            {trustStatus === 'loading' ? <Loader2 size={12} className="animate-spin" /> : null}
+            {trustStatus === 'loading' ? <Loader2 size={13} className="animate-spin" /> : isRemove ? <Unlink2 size={13} /> : <Link2 size={13} />}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
           <button
             onClick={() => setShowInfo(true)}
             className={cn(
-              "p-1.5 rounded-lg transition-all",
-              isDark ? "hover:bg-white/[0.06] text-white/40 hover:text-white/70" : "hover:bg-black/[0.04] text-gray-400 hover:text-gray-600"
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+              isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.06]" : "text-gray-400 hover:text-gray-600 hover:bg-black/[0.04]"
             )}
-            title="Technical Info"
           >
-            <Info size={14} />
+            <Code2 size={13} />
+            API
           </button>
         </div>
         <div className="flex items-center gap-1">
@@ -499,34 +500,39 @@ const TokenSummary = memo(({ token }) => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3 flex-1">
                 <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Technical Information</span>
-                <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
               </div>
               <button onClick={() => setShowInfo(false)} className={cn("p-1.5 rounded-lg transition-all ml-2", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-black/[0.04] text-gray-400")}>
                 <X size={14} />
               </button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {[
-                { label: 'MD5 Hash', value: md5 },
-                { label: 'Currency Code', value: currency },
-                { label: 'Issuer Address', value: issuer },
-                { label: 'Trustlines', value: trustlines ? fNumber(trustlines) : '0', noCopy: true },
-                ...(AMM ? [{ label: 'AMM Account', value: AMM }] : [])
+                { label: 'Issuer', value: issuer },
+                { label: 'Currency', value: currency },
+                ...(AMM ? [{ label: 'AMM Account', value: AMM }] : []),
+                { label: 'MD5', value: md5 }
               ].map((item) => (
-                <div key={item.label}>
-                  <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</div>
-                  <div className={cn("flex items-center gap-2 font-mono text-[11px] p-2 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-black/[0.02]")}>
-                    <span className={cn("flex-1 break-all", isDark ? "text-white/70" : "text-gray-600")}>{item.value}</span>
-                    {!item.noCopy && (
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(item.value); }}
-                        className={cn("p-1 rounded transition-all flex-shrink-0", isDark ? "text-white/30 hover:text-white/60 hover:bg-white/[0.06]" : "text-gray-300 hover:text-gray-500 hover:bg-black/[0.04]")}
-                      >
-                        <Copy size={11} />
-                      </button>
-                    )}
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    navigator.clipboard.writeText(item.value);
+                    setCopiedField(item.label);
+                    setTimeout(() => setCopiedField(null), 1500);
+                  }}
+                  className={cn(
+                    "group w-full text-left rounded-lg px-3 py-2 transition-all flex items-center gap-3 cursor-pointer",
+                    isDark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.03]"
+                  )}
+                >
+                  <div className="flex-1 min-w-0">
+                    <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</span>
+                    <div className={cn("font-mono text-[11px] truncate", isDark ? "text-white/80" : "text-gray-700")}>{item.value}</div>
                   </div>
-                </div>
+                  <span className={cn("flex-shrink-0 transition-all", copiedField === item.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/50" : "text-gray-300 group-hover:text-gray-500")}>
+                    {copiedField === item.label ? <Check size={14} /> : <Copy size={14} />}
+                  </span>
+                </button>
               ))}
               {/* API Section */}
               <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
@@ -535,11 +541,11 @@ const TokenSummary = memo(({ token }) => {
                   className={cn("flex items-center gap-3 w-full text-left transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
                 >
                   <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>API Endpoints</span>
-                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                   <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{showApi ? '▲' : '▼'}</span>
                 </button>
                 {showApi && (
-                  <div className="space-y-2 mt-3">
+                  <div className="space-y-1 mt-2">
                     {[
                       { label: 'Token Info', url: `https://api.xrpl.to/api/token/${md5}` },
                       { label: 'Rich List', url: `https://api.xrpl.to/api/richlist/${md5}` },
@@ -548,29 +554,40 @@ const TokenSummary = memo(({ token }) => {
                       { label: 'OHLC Data', url: `https://api.xrpl.to/api/ohlc/${md5}` },
                       { label: 'Top Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
                       { label: 'AMM Pools', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
-                      { label: 'Swap Quote (POST)', url: `https://api.xrpl.to/api/dex/quote` },
+                      { label: 'Swap Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
                       { label: 'Pair Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
                     ].map((endpoint) => (
-                      <div key={endpoint.label} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.015]")}>
+                      <button
+                        key={endpoint.label}
+                        onClick={() => {
+                          navigator.clipboard.writeText(endpoint.url);
+                          setCopiedField(endpoint.label);
+                          setTimeout(() => setCopiedField(null), 1500);
+                        }}
+                        className={cn(
+                          "group w-full text-left rounded-lg px-3 py-1.5 transition-all cursor-pointer flex items-center gap-3",
+                          isDark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.03]"
+                        )}
+                      >
                         <div className="flex-1 min-w-0">
-                          <div className={cn("text-[8px] uppercase mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{endpoint.label}</div>
-                          <div className={cn("font-mono text-[10px] break-all", isDark ? "text-blue-400/80" : "text-blue-600")}>{endpoint.url}</div>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{endpoint.label}</span>
+                            {endpoint.method && <span className={cn("text-[8px] px-1 py-0.5 rounded", isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-600")}>{endpoint.method}</span>}
+                          </div>
+                          <div className={cn("font-mono text-[10px] truncate", isDark ? "text-blue-400/70" : "text-blue-600")}>{endpoint.url}</div>
                         </div>
-                        <button
-                          onClick={() => { navigator.clipboard.writeText(endpoint.url); }}
-                          className={cn("p-1 rounded transition-all flex-shrink-0", isDark ? "text-white/25 hover:text-white/50 hover:bg-white/[0.06]" : "text-gray-300 hover:text-gray-500 hover:bg-black/[0.04]")}
-                        >
-                          <Copy size={10} />
-                        </button>
-                      </div>
+                        <span className={cn("flex-shrink-0 transition-all", copiedField === endpoint.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/50" : "text-gray-300 group-hover:text-gray-500")}>
+                          {copiedField === endpoint.label ? <Check size={14} /> : <Copy size={14} />}
+                        </span>
+                      </button>
                     ))}
                     <a
                       href="/docs"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={cn("block text-center text-[11px] mt-3 py-2 rounded-lg transition-all", isDark ? "text-blue-400/70 hover:text-blue-400 hover:bg-blue-500/10" : "text-blue-600 hover:bg-blue-50")}
+                      className={cn("block text-center text-[10px] mt-2 py-1.5 rounded-lg transition-all", isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-black/[0.03]")}
                     >
-                      Read API Docs →
+                      View Full API Docs →
                     </a>
                   </div>
                 )}
