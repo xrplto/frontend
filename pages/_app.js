@@ -167,7 +167,7 @@ function AppPageLayout({ children }) {
   const isApiDocsPage = router.pathname === '/api-docs';
 
   return (
-    <div>
+    <div style={{ position: 'relative', zIndex: 1 }}>
       {/* Main content with padding for fixed headers */}
       <div
         style={{
