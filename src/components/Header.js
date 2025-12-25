@@ -622,8 +622,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <header
       className={cn(
         'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark ? 'bg-black border-b border-white/10' : 'bg-white border-b border-gray-200',
-        !openDrawer && !isDark && 'bg-white/95 backdrop-blur-md'
+        isDark ? 'bg-transparent backdrop-blur-md border-b border-white/10' : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
       )}
           >
       <div className="relative mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-6">
@@ -1341,8 +1340,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/watchlist"
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
-                  isDark ? 'text-white/50 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,10' : 'text-gray-400 hover:text-[#3f96fe] hover:bg-blue-50'
+                  'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
+                  isDark ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]' : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
                 )}
               >
                 <Star size={16} />
@@ -1353,8 +1352,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <button
                   onClick={handleSettingsToggle}
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
-                    isDark ? 'text-white/50 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,10' : 'text-gray-400 hover:text-[#3f96fe] hover:bg-blue-50'
+                    'flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200',
+                    isDark ? 'border-white/10 text-white/50 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-[rgba(63,150,254,0.1)]' : 'border-gray-200 text-gray-400 hover:text-[#3f96fe] hover:border-[#3f96fe]/50 hover:bg-blue-50'
                   )}
                 >
                   <Settings size={16} />

@@ -16,7 +16,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
     [sources]
   );
 
-  const displayLimit = isMobile ? 8 : 12;
+  const displayLimit = isMobile ? 8 : 14;
   const displayedSources = useMemo(
     () => (showAll ? sortedSources : sortedSources.slice(0, displayLimit)),
     [showAll, sortedSources, displayLimit]
@@ -26,62 +26,51 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
   const hiddenCount = totalSources - displayLimit;
 
   return (
-    <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
-      <div className="mb-3 flex items-center justify-between">
-        <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
-          {isMobile ? `Sources` : `News Sources`}
-          <span className={cn("ml-2 rounded px-1.5 py-0.5 text-[10px]", isDark ? "bg-[rgba(59,130,246,0.1)]" : "bg-gray-100")}>{totalSources}</span>
-        </p>
-        {totalSources > displayLimit && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className={cn("rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-normal transition-colors hover:border-primary hover:bg-primary/5", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}
-          >
-            {showAll ? 'Show Less' : `+${hiddenCount} more`}
-          </button>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-2">
+    <div className="mb-4">
+      <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => onSourceSelect(null)}
           className={cn(
-            'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
+            'rounded-md px-2 py-1 text-[11px] font-medium transition-colors',
             !selectedSource
-              ? 'border-primary bg-primary text-white'
-              : isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
+              ? 'bg-primary text-white'
+              : isDark ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-100'
           )}
         >
           All Sources
         </button>
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
-          const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
+          const bull = sentiment?.Bullish || 0;
           const isSelected = selectedSource === source;
 
           return (
-            <div key={source} className="relative">
-              <button
-                onClick={() => onSourceSelect(source)}
-                className={cn(
-                  'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
-                  isSelected
-                    ? 'border-primary bg-primary text-white'
-                    : isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
-                )}
-              >
-                <span>{source}</span>
-                <span className="ml-1.5 text-xs opacity-50">({data.count})</span>
-              </button>
-              {hasSentiment && !isSelected && (
-                <div className="absolute bottom-0 left-0 right-0 flex h-[2.5px] overflow-hidden rounded-b-lg">
-                  <div style={{ width: `${sentiment.Bullish}%` }} className="bg-green-500 opacity-90" />
-                  <div style={{ width: `${sentiment.Bearish}%` }} className="bg-red-500 opacity-90" />
-                  <div style={{ width: `${sentiment.Neutral}%` }} className="bg-yellow-500 opacity-90" />
-                </div>
+            <button
+              key={source}
+              onClick={() => onSourceSelect(source)}
+              className={cn(
+                'group relative flex items-center gap-1 rounded-md px-2 py-1 text-[11px] transition-colors',
+                isSelected
+                  ? 'bg-primary text-white'
+                  : isDark ? 'text-gray-400 hover:bg-white/5' : 'text-gray-600 hover:bg-gray-100'
               )}
-            </div>
+            >
+              <span className="font-medium">{source}</span>
+              <span className={cn("tabular-nums", isSelected ? "opacity-70" : "opacity-40")}>{data.count}</span>
+              {bull > 0 && !isSelected && (
+                <span className={cn("h-1.5 w-1.5 rounded-full", bull > 60 ? "bg-green-500" : bull < 40 ? "bg-red-500" : "bg-yellow-500")} />
+              )}
+            </button>
           );
         })}
+        {totalSources > displayLimit && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className={cn("rounded-md px-2 py-1 text-[11px] transition-colors", isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600")}
+          >
+            {showAll ? 'Less' : `+${hiddenCount}`}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -310,7 +299,7 @@ function NewsPage() {
   }, []);
 
   return (
-    <div className={cn("flex min-h-screen flex-col", isDark ? "bg-black" : "bg-white")}>
+    <div className={cn("flex min-h-screen flex-col", isDark ? "bg-transparent" : "bg-white")}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -329,109 +318,84 @@ function NewsPage() {
         ) : (
           <>
             {/* Header with Search */}
-            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-200 bg-gray-50")}>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", isDark ? "bg-primary/10" : "bg-primary/5")}>
-                    <svg className="h-[18px] w-[18px] text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>XRP News</h2>
-                    <p className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-500")}>
-                      {totalCount > 0 ? `${totalCount.toLocaleString()} articles` : 'Latest updates'}
-                    </p>
-                  </div>
-                </div>
-
-                <form
-                  onSubmit={handleSearch}
-                  className={cn("flex h-10 min-w-full items-center gap-3 rounded-xl border-[1.5px] px-4 transition-all hover:border-primary/30 focus-within:border-primary/50 sm:min-w-[320px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-200 bg-white")}
-                >
-                  <svg className={cn("h-4 w-4", isDark ? "text-gray-400/60" : "text-gray-500")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Search news..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className={cn("flex-1 bg-transparent text-sm focus:outline-none", isDark ? "text-white placeholder:text-white/50" : "text-gray-900 placeholder:text-gray-400")}
-                  />
-                  {searchInput && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchInput('');
-                          setSearchQuery('');
-                          setSearchSentimentScore(null);
-                          setCurrentPage(1);
-                          const query = { page: 1 };
-                          if (itemsPerPage !== 10) query.limit = itemsPerPage;
-                          if (selectedSource) query.source = selectedSource;
-                          router.push({ pathname: '/news', query }, undefined, { shallow: true });
-                        }}
-                        className="p-1"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                      <button
-                        type="submit"
-                        className={cn("rounded-lg border-[1.5px] px-4 py-1 text-[0.95rem] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-300")}
-                      >
-                        Search
-                      </button>
-                    </>
-                  )}
-                </form>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className={cn("text-[17px] font-medium", isDark ? "text-white" : "text-gray-900")}>News</h2>
+                <span className={cn("rounded px-1.5 py-0.5 text-[11px] tabular-nums", isDark ? "bg-white/10 text-gray-400" : "bg-gray-100 text-gray-500")}>
+                  {totalCount.toLocaleString()}
+                </span>
               </div>
+
+              <form
+                onSubmit={handleSearch}
+                className={cn(
+                  "flex h-9 items-center gap-2 rounded-lg px-3 transition-all",
+                  isDark ? "bg-white/5 focus-within:bg-white/8" : "bg-gray-100 focus-within:bg-gray-200/80"
+                )}
+              >
+                <svg className={cn("h-4 w-4 shrink-0", isDark ? "text-gray-500" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className={cn("w-full min-w-[180px] bg-transparent text-[13px] focus:outline-none sm:w-[240px]", isDark ? "text-white placeholder:text-gray-500" : "text-gray-900 placeholder:text-gray-400")}
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput('');
+                      setSearchQuery('');
+                      setSearchSentimentScore(null);
+                      setCurrentPage(1);
+                      const query = { page: 1 };
+                      if (itemsPerPage !== 10) query.limit = itemsPerPage;
+                      if (selectedSource) query.source = selectedSource;
+                      router.push({ pathname: '/news', query }, undefined, { shallow: true });
+                    }}
+                    className={cn("shrink-0 rounded p-0.5", isDark ? "hover:bg-white/10" : "hover:bg-gray-300")}
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </form>
             </div>
 
-            {/* Sentiment Summary */}
-            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
-              <div className="mb-3 flex items-center justify-between">
-                <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
-                  {isMobile ? 'Sentiment' : 'Market Sentiment'}
-                </p>
-                {searchQuery && searchSentimentScore !== null && (
-                  <span className={cn("rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium", isDark ? "border-[rgba(59,130,246,0.08)] text-gray-400" : "border-gray-200 text-gray-500")}>
-                    Score: {searchSentimentScore}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {/* Sentiment Summary - Compact horizontal */}
+            <div className={cn("mb-4 rounded-xl p-3", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-400")}>
+                  Sentiment
+                </span>
                 {[
                   { period: '24H', stats: sentimentStats.last24h },
                   { period: '7D', stats: sentimentStats.last7d },
                   { period: '30D', stats: sentimentStats.last30d },
                   { period: 'ALL', stats: sentimentStats.all }
-                ].map((item) => (
-                  <div
-                    key={item.period}
-                    className={cn("rounded-xl border-[1.5px] p-3", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.02)]" : "border-gray-100 bg-gray-50")}
-                  >
-                    <p className={cn("mb-2 text-center text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-500")}>{item.period}</p>
-                    <div className="flex justify-center gap-4">
-                      <div className="text-center">
-                        <p className="text-[14px] font-semibold text-green-500">{item.stats?.bullish || 0}%</p>
-                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Bull</p>
+                ].map((item) => {
+                  const bull = item.stats?.bullish || 0;
+                  const bear = item.stats?.bearish || 0;
+                  return (
+                    <div key={item.period} className="flex items-center gap-2">
+                      <span className={cn("w-7 text-[10px] font-medium", isDark ? "text-gray-500" : "text-gray-400")}>{item.period}</span>
+                      <div className={cn("flex h-1.5 w-20 overflow-hidden rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
+                        <div style={{ width: `${bull}%` }} className="bg-green-500" />
+                        <div style={{ width: `${bear}%` }} className="bg-red-500" />
                       </div>
-                      <div className="text-center">
-                        <p className="text-[14px] font-semibold text-red-500">{item.stats?.bearish || 0}%</p>
-                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Bear</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[14px] font-semibold text-yellow-500">{item.stats?.neutral || 0}%</p>
-                        <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-gray-600" : "text-gray-400")}>Neut</p>
-                      </div>
+                      <span className="w-8 text-[10px] tabular-nums text-green-500">{bull}%</span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+                {searchQuery && searchSentimentScore !== null && (
+                  <span className={cn("ml-auto text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-500")}>
+                    Score: {searchSentimentScore}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -444,10 +408,10 @@ function NewsPage() {
             />
 
             {/* News Grid */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {currentItems.length === 0 ? (
                 <div className="py-16 text-center">
-                  <div className={cn("mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl", isDark ? "bg-[rgba(59,130,246,0.05)]" : "bg-gray-100")}>
+                  <div className={cn("mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl", isDark ? "bg-white/5" : "bg-gray-100")}>
                     <svg className={cn("h-7 w-7", isDark ? "text-gray-600" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
@@ -457,145 +421,135 @@ function NewsPage() {
                 </div>
               ) : (
                 currentItems.map((article) => (
-                  <div
+                  <a
                     key={article._id}
-                    className={cn("group cursor-pointer rounded-xl border-[1.5px] p-4 transition-all sm:p-5", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)] hover:border-[rgba(59,130,246,0.12)] hover:bg-[rgba(59,130,246,0.02)]" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
+                    href={article.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "group flex gap-4 rounded-xl border-[1.5px] p-4 transition-all",
+                      isDark
+                        ? "border-white/10 bg-[rgba(255,255,255,0.01)] hover:border-primary/30 hover:bg-white/[0.02]"
+                        : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+                    )}
                   >
-                    <div className="mb-2 flex items-start justify-between gap-3">
-                      <p className={cn("flex-1 text-[14px] font-medium leading-snug transition-colors group-hover:text-primary", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
-                      <span
-                        className="shrink-0 rounded-md border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
-                        style={{
-                          borderColor: `${getSentimentColor(article.sentiment)}3D`,
-                          color: `${getSentimentColor(article.sentiment)}`,
-                          backgroundColor: `${getSentimentColor(article.sentiment)}10`
-                        }}
-                      >
-                        {article.sentiment || 'Unknown'}
-                      </span>
-                    </div>
+                    {/* Sentiment indicator bar */}
+                    <div
+                      className="w-1 shrink-0 rounded-full"
+                      style={{ backgroundColor: getSentimentColor(article.sentiment) }}
+                    />
 
-                    <p className={cn("mb-3 line-clamp-2 text-[13px] leading-relaxed", isDark ? "text-gray-500" : "text-gray-600")}>{article.summary}</p>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className={cn("rounded-md px-2 py-0.5 text-[10px] font-medium", isDark ? "bg-[rgba(59,130,246,0.08)] text-gray-400" : "bg-gray-100 text-gray-600")}>
+                    <div className="min-w-0 flex-1">
+                      {/* Top row: Source & Time */}
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <span className={cn("text-[11px] font-medium", isDark ? "text-gray-400" : "text-gray-500")}>
                           {article.sourceName}
                         </span>
                         <span className={cn("text-[10px]", isDark ? "text-gray-600" : "text-gray-400")}>
                           {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                         </span>
+                        <span
+                          className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase"
+                          style={{
+                            color: getSentimentColor(article.sentiment),
+                            backgroundColor: `${getSentimentColor(article.sentiment)}15`
+                          }}
+                        >
+                          {article.sentiment || 'N/A'}
+                        </span>
                       </div>
-                      <a
-                        href={article.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-[12px] font-medium text-primary hover:underline"
-                      >
-                        Read
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
+
+                      {/* Title */}
+                      <h3 className={cn(
+                        "mb-1 text-[14px] font-medium leading-snug transition-colors group-hover:text-primary",
+                        isDark ? "text-white" : "text-gray-900"
+                      )}>
+                        {extractTitle(article.title)}
+                      </h3>
+
+                      {/* Summary */}
+                      <p className={cn("line-clamp-1 text-[12px] leading-relaxed", isDark ? "text-gray-500" : "text-gray-500")}>
+                        {article.summary}
+                      </p>
                     </div>
-                  </div>
+
+                    {/* Arrow indicator */}
+                    <div className={cn(
+                      "flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100",
+                      isDark ? "text-gray-500" : "text-gray-400"
+                    )}>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </a>
                 ))
               )}
             </div>
 
             {/* Pagination */}
-            {totalCount > 0 && (
-              <div className="mt-4 flex flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
-                <div className={cn("flex flex-wrap items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-transparent" : "border-black/8 bg-white")}>
-                  <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal tabular-nums border", isDark ? "border-[rgba(59,130,246,0.08)] text-white" : "border-black/8 text-gray-700")}>
-                    {`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}
-                  </span>
-                  <span className={cn("text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-600")}>articles</span>
-                  {searchQuery && (
-                    <>
-                      <span className={cn("text-[11px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>for</span>
-                      <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>"{searchQuery}"</span>
-                    </>
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-1">
+                <button
+                  onClick={() => handlePageChange(null, currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:opacity-30",
+                    isDark ? "hover:bg-white/5 disabled:hover:bg-transparent" : "hover:bg-gray-100 disabled:hover:bg-transparent"
                   )}
-                  {selectedSource && !searchQuery && (
-                    <>
-                      <span className={cn("text-[11px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>from</span>
-                      <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{selectedSource}</span>
-                    </>
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {(() => {
+                  const pages = [];
+                  if (totalPages <= 5) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else if (currentPage <= 3) {
+                    pages.push(1, 2, 3, '...', totalPages);
+                  } else if (currentPage >= totalPages - 2) {
+                    pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
+                  } else {
+                    pages.push(1, '...', currentPage, '...', totalPages);
+                  }
+                  return pages.map((p, i) =>
+                    p === '...' ? (
+                      <span key={`e${i}`} className={cn("px-1 text-[12px]", isDark ? "text-gray-600" : "text-gray-400")}>...</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(null, p)}
+                        className={cn(
+                          "flex h-8 min-w-[32px] items-center justify-center rounded-md text-[12px] tabular-nums transition-colors",
+                          p === currentPage
+                            ? "bg-primary text-white"
+                            : isDark ? "text-gray-400 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
+                        )}
+                      >
+                        {p}
+                      </button>
+                    )
+                  );
+                })()}
+
+                <button
+                  onClick={() => handlePageChange(null, currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:opacity-30",
+                    isDark ? "hover:bg-white/5 disabled:hover:bg-transparent" : "hover:bg-gray-100 disabled:hover:bg-transparent"
                   )}
-                </div>
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
 
-                {totalPages > 1 && (
-                  <div className="flex flex-1 justify-center">
-                    <div className={cn("flex items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-[rgba(59,130,246,0.08)] bg-transparent" : "border-black/8 bg-white")}>
-                      <button
-                        onClick={() => handlePageChange(null, 1)}
-                        disabled={currentPage === 1}
-                        title="First page"
-                        className="inline-flex h-[26px] w-[26px] items-center justify-center rounded disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
-                      >
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-
-                      {(() => {
-                        const pages = [];
-                        if (totalPages <= 7) {
-                          for (let i = 1; i <= totalPages; i++) {
-                            pages.push(i);
-                          }
-                        } else {
-                          if (currentPage <= 3) {
-                            for (let i = 1; i <= 5; i++) pages.push(i);
-                            pages.push('...');
-                            pages.push(totalPages);
-                          } else if (currentPage >= totalPages - 2) {
-                            pages.push(1);
-                            pages.push('...');
-                            for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-                          } else {
-                            pages.push(1);
-                            pages.push('...');
-                            for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-                            pages.push('...');
-                            pages.push(totalPages);
-                          }
-                        }
-                        return pages.map((pageNum, idx) => {
-                          if (pageNum === '...') {
-                            return <span key={`ellipsis-${idx}`} className={cn("px-0.5 text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-500")}>...</span>;
-                          }
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => handlePageChange(null, pageNum)}
-                              className={cn(
-                                'inline-flex min-w-[22px] h-[22px] items-center justify-center rounded px-1 text-[11px] tabular-nums',
-                                pageNum === currentPage
-                                  ? 'bg-primary font-medium text-white hover:bg-primary-600'
-                                  : isDark ? 'font-normal hover:bg-primary/8' : 'font-normal text-gray-700 hover:bg-gray-200'
-                              )}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        });
-                      })()}
-
-                      <button
-                        onClick={() => handlePageChange(null, totalPages)}
-                        disabled={currentPage === totalPages}
-                        title="Last page"
-                        className="inline-flex h-[26px] w-[26px] items-center justify-center rounded disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
-                      >
-                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <span className={cn("ml-2 text-[11px] tabular-nums", isDark ? "text-gray-600" : "text-gray-400")}>
+                  {currentPage}/{totalPages}
+                </span>
               </div>
             )}
           </>

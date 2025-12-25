@@ -78,7 +78,30 @@ const CardContent = ({ children, sx, ...p }) => <div style={{ padding: '16px', .
 const Chip = ({ label, sx, ...p }) => <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '9999px', padding: '2px 8px', fontSize: '12px', ...sx2style(sx) }} {...p}>{label}</span>;
 const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => <div style={{ display: 'flex', flexDirection: direction === 'row' ? 'row' : 'column', gap: `${spacing * 8}px`, alignItems, ...sx2style(sx) }} {...p}>{children}</div>;
 const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
-const Tooltip = ({ children, title, onOpen, ...p }) => <span title={typeof title === 'string' ? title : ''} onMouseEnter={onOpen} {...p}>{children}</span>;
+const Tooltip = ({ children, title, onOpen, ...p }) => {
+  const [show, setShow] = useState(false);
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-flex' }}
+      onMouseEnter={() => { setShow(true); onOpen?.(); }}
+      onMouseLeave={() => setShow(false)}
+      {...p}
+    >
+      {children}
+      {show && title && typeof title !== 'string' && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+          marginBottom: 8, zIndex: 9999, minWidth: 200,
+          background: isDark ? '#1a1a1a' : '#fff',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          borderRadius: 8, padding: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}>{title}</div>
+      )}
+    </span>
+  );
+};
 const IconButton = ({ children, onClick, sx, ...p }) => <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'inline-flex', ...sx2style(sx) }} onClick={onClick} {...p}>{children}</button>;
 const Divider = ({ sx, ...p }) => <hr style={{ border: 'none', borderTop: '1px solid rgba(128,128,128,0.2)', margin: '8px 0', ...sx2style(sx) }} {...p} />;
 const FileCopyOutlinedIcon = ({ sx }) => <Copy size={sx?.fontSize ? parseInt(sx.fontSize) : 16} />;
@@ -803,7 +826,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
     try {
       let response;
       if (isXRP) {
-        response = await axios.get('https://api.xrpl.to/api/token/xrp');
+        response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
       } else {
         response = await axios.get(`https://api.xrpl.to/api/token/${md5}`);
       }
@@ -908,7 +931,7 @@ const XrpDisplay = ({ variant = 'body2', showText = true }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/api/token/xrp');
+      const response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -968,7 +991,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/api/token/xrp');
+      const response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -981,11 +1004,12 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
   if (typeof amount === 'string') {
     const xrpElement = (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Typography variant={variant}>{dropsToXrp(amount)}</Typography>
         <Avatar
           src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
-          sx={{ width: 20, height: 20, mr: 0.5 }}
+          sx={{ width: 20, height: 20, mx: 0.5 }}
         />
-        <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>
+        <Typography variant={variant}>XRP</Typography>
       </Box>
     );
 
@@ -1019,6 +1043,47 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
   }
   if (typeof amount === 'object') {
     const currency = normalizeCurrencyCode(amount.currency);
+    // Handle XRP as object (some APIs return it this way with value in drops)
+    if (amount.currency === 'XRP' && !amount.issuer) {
+      const xrpValue = dropsToXrp(String(amount.value));
+      const xrpElement = (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant={variant}>{xrpValue}</Typography>
+          <Avatar
+            src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+            sx={{ width: 20, height: 20, mx: 0.5 }}
+          />
+          <Typography variant={variant}>XRP</Typography>
+        </Box>
+      );
+      return (
+        <Tooltip
+          title={
+            <TokenTooltipContent
+              md5="84e5efeb89c4eae8f68188982dc290d8"
+              tokenInfo={xrpTokenInfo}
+              loading={loading}
+              error={error}
+            />
+          }
+          onOpen={handleFetchXrpInfo}
+          placement="top"
+          arrow
+          PopperProps={{
+            sx: {
+              '& .MuiTooltip-tooltip': {
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                border: `1px solid ${theme.palette.divider}`,
+                maxWidth: 'none'
+              }
+            }
+          }}
+        >
+          <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{xrpElement}</Box>
+        </Tooltip>
+      );
+    }
     const slug = amount.issuer ? `${amount.issuer}-${amount.currency}` : null;
     return (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1109,6 +1174,10 @@ const getTransactionDescription = (txData) => {
       return `${dropsToXrp(amount)} XRP`;
     }
     if (typeof amount === 'object' && amount) {
+      // Handle XRP as object (some APIs return it this way with value in drops)
+      if (amount.currency === 'XRP' && !amount.issuer) {
+        return `${dropsToXrp(String(amount.value))} XRP`;
+      }
       const currency = normalizeCurrencyCode(amount.currency);
       return `${formatDecimal(new Decimal(amount.value))} ${currency}`;
     }
@@ -3097,10 +3166,10 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     {(Amount || Amount2) && (
                       <DetailRow label="Deposited Assets">
-                        <Stack spacing={1}>
-                          {Amount && <AmountDisplay amount={Amount} />}
-                          {Amount2 && <AmountDisplay amount={Amount2} />}
-                        </Stack>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                          {Amount && <div style={{ border: '1px solid #666', borderRadius: '6px', padding: '6px 10px' }}><AmountDisplay amount={Amount} /></div>}
+                          {Amount2 && <div style={{ border: '1px solid #666', borderRadius: '6px', padding: '6px 10px' }}><AmountDisplay amount={Amount2} /></div>}
+                        </div>
                       </DetailRow>
                     )}
                   </>
@@ -4320,7 +4389,10 @@ const TxPage = ({ txData, error }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex-1 py-8 max-w-[1920px] mx-auto w-full px-4">
+      <div className={cn(
+        "flex-1 py-8 max-w-[1920px] mx-auto w-full px-4 rounded-xl border-[1.5px]",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
             The imports have been updated, but the component JSX still uses many MUI components like:
             Box, Typography, Paper, Card, CardContent, Stack, Grid, Chip, Avatar, Tooltip, etc.
@@ -4425,11 +4497,15 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const response = await axios.get(`https://api.xrpscan.com/api/v1/tx/${hash}`)
-    .then(res => ({ data: { result: res.data } }))
-    .catch(() => null);
+  const response = await axios.post('https://s1.ripple.com:51234', {
+    method: 'tx',
+    params: [{
+      transaction: hash,
+      binary: false
+    }]
+  }).catch(() => null);
 
-  if (!response) {
+  if (!response || !response.data?.result) {
     return {
       props: {
         txData: null,

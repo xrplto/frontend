@@ -301,9 +301,9 @@ const TokenSummary = memo(({ token }) => {
 
   const getPriceDisplay = () => {
     const symbol = currencySymbols[activeFiatCurrency];
-    const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
-    const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-    if (!price || price === 0) return { symbol, price: '0', isCompact: false };
+    const exchRate = Number(metrics[activeFiatCurrency]) || (activeFiatCurrency === 'CNH' ? Number(metrics.CNY) : null) || 1;
+    const price = Number(activeFiatCurrency === 'XRP' ? exch : exch / exchRate);
+    if (!price || !isFinite(price) || price === 0) return { symbol, price: '0', isCompact: false };
 
     if (price < 0.01) {
       const str = price.toFixed(15);

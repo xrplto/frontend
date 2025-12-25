@@ -1351,7 +1351,7 @@ export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)'};
+  background: ${(props) => props.isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(12px);
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   font-size: 12px;

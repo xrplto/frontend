@@ -2,7 +2,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef } from 'react';
 import styled from '@emotion/styled';
-import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert, ArrowUpRight, ArrowDownLeft, Droplet, Flame, ArrowLeftRight, BarChart2, X, Link2, Settings, FileText } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -285,40 +285,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       .then(data => {
         if (data?.review) {
           const review = data.review;
-          // Check if direct format (has riskScore directly)
-          if (typeof review.riskScore === 'number') {
+          // Handle safetyScore (new, 10=safe) or riskScore (old, 10=risky)
+          const score = review.safetyScore ?? review.riskScore;
+          if (typeof score === 'number') {
             setAiReview({
+              safetyScore: review.safetyScore,
               riskScore: review.riskScore,
               risks: Array.isArray(review.risks) ? review.risks : [],
               positives: Array.isArray(review.positives) ? review.positives : [],
               summary: review.summary || '',
               timestamp: data.timestamp
             });
-          } else if (review.raw) {
-            // Parse malformed JSON: arrays have "key": "value" format
-            try {
-              const raw = review.raw;
-              const riskMatch = raw.match(/"riskScore"\s*:\s*(\d+)/);
-              const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
-              const risksMatch = raw.match(/"risks"\s*:\s*\[([\s\S]*?)\]/);
-              const positivesMatch = raw.match(/"positives"\s*:\s*\[([\s\S]*?)\]/);
-
-              const extractValues = (str) => {
-                if (!str) return [];
-                const matches = str.match(/"[^"]+"\s*:\s*"([^"]+)"/g) || [];
-                return matches.map(m => m.match(/:\s*"([^"]+)"/)?.[1]).filter(Boolean);
-              };
-
-              setAiReview({
-                riskScore: riskMatch ? parseInt(riskMatch[1]) : null,
-                risks: extractValues(risksMatch?.[1]),
-                positives: extractValues(positivesMatch?.[1]),
-                summary: summaryMatch?.[1] || '',
-                timestamp: data.timestamp
-              });
-            } catch (e) {
-              console.error('AI parse error:', e);
-            }
           }
         }
         setAiLoading(false);
@@ -341,10 +318,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     try {
       // First try creator-activity API (token-specific)
       let url = `https://api.xrpl.to/api/creators/${creator}?limit=12`;
-      if (filter === 'sells') url += '&side=sell';
-      else if (filter === 'buys') url += '&side=buy';
-      else if (filter === 'amm') url += '&type=AMMDeposit,AMMWithdraw';
-      else if (filter === 'exits') url += '&side=sell,withdraw';
+      if (filter === 'swaps') url += '&side=sell,buy';
+      else if (filter === 'transfers') url += '&side=transfer_out,receive';
+      else if (filter === 'checks') url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
+      else if (filter === 'lp') url += '&side=deposit,withdraw,amm_create';
 
       const res = await fetch(url, { signal });
       if (signal?.aborted) return;
@@ -612,70 +589,54 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             )}
           </Stack>
 
-          {aiReview && (
+          {aiReview && (() => {
+              // safetyScore (10=safe) or riskScore (10=risky)
+              const hasSafety = typeof aiReview.safetyScore === 'number';
+              const score = hasSafety ? aiReview.safetyScore : aiReview.riskScore;
+              const isGreen = hasSafety ? score >= 7 : score <= 3;
+              const isYellow = hasSafety ? (score >= 4 && score < 7) : (score > 3 && score <= 6);
+              const color = isGreen ? '#22c55e' : isYellow ? '#f59e0b' : '#ef4444';
+              const label = hasSafety
+                ? (score >= 7 ? 'Safe' : score >= 4 ? 'Moderate' : 'Risky')
+                : (score <= 3 ? 'Low Risk' : score <= 6 ? 'Medium Risk' : 'High Risk');
+              const Icon = isGreen ? ShieldCheck : isYellow ? ShieldAlert : AlertTriangle;
+
+              return (
             <>
-              {/* Risk Score Card */}
+              {/* Score Card */}
               <Box style={{
                 padding: '12px',
                 borderRadius: '10px',
                 background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.6)',
                 marginBottom: '12px',
-                border: `1px solid ${aiReview.riskScore <= 3 ? 'rgba(34,197,94,0.2)' : aiReview.riskScore <= 6 ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)'}`
+                border: `1px solid ${color}22`
               }}>
                 <Stack direction="row" alignItems="center" style={{ gap: '12px' }}>
                   <div style={{
                     width: 44,
                     height: 44,
                     borderRadius: '10px',
-                    background: aiReview.riskScore <= 3
-                      ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)'
-                      : aiReview.riskScore <= 6
-                        ? 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.05) 100%)'
-                        : 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%)',
+                    background: `linear-gradient(135deg, ${color}22 0%, ${color}0d 100%)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    {aiReview.riskScore <= 3 ? <ShieldCheck size={22} color="#22c55e" /> : aiReview.riskScore <= 6 ? <ShieldAlert size={22} color="#f59e0b" /> : <AlertTriangle size={22} color="#ef4444" />}
+                    <Icon size={22} color={color} />
                   </div>
                   <Stack style={{ flex: 1 }}>
                     <Stack direction="row" alignItems="baseline" style={{ gap: '4px' }}>
-                      <Typography style={{
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        color: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
-                        lineHeight: 1,
-                        letterSpacing: '-0.02em'
-                      }}>
-                        {aiReview.riskScore}
+                      <Typography style={{ fontSize: '24px', fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                        {score}
                       </Typography>
                       <Typography style={{ fontSize: '13px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 500 }}>/10</Typography>
                     </Stack>
-                    <Typography style={{
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      color: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
-                      {aiReview.riskScore <= 3 ? 'Low Risk' : aiReview.riskScore <= 6 ? 'Medium Risk' : aiReview.riskScore <= 8 ? 'High Risk' : 'Extreme Risk'}
+                    <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {label}
                     </Typography>
                   </Stack>
-                  {/* Risk bar */}
                   <div style={{ width: '60px' }}>
-                    <div style={{
-                      height: '4px',
-                      borderRadius: '2px',
-                      background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        width: `${aiReview.riskScore * 10}%`,
-                        height: '100%',
-                        borderRadius: '2px',
-                        background: aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444',
-                        transition: 'width 0.5s ease'
-                      }} />
+                    <div style={{ height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '2px', background: color, transition: 'width 0.5s ease' }} />
                     </div>
                   </div>
                 </Stack>
@@ -712,7 +673,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   borderRadius: '8px',
                   padding: '10px 12px',
                   marginTop: '8px',
-                  borderLeft: `2px solid ${aiReview.riskScore <= 3 ? '#22c55e' : aiReview.riskScore <= 6 ? '#f59e0b' : '#ef4444'}`
+                  borderLeft: `2px solid ${color}`
                 }}>
                   <Typography style={{
                     fontSize: '10px',
@@ -734,7 +695,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 </div>
               )}
             </>
-          )}
+              );
+          })()}
         </Box>
       )}
 
@@ -1520,10 +1482,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   <Stack direction="row" style={{ gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
                     {[
                       { key: 'all', label: 'All' },
-                      { key: 'exits', label: 'Exits', color: '#ef4444' },
-                      { key: 'sells', label: 'Sells' },
-                      { key: 'buys', label: 'Buys' },
-                      { key: 'amm', label: 'AMM' }
+                      { key: 'swaps', label: 'Swaps', color: '#3b82f6' },
+                      { key: 'transfers', label: 'Transfers', color: '#9C27B0' },
+                      { key: 'checks', label: 'Checks', color: '#f59e0b' },
+                      { key: 'lp', label: 'LP', color: '#22c55e' }
                     ].map(f => (
                       <Typography
                         key={f.key}
@@ -1581,127 +1543,124 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     </Typography>
                   ) : (
                     <Stack spacing={0}>
-                      {/* Header */}
-                      <Stack direction="row" style={{ padding: '0 0 8px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`, marginBottom: '6px' }}>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '70px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Action</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, flex: 1, textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Amount</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '70px', textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>XRP</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '9px', fontWeight: 500, width: '50px', textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time</Typography>
-                      </Stack>
-
                       {transactions.map((event, i) => {
-                        const { side, tokenAmount, xrpAmount, result, time, hash, ledger, type, currency, destination } = event;
+                        const { side, tokenAmount, xrpAmount, result, time, hash, ledger, type, currency, destination, name } = event;
+                        const tokenName = name || currency;
                         const isFailed = result && result !== 'tesSUCCESS';
 
                         // Side-based styling with fallback to type
                         const sideConfig = {
-                          sell: { label: 'SELL', color: '#ef4444', icon: '📤' },
-                          buy: { label: 'BUY', color: '#22c55e', icon: '📥' },
-                          deposit: { label: 'DEPOSIT', color: '#22c55e', icon: '💧' },
-                          withdraw: { label: 'WITHDRAW', color: '#f59e0b', icon: '🔥' },
-                          receive: { label: 'RECEIVE', color: '#22c55e', icon: '📥' },
-                          send: { label: 'SEND', color: '#f59e0b', icon: '📤' },
-                          clawback: { label: 'CLAWBACK', color: '#ef4444', icon: '⚠️' },
-                          check_create: { label: 'CHECK', color: '#3b82f6', icon: '📝' },
-                          check_receive: { label: 'CHECK IN', color: '#22c55e', icon: '📥' },
-                          check_send: { label: 'CHECK OUT', color: '#ef4444', icon: '📤' }
+                          sell: { label: 'SELL', color: '#ef4444', Icon: ArrowUpRight },
+                          buy: { label: 'BUY', color: '#22c55e', Icon: ArrowDownLeft },
+                          deposit: { label: 'DEPOSIT', color: '#22c55e', Icon: Droplet },
+                          withdraw: { label: 'WITHDRAW', color: '#f59e0b', Icon: Flame },
+                          receive: { label: 'RECEIVE', color: '#22c55e', Icon: ArrowDownLeft },
+                          send: { label: 'SEND', color: '#f59e0b', Icon: ArrowUpRight },
+                          transfer_out: { label: 'TRANSFER', color: '#9C27B0', Icon: ArrowLeftRight },
+                          clawback: { label: 'CLAWBACK', color: '#ef4444', Icon: AlertTriangle },
+                          amm_create: { label: 'AMM CREATE', color: '#22c55e', Icon: Droplet },
+                          check_create: { label: 'CHECK', color: '#3b82f6', Icon: FileText },
+                          check_incoming: { label: 'CHECK IN', color: '#22c55e', Icon: ArrowDownLeft },
+                          check_receive: { label: 'CASHED', color: '#22c55e', Icon: ArrowDownLeft },
+                          check_send: { label: 'CHECK OUT', color: '#ef4444', Icon: ArrowUpRight },
+                          check_cancel: { label: 'CANCELLED', color: '#6b7280', Icon: X }
                         };
                         const typeConfig = {
-                          Payment: { label: 'TRANSFER', color: '#9C27B0', icon: '↔️' },
-                          AMMDeposit: { label: 'AMM ADD', color: '#22c55e', icon: '💧' },
-                          AMMWithdraw: { label: 'AMM EXIT', color: '#f59e0b', icon: '🔥' },
-                          OfferCreate: { label: 'OFFER', color: '#3b82f6', icon: '📊' },
-                          OfferCancel: { label: 'CANCEL', color: '#9C27B0', icon: '❌' },
-                          TrustSet: { label: 'TRUST', color: '#3b82f6', icon: '🔗' },
-                          AccountSet: { label: 'SETTINGS', color: '#6b7280', icon: '⚙️' },
-                          Clawback: { label: 'CLAWBACK', color: '#ef4444', icon: '⚠️' }
+                          Payment: { label: 'TRANSFER', color: '#9C27B0', Icon: ArrowLeftRight },
+                          AMMDeposit: { label: 'AMM ADD', color: '#22c55e', Icon: Droplet },
+                          AMMWithdraw: { label: 'AMM EXIT', color: '#f59e0b', Icon: Flame },
+                          OfferCreate: { label: 'OFFER', color: '#3b82f6', Icon: BarChart2 },
+                          OfferCancel: { label: 'CANCEL', color: '#9C27B0', Icon: X },
+                          TrustSet: { label: 'TRUST', color: '#3b82f6', Icon: Link2 },
+                          AccountSet: { label: 'SETTINGS', color: '#6b7280', Icon: Settings },
+                          Clawback: { label: 'CLAWBACK', color: '#ef4444', Icon: AlertTriangle }
                         };
-                        const cfg = side ? sideConfig[side] : (typeConfig[type] || { label: type?.slice(0, 8), color: '#9C27B0', icon: '•' });
+                        const cfg = sideConfig[side] || sideConfig[side?.toLowerCase()] || typeConfig[type] || { label: type?.slice(0, 8) || 'TX', color: '#9C27B0', Icon: null };
                         const displayColor = isFailed ? '#ef4444' : cfg.color;
 
-                        // Time ago
+                        // Time ago - compact
                         const diffMs = time ? Date.now() - time : 0;
                         const mins = Math.floor(diffMs / 60000);
                         const hours = Math.floor(diffMs / 3600000);
                         const days = Math.floor(diffMs / 86400000);
-                        const timeAgo = days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : mins > 0 ? `${mins}m ago` : 'just now';
+                        const timeAgo = days > 0 ? `${days}d` : hours > 0 ? `${hours}h` : mins > 0 ? `${mins}m` : 'now';
 
                         // Format amounts
                         const hasToken = tokenAmount > 0;
                         const hasXrp = xrpAmount > 0.001;
-                        const displayCurrency = currency || 'tokens';
+                        const displayCurrency = tokenName || currency || '';
 
                         return (
-                          <Stack
+                          <Link
                             key={hash || i}
-                            direction="row"
-                            alignItems="center"
-                            style={{
-                              padding: '8px 0',
-                              borderBottom: i < transactions.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}` : 'none',
-                              opacity: isFailed ? 0.5 : 1
-                            }}
+                            href={`/tx/${hash}`}
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ textDecoration: 'none' }}
                           >
-                            {/* Action */}
-                            <Stack direction="row" alignItems="center" style={{ width: '70px', gap: '5px' }}>
-                              <Tooltip title={`${type}\n${result}\nLedger: ${ledger}`}>
-                                <Link
-                                  href={`/tx/${hash}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                  <span style={{ fontSize: '11px' }}>{cfg.icon}</span>
-                                  <Typography variant="caption" style={{
-                                    color: displayColor,
-                                    fontSize: '10px',
-                                    fontWeight: 500
-                                  }}>{cfg.label}</Typography>
-                                </Link>
-                              </Tooltip>
-                              {isFailed && <span style={{ fontSize: '9px' }}>✕</span>}
-                            </Stack>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              style={{
+                                padding: '5px 0',
+                                borderBottom: i < transactions.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` : 'none',
+                                opacity: isFailed ? 0.5 : 1,
+                                cursor: 'pointer',
+                                gap: '8px'
+                              }}
+                            >
+                              {/* Icon */}
+                              {cfg.Icon && <cfg.Icon size={13} style={{ color: displayColor, flexShrink: 0 }} />}
 
-                            {/* Token Amount */}
-                            <Tooltip title={hasToken ? `${fNumber(tokenAmount)} ${displayCurrency}` : ''}>
+                              {/* Action */}
+                              <Typography variant="caption" style={{
+                                color: displayColor,
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                width: '65px',
+                                flexShrink: 0
+                              }}>{cfg.label}{isFailed && ' ✕'}</Typography>
+
+                              {/* Amount + Token */}
                               <Typography variant="caption" style={{
                                 flex: 1,
-                                textAlign: 'right',
-                                color: hasToken ? (isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)') : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
+                                color: hasToken ? (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)') : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
                                 fontSize: '11px',
-                                fontWeight: hasToken ? 500 : 400,
+                                fontWeight: 500,
                                 fontFamily: 'monospace',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
                               }}>
-                                {hasToken ? `${fNumber(tokenAmount)}` : '—'}
+                                {hasToken ? `${fNumber(tokenAmount)} ${displayCurrency}` : '—'}
                               </Typography>
-                            </Tooltip>
 
-                            {/* XRP Amount */}
-                            <Tooltip title={hasXrp ? `${fNumber(xrpAmount)} XRP${destination ? `\nTo: ${destination.slice(0, 8)}...` : ''}` : ''}>
+                              {/* XRP Value */}
+                              <Typography variant="caption" style={{
+                                width: '80px',
+                                textAlign: 'right',
+                                color: hasXrp ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
+                                fontSize: '11px',
+                                fontWeight: hasXrp ? 500 : 400,
+                                fontFamily: 'monospace',
+                                flexShrink: 0
+                              }}>
+                                {hasXrp ? `${fNumber(xrpAmount)} XRP` : '—'}
+                              </Typography>
+
+                              {/* Hash + Time */}
                               <Typography variant="caption" style={{
                                 width: '70px',
                                 textAlign: 'right',
-                                color: hasXrp ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
-                                fontSize: '11px',
-                                fontWeight: hasXrp ? 500 : 400,
-                                fontFamily: 'monospace'
+                                color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                                fontSize: '9px',
+                                fontFamily: 'monospace',
+                                flexShrink: 0
                               }}>
-                                {hasXrp ? `${fNumber(xrpAmount)}` : '—'}
+                                {hash?.slice(0, 6)} · {timeAgo}
                               </Typography>
-                            </Tooltip>
-
-                            {/* Time */}
-                            <Typography variant="caption" style={{
-                              width: '50px',
-                              textAlign: 'right',
-                              color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                              fontSize: '10px'
-                            }}>
-                              {timeAgo}
-                            </Typography>
-                          </Stack>
+                            </Stack>
+                          </Link>
                         );
                       })}
                     </Stack>

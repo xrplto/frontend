@@ -574,7 +574,8 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? 'rgba(10, 10, 10, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
+  background: ${(props) => (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)')};
+  backdrop-filter: blur(12px);
 `;
 
 const StyledTableCell = styled.th`
@@ -633,7 +634,7 @@ const StyledMobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.98)'};
+  background: ${(props) => props.isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(12px);
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   font-size: 12px;

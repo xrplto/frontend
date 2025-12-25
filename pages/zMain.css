@@ -55,24 +55,9 @@ body {
   background: #ffffff;
 }
 
-/* Dark mode - futuristic XRP Ledger aesthetic */
+/* Dark mode */
 html.dark body {
-  background:
-    /* Subtle grid pattern */
-    linear-gradient(rgba(20, 125, 254, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 125, 254, 0.03) 1px, transparent 1px),
-    /* Primary glow - top left */
-    radial-gradient(ellipse 60% 50% at 0% 0%, rgba(20, 125, 254, 0.15), transparent 50%),
-    /* Secondary glow - bottom right */
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(99, 102, 241, 0.12), transparent 50%),
-    /* Accent glow - center right */
-    radial-gradient(ellipse 40% 60% at 100% 30%, rgba(20, 125, 254, 0.06), transparent 50%),
-    /* Vignette */
-    radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.4) 100%),
-    /* Base */
-    #000000;
-  background-size: 60px 60px, 60px 60px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-  background-attachment: fixed;
+  background: #000000;
 }
 
 /* Firefox focus fix */

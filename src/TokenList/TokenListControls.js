@@ -11,7 +11,7 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+  background: ${(props) => (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)')};
   backdrop-filter: blur(12px);
 `;
 
@@ -31,7 +31,7 @@ const StyledTableCell = styled.th`
   position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
   left: ${(props) => props.left || 'unset'};
   z-index: ${(props) => (props.sticky ? 101 : 'auto')};
-  background: ${(props) => (props.sticky ? (props.darkMode ? '#0a0a0a' : '#fff') : 'transparent')};
+  background: ${(props) => (props.sticky ? (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)') : 'transparent')};
   font-family: inherit;
   transition: color 0.15s ease;
   width: ${(props) => (props.width ? `${props.width}px` : 'auto')};
