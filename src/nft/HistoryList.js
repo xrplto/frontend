@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import Link from 'next/link';
 import { ExternalLink, TrendingUp, Users, Zap, Award, DollarSign, Sparkles, ArrowUpRight, Flame, Tag, List, X } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 
 const TYPE_CONFIG = {
   SALE: { label: 'Sale', color: '#e5e5e5', Icon: DollarSign },
@@ -45,6 +46,8 @@ const formatRelativeTime = (ts) => {
 };
 
 export default function HistoryList({ nft }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -126,16 +129,19 @@ export default function HistoryList({ nft }) {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+      <div className={cn(
+        "rounded-2xl border overflow-hidden",
+        isDark ? "border-gray-800/60 bg-gradient-to-b from-gray-900/50 to-black/50" : "border-gray-200 bg-gray-50"
+      )}>
         <div className="p-4">
           <div className="grid grid-cols-4 gap-3 mb-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-16 rounded-xl bg-white/[0.03] animate-pulse" />
+              <div key={i} className={cn("h-16 rounded-xl animate-pulse", isDark ? "bg-white/[0.03]" : "bg-gray-200")} />
             ))}
           </div>
           <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-14 rounded-xl animate-pulse bg-white/[0.02]" />
+              <div key={i} className={cn("h-14 rounded-xl animate-pulse", isDark ? "bg-white/[0.02]" : "bg-gray-100")} />
             ))}
           </div>
         </div>
@@ -145,60 +151,66 @@ export default function HistoryList({ nft }) {
 
   if (!history.length) {
     return (
-      <div className="rounded-2xl border border-gray-800/60 overflow-hidden bg-gradient-to-b from-gray-900/50 to-black/50">
+      <div className={cn(
+        "rounded-2xl border overflow-hidden",
+        isDark ? "border-gray-800/60 bg-gradient-to-b from-gray-900/50 to-black/50" : "border-gray-200 bg-gray-50"
+      )}>
         <div className="py-12 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
-            <Zap size={20} className="text-gray-600" />
+          <div className={cn("w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-200")}>
+            <Zap size={20} className="text-gray-500" />
           </div>
           <p className="text-sm text-gray-500">No activity yet</p>
-          <p className="text-xs text-gray-600 mt-1">History will appear here</p>
+          <p className={cn("text-xs mt-1", isDark ? "text-gray-600" : "text-gray-400")}>History will appear here</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-950">
+    <div className={cn(
+      "rounded-2xl border overflow-hidden",
+      isDark ? "border-neutral-800 bg-neutral-950" : "border-gray-200 bg-white"
+    )}>
       {/* Stats Summary */}
       {stats.salesCount > 0 && (
-        <div className="p-3 border-b border-neutral-800">
+        <div className={cn("p-3 border-b", isDark ? "border-neutral-800" : "border-gray-200")}>
           <div className="grid grid-cols-4 gap-1.5">
-            <div className="text-center p-2 rounded-lg bg-neutral-900">
+            <div className={cn("text-center p-2 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Zap size={11} className="text-neutral-500" />
-                <span className="text-sm font-medium text-white tabular-nums">{stats.salesCount}</span>
+                <Zap size={11} className="text-gray-500" />
+                <span className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{stats.salesCount}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Sales</p>
+              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-neutral-600" : "text-gray-500")}>Sales</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-neutral-900">
+            <div className={cn("text-center p-2 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <TrendingUp size={11} className="text-neutral-500" />
-                <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.totalVolume)}</span>
+                <TrendingUp size={11} className="text-gray-500" />
+                <span className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fNumber(stats.totalVolume)}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Volume</p>
+              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-neutral-600" : "text-gray-500")}>Volume</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-neutral-900">
+            <div className={cn("text-center p-2 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Award size={11} className="text-neutral-500" />
-                <span className="text-sm font-medium text-white tabular-nums">{fNumber(stats.highestSale)}</span>
+                <Award size={11} className="text-gray-500" />
+                <span className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fNumber(stats.highestSale)}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-neutral-600">ATH</p>
+              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-neutral-600" : "text-gray-500")}>ATH</p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-neutral-900">
+            <div className={cn("text-center p-2 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
               <div className="flex items-center justify-center gap-1 mb-0.5">
-                <Users size={11} className="text-neutral-500" />
-                <span className="text-sm font-medium text-white tabular-nums">{stats.uniqueOwners}</span>
+                <Users size={11} className="text-gray-500" />
+                <span className={cn("text-sm font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>{stats.uniqueOwners}</span>
               </div>
-              <p className="text-[9px] uppercase tracking-wide text-neutral-600">Owners</p>
+              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-neutral-600" : "text-gray-500")}>Owners</p>
             </div>
           </div>
           {/* List vs Last Sale + Mint Date */}
           <div className="mt-2 flex items-center gap-2">
             {stats.listPrice > 0 && stats.salePrice > 0 && (
-              <div className="flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg bg-neutral-900">
-                <span className="text-[10px] text-neutral-500">List vs Sale</span>
+              <div className={cn("flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
+                <span className="text-[10px] text-gray-500">List vs Sale</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-neutral-400 tabular-nums">{fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}</span>
+                  <span className={cn("text-[11px] tabular-nums", isDark ? "text-neutral-400" : "text-gray-600")}>{fNumber(stats.listPrice)} / {fNumber(stats.salePrice)}</span>
                   <span className={cn(
                     "text-[10px] font-medium tabular-nums px-1.5 py-0.5 rounded",
                     stats.priceDiff >= 0 ? "text-emerald-400 bg-emerald-500/10" : "text-red-400 bg-red-500/10"
@@ -209,9 +221,9 @@ export default function HistoryList({ nft }) {
               </div>
             )}
             {stats.mintDate && (
-              <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-neutral-900">
-                <span className="text-[10px] text-neutral-500 mr-2">Minted</span>
-                <span className="text-[11px] text-neutral-400">{new Date(stats.mintDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              <div className={cn("flex items-center justify-between px-2 py-1.5 rounded-lg", isDark ? "bg-neutral-900" : "bg-gray-50")}>
+                <span className="text-[10px] text-gray-500 mr-2">Minted</span>
+                <span className={cn("text-[11px]", isDark ? "text-neutral-400" : "text-gray-600")}>{new Date(stats.mintDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </div>
             )}
           </div>
@@ -219,15 +231,15 @@ export default function HistoryList({ nft }) {
       )}
 
       {/* Filter Pills */}
-      <div className="px-3 py-2 border-b border-neutral-800">
+      <div className={cn("px-3 py-2 border-b", isDark ? "border-neutral-800" : "border-gray-200")}>
         <div className="flex items-center gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
               "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border",
               activeFilter === 'all'
-                ? "bg-white/10 text-white/90 border-white/15"
-                : "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]"
+                ? isDark ? "bg-white/10 text-white/90 border-white/15" : "bg-gray-900 text-white border-gray-900"
+                : isDark ? "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]" : "text-gray-600 border-gray-300 hover:text-gray-900 hover:bg-gray-100"
             )}
           >
             All {history.length}
@@ -241,7 +253,9 @@ export default function HistoryList({ nft }) {
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
                 className={cn(
                   "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border",
-                  activeFilter === type ? "bg-white/10 text-white/90 border-white/15" : "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]"
+                  activeFilter === type
+                    ? isDark ? "bg-white/10 text-white/90 border-white/15" : "bg-gray-900 text-white border-gray-900"
+                    : isDark ? "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]" : "text-gray-600 border-gray-300 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
                 {config.label} {count}
@@ -273,8 +287,8 @@ export default function HistoryList({ nft }) {
                 <div key={groupName}>
                   {/* Date Group Header */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-neutral-600">{groupName}</span>
-                    <div className="flex-1 h-px bg-neutral-800" />
+                    <span className={cn("text-[9px] font-medium uppercase tracking-wider", isDark ? "text-neutral-600" : "text-gray-500")}>{groupName}</span>
+                    <div className={cn("flex-1 h-px", isDark ? "bg-neutral-800" : "bg-gray-200")} />
                   </div>
 
                   {/* Items */}
@@ -293,13 +307,13 @@ export default function HistoryList({ nft }) {
                           className={cn(
                             "group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all",
                             isOwnershipChange
-                              ? "bg-neutral-900/50 border-l-2 border-l-neutral-600 hover:bg-neutral-800/50"
-                              : "hover:bg-neutral-900/50"
+                              ? isDark ? "bg-neutral-900/50 border-l-2 border-l-neutral-600 hover:bg-neutral-800/50" : "bg-gray-100 border-l-2 border-l-gray-400 hover:bg-gray-200"
+                              : isDark ? "hover:bg-neutral-900/50" : "hover:bg-gray-100"
                           )}
                         >
                           {/* Icon */}
-                          <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 bg-neutral-800">
-                            <config.Icon size={14} className="text-neutral-400" />
+                          <div className={cn("w-7 h-7 rounded-md flex items-center justify-center shrink-0", isDark ? "bg-neutral-800" : "bg-gray-200")}>
+                            <config.Icon size={14} className={isDark ? "text-neutral-400" : "text-gray-600"} />
                           </div>
 
                           {/* Content */}
@@ -307,13 +321,15 @@ export default function HistoryList({ nft }) {
                             <div className="min-w-0">
                               {/* Event + Price */}
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-medium text-neutral-400">
+                                <span className={cn("text-[11px] font-medium", isDark ? "text-neutral-400" : "text-gray-500")}>
                                   {config.label}
                                 </span>
                                 {price > 0 && (
                                   <span className={cn(
                                     "text-[12px] font-medium tabular-nums",
-                                    isCancelled ? "text-neutral-600 line-through" : "text-white"
+                                    isCancelled
+                                      ? isDark ? "text-neutral-600 line-through" : "text-gray-400 line-through"
+                                      : isDark ? "text-white" : "text-gray-900"
                                   )}>
                                     {fNumber(price)} XRP
                                   </span>
@@ -325,8 +341,10 @@ export default function HistoryList({ nft }) {
                                   <Link
                                     href={`/address/${from}`}
                                     className={cn(
-                                      "hover:text-white transition-colors font-mono",
-                                      from === stats.currentOwner ? "text-white" : "text-neutral-500"
+                                      "transition-colors font-mono",
+                                      from === stats.currentOwner
+                                        ? isDark ? "text-white hover:text-white" : "text-gray-900 hover:text-gray-900"
+                                        : isDark ? "text-neutral-500 hover:text-white" : "text-gray-500 hover:text-gray-900"
                                     )}
                                   >
                                     {formatAddr(from)}{from === stats.currentOwner && ' ·owner'}
@@ -334,12 +352,14 @@ export default function HistoryList({ nft }) {
                                 )}
                                 {to && (
                                   <>
-                                    <span className="text-neutral-700">→</span>
+                                    <span className={isDark ? "text-neutral-700" : "text-gray-400"}>→</span>
                                     <Link
                                       href={`/address/${to}`}
                                       className={cn(
-                                        "hover:text-white transition-colors font-mono",
-                                        to === stats.currentOwner ? "text-white" : "text-neutral-500"
+                                        "transition-colors font-mono",
+                                        to === stats.currentOwner
+                                          ? isDark ? "text-white hover:text-white" : "text-gray-900 hover:text-gray-900"
+                                          : isDark ? "text-neutral-500 hover:text-white" : "text-gray-500 hover:text-gray-900"
                                       )}
                                     >
                                       {formatAddr(to)}{to === stats.currentOwner && ' ·owner'}
@@ -350,14 +370,17 @@ export default function HistoryList({ nft }) {
                             </div>
                             {/* Time */}
                             <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[10px] text-neutral-600 tabular-nums">
+                              <span className={cn("text-[10px] tabular-nums", isDark ? "text-neutral-600" : "text-gray-500")}>
                                 {formatRelativeTime(item.time)}
                               </span>
                               {item.hash && (
                                 <Link
                                   href={`/tx/${item.hash}`}
                                   target="_blank"
-                                  className="p-1 rounded text-neutral-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                  className={cn(
+                                    "p-1 rounded transition-all opacity-0 group-hover:opacity-100",
+                                    isDark ? "text-neutral-600 hover:text-white" : "text-gray-500 hover:text-gray-900"
+                                  )}
                                 >
                                   <ExternalLink size={11} />
                                 </Link>

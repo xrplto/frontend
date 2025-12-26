@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/formatters';
+import { clear } from 'console';
 
 function formatDecimal(decimal, decimalPlaces = null) {
   let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
@@ -206,7 +207,6 @@ const KNOWN_SOURCE_TAGS = {
   510162502: { name: 'Sonar Muse', url: 'https://sonarmuse.com' },
   80008000: { name: 'Orchestra', url: 'https://orchestra.com' }
 };
-
 // Helper to render JSON with syntax highlighting
 const JsonViewer = ({ data, isDark: isDarkProp }) => {
   const { themeName } = useContext(AppContext);

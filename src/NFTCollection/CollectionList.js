@@ -1190,7 +1190,10 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
   useEffect(() => {
     // Only fetch if not initial load (page change, sort change, etc)
     if (page === 0 && order === 'desc' && orderBy === 'totalVol24h' && rows === 50 && !tag && initialCollections.length > 0) {
-      return; // Use server-side data
+      // Reset to initial data when returning to page 1 with default settings
+      setCollections(initialCollections);
+      setTotal(initialTotal);
+      return;
     }
 
     const loadCollections = () => {
