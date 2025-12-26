@@ -411,17 +411,16 @@ const Tab = styled.button`
   padding: 6px 14px;
   font-size: 12px;
   text-transform: none;
-  border: none;
+  border: 1px solid ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
   border-radius: 6px;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
-  color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
+  color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
   transition: all 0.15s ease;
-  box-shadow: ${props => props.isActive ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
+    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.85)') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   @media (max-width: 600px) {
     padding: 8px 16px;

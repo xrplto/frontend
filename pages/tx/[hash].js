@@ -1,10 +1,11 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useState, useMemo, useEffect, useContext } from 'react';
+import { useState, useMemo, useEffect, useContext, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { LRUCache } from 'lru-cache';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy, ArrowLeftRight, Wallet, TrendingUp, AlertCircle, Home, Search, Share2, Send, Link as LinkIcon, FileText, Scale, Settings, Code } from 'lucide-react';
+import { Copy, ArrowLeftRight, Wallet, TrendingUp, AlertCircle, Home, Search, Share2, Send, Link as LinkIcon, FileText, Scale, Settings, Code, ChevronRight, Check, X } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
@@ -80,24 +81,37 @@ const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ..
 const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
 const Tooltip = ({ children, title, onOpen, ...p }) => {
   const [show, setShow] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const ref = useRef(null);
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const handleEnter = () => {
+    setShow(true);
+    onOpen?.();
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.top - 8, left: rect.left + rect.width / 2 });
+    }
+  };
   return (
     <span
-      style={{ position: 'relative', display: 'inline-flex' }}
-      onMouseEnter={() => { setShow(true); onOpen?.(); }}
+      ref={ref}
+      style={{ display: 'inline-flex' }}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
       {...p}
     >
       {children}
-      {show && title && typeof title !== 'string' && (
+      {show && title && typeof title !== 'string' && typeof window !== 'undefined' && createPortal(
         <div style={{
-          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-          marginBottom: 8, zIndex: 9999, minWidth: 200,
-          background: isDark ? '#1a1a1a' : '#fff',
+          position: 'fixed', top: pos.top, left: pos.left, transform: 'translate(-50%, -100%)',
+          zIndex: 99999, minWidth: 200,
+          background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: 8, padding: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-        }}>{title}</div>
+          borderRadius: 12, padding: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+        }}>{title}</div>,
+        document.body
       )}
     </span>
   );
@@ -238,18 +252,22 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
   );
 };
 
-const DetailRow = ({ label, children, index = 0 }) => {
+const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isOdd = index % 2 === 1;
 
   return (
     <div className={cn(
-      "flex items-center justify-between px-4 py-3",
+      "grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px]",
       isOdd && (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
     )}>
-      <span className={cn("text-[13px] min-w-[140px]", isDark ? "text-white/50" : "text-gray-500")}>{label}</span>
-      <div className={cn("flex-1 text-right text-[13px]", isDark ? "text-white/90" : "text-gray-800")}>{children}</div>
+      <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>{label}</span>
+      <div className={cn(
+        "text-[13px] flex items-center gap-2",
+        alignValue === 'right' ? "justify-end" : "justify-start",
+        isDark ? "text-white/90" : "text-gray-800"
+      )}>{children}</div>
     </div>
   );
 };
@@ -257,7 +275,7 @@ const DetailRow = ({ label, children, index = 0 }) => {
 const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   if (error) return <Typography sx={{ p: 1 }}>{error}</Typography>;
   if (loading) return <Typography sx={{ p: 1 }}>Loading...</Typography>;
-  if (!tokenInfo || tokenInfo.res !== 'success' || !tokenInfo.token)
+  if (!tokenInfo || tokenInfo.result !== 'success' || !tokenInfo.token)
     return <Typography sx={{ p: 1 }}>No data available.</Typography>;
 
   const { token, exch } = tokenInfo;
@@ -468,327 +486,67 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
     );
   }
 
-  // Enhanced tooltip for regular tokens
+  // Enhanced tooltip for regular tokens - clean symmetrical layout
+  const chipStyle = { fontSize: '10px', height: '20px', px: 1, backgroundColor: 'rgba(66,133,244,0.08)', color: '#4285f4', border: '1px solid rgba(66,133,244,0.2)', fontWeight: 400 };
+  const greenChipStyle = { ...chipStyle, backgroundColor: 'rgba(16,185,129,0.08)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' };
+  const Row = ({ label, value }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>{label}</span>
+      <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 500 }}>{value}</span>
+    </div>
+  );
+
   return (
-    <Box sx={{ p: 2, minWidth: 320, maxWidth: 400 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        {imageUrl && <Avatar src={imageUrl} sx={{ mr: 1.5, width: 32, height: 32 }} />}
-        <Box>
-          <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 500, mb: 0.5 }}>
-            {token.name || token.user || 'Unknown Token'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {token.user && token.name !== token.user ? `"${token.user}"` : 'Token'}
-          </Typography>
-          {token.issuer && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {token.issuer.slice(0, 12)}...{token.issuer.slice(-6)}
-            </Typography>
-          )}
-        </Box>
-      </Box>
+    <div style={{ minWidth: 280, maxWidth: 320 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        {imageUrl && <Avatar src={imageUrl} sx={{ width: 40, height: 40 }} />}
+        <div>
+          <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff' }}>{token.name || token.user || 'Unknown'}</div>
+          {token.user && token.name !== token.user && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>"{token.user}"</div>}
+          {token.issuer && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>{token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}</div>}
+        </div>
+      </div>
 
-      <Divider sx={{ mb: 2 }} />
-
-      {/* Price Information */}
-      {(token.usd || exch) && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
-            Price
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {token.usd && (
-              <Chip
-                label={`$${new Decimal(token.usd).toFixed(6)}`}
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#4285f4', 0.06),
-                  color: '#4285f4',
-                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
-            )}
-            {token.exch && (
-              <Chip
-                label={`${new Decimal(token.exch).toFixed(6)} XRP`}
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#4285f4', 0.06),
-                  color: '#4285f4',
-                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
-            )}
-          </Box>
-        </Box>
+      {/* Price */}
+      {(token.usd || token.exch) && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {token.usd && <Chip label={`$${new Decimal(token.usd).toFixed(6)}`} sx={chipStyle} />}
+          {token.exch && <Chip label={`${new Decimal(token.exch).toFixed(6)} XRP`} sx={chipStyle} />}
+        </div>
       )}
 
-      {/* Performance */}
-      {(token.pro24h || token.pro7d) && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
-            Performance
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            {typeof token.pro24h === 'number' && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  24h Change
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: token.pro24h >= 0 ? 'success.main' : 'error.main'
-                  }}
-                >
-                  {token.pro24h >= 0 ? '+' : ''}
-                  {token.pro24h.toFixed(2)}%
-                </Typography>
-              </Box>
-            )}
-            {typeof token.pro7d === 'number' && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  7d Change
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 500,
-                    color: token.pro7d >= 0 ? 'success.main' : 'error.main'
-                  }}
-                >
-                  {token.pro7d >= 0 ? '+' : ''}
-                  {token.pro7d.toFixed(2)}%
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </Box>
+      {/* Market Data Grid */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}>
+        {token.marketcap > 0 && <Row label="Market Cap" value={`${formatDecimal(new Decimal(token.marketcap), 0)} XRP`} />}
+        {token.supply && <Row label="Supply" value={formatDecimal(new Decimal(token.supply), 0)} />}
+        {token.holders && <Row label="Holders" value={formatDecimal(new Decimal(token.holders), 0)} />}
+        {token.trustlines && <Row label="Trust Lines" value={formatDecimal(new Decimal(token.trustlines), 0)} />}
+      </div>
+
+      {/* Features & Social Row */}
+      {(token.kyc || token.AMM || token.social?.twitter) && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+          {token.kyc && <Chip label="KYC" sx={greenChipStyle} />}
+          {token.AMM && <Chip label="AMM" sx={chipStyle} />}
+          {token.social?.twitter && <Chip label="Twitter" sx={chipStyle} />}
+        </div>
       )}
 
-      {/* Market Data */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
-          Market Data
-        </Typography>
-        <Stack spacing={0.5}>
-          {token.marketcap > 0 && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                Market Cap
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {formatDecimal(new Decimal(token.marketcap), 0)} XRP
-              </Typography>
-            </Box>
-          )}
-          {token.vol24h > 0 && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                24h Volume
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {formatDecimal(new Decimal(token.vol24h), 0)} XRP
-              </Typography>
-            </Box>
-          )}
-          {token.supply && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                Supply
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {formatDecimal(new Decimal(token.supply), 0)}
-              </Typography>
-            </Box>
-          )}
-          {token.holders && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                Holders
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {formatDecimal(new Decimal(token.holders), 0)}
-              </Typography>
-            </Box>
-          )}
-          {token.trustlines && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                Trust Lines
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                {formatDecimal(new Decimal(token.trustlines), 0)}
-              </Typography>
-            </Box>
-          )}
-        </Stack>
-      </Box>
-
-      {/* Verification & Features */}
-      {(token.kyc || token.verified || token.AMM) && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
-            Features
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {token.kyc && (
-              <Chip
-                label="KYC"
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#10b981', 0.06),
-                  color: '#10b981',
-                  border: `1px solid ${alpha('#10b981', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
-            )}
-            {token.verified && (
-              <Chip
-                label="Verified"
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#4285f4', 0.06),
-                  color: '#4285f4',
-                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
-            )}
-            {token.AMM && (
-              <Chip
-                label="AMM"
-                size="small"
-                sx={{
-                  fontSize: '10px',
-                  height: '18px',
-                  px: 0.5,
-                  backgroundColor: alpha('#4285f4', 0.06),
-                  color: '#4285f4',
-                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                  fontWeight: 400
-                }}
-              />
-            )}
-          </Box>
-        </Box>
+      {/* Info */}
+      {token.domain && (
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}>
+          <Row label="Domain" value={token.domain} />
+        </div>
       )}
 
-      {/* Additional Info */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
-          Info
-        </Typography>
-        <Stack spacing={0.5}>
-          {token.domain && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" color="text.secondary">
-                Domain
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 'medium', wordBreak: 'break-all' }}>
-                {token.domain}
-              </Typography>
-            </Box>
-          )}
-          {token.social && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Social
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {token.social.twitter && (
-                  <Chip
-                    label="Twitter"
-                    size="small"
-                    sx={{
-                      fontSize: '10px',
-                      height: '18px',
-                      px: 0.5,
-                      backgroundColor: alpha('#4285f4', 0.06),
-                      color: '#4285f4',
-                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                      fontWeight: 400
-                    }}
-                  />
-                )}
-                {token.social.telegram && (
-                  <Chip
-                    label="Telegram"
-                    size="small"
-                    sx={{
-                      fontSize: '10px',
-                      height: '18px',
-                      px: 0.5,
-                      backgroundColor: alpha('#4285f4', 0.06),
-                      color: '#4285f4',
-                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                      fontWeight: 400
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          )}
-          {token.tags && token.tags.length > 0 && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Tags
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {token.tags.slice(0, 3).map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    sx={{
-                      fontSize: '10px',
-                      height: '18px',
-                      px: 0.5,
-                      backgroundColor: alpha('#4285f4', 0.06),
-                      color: '#4285f4',
-                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                      fontWeight: 400
-                    }}
-                  />
-                ))}
-                {token.tags.length > 3 && (
-                  <Chip
-                    label={`+${token.tags.length - 3}`}
-                    size="small"
-                    sx={{
-                      fontSize: '10px',
-                      height: '18px',
-                      px: 0.5,
-                      backgroundColor: alpha('#4285f4', 0.06),
-                      color: '#4285f4',
-                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                      fontWeight: 400
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          )}
-        </Stack>
-      </Box>
-    </Box>
+      {/* Tags */}
+      {token.tags?.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {token.tags.slice(0, 4).map((tag) => <Chip key={tag} label={tag} sx={chipStyle} />)}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -1916,46 +1674,50 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
       "rounded-xl mb-4 overflow-hidden",
       isDark ? "bg-transparent" : "bg-white"
     )} style={{
-      border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+      border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
     }}>
       {/* Header bar */}
       <div className={cn(
         "flex items-center justify-between px-4 py-3",
-        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+        isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
       )}>
         <div className="flex items-center gap-3">
           <span className={cn(
-            "w-7 h-7 rounded-md flex items-center justify-center text-sm font-medium",
-            isSuccess ? "bg-[#22c55e] text-white" : "bg-[#ef4444] text-white"
+            "w-7 h-7 rounded-md flex items-center justify-center",
+            isSuccess ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
           )}>
-            {isSuccess ? '✓' : '✗'}
+            {isSuccess ? <Check size={16} strokeWidth={2.5} /> : <X size={16} strokeWidth={2.5} />}
           </span>
           <span className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium uppercase tracking-wide",
-            isDark ? "bg-[rgba(59,130,246,0.08)] text-white/80 border border-[rgba(59,130,246,0.15)]" : "bg-gray-50 text-gray-600 border border-gray-200"
+            isDark ? "bg-white/5 text-white/80 border border-white/10" : "bg-gray-50 text-gray-600 border border-gray-200"
           )}>
             <ArrowLeftRight size={12} />
             {isSwap ? 'Swap' : 'Transaction'}
           </span>
           {/* Swap Summary Inline */}
           {isSwap && isSuccess && (
-            <div className="flex items-center gap-2 ml-2">
-              <span className={cn("text-[13px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>
+            <div className="flex items-center gap-1.5 ml-1">
+              <span className={cn("text-[13px] font-mono px-1.5 py-0.5 rounded", isDark ? "text-white/60 bg-white/5" : "text-gray-600 bg-gray-100")}>
                 {Account.slice(0, 4)}..{Account.slice(-3)}
               </span>
-              <span className={isDark ? "text-white/30" : "text-gray-400"}>→</span>
-              <span className="text-[#ef4444] text-[14px] font-medium font-mono">
-                -{formatDecimal(new Decimal(swapInfo.paid.value))}
+              <ChevronRight size={14} className={isDark ? "text-white/25" : "text-gray-300"} />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/15">
+                <span className="text-red-400 text-[13px] font-medium font-mono">
+                  -{formatDecimal(new Decimal(swapInfo.paid.value))}
+                </span>
+                <span className="text-red-400/70 text-[12px]">
+                  {swapInfo.paid.currency}
+                </span>
               </span>
-              <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
-                {swapInfo.paid.currency}
-              </span>
-              <span className={isDark ? "text-white/30" : "text-gray-400"}>→</span>
-              <span className="text-[#22c55e] text-[14px] font-medium font-mono">
-                +{formatDecimal(new Decimal(swapInfo.got.value))}
-              </span>
-              <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
-                {swapInfo.got.currency}
+              <ChevronRight size={14} className={isDark ? "text-white/25" : "text-gray-300"} />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15">
+                <span className="text-emerald-400 text-[13px] font-medium font-mono">
+                  +{formatDecimal(new Decimal(swapInfo.got.value))}
+                </span>
+                <span className="text-emerald-400/70 text-[12px]">
+                  {swapInfo.got.currency}
+                </span>
               </span>
             </div>
           )}
@@ -2030,7 +1792,7 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
       {aiLoading && (
         <div className={cn(
           "px-6 py-5 relative overflow-hidden",
-          isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+          isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
         )}>
           <style jsx>{`
             @keyframes scanline {
@@ -2169,20 +1931,10 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
         );
       })()}
 
-      {/* Transaction type */}
-      <div className={cn(
-        "px-4 py-4 text-center",
-        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
-      )}>
-        <span className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-500")}>
-          {description.title}
-        </span>
-      </div>
-
       {/* Tabs */}
       <div className={cn(
         "flex items-center gap-2 px-4 py-3",
-        isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+        isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
       )}>
         {tabs.map((tab) => (
           <button
@@ -2192,14 +1944,14 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               "flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border",
               activeTab === tab.id
                 ? isDark
-                  ? "bg-white/5 text-[#f97316] border-[#f97316]/30"
-                  : "bg-orange-50 text-[#f97316] border-[#f97316]/30"
+                  ? "bg-white/10 text-white/90 border-white/15"
+                  : "bg-black/[0.06] text-black/80 border-black/10"
                 : isDark
-                  ? "text-white/60 border-white/10 hover:border-white/20"
-                  : "text-gray-500 border-gray-200 hover:border-gray-300"
+                  ? "text-white/50 border-white/10 hover:bg-white/[0.06] hover:text-white/70"
+                  : "text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700"
             )}
           >
-            <span className={activeTab === tab.id ? "text-[#f97316]" : ""}>{tab.icon}</span>
+            {tab.icon}
             {tab.label}
           </button>
         ))}
@@ -2207,32 +1959,32 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
 
       {/* Info grid */}
       <div className={cn(
-        "grid grid-cols-3",
-        isDark ? "divide-x divide-[rgba(59,130,246,0.12)]" : "divide-x divide-[rgba(0,0,0,0.08)]"
+        "grid grid-cols-[1fr_2fr_1fr]",
+        isDark ? "divide-x divide-white/[0.06]" : "divide-x divide-gray-100"
       )}>
         <div className="px-4 py-3">
-          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
             Signature
           </div>
           <div className="flex items-center gap-1.5">
             <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
               {hash.slice(0, 4)}...{hash.slice(-4)}
             </code>
-            <button onClick={copyHash} className={cn("p-0.5 rounded transition-colors", isDark ? "text-white/40 hover:text-[#3b82f6]" : "text-gray-400 hover:text-[#3b82f6]")}>
+            <button onClick={copyHash} className={cn("p-0.5 rounded transition-colors", isDark ? "text-white/40 hover:text-primary" : "text-gray-400 hover:text-primary")}>
               <Copy size={12} />
             </button>
           </div>
         </div>
         <div className="px-4 py-3">
-          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
             Time
           </div>
           <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
-            {timeAgo ? <><span className="text-[#3b82f6]">{timeAgo} ago</span> {dateStr && <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span>}</> : 'Unknown'}
+            {timeAgo ? <><span className="text-primary">{timeAgo} ago</span> <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span></> : 'Unknown'}
           </div>
         </div>
-        <div className="px-4 py-3">
-          <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>
+        <div className="px-4 py-3 text-right">
+          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
             Ledger
           </div>
           <div className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
@@ -2287,7 +2039,8 @@ const TransactionDetails = ({ txData }) => {
     LPTokenIn,
     NFTokenSellOffer,
     NFTokenBuyOffer,
-    NFTokenID
+    NFTokenID,
+    Owner
   } = txData;
 
   const clientInfo = KNOWN_SOURCE_TAGS[SourceTag];
@@ -2905,15 +2658,15 @@ const TransactionDetails = ({ txData }) => {
           "rounded-xl overflow-hidden",
           isDark ? "bg-transparent" : "bg-white"
         )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
         }}>
           <div className={cn(
             "px-4 py-3",
-            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+            isDark ? "border-b border-white/10" : "border-b border-gray-100"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/40" : "text-gray-400"
+              isDark ? "text-white/50" : "text-gray-400"
             )}>
               Details
             </span>
@@ -3303,53 +3056,33 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     {NFTokenSellOffer && (
                       <DetailRow label="Sell Offer">
-                        <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={NFTokenSellOffer}>
                           {NFTokenSellOffer}
-                        </Typography>
+                        </span>
                       </DetailRow>
                     )}
                     {NFTokenBuyOffer && (
                       <DetailRow label="Buy Offer">
-                        <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={NFTokenBuyOffer}>
                           {NFTokenBuyOffer}
-                        </Typography>
+                        </span>
                       </DetailRow>
                     )}
-                    <DetailRow label="Transfer from">
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <DetailRow label="From">
+                      <div className="flex items-center gap-2">
                         <AccountAvatar account={acceptedOfferDetails.seller} />
-                        <Link href={`/address/${acceptedOfferDetails.seller}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {acceptedOfferDetails.seller}
-                          </Typography>
+                        <Link href={`/address/${acceptedOfferDetails.seller}`}>
+                          <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.seller}</span>
                         </Link>
-                      </Box>
+                      </div>
                     </DetailRow>
-                    <DetailRow label="Transfer to">
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <DetailRow label="To">
+                      <div className="flex items-center gap-2">
                         <AccountAvatar account={acceptedOfferDetails.buyer} />
-                        <Link href={`/address/${acceptedOfferDetails.buyer}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {acceptedOfferDetails.buyer}
-                          </Typography>
+                        <Link href={`/address/${acceptedOfferDetails.buyer}`}>
+                          <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.buyer}</span>
                         </Link>
-                      </Box>
+                      </div>
                     </DetailRow>
                     {/* NFT Card */}
                     {nftInfoLoading ? (
@@ -3447,192 +3180,121 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     {offerNftInfoLoading ? (
                       <DetailRow label="NFT">
-                        <Typography>Loading NFT data...</Typography>
+                        <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>Loading...</span>
                       </DetailRow>
                     ) : offerNftInfo ? (
-                      <DetailRow label="NFT Data">
-                        <Grid container spacing={2}>
-                          <Grid size={{ xs: 12, md: 4 }}>
+                      <>
+                        <DetailRow label="NFT">
+                          <div className="flex items-center gap-3">
                             {getNftImage(offerNftInfo) && (
-                              <Box
-                                component="img"
+                              <img
                                 src={getNftImage(offerNftInfo)}
-                                alt={offerNftInfo.meta?.name || 'NFT Image'}
-                                sx={{
-                                  width: '100%',
-                                  maxWidth: '220px',
-                                  borderRadius: 2
-                                }}
+                                alt={offerNftInfo.meta?.name || 'NFT'}
+                                className="w-10 h-10 rounded-lg object-cover"
                               />
                             )}
-                          </Grid>
-                          <Grid size={{ xs: 12, md: 8 }}>
-                            <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Link href={`/nft/${offerNftInfo.NFTokenID}`}>
-                                <span className="text-[#4285f4] hover:underline break-all">
-                                  {offerNftInfo.NFTokenID}
-                                </span>
-                              </Link>
-                            </DetailRow>
-                            <DetailRow label="Issuer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <AccountAvatar account={offerNftInfo.issuer} />
-                                <Link href={`/address/${offerNftInfo.issuer}`}>
-                                  <span className="text-[#4285f4] hover:underline">
-                                    {offerNftInfo.issuer}
-                                  </span>
-                                </Link>
-                              </Box>
-                            </DetailRow>
-                          </Grid>
-                        </Grid>
-                      </DetailRow>
+                            <Link href={`/nft/${offerNftInfo.NFTokenID}`}>
+                              <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]" title={offerNftInfo.NFTokenID}>
+                                {offerNftInfo.NFTokenID}
+                              </span>
+                            </Link>
+                          </div>
+                        </DetailRow>
+                        <DetailRow label="Issuer">
+                          <div className="flex items-center gap-2">
+                            <AccountAvatar account={offerNftInfo.issuer} />
+                            <Link href={`/address/${offerNftInfo.issuer}`}>
+                              <span className="text-primary text-[13px] hover:underline">{offerNftInfo.issuer}</span>
+                            </Link>
+                          </div>
+                        </DetailRow>
+                      </>
                     ) : (
                       <DetailRow label="NFT">
-                        <Link href={`/nft/${NFTokenID}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {NFTokenID}
-                          </Typography>
+                        <Link href={`/nft/${NFTokenID}`}>
+                          <span className="text-primary text-[13px] font-mono hover:underline">{NFTokenID}</span>
                         </Link>
                       </DetailRow>
                     )}
-
-                    <DetailRow label="NFT Offer Details">
-                      <Box
-                        sx={{
-                          p: 2,
-                          width: '100%',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          borderRadius: 2
-                        }}
-                      >
-                        <Grid container spacing={1}>
-                          {meta.offer_id && (
-                            <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                {meta.offer_id}
-                              </Typography>
-                            </DetailRow>
-                          )}
-                          <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                            <AmountDisplay amount={Amount} />
-                          </DetailRow>
-                          {Destination && (
-                            <DetailRow
-                              label="Destination"
-                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <AccountAvatar account={Destination} />
-                                <Link href={`/address/${Destination}`} passHref>
-                                  <Typography
-                                    component="span"
-                                    variant="body1"
-                                    sx={{
-                                      color: theme.palette.primary.main,
-                                      textDecoration: 'none',
-                                      '&:hover': { textDecoration: 'underline' }
-                                    }}
-                                  >
-                                    {Destination}
-                                  </Typography>
-                                </Link>
-                              </Box>
-                            </DetailRow>
-                          )}
-                        </Grid>
-                      </Box>
+                    {Owner && (
+                      <DetailRow label="NFT Owner">
+                        <div className="flex items-center gap-2">
+                          <AccountAvatar account={Owner} />
+                          <Link href={`/address/${Owner}`}>
+                            <span className="text-primary text-[13px] hover:underline">{Owner}</span>
+                          </Link>
+                        </div>
+                      </DetailRow>
+                    )}
+                    {meta.offer_id && (
+                      <DetailRow label="Offer ID">
+                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={meta.offer_id}>
+                          {meta.offer_id}
+                        </span>
+                      </DetailRow>
+                    )}
+                    <DetailRow label="Amount">
+                      <AmountDisplay amount={Amount} />
                     </DetailRow>
+                    {Destination && (
+                      <DetailRow label="Destination">
+                        <div className="flex items-center gap-2">
+                          <AccountAvatar account={Destination} />
+                          <Link href={`/address/${Destination}`}>
+                            <span className="text-primary text-[13px] hover:underline">{Destination}</span>
+                          </Link>
+                        </div>
+                      </DetailRow>
+                    )}
                   </>
                 )}
 
                 {TransactionType === 'NFTokenMint' && (
                   <>
-                    <DetailRow label="NFT Data">
-                      <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, md: 4 }}>
+                    {meta.nftoken_id && (
+                      <DetailRow label="NFT">
+                        <div className="flex items-center gap-3">
                           {mintedNftInfoLoading ? (
-                            <Typography>Loading NFT image...</Typography>
+                            <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse" />
                           ) : getNftImage(mintedNftInfo) ? (
-                            <Box
-                              component="img"
+                            <img
                               src={getNftImage(mintedNftInfo)}
-                              alt={mintedNftInfo?.meta?.name || 'NFT Image'}
-                              sx={{
-                                width: '100%',
-                                maxWidth: '220px',
-                                borderRadius: 2
-                              }}
+                              alt={mintedNftInfo?.meta?.name || 'NFT'}
+                              className="w-10 h-10 rounded-lg object-cover"
                             />
                           ) : null}
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 8 }}>
-                          {meta.nftoken_id && (
-                            <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Link href={`/nft/${meta.nftoken_id}`} passHref>
-                                <Typography
-                                  component="span"
-                                  variant="body1"
-                                  sx={{
-                                    color: theme.palette.primary.main,
-                                    textDecoration: 'none',
-                                    '&:hover': { textDecoration: 'underline' },
-                                    wordBreak: 'break-all'
-                                  }}
-                                >
-                                  {meta.nftoken_id}
-                                </Typography>
-                              </Link>
-                            </DetailRow>
-                          )}
-                          {typeof TransferFee !== 'undefined' && (
-                            <DetailRow
-                              label="Transfer Fee"
-                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                            >
-                              <Typography variant="body1">{TransferFee / 1000}%</Typography>
-                            </DetailRow>
-                          )}
-                          {Flags > 0 && (
-                            <DetailRow label="Flag" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Typography variant="body1">
-                                {getNFTokenMintFlagExplanation(Flags)}
-                              </Typography>
-                            </DetailRow>
-                          )}
-                          {typeof NFTokenTaxon !== 'undefined' && (
-                            <DetailRow
-                              label="NFT Taxon"
-                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                            >
-                              <Typography variant="body1">{NFTokenTaxon}</Typography>
-                            </DetailRow>
-                          )}
-                          {URI && safeHexDecode(URI) && (
-                            <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Link
-                                href={safeHexDecode(URI)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span className="text-[#4285f4] hover:underline break-all text-[13px]">
-                                  {safeHexDecode(URI)}
-                                </span>
-                              </Link>
-                            </DetailRow>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </DetailRow>
+                          <Link href={`/nft/${meta.nftoken_id}`}>
+                            <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]" title={meta.nftoken_id}>
+                              {meta.nftoken_id}
+                            </span>
+                          </Link>
+                        </div>
+                      </DetailRow>
+                    )}
+                    {typeof TransferFee !== 'undefined' && (
+                      <DetailRow label="Transfer Fee">
+                        <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-700")}>{TransferFee / 1000}%</span>
+                      </DetailRow>
+                    )}
+                    {Flags > 0 && (
+                      <DetailRow label="Flag">
+                        <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-700")}>{getNFTokenMintFlagExplanation(Flags)}</span>
+                      </DetailRow>
+                    )}
+                    {typeof NFTokenTaxon !== 'undefined' && (
+                      <DetailRow label="Taxon">
+                        <span className={cn("text-[13px] font-mono", isDark ? "text-white/70" : "text-gray-700")}>{NFTokenTaxon}</span>
+                      </DetailRow>
+                    )}
+                    {URI && safeHexDecode(URI) && (
+                      <DetailRow label="URI">
+                        <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
+                          <span className="text-primary text-[13px] hover:underline truncate max-w-[300px]" title={safeHexDecode(URI)}>
+                            {safeHexDecode(URI)}
+                          </span>
+                        </Link>
+                      </DetailRow>
+                    )}
                   </>
                 )}
 
@@ -3991,22 +3653,8 @@ const TransactionDetails = ({ txData }) => {
                 {displayExchange && isSuccess && (
                   <>
                     <DetailRow label="Sold">
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          px: 1,
-                          py: 0.5,
-                          backgroundColor: alpha('#ef4444', 0.08),
-                          border: `1px solid ${alpha('#ef4444', 0.15)}`,
-                          borderRadius: '6px',
-                          width: 'fit-content'
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ color: '#ef4444', fontWeight: 500, fontSize: '13px' }}>
-                          {formatDecimal(new Decimal(displayExchange.paid.value))}
-                        </Typography>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                        {formatDecimal(new Decimal(displayExchange.paid.value))}
                         {displayExchange.paid.rawCurrency ? (
                           <TokenDisplay
                             slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
@@ -4017,25 +3665,11 @@ const TransactionDetails = ({ txData }) => {
                         ) : (
                           <XrpDisplay variant="body2" showText={true} />
                         )}
-                      </Box>
+                      </span>
                     </DetailRow>
                     <DetailRow label="Received">
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          px: 1,
-                          py: 0.5,
-                          backgroundColor: alpha('#10b981', 0.08),
-                          border: `1px solid ${alpha('#10b981', 0.15)}`,
-                          borderRadius: '6px',
-                          width: 'fit-content'
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 500, fontSize: '13px' }}>
-                          {formatDecimal(new Decimal(displayExchange.got.value))}
-                        </Typography>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {formatDecimal(new Decimal(displayExchange.got.value))}
                         {displayExchange.got.rawCurrency ? (
                           <TokenDisplay
                             slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
@@ -4046,7 +3680,7 @@ const TransactionDetails = ({ txData }) => {
                         ) : (
                           <XrpDisplay variant="body2" showText={true} />
                         )}
-                      </Box>
+                      </span>
                     </DetailRow>
                     <DetailRow label="Rate">
                       {(() => {
@@ -4055,25 +3689,17 @@ const TransactionDetails = ({ txData }) => {
                           const gotValue = new Decimal(displayExchange.got.value);
 
                           if (paidValue.isZero() || gotValue.isZero()) {
-                            return (
-                              <Typography variant="body2" sx={{ fontSize: '13px', color: alpha(theme.palette.text.primary, 0.6) }}>
-                                N/A
-                              </Typography>
-                            );
+                            return <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>N/A</span>;
                           }
 
                           const rate = paidValue.div(gotValue);
                           return (
-                            <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                            <span className="text-[13px] font-mono">
                               1 {displayExchange.got.currency} = {rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6)} {displayExchange.paid.currency}
-                            </Typography>
+                            </span>
                           );
                         } catch (error) {
-                          return (
-                            <Typography variant="body2" sx={{ fontSize: '13px', color: alpha(theme.palette.text.primary, 0.6) }}>
-                              N/A
-                            </Typography>
-                          );
+                          return <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>N/A</span>;
                         }
                       })()}
                     </DetailRow>
@@ -4082,45 +3708,27 @@ const TransactionDetails = ({ txData }) => {
 
                 {flagExplanations.length > 0 && (
                   <DetailRow label="Flags">
-                    <Stack spacing={0.5}>
+                    <div className="flex flex-wrap gap-1.5 justify-end">
                       {TransactionType === 'Payment' ? (
                         flagExplanations.map((flag) => (
-                          <Chip
+                          <span
                             key={flag.title}
-                            label={flag.title}
-                            size="small"
-                            sx={{
-                              fontSize: '10px',
-                              height: '18px',
-                              px: 0.5,
-                              backgroundColor: alpha('#f59e0b', 0.08),
-                              color: '#f59e0b',
-                              border: `1px solid ${alpha('#f59e0b', 0.15)}`,
-                              fontWeight: 400,
-                              width: 'fit-content'
-                            }}
-                          />
+                            className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          >
+                            {flag.title}
+                          </span>
                         ))
                       ) : (
                         flagExplanations.map((text) => (
-                          <Chip
+                          <span
                             key={text}
-                            label={text}
-                            size="small"
-                            sx={{
-                              fontSize: '10px',
-                              height: '18px',
-                              px: 0.5,
-                              backgroundColor: alpha('#f59e0b', 0.08),
-                              color: '#f59e0b',
-                              border: `1px solid ${alpha('#f59e0b', 0.15)}`,
-                              fontWeight: 400,
-                              width: 'fit-content'
-                            }}
-                          />
+                            className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          >
+                            {text}
+                          </span>
                         ))
                       )}
-                    </Stack>
+                    </div>
                   </DetailRow>
                 )}
 
@@ -4172,24 +3780,24 @@ const TransactionDetails = ({ txData }) => {
           </div>
 
           {/* Transaction Link */}
-        <div className={cn(
-          "mt-4 px-4 py-3 rounded-lg border",
-          isDark ? "border-white/10" : "border-gray-200"
-        )}>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className={cn(
+            "grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px] border-t",
+            isDark ? "border-white/[0.06]" : "border-gray-100"
+          )}>
             <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>
-              Transaction Link:
+              Link
             </span>
-            <Link href={`/tx/${hash}`} passHref>
-              <span className="text-primary text-[13px] font-mono hover:underline break-all">
-                {txUrl}
-              </span>
-            </Link>
-            <button onClick={copyUrlToClipboard} className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40" : "text-gray-400")}>
-              <Copy size={14} />
-            </button>
+            <div className="flex items-center gap-2 justify-end">
+              <Link href={`/tx/${hash}`} passHref>
+                <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[280px]" title={txUrl}>
+                  {txUrl}
+                </span>
+              </Link>
+              <button onClick={copyUrlToClipboard} className={cn("p-1 rounded hover:bg-white/10 shrink-0", isDark ? "text-white/50 hover:text-primary" : "text-gray-400 hover:text-primary")}>
+                <Copy size={14} />
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       )}
 
@@ -4199,11 +3807,11 @@ const TransactionDetails = ({ txData }) => {
           "rounded-xl overflow-hidden",
           isDark ? "bg-transparent" : "bg-white"
         )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
         }}>
           <div className={cn(
             "px-4 py-3",
-            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -4278,11 +3886,11 @@ const TransactionDetails = ({ txData }) => {
           "rounded-xl overflow-hidden",
           isDark ? "bg-transparent" : "bg-white"
         )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
         }}>
           <div className={cn(
             "px-4 py-3",
-            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -4327,11 +3935,11 @@ const TransactionDetails = ({ txData }) => {
           "rounded-xl overflow-hidden",
           isDark ? "bg-transparent" : "bg-white"
         )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
+          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
         }}>
           <div className={cn(
             "px-4 py-3",
-            isDark ? "border-b border-[rgba(59,130,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
+            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
           )}>
             <span className={cn(
               "text-[11px] font-medium uppercase tracking-wider",
@@ -4390,7 +3998,7 @@ const TxPage = ({ txData, error }) => {
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className={cn(
-        "flex-1 py-8 max-w-[1920px] mx-auto w-full px-4 rounded-xl border-[1.5px]",
+        "flex-1 mt-6 py-8 max-w-[1920px] mx-auto w-full px-4 rounded-xl border-[1.5px]",
         isDark ? "border-white/10" : "border-gray-200"
       )}>
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.

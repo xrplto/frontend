@@ -760,24 +760,21 @@ const Tab = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   font-size: 12px;
-  font-weight: ${props => props.selected ? 500 : 400};
-  padding: 8px 14px;
-  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
-  border: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
+  border: 1px solid ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
   border-radius: 8px;
-  color: ${props => props.selected ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  color: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   transition: all 0.15s ease;
-  text-transform: none;
-  letter-spacing: 0;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: ${props => props.selected ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    background: ${props => props.selected ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.selected ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
   }
   @media (max-width: 640px) {
     flex: 1;
@@ -1077,13 +1074,13 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   };
 
   const SubTab = styled.button`
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     padding: 10px 16px;
-    background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent'};
+    background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)') : 'transparent'};
     border: none;
-    border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+    border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+    color: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
     cursor: pointer;
     transition: all 0.15s;
     text-transform: uppercase;
@@ -1091,7 +1088,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     &:last-child { border-right: none; }
     &:hover {
       background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-      color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+      color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
     }
     @media (max-width: 640px) {
       padding: 8px 12px;

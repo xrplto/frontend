@@ -224,10 +224,10 @@ export default function HistoryList({ nft }) {
           <button
             onClick={() => setActiveFilter('all')}
             className={cn(
-              "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap",
+              "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border",
               activeFilter === 'all'
-                ? "bg-white text-black"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                ? "bg-white/10 text-white/90 border-white/15"
+                : "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]"
             )}
           >
             All {history.length}
@@ -240,8 +240,8 @@ export default function HistoryList({ nft }) {
                 key={type}
                 onClick={() => setActiveFilter(activeFilter === type ? 'all' : type)}
                 className={cn(
-                  "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap",
-                  activeFilter === type ? "bg-neutral-700 text-white" : "text-neutral-500 hover:text-white hover:bg-neutral-800"
+                  "px-2.5 py-1 rounded text-[10px] font-medium transition-all whitespace-nowrap border",
+                  activeFilter === type ? "bg-white/10 text-white/90 border-white/15" : "text-white/50 border-white/10 hover:text-white/70 hover:bg-white/[0.06]"
                 )}
               >
                 {config.label} {count}

@@ -1771,6 +1771,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       sessionStorage.setItem('wallet_modal_open', 'true');
 
       // Step 1: Get OAuth 1.0a request token and auth URL
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
       const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/request', {
         method: 'POST',
         headers: {
@@ -1778,8 +1781,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         },
         body: JSON.stringify({
           callbackUrl: callbackUrl
-        })
-      });
+        }),
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeoutId));
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Request failed' }));
@@ -1806,7 +1810,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       devLog('Redirecting to Twitter OAuth 1.0a:', authUrl);
       window.location.href = authUrl;
     } catch (error) {
-      openSnackbar('X connect failed: ' + error.message, 'error');
+      devError('X connect error:', error);
+      if (error.name === 'AbortError') {
+        openSnackbar('X connect timed out. Please try again.', 'error');
+      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        // Network/CORS error - API might be down
+        openSnackbar('X authentication unavailable. Try Google or Passkeys.', 'error');
+      } else {
+        openSnackbar('X connect failed: ' + (error.message || 'Unknown error'), 'error');
+      }
     }
   };
 

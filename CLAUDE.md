@@ -2,6 +2,74 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## COLOR SYSTEM & STYLING
+
+### Color Palette (Dark Mode)
+| Element | Color | Tailwind Class |
+|---------|-------|----------------|
+| Labels | `white/50` | `text-white/50` |
+| Values | `white/80-90` | `text-white/80` or `text-white/90` |
+| Muted text | `white/40` | `text-white/40` |
+| Links | `#4285f4` | `text-primary` |
+| Success | `#10b981` | `text-emerald-400` |
+| Error/Sell | `#ef4444` | `text-red-400` |
+| Warning | `#f59e0b` | `text-amber-400` |
+| Borders | `white/10` | `border-white/10` |
+| Subtle borders | `white/[0.06]` | `border-white/[0.06]` |
+| Backgrounds | `white/[0.02]` | `bg-white/[0.02]` |
+
+### Badge Styling
+```jsx
+// Primary badge (links, types)
+<span className="px-2 py-0.5 rounded text-[12px] bg-primary/10 text-primary border border-primary/20">
+
+// Success badge (received, buy)
+<span className="px-2.5 py-1 rounded-md text-[13px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+
+// Error badge (sold, sell)
+<span className="px-2.5 py-1 rounded-md text-[13px] bg-red-500/10 text-red-400 border border-red-500/20">
+
+// Warning badge (flags)
+<span className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20">
+```
+
+### Gap & Spacing System
+| Size | Tailwind | Use Case |
+|------|----------|----------|
+| `gap-1` | 4px | Icon + text inline |
+| `gap-1.5` | 6px | Tight groupings |
+| `gap-2` | 8px | Default spacing |
+| `gap-3` | 12px | Card elements |
+| `gap-4` | 16px | Section spacing |
+| `px-2` | 8px | Small badge padding |
+| `px-2.5` | 10px | Medium badge padding |
+| `px-4` | 16px | Container padding |
+| `py-0.5` | 2px | Badge vertical |
+| `py-1` | 4px | Button vertical |
+| `py-2.5` | 10px | Row vertical |
+| `py-3` | 12px | Section vertical |
+
+### Grid Layouts
+```jsx
+// Detail row (label + value)
+<div className="grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px]">
+
+// 3-column info grid
+<div className="grid grid-cols-[1fr_2fr_1fr]">
+
+// Equal columns
+<div className="grid grid-cols-3">
+```
+
+### Typography
+| Element | Size | Weight | Class |
+|---------|------|--------|-------|
+| Section headers | 11px | medium | `text-[11px] font-medium uppercase tracking-wider` |
+| Labels | 13px | normal | `text-[13px]` |
+| Values | 13px | normal | `text-[13px] font-mono` (for IDs/addresses) |
+| Badges | 11-12px | medium | `text-[12px] font-medium` |
+| Small text | 10px | medium | `text-[10px] font-medium` |
+
 ## CRITICAL INSTRUCTIONS - MUST FOLLOW
 
 ### DO NOT RUN THESE COMMANDS

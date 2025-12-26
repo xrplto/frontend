@@ -264,6 +264,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
   // Fetch creator activity when expanded
   const [hasWarning, setHasWarning] = useState(false);
+  const [signals, setSignals] = useState([]);
+  const [creatorStats, setCreatorStats] = useState(null);
   const [activityFilter, setActivityFilter] = useState('all');
   const [filterLoading, setFilterLoading] = useState(false);
   const [noTokenActivity, setNoTokenActivity] = useState(false);
@@ -329,7 +331,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
       if (data?.events?.length > 0) {
         setTransactions(data.events);
-        setHasWarning(data.warning || false);
+        setHasWarning(data.signals?.length > 0 || data.warning || false);
+        setSignals(data.signals || []);
+        setCreatorStats(data.stats || null);
       } else if (filter === 'all') {
         // Fallback to tx for general activity
         setNoTokenActivity(true);
@@ -564,7 +568,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   AI Analysis
                 </Typography>
                 <Typography style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Powered by Groq {aiReview?.timestamp && `· ${(() => {
+                  Powered by YANN {aiReview?.timestamp && `· ${(() => {
                     const diff = Date.now() - new Date(aiReview.timestamp).getTime();
                     const mins = Math.floor(diff / 60000);
                     if (mins < 1) return 'just now';
@@ -590,15 +594,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           </Stack>
 
           {aiReview && (() => {
-              // safetyScore (10=safe) or riskScore (10=risky)
-              const hasSafety = typeof aiReview.safetyScore === 'number';
-              const score = hasSafety ? aiReview.safetyScore : aiReview.riskScore;
-              const isGreen = hasSafety ? score >= 7 : score <= 3;
-              const isYellow = hasSafety ? (score >= 4 && score < 7) : (score > 3 && score <= 6);
+              // Both safetyScore and riskScore use same scale: 1=safest, 10=riskiest
+              const score = aiReview.safetyScore ?? aiReview.riskScore;
+              // 1-4: Safe (green), 5-7: Elevated (amber), 8-10: High risk/Scam (red)
+              const isGreen = score <= 4;
+              const isYellow = score >= 5 && score <= 7;
               const color = isGreen ? '#22c55e' : isYellow ? '#f59e0b' : '#ef4444';
-              const label = hasSafety
-                ? (score >= 7 ? 'Safe' : score >= 4 ? 'Moderate' : 'Risky')
-                : (score <= 3 ? 'Low Risk' : score <= 6 ? 'Medium Risk' : 'High Risk');
+              const label = score <= 2 ? 'Very Safe' : score <= 4 ? 'Low Risk' : score === 5 ? 'Neutral' : score <= 7 ? 'Elevated Risk' : score <= 9 ? 'High Risk' : 'Scam';
               const Icon = isGreen ? ShieldCheck : isYellow ? ShieldAlert : AlertTriangle;
 
               return (
@@ -646,12 +648,37 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <Stack direction="row" style={{ gap: '8px', marginBottom: '10px' }}>
                 {aiReview.risks?.length > 0 && (
                   <Stack style={{ flex: 1, gap: '6px' }}>
-                    {aiReview.risks.slice(0, 3).map((r, i) => (
+                    {aiReview.risks.slice(0, 3).map((r, i) => {
+                      // Determine severity color based on risk content
+                      const rLower = r.toLowerCase();
+                      let riskColor = '#f59e0b'; // default amber/warning
+
+                      // Red (severe) risks
+                      if (rLower.includes('scam') || rLower.includes('rug') || rLower.includes('honeypot')) {
+                        riskColor = '#ef4444';
+                      } else if (rLower.includes('from ath') || rLower.includes('down')) {
+                        // Parse ATH drop percentage
+                        const athMatch = r.match(/(\d+)%/);
+                        if (athMatch) {
+                          const pct = parseInt(athMatch[1], 10);
+                          riskColor = pct >= 80 ? '#ef4444' : pct >= 50 ? '#f59e0b' : '#eab308'; // red > 80%, amber > 50%, yellow otherwise
+                        }
+                      } else if (rLower.includes('creator sell') || rLower.includes('dumping')) {
+                        riskColor = '#ef4444';
+                      // Amber (elevated) risks
+                      } else if (rLower.includes('concentration') || rLower.includes('consecutive') || rLower.includes('wash')) {
+                        riskColor = '#f59e0b';
+                      } else if (rLower.includes('low liquidity') || rLower.includes('few holder')) {
+                        riskColor = '#f59e0b';
+                      }
+
+                      return (
                       <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef4444', marginTop: '5px', flexShrink: 0 }} />
-                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', lineHeight: 1.4 }}>{r}</Typography>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskColor, marginTop: '5px', flexShrink: 0 }} />
+                        <Typography style={{ fontSize: '11px', color: riskColor, lineHeight: 1.4 }}>{r}</Typography>
                       </Stack>
-                    ))}
+                      );
+                    })}
                   </Stack>
                 )}
                 {aiReview.positives?.length > 0 && (
@@ -1512,13 +1539,40 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                     ))}
                   </Stack>
 
+                  {/* Stats Summary */}
+                  {creatorStats && (
+                    <Stack direction="row" style={{ gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      {creatorStats.buy?.count > 0 && (
+                        <Typography variant="caption" style={{ fontSize: '10px', color: '#22c55e' }}>
+                          {creatorStats.buy.count} buys · {fNumber(creatorStats.buy.xrp)} XRP
+                        </Typography>
+                      )}
+                      {creatorStats.sell?.count > 0 && (
+                        <Typography variant="caption" style={{ fontSize: '10px', color: '#ef4444' }}>
+                          {creatorStats.sell.count} sells · {fNumber(creatorStats.sell.xrp)} XRP
+                        </Typography>
+                      )}
+                      {creatorStats.transfer_out?.count > 0 && (
+                        <Typography variant="caption" style={{ fontSize: '10px', color: '#9C27B0' }}>
+                          {creatorStats.transfer_out.count} transfers
+                        </Typography>
+                      )}
+                      {creatorStats.sellBuyRatio !== undefined && creatorStats.sellBuyRatio > 0 && (
+                        <Typography variant="caption" style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          Sell ratio: {(creatorStats.sellBuyRatio * 100).toFixed(0)}%
+                        </Typography>
+                      )}
+                    </Stack>
+                  )}
+
                   {/* Warning Banner */}
-                  {hasWarning && (
+                  {hasWarning && signals.length > 0 && (
                     <Stack direction="row" alignItems="center" style={{ gap: '8px', marginBottom: '12px', padding: '10px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.15)' }}>
                       <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
                       <Stack style={{ flex: 1 }}>
-                        <Typography variant="caption" style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>Exit Signal Detected</Typography>
-                        <Typography variant="caption" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '10px' }}>Creator has failed transactions in the last 24 hours</Typography>
+                        <Typography variant="caption" style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
+                          {signals.map(s => s.msg).join(' · ')}
+                        </Typography>
                       </Stack>
                     </Stack>
                   )}

@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Loader2 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
+import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
+
+// Pre-instantiate to avoid dynamic import latency
+const walletStorage = new EncryptedWalletStorage();
 
 const OAuthCallback = () => {
   const router = useRouter();
@@ -21,8 +25,8 @@ const OAuthCallback = () => {
       if (isProcessingFlag === 'true') {
         const elapsed = processingStart ? Date.now() - parseInt(processingStart) : 0;
         console.log('[Callback] Already processing, elapsed:', elapsed, 'ms');
-        // If stuck for more than 10 seconds, clear and retry
-        if (processingStart && elapsed > 10000) {
+        // If stuck for more than 5 seconds, clear and retry
+        if (processingStart && elapsed > 5000) {
           console.warn('[Callback] Processing stuck >10s - clearing flag and retrying');
           sessionStorage.removeItem('callback_processing');
           sessionStorage.removeItem('callback_processing_start');
@@ -417,11 +421,7 @@ const OAuthCallback = () => {
           }
         }
 
-        // Import unified wallet storage
-        console.log('[Callback] Importing EncryptedWalletStorage...');
-        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new EncryptedWalletStorage();
-        console.log('[Callback] WalletStorage created');
+        console.log('[Callback] Using pre-instantiated walletStorage');
 
         // Create backend object with proper API URL
         const backend = {

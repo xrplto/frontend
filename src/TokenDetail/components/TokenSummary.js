@@ -511,6 +511,7 @@ const TokenSummary = memo(({ token }) => {
                 { label: 'Issuer', value: issuer },
                 { label: 'Currency', value: currency },
                 ...(AMM ? [{ label: 'AMM Account', value: AMM }] : []),
+                ...(creator ? [{ label: 'Creator', value: creator }] : []),
                 { label: 'MD5', value: md5 }
               ].map((item) => (
                 <button

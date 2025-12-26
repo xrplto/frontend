@@ -1,11 +1,32 @@
 import { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { Eye, EyeOff, Loader2, Plus, X, Copy, Check, ChevronDown, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plus, X, Copy, Check, ChevronDown, ArrowRight, RefreshCw, ExternalLink, AlertCircle } from 'lucide-react';
 import { trackExchange } from 'src/components/BridgeTracker';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
 import { Wallet as XRPLWallet } from 'xrpl';
+
+// Password strength checker with real-time feedback
+const getPasswordStrength = (password) => {
+  if (!password) return { score: 0, label: '', color: '' };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+
+  const levels = [
+    { score: 0, label: '', color: '' },
+    { score: 1, label: 'Weak', color: '#f44336' },
+    { score: 2, label: 'Fair', color: '#FF9800' },
+    { score: 3, label: 'Good', color: '#4285f4' },
+    { score: 4, label: 'Strong', color: '#22c55e' },
+    { score: 5, label: 'Very Strong', color: '#22c55e' }
+  ];
+  return levels[Math.min(score, 5)];
+};
 
 // Bridge API configuration
 const BRIDGE_API_URL = 'https://api.xrpl.to/api/bridge';
@@ -65,9 +86,16 @@ const WalletSetupPage = () => {
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
   const [txStatus, setTxStatus] = useState(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [redirectNotice, setRedirectNotice] = useState(null);
+  const [showSeed, setShowSeed] = useState(false);
+  const [seedCopied, setSeedCopied] = useState(false);
 
   // OAuth data - start as undefined to indicate "not yet loaded"
   const [oauthData, setOauthData] = useState(undefined);
+
+  // Password strength for real-time feedback
+  const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
 
   // Load OAuth data only on client side (single useEffect to prevent flicker)
   useEffect(() => {
@@ -80,14 +108,17 @@ const WalletSetupPage = () => {
     const action = sessionStorage.getItem('oauth_action');
 
     if (!token || !provider || !userStr) {
-      window.location.href = '/';
+      // Show notice before redirect instead of silent redirect
+      setRedirectNotice('Session expired. Redirecting to login...');
+      setTimeout(() => { window.location.href = '/'; }, 1500);
       return;
     }
 
     try {
       setOauthData({ token, provider, user: JSON.parse(userStr), action });
     } catch {
-      window.location.href = '/';
+      setRedirectNotice('Invalid session data. Redirecting...');
+      setTimeout(() => { window.location.href = '/'; }, 1500);
     }
   }, []);
 
@@ -450,11 +481,6 @@ const WalletSetupPage = () => {
     }
   };
 
-  const handleContinue = () => {
-    setShowSuccess(false);
-    setShowFundScreen(true);
-  };
-
   const handleStartTrading = () => {
     openSnackbar('Wallet ready!', 'success');
     window.location.href = '/';
@@ -481,69 +507,198 @@ const WalletSetupPage = () => {
     return (
       <div className="flex min-h-screen items-center justify-center py-16">
         <div className="text-center">
-          <Loader2 className="mx-auto mb-4 animate-spin" size={40} />
-          <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
+          {redirectNotice ? (
+            <>
+              <AlertCircle className="mx-auto mb-4 text-amber-500" size={40} />
+              <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>{redirectNotice}</p>
+            </>
+          ) : (
+            <>
+              <Loader2 className="mx-auto mb-4 animate-spin" size={40} />
+              <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
+            </>
+          )}
         </div>
       </div>
     );
   }
 
-  // Success screen after wallet creation
+  // Combined success + fund screen (merged for fewer clicks)
   if (showSuccess) {
+    const walletAddress = createdWallet?.wallet?.address || createdWallet?.wallet?.account;
+    const walletSeed = createdWallet?.wallet?.seed;
+
+    const copySeed = () => {
+      if (walletSeed) {
+        navigator.clipboard.writeText(walletSeed);
+        setSeedCopied(true);
+        setTimeout(() => setSeedCopied(false), 2000);
+      }
+    };
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md text-center">
-          <h1 className="mb-8 text-[22px] font-normal text-[#22c55e]">
-            Password ready
-          </h1>
+        <div className="w-full max-w-md">
+          {/* Success Header */}
+          <div className="text-center mb-5">
+            <div className={cn(
+              "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full",
+              "bg-[rgba(34,197,94,0.15)]"
+            )}>
+              <Check size={24} className="text-[#22c55e]" />
+            </div>
+            <h1 className={cn("text-[20px] font-normal", isDark ? "text-white" : "text-[#212B36]")}>
+              Wallet Created
+            </h1>
+            <p className={cn("mt-1 text-[12px]", isDark ? "text-[rgba(255,255,255,0.5)]" : "text-[rgba(33,43,54,0.5)]")}>
+              Fund with at least 1 XRP to activate
+            </p>
+          </div>
 
+          {/* Backup Section */}
           <div className={cn(
-            "mb-8 rounded-[10px] border p-4 text-left",
-            "border-[rgba(255,152,0,0.3)] bg-transparent"
+            "mb-4 rounded-[10px] border p-4",
+            "border-[rgba(255,152,0,0.2)] bg-[rgba(255,152,0,0.05)]"
           )}>
-            <div className="flex gap-3">
-              <span className="text-[20px]">⚠️</span>
-              <div className="text-[12px] leading-relaxed">
-                <p className={isDark ? "text-white" : "text-[#212B36]"}>
-                  Your password is the only way to use your wallets via the xrpl.to app. If you lose your password, it cannot be recovered.
-                </p>
-                <p className={cn("mt-3", isDark ? "text-[rgba(255,255,255,0.6)]" : "text-[rgba(33,43,54,0.6)]")}>
-                  We recommend exporting your private keys to mitigate the risk of permanently losing access to your funds.
-                </p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} className="text-amber-500" />
+                <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  Backup Your Secret Key
+                </span>
               </div>
+              <button
+                onClick={() => setShowSeed(!showSeed)}
+                className={cn(
+                  "flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded transition-colors",
+                  isDark ? "text-amber-400 hover:bg-amber-500/10" : "text-amber-600 hover:bg-amber-50"
+                )}
+              >
+                {showSeed ? <EyeOff size={12} /> : <Eye size={12} />}
+                {showSeed ? 'Hide' : 'Reveal'}
+              </button>
+            </div>
+
+            {showSeed ? (
+              <div className={cn(
+                "rounded-[8px] border p-3 mb-3",
+                isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
+              )}>
+                <div className="flex items-center justify-between gap-2">
+                  <code className={cn(
+                    "text-[11px] font-mono break-all flex-1",
+                    isDark ? "text-white/90" : "text-gray-900"
+                  )}>
+                    {walletSeed}
+                  </code>
+                  <button
+                    onClick={copySeed}
+                    className={cn(
+                      "flex-shrink-0 p-1.5 rounded transition-colors",
+                      seedCopied
+                        ? "bg-[rgba(34,197,94,0.15)] text-[#22c55e]"
+                        : isDark
+                        ? "bg-white/10 text-white/60 hover:bg-white/15"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    )}
+                  >
+                    {seedCopied ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={cn(
+                "rounded-[8px] border p-3 mb-3 text-center",
+                isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
+              )}>
+                <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
+                  Click "Reveal" to view your secret key
+                </span>
+              </div>
+            )}
+
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={agreedToExport}
+                onChange={(e) => setAgreedToExport(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded accent-amber-500"
+              />
+              <span className={cn("text-[10px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                I've saved my secret key. I understand this is a <strong>non-custodial wallet</strong> — xrpl.to cannot recover lost keys or passwords.
+              </span>
+            </label>
+            <p className={cn("mt-2 text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>
+              You can also export your keys anytime from Settings → Export
+            </p>
+          </div>
+
+          {/* QR Code + Address */}
+          <div className={cn(
+            "mb-4 rounded-[12px] border p-4",
+            isDark ? "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.02)]" : "border-[rgba(0,0,0,0.08)] bg-gray-50"
+          )}>
+            <div className="mx-auto mb-3 w-fit rounded-xl bg-white p-2">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${walletAddress}`}
+                alt="Wallet QR Code"
+                width={100}
+                height={100}
+              />
+            </div>
+            <div className={cn(
+              "flex items-center justify-between rounded-[8px] border px-3 py-2",
+              isDark ? "border-[rgba(255,255,255,0.08)] bg-[rgba(0,0,0,0.2)]" : "border-[rgba(0,0,0,0.06)] bg-white"
+            )}>
+              <span className={cn("font-mono text-[10px]", isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]")}>
+                {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-8)}
+              </span>
+              <button
+                onClick={copyAddress}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-[10px] font-medium transition-colors",
+                  copied
+                    ? "bg-[rgba(34,197,94,0.15)] text-[#22c55e]"
+                    : isDark
+                    ? "bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)] hover:bg-[rgba(255,255,255,0.12)]"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
             </div>
           </div>
 
-          <label className={cn(
-            "mb-8 flex cursor-pointer items-start gap-3 text-left",
-            isDark ? "text-[rgba(255,255,255,0.7)]" : "text-[rgba(33,43,54,0.7)]"
-          )}>
-            <input
-              type="checkbox"
-              checked={agreedToExport}
-              onChange={(e) => setAgreedToExport(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-[rgba(255,255,255,0.2)] bg-transparent"
-            />
-            <span className="text-[12px]">
-              I will export and safely store my private keys before depositing funds
-            </span>
-          </label>
-
+          {/* Continue Button */}
           <button
-            onClick={handleContinue}
+            onClick={() => { setShowSuccess(false); setShowFundScreen(true); }}
             disabled={!agreedToExport}
             className={cn(
-              "w-full rounded-full px-6 py-3 text-[13px] font-normal transition-colors",
+              "w-full rounded-[10px] px-6 py-3 text-[13px] font-medium transition-colors mb-3",
               agreedToExport
-                ? isDark
-                  ? "bg-[rgba(255,255,255,0.15)] text-white hover:bg-[rgba(255,255,255,0.2)]"
-                  : "bg-[#22c55e] text-white hover:bg-[#1ea34b]"
+                ? "bg-[#3b82f6] text-white hover:bg-[#2563eb]"
                 : isDark
-                ? "cursor-not-allowed bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.3)]"
-                : "cursor-not-allowed bg-gray-200 text-gray-400"
+                ? "cursor-not-allowed bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.3)]"
+                : "cursor-not-allowed bg-gray-100 text-gray-400"
             )}
           >
-            Continue
+            Fund with Crypto Swap
+          </button>
+
+          <button
+            onClick={handleStartTrading}
+            disabled={!agreedToExport}
+            className={cn(
+              "w-full rounded-[10px] border px-6 py-3 text-[13px] font-medium transition-colors",
+              agreedToExport
+                ? isDark ? "border-white/10 text-white/60 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                : isDark
+                ? "cursor-not-allowed border-white/5 text-white/20"
+                : "cursor-not-allowed border-gray-100 text-gray-300"
+            )}
+          >
+            Skip, I'll send XRP directly
           </button>
         </div>
       </div>
@@ -1076,9 +1231,27 @@ const WalletSetupPage = () => {
               {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
             {importMethod === 'new' && (
-              <p className={cn("mt-1 text-[10px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-[rgba(33,43,54,0.4)]")}>
-                8+ chars, mix letters/numbers/symbols
-              </p>
+              <>
+                {password && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 h-1 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full transition-all duration-300"
+                        style={{
+                          width: `${(passwordStrength.score / 5) * 100}%`,
+                          backgroundColor: passwordStrength.color
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium" style={{ color: passwordStrength.color }}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+                <p className={cn("mt-1 text-[10px]", isDark ? "text-[rgba(255,255,255,0.3)]" : "text-[rgba(33,43,54,0.4)]")}>
+                  8+ chars, mix letters/numbers/symbols
+                </p>
+              </>
             )}
           </div>
 
@@ -1254,16 +1427,56 @@ const WalletSetupPage = () => {
           </div>
         )}
 
+        {/* Cancel Confirmation Modal */}
+        {showCancelConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowCancelConfirm(false)}>
+            <div
+              className={cn(
+                "w-full max-w-sm rounded-[12px] p-5",
+                isDark ? "bg-[#0a0a0a] border border-white/10" : "bg-white border border-gray-200"
+              )}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle size={20} className="text-amber-500" />
+                <h3 className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  Cancel Setup?
+                </h3>
+              </div>
+              <p className={cn("text-[12px] mb-5", isDark ? "text-white/60" : "text-gray-600")}>
+                Your login session will be cleared. You'll need to sign in again to create a wallet.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className={cn(
+                    "flex-1 rounded-[8px] border-[1.5px] px-4 py-2 text-[11px] font-medium transition-colors",
+                    isDark ? "border-white/15 text-white/70 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                  )}
+                >
+                  Continue Setup
+                </button>
+                <button
+                  onClick={() => {
+                    sessionStorage.removeItem('oauth_temp_token');
+                    sessionStorage.removeItem('oauth_temp_provider');
+                    sessionStorage.removeItem('oauth_temp_user');
+                    sessionStorage.removeItem('oauth_action');
+                    window.location.href = '/';
+                  }}
+                  className="flex-1 rounded-[8px] bg-red-500/10 border border-red-500/20 px-4 py-2 text-[11px] font-medium text-red-500 hover:bg-red-500/20 transition-colors"
+                >
+                  Yes, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex gap-3">
           <button
-            onClick={() => {
-              sessionStorage.removeItem('oauth_temp_token');
-              sessionStorage.removeItem('oauth_temp_provider');
-              sessionStorage.removeItem('oauth_temp_user');
-              sessionStorage.removeItem('oauth_action');
-              window.location.href = '/';
-            }}
+            onClick={() => setShowCancelConfirm(true)}
             disabled={isCreating}
             className={cn(
               "flex-1 rounded-[8px] border-[1.5px] px-4 py-2 text-[11px] font-normal transition-colors",

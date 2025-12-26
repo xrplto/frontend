@@ -95,8 +95,8 @@ const ButtonGroup = styled.div`
   padding: 2px;
   border-radius: 8px;
   background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
-  gap: 1px;
-  & > button { border-radius: 6px; border: none; }
+  gap: 2px;
+  & > button { border-radius: 6px; }
 `;
 
 const Button = styled.button`
@@ -106,18 +106,17 @@ const Button = styled.button`
   height: ${props => props.isMobile ? '24px' : '26px'};
   border-radius: 6px;
   font-weight: ${props => props.isActive ? 500 : 400};
-  border: none;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : '#fff') : 'transparent'};
-  color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  border: 1px solid ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
+  color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 3px;
   transition: all 0.15s ease;
-  box-shadow: ${props => props.isActive ? '0 1px 2px rgba(0,0,0,0.08)' : 'none'};
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? '#fff' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.isActive ? (props.isDark ? '#111' : '#333') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
+    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.85)') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   & svg { width: ${props => props.isMobile ? '11px' : '12px'}; height: ${props => props.isMobile ? '11px' : '12px'}; }
 `;
