@@ -88,8 +88,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-start gap-1.5 px-3 h-[36px] overflow-x-auto scrollbar-hide border-b -mx-2 sm:-mx-4 mb-3',
-        isDark ? 'border-b-white/10 bg-[#0d0d0d]' : 'border-b-gray-200 bg-gray-50/80'
+        'flex items-center gap-1 px-2 h-[32px] overflow-x-auto scrollbar-hide -mx-2 sm:-mx-4 mb-3',
+        isDark ? 'bg-transparent' : 'bg-transparent'
       )}
     >
       {/* Back navigation */}
@@ -98,16 +98,16 @@ const TokenTabs = memo(({ currentMd5 }) => {
           <a
             href={isNftWithCollection ? `/collection/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
             className={cn(
-              'flex items-center gap-0.5 px-2 h-6 rounded-md text-[11px] font-medium transition-all shrink-0',
-              'text-primary/80 hover:text-primary hover:bg-primary/10'
+              'flex items-center gap-0.5 px-2 h-6 rounded text-[11px] font-medium transition-all shrink-0',
+              isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             )}
           >
             <ChevronLeft size={12} />
-            <span className="max-w-[100px] truncate">
+            <span className="max-w-[80px] truncate">
               {isNftWithCollection ? currentTab.collectionName || 'Collection' : isCollection ? 'Collections' : 'Tokens'}
             </span>
           </a>
-          <div className={cn('w-px h-4 shrink-0', isDark ? 'bg-white/15' : 'bg-gray-300')} />
+          <div className={cn('w-px h-3.5 shrink-0', isDark ? 'bg-white/10' : 'bg-gray-200')} />
         </>
       )}
 
@@ -139,12 +139,14 @@ const TokenTabs = memo(({ currentMd5 }) => {
             href={href}
             onClick={(e) => isActive && e.preventDefault()}
             className={cn(
-              'group flex items-center gap-1.5 px-2.5 h-6 rounded-md text-[11px] font-medium transition-all shrink-0',
+              'group flex items-center gap-1.5 px-2 h-6 rounded text-[11px] font-medium transition-all shrink-0 border',
               isActive
-                ? 'bg-primary/15 text-primary border border-primary/30'
+                ? isDark
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                 : isDark
-                  ? 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-transparent hover:border-gray-200'
+                  ? 'text-white/50 hover:text-white/80 bg-white/[0.02] border-white/10 hover:border-white/20'
+                  : 'text-gray-500 hover:text-gray-700 bg-gray-50 border-gray-200 hover:border-gray-300'
             )}
           >
             <img
@@ -153,7 +155,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
               className={cn('w-3.5 h-3.5 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
               onError={(e) => (e.target.src = '/static/alt.webp')}
             />
-            <span className="max-w-[100px] truncate">{label}</span>
+            <span className="max-w-[90px] truncate">{label}</span>
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -161,11 +163,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
                 removeTab(tabId);
               }}
               className={cn(
-                'ml-0.5 transition-all opacity-0 group-hover:opacity-60 hover:!opacity-100',
-                isActive ? 'opacity-60 text-primary' : isDark ? 'hover:text-white' : 'hover:text-gray-600'
+                'transition-all opacity-0 group-hover:opacity-50 hover:!opacity-100',
+                isActive ? 'opacity-50' : ''
               )}
             >
-              <X size={11} />
+              <X size={10} />
             </button>
           </a>
         );
@@ -179,8 +181,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
           onClick={openSearch}
           title="Add tab"
           className={cn(
-            'p-1.5 rounded-md transition-colors',
-            isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            'p-1 rounded transition-colors',
+            isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'
           )}
         >
           <Plus size={14} />
@@ -191,67 +193,60 @@ const TokenTabs = memo(({ currentMd5 }) => {
             onClick={clearOthers}
             title="Clear other tabs"
             className={cn(
-              'p-1.5 rounded-md transition-colors',
-              isDark ? 'text-white/50 hover:text-red-400 hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
+              'p-1 rounded transition-colors',
+              isDark ? 'text-white/40 hover:text-red-400' : 'text-gray-400 hover:text-red-500'
             )}
           >
-            <Trash2 size={13} />
+            <Trash2 size={12} />
           </button>
         )}
       </div>
 
       {/* Search Modal */}
       {searchOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh]" onClick={() => { setSearchOpen(false); setQuery(''); }}>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[12vh]" onClick={() => { setSearchOpen(false); setQuery(''); }}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
           <div
             ref={searchRef}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'relative w-full max-w-lg rounded-2xl border overflow-hidden',
-              isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+              'relative w-full max-w-md mx-4 rounded-xl border overflow-hidden',
+              isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200 shadow-xl'
             )}
           >
-            <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
-              <Search size={18} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+            <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-100')}>
+              <Search size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tokens to add..."
-                className={cn('flex-1 bg-transparent text-[15px] outline-none', isDark ? 'text-white placeholder:text-white/40' : 'text-gray-900 placeholder:text-gray-400')}
+                placeholder="Search tokens..."
+                className={cn('flex-1 bg-transparent text-[14px] outline-none', isDark ? 'text-white placeholder:text-white/30' : 'text-gray-900 placeholder:text-gray-400')}
               />
               <button onClick={() => { setSearchOpen(false); setQuery(''); }} className={cn('p-1 rounded', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
-                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
               </button>
             </div>
-            <div className="max-h-[480px] overflow-y-auto p-2">
+            <div className="max-h-[400px] overflow-y-auto">
               {/* Tokens Section */}
               {(query ? results.tokens : suggested.tokens).length > 0 && (
                 <>
-                  <div className="flex items-center gap-3 px-2 py-2">
-                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Tokens</span>
-                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
-                  </div>
+                  <div className={cn('px-3 py-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Tokens</div>
                   {(query ? results.tokens : suggested.tokens).map((token) => (
                     <div
                       key={token.md5}
                       onClick={() => handleSelectToken(token)}
-                      className={cn('flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-50')}
+                      className={cn('flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                     >
-                      <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" onError={(e) => (e.target.src = '/static/alt.webp')} />
+                      <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-8 h-8 rounded-full object-cover" alt="" onError={(e) => (e.target.src = '/static/alt.webp')} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{token.user}</span>
-                          <span className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>•</span>
-                          <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>({token.name})</span>
+                          <span className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{token.user}</span>
+                          <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>({token.name})</span>
                         </div>
-                        <p className={cn('text-[11px] font-mono truncate mt-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>{token.issuer}</p>
+                        <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/20' : 'text-gray-400')}>{token.issuer}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={cn('px-2 py-1 text-[10px] font-semibold uppercase rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')}>Token</span>
-                        {token.verified && <span className="px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
-                      </div>
+                      {token.verified && <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-[9px]">✓</span>}
                     </div>
                   ))}
                 </>
@@ -260,32 +255,26 @@ const TokenTabs = memo(({ currentMd5 }) => {
               {/* NFTs Section */}
               {(query ? results.collections : suggested.collections).length > 0 && (
                 <>
-                  <div className="flex items-center gap-3 px-2 py-2 mt-1">
-                    <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>NFTs</span>
-                    <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
-                  </div>
+                  <div className={cn('px-3 py-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/30 border-t border-white/5' : 'text-gray-400 border-t border-gray-100')}>Collections</div>
                   {(query ? results.collections : suggested.collections).map((col) => (
                     <div
                       key={col.slug}
                       onClick={() => handleSelectCollection(col)}
-                      className={cn('flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-50')}
+                      className={cn('flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                     >
-                      <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" onError={(e) => (e.target.src = '/static/alt.webp')} />
+                      <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-8 h-8 rounded object-cover" alt="" onError={(e) => (e.target.src = '/static/alt.webp')} />
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{col.name}</span>
-                        <p className={cn('text-[11px] font-mono truncate mt-0.5', isDark ? 'text-white/25' : 'text-gray-400')}>{col.account}</p>
+                        <span className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{col.name}</span>
+                        <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/20' : 'text-gray-400')}>{col.account}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={cn('px-2 py-1 text-[10px] font-semibold uppercase rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500')}>NFT</span>
-                        {col.verified === 'yes' && <span className="px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓</span>}
-                      </div>
+                      {col.verified === 'yes' && <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-[9px]">✓</span>}
                     </div>
                   ))}
                 </>
               )}
 
               {query && !loading && results.tokens.length === 0 && results.collections.length === 0 && (
-                <p className={cn('px-4 py-8 text-[13px] text-center', isDark ? 'text-white/40' : 'text-gray-400')}>No results found</p>
+                <p className={cn('px-4 py-6 text-[12px] text-center', isDark ? 'text-white/30' : 'text-gray-400')}>No results found</p>
               )}
             </div>
           </div>

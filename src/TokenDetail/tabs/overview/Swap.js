@@ -396,36 +396,23 @@ const Alert = styled.div`
 const Tabs = styled.div`
   display: flex;
   width: fit-content;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
-  border: none;
-  @media (max-width: 600px) {
-    padding: 3px;
-    gap: 2px;
-  }
+  gap: 4px;
 `;
 
 const Tab = styled.button`
-  padding: 6px 14px;
+  padding: 6px 16px;
   font-size: 12px;
   text-transform: none;
-  border: 1px solid ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
+  border: none;
   border-radius: 6px;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
-  color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
+  color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
   transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.85)') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
-  }
-  @media (max-width: 600px) {
-    padding: 8px 16px;
-    font-size: 13px;
-    border-radius: 6px;
+    background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)') : (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
+    color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   }
 `;
 
@@ -1917,39 +1904,25 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           : '0'}
                       </Typography>
                     </Typography>
-                    <Stack direction="row" spacing={0.5}>
-                      {[0.25, 0.5, 0.75].map((p) => (
-                        <Button
+                    <div className="flex gap-1">
+                      {[0.25, 0.5, 0.75, 1].map((p) => (
+                        <button
                           key={p}
-                          isDark={isDark}
-                          sx={{
-                            px: { xs: 1, sm: 0.5 },
-                            py: 0,
-                            minWidth: 0,
-                            fontSize: { xs: '0.75rem', sm: '0.75rem' },
-                            height: { xs: '28px', sm: '20px' }
-                          }}
                           disabled={!accountPairBalance?.curr1?.value}
-                          onClick={() => onFillPercent(p)}
+                          onClick={() => p === 1 ? onFillMax() : onFillPercent(p)}
+                          className={cn(
+                            'px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors',
+                            !accountPairBalance?.curr1?.value
+                              ? 'opacity-30 cursor-not-allowed'
+                              : isDark
+                                ? 'text-white/40 hover:text-primary hover:bg-primary/10'
+                                : 'text-gray-400 hover:text-primary hover:bg-primary/10'
+                          )}
                         >
-                          {Math.round(p * 100)}%
-                        </Button>
+                          {p === 1 ? 'MAX' : `${Math.round(p * 100)}%`}
+                        </button>
                       ))}
-                      <Button
-                        isDark={isDark}
-                        sx={{
-                          px: { xs: 1, sm: 0.5 },
-                          py: 0,
-                          minWidth: 0,
-                          fontSize: { xs: '0.75rem', sm: '0.75rem' },
-                          height: { xs: '28px', sm: '20px' }
-                        }}
-                        disabled={!accountPairBalance?.curr1?.value}
-                        onClick={onFillMax}
-                      >
-                        MAX
-                      </Button>
-                    </Stack>
+                    </div>
                   </Stack>
                 )}
                 <Input
@@ -2110,36 +2083,39 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             >
               <div
                 onClick={e => e.stopPropagation()}
-                className={`w-[320px] rounded-xl border-[1.5px] p-5 ${isDark ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'}`}
+                className={cn(
+                  'w-[320px] rounded-xl border p-5',
+                  isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                )}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Settings</span>
-                  <button onClick={() => setShowSettingsModal(false)} className="p-1.5 rounded-lg hover:bg-white/10">
-                    <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                <div className="flex items-center justify-between mb-5">
+                  <span className={cn('text-[14px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>Settings</span>
+                  <button onClick={() => setShowSettingsModal(false)} className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100')}>
+                    <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </button>
                 </div>
 
                 {/* Max Slippage Section */}
                 <div className="mb-4">
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="mb-2.5">
                     <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Max Slippage</span>
-                    <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     {[1, 2, 3, 5].map((preset) => (
                       <button
                         key={preset}
                         onClick={() => setSlippage(preset)}
-                        className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                        className={cn(
+                          'flex-1 h-8 text-[12px] font-medium rounded-md transition-colors',
                           slippage === preset
-                            ? 'bg-primary text-white border-primary'
-                            : isDark ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                        }`}
+                            ? 'bg-primary/15 text-primary'
+                            : isDark ? 'bg-white/[0.03] text-white/50 hover:text-white/70' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                        )}
                       >
                         {preset}%
                       </button>
                     ))}
-                    <div className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                    <div className={cn('flex items-center justify-center h-8 px-2 min-w-[50px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')}>
                       <input
                         type="text"
                         inputMode="decimal"
@@ -2150,41 +2126,40 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             setSlippage(val === '' ? '' : parseFloat(val) || val);
                           }
                         }}
-                        className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
+                        className={cn('w-5 bg-transparent border-none outline-none text-[12px] font-medium text-center', isDark ? 'text-white/80' : 'text-gray-700')}
                       />
-                      <span className={`text-[12px] ${isDark ? 'text-white/40' : 'text-gray-400'}`}>%</span>
+                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>%</span>
                     </div>
                   </div>
                   {Number(slippage) >= 4 && (
-                    <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span className="text-[11px] text-amber-500">High slippage may cause front-running</span>
+                    <div className="flex items-center gap-2 mt-2.5 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[10px] text-amber-500">High slippage may cause front-running</span>
                     </div>
                   )}
                 </div>
 
                 {/* Network Fee Section */}
                 <div className="mb-4">
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-1.5 mb-2.5">
                     <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Network Fee</span>
                     <span className={`text-[10px] ${isDark ? 'text-white/25' : 'text-gray-400'}`}>(drops)</span>
-                    <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     {[12, 15, 20, 50].map((val) => (
                       <button
                         key={val}
                         onClick={() => setTxFee(String(val))}
-                        className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                        className={cn(
+                          'flex-1 h-8 text-[12px] font-medium rounded-md transition-colors',
                           txFee === String(val)
-                            ? 'bg-primary text-white border-primary'
-                            : isDark ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                        }`}
+                            ? 'bg-primary/15 text-primary'
+                            : isDark ? 'bg-white/[0.03] text-white/50 hover:text-white/70' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                        )}
                       >
                         {val}
                       </button>
                     ))}
-                    <div className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                    <div className={cn('flex items-center h-8 px-2 min-w-[52px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')}>
                       <input
                         type="text"
                         inputMode="numeric"
@@ -2193,24 +2168,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           const val = e.target.value.replace(/[^0-9]/g, '');
                           setTxFee(val);
                         }}
-                        className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
+                        className={cn('w-8 bg-transparent border-none outline-none text-[12px] font-medium text-center', isDark ? 'text-white/80' : 'text-gray-700')}
                       />
                     </div>
                   </div>
-                  <p className={`text-[10px] mt-2 ${isDark ? 'text-white/30' : 'text-gray-400'}`}>Higher fees = priority during congestion</p>
+                  <p className={cn('text-[10px] mt-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Higher fees = priority during congestion</p>
                   {parseInt(txFee) >= 50 && (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span className="text-[11px] text-amber-500">Only needed during extreme congestion</span>
+                    <div className="flex items-center gap-2 mt-2 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[10px] text-amber-500">Only needed during extreme congestion</span>
                     </div>
                   )}
                 </div>
 
                 <button
                   onClick={() => setShowSettingsModal(false)}
-                  className="w-full py-3 rounded-lg bg-primary text-white text-[14px] font-medium border-none cursor-pointer hover:bg-primary/90 transition-colors"
+                  className="w-full py-2.5 rounded-lg bg-primary text-white text-[13px] font-medium border-none cursor-pointer hover:bg-blue-600 transition-colors mt-2"
                 >
-                  Save Settings
+                  Done
                 </button>
               </div>
             </div>
@@ -2218,18 +2192,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Slippage control - Only for market orders */}
           {orderType === 'market' && (
-            <Box sx={{ px: 1.5, py: 1 }}>
+            <Box sx={{ px: 0.5, py: 0.75 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <button onClick={() => setShowSettingsModal(true)} style={{
-                  display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
-                  cursor: 'pointer', padding: 0, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                }}>
-                  <Settings size={14} />
-                  <span style={{ fontSize: 12 }}>Slippage {slippage}%</span>
+                <button onClick={() => setShowSettingsModal(true)} className={cn(
+                  'flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 transition-colors',
+                  isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
+                )}>
+                  <Settings size={13} />
+                  <span className="text-[11px]">Slippage {slippage}%</span>
                 </button>
-                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', color: 'text.secondary' }}>
+                <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
                   Impact {swapQuoteCalc?.price_impact?.percent ? parseFloat(swapQuoteCalc.price_impact.percent.replace('%', '')).toFixed(2) : '—'}%
-                </Typography>
+                </span>
               </Stack>
 
               {/* Quote Summary */}
@@ -2640,9 +2614,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.25, mb: 0.25, width: '100%' }}>
-        <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={12} />
-        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.7 }}>
+      <div className="flex items-center gap-1.5 mt-1 mb-0.5 px-1">
+        <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={10} />
+        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/40' : 'text-gray-400')}>
           1 {curr1.name} = {(() => {
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
               return (parseFloat(amount2) / parseFloat(amount1)).toFixed(6);
@@ -2662,8 +2636,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             if (!isFinite(rate) || isNaN(rate)) return '--';
             return rate.toFixed(6);
           })()} {curr2.name}
-        </Typography>
-      </Stack>
+        </span>
+      </div>
 
       {/* Floating Order Book Panel */}
       {showOrderbook && (

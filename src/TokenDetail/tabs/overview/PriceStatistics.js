@@ -295,7 +295,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               riskScore: review.riskScore,
               risks: Array.isArray(review.risks) ? review.risks : [],
               positives: Array.isArray(review.positives) ? review.positives : [],
-              summary: review.summary || '',
               timestamp: data.timestamp
             });
           }
@@ -567,10 +566,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               </div>
               <Stack style={{ gap: 0 }}>
                 <Typography style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.01em' }}>
-                  AI Analysis
+                  Safety Score
                 </Typography>
                 <Typography style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Powered by YANN {aiReview?.timestamp && `· ${(() => {
+                  Multi-factor analysis {aiReview?.timestamp && `· ${(() => {
                     const diff = Date.now() - new Date(aiReview.timestamp).getTime();
                     const mins = Math.floor(diff / 60000);
                     if (mins < 1) return 'just now';
@@ -650,7 +649,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <Stack direction="row" style={{ gap: '8px', marginBottom: '10px' }}>
                 {aiReview.risks?.length > 0 && (
                   <Stack style={{ flex: 1, gap: '6px' }}>
-                    {aiReview.risks.slice(0, 3).map((r, i) => {
+                    {aiReview.risks.map((r, i) => {
                       // Determine severity color based on risk content
                       const rLower = r.toLowerCase();
                       let riskColor = '#f59e0b'; // default amber/warning
@@ -685,7 +684,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 )}
                 {aiReview.positives?.length > 0 && (
                   <Stack style={{ flex: 1, gap: '6px' }}>
-                    {aiReview.positives.slice(0, 3).map((p, i) => (
+                    {aiReview.positives.map((p, i) => (
                       <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
                         <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', marginTop: '5px', flexShrink: 0 }} />
                         <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', lineHeight: 1.4 }}>{p}</Typography>
@@ -695,34 +694,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 )}
               </Stack>
 
-              {/* Summary */}
-              {aiReview.summary && (
-                <div style={{
-                  background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(139,92,246,0.04)',
-                  borderRadius: '8px',
-                  padding: '10px 12px',
-                  marginTop: '8px',
-                  borderLeft: `2px solid ${color}`
-                }}>
-                  <Typography style={{
-                    fontSize: '10px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    marginBottom: '4px',
-                    fontWeight: 500
-                  }}>
-                    Summary
-                  </Typography>
-                  <Typography style={{
-                    fontSize: '11px',
-                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                    lineHeight: 1.5
-                  }}>
-                    {aiReview.summary}
-                  </Typography>
-                </div>
-              )}
             </>
               );
           })()}
