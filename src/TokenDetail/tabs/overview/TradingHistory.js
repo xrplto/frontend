@@ -53,6 +53,7 @@ const getTokenImageUrl = (issuer, currency) => {
   return `https://s1.xrpl.to/token/${md5Hash}`;
 };
 const SOURCE_TAGS = {
+  111: 'Horizon',
   101102979: 'xrp.cafe',
   10011010: 'Magnetic',
   74920348: 'First Ledger',
@@ -569,19 +570,23 @@ const BarCell = styled.div`
     transform: translateY(-50%);
     height: 22px;
     width: ${props => Math.min(100, Math.max(8, props.barWidth || 0))}%;
-    background: ${props => props.isLP
+    background: ${props => props.isCreate
       ? (props.isDark
-          ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.18) 100%)'
-          : 'linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(139, 92, 246, 0.14) 100%)')
-      : props.isBuy
+          ? 'linear-gradient(90deg, rgba(20, 184, 166, 0.10) 0%, rgba(20, 184, 166, 0.18) 100%)'
+          : 'linear-gradient(90deg, rgba(20, 184, 166, 0.06) 0%, rgba(20, 184, 166, 0.14) 100%)')
+      : props.isLP
         ? (props.isDark
-            ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
-            : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)')
-        : (props.isDark
-            ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
-            : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)')};
+            ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.18) 100%)'
+            : 'linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(139, 92, 246, 0.14) 100%)')
+        : props.isBuy
+          ? (props.isDark
+              ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
+              : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)')
+          : (props.isDark
+              ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
+              : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)')};
     border-radius: 4px;
-    border-left: 2px solid ${props => props.isLP ? 'rgba(139, 92, 246, 0.5)' : props.isBuy
+    border-left: 2px solid ${props => props.isCreate ? 'rgba(20, 184, 166, 0.5)' : props.isLP ? 'rgba(139, 92, 246, 0.5)' : props.isBuy
       ? (props.isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(34, 197, 94, 0.5)')
       : (props.isDark ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.5)')};
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2224,6 +2229,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       // Simple liquidity label
       const getLiquidityLabel = () => {
         if (trade.type === 'withdraw') return 'Remove';
+        if (trade.type === 'create') return 'Create';
         return 'Add';
       };
 
@@ -2240,7 +2246,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     <span style={{
                       fontSize: '11px',
                       fontWeight: 500,
-                      color: trade.type === 'withdraw' ? '#f59e0b' : '#8b5cf6'
+                      color: trade.type === 'withdraw' ? '#f59e0b' : trade.type === 'create' ? '#14b8a6' : '#8b5cf6'
                     }}>
                       {getLiquidityLabel()}
                     </span>
@@ -2297,7 +2303,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <span style={{
                   fontSize: '11px',
                   fontWeight: 500,
-                  color: trade.type === 'withdraw' ? '#f59e0b' : '#8b5cf6'
+                  color: trade.type === 'withdraw' ? '#f59e0b' : trade.type === 'create' ? '#14b8a6' : '#8b5cf6'
                 }}>
                   {getLiquidityLabel()}
                 </span>
@@ -2313,14 +2319,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </span>
 
               {/* Amount with colored bar */}
-              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isDark={isDark}>
+              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isCreate={trade.type === 'create'} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(amountData.currency)}</span>
                 </span>
               </BarCell>
 
               {/* Value with colored bar */}
-              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isDark={isDark}>
+              <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isCreate={trade.type === 'create'} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
                 </span>

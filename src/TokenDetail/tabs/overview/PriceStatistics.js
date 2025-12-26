@@ -532,43 +532,28 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           margin: '10px',
           padding: '14px',
           borderRadius: '12px',
-          background: isDark ? '#000' : '#fafafa',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(139,92,246,0.15)'}`,
-          position: 'relative',
-          overflow: 'hidden'
+          background: isDark ? 'rgba(255,255,255,0.02)' : '#fff',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`
         }}>
-          {/* Subtle glow effect */}
-          <div style={{
-            position: 'absolute',
-            top: '-50%',
-            right: '-20%',
-            width: '150px',
-            height: '150px',
-            background: isDark
-              ? 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)',
-            pointerEvents: 'none'
-          }} />
-
-          <Stack direction="row" alignItems="center" justifyContent="space-between" style={{ marginBottom: '12px', position: 'relative' }}>
-            <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+          {/* Header */}
+          <Stack direction="row" alignItems="center" justifyContent="space-between" style={{ marginBottom: '14px' }}>
+            <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
               <div style={{
-                width: 28,
-                height: 28,
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                width: 32,
+                height: 32,
+                borderRadius: '10px',
+                background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(139,92,246,0.3)'
+                justifyContent: 'center'
               }}>
-                <Sparkles size={14} color="#fff" />
+                <Sparkles size={16} color="#8b5cf6" />
               </div>
-              <Stack style={{ gap: 0 }}>
-                <Typography style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.01em' }}>
+              <Stack style={{ gap: '2px' }}>
+                <Typography style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
                   Safety Score
                 </Typography>
-                <Typography style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <Typography style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                   Multi-factor analysis {aiReview?.timestamp && `· ${(() => {
                     const diff = Date.now() - new Date(aiReview.timestamp).getTime();
                     const mins = Math.floor(diff / 60000);
@@ -595,9 +580,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           </Stack>
 
           {aiReview && (() => {
-              // Both safetyScore and riskScore use same scale: 1=safest, 10=riskiest
               const score = aiReview.safetyScore ?? aiReview.riskScore;
-              // 1-4: Safe (green), 5-7: Elevated (amber), 8-10: High risk/Scam (red)
               const isGreen = score <= 4;
               const isYellow = score >= 5 && score <= 7;
               const color = isGreen ? '#22c55e' : isYellow ? '#f59e0b' : '#ef4444';
@@ -606,94 +589,79 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
               return (
             <>
-              {/* Score Card */}
-              <Box style={{
-                padding: '12px',
-                borderRadius: '10px',
-                background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.9)',
-                marginBottom: '12px',
-                border: `1px solid ${color}33`
-              }}>
-                <Stack direction="row" alignItems="center" style={{ gap: '12px' }}>
-                  <div style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: '10px',
-                    background: `linear-gradient(135deg, ${color}22 0%, ${color}0d 100%)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Icon size={22} color={color} />
-                  </div>
-                  <Stack style={{ flex: 1 }}>
-                    <Stack direction="row" alignItems="baseline" style={{ gap: '4px' }}>
-                      <Typography style={{ fontSize: '24px', fontWeight: 700, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
-                        {score}
-                      </Typography>
-                      <Typography style={{ fontSize: '13px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 500 }}>/10</Typography>
-                    </Stack>
-                    <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {label}
+              {/* Score Display */}
+              <Stack direction="row" alignItems="center" style={{ gap: '14px', marginBottom: '14px' }}>
+                <div style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '12px',
+                  background: isDark ? `${color}15` : `${color}10`,
+                  border: `1.5px solid ${color}30`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Icon size={24} color={color} strokeWidth={1.5} />
+                </div>
+                <Stack style={{ flex: 1 }}>
+                  <Stack direction="row" alignItems="baseline" style={{ gap: '3px' }}>
+                    <Typography style={{ fontSize: '28px', fontWeight: 600, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                      {score}
                     </Typography>
+                    <Typography style={{ fontSize: '14px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontWeight: 400 }}>/10</Typography>
                   </Stack>
-                  <div style={{ width: '60px' }}>
-                    <div style={{ height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                      <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '2px', background: color, transition: 'width 0.5s ease' }} />
-                    </div>
-                  </div>
+                  <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: '2px' }}>
+                    {label}
+                  </Typography>
                 </Stack>
-              </Box>
+                {/* Progress bar */}
+                <div style={{ width: '70px' }}>
+                  <div style={{ height: '5px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                    <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '3px', background: color }} />
+                  </div>
+                </div>
+              </Stack>
 
-              {/* Risks & Positives */}
-              <Stack direction="row" style={{ gap: '8px', marginBottom: '10px' }}>
+              {/* Risks & Positives in two columns */}
+              <Stack direction="row" style={{ gap: '12px' }}>
                 {aiReview.risks?.length > 0 && (
-                  <Stack style={{ flex: 1, gap: '6px' }}>
+                  <Stack style={{ flex: 1, gap: '5px' }}>
                     {aiReview.risks.map((r, i) => {
-                      // Determine severity color based on risk content
                       const rLower = r.toLowerCase();
-                      let riskColor = '#f59e0b'; // default amber/warning
-
-                      // Red (severe) risks
+                      let riskColor = '#f59e0b';
                       if (rLower.includes('scam') || rLower.includes('rug') || rLower.includes('honeypot')) {
                         riskColor = '#ef4444';
                       } else if (rLower.includes('from ath') || rLower.includes('down')) {
-                        // Parse ATH drop percentage
                         const athMatch = r.match(/(\d+)%/);
                         if (athMatch) {
                           const pct = parseInt(athMatch[1], 10);
-                          riskColor = pct >= 80 ? '#ef4444' : pct >= 50 ? '#f59e0b' : '#eab308'; // red > 80%, amber > 50%, yellow otherwise
+                          riskColor = pct >= 80 ? '#ef4444' : pct >= 50 ? '#f59e0b' : '#eab308';
                         }
                       } else if (rLower.includes('creator sell') || rLower.includes('dumping')) {
                         riskColor = '#ef4444';
-                      // Amber (elevated) risks
-                      } else if (rLower.includes('concentration') || rLower.includes('consecutive') || rLower.includes('wash')) {
-                        riskColor = '#f59e0b';
-                      } else if (rLower.includes('low liquidity') || rLower.includes('few holder')) {
+                      } else if (rLower.includes('concentration') || rLower.includes('consecutive') || rLower.includes('wash') || rLower.includes('low liquidity') || rLower.includes('few holder')) {
                         riskColor = '#f59e0b';
                       }
-
                       return (
-                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: riskColor, marginTop: '5px', flexShrink: 0 }} />
-                        <Typography style={{ fontSize: '11px', color: riskColor, lineHeight: 1.4 }}>{r}</Typography>
-                      </Stack>
+                        <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '6px' }}>
+                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: riskColor, marginTop: '6px', flexShrink: 0 }} />
+                          <Typography style={{ fontSize: '11px', color: riskColor, lineHeight: 1.5 }}>{r}</Typography>
+                        </Stack>
                       );
                     })}
                   </Stack>
                 )}
                 {aiReview.positives?.length > 0 && (
-                  <Stack style={{ flex: 1, gap: '6px' }}>
+                  <Stack style={{ flex: 1, gap: '5px' }}>
                     {aiReview.positives.map((p, i) => (
-                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '8px' }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', marginTop: '5px', flexShrink: 0 }} />
-                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', lineHeight: 1.4 }}>{p}</Typography>
+                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '6px' }}>
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e', marginTop: '6px', flexShrink: 0 }} />
+                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)', lineHeight: 1.5 }}>{p}</Typography>
                       </Stack>
                     ))}
                   </Stack>
                 )}
               </Stack>
-
             </>
               );
           })()}
@@ -705,25 +673,27 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* ========== MARKET METRICS GROUP ========== */}
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 FDV Market Cap
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
-              <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
-                {currencySymbols[activeFiatCurrency]}{fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
-              </Typography>
+              <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
+                  {currencySymbols[activeFiatCurrency]}{fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
+                </Typography>
+              </Stack>
             </ModernTableCell>
           </TableRowStyled>
 
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 Volume Dominance
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
-              <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px' }}>
+              <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px' }}>
                 {(dom || 0).toFixed(4)}%
               </Typography>
             </ModernTableCell>
@@ -732,12 +702,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {amount > 0 && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   Supply
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
+                <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(amount)}
                 </Typography>
               </ModernTableCell>
@@ -747,12 +717,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {(txns24h > 0 || vol24htx > 0) && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   Trades (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
+                <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(txns24h || vol24htx)}
                 </Typography>
               </ModernTableCell>
@@ -762,12 +732,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {uniqueTraders24h > 0 && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.55)", fontSize: '12px' }} noWrap>
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   Unique Traders (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography style={{ fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.9)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
+                <Typography style={{ fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                   {fNumber(uniqueTraders24h)}
                 </Typography>
               </ModernTableCell>
@@ -777,10 +747,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* ========== BUY/SELL METRICS GROUP ========== */}
           {(buy24hxrp > 0 || sell24hxrp > 0) && (
             <tr>
-              <td colSpan={2}>
-                <SectionHeader>
-                  <SectionLabel isDark={isDark}>24h Trading</SectionLabel>
-                </SectionHeader>
+              <td colSpan={2} style={{ padding: '14px 14px 6px' }}>
+                <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  24h Trading
+                </Typography>
               </td>
             </tr>
           )}
@@ -828,39 +798,16 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* Buys (24h) Row - Always show */}
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 Buys (24h)
               </Typography>
             </ModernTableCell>
             <ModernTableCell>
               <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: '#10b981',
-                    fontSize: '13px'
-                  }}
-                >
+                <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
                   {fNumber(buy24hxrp || 0)} XRP
                 </Typography>
-                <Typography
-                  variant="caption"
-                  style={{
-                    color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                    fontSize: '11px'
-                  }}
-                >
+                <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontSize: '11px' }}>
                   {fNumber(buyTxns24h || buy24htx || 0)} tx
                 </Typography>
               </Stack>
@@ -870,16 +817,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* Unique Buyers (24h) Row - Always show */}
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 Unique Buyers (24h)
               </Typography>
             </ModernTableCell>
@@ -892,7 +830,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
                   const pct = Math.max(((uniqueBuyers24h || 0) / total) * 100, 15);
                   return (
-                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
                     </Box>
                   );
@@ -904,16 +842,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* Sells (24h) Row - Always show */}
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 Sells (24h)
               </Typography>
             </ModernTableCell>
@@ -922,7 +851,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 <Typography style={{ fontWeight: 500, color: '#f43f5e', fontSize: '13px' }}>
                   {fNumber(sell24hxrp || 0)} XRP
                 </Typography>
-                <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', fontSize: '11px' }}>
+                <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontSize: '11px' }}>
                   {fNumber(sellTxns24h || sell24htx || 0)} tx
                 </Typography>
               </Stack>
@@ -932,16 +861,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* Unique Sellers (24h) Row - Always show */}
           <TableRowStyled isDark={isDark}>
             <ModernTableCell>
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                  fontSize: '12px'
-                }}
-                noWrap
-              >
+              <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                 Unique Sellers (24h)
               </Typography>
             </ModernTableCell>
@@ -954,7 +874,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   const total = (uniqueBuyers24h || 0) + (uniqueSellers24h || 0);
                   const pct = Math.max(((uniqueSellers24h || 0) / total) * 100, 15);
                   return (
-                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                    <Box style={{ width: '40px', height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: '#f43f5e', marginLeft: 'auto' }} />
                     </Box>
                   );
@@ -965,13 +885,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
           {/* ========== AMM LIQUIDITY GROUP ========== */}
           {(deposit24hxrp > 0 || withdraw24hxrp > 0) && (
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
+            <tr>
+              <td colSpan={2} style={{ padding: '14px 14px 6px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   AMM Liquidity
                 </Typography>
-              </ModernTableCell>
-            </TableRowStyled>
+              </td>
+            </tr>
           )}
 
           {/* AMM Flow Visual Bar */}
@@ -1018,40 +938,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {deposit24hxrp ? (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   AMM Deposits (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
                 <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 500,
-                      color: '#10b981',
-                      fontSize: '13px'
-                    }}
-                  >
+                  <Typography style={{ fontWeight: 500, color: '#10b981', fontSize: '13px' }}>
                     {fNumber(deposit24hxrp)} XRP
                   </Typography>
                   {deposit24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                        fontSize: '11px'
-                      }}
-                    >
+                    <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontSize: '11px' }}>
                       {fNumber(deposit24htx)} tx
                     </Typography>
                   ) : null}
@@ -1064,40 +961,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {withdraw24hxrp ? (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   AMM Withdrawals (24h)
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
                 <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 500,
-                      color: '#f59e0b',
-                      fontSize: '13px'
-                    }}
-                  >
+                  <Typography style={{ fontWeight: 500, color: '#f59e0b', fontSize: '13px' }}>
                     {fNumber(Math.abs(withdraw24hxrp))} XRP
                   </Typography>
                   {withdraw24htx ? (
-                    <Typography
-                      variant="caption"
-                      style={{
-                        color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                        fontSize: '11px'
-                      }}
-                    >
+                    <Typography style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontSize: '11px' }}>
                       {fNumber(withdraw24htx)} tx
                     </Typography>
                   ) : null}
@@ -1109,9 +983,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* LP Burned Percentage Row */}
           {(lpBurnedPercent != null || lpHolderCount > 0) && (
             <TableRowStyled isDark={isDark}>
-              <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
-                <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <Typography style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(33,43,54,0.6)' }}>
+              <ModernTableCell colSpan={2} style={{ padding: '8px 14px 12px' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <Typography style={{ fontSize: '13px', fontWeight: 400, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)' }}>
                     LP Burned
                   </Typography>
                   <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
@@ -1119,24 +993,23 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       {(lpBurnedPercent || 0).toFixed(2)}%
                     </Typography>
                     {lpBurnedHolders > 0 && (
-                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)' }}>
                         {lpBurnedHolders} burned
                       </Typography>
                     )}
                     {lpHolderCount > 0 && (
-                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)' }}>
                         {lpHolderCount} total
                       </Typography>
                     )}
                   </Stack>
                 </Stack>
-                <Box style={{ height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                <Box style={{ height: '5px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', overflow: 'hidden' }}>
                   <div style={{
                     width: `${Math.min(lpBurnedPercent || 0, 100)}%`,
                     height: '100%',
                     borderRadius: '3px',
-                    background: (lpBurnedPercent || 0) >= 50 ? '#10b981' : (lpBurnedPercent || 0) >= 20 ? '#f59e0b' : '#f43f5e',
-                    transition: 'width 0.3s ease'
+                    background: (lpBurnedPercent || 0) >= 50 ? '#10b981' : (lpBurnedPercent || 0) >= 20 ? '#f59e0b' : '#f43f5e'
                   }} />
                 </Box>
               </ModernTableCell>
@@ -1145,42 +1018,25 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
           {/* ========== TOKEN INFO GROUP ========== */}
           {(date || dateon || creator) && (
-            <TableRowStyled isDark={isDark}>
-              <ModernTableCell colSpan={2} style={{ padding: '12px 12px 4px' }}>
+            <tr>
+              <td colSpan={2} style={{ padding: '14px 14px 6px' }}>
                 <Typography style={{ fontSize: '10px', fontWeight: 500, color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Token Info
                 </Typography>
-              </ModernTableCell>
-            </TableRowStyled>
+              </td>
+            </tr>
           )}
 
           {/* Created Date Row */}
           {date || dateon ? (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   Created
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 500,
-                    color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)",
-                    fontSize: '13px'
-                  }}
-                >
+                <Typography style={{ fontWeight: 500, color: isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)", fontSize: '13px' }}>
                   {fDate(date || dateon)}
                 </Typography>
               </ModernTableCell>
@@ -1191,70 +1047,45 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {creator && (
             <TableRowStyled isDark={isDark}>
               <ModernTableCell>
-                <Typography
-                  isDark={isDark}
-                  variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                    fontSize: '12px'
-                  }}
-                  noWrap
-                >
+                <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                   Creator
                 </Typography>
               </ModernTableCell>
               <ModernTableCell>
-                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} style={{ minWidth: 0, flex: 1, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
+                <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '8px' }}>
                   <Tooltip title="Click to view activity">
                     <Chip
                       size="small"
                       onClick={() => setActivityOpen(!activityOpen)}
                       style={{
-                        position: 'relative',
-                        paddingLeft: '8px',
-                        paddingRight: '8px',
+                        paddingLeft: '10px',
+                        paddingRight: '10px',
                         borderRadius: '8px',
                         height: '28px',
-                        background: isDark ? '#0d0d1a' : 'rgba(139,92,246,0.08)',
-                        border: `1px solid ${activityOpen ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.3)'}`,
-                        color: isDark ? '#c4b5fd' : '#8b5cf6',
-                        fontWeight: 400,
-                        minWidth: 0,
-                        maxWidth: isMobile ? '100px' : '200px',
+                        background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                        border: `1px solid ${activityOpen ? (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)') : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}`,
+                        maxWidth: isMobile ? '110px' : '180px',
                         overflow: 'hidden',
-                        flexShrink: 1,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: activityOpen ? '0 0 15px rgba(168,85,247,0.3)' : 'none'
+                        cursor: 'pointer'
                       }}
                     >
-                      {isDark && (
-                        <>
-                          <span style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(90deg, rgba(147,51,234,0.2), rgba(217,70,239,0.2), rgba(34,211,238,0.2))',
-                            animation: 'shimmer 3s ease-in-out infinite',
-                            borderRadius: '8px'
-                          }} />
-                          <span style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'radial-gradient(ellipse at top, rgba(168,85,247,0.15), transparent 50%)',
-                            borderRadius: '8px'
-                          }} />
-                        </>
-                      )}
                       <Typography
                         variant="caption"
-                        style={{ position: 'relative', zIndex: 1, fontWeight: 500, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isDark ? '#fff' : '#8b5cf6' }}
+                        style={{
+                          fontWeight: 400,
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'
+                        }}
                       >
                         {creator}
                       </Typography>
                     </Chip>
                   </Tooltip>
-                  <Tooltip title="Copy creator address">
+                  <Tooltip title="Copy address">
                     <IconButton
                       onClick={() => {
                         navigator.clipboard.writeText(creator).then(() => {
@@ -1264,16 +1095,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       size="small"
                       style={{
                         padding: '4px',
-                        width: isMobile ? '24px' : '26px',
-                        height: isMobile ? '24px' : '26px',
-                        borderRadius: '8px',
+                        width: '26px',
+                        height: '26px',
+                        borderRadius: '6px',
                         background: 'transparent',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                        flexShrink: 0,
-                        transition: 'all 0.15s ease'
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                        flexShrink: 0
                       }}
                     >
-                      <Copy size={isMobile ? 11 : 13} color="#8b5cf6" />
+                      <Copy size={13} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
                     </IconButton>
                   </Tooltip>
                 </Stack>
@@ -1286,16 +1116,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             <>
               <TableRowStyled isDark={isDark}>
                 <ModernTableCell>
-                  <Typography
-                    isDark={isDark}
-                    variant="body2"
-                    style={{
-                      fontWeight: 400,
-                      color: isDark ? "rgba(255,255,255,0.55)" : "rgba(33,43,54,0.6)",
-                      fontSize: '12px'
-                    }}
-                    noWrap
-                  >
+                  <Typography style={{ fontWeight: 400, color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: '13px' }} noWrap>
                     Creator Last Action
                   </Typography>
                 </ModernTableCell>
@@ -1925,13 +1746,12 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+              background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              textDecoration: 'none',
-              transition: 'all 0.15s ease'
+              textDecoration: 'none'
             }}
           >
             {getIcon(platform)}
@@ -1956,17 +1776,16 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
             display: 'inline-flex',
             alignItems: 'center',
             gap: '5px',
-            padding: '5px 10px',
+            padding: '4px 10px',
             borderRadius: '6px',
-            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+            background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
             textDecoration: 'none',
-            fontSize: '10px',
-            fontWeight: 500,
-            color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+            fontSize: '11px',
+            fontWeight: 400,
+            color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)',
             textTransform: 'uppercase',
-            letterSpacing: '0.4px',
-            transition: 'all 0.15s ease'
+            letterSpacing: '0.3px'
           }}
           rel="noreferrer noopener nofollow"
         >
@@ -1979,12 +1798,12 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
       {enhancedTags.length > maxTags && (
         <Typography
           style={{
-            padding: '5px 10px',
+            padding: '4px 10px',
             borderRadius: '6px',
-            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-            fontSize: '10px',
-            fontWeight: 500,
+            background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+            fontSize: '11px',
+            fontWeight: 400,
             color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
             cursor: toggleTagsDrawer ? 'pointer' : 'default'
           }}

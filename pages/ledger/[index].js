@@ -33,7 +33,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
     return <p className="text-red-500">{error}</p>;
   }
 
-  const { ledger_index, close_time, close_time_human, ledger_hash, parent_hash, tx_count, total_coins, parent_close_time } = ledgerData;
+  const { ledger_index, close_time, close_time_human, ledger_hash, parent_hash, txn_count, total_coins, parent_close_time } = ledgerData;
   const ledgerIndex = parseInt(ledger_index, 10);
   const closeTimeLocale = close_time_human ? new Date(close_time_human).toLocaleString() : 'Unknown';
   const totalXrp = total_coins ? (total_coins / 1000000).toLocaleString() : 'Unknown';
@@ -113,16 +113,16 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
                   {tx.meta.TransactionIndex}
                 </td>
                 <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
-                  {tx.TransactionType}
+                  {tx.tx_json?.TransactionType}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center">
-                    <AccountAvatar account={tx.Account} />
+                    <AccountAvatar account={tx.tx_json?.Account} />
                     <span
-                      onClick={() => (window.location.href = `/address/${tx.Account}`)}
+                      onClick={() => (window.location.href = `/address/${tx.tx_json?.Account}`)}
                       className="cursor-pointer text-[13px] text-primary hover:underline"
                     >
-                      {shortenAddress(tx.Account)}
+                      {shortenAddress(tx.tx_json?.Account)}
                     </span>
                   </div>
                 </td>
@@ -159,7 +159,7 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
             </p>
           )}
           <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span> {tx_count}
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span> {txn_count}
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
@@ -220,12 +220,11 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const [ledgerRes, txRes] = await Promise.all([
-      axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}`),
-      axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}/transactions`)
-    ]);
+    const res = await axios.get(`https://api.xrpl.to/api/ledger/${index}?expand=true`);
+    const ledgerData = res.data;
+    const transactions = ledgerData?.transactions || [];
     return {
-      props: { ledgerData: ledgerRes.data, transactions: txRes.data || [], error: null }
+      props: { ledgerData, transactions, error: null }
     };
   } catch (error) {
     console.error(error);
