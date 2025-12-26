@@ -146,7 +146,7 @@ export const clearTransactionCache = (hash) => {
   }
 };
 
-// Parse date from either ISO string (xrpscan) or ripple epoch (raw XRPL)
+// Parse date from either ISO string (api.xrpl.to) or ripple epoch (raw XRPL)
 const parseTransactionDate = (date) => {
   if (!date) return null;
   if (typeof date === 'string') return new Date(date);
@@ -3759,7 +3759,7 @@ const TransactionDetails = ({ txData }) => {
                         // Smart decode: only decode if it looks like hex
                         const decodeMemo = (value) => {
                           if (!value) return null;
-                          // If it's already readable text (from xrpscan), use as-is
+                          // If it's already readable text, use as-is
                           if (!isHex(value)) return value;
                           // Otherwise decode from hex
                           return decodeHex(value);
@@ -4105,15 +4105,9 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const response = await axios.post('https://s1.ripple.com:51234', {
-    method: 'tx',
-    params: [{
-      transaction: hash,
-      binary: false
-    }]
-  }).catch(() => null);
+  const response = await axios.get(`https://api.xrpl.to/api/tx/${hash}`).catch(() => null);
 
-  if (!response || !response.data?.result) {
+  if (!response || !response.data) {
     return {
       props: {
         txData: null,
@@ -4123,30 +4117,21 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    if (response.data.result.error === 'txnNotFound') {
-      return {
-        notFound: true
-      };
-    }
-
-    if (response.data.result.error) {
+    if (response.data.error) {
+      if (response.status === 404) {
+        return { notFound: true };
+      }
       return {
         props: {
           txData: null,
-          error: response.data.result.error_message || 'Transaction not found'
+          error: response.data.error || 'Transaction not found'
         }
       };
     }
 
-    const { meta, ...rest } = response.data.result;
-    // if (meta) {
-    //   const deliveredAmount = meta.delivered_amount;
-    //   if (typeof deliveredAmount === 'object' && deliveredAmount.value) {
-    //     meta.delivered_amount.value = new Decimal(deliveredAmount.value).toString();
-    //   }
-    // }
-
-    const txData = { ...rest, meta: meta ?? null };
+    const { tx_json, meta, ...rest } = response.data;
+    // Flatten tx_json into the response for compatibility
+    const txData = { ...rest, ...tx_json, meta: meta ?? null };
 
     // Cache the successful response
     txCache.set(hash, txData);

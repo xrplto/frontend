@@ -154,11 +154,12 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpscan.com/api/v1/ledger/${ledgerIndex}/transactions`, {
+    fetch(`https://api.xrpl.to/api/ledger/${ledgerIndex}?expand=true`, {
       signal: controller.signal
     })
       .then(res => res.json())
-      .then(transactions => {
+      .then(data => {
+        const transactions = data?.transactions || [];
         if (Array.isArray(transactions)) {
           const sorted = transactions.sort(
             (a, b) => (a.meta?.TransactionIndex || 0) - (b.meta?.TransactionIndex || 0)
@@ -166,17 +167,21 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
 
           const isAddressInvolved = (tx) => {
             if (!watchAddresses.length) return false;
+            const txData = tx.tx_json || tx;
             return watchAddresses.some(addr =>
-              tx.Account === addr || tx.Destination === addr || tx.Owner === addr || tx.Issuer === addr
+              txData.Account === addr || txData.Destination === addr || txData.Owner === addr || txData.Issuer === addr
             );
           };
 
-          const sequence = sorted.map(tx => ({
-            category: getTxCategory(tx.TransactionType),
-            txType: tx.TransactionType,
-            matched: isAddressInvolved(tx),
-            typeMatched: watchTxType ? tx.TransactionType === watchTxType : false
-          }));
+          const sequence = sorted.map(tx => {
+            const txData = tx.tx_json || tx;
+            return {
+              category: getTxCategory(txData.TransactionType),
+              txType: txData.TransactionType,
+              matched: isAddressInvolved(tx),
+              typeMatched: watchTxType ? txData.TransactionType === watchTxType : false
+            };
+          });
 
           const matches = sequence.filter(s => s.matched).length;
           const typeMatches = sequence.filter(s => s.typeMatched).length;
@@ -536,16 +541,18 @@ export default function LedgerStreamPage() {
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpscan.com/api/v1/ledger/${latestLedger.ledger_index}/transactions`, {
+    fetch(`https://api.xrpl.to/api/ledger/${latestLedger.ledger_index}?expand=true`, {
       signal: controller.signal
     })
       .then(res => res.json())
-      .then(transactions => {
+      .then(data => {
+        const transactions = data?.transactions || [];
         if (!Array.isArray(transactions)) return;
 
         const isAddressInvolved = (tx) => {
+          const txData = tx.tx_json || tx;
           return watchAddresses.some(addr =>
-            tx.Account === addr || tx.Destination === addr || tx.Owner === addr || tx.Issuer === addr
+            txData.Account === addr || txData.Destination === addr || txData.Owner === addr || txData.Issuer === addr
           );
         };
 
@@ -582,9 +589,10 @@ export default function LedgerStreamPage() {
         };
 
         const getTxLabel = (tx) => {
-          if (tx.TransactionType === 'Payment') {
-            const sendMax = parseAmount(tx.SendMax);
-            const amount = parseAmount(tx.Amount || tx.DeliverMax);
+          const txData = tx.tx_json || tx;
+          if (txData.TransactionType === 'Payment') {
+            const sendMax = parseAmount(txData.SendMax);
+            const amount = parseAmount(txData.Amount || txData.DeliverMax);
             const delivered = parseAmount(tx.meta?.delivered_amount || tx.meta?.DeliveredAmount);
 
             // Has SendMax = cross-currency swap
@@ -602,44 +610,45 @@ export default function LedgerStreamPage() {
               detail: transferAmt ? `${transferAmt.value} ${transferAmt.currency}` : ''
             };
           }
-          if (tx.TransactionType === 'OfferCreate') {
-            const pays = parseAmount(tx.TakerPays);
-            const gets = parseAmount(tx.TakerGets);
+          if (txData.TransactionType === 'OfferCreate') {
+            const pays = parseAmount(txData.TakerPays);
+            const gets = parseAmount(txData.TakerGets);
             return {
               label: 'DEX Order',
               detail: pays && gets ? `${gets.value} ${gets.currency} for ${pays.value} ${pays.currency}` : ''
             };
           }
-          if (tx.TransactionType === 'TrustSet') {
-            const limit = tx.LimitAmount;
+          if (txData.TransactionType === 'TrustSet') {
+            const limit = txData.LimitAmount;
             return {
               label: 'Trust Line',
               detail: limit ? `${limit.currency}` : ''
             };
           }
-          return { label: tx.TransactionType, detail: '' };
+          return { label: txData.TransactionType, detail: '' };
         };
 
         const matched = transactions
           .filter(isAddressInvolved)
           .map(tx => {
+            const txData = tx.tx_json || tx;
             const { label, detail } = getTxLabel(tx);
             const result = tx.meta?.TransactionResult || '';
             const success = result === 'tesSUCCESS';
             return {
               hash: tx.hash,
-              type: tx.TransactionType,
+              type: txData.TransactionType,
               label,
               detail,
               success,
               result,
-              account: tx.Account,
-              accountName: tx.AccountName,
-              destination: tx.Destination,
-              destinationName: tx.DestinationName,
+              account: txData.Account,
+              accountName: txData.AccountName,
+              destination: txData.Destination,
+              destinationName: txData.DestinationName,
               ledger: latestLedger.ledger_index,
               time: latestLedger.close_time,
-              category: getTxCategory(tx.TransactionType),
+              category: getTxCategory(txData.TransactionType),
               raw: tx
             };
           });
@@ -685,12 +694,13 @@ export default function LedgerStreamPage() {
 
     // Fetch success rate and fee stats (accumulate over window)
     if (latest.txn_count > 0) {
-      fetch(`https://api.xrpscan.com/api/v1/ledger/${latest.ledger_index}/transactions`)
+      fetch(`https://api.xrpl.to/api/ledger/${latest.ledger_index}?expand=true`)
         .then(res => res.json())
-        .then(txs => {
+        .then(data => {
+          const txs = data?.transactions || [];
           if (!Array.isArray(txs)) return;
           const success = txs.filter(tx => tx.meta?.TransactionResult === 'tesSUCCESS').length;
-          const totalFees = txs.reduce((sum, tx) => sum + parseInt(tx.Fee || 0), 0);
+          const totalFees = txs.reduce((sum, tx) => sum + parseInt(tx.tx_json?.Fee || 0), 0);
 
           stats.successes.push(success);
           stats.totals.push(txs.length);

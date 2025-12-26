@@ -76,9 +76,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             </span>
             <div className="flex items-center gap-1 flex-1 min-w-0">
               <a
-                href={`https://bithomp.com/explorer/${issuer}`}
-                target="_blank"
-                rel="noreferrer noopener nofollow"
+                href={`/address/${issuer}`}
                 className={cn(
                   'flex-1 font-mono text-[13px] px-2 py-1 rounded truncate transition-colors',
                   isDark
