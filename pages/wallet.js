@@ -64,6 +64,14 @@ export default function WalletPage() {
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Sync tab with URL query parameter
+  useEffect(() => {
+    if (initialTab && initialTab !== activeTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [sendAmount, setSendAmount] = useState('');
   const [sendTo, setSendTo] = useState('');
   const [sendTag, setSendTag] = useState('');
@@ -138,6 +146,7 @@ export default function WalletPage() {
     try {
       await withdrawalStorage.remove(id);
       setWithdrawals(prev => prev.filter(w => w.id !== id));
+      setDeleteConfirmId(null);
     } catch (e) {
       console.error('Failed to delete withdrawal:', e);
     }
@@ -298,6 +307,10 @@ export default function WalletPage() {
                         <div>
                           <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Recipient</label>
                           <input type="text" value={sendTo} onChange={(e) => setSendTo(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
+                        </div>
+                        <div>
+                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Destination Tag (optional)</label>
+                          <input type="text" value={sendTag} onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))} placeholder="e.g. 12345678" className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
                         </div>
                         <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 mt-2 transition-colors duration-200">
                           <Send size={16} /> Send {selectedToken}
@@ -649,6 +662,31 @@ export default function WalletPage() {
           {/* Withdrawals Tab */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
+              {/* Delete Confirmation Modal */}
+              {deleteConfirmId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDeleteConfirmId(null)}>
+                  <div className={cn("w-full max-w-sm rounded-xl p-5", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-red-500/20" : "bg-white/98 backdrop-blur-xl border border-gray-200")} onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-red-500/10" : "bg-red-50")}>
+                        <Trash2 size={18} className="text-red-500" />
+                      </div>
+                      <div>
+                        <h3 className={cn("text-[14px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Delete Address?</h3>
+                        <p className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>This cannot be undone</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setDeleteConfirmId(null)} className={cn("flex-1 py-2.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                        Cancel
+                      </button>
+                      <button onClick={() => handleDeleteWithdrawal(deleteConfirmId)} className="flex-1 py-2.5 rounded-lg text-[12px] font-medium bg-red-500 text-white hover:bg-red-600 transition-colors">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Add Withdrawal Modal */}
               {showAddWithdrawal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAddWithdrawal(false)}>
@@ -712,7 +750,7 @@ export default function WalletPage() {
                           <button onClick={() => { setSelectedToken('XRP'); setSendTo(wallet.address); setSendTag(wallet.tag || ''); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
                             <Send size={14} />
                           </button>
-                          <button onClick={() => handleDeleteWithdrawal(wallet.id)} className={cn("p-2 rounded-lg transition-colors duration-150 opacity-0 group-hover:opacity-100", isDark ? "hover:bg-red-500/10 text-white/40 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500")}>
+                          <button onClick={() => setDeleteConfirmId(wallet.id)} className={cn("p-2 rounded-lg transition-colors duration-150 opacity-0 group-hover:opacity-100", isDark ? "hover:bg-red-500/10 text-white/40 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500")}>
                             <Trash2 size={14} />
                           </button>
                         </div>

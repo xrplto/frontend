@@ -90,6 +90,7 @@ const WalletSetupPage = () => {
   const [redirectNotice, setRedirectNotice] = useState(null);
   const [showSeed, setShowSeed] = useState(false);
   const [seedCopied, setSeedCopied] = useState(false);
+  const [currenciesFetched, setCurrenciesFetched] = useState(false);
 
   // OAuth data - start as undefined to indicate "not yet loaded"
   const [oauthData, setOauthData] = useState(undefined);
@@ -122,10 +123,18 @@ const WalletSetupPage = () => {
     }
   }, []);
 
-  // Fetch available currencies from Bridge API
+  // Fetch available currencies from Bridge API (only once)
   const fetchCurrencies = useCallback(async () => {
+    if (currenciesFetched) return; // Prevent duplicate fetches
+    setCurrenciesFetched(true);
+
     try {
-      const res = await fetch(`${BRIDGE_API_URL}/currencies`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+      const res = await fetch(`${BRIDGE_API_URL}/currencies`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (!res.ok) throw new Error('Failed to fetch currencies');
       const data = await res.json();
       // Filter to popular currencies and sort
@@ -141,13 +150,18 @@ const WalletSetupPage = () => {
           return a.name.localeCompare(b.name);
         });
       setCurrencies(sorted);
-      if (sorted.length > 0 && !selectedCurrency) {
+      if (sorted.length > 0) {
         setSelectedCurrency(sorted[0]);
       }
     } catch (err) {
-      console.error('Failed to fetch currencies:', err);
+      if (err.name === 'AbortError') {
+        console.warn('Currency fetch timed out');
+      } else {
+        console.error('Failed to fetch currencies:', err);
+      }
+      // Don't block wallet creation - currencies are optional for funding
     }
-  }, [selectedCurrency]);
+  }, [currenciesFetched]);
 
   // Fetch minimum amount and estimate
   const fetchEstimate = useCallback(async () => {
@@ -252,10 +266,11 @@ const WalletSetupPage = () => {
     return () => clearInterval(interval);
   }, [exchangeData?.id, fetchTxStatus]);
 
-  // Load currencies on mount
+  // Load currencies on mount (only once)
   useEffect(() => {
     fetchCurrencies();
-  }, [fetchCurrencies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Debounce estimate fetch
   useEffect(() => {

@@ -112,7 +112,35 @@ export class UnifiedWalletStorage {
     this.version = 1;
     this.dbPromise = null; // Singleton promise for DB initialization
     this._entropyNeedsCheck = false; // Flag to check IndexedDB for existing backup
+    this._entropyRestored = false; // Track if entropy restoration was attempted
     this.localStorageKey = this.generateLocalStorageKey();
+  }
+
+  // Ensure entropy is restored from IndexedDB before any critical operations
+  // This handles the case where localStorage was cleared but IndexedDB has backup
+  async ensureEntropyRestored() {
+    if (this._entropyRestored) return; // Already done
+    this._entropyRestored = true;
+
+    try {
+      const currentEntropy = localStorage.getItem('__wk_entropy__');
+      const backupEntropy = await this.getEntropyFromIndexedDB();
+
+      console.log('[ensureEntropyRestored] Current:', currentEntropy ? 'EXISTS' : 'NULL', 'Backup:', backupEntropy ? 'EXISTS' : 'NULL');
+
+      if (backupEntropy && currentEntropy !== backupEntropy) {
+        // IndexedDB has DIFFERENT entropy - restore it
+        console.log('[ensureEntropyRestored] Restoring entropy from IndexedDB backup');
+        localStorage.setItem('__wk_entropy__', backupEntropy);
+        this.localStorageKey = 'xrpl-wallet-v1-' + backupEntropy;
+      } else if (!backupEntropy && currentEntropy) {
+        // No backup exists - backup current entropy
+        console.log('[ensureEntropyRestored] Backing up current entropy to IndexedDB');
+        await this.backupEntropyToIndexedDB(currentEntropy);
+      }
+    } catch (e) {
+      console.error('[ensureEntropyRestored] Error:', e);
+    }
   }
 
   // Backup entropy to IndexedDB (prevents lockout if localStorage cleared)

@@ -533,8 +533,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           margin: '10px',
           padding: '14px',
           borderRadius: '12px',
-          background: isDark ? '#000' : '#0a0a0a',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          background: isDark ? '#000' : '#fafafa',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(139,92,246,0.15)'}`,
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -545,7 +545,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             right: '-20%',
             width: '150px',
             height: '150px',
-            background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)',
             pointerEvents: 'none'
           }} />
 
@@ -609,9 +611,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <Box style={{
                 padding: '12px',
                 borderRadius: '10px',
-                background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.6)',
+                background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.9)',
                 marginBottom: '12px',
-                border: `1px solid ${color}22`
+                border: `1px solid ${color}33`
               }}>
                 <Stack direction="row" alignItems="center" style={{ gap: '12px' }}>
                   <div style={{
@@ -696,7 +698,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               {/* Summary */}
               {aiReview.summary && (
                 <div style={{
-                  background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                  background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(139,92,246,0.04)',
                   borderRadius: '8px',
                   padding: '10px 12px',
                   marginTop: '8px',

@@ -1459,15 +1459,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <button
                 onClick={() => setOpenWalletModal(true)}
                 className={cn(
-                  'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-300 border overflow-hidden',
-                  'before:absolute before:inset-0 before:rounded-[inherit] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] hover:before:bg-[position:-100%_0,0_0] hover:before:duration-[1500ms]',
+                  'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
                   accountProfile
                     ? isDark
-                      ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,40 hover:bg-[rgba(63,150,254,5 before:bg-none'
-                      : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50 before:bg-none'
+                      ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
+                      : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
                     : isDark
-                      ? 'bg-[#0a0a12] text-white/70 border-white/20 hover:border-white/40 hover:text-white before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%,transparent_100%)]'
-                      : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:border-gray-400 before:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)]'
+                      ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                 )}
               >
                 {accountProfile ? (
@@ -1476,16 +1475,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
-                    <span className="font-medium">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
+                    <span className="font-medium tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
                     {profiles?.length > 1 && (
-                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-500')}>{profiles.length}</span>
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
                     )}
                     <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </>
                 ) : (
                   <>
-                    <Wallet size={14} className="relative z-10" />
-                    <span className="relative z-10">Connect</span>
+                    <Wallet size={14} />
+                    <span>Connect</span>
                   </>
                 )}
               </button>
@@ -1502,11 +1501,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
                   accountProfile
                     ? isDark
-                      ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20'
-                      : 'bg-gray-50 text-gray-900 border-gray-200'
+                      ? 'bg-emerald-500/5 text-white border-emerald-500/20'
+                      : 'bg-emerald-50 text-gray-900 border-emerald-200'
                     : isDark
-                      ? 'bg-white/[0.06] text-white/60 border-white/10'
-                      : 'bg-gray-100 text-gray-500 border-gray-200'
+                      ? 'bg-white/[0.04] text-white/60 border-white/15'
+                      : 'bg-gray-50 text-gray-500 border-gray-200'
                 )}
               >
                 {accountProfile ? (
@@ -1515,7 +1514,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     </span>
-                    <span>{parseFloat(accountProfile.xrp || 0).toFixed(1)}</span>
+                    <span className="tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(1)}</span>
                   </>
                 ) : (
                   <Wallet size={14} />
@@ -1717,17 +1716,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     className={cn(
                       'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
                       isDark
-                        ? 'bg-white/[0.04] text-white border-[rgba(63,150,254,20 hover:border-[rgba(63,150,254,40 hover:bg-[rgba(63,150,254,5'
-                        : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
+                        : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
                     )}
                   >
                     <span className="relative flex h-2 w-2">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
-                    <span className="font-medium">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
+                    <span className="font-medium tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
                     {profiles?.length > 1 && (
-                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-500')}>{profiles.length}</span>
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
                     )}
                   </button>
                 ) : (

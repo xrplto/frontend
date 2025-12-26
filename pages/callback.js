@@ -4,8 +4,16 @@ import { Loader2 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
-// Pre-instantiate to avoid dynamic import latency
-const walletStorage = new EncryptedWalletStorage();
+// Lazy instantiation to ensure client-side only and proper entropy handling
+let walletStorage = null;
+const getWalletStorage = async () => {
+  if (!walletStorage) {
+    walletStorage = new EncryptedWalletStorage();
+    // Ensure entropy is restored from IndexedDB backup if needed BEFORE any operations
+    await walletStorage.ensureEntropyRestored?.();
+  }
+  return walletStorage;
+};
 
 const OAuthCallback = () => {
   const router = useRouter();
@@ -421,7 +429,9 @@ const OAuthCallback = () => {
           }
         }
 
-        console.log('[Callback] Using pre-instantiated walletStorage');
+        console.log('[Callback] Getting walletStorage instance...');
+        const storage = await getWalletStorage();
+        console.log('[Callback] WalletStorage ready');
 
         // Create backend object with proper API URL
         const backend = {
@@ -439,8 +449,8 @@ const OAuthCallback = () => {
         };
 
         // Handle social login
-        console.log('[Callback] Calling walletStorage.handleSocialLogin...');
-        const result = await walletStorage.handleSocialLogin(
+        console.log('[Callback] Calling storage.handleSocialLogin...');
+        const result = await storage.handleSocialLogin(
           {
             id: payload?.id || payload?.sub || 'unknown',
             provider: provider,
@@ -475,9 +485,9 @@ const OAuthCallback = () => {
         } else {
           // Wallet already setup
           console.log('[Callback] Wallet already setup - storing credentials...');
-          await walletStorage.setSecureItem('jwt', jwtToken);
-          await walletStorage.setSecureItem('authMethod', provider);
-          await walletStorage.setSecureItem('user', payload || {});
+          await storage.setSecureItem('jwt', jwtToken);
+          await storage.setSecureItem('authMethod', provider);
+          await storage.setSecureItem('user', payload || {});
 
           // Store ALL wallets in profiles (NO seeds - seeds only in encrypted IndexedDB)
           if (result.allWallets && result.allWallets.length > 0) {
@@ -494,8 +504,8 @@ const OAuthCallback = () => {
               tokenCreatedAt: Date.now()
             }));
 
-            await walletStorage.setSecureItem('account_profile_2', allProfiles[0]);
-            await walletStorage.setSecureItem('account_profiles_2', allProfiles);
+            await storage.setSecureItem('account_profile_2', allProfiles[0]);
+            await storage.setSecureItem('account_profiles_2', allProfiles);
 
             // Store in localStorage for AppContext to read on page load
             localStorage.setItem('account_profile_2', JSON.stringify(allProfiles[0]));
@@ -518,9 +528,25 @@ const OAuthCallback = () => {
         }
       } catch (error) {
         console.error('[Callback] Error processing OAuth callback:', error);
+
+        // Provide specific error messages
+        let errorTitle = 'Processing Failed';
+        let errorMessage = error.message || 'Failed to process authentication';
+
+        if (error.message?.includes('entropy') || error.message?.includes('decrypt')) {
+          errorTitle = 'Wallet Data Issue';
+          errorMessage = 'Your wallet data may be corrupted. Try clearing browser data and re-authenticating.';
+        } else if (error.message?.includes('network') || error.message?.includes('fetch') || error.name === 'TypeError') {
+          errorTitle = 'Connection Error';
+          errorMessage = 'Unable to connect. Please check your internet connection and try again.';
+        } else if (error.message?.includes('IndexedDB') || error.message?.includes('database')) {
+          errorTitle = 'Storage Error';
+          errorMessage = 'Browser storage error. Try refreshing or using a different browser.';
+        }
+
         setErrorState({
-          title: 'Processing Failed',
-          message: error.message || 'Failed to process authentication',
+          title: errorTitle,
+          message: errorMessage,
           provider: provider
         });
         setIsProcessing(false);

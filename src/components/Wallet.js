@@ -841,27 +841,30 @@ const WalletContent = ({
       </div>
 
       {/* Balance Section */}
-      <div className="px-5 pt-5 pb-4 text-center">
-        <div className="mb-0.5">
-          <span className="font-mono text-3xl font-light tracking-tight">
+      <div className="px-5 pt-5 pb-3 text-center">
+        {/* Balance */}
+        <div className="flex items-baseline justify-center gap-1.5 mb-1">
+          <span className="font-mono text-2xl font-medium tracking-tight">
             {accountTotalXrp || accountBalance?.curr1?.value || '0'}
           </span>
-          <span className={cn("text-sm ml-1.5", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+          <span className={cn("text-sm font-medium", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
         </div>
-        {/* Balance Stats - Always visible under balance */}
-        <div className={cn("flex items-center justify-center gap-3 text-[11px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+        {/* Balance Stats */}
+        <div className={cn("flex items-center justify-center gap-3 text-[10px] mb-4", isDark ? "text-white/35" : "text-gray-400")}>
           <span>{accountBalance?.curr1?.value || '0'} available</span>
           <span>•</span>
           <span>{accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved</span>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center justify-center gap-2 mt-4">
+        <div className="flex items-center justify-center gap-2">
           <a
             href="/wallet?tab=send"
             className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              isDark ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-primary/10 text-primary hover:bg-primary/20"
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
+              isDark
+                ? "border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/50"
+                : "border-primary/30 text-primary bg-primary/5 hover:bg-primary/10"
             )}
           >
             <Send size={13} />
@@ -870,8 +873,12 @@ const WalletContent = ({
           <button
             onClick={() => setShowQrCode(!showQrCode)}
             className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              showQrCode ? "bg-primary/10 text-primary" : isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
+              showQrCode
+                ? "border-primary/30 text-primary bg-primary/5"
+                : isDark
+                  ? "border-white/10 text-white/60 hover:border-white/20 hover:bg-white/[0.03]"
+                  : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
             )}
           >
             <QrCode size={13} />
@@ -880,8 +887,10 @@ const WalletContent = ({
           <button
             onClick={onBackupSeed}
             className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
+              isDark
+                ? "border-white/10 text-white/60 hover:border-white/20 hover:bg-white/[0.03]"
+                : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
             )}
           >
             <Shield size={13} />
@@ -893,11 +902,12 @@ const WalletContent = ({
         <a
           href="/wallet"
           className={cn(
-            "block text-center text-[11px] font-medium mt-3 py-2 transition-colors",
+            "inline-flex items-center gap-1 text-[11px] font-medium mt-3 py-1.5 transition-colors",
             isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
           )}
         >
-          View Full Wallet →
+          View Full Wallet
+          <ChevronRight size={12} />
         </a>
       </div>
 
@@ -931,53 +941,49 @@ const WalletContent = ({
       )}
 
       {/* Token Holdings - Mock */}
-      <div className="px-4 pt-3">
-        <p className={cn("text-[10px] font-medium uppercase tracking-wide mb-2", isDark ? "text-white/40" : "text-gray-500")}>Holdings</p>
-        <div className="space-y-1">
+      <div className={cn("mx-4 rounded-xl", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+        <div className={cn("px-3 py-2 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+          <p className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>Holdings</p>
+        </div>
+        <div className="py-1">
           {[
             { symbol: 'SOLO', name: 'Sologenic', amount: '1,250.00', value: '$45.20', change: '+2.4%', positive: true, color: '#00D4AA' },
             { symbol: 'CSC', name: 'CasinoCoin', amount: '50,000', value: '$125.00', change: '-1.2%', positive: false, color: '#E91E63' },
             { symbol: 'CORE', name: 'Coreum', amount: '320.50', value: '$89.40', change: '+5.1%', positive: true, color: '#25D695' },
           ].map((token) => (
-            <div key={token.symbol} className={cn("flex items-center gap-2 p-2 rounded-lg", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: token.color }}>
+            <div key={token.symbol} className={cn("flex items-center gap-2.5 px-3 py-2 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-100/50")}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>
                 {token.symbol[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.symbol}</p>
-                <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{token.amount}</p>
+                <p className={cn("text-[12px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{token.amount}</p>
               </div>
               <div className="text-right">
-                <p className={cn("text-[11px] font-medium", isDark ? "text-white/80" : "text-gray-700")}>{token.value}</p>
-                <p className={cn("text-[10px]", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                <p className={cn("text-[11px] font-medium tabular-nums", isDark ? "text-white/80" : "text-gray-700")}>{token.value}</p>
+                <p className={cn("text-[10px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Accounts Section - Enhanced */}
-      <div className="px-4 pt-3">
+      {/* Accounts Section */}
+      <div className="px-4 pt-4">
         <button
           onClick={() => setShowAllAccounts(!showAllAccounts)}
-          className="w-full flex items-center gap-3 mb-3"
+          className="w-full flex items-center gap-2"
         >
-          <span className={cn("text-[10px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>
+          <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>
             Accounts
           </span>
           <span className={cn(
-            "px-1.5 py-0.5 rounded text-[10px] font-medium",
-            isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500"
+            "px-1.5 py-0.5 rounded text-[9px] font-semibold",
+            isDark ? "bg-white/[0.06] text-white/50" : "bg-gray-100 text-gray-500"
           )}>
             {profiles.length}
           </span>
-          <div
-            className="flex-1 h-[14px]"
-            style={{
-              backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-              backgroundSize: '8px 5px'
-            }}
-          />
+          <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
           <ChevronDown
             size={14}
             className={cn(
@@ -1111,19 +1117,17 @@ const WalletContent = ({
         )}
       </div>
 
-      {/* Footer Actions - Enhanced */}
+      {/* Footer Actions */}
       <div className={cn(
-        "px-3 py-3 flex items-center gap-2 border-t",
+        "px-4 py-3 flex items-center justify-between border-t mt-2",
         isDark ? "border-white/[0.06]" : "border-gray-100"
       )}>
         {onCreateNewAccount && profiles.length < 25 && (
           <button
             onClick={onCreateNewAccount}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all",
-              isDark
-                ? "text-primary hover:bg-primary/10"
-                : "text-primary hover:bg-primary/5"
+              "flex items-center gap-1.5 text-xs font-medium transition-colors",
+              isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
             )}
           >
             <Plus size={14} />
@@ -1133,11 +1137,8 @@ const WalletContent = ({
         <button
           onClick={onLogout}
           className={cn(
-            "py-2.5 rounded-xl text-xs font-medium transition-all",
-            profiles.length >= 25 ? "flex-1" : "px-4",
-            isDark
-              ? "text-white/50 hover:text-red-400 hover:bg-red-500/10"
-              : "text-gray-500 hover:text-red-500 hover:bg-red-50"
+            "flex items-center gap-1.5 text-xs font-medium transition-colors ml-auto",
+            isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500"
           )}
         >
           Logout
