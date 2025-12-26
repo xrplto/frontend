@@ -3,6 +3,11 @@ import Head from 'next/head';
 const BASE = 'https://xrpl.to';
 const OG_API = `${BASE}/api/og`;
 
+// Normalize name: API may return object {collection_name, collection_description} or string
+const normalizeName = (name) => typeof name === 'object' && name !== null
+  ? name.collection_name || ''
+  : name || '';
+
 // All static pages
 const PAGES = {
   index: { title: 'XRPL.to - XRP Ledger Token Prices & Analytics', desc: 'Real-time XRP Ledger token prices, charts, and trading data.' },
@@ -48,11 +53,11 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     const name = nft.name || nft.nftokenid?.slice(0, 12);
     title = customTitle || `${name} - XRPL.to`;
     desc = customDesc || `${name} NFT on XRP Ledger.`;
-    const params = new URLSearchParams({ name, collection: nft.collection?.name || '', image: nft.image || '' });
+    const params = new URLSearchParams({ name, collection: normalizeName(nft.collection?.name), image: nft.image || '' });
     image = customImage || `${OG_API}/nft/${nft.nftokenid}?${params}`;
     url = `${BASE}/nft/${nft.nftokenid}`;
   } else if (type === 'collection' && collection) {
-    const name = collection.name;
+    const name = normalizeName(collection.name);
     title = customTitle || `${name} Collection - XRPL.to`;
     desc = customDesc || `${name} - ${collection.nfts || 0} NFTs on XRP Ledger.`;
     const params = new URLSearchParams({ name, nfts: collection.nfts || '', image: collection.image || '' });
@@ -85,9 +90,10 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     image = customImage || `${OG_API}/ledger-block/${ledgerIndex}`;
     url = `${BASE}/ledger/${ledgerIndex}`;
   } else if (type === 'collection-edit' && collection) {
-    title = customTitle || `Edit ${collection.name} - XRPL.to`;
+    const editName = normalizeName(collection.name);
+    title = customTitle || `Edit ${editName} - XRPL.to`;
     desc = customDesc || `Manage your NFT collection.`;
-    image = customImage || `${OG_API}/collection-edit?name=${encodeURIComponent(collection.name)}`;
+    image = customImage || `${OG_API}/collection-edit?name=${encodeURIComponent(editName)}`;
     url = `${BASE}/collection/${collection.slug}/edit`;
   } else {
     title = customTitle || 'XRPL.to';

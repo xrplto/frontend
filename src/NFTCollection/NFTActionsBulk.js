@@ -35,7 +35,7 @@ export default function NFTActionsBulk({ nft }) {
   const {
     uuid,
     NFTokenID,
-    name,
+    name: rawName,
     cid,
     collection,
     flag,
@@ -51,6 +51,11 @@ export default function NFTActionsBulk({ nft }) {
     taxon,
     costs
   } = nft;
+
+  // Normalize name: API may return object {collection_name, collection_description} or string
+  const name = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || ''
+    : rawName || '';
 
   useEffect(() => {
     function getMints() {

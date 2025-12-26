@@ -23,7 +23,11 @@ export default function Overview({ collection }) {
     return <div>Loading...</div>;
   }
 
-  const collectionName = collection.name || 'NFT Collection';
+  // Normalize name: API may return object {collection_name, collection_description} or string
+  const rawName = collection.name;
+  const collectionName = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || 'NFT Collection'
+    : rawName || 'NFT Collection';
 
   return (
     <OverviewWrapper>
@@ -85,8 +89,16 @@ export async function getServerSideProps(ctx) {
   }
 
   if (data && data.collection) {
-    const { name, featuredImage, logoImage, bannerImage, slug, uuid, description } =
+    const { name: rawName, featuredImage, logoImage, bannerImage, slug, uuid, description: rawDesc } =
       data.collection;
+
+    // Normalize name/description: API may return object or string
+    const name = typeof rawName === 'object' && rawName !== null
+      ? rawName.collection_name || ''
+      : rawName || '';
+    const description = typeof rawDesc === 'object' && rawDesc !== null
+      ? rawDesc.collection_description || ''
+      : rawDesc || '';
 
     // Enhanced OGP metadata
     const ogp = {

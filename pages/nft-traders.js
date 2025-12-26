@@ -378,7 +378,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                                   <CollectionImg
                                     key={col._id}
                                     src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                                    alt={col.name}
+                                    alt={typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
                                     darkMode={darkMode}
                                     style={{ marginLeft: -4 }}
                                   />

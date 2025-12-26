@@ -1565,13 +1565,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               >
                 <img
                   src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
-                  alt={col.name}
+                  alt={typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
                   style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}
                   onError={(e) => (e.target.src = '/static/alt.webp')}
                 />
                 <Stack style={{ flex: 1, minWidth: 0 }}>
                   <Typography style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {col.name}
+                    {typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
                   </Typography>
                   <Stack direction="row" style={{ gap: '10px', marginTop: '2px' }}>
                     <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)' }}>

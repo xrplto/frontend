@@ -7,6 +7,12 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
+  // Normalize name: API may return object {collection_name, collection_description} or string
+  const rawName = collection?.collection?.name;
+  const collectionName = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || ''
+    : rawName || '';
+
   return (
     <div
       className={cn(
@@ -27,7 +33,7 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
         rel="noreferrer noopener nofollow"
         className="text-primary hover:underline text-[13px] font-normal"
       >
-        {collection.collection.name}
+        {collectionName}
       </a>
       {nftName && (
         <>

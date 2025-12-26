@@ -87,11 +87,11 @@ export default function SpinNFT({ collection, setView }) {
 
   const {
     uuid,
-    name,
+    name: rawName,
     slug,
     items,
     type,
-    description,
+    description: rawDescription,
     logoImage,
     // featuredImage,
     // bannerImage,
@@ -102,6 +102,14 @@ export default function SpinNFT({ collection, setView }) {
     verified,
     extra
   } = collection;
+
+  // Normalize name/description: API may return object {collection_name, collection_description} or string
+  const name = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || ''
+    : rawName || '';
+  const description = typeof rawDescription === 'object' && rawDescription !== null
+    ? rawDescription.collection_description || ''
+    : rawDescription || '';
 
   const [nft, setNft] = useState(extra?.sampleNft);
 

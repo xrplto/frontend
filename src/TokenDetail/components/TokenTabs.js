@@ -74,7 +74,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
   }, []);
 
   const handleSelectCollection = useCallback((col) => {
-    addTokenToTabs({ slug: col.slug, name: col.name, type: 'collection', logoImage: col.logoImage });
+    // Normalize name: API may return object {collection_name, collection_description}
+    const normalizedName = typeof col.name === 'object' && col.name !== null
+      ? col.name.collection_name || ''
+      : col.name || '';
+    addTokenToTabs({ slug: col.slug, name: normalizedName, type: 'collection', logoImage: col.logoImage });
     setSearchOpen(false);
     setQuery('');
     window.location.href = `/collection/${col.slug}`;
@@ -131,7 +135,11 @@ const TokenTabs = memo(({ currentMd5 }) => {
             : isCollection
               ? (tab.logoImage ? `https://s1.xrpl.to/nft-collection/${tab.logoImage}` : '/static/alt.webp')
               : `https://s1.xrpl.to/token/${tab.md5}`;
-        const label = isAccount ? tab.name : isNft ? tab.name : isCollection ? tab.name : `${tab.name}/XRP`;
+        // Normalize tab.name: could be object {collection_name, collection_description}
+        const tabName = typeof tab.name === 'object' && tab.name !== null
+          ? tab.name.collection_name || tab.name.name || ''
+          : tab.name || '';
+        const label = isAccount ? tabName : isNft ? tabName : isCollection ? tabName : `${tabName}/XRP`;
 
         return (
           <a
@@ -264,7 +272,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
                     >
                       <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-8 h-8 rounded object-cover" alt="" onError={(e) => (e.target.src = '/static/alt.webp')} />
                       <div className="flex-1 min-w-0">
-                        <span className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{col.name}</span>
+                        <span className={cn('text-[13px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
                         <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/20' : 'text-gray-400')}>{col.account}</p>
                       </div>
                       {col.verified === 'yes' && <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-[9px]">✓</span>}

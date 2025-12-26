@@ -736,7 +736,10 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
 
   const { NFTokenID } = collection;
   const imgUrl = `https://s1.xrpl.to/nft-collection/${collection.logoImage}`;
-  const name = collection.name || 'No Name';
+  const rawName = collection.name;
+  const name = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || 'No Name'
+    : rawName || 'No Name';
   const collectionType = type.charAt(0).toUpperCase() + type.slice(1);
 
   const handleRemoveNft = (e) => {
@@ -1469,11 +1472,28 @@ export default function CollectionView({ collection }) {
 
   // Add current collection to tabs on mount
   const collectionData = collection?.collection || collection;
+
+  // DEBUG: Log collection data to find object rendering issues
+  useEffect(() => {
+    if (collectionData) {
+      console.log('[CollectionView] Raw collection data:', {
+        name: collectionData.name,
+        nameType: typeof collectionData.name,
+        description: collectionData.description,
+        descType: typeof collectionData.description
+      });
+    }
+  }, [collectionData]);
+
   useEffect(() => {
     if (collectionData?.slug && collectionData?.name) {
+      // Normalize name before passing to addTokenToTabs
+      const normalizedName = typeof collectionData.name === 'object' && collectionData.name !== null
+        ? collectionData.name.collection_name || ''
+        : collectionData.name || '';
       addTokenToTabs({
         slug: collectionData.slug,
-        name: collectionData.name,
+        name: normalizedName,
         type: 'collection',
         logoImage: collectionData.logoImage
       });
@@ -1529,10 +1549,10 @@ export default function CollectionView({ collection }) {
   const {
     account,
     accountName,
-    name,
+    name: rawName,
     slug,
     items,
-    description,
+    description: rawDescription,
     logoImage,
     verified,
     created,
@@ -1560,6 +1580,14 @@ export default function CollectionView({ collection }) {
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
   const royaltyPercent = royaltyFee ?? (transferFee ? (transferFee / 1000).toFixed(2) : null);
+
+  // Normalize name/description: API may return object {collection_name, collection_description} or string
+  const name = typeof rawName === 'object' && rawName !== null
+    ? rawName.collection_name || ''
+    : rawName || '';
+  const descriptionText = typeof rawDescription === 'object' && rawDescription !== null
+    ? rawDescription.collection_description || ''
+    : rawDescription || '';
 
   const shareUrl = `https://xrpl.to/collection/${slug}`;
   const shareTitle = name;
@@ -1670,7 +1698,7 @@ export default function CollectionView({ collection }) {
               <button onClick={() => setOpenInfo(!openInfo)} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Info</button>
               {openInfo && (
                 <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[280px]', isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]')}>
-                  {description && <p className={cn("text-[11px] mb-2", isDark ? "text-white/70" : "text-gray-600")}>{description}</p>}
+                  {descriptionText && <p className={cn("text-[11px] mb-2", isDark ? "text-white/70" : "text-gray-600")}>{descriptionText}</p>}
                   <div className="space-y-1 text-[10px]">
                     {royaltyPercent !== null && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Royalty</span><span className="text-primary font-medium">{royaltyPercent}%</span></div>}
                     {category && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Category</span><span>{category}</span></div>}

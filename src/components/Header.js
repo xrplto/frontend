@@ -889,7 +889,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                             <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                             <div className="w-[200px] min-w-[200px]">
-                              <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</span>
+                              <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
                               <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>Collection</span>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -1067,7 +1067,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                         <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                         <div className="w-[200px] min-w-[200px]">
-                          <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</span>
+                          <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
                           <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>Collection</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1158,7 +1158,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                       <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -1285,7 +1285,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                       <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">

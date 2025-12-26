@@ -785,8 +785,8 @@ OptimizedImage.displayName = 'OptimizedImage';
 const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
-  // Handle name being an object or string
-  const collectionName = typeof name === 'string' ? name : (name?.name || 'Unnamed Collection');
+  // Handle name being an object {collection_name, collection_description} or string
+  const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor?.amount || 0;
@@ -851,8 +851,8 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     origin
   } = collection;
 
-  // Handle name being an object or string
-  const collectionName = typeof name === 'string' ? name : (name?.name || 'Unnamed Collection');
+  // Handle name being an object {collection_name, collection_description} or string
+  const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor?.amount || 0;
@@ -1286,15 +1286,18 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
               VOL
             </StyledHeaderCell>
           </StyledMobileHeader>
-          {collections.map((collection, idx) => (
-            <CollectionRow
-              key={collection.slug || collection.name || idx}
-              collection={collection}
-              idx={page * rows + idx}
-              isMobile={true}
-              darkMode={darkMode}
-            />
-          ))}
+          {collections.map((collection, idx) => {
+            const keyName = typeof collection.name === 'object' ? collection.name?.collection_name : collection.name;
+            return (
+              <CollectionRow
+                key={collection.slug || keyName || idx}
+                collection={collection}
+                idx={page * rows + idx}
+                isMobile={true}
+                darkMode={darkMode}
+              />
+            );
+          })}
         </MobileContainer>
       ) : (
         <TableContainer>
@@ -1308,15 +1311,18 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
               isMobile={false}
             />
             <StyledTableBody darkMode={darkMode}>
-              {collections.map((collection, idx) => (
-                <CollectionRow
-                  key={collection.slug || collection.name || idx}
-                  collection={collection}
-                  idx={page * rows + idx}
-                  isMobile={false}
-                  darkMode={darkMode}
-                />
-              ))}
+              {collections.map((collection, idx) => {
+                const keyName = typeof collection.name === 'object' ? collection.name?.collection_name : collection.name;
+                return (
+                  <CollectionRow
+                    key={collection.slug || keyName || idx}
+                    collection={collection}
+                    idx={page * rows + idx}
+                    isMobile={false}
+                    darkMode={darkMode}
+                  />
+                );
+              })}
             </StyledTableBody>
           </StyledTable>
         </TableContainer>

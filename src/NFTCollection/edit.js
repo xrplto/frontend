@@ -233,10 +233,18 @@ export default function EditCollection({ collection }) {
 
   const [openAddCost, setOpenAddCost] = useState(false);
 
-  const [name, setName] = useState(collection.name);
+  // Normalize name/description: API may return object {collection_name, collection_description} or string
+  const initialName = typeof collection.name === 'object' && collection.name !== null
+    ? collection.name.collection_name || ''
+    : collection.name || '';
+  const initialDescription = typeof collection.description === 'object' && collection.description !== null
+    ? collection.description.collection_description || ''
+    : collection.description || '';
+
+  const [name, setName] = useState(initialName);
   const [category, setCategory] = useState(collection.category || 'NONE');
   const [slug, setSlug] = useState(collection.slug);
-  const [description, setDescription] = useState(collection.description || '');
+  const [description, setDescription] = useState(initialDescription);
   const [type, setType] = useState(collection.type);
   const [privateCollection, setPrivateCollection] = useState(collection.private);
   const [bulkUrl, setBulkUrl] = useState(collection.bulkUrl || '');
@@ -272,7 +280,7 @@ export default function EditCollection({ collection }) {
     if (file4) return true;
     else if (fileUrl4 !== spinnerImageUrl) return true;
 
-    if (stringCompare(description, collection.description)) return true;
+    if (stringCompare(description, initialDescription)) return true;
 
     if (!slug) return false;
     if (slug !== collection.slug) return true;
