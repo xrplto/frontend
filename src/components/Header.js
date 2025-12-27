@@ -820,7 +820,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       {recentSearches.map((item, i) => (
                         <button key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full transition-colors", isDark ? "bg-white/5 hover:bg-white/10" : "bg-gray-100 hover:bg-gray-200")}>
                           <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-5 h-5 object-cover", item.type === 'token' ? "rounded-full" : "rounded")} alt="" />
-                          <span className={cn("text-[12px]", isDark ? "text-white/80" : "text-gray-700")}>{item.user || item.name}</span>
+                          <span className={cn("text-[12px]", isDark ? "text-white/80" : "text-gray-700")}>{item.type === 'token' ? `${item.name}/XRP` : (item.user || item.name)}</span>
                         </button>
                       ))}
                       <button onClick={clearRecentSearches} className={cn("text-[10px] ml-auto", isDark ? "text-white/20 hover:text-white/40" : "text-gray-300 hover:text-gray-500")}>×</button>
