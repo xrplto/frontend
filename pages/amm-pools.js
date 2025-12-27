@@ -275,7 +275,7 @@ const TokenImage = styled.img`
 const PoolAccount = styled.div`
   font-size: 11px;
   color: ${p => p.darkMode ? '#bbb' : '#666'};
-  font-family: monospace;
+  font-family: var(--font-mono);
 `;
 
 const APYBadge = styled.span`

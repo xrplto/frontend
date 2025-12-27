@@ -503,7 +503,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
         <div>
           <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff' }}>{token.name || token.user || 'Unknown'}</div>
           {token.user && token.name !== token.user && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>"{token.user}"</div>}
-          {token.issuer && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>{token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}</div>}
+          {token.issuer && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>{token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}</div>}
         </div>
       </div>
 
@@ -2708,7 +2708,7 @@ const TransactionDetails = ({ txData }) => {
                               sx={{
                                 color: theme.palette.primary.main,
                                 textDecoration: 'none',
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 fontSize: '13px',
                                 '&:hover': { textDecoration: 'underline' }
                               }}
@@ -2730,7 +2730,7 @@ const TransactionDetails = ({ txData }) => {
                                 sx={{
                                   color: theme.palette.primary.main,
                                   textDecoration: 'none',
-                                  fontFamily: 'monospace',
+                                  fontFamily: 'var(--font-mono)',
                                   fontSize: '13px',
                                   '&:hover': { textDecoration: 'underline' }
                                 }}
@@ -2750,7 +2750,7 @@ const TransactionDetails = ({ txData }) => {
                                 sx={{
                                   color: theme.palette.primary.main,
                                   textDecoration: 'none',
-                                  fontFamily: 'monospace',
+                                  fontFamily: 'var(--font-mono)',
                                   fontSize: '13px',
                                   '&:hover': { textDecoration: 'underline' }
                                 }}
@@ -3428,14 +3428,14 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     {txData.EmailHash && (
                       <DetailRow label="Email Hash">
-                        <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
                           {txData.EmailHash}
                         </Typography>
                       </DetailRow>
                     )}
                     {txData.MessageKey && (
                       <DetailRow label="Message Key">
-                        <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
                           {txData.MessageKey}
                         </Typography>
                       </DetailRow>
@@ -3477,7 +3477,7 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     {txData.CheckID && (
                       <DetailRow label="Check ID">
-                        <Typography variant="body1" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {txData.CheckID}
                         </Typography>
                       </DetailRow>
@@ -3514,14 +3514,14 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     {txData.Condition && (
                       <DetailRow label="Condition">
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {txData.Condition}
                         </Typography>
                       </DetailRow>
                     )}
                     {txData.Fulfillment && (
                       <DetailRow label="Fulfillment">
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {txData.Fulfillment}
                         </Typography>
                       </DetailRow>
@@ -3534,7 +3534,7 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     {txData.Channel && (
                       <DetailRow label="Channel ID">
-                        <Typography variant="body1" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {txData.Channel}
                         </Typography>
                       </DetailRow>
@@ -3546,7 +3546,7 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     {txData.PublicKey && (
                       <DetailRow label="Public Key">
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {txData.PublicKey}
                         </Typography>
                       </DetailRow>

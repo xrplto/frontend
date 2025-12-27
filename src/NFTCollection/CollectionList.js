@@ -266,16 +266,17 @@ const StyledRow = styled.tr`
 `;
 
 const StyledCell = styled.td`
-  padding: 12px 8px;
+  padding: 14px 8px;
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isCollectionColumn ? '200px' : 'auto')};
-  letter-spacing: 0.01em;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 
   &:first-of-type {
     padding-left: 12px;
@@ -314,11 +315,12 @@ const MobileCell = styled.div`
   flex: ${(props) => props.flex || 1};
   text-align: ${(props) => props.align || 'right'};
   padding: 0 6px;
-  font-weight: ${(props) => props.fontWeight || 500};
-  font-size: 13px;
-  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
+  font-weight: ${(props) => props.fontWeight || 400};
+  font-size: 14px;
+  color: ${(props) => props.color || (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a')};
   min-width: ${(props) => props.minWidth || 'auto'};
-  letter-spacing: 0.01em;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
   ${(props) => props.lineHeight && `line-height: ${props.lineHeight};`}
 `;
@@ -341,32 +343,30 @@ const CollectionDetails = styled.div`
 `;
 
 const CollectionName = styled.span`
-  font-weight: 600;
-  font-size: ${(props) => (props.isMobile ? '13px' : '14px')};
-  color: ${(props) => (props.darkMode ? '#FFFFFF' : '#000000')};
-  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
+  font-weight: 500;
+  font-size: ${(props) => (props.isMobile ? '14px' : '15px')};
+  color: ${(props) => (props.darkMode ? '#FFFFFF' : '#1a1a1a')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
+  line-height: 1.4;
+  font-family: var(--font-sans);
 `;
 
 const CollectionSubtext = styled.span`
-  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
-  color: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  opacity: 1;
+  font-size: ${(props) => (props.isMobile ? '12px' : '13px')};
+  color: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)')};
   font-weight: 400;
   display: block;
-  max-width: ${(props) => (props.isMobile ? '120px' : '160px')};
+  max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.3;
-  margin-top: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
 `;
 
 // Toolbar styled components
@@ -581,10 +581,10 @@ const StyledTableHead = styled.thead`
 const StyledTableCell = styled.th`
   font-weight: 500;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.45)')};
-  padding: 14px 4px;
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.55)')};
+  padding: 14px 8px;
   border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
@@ -605,7 +605,7 @@ const StyledTableCell = styled.th`
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') : 'inherit'};
   }
 `;
 
@@ -637,11 +637,11 @@ const StyledMobileHeader = styled.div`
   background: ${(props) => props.isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(12px);
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  font-size: 12px;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0.01em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)'};
   position: sticky;
   top: 0;
   z-index: 10;
@@ -796,9 +796,9 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const floorChangePercent = floor1dPercent || 0;
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return '#22c55e';
-    if (percent < 0) return '#ef4444';
-    return darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)';
+    if (percent > 0) return '#22a86b';
+    if (percent < 0) return '#c75050';
+    return darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
   };
 
   const formatFloorChange = (percent) => {
@@ -819,15 +819,15 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
         </CollectionDetails>
       </MobileCollectionInfo>
 
-      <MobileCell flex={1.2} align="right" darkMode={darkMode}>
+      <MobileCell flex={1.2} align="right" darkMode={darkMode} fontWeight={400}>
         ✕ {fNumber(floorPrice)}
       </MobileCell>
 
-      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)} darkMode={darkMode}>
+      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)} darkMode={darkMode} fontWeight={400}>
         {formatFloorChange(floorChangePercent)}
       </MobileCell>
 
-      <MobileCell flex={1} align="right" color="#00AB55" darkMode={darkMode}>
+      <MobileCell flex={1} align="right" darkMode={darkMode} fontWeight={400}>
         ✕ {fVolume(totalVolume || 0)}
       </MobileCell>
     </MobileCollectionCard>
@@ -866,9 +866,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   const strDateTime = formatMonthYearDate(created);
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return '#22c55e';
-    if (percent < 0) return '#ef4444';
-    return darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)';
+    if (percent > 0) return '#22a86b';
+    if (percent < 0) return '#c75050';
+    return darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
   };
 
   const formatFloorChange = (percent) => {
@@ -877,14 +877,8 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     return `${sign}${percent.toFixed(1)}%`;
   };
 
-  const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return darkMode ? 'rgba(255,255,255,0.9)' : '#212B36';
-    if (mcap >= 5e6) return '#22c55e';
-    if (mcap >= 1e6) return '#22c55e';
-    if (mcap >= 1e5) return '#3b82f6';
-    if (mcap >= 1e4) return '#eab308';
-    if (mcap >= 1e3) return '#f97316';
-    return '#ef4444';
+  const getMarketCapColor = () => {
+    return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
   };
 
   // Process chart data
@@ -907,7 +901,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   return (
     <StyledRow onClick={handleRowClick} darkMode={darkMode}>
       <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-        <span style={{ fontWeight: '400', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>{idx + 1}</span>
+        <span style={{ fontWeight: '400', fontSize: '13px', color: darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)' }}>{idx + 1}</span>
       </StyledCell>
 
       <StyledCell
@@ -926,52 +920,52 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         </div>
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         ✕ {fNumber(floorPrice)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={400}>
         {formatFloorChange(floorChangePercent)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         ✕ {volume24h}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         ✕ {fVolume(totalVolume || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
-        <span style={{ fontSize: '11px' }}>{strDateTime}</span>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
+        <span style={{ fontSize: '13px', color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)' }}>{strDateTime}</span>
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         {fIntNumber(sales24h || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         {fIntNumber(totalSales || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor(marketCapAmount)} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor()} fontWeight={400}>
         ✕ {fVolume(marketCapAmount)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         {fIntNumber(listedCount || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         {fIntNumber(owners || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
         {fIntNumber(items)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
-        {origin || 'XRPL'}
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
+        <span style={{ fontFamily: 'var(--font-sans)', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>{origin || 'XRPL'}</span>
       </StyledCell>
 
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
@@ -980,7 +974,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
             <OptimizedChart salesData={salesData} darkMode={darkMode} />
           </div>
         ) : (
-          <span style={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(33, 43, 54, 0.3)', fontSize: '12px' }}>No data</span>
+          <span style={{ color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)', fontSize: '12px' }}>-</span>
         )}
       </StyledCell>
     </StyledRow>

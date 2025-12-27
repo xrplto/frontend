@@ -211,7 +211,7 @@ const PriceText = ({ flashColor, isDark, isMobile, children }) => (
       fontSize: isMobile ? '14px' : '15px',
       color: flashColor || (isDark ? 'rgba(255, 255, 255, 0.9)' : '#1a1a1a'),
       transition: 'color 0.8s ease-out',
-      fontFamily: 'SF Mono, Monaco, Consolas, monospace'
+      fontFamily: 'var(--font-mono)'
     }}
   >
     {children}
@@ -222,7 +222,7 @@ const PercentText = styled.span`
   font-weight: 400;
   color: ${(props) => props.color};
   font-size: ${(props) => (props.isMobile ? '14px' : '14px')};
-  font-family: SF Mono, Monaco, Consolas, monospace;
+  font-family: var(--font-mono);
 `;
 
 const truncate = (str, n) => {
@@ -1138,7 +1138,7 @@ const DesktopTokenRow = ({
           fontWeight: '400',
           fontSize: '13px',
           color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-          fontFamily: 'SF Mono, Monaco, Consolas, monospace'
+          fontFamily: 'var(--font-mono)'
         }}>{idx + 1}</span>
       </StyledCell>
 

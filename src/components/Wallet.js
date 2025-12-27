@@ -4660,7 +4660,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }}
                             sx={{
                               '& .MuiInputBase-input': {
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 fontSize: '14px'
                               },
                               '& .MuiFormHelperText-root': {

@@ -569,7 +569,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         },
         textColor: isDark ? '#FFFFFF' : '#212B36',
         fontSize: isMobile ? 9 : 11,
-        fontFamily: "'Segoe UI', Roboto, Arial, sans-serif"
+        fontFamily: "var(--font-sans)"
       },
       grid: {
         vertLines: {
@@ -1162,7 +1162,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <span style={{
                   fontSize: '10px',
                   fontWeight: 400,
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   color: isNearATH ? '#22c55e' : isCritical ? '#ef4444' : '#f59e0b',
                   minWidth: '40px',
                   textAlign: 'right'
@@ -1174,7 +1174,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <span style={{
                   fontSize: '10px',
                   color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                   paddingLeft: '6px'
                 }}>
@@ -1186,7 +1186,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           {lastUpdate && (
             <Box style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.5 }}>
               <Box style={{ width: '4px', height: '4px', borderRadius: '50%', background: isUserZoomed ? '#f59e0b' : '#22c55e' }} />
-              <span style={{ fontSize: '11px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                 {lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
               </span>
               {isUserZoomed && <span style={{ fontSize: '10px', color: '#f59e0b', textTransform: 'uppercase' }}>paused</span>}

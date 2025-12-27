@@ -2215,7 +2215,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
                         Rate{swapQuoteCalc.ammFallback && <span style={{ color: '#f59e0b' }}> ~est</span>}{quoteLoading && <span style={{ opacity: 0.5 }}> •••</span>}
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
                         1 {token2?.name || token2?.currency} = {(() => {
                           // Calculate rate as source/destination (XRP per token)
                           const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
@@ -2234,7 +2234,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
                         Min received
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
                         {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
                       </Typography>
                     </Stack>
@@ -2251,7 +2251,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
                             Route
                           </Typography>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'monospace' }}>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
                             {obVal > 0 && ammVal > 0 ? (
                               <span style={{ color: '#22c55e' }}>DEX+AMM</span>
                             ) : obVal > 0 ? (
@@ -2377,7 +2377,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
                           Best Bid
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'monospace' }}>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>
                           {bestBid < 0.0001 ? bestBid.toFixed(8) : fNumber(bestBid)}
                         </Typography>
                       </Stack>
@@ -2407,7 +2407,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
                           Best Ask
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'monospace' }}>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
                           {bestAsk < 0.0001 ? bestAsk.toFixed(8) : fNumber(bestAsk)}
                         </Typography>
                       </Stack>
@@ -2578,7 +2578,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Debug Panel */}
           {debugInfo && (
-            <div style={{ marginBottom: 8, padding: 8, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`, background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8', fontFamily: 'monospace', fontSize: 9 }}>
+            <div style={{ marginBottom: 8, padding: 8, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`, background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8', fontFamily: 'var(--font-mono)', fontSize: 9 }}>
               <div style={{ fontWeight: 500, marginBottom: 4, color: '#ca8a04', fontSize: 10 }}>Debug:</div>
               <div>wallet_type: <span style={{ color: '#3b82f6' }}>{debugInfo.wallet_type || 'undefined'}</span></div>
               <div>account: <span style={{ opacity: 0.7 }}>{debugInfo.account || 'undefined'}</span></div>

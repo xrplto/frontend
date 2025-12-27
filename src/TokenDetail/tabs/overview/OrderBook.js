@@ -88,7 +88,7 @@ const Row = styled.div`
   position: relative;
   cursor: pointer;
   font-size: 12px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   transition: background 0.1s;
   &:hover {
     background: ${props => props.type === 'ask'
@@ -142,7 +142,7 @@ const SpreadBar = styled.div`
   border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   font-size: 11px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   flex-shrink: 0;
 `;
 

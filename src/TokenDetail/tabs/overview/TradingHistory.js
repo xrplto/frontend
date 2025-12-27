@@ -1233,7 +1233,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
             <OfferCard isDark={isDark}>
               <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
               <Box style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'monospace' }}>
+                <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>
                   {formatPrice(mockAssets.avgBuyPrice)}
                 </span>
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>XRP</span>
@@ -1318,7 +1318,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                         <span style={{ flex: '1', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                           {formatTradeValue(trade.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
                         </span>
-                        <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                        <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                           {formatPrice(trade.price)}
                         </span>
                         <span style={{ flex: '0.8', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
@@ -1554,7 +1554,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
                 href={`/address/${account}`}
                 style={{
                   fontSize: '11px',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   color: '#3b82f6',
                   textDecoration: 'none',
                   display: 'block',
@@ -1684,7 +1684,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
                 </div>
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {keyPoints.map((point, idx) => (
-                    <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', fontFamily: 'monospace', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>
+                    <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>
                       <span style={{ color: '#8b5cf6' }}>•</span>
                       <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
                     </li>
@@ -2259,11 +2259,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 </Box>
                 {/* Center: Amount → Total with fiat value */}
                 <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
-                  <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                  <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                     {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
                   </span>
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>→</span>
-                  <span style={{ fontSize: '13px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                  <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                     {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
                     {activeFiatCurrency !== 'XRP' && (
                       <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', marginLeft: '4px' }}>
@@ -2314,7 +2314,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               )}
 
               {/* Price */}
-              <span style={{ fontSize: '12px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                 {isLiquidity ? '-' : formatPrice(price)}
               </span>
 
@@ -2334,7 +2334,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
-                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right', fontFamily: 'monospace' }}>
+                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                   {currencySymbols[activeFiatCurrency]}{formatTradeValue((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
                 </span>
               )}
@@ -2348,7 +2348,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   alignItems: 'center',
                   gap: '4px',
                   fontSize: '11px',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                   textDecoration: 'none',
                   padding: '3px 6px',

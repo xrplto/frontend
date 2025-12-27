@@ -112,7 +112,7 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.7rem;
-  color: ${(props) => props.isPositive ? '#22c55e' : '#ef4444'};
+  color: ${(props) => props.isPositive ? '#22a86b' : '#c75050'};
   display: inline-flex;
   align-items: center;
   gap: 2px;

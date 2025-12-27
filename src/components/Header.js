@@ -650,7 +650,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   )}
                 >
                   Tokens
-                  <ChevronDown size={14} className={cn('transition-transform duration-150', tokensMenuOpen && 'rotate-180')} />
                 </a>
 
                 {tokensMenuOpen && (
@@ -707,7 +706,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   )}
                 >
                   NFTs
-                  <ChevronDown size={14} className={cn('transition-transform duration-150', nftsMenuOpen && 'rotate-180')} />
                 </a>
 
                 {nftsMenuOpen && (

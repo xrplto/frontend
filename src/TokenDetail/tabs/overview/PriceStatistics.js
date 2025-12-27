@@ -1074,7 +1074,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         style={{
                           fontWeight: 400,
                           fontSize: '11px',
-                          fontFamily: 'monospace',
+                          fontFamily: 'var(--font-mono)',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -1475,7 +1475,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 color: hasToken ? (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)') : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
                                 fontSize: '11px',
                                 fontWeight: 500,
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
@@ -1490,7 +1490,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 color: hasXrp ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
                                 fontSize: '11px',
                                 fontWeight: hasXrp ? 500 : 400,
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 flexShrink: 0
                               }}>
                                 {hasXrp ? `${fNumber(xrpAmount)} XRP` : '—'}
@@ -1502,7 +1502,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 textAlign: 'right',
                                 color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
                                 fontSize: '9px',
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 flexShrink: 0
                               }}>
                                 {hash?.slice(0, 6)} · {timeAgo}
