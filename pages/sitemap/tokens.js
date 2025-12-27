@@ -52,11 +52,10 @@ const Sitemap = ({ tokens, slug }) => {
 
   return (
     <div className="min-h-screen overflow-hidden">
-      <div id="back-to-top-anchor" className="h-16" />
       <Header />
 
-      <div className="mx-auto max-w-7xl px-4">
-        <h1 className={cn("mt-4 text-3xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+      <div id="back-to-top-anchor" className="mx-auto max-w-7xl px-4 mt-4">
+        <h1 className={cn("text-3xl font-normal", isDark ? "text-white" : "text-gray-900")}>
           {`${capitalizedText(slug)} Sitemap`}
         </h1>
 

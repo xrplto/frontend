@@ -67,14 +67,13 @@ function Detail({ data }) {
 
   return (
     <main className="overflow-hidden min-h-screen">
-      <div id="back-to-top-anchor" className="h-0" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
       <h1 className="sr-only">{tokenName} Price Chart & Trading Data</h1>
 
-      <article className="w-full px-2 sm:px-4">
+      <article id="back-to-top-anchor" className="w-full px-2 sm:px-4 mt-4">
         <TokenDetail
           token={token}
           tab={data.tab}

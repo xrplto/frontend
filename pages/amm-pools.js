@@ -442,13 +442,12 @@ function AMMPoolsPage({ data }) {
 
   return (
     <Wrapper>
-      {!isMobile && <div className="h-6" />}
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4 mt-0 md:-mt-2">
+      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-4 mt-4">
         {summary && (
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>

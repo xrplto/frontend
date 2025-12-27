@@ -17,11 +17,9 @@ export default function Overview({ data }) {
 
   return (
     <OverviewWrapper>
-      <div className="h-16" id="back-to-top-anchor" />
-
       <Header />
 
-      <div className="mx-auto max-w-2xl px-4">
+      <div id="back-to-top-anchor" className="mx-auto max-w-2xl px-4 mt-4">
         <CreateCollection onCreate={handleCreate} />
       </div>
 

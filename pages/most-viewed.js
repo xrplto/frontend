@@ -41,7 +41,6 @@ function MostViewedPage({ data }) {
 
   return (
     <div className="min-h-screen overflow-hidden m-0 p-0">
-      {!isMobile && <div id="back-to-top-anchor" className="h-6" />}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -50,8 +49,8 @@ function MostViewedPage({ data }) {
         Most Viewed XRPL Tokens
       </h1>
 
-      <div className={notificationPanelOpen ? "mx-auto w-full px-4" : "mx-auto max-w-[1920px] px-4"}>
-        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-px">
+      <div id="back-to-top-anchor" className={notificationPanelOpen ? "mx-auto w-full px-4 mt-4" : "mx-auto max-w-[1920px] px-4 mt-4"}>
+        <div className="w-full px-0 py-0">
           <Summary mostViewedTokens={data?.tokens?.slice(0, 5)} />
         </div>
       </div>

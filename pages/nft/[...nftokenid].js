@@ -60,7 +60,6 @@ export default function Overview({ nft }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div id="back-to-top-anchor" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {nftName} NFT on XRPL
@@ -68,7 +67,7 @@ export default function Overview({ nft }) {
 
       {!isMobile && <TokenTabs currentMd5={nftTokenId} />}
 
-      <div className="mx-auto max-w-7xl flex-1 px-4 mt-3">
+      <div id="back-to-top-anchor" className="mx-auto max-w-7xl flex-1 px-4 mt-4">
         <Suspense
           fallback={
             <div className="flex min-h-[400px] items-center justify-center">

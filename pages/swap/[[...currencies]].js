@@ -48,7 +48,6 @@ function SwapPage({ data }) {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden fixed top-0 left-0 right-0 bottom-0">
-      <div id="back-to-top-anchor" className="h-16" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}

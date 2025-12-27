@@ -44,14 +44,13 @@ function GainersPage({ data, period }) {
 
   return (
     <OverviewWrapper>
-      {!isMobile && <div className="h-16" id="back-to-top-anchor" />}
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         Top Gaining XRPL Tokens
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-0 md:px-4">
-        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-1">
+      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-0 md:px-4 mt-4">
+        <div className="w-full px-0 py-0">
           <Summary />
         </div>
       </div>
