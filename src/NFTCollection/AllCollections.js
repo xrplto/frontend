@@ -548,7 +548,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
               <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>24h Volume</MetricTitle>
                 <MetricValue isDark={isDark}>
-                  ✕{formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
+                  ✕{fVolume(globalMetrics.total24hVolume || 0)}
                 </MetricValue>
                 <PercentageChange isPositive={(globalMetrics.volumePct || 0) >= 0}>
                   {(globalMetrics.volumePct || 0) >= 0 ? '↑' : '↓'}

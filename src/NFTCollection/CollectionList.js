@@ -663,7 +663,7 @@ const StyledHeaderCell = styled.div`
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price in XRP' },
+  { id: 'floor', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price in XRP' },
   { id: 'floor1dPercent', label: '24H %', align: 'right', width: '20%', order: true, tooltip: '24h floor price change' },
   { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '20%', order: true, tooltip: 'All-time trading volume' }
 ];
@@ -671,12 +671,13 @@ const TABLE_HEAD_MOBILE = [
 const TABLE_HEAD_DESKTOP = [
   { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
   { id: 'name', label: 'COLLECTION', align: 'left', width: '220px', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: 'auto', order: true, tooltip: 'Floor price in XRP' },
+  { id: 'floor', label: 'FLOOR', align: 'right', width: 'auto', order: true, tooltip: 'Floor price in XRP' },
   { id: 'floor1dPercent', label: '24H %', align: 'right', width: 'auto', order: true, tooltip: '24h floor price change' },
   { id: 'totalVol24h', label: 'VOL 24H', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
   { id: 'totalVolume', label: 'VOL ALL', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
   { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
   { id: 'sales24h', label: 'SALES 24H', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
+  { id: 'totalSales', label: 'SALES ALL', align: 'right', width: 'auto', order: true, tooltip: 'Total sales count' },
   { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: 'auto', order: true, tooltip: 'Floor price × supply' },
   { id: 'listedCount', label: 'LISTED', align: 'right', width: 'auto', order: true, tooltip: 'NFTs listed for sale' },
   { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
@@ -707,6 +708,8 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, dar
         return <>Volume <span style={badgeStyle}>All</span></>;
       case 'sales24h':
         return <>Sales <span style={badgeStyle}>24h</span></>;
+      case 'totalSales':
+        return <>Sales <span style={badgeStyle}>All</span></>;
       case 'sparkline':
         return <>Trendline <span style={badgeStyle}>30d</span></>;
       case 'floor1dPercent':
@@ -789,7 +792,7 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
-  const floorPrice = floor?.amount || 0;
+  const floorPrice = floor || 0;
   const floorChangePercent = floor1dPercent || 0;
 
   const getFloorChangeColor = (percent) => {
@@ -843,6 +846,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     totalVol24h,
     totalVolume,
     sales24h,
+    totalSales,
     marketcap,
     listedCount,
     owners,
@@ -855,7 +859,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
-  const floorPrice = floor?.amount || 0;
+  const floorPrice = floor || 0;
   const floorChangePercent = floor1dPercent || 0;
   const volume24h = fVolume(totalVol24h || 0);
   const marketCapAmount = marketcap?.amount || 0;
@@ -946,6 +950,10 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(sales24h || 0)}
       </StyledCell>
 
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+        {fIntNumber(totalSales || 0)}
+      </StyledCell>
+
       <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor(marketCapAmount)} fontWeight={500}>
         ✕ {fVolume(marketCapAmount)}
       </StyledCell>
@@ -1000,7 +1008,7 @@ const CollectionRow = memo(
 
     return (
       prev.slug === next.slug &&
-      prev.floor?.amount === next.floor?.amount &&
+      prev.floor === next.floor &&
       prev.floor1dPercent === next.floor1dPercent &&
       prev.totalVol24h === next.totalVol24h &&
       prev.sales24h === next.sales24h &&
