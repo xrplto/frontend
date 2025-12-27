@@ -14,7 +14,6 @@ import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import CryptoJS from 'crypto-js';
 import { getHashIcon } from 'src/utils/formatters';
-import { clear } from 'console';
 
 function formatDecimal(decimal, decimalPlaces = null) {
   let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
@@ -188,7 +187,7 @@ const safeHexDecode = (hex) => {
 
 const KNOWN_SOURCE_TAGS = {
   74920348: { name: 'First Ledger', url: 'https://firstledger.net' },
-  10011010: { name: 'Magnetic', url: 'https://magnetic.com' },
+  10011010: { name: 'Magnetic', url: 'https://xmagnetic.org' },
   101102979: { name: 'xrp.cafe', url: 'https://xrp.cafe' },
   20221212: { name: 'XPMarket', url: 'https://xpmarket.com' },
   69420589: { name: 'Bidds', url: 'https://bidds.com' },
