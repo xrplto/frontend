@@ -54,12 +54,12 @@ const Stack = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr) 1.5fr;
+  grid-template-columns: repeat(5, 1fr) 1.5fr;
   gap: 10px;
   width: 100%;
 
   @media (max-width: 1400px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   @media (max-width: 1024px) {
@@ -238,7 +238,7 @@ const ChartMetricBox = styled(MetricBox)`
   height: 82px;
 
   @media (max-width: 1400px) {
-    grid-column: span 4;
+    grid-column: span 3;
   }
 
   @media (max-width: 1024px) {
@@ -897,36 +897,34 @@ export default function Summary() {
         ) : (
           <div style={{ width: '100%' }}>
             <Grid>
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>MCap</MetricTitle>
-                <MetricValue isDark={darkMode}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(
-                    new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
-                      .div(fiatRate)
-                      .toNumber()
-                  )}
-                </MetricValue>
-                <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}>
-                  {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(2)}%
-                </PercentageChange>
-              </MetricBox>
-
-              <MetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>TVL</MetricTitle>
-                <MetricValue isDark={darkMode}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(
-                    new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0)
-                      .div(fiatRate)
-                      .toNumber()
-                  )}
-                </MetricValue>
-                <PercentageChange isPositive={(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0}>
-                  {(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0).toFixed(2)}%
-                </PercentageChange>
+              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '110px' } : {}}>
+                <MetricTitle isDark={darkMode}>MCap / TVL</MetricTitle>
+                <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <MetricValue isDark={darkMode} style={{ fontSize: isMobile ? '0.85rem' : '1.1rem' }}>
+                      {currencySymbols[activeFiatCurrency]}
+                      {formatNumberWithDecimals(
+                        new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber()
+                      )}
+                    </MetricValue>
+                    <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0} style={{ fontSize: '0.55rem' }}>
+                      {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
+                      {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
+                    </PercentageChange>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <MetricValue isDark={darkMode} style={{ fontSize: isMobile ? '0.85rem' : '1.1rem', opacity: 0.7 }}>
+                      {currencySymbols[activeFiatCurrency]}
+                      {formatNumberWithDecimals(
+                        new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0).div(fiatRate).toNumber()
+                      )}
+                    </MetricValue>
+                    <PercentageChange isPositive={(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0} style={{ fontSize: '0.55rem' }}>
+                      {(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
+                      {Math.abs(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0).toFixed(1)}%
+                    </PercentageChange>
+                  </div>
+                </div>
               </MetricBox>
 
               <MetricBox isDark={darkMode}>
