@@ -31,7 +31,6 @@ import { format } from 'date-fns';
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-top: 12px;
   margin-bottom: 12px;
   width: 100%;
   max-width: 100%;

@@ -15,7 +15,6 @@ const CollectionListType = {
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-top: 16px;
   margin-bottom: 16px;
   width: 100%;
   max-width: 100%;

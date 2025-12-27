@@ -3997,8 +3997,8 @@ const TxPage = ({ txData, error }) => {
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className={cn(
-        "flex-1 mt-6 py-8 max-w-[1920px] mx-auto w-full px-4 rounded-xl border-[1.5px]",
-        isDark ? "border-white/10" : "border-gray-200"
+        "flex-1 max-w-[1920px] mx-auto w-full px-4 mt-4",
+        isDark ? "" : ""
       )}>
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
             The imports have been updated, but the component JSX still uses many MUI components like:

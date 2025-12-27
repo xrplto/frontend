@@ -28,13 +28,12 @@ function Overview({ data }) {
 
   return (
     <div className="min-h-screen overflow-hidden">
-      <div id="back-to-top-anchor" className="h-6" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {data?.tagName || 'Tagged'} XRPL Tokens
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <div id="back-to-top-anchor" className="mx-auto max-w-[1920px] px-4 mt-4">
         <div className="mb-6">
           <SummaryTag tagName={data.tagName} />
         </div>

@@ -92,8 +92,6 @@ function Overview({ data }) {
 
   return (
     <OverviewWrapper>
-      {/* Only show spacing on desktop - remove on mobile to eliminate spacing */}
-      {!isMobile && <div className="h-6" id="back-to-top-anchor" />}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -102,8 +100,8 @@ function Overview({ data }) {
         XRPL Tokens Analytics & Trading Platform
       </h1>
 
-      <div className={notificationPanelOpen ? 'mx-auto px-0' : 'mx-auto max-w-[1920px] px-0 md:px-4'}>
-        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-1">
+      <div id="back-to-top-anchor" className={notificationPanelOpen ? 'mx-auto px-0 mt-4' : 'mx-auto max-w-[1920px] px-0 md:px-4 mt-4'}>
+        <div className="w-full px-0 py-0">
           <Summary />
         </div>
       </div>

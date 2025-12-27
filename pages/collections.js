@@ -7,13 +7,12 @@ import ScrollToTop from 'src/components/ScrollToTop';
 export default function Overview({ collections, total, globalMetrics, tags }) {
   return (
     <div className="min-h-screen overflow-hidden">
-      <div id="back-to-top-anchor" className="h-4" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         NFT Collections on XRPL
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4">
+      <div className="mx-auto max-w-[1920px] px-4 mt-4">
         <AllCollections
           initialCollections={collections}
           initialTotal={total}

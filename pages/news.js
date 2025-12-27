@@ -305,7 +305,7 @@ function NewsPage() {
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
       <h1 className="sr-only">XRPL News & Updates</h1>
-      <div className={cn('flex-1 pt-[72px] pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
+      <div className={cn('flex-1 mt-4 pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
         {loading ? (
           <div className="flex justify-center py-16">
             <svg className="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
