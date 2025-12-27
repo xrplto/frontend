@@ -178,7 +178,9 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
   const handleTweetNFT = () => {
     const nftName = nft?.name || 'this NFT';
-    const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
+    // Handle collection being an object {name, family} or a string
+    const rawCol = nft?.collection;
+    const collectionName = (typeof rawCol === 'string' ? rawCol : rawCol?.name) || nft?.meta?.collection?.name || '';
     const currentUrl = window.location.href;
 
     let tweetText = `Check out ${nftName}`;
@@ -192,7 +194,9 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   };
 
   const NFTName = nft?.name || nft?.meta?.name || nft?.meta?.Name || 'Untitled NFT';
-  const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
+  // Handle collection being an object {name, family} or a string
+  const rawCollection = nft?.collection;
+  const collectionName = (typeof rawCollection === 'string' ? rawCollection : rawCollection?.name) || nft?.meta?.collection?.name || '';
   const rarity = nft?.rarity_rank || null;
 
   return (
@@ -419,8 +423,9 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   const { issuer } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
   const transferFee = royalty ? (royalty / 1000).toFixed(1) : 0;
 
+  // Handle collection being an object {name, family} or a string
   const collectionName = useMemo(
-    () => collection || meta?.collection?.name || 'No Collection',
+    () => (typeof collection === 'string' ? collection : collection?.name) || meta?.collection?.name || 'No Collection',
     [collection, meta]
   );
   const properties = useMemo(() => props || getProperties(meta), [props, meta]);

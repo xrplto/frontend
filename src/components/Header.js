@@ -949,7 +949,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       )}
                       <div className="w-[200px] min-w-[200px]">
                         <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
-                        <span className={cn("text-[12px] block truncate", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.nft.collection || 'NFT'}</span>
+                        <span className={cn("text-[12px] block truncate", isDark ? "text-white/40" : "text-gray-500")}>{typeof searchResults.nft.collection === 'string' ? searchResults.nft.collection : searchResults.nft.collection?.name || 'NFT'}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.nft._id}</p>
@@ -1206,7 +1206,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                     <div className="flex-1 min-w-0">
                       <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{searchResults.nft.name || 'View NFT'}</span>
-                      <p className={cn("text-[11px] truncate", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.nft.collection || searchResults.nft._id}</p>
+                      <p className={cn("text-[11px] truncate", isDark ? "text-white/40" : "text-gray-500")}>{(typeof searchResults.nft.collection === 'string' ? searchResults.nft.collection : searchResults.nft.collection?.name) || searchResults.nft._id}</p>
                     </div>
                     <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md", isDark ? "bg-pink-500/10 text-pink-400 border border-pink-500/20" : "bg-pink-50 text-pink-600")}>NFT</span>
                   </div>

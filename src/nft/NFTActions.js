@@ -150,13 +150,16 @@ export default function NFTActions({ nft }) {
     MasterSequence
   } = nft;
 
-  const collectionName = collection || '[No Collection]';
-  const nftName = name || '[No Name]';
+  // Handle collection being an object {name, family} or a string
+  const collectionName = typeof collection === 'string' ? collection : (collection?.name || '[No Collection]');
+  // Safely extract name - handle cases where name might be an object
+  const rawNftName = name || meta?.name;
+  const nftName = typeof rawNftName === 'string' ? rawNftName : (rawNftName?.name || rawNftName?.family || '[No Name]');
   const floorPrice = cfloor?.amount || 0;
   const accountLogo = getHashIcon(account);
   const shareUrl = `https://xrpnft.com/nft/${NFTokenID}`;
   const shareTitle = nftName;
-  const shareDesc = meta?.description || '';
+  const shareDesc = typeof meta?.description === 'string' ? meta.description : '';
   const isOwner = accountLogin === account;
   const isBurnable = (flag & 0x00000001) > 0;
 

@@ -151,7 +151,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 <p className="text-[13px] font-normal">{nft?.name}</p>
                 {nft?.collection && (
                   <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                    Collection: {nft.collection}
+                    Collection: {typeof nft.collection === 'string' ? nft.collection : nft.collection?.name}
                   </p>
                 )}
                 {nft?.rarity_rank && (

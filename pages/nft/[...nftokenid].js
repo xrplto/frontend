@@ -23,7 +23,9 @@ export default function Overview({ nft }) {
   const nftName = nft?.nft?.meta?.name || nft?.nft?.meta?.Name || 'No Name';
   const nftTokenId = nft?.nft?.NFTokenID;
   const collectionSlug = nft?.nft?.cslug;
-  const collectionName = nft?.nft?.collection;
+  // Handle collection being an object {name, family} or a string
+  const rawCollection = nft?.nft?.collection;
+  const collectionName = typeof rawCollection === 'string' ? rawCollection : rawCollection?.name;
   const nftThumbnail = nft?.nft?.files?.[0]?.thumbnail?.small || nft?.nft?.files?.[0]?.thumbnail?.medium;
 
   // Add current NFT to tabs on mount
@@ -106,7 +108,8 @@ export async function getServerSideProps(ctx) {
 
     const name = meta?.name || nft.meta?.Name || 'No Name';
     const description = meta?.description;
-    const cname = collection || '';
+    // Handle collection being an object {name, family} or a string
+    const cname = (typeof collection === 'string' ? collection : collection?.name) || '';
 
     let ogp = {};
     ogp.canonical = `https://xrpl.to/nft/${NFTokenID}`;
