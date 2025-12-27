@@ -1028,43 +1028,114 @@ export default function Summary() {
                 })()}
               </MetricBox>
 
-              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
+              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '130px' } : { minWidth: '160px' }}>
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '20px', alignItems: 'baseline' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                    <MetricValue
-                      style={{
-                        fontSize: isMobile ? '0.92rem' : '1.25rem',
-                        color:
-                          metrics.global?.sentimentScore >= 60
-                            ? '#10b981'
-                            : metrics.global?.sentimentScore >= 40
-                              ? '#fbbf24'
-                              : '#ef4444'
-                      }}
-                    >
-                      {(metrics.global?.sentimentScore || 0).toFixed(0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={darkMode}>Sent</VolumePercentage>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                    <MetricValue
-                      isDark={darkMode}
-                      style={{
-                        fontSize: isMobile ? '0.92rem' : '1.25rem',
-                        color:
-                          (metrics.global?.avgRSI || 50) <= 30
-                            ? '#ef4444'
-                            : (metrics.global?.avgRSI || 50) >= 70
-                              ? '#10b981'
-                              : darkMode ? '#FFFFFF' : '#212B36'
-                      }}
-                    >
-                      {(metrics.global?.avgRSI || 50).toFixed(0)}
-                    </MetricValue>
-                    <VolumePercentage isDark={darkMode}>RSI</VolumePercentage>
-                  </div>
-                </div>
+                {(() => {
+                  const sentiment = metrics.global?.sentimentScore || 50;
+                  const rsi = metrics.global?.avgRSI || 50;
+
+                  const getSentimentColor = (v) => v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
+                  const getRsiColor = (v) => v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
+
+                  const sentColor = getSentimentColor(sentiment);
+                  const rsiColor = getRsiColor(rsi);
+
+                  return (
+                    <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', alignItems: 'flex-end' }}>
+                      {/* Sentiment gauge */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                          {/* Semi-circle background */}
+                          <div style={{
+                            position: 'absolute',
+                            width: '36px',
+                            height: '18px',
+                            borderRadius: '18px 18px 0 0',
+                            background: `conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)`,
+                            opacity: 0.2
+                          }} />
+                          {/* Needle */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            left: '50%',
+                            width: '2px',
+                            height: '14px',
+                            background: sentColor,
+                            transformOrigin: 'bottom center',
+                            transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
+                            borderRadius: '1px'
+                          }} />
+                          {/* Center dot */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-2px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: sentColor
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: sentColor, lineHeight: 1 }}>
+                            {sentiment.toFixed(0)}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            Sentiment
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* RSI gauge */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                          {/* Semi-circle background */}
+                          <div style={{
+                            position: 'absolute',
+                            width: '36px',
+                            height: '18px',
+                            borderRadius: '18px 18px 0 0',
+                            background: `conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)`,
+                            opacity: 0.2
+                          }} />
+                          {/* Needle */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            left: '50%',
+                            width: '2px',
+                            height: '14px',
+                            background: rsiColor,
+                            transformOrigin: 'bottom center',
+                            transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
+                            borderRadius: '1px'
+                          }} />
+                          {/* Center dot */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-2px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: rsiColor
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: rsiColor, lineHeight: 1 }}>
+                            {rsi.toFixed(0)}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            RSI
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </MetricBox>
 
               <ChartMetricBox isDark={darkMode}>
