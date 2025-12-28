@@ -18,7 +18,10 @@ import {
   X,
   Share,
   Loader2,
-  Star
+  Star,
+  Trophy,
+  Link2,
+  TrendingUp
 } from 'lucide-react';
 
 // Context
@@ -437,22 +440,62 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         <NFTPreviewComponent nft={nft} showDetails={false} />
       </div>
 
-      {/* Title and Collection */}
-      <div className="mb-4">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <h1 className={cn("text-xl font-medium", isDark ? "text-white" : "text-gray-900")}>
-            {nft.name || meta?.name || 'Untitled'}
-          </h1>
+      {/* Title and Collection - Futuristic */}
+      <div className={cn(
+        "mb-4 p-4 rounded-xl border-[1.5px] relative overflow-hidden",
+        isDark ? "border-white/[0.08] bg-gradient-to-br from-white/[0.03] to-transparent" : "border-gray-200 bg-gradient-to-br from-gray-50 to-white"
+      )}>
+        {/* Accent line */}
+        <div className={cn(
+          "absolute top-0 left-0 w-1 h-full",
+          isDark ? "bg-gradient-to-b from-primary via-primary/50 to-transparent" : "bg-gradient-to-b from-primary via-primary/30 to-transparent"
+        )} />
+
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0 pl-3">
+            {/* NFT Name */}
+            <h1 className={cn(
+              "text-xl font-semibold tracking-tight mb-1",
+              isDark ? "text-white" : "text-gray-900"
+            )}>
+              {nft.name || meta?.name || 'Untitled'}
+            </h1>
+
+            {/* Collection */}
+            {cslug && (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/collection/${cslug}`}
+                  className={cn(
+                    "text-[13px] font-medium uppercase tracking-wider hover:text-primary transition-colors",
+                    isDark ? "text-primary/70" : "text-primary/80"
+                  )}
+                >
+                  {collectionName}
+                </Link>
+                {(nft.collectionVerified >= 1 || (typeof collection === 'object' && collection?.verified >= 1)) && (
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wide",
+                    isDark ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                  )}>
+                    Verified
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={saveLoading}
             className={cn(
-              "flex-shrink-0 p-2 rounded-lg border-[1.5px] transition-all",
+              "flex-shrink-0 p-2.5 rounded-lg border-[1.5px] transition-all",
               isSaved
-                ? "border-primary bg-primary/10 text-primary"
+                ? "border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(66,133,244,0.25)]"
                 : isDark
-                  ? "border-white/10 text-gray-400 hover:border-primary hover:text-primary"
-                  : "border-gray-200 text-gray-400 hover:border-primary hover:text-primary",
+                  ? "border-white/10 text-gray-400 hover:border-primary/50 hover:text-primary hover:bg-primary/5"
+                  : "border-gray-200 text-gray-400 hover:border-primary/50 hover:text-primary hover:bg-primary/5",
               saveLoading && "opacity-50 cursor-not-allowed"
             )}
             title={isSaved ? "Remove from watchlist" : "Add to watchlist"}
@@ -460,16 +503,6 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             {saveLoading ? <Loader2 size={18} className="animate-spin" /> : <Star size={18} fill={isSaved ? "currentColor" : "none"} />}
           </button>
         </div>
-        {cslug && (
-          <div className="flex items-center gap-2">
-            <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
-              {collectionName}
-            </Link>
-            {(nft.collectionVerified >= 1 || (typeof collection === 'object' && collection?.verified >= 1)) && (
-              <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Properties */}
@@ -489,7 +522,9 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   href={cslug ? `/collection/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'}
                   className={cn(
                     "group p-2.5 text-center rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.97]",
-                    isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-primary hover:bg-primary/10" : "border-gray-200 bg-gray-50 hover:border-primary hover:bg-primary/5"
+                    isDark
+                      ? "border-white/[0.08] bg-white/[0.02] hover:border-primary/50 hover:bg-primary/10 hover:shadow-[0_0_16px_rgba(66,133,244,0.15)]"
+                      : "border-gray-200 bg-gray-50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-[0_0_16px_rgba(66,133,244,0.1)]"
                   )}
                 >
                   <p className={cn("text-[10px] uppercase tracking-wide mb-1 transition-colors", isDark ? "text-gray-500 group-hover:text-primary/70" : "text-gray-400 group-hover:text-primary/70")}>{type}</p>
@@ -518,20 +553,29 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           <div className="grid grid-cols-3 gap-4">
             {rarity_rank > 0 && (
               <div className="text-center">
-                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Rarity Rank</p>
-                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>#{rarity_rank}</p>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Trophy size={12} className={cn(isDark ? "text-amber-400" : "text-amber-500")} />
+                  <p className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Rarity</p>
+                </div>
+                <p className={cn("text-base font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>#{rarity_rank}</p>
               </div>
             )}
             {MasterSequence > 0 && (
               <div className="text-center">
-                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>On-Chain Rank</p>
-                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>#{MasterSequence}</p>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Link2 size={12} className={cn(isDark ? "text-primary" : "text-primary")} />
+                  <p className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>On-Chain</p>
+                </div>
+                <p className={cn("text-base font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>#{MasterSequence}</p>
               </div>
             )}
             {volume > 0 && (
               <div className="text-center">
-                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Volume</p>
-                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>✕{fVolume(volume)}</p>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <TrendingUp size={12} className={cn(isDark ? "text-emerald-400" : "text-emerald-500")} />
+                  <p className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Volume</p>
+                </div>
+                <p className={cn("text-base font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fVolume(volume)} XRP</p>
               </div>
             )}
           </div>
@@ -539,22 +583,31 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Technical Details */}
-      <div className={cn("p-3 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
-        <div className="space-y-3">
+      <div className={cn(
+        "p-3 mb-4 rounded-xl border relative overflow-hidden",
+        isDark ? "border-white/[0.08] bg-gradient-to-br from-white/[0.02] to-transparent" : "border-gray-200 bg-gradient-to-br from-gray-50 to-white"
+      )}>
+        {/* Accent line */}
+        <div className={cn(
+          "absolute top-0 left-0 w-1 h-full",
+          isDark ? "bg-gradient-to-b from-gray-500 via-gray-600/50 to-transparent" : "bg-gradient-to-b from-gray-400 via-gray-300/50 to-transparent"
+        )} />
+
+        <div className="pl-3 space-y-3">
           {/* Owner + Royalties row */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Owner</span>
-                <button onClick={() => handleCopy(account, 'Owner')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+                <button onClick={() => handleCopy(account, 'Owner')} className={cn("p-0.5 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
                   <Copy size={10} />
                 </button>
               </div>
-              <Link href={`/address/${account}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{account}</Link>
+              <Link href={`/address/${account}`} className={cn("text-[12px] font-mono break-all block hover:text-primary transition-colors", isDark ? "text-gray-300" : "text-gray-700")}>{account}</Link>
             </div>
             <div className="text-right">
               <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-0.5", isDark ? "text-gray-500" : "text-gray-400")}>Royalties</p>
-              <p className="text-sm font-medium text-primary">{transferFee}%</p>
+              <p className={cn("text-sm font-semibold", isDark ? "text-primary drop-shadow-[0_0_8px_rgba(66,133,244,0.3)]" : "text-primary")}>{transferFee}%</p>
             </div>
           </div>
 
@@ -562,22 +615,22 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
               <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Issuer</span>
-              <button onClick={() => handleCopy(issuer, 'Issuer')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+              <button onClick={() => handleCopy(issuer, 'Issuer')} className={cn("p-0.5 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
                 <Copy size={10} />
               </button>
             </div>
-            <Link href={`/address/${issuer}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{issuer}</Link>
+            <Link href={`/address/${issuer}`} className={cn("text-[12px] font-mono break-all block hover:text-primary transition-colors", isDark ? "text-gray-300" : "text-gray-700")}>{issuer}</Link>
           </div>
 
           {/* Token ID */}
           <div>
             <div className="flex items-center gap-1.5 mb-0.5">
               <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Token ID</span>
-              <button onClick={() => handleCopy(NFTokenID, 'Token ID')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+              <button onClick={() => handleCopy(NFTokenID, 'Token ID')} className={cn("p-0.5 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
                 <Copy size={10} />
               </button>
             </div>
-            <a href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noopener noreferrer" className={cn("text-[11px] font-mono break-all block hover:text-primary", isDark ? "text-gray-400" : "text-gray-500")}>{NFTokenID}</a>
+            <a href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noopener noreferrer" className={cn("text-[11px] font-mono break-all block hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>{NFTokenID}</a>
           </div>
         </div>
       </div>

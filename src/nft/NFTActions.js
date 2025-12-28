@@ -424,48 +424,72 @@ export default function NFTActions({ nft }) {
         isDark ? "border-gray-700/50 bg-black/60" : "border-gray-200 bg-white/90"
       )}>
         <div className="space-y-5">
-          {/* Collection Header */}
+          {/* Collection Header - Futuristic */}
           {self && (
             <div className="flex justify-between items-start">
-              <div className="space-y-1">
+              <div className={cn(
+                "relative pl-4 space-y-1.5",
+              )}>
+                {/* Accent line */}
+                <div className={cn(
+                  "absolute top-0 left-0 w-1 h-full rounded-full",
+                  isDark ? "bg-gradient-to-b from-primary via-primary/50 to-transparent" : "bg-gradient-to-b from-primary via-primary/30 to-transparent"
+                )} />
+
+                {/* Collection name */}
                 {cslug ? (
                   <Link href={`/collection/${cslug}`} className="inline-flex items-center gap-2 group">
-                    <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                    <span className={cn(
+                      "text-[13px] font-medium uppercase tracking-wider transition-colors",
+                      isDark ? "text-primary/70 group-hover:text-primary" : "text-primary/80 group-hover:text-primary"
+                    )}>
                       {collectionName}
                     </span>
                     {cverified === 'yes' && (
-                      <span className="w-4 h-4 rounded-full bg-primary/80 flex items-center justify-center">
-                        <Check size={10} className="text-white" />
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wide",
+                        isDark ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                      )}>
+                        Verified
                       </span>
                     )}
                   </Link>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400">{collectionName}</span>
+                    <span className={cn(
+                      "text-[13px] font-medium uppercase tracking-wider",
+                      isDark ? "text-primary/70" : "text-primary/80"
+                    )}>
+                      {collectionName}
+                    </span>
                     {cverified === 'yes' && (
-                      <span className="w-4 h-4 rounded-full bg-primary/80 flex items-center justify-center">
-                        <Check size={10} className="text-white" />
+                      <span className={cn(
+                        "px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wide",
+                        isDark ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                      )}>
+                        Verified
                       </span>
                     )}
                   </div>
                 )}
 
-                <h2 className={cn("text-xl font-medium", isDark ? "text-white" : "text-gray-900")}>{nftName}</h2>
+                {/* NFT Name */}
+                <h2 className={cn("text-xl font-semibold tracking-tight", isDark ? "text-white" : "text-gray-900")}>{nftName}</h2>
 
-                {/* Floor Price */}
+                {/* Floor Price - Enhanced */}
                 <div className={cn(
                   "inline-flex items-center gap-3 px-3 py-1.5 rounded-xl border",
-                  isDark ? "border-gray-700/50 bg-white/5" : "border-gray-200 bg-gray-50"
+                  isDark ? "border-white/[0.08] bg-gradient-to-r from-white/[0.04] to-transparent" : "border-gray-200 bg-gradient-to-r from-gray-100 to-gray-50"
                 )}>
                   <div className="flex items-center gap-1">
-                    <span className={cn("text-sm font-normal", isDark ? "text-gray-400" : "text-gray-500")}>Global Floor</span>
-                    <Info size={14} className="text-gray-500 cursor-help" />
+                    <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Floor</span>
+                    <Info size={12} className="text-gray-500 cursor-help" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={cn("text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
-                      {floorPrice > 0 ? fNumber(floorPrice) : '- - -'}
+                    <span className={cn("text-lg font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                      {floorPrice > 0 ? fNumber(floorPrice) : '---'}
                     </span>
-                    <span className="text-sm text-gray-500">XRP</span>
+                    <span className="text-[11px] uppercase tracking-wide text-gray-500">XRP</span>
                   </div>
                 </div>
               </div>
@@ -541,8 +565,10 @@ export default function NFTActions({ nft }) {
                   onClick={handleCreateSellOffer}
                   disabled={!accountLogin || burnt}
                   className={cn(
-                    'flex-1 py-3 rounded-xl text-[15px] font-normal bg-primary/90 text-white hover:bg-primary transition-colors',
-                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
+                    'flex-1 py-3 rounded-xl text-[15px] font-medium bg-primary text-white transition-all',
+                    'hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]',
+                    'active:scale-[0.98]',
+                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed hover:shadow-none'
                   )}
                 >
                   Sell
@@ -568,20 +594,26 @@ export default function NFTActions({ nft }) {
                   </div>
                 ) : lowestSellOffer ? (
                   <div className={cn(
-                    "p-4 rounded-xl border",
-                    isDark ? "border-gray-700/50 bg-white/5" : "border-gray-200 bg-gray-50"
+                    "p-4 rounded-xl border relative overflow-hidden",
+                    isDark ? "border-primary/20 bg-gradient-to-br from-primary/[0.08] to-transparent" : "border-primary/20 bg-gradient-to-br from-primary/[0.05] to-gray-50"
                   )}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] uppercase tracking-wider font-normal text-gray-500">Price</span>
+                    {/* Subtle glow */}
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="relative flex items-center justify-between">
+                      <span className={cn("text-[11px] uppercase tracking-wider font-medium", isDark ? "text-gray-500" : "text-gray-400")}>Price</span>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-normal tabular-nums text-primary">
+                        <span className={cn(
+                          "text-3xl font-semibold tabular-nums",
+                          isDark ? "text-primary drop-shadow-[0_0_12px_rgba(66,133,244,0.4)]" : "text-primary"
+                        )}>
                           {formatXRPAmount(lowestSellOffer.totalAmount, false)}
                         </span>
-                        <span className="text-base text-gray-400">XRP</span>
+                        <span className={cn("text-sm uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-500")}>XRP</span>
                       </div>
                     </div>
                     {lowestSellOffer.hasBroker && (
-                      <div className="mt-3 pt-3 border-t border-gray-700/30">
+                      <div className={cn("mt-3 pt-3 border-t", isDark ? "border-white/[0.08]" : "border-gray-200")}>
                         <div className="flex justify-between text-[11px] text-gray-500">
                           <span>Base: {lowestSellOffer.baseAmount} XRP</span>
                           <span>{lowestSellOffer.brokerName}: +{lowestSellOffer.brokerFee.toFixed(2)} XRP</span>
@@ -625,7 +657,11 @@ export default function NFTActions({ nft }) {
                       ) : (
                         <button
                           onClick={handleBuyNow}
-                          className="w-full py-3.5 rounded-xl text-[15px] font-normal bg-primary/90 text-white hover:bg-primary transition-colors"
+                          className={cn(
+                            "w-full py-3.5 rounded-xl text-[15px] font-medium bg-primary text-white transition-all",
+                            "hover:bg-primary/90 hover:shadow-[0_0_24px_rgba(66,133,244,0.4)]",
+                            "active:scale-[0.98]"
+                          )}
                         >
                           Buy Now
                         </button>
