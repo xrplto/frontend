@@ -1294,6 +1294,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [storedWalletAddresses, setStoredWalletAddresses] = useState([]);
   const [isMobileView, setIsMobileView] = useState(false);
 
+  // Returning user unlock flow state
+  const [hasExistingWallet, setHasExistingWallet] = useState(false);
+  const [walletMetadata, setWalletMetadata] = useState([]);
+  const [showPasswordUnlock, setShowPasswordUnlock] = useState(false);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [showUnlockPassword, setShowUnlockPassword] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
+
   // Check for mobile viewport
   useEffect(() => {
     const checkMobile = () => setIsMobileView(window.innerWidth < 640);
@@ -2425,6 +2434,84 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     handleLogout,
     doLogIn
   } = useContext(AppContext);
+
+  // Check for existing wallets when modal opens (for returning users)
+  useEffect(() => {
+    const checkExistingWallets = async () => {
+      // Only check when modal is opening and user is not logged in
+      if (!openWalletModal || accountProfile) return;
+
+      try {
+        const hasWallet = await walletStorage.hasWallet();
+        const metadata = hasWallet ? await walletStorage.getWalletMetadata() : [];
+
+        setHasExistingWallet(hasWallet && metadata.length > 0);
+        setWalletMetadata(metadata);
+
+        // Auto-show password unlock if wallets exist
+        if (hasWallet && metadata.length > 0) {
+          setShowPasswordUnlock(true);
+        }
+      } catch (e) {
+        console.error('[Wallet] Error checking existing wallets:', e);
+      }
+    };
+    checkExistingWallets();
+
+    // Reset unlock state when modal closes
+    if (!openWalletModal) {
+      setShowPasswordUnlock(false);
+      setUnlockPassword('');
+      setUnlockError('');
+    }
+  }, [openWalletModal, accountProfile, walletStorage]);
+
+  // Handle password unlock for returning users
+  const handlePasswordUnlock = async () => {
+    if (!unlockPassword) {
+      setUnlockError('Enter password');
+      return;
+    }
+
+    setIsUnlocking(true);
+    setUnlockError('');
+
+    try {
+      const wallets = await walletStorage.unlockWithPassword(unlockPassword);
+
+      if (!wallets || wallets.length === 0) {
+        setUnlockError('Incorrect password');
+        return;
+      }
+
+      // Convert to profile format
+      const allProfiles = wallets.map((w, index) => ({
+        account: w.address,
+        address: w.address,
+        publicKey: w.publicKey,
+        wallet_type: w.wallet_type || 'oauth',
+        provider: w.provider,
+        provider_id: w.provider_id,
+        deviceKeyId: w.deviceKeyId,
+        accountIndex: w.accountIndex ?? index,
+        createdAt: w.createdAt || Date.now(),
+        tokenCreatedAt: Date.now()
+      }));
+
+      setProfiles(allProfiles);
+      localStorage.setItem('profiles', JSON.stringify(allProfiles));
+      doLogIn(allProfiles[0], allProfiles);
+
+      setUnlockPassword('');
+      setShowPasswordUnlock(false);
+      setOpenWalletModal(false);
+      openSnackbar('Wallet unlocked', 'success');
+    } catch (error) {
+      setUnlockError(error.message || 'Incorrect password');
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
 
   // Strict security dependency loading - NO FALLBACKS
   const loadDependencies = async () => {
@@ -3927,7 +4014,96 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <div className="px-5 py-4">
                   {!showDeviceLogin ? (
                     <>
-                      {/* Social Options - Grid Layout */}
+                      {/* Password Unlock for Returning Users */}
+                      {hasExistingWallet && showPasswordUnlock && (
+                        <div className="mb-4">
+                          <p className={cn("text-[11px] mb-2", isDark ? "text-white/40" : "text-gray-400")}>
+                            {walletMetadata.length} wallet{walletMetadata.length !== 1 ? 's' : ''} found
+                          </p>
+
+                          <div className="relative mb-2">
+                            <input
+                              type={showUnlockPassword ? 'text' : 'password'}
+                              value={unlockPassword}
+                              onChange={(e) => setUnlockPassword(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handlePasswordUnlock()}
+                              placeholder="Password"
+                              autoFocus
+                              className={cn(
+                                "w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors",
+                                isDark
+                                  ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
+                                  : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowUnlockPassword(!showUnlockPassword)}
+                              className={cn(
+                                "absolute right-3 top-1/2 -translate-y-1/2",
+                                isDark ? "text-white/25 hover:text-white/40" : "text-gray-400 hover:text-gray-500"
+                              )}
+                            >
+                              {showUnlockPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
+                          </div>
+
+                          {unlockError && (
+                            <p className="text-[11px] text-red-400 mb-2">{unlockError}</p>
+                          )}
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handlePasswordUnlock}
+                              disabled={isUnlocking}
+                              className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
+                                "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                              )}
+                            >
+                              {isUnlocking ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                'Unlock'
+                              )}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowPasswordUnlock(false);
+                                setUnlockPassword('');
+                                setUnlockError('');
+                              }}
+                              className={cn(
+                                "px-4 py-2.5 rounded-lg text-[13px] transition-colors",
+                                isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                              )}
+                            >
+                              Other
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Link to show unlock option when viewing OAuth options */}
+                      {hasExistingWallet && !showPasswordUnlock && (
+                        <div className="flex items-center gap-4 mb-4">
+                          <button
+                            onClick={() => setShowPasswordUnlock(true)}
+                            className={cn(
+                              "flex items-center gap-2 text-[11px] font-medium transition-colors",
+                              isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
+                            )}
+                          >
+                            <Lock size={12} />
+                            Unlock with password
+                          </button>
+                          <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
+                        </div>
+                      )}
+
+                      {/* Social Options - Grid Layout (hidden when password unlock is showing) */}
+                      {(!hasExistingWallet || !showPasswordUnlock) && (
+                      <>
                       <div className="grid grid-cols-2 gap-2">
                         {/* Google */}
                         <button
@@ -4017,6 +4193,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <FingerprintIcon size={17} />
                         <span>Passkey</span>
                       </button>
+                      </>
+                      )}
 
                       {/* Email Verification UI - Enhanced */}
                       {showEmailVerification && (

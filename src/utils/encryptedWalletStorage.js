@@ -776,6 +776,121 @@ export class UnifiedWalletStorage {
     }
   }
 
+  /**
+   * Get wallet metadata WITHOUT requiring password (for UI display)
+   * Returns list of wallets with masked addresses and provider info
+   */
+  async getWalletMetadata() {
+    try {
+      const db = await this.initDB();
+
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return [];
+      }
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const request = store.getAll();
+
+        request.onerror = () => resolve([]);
+        request.onsuccess = () => {
+          const records = request.result || [];
+          // Filter out special records (passwords, entropy backup)
+          const walletRecords = records.filter(r =>
+            r.id && typeof r.id === 'string' &&
+            !r.id.startsWith('__pwd__') &&
+            !r.id.startsWith('__entropy')
+          );
+
+          // Return public metadata only
+          const metadata = walletRecords.map(r => ({
+            id: r.id,
+            maskedAddress: r.maskedAddress || 'Unknown',
+            timestamp: r.timestamp
+          }));
+
+          resolve(metadata);
+        };
+      });
+    } catch (error) {
+      devError('Error getting wallet metadata:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Try to unlock all wallets with just a password (for returning users)
+   * Returns all decrypted wallets if password is correct
+   */
+  async unlockWithPassword(password) {
+    const rateLimitKey = 'wallet_unlock';
+
+    // Rate limiting check
+    const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
+    if (!rateCheck.allowed) {
+      throw new Error(rateCheck.error);
+    }
+
+    try {
+      const allWallets = await this.getAllWallets(password);
+
+      if (!allWallets || allWallets.length === 0) {
+        securityUtils.rateLimiter.recordFailure(rateLimitKey);
+        return []; // No wallets found - not necessarily wrong password
+      }
+
+      // Success
+      securityUtils.rateLimiter.recordSuccess(rateLimitKey);
+      devLog('Unlocked', allWallets.length, 'wallets');
+      return allWallets;
+    } catch (error) {
+      devError('Unlock error:', error.message);
+      securityUtils.rateLimiter.recordFailure(rateLimitKey);
+
+      // Check for specific decryption errors
+      if (error.message?.includes('decrypt') || error.message?.includes('Malformed')) {
+        throw new Error('Incorrect password');
+      }
+      throw new Error('Incorrect password');
+    }
+  }
+
+  /**
+   * Check if any stored password exists (indicates returning user)
+   */
+  async hasStoredCredentials() {
+    try {
+      const db = await this.initDB();
+
+      if (!db.objectStoreNames.contains(this.walletsStore)) {
+        return false;
+      }
+
+      return new Promise((resolve) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const request = store.getAll();
+
+        request.onerror = () => resolve(false);
+        request.onsuccess = () => {
+          const records = request.result || [];
+          // Check for password records
+          const hasPasswords = records.some(r =>
+            r.id && typeof r.id === 'string' && r.id.startsWith('__pwd__')
+          );
+          // Check for device credentials in localStorage
+          const hasDeviceCreds = typeof window !== 'undefined' &&
+            Object.keys(localStorage).some(k => k.startsWith('device_pwd_'));
+
+          resolve(hasPasswords || hasDeviceCreds);
+        };
+      });
+    } catch (error) {
+      return false;
+    }
+  }
+
   validatePin(pin) {
     const pinStr = pin.toString();
     const isValidLength = pinStr.length === 6;
