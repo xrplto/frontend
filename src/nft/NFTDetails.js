@@ -461,9 +461,14 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           </button>
         </div>
         {cslug && (
-          <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
-            {collectionName}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
+              {collectionName}
+            </Link>
+            {(nft.collectionVerified >= 1 || (typeof collection === 'object' && collection?.verified >= 1)) && (
+              <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>
+            )}
+          </div>
         )}
       </div>
 

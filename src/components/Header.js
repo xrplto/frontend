@@ -849,7 +849,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                             <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="" />
                             <div className="w-[200px] min-w-[200px]">
-                              <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[14px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                                {token.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                              </div>
                               <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -857,7 +860,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </div>
                             <div className="flex items-center gap-2 w-[180px] justify-end">
                               <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
-                              {token.verified && <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]" : "bg-cyan-50 text-cyan-600")}>✓ Verified</span>}
                             </div>
                             <div className="text-right w-[90px]">
                               <span className={cn("text-[13px] font-semibold tabular-nums block", isDark ? "text-white/80" : "text-gray-700")}>{formatMcap(getMcap(token.marketcap))}</span>
@@ -887,7 +889,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                             <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                             <div className="w-[200px] min-w-[200px]">
-                              <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[14px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                                {col.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                              </div>
                               <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>Collection</span>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -895,7 +900,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </div>
                             <div className="flex items-center gap-2 w-[180px] justify-end">
                               <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
-                              {col.verified === 'yes' && <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]" : "bg-cyan-50 text-cyan-600")}>✓ Verified</span>}
                             </div>
                             <div className="text-right w-[90px]">
                               <span className={cn("text-[13px] font-semibold tabular-nums block", isDark ? "text-white/80" : "text-gray-700")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0}`}</span>
@@ -1027,7 +1031,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                         <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="" />
                         <div className="w-[200px] min-w-[200px]">
-                          <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("text-[14px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.user}</span>
+                            {token.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                          </div>
                           <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1035,7 +1042,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                         <div className="flex items-center gap-2 w-[180px] justify-end">
                           <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>Token</span>
-                          {token.verified && <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]" : "bg-cyan-50 text-cyan-600")}>✓ Verified</span>}
                         </div>
                         <div className="text-right w-[90px]">
                           <span className={cn("text-[13px] font-semibold tabular-nums block", isDark ? "text-white/80" : "text-gray-700")}>{formatMcap(getMcap(token.marketcap))}</span>
@@ -1065,7 +1071,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                         <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                         <div className="w-[200px] min-w-[200px]">
-                          <span className={cn("text-[14px] font-medium block truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("text-[14px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                            {col.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                          </div>
                           <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>Collection</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1073,7 +1082,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         </div>
                         <div className="flex items-center gap-2 w-[180px] justify-end">
                           <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>NFT</span>
-                          {col.verified === 'yes' && <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]" : "bg-cyan-50 text-cyan-600")}>✓ Verified</span>}
                         </div>
                         <div className="text-right w-[90px]">
                           <span className={cn("text-[13px] font-semibold tabular-nums block", isDark ? "text-white/80" : "text-gray-700")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0}`}</span>
@@ -1131,12 +1139,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                          {token.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
                           <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                         </div>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {token.verified && <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded-md", isDark ? "bg-[rgba(63,150,254,0.15)] text-[#3f96fe]" : "bg-cyan-100 text-cyan-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[13px] font-semibold tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{formatMcap(getMcap(token.marketcap))}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
@@ -1156,11 +1164,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                       <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                          {col.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                        </div>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {col.verified === 'yes' && <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded-md", isDark ? "bg-[rgba(63,150,254,0.15)] text-[#3f96fe]" : "bg-cyan-100 text-cyan-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[13px] font-semibold tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0}`}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}</p>
@@ -1258,12 +1268,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                          {token.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
                           <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                         </div>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {token.verified && <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded-md", isDark ? "bg-[rgba(63,150,254,0.15)] text-[#3f96fe]" : "bg-cyan-100 text-cyan-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[13px] font-semibold tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{formatMcap(getMcap(token.marketcap))}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Mkt Cap</p>
@@ -1283,11 +1293,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                       <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" alt="" />
                       <div className="flex-1 min-w-0">
-                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}</span>
+                          {col.verified >= 1 && <span className={cn("px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+                        </div>
                         <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {col.verified === 'yes' && <span className={cn("px-2 py-0.5 text-[9px] font-semibold uppercase rounded-md", isDark ? "bg-[rgba(63,150,254,0.15)] text-[#3f96fe]" : "bg-cyan-100 text-cyan-600")}>✓</span>}
                         <div className="text-right">
                           <span className={cn("text-[13px] font-semibold tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : `${col.items?.toLocaleString() || 0}`}</span>
                           <p className={cn("text-[8px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}</p>

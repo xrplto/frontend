@@ -474,7 +474,7 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
                         >
                           {token.user}
                         </Typography>
-                        {token.verified && <VerifiedBadge isDark={darkMode}>✓</VerifiedBadge>}
+                        {token.verified >= 1 && <span style={{ padding: '1px 5px', borderRadius: '4px', fontSize: '8px', fontWeight: 500, background: darkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)', color: darkMode ? '#4ade80' : '#16a34a' }}>Verified</span>}
                       </Stack>
                     </Box>
                   </Box>
@@ -653,7 +653,7 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
                       >
                         {token.user}
                       </Typography>
-                      {token.verified && <VerifiedBadge isDark={darkMode}>✓</VerifiedBadge>}
+                      {token.verified >= 1 && <span style={{ padding: '1px 5px', borderRadius: '4px', fontSize: '8px', fontWeight: 500, background: darkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)', color: darkMode ? '#4ade80' : '#16a34a' }}>Verified</span>}
                     </Stack>
                     {token.name && token.name !== token.user && !isMobile && (
                       <Typography

@@ -1655,7 +1655,7 @@ export default function CollectionView({ collection }) {
           <Image src={`https://s1.xrpl.to/nft-collection/${logoImage}`} alt={name} width={40} height={40} className="rounded-lg" />
           <div className="flex items-center gap-2">
             <span className={cn("text-base font-semibold", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-            {(verified === true || verified === 'yes') && <span className={cn("flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>✓ Verified</span>}
+            {verified >= 1 && <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
             {twitter && (
               <a href={`https://x.com/${twitter}`} target="_blank" rel="noopener noreferrer" className={cn("p-1 rounded transition-colors", isDark ? "text-white/40 hover:text-primary" : "text-gray-400 hover:text-primary")}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
