@@ -30,8 +30,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Layers,
-  CheckCircle,
   ClipboardCheck,
   Bookmark,
   Settings2,
@@ -161,15 +159,27 @@ Label.propTypes = {
   variant: PropTypes.oneOf(['filled', 'outlined', 'ghost'])
 };
 
-// AttributeFilter Component
-function AttributeFilter({ attrs, setFilterAttrs }) {
+// AttributeFilter Component - Compact horizontal layout
+function AttributeFilter({ attrs, setFilterAttrs, activeFilters = [] }) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [attrFilter, setAttrFilter] = useState([]);
+  const [expandedTrait, setExpandedTrait] = useState(null);
 
+  // Initialize and sync with activeFilters
   useEffect(() => {
-    setAttrFilter(attrs.map(attr => ({ trait_type: attr.title, value: [] })));
-  }, [attrs]);
+    const initial = attrs.map(attr => {
+      const existing = activeFilters.find(f => f.trait_type === attr.title);
+      return { trait_type: attr.title, value: existing?.value || [] };
+    });
+    setAttrFilter(initial);
+
+    // Auto-expand first trait that has selections
+    const firstWithSelection = initial.find(f => f.value?.length > 0);
+    if (firstWithSelection) {
+      setExpandedTrait(firstWithSelection.trait_type);
+    }
+  }, [attrs, activeFilters]);
 
   const handleAttrChange = (title, key) => {
     const tempAttrs = [...attrFilter];
@@ -181,68 +191,90 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
     }
   };
 
-  const totalSelected = attrFilter.reduce((sum, attr) => sum + attr.value.length, 0);
+  const toggleTrait = (title) => {
+    setExpandedTrait(expandedTrait === title ? null : title);
+  };
 
   return (
-    <div>
-      {totalSelected > 0 && (
-        <div className="mb-2">
-          <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium', 'bg-primary/10 text-primary')}>
-            <CheckCircle size={10} />{totalSelected} selected
-          </span>
-        </div>
-      )}
-
-      <div className="space-y-1">
-        {attrs.map((attr, idx) => {
+    <div className="space-y-2">
+      {/* Trait pills row */}
+      <div className="flex flex-wrap gap-1.5">
+        {attrs.map((attr) => {
           const title = attr.title;
-          const items = attr.items;
-          const count = Object.keys(items).length;
           const selectedCount = attrFilter.find((elem) => elem.trait_type === title)?.value?.length || 0;
-          const maxValue = Math.max(...Object.values(items).map((item) => item.count || item));
+          const isExpanded = expandedTrait === title;
 
           return (
-            <details key={title} className={cn('group rounded-lg border-[1.5px] overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-gray-200')} open={idx === 0}>
-              <summary className={cn('flex items-center justify-between px-2.5 py-2 cursor-pointer list-none', isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50')}>
-                <div className="flex items-center gap-2">
-                  <Layers size={12} className="text-blue-500" />
-                  <span className={cn('text-[11px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{title}</span>
-                  {selectedCount > 0 && <span className="text-[9px] text-primary">({selectedCount})</span>}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={cn('px-1 py-0.5 rounded text-[9px]', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{count}</span>
-                  <ChevronDown size={12} className="text-primary transition-transform group-open:rotate-180" />
-                </div>
-              </summary>
-              <div className={cn('px-2 pb-2 pt-1 border-t space-y-0.5', isDark ? 'border-white/5' : 'border-gray-100')}>
-                {Object.keys(items).map((key) => {
-                  const data = items[key];
-                  const itemCount = data.count || data;
-                  const isChecked = attrFilter.find((elem) => elem.trait_type === title)?.value?.includes(key);
-                  const percentage = (itemCount / maxValue) * 100;
-
-                  return (
-                    <div key={title + key} onClick={() => handleAttrChange(title, key)}
-                      className={cn('px-2 py-1.5 rounded-md cursor-pointer transition-all flex items-center gap-2',
-                        isChecked ? 'bg-primary/10' : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50')}>
-                      <input type="checkbox" checked={isChecked || false} onChange={() => {}} className="w-3 h-3 rounded border-gray-300 text-primary" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className={cn('text-[10px] truncate', isDark ? 'text-white' : 'text-gray-900')}>{key}</span>
-                          <span className={cn('text-[9px] ml-1', isDark ? 'text-white/40' : 'text-gray-500')}>{fIntNumber(itemCount)}</span>
-                        </div>
-                        <div className={cn('h-0.5 rounded-full mt-0.5', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                          <div className="h-full rounded-full bg-primary/50" style={{ width: `${percentage}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </details>
+            <button
+              key={title}
+              onClick={() => toggleTrait(title)}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all',
+                isExpanded
+                  ? 'bg-primary text-white'
+                  : selectedCount > 0
+                    ? 'bg-primary/15 text-primary border border-primary/30'
+                    : isDark
+                      ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              {title}
+              {selectedCount > 0 && (
+                <span className={cn(
+                  'w-4 h-4 rounded-full text-[9px] flex items-center justify-center',
+                  isExpanded ? 'bg-white/20' : 'bg-primary text-white'
+                )}>
+                  {selectedCount}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>
+
+      {/* Expanded trait values */}
+      {expandedTrait && (
+        <div className={cn(
+          'p-2 rounded-lg border-[1.5px]',
+          isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+        )}>
+          <div className="flex flex-wrap gap-1">
+            {(() => {
+              const attr = attrs.find(a => a.title === expandedTrait);
+              if (!attr) return null;
+              const items = attr.items;
+              const sortedKeys = Object.keys(items).sort((a, b) => (items[b].count || items[b]) - (items[a].count || items[a]));
+
+              return sortedKeys.map((key) => {
+                const data = items[key];
+                const itemCount = data.count || data;
+                const isChecked = attrFilter.find((elem) => elem.trait_type === expandedTrait)?.value?.includes(key);
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleAttrChange(expandedTrait, key)}
+                    className={cn(
+                      'inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all',
+                      isChecked
+                        ? 'bg-primary text-white'
+                        : isDark
+                          ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                    )}
+                  >
+                    {key}
+                    <span className={cn('text-[9px]', isChecked ? 'text-white/70' : isDark ? 'text-white/40' : 'text-gray-400')}>
+                      {fIntNumber(itemCount)}
+                    </span>
+                  </button>
+                );
+              });
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -258,7 +290,7 @@ const NFTSkeleton = React.memo(({ isDark }) => (
   </div>
 ));
 
-// Ultra-light NFT Card - no state, no transitions, minimal DOM
+// Ultra-light NFT Card - hover effects + listed badge
 const NFTCard = React.memo(({ nft, isDark, priority }) => {
   const { cost, meta, NFTokenID, rarity_rank } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
@@ -266,16 +298,24 @@ const NFTCard = React.memo(({ nft, isDark, priority }) => {
   const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
 
   return (
-    <a href={`/nft/${NFTokenID}`} className="block" style={{ contain: 'layout style paint' }}>
-      <div className="rounded-xl overflow-hidden">
-        <div className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+    <a href={`/nft/${NFTokenID}`} className="block group" style={{ contain: 'layout style paint' }}>
+      <div className={cn(
+        "rounded-xl overflow-hidden border-[1.5px] transition-all duration-200",
+        isDark
+          ? "border-white/[0.06] group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(66,133,244,0.15)]"
+          : "border-gray-200 group-hover:border-primary/40 group-hover:shadow-[0_4px_20px_rgba(66,133,244,0.12)]"
+      )}>
+        <div
+          className="relative aspect-square overflow-hidden"
+          style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+        >
           {imgUrl ? (
             <Image
               src={imgUrl}
               alt=""
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 10vw"
-              className="object-cover"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               loading={priority ? 'eager' : 'lazy'}
               priority={priority}
               unoptimized
@@ -283,13 +323,54 @@ const NFTCard = React.memo(({ nft, isDark, priority }) => {
           ) : (
             <span className="absolute inset-0 flex items-center justify-center text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>No image</span>
           )}
-          {rarity_rank > 0 && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-white z-10">#{rarity_rank}</div>
+
+          {/* Top badges row */}
+          <div className="absolute top-2 left-2 right-2 flex justify-between items-start z-10">
+            {rarity_rank > 0 ? (
+              <div className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/70 backdrop-blur-sm text-white">
+                #{rarity_rank}
+              </div>
+            ) : <div />}
+
+            {/* Listed badge */}
+            {listPrice && (
+              <div className={cn(
+                "px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm",
+                "bg-emerald-500/90 text-white"
+              )}>
+                Listed
+              </div>
+            )}
+          </div>
+
+          {/* Price overlay on hover */}
+          {listPrice && (
+            <div className={cn(
+              "absolute bottom-0 left-0 right-0 p-2 transition-opacity duration-200",
+              "bg-gradient-to-t from-black/80 via-black/40 to-transparent",
+              "opacity-0 group-hover:opacity-100"
+            )}>
+              <span className="text-[13px] font-semibold text-white drop-shadow-sm">
+                {fNumber(listPrice)} XRP
+              </span>
+            </div>
           )}
         </div>
-        <div className="px-1 pt-1.5 pb-1">
-          <p className="text-[11px] font-medium truncate" style={{ color: isDark ? 'rgba(255,255,255,0.8)' : '#374151' }}>{name}</p>
-          {listPrice && <span className="text-[11px] font-medium text-primary">{fNumber(listPrice)} XRP</span>}
+
+        {/* Card footer */}
+        <div className={cn(
+          "px-2 py-2",
+          isDark ? "bg-white/[0.02]" : "bg-gray-50/50"
+        )}>
+          <p className={cn(
+            "text-[11px] font-medium truncate",
+            isDark ? "text-white/80" : "text-gray-700"
+          )}>{name}</p>
+          {listPrice ? (
+            <span className="text-[11px] font-semibold text-primary">{fNumber(listPrice)} XRP</span>
+          ) : (
+            <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>Not listed</span>
+          )}
         </div>
       </div>
     </a>
@@ -446,9 +527,9 @@ const NFTGrid = React.memo(({ collection, isDark }) => {
     }
   }, [traits, router.isReady, router.query.traits, router.query.sortBy, router.query.listed]);
 
-  // Sync filters to URL (debounced)
+  // Sync filters to URL (debounced) - wait for traits to load first to avoid clearing URL params
   useEffect(() => {
-    if (!router.isReady || !slug) return;
+    if (!router.isReady || !slug || traits.length === 0) return;
 
     const query = {};
     if (sortBy !== 'price-low') query.sortBy = sortBy;
@@ -466,7 +547,7 @@ const NFTGrid = React.memo(({ collection, isDark }) => {
     if (hasChanged) {
       router.replace({ pathname: `/collection/${slug}`, query }, undefined, { shallow: true });
     }
-  }, [sortBy, listed, filterAttrs, slug, router.isReady]);
+  }, [sortBy, listed, filterAttrs, slug, router.isReady, traits.length]);
 
   const currentSort = SORT_OPTIONS.find(opt => opt.value === sortBy) || SORT_OPTIONS[0];
 
@@ -682,7 +763,7 @@ const NFTGrid = React.memo(({ collection, isDark }) => {
         {/* Trait Filter Panel */}
         {showFilter && traits.length > 0 && (
           <div className={cn('mt-3 p-3 rounded-lg border-[1.5px]', isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50')}>
-            <AttributeFilter attrs={traits} setFilterAttrs={setFilterAttrs} />
+            <AttributeFilter attrs={traits} setFilterAttrs={setFilterAttrs} activeFilters={filterAttrs} />
           </div>
         )}
 

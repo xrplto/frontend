@@ -589,8 +589,18 @@ export default function NFTActions({ nft }) {
             ) : (
               <div className="space-y-3">
                 {loading ? (
-                  <div className="flex justify-center py-3">
-                    <PulseLoader color="#6b7280" size={10} />
+                  /* Skeleton loader for price */
+                  <div className={cn(
+                    "p-4 rounded-xl border animate-pulse",
+                    isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+                  )}>
+                    <div className="flex items-center justify-between">
+                      <div className={cn("h-3 w-12 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                      <div className="flex items-baseline gap-2">
+                        <div className={cn("h-8 w-24 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                        <div className={cn("h-4 w-8 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                      </div>
+                    </div>
                   </div>
                 ) : lowestSellOffer ? (
                   <div className={cn(
@@ -622,7 +632,14 @@ export default function NFTActions({ nft }) {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-center py-2 text-gray-500">Not listed for sale</p>
+                  /* Not listed state - improved */
+                  <div className={cn(
+                    "p-4 rounded-xl border-[1.5px] border-dashed text-center",
+                    isDark ? "border-white/[0.1] bg-white/[0.02]" : "border-gray-300 bg-gray-50"
+                  )}>
+                    <p className={cn("text-sm font-medium mb-1", isDark ? "text-gray-400" : "text-gray-500")}>Not listed for sale</p>
+                    <p className={cn("text-[11px]", isDark ? "text-gray-600" : "text-gray-400")}>Make an offer below</p>
+                  </div>
                 )}
 
                 {accountLogin ? (
@@ -748,8 +765,22 @@ export default function NFTActions({ nft }) {
                   )}
                 </div>
                 {loading ? (
-                  <div className="flex justify-center py-6">
-                    <PulseLoader color="#6b7280" size={10} />
+                  /* Skeleton loader for sell offers */
+                  <div className={cn(
+                    "rounded-xl border overflow-hidden",
+                    isDark ? "border-gray-700/50" : "border-gray-200"
+                  )}>
+                    {[1, 2].map((i) => (
+                      <div key={i} className={cn(
+                        "px-4 py-3 animate-pulse",
+                        i < 2 && (isDark ? "border-b border-gray-700/30" : "border-b border-gray-200")
+                      )}>
+                        <div className="flex items-center justify-between">
+                          <div className={cn("h-5 w-20 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                          <div className={cn("h-6 w-16 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : sellOffers.length > 0 ? (
                   <div className={cn(
@@ -825,8 +856,25 @@ export default function NFTActions({ nft }) {
                 )}
               </div>
               {loading ? (
-                <div className="flex justify-center py-8">
-                  <PulseLoader color="#6b7280" size={10} />
+                /* Skeleton loader for offers */
+                <div className={cn(
+                  "rounded-xl border overflow-hidden",
+                  isDark ? "border-gray-700/50" : "border-gray-200"
+                )}>
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className={cn(
+                      "px-4 py-3 animate-pulse",
+                      i < 3 && (isDark ? "border-b border-gray-700/30" : "border-b border-gray-200")
+                    )}>
+                      <div className="flex items-center justify-between">
+                        <div className={cn("h-3 w-24 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                        <div className="flex items-center gap-2">
+                          <div className={cn("h-4 w-16 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                          <div className={cn("h-6 w-14 rounded", isDark ? "bg-white/10" : "bg-gray-200")} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : buyOffers.length > 0 ? (
                 <div className={cn(

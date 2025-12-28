@@ -223,11 +223,31 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
-            <div className="w-full">
+            <div className="w-full relative">
+              {/* Blur-up placeholder */}
+              {!loaded && !errored && (
+                <div className={cn(
+                  "absolute inset-0 flex items-center justify-center",
+                  isDark ? "bg-gray-900" : "bg-gray-100"
+                )}>
+                  <div className="relative">
+                    {/* Animated gradient background */}
+                    <div className={cn(
+                      "w-48 h-48 rounded-2xl animate-pulse",
+                      isDark ? "bg-gradient-to-br from-white/[0.08] to-white/[0.02]" : "bg-gradient-to-br from-gray-200 to-gray-100"
+                    )} />
+                    {/* Centered spinner */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 size={28} className="animate-spin text-primary/60" />
+                    </div>
+                  </div>
+                </div>
+              )}
               <img
                 className={cn(
-                  "w-full h-auto max-h-[70vh] object-contain mx-auto cursor-pointer transition-transform hover:scale-[1.02]",
-                  loaded ? "block" : "hidden"
+                  "w-full h-auto max-h-[70vh] object-contain mx-auto cursor-pointer transition-all duration-300",
+                  "hover:scale-[1.02]",
+                  loaded ? "opacity-100" : "opacity-0"
                 )}
                 onLoad={() => {
                   setLoaded(true);
@@ -259,16 +279,13 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                 })()}
                 alt={NFTName}
               />
-              {!loaded && !errored && (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 size={24} className="animate-spin text-primary" />
-                </div>
-              )}
               {errored && (
-                <div className="flex items-center justify-center py-20">
-                  <span className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
-                    Image unavailable
-                  </span>
+                <div className={cn(
+                  "flex flex-col items-center justify-center py-20 gap-2",
+                  isDark ? "text-gray-400" : "text-gray-500"
+                )}>
+                  <Info size={24} className="opacity-50" />
+                  <span className="text-[13px]">Image unavailable</span>
                 </div>
               )}
             </div>
