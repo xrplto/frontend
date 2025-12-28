@@ -2059,7 +2059,7 @@ const TransactionDetails = ({ txData }) => {
     if (aiLoading || aiExplanation) return;
     setAiLoading(true);
     try {
-      const response = await axios.get(`https://api.xrpl.to/api/ai/${hash}`);
+      const response = await axios.get(`https://api.xrpl.to/api/tx-explain/${hash}`);
       if (response.data) {
         setAiExplanation(response.data);
       }

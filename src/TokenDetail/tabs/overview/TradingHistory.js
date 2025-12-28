@@ -1504,7 +1504,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
-      const response = await fetch(`https://api.xrpl.to/api/ai/${trade.hash}`, { signal: controller.signal });
+      const response = await fetch(`https://api.xrpl.to/api/tx-explain/${trade.hash}`, { signal: controller.signal });
       clearTimeout(timeout);
       if (!response.ok) throw new Error('API error');
       const data = await response.json();

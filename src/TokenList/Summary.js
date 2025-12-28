@@ -1137,22 +1137,52 @@ export default function Summary() {
               </MetricBox>
 
               <ChartMetricBox isDark={darkMode}>
-                <MetricTitle isDark={darkMode}>New Tokens (30d)</MetricTitle>
-                <TokenChart
-                  data={chartData}
-                  activeFiatCurrency={activeFiatCurrency}
-                  darkMode={darkMode}
-                />
+                {(() => {
+                  const today = chartData[chartData.length - 1]?.Tokens || 0;
+                  const yesterday = chartData[chartData.length - 2]?.Tokens || 0;
+                  const isUp = today >= yesterday;
+                  return (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                        <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                            {today}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            today
+                          </span>
+                          <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                            {isUp ? '↑' : '↓'}
+                          </span>
+                        </div>
+                      </div>
+                      <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />
+                    </>
+                  );
+                })()}
               </ChartMetricBox>
             </Grid>
 
             <MobileChartBox isDark={darkMode}>
-              <MetricTitle isDark={darkMode}>New Tokens (30d)</MetricTitle>
-              <TokenChart
-                data={chartData}
-                activeFiatCurrency={activeFiatCurrency}
-                darkMode={darkMode}
-              />
+              {(() => {
+                const today = chartData[chartData.length - 1]?.Tokens || 0;
+                const yesterday = chartData[chartData.length - 2]?.Tokens || 0;
+                const isUp = today >= yesterday;
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{today}</span>
+                        <span style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
+                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
+                      </div>
+                    </div>
+                    <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />
+                  </>
+                );
+              })()}
             </MobileChartBox>
           </div>
         )}
