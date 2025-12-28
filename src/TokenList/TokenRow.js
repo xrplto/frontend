@@ -230,27 +230,38 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '...' : str;
 };
 
-// Simple price formatter without rounding issues
+// Price formatter - returns object for compact notation or string
 const formatPrice = (price) => {
-  if (!price || isNaN(price)) return '0';
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice) || numPrice === 0) return '0';
 
-  // Handle very small prices with compact notation
-  if (price < 0.0001) {
-    const str = price.toFixed(15);
+  if (numPrice < 0.01) {
+    const str = numPrice.toFixed(15);
     const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
     if (zeros >= 4) {
       const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-      return `0.0(${zeros})${significant.slice(0, 4)}`;
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
     }
-    return price.toFixed(8);
+    return numPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 1) {
+    return numPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 100) {
+    return numPrice.toFixed(2);
+  } else if (numPrice >= 1e6) {
+    return `${(numPrice / 1e6).toFixed(1)}M`;
+  } else if (numPrice >= 1e3) {
+    return `${(numPrice / 1e3).toFixed(1)}K`;
   }
+  return Math.round(numPrice).toString();
+};
 
-  // Regular prices
-  if (price < 1) return price.toFixed(4);
-  if (price < 100) return price.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
-  if (price < 1000) return price.toFixed(2);
-  if (price < 1000000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+// Render price with compact notation support
+const PriceDisplay = ({ price, symbol = '' }) => {
+  const formatted = formatPrice(price);
+  if (formatted?.compact) {
+    return <>{symbol}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>{formatted.significant}</>;
+  }
+  return <>{symbol}{formatted}</>;
 };
 
 // Simple number formatter with thousand separators
@@ -472,7 +483,7 @@ const MobileTokenRow = ({
     switch (columnId) {
       case 'price':
         const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-        return currencySymbols[activeFiatCurrency] + formatPrice(price);
+        return <PriceDisplay price={price} symbol={currencySymbols[activeFiatCurrency]} />;
       case 'volume24h':
         const vol =
           vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0;
@@ -636,18 +647,15 @@ const DesktopTokenRow = ({
 
     const priceCell = (() => {
       const rawPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-      // Format price like Orb - clean comma separators
-      const formatOrbPrice = (price) => {
-        if (!price || isNaN(price)) return '0.00';
-        if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        if (price >= 1) return price.toFixed(2);
-        if (price >= 0.01) return price.toFixed(4);
-        return price.toFixed(6);
-      };
+      const formatted = formatPrice(rawPrice);
       return (
         <StyledCell align="right" isDark={darkMode} style={{ minWidth: 100 }}>
           <PriceText flashColor={flashColor} isDark={darkMode}>
-            {currencySymbols[activeFiatCurrency]}{formatOrbPrice(rawPrice)}
+            {formatted?.compact ? (
+              <>{currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>{formatted.significant}</>
+            ) : (
+              <>{currencySymbols[activeFiatCurrency]}{formatted}</>
+            )}
           </PriceText>
         </StyledCell>
       );
@@ -867,10 +875,15 @@ const DesktopTokenRow = ({
           switch (column) {
             case 'price':
               const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
+              const customFormatted = formatPrice(customPrice);
               columnElements.push(
                 <StyledCell key="price" align="right" isDark={darkMode} style={extraStyle}>
                   <PriceText flashColor={flashColor} isDark={darkMode}>
-                    {currencySymbols[activeFiatCurrency]}{formatPrice(customPrice)}
+                    {customFormatted?.compact ? (
+                      <>{currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{customFormatted.zeros}</sub>{customFormatted.significant}</>
+                    ) : (
+                      <>{currencySymbols[activeFiatCurrency]}{customFormatted}</>
+                    )}
                   </PriceText>
                 </StyledCell>
               );

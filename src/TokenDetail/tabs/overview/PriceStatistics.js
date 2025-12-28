@@ -189,6 +189,40 @@ const currencySymbols = {
   XRP: '✕ '
 };
 
+// Price formatter - returns object for compact notation or string
+const formatPrice = (price) => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice) || numPrice === 0) return '0';
+
+  if (numPrice < 0.01) {
+    const str = numPrice.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
+    }
+    return numPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 1) {
+    return numPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 100) {
+    return numPrice.toFixed(2);
+  } else if (numPrice >= 1e6) {
+    return `${(numPrice / 1e6).toFixed(1)}M`;
+  } else if (numPrice >= 1e3) {
+    return `${(numPrice / 1e3).toFixed(1)}K`;
+  }
+  return Math.round(numPrice).toString();
+};
+
+// Render price with compact notation support
+const PriceDisplay = ({ price, symbol = '' }) => {
+  const formatted = formatPrice(price);
+  if (formatted?.compact) {
+    return <>{symbol}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>{formatted.significant}</>;
+  }
+  return <>{symbol}{formatted}</>;
+};
+
 // ----------------------------------------------------------------------
 
 export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {

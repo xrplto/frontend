@@ -920,24 +920,19 @@ const getTradeSizeInfo = (value) => {
 
 const formatTradeValue = (value) => {
   const numValue = typeof value === 'string' ? Number(value) : value;
+  if (!Number.isFinite(numValue) || numValue === 0) return '0';
 
-  // Handle very small values with more decimal places
-  if (Math.abs(numValue) < 0.000001) {
-    return numValue.toFixed(12);
+  if (Math.abs(numValue) < 0.01) {
+    const str = Math.abs(numValue).toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
+    }
+    return numValue.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
   }
 
-  if (Math.abs(numValue) < 0.00001) {
-    return numValue.toFixed(10);
-  }
-
-  if (Math.abs(numValue) < 0.0001) {
-    return numValue.toFixed(8);
-  }
-
-  if (Math.abs(numValue) < 1) {
-    return numValue.toFixed(4);
-  }
-
+  if (Math.abs(numValue) < 1) return numValue.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
   return abbreviateNumber(numValue);
 };
 
@@ -950,44 +945,38 @@ const formatXRPAmount = (value) => {
   return abbreviateNumber(numValue);
 };
 
-const formatPrice = (value) => {
-  // Handle null, undefined, NaN, Infinity
-  if (value == null || !Number.isFinite(value)) {
-    return '-';
-  }
-
+const formatPriceValue = (value) => {
+  if (value == null || !Number.isFinite(value)) return '-';
   const numValue = typeof value === 'string' ? Number(value) : value;
-
-  // Double-check after conversion
-  if (!Number.isFinite(numValue)) {
-    return '-';
-  }
-
-  if (Math.abs(numValue) < 0.000001) {
-    return numValue.toFixed(12);
-  }
-
-  if (Math.abs(numValue) < 0.00001) {
-    return numValue.toFixed(10);
-  }
-
-  if (Math.abs(numValue) < 0.0001) {
-    return numValue.toFixed(8);
-  }
+  if (!Number.isFinite(numValue) || numValue === 0) return '0';
 
   if (Math.abs(numValue) < 0.01) {
-    return numValue.toFixed(8);
+    const str = Math.abs(numValue).toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
+    }
+    return numValue.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
   }
+  if (Math.abs(numValue) < 1) return numValue.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  if (Math.abs(numValue) < 100) return numValue.toFixed(2);
+  if (numValue >= 1e6) return `${(numValue / 1e6).toFixed(1)}M`;
+  if (numValue >= 1e3) return `${(numValue / 1e3).toFixed(1)}K`;
+  return Math.round(numValue).toString();
+};
 
-  if (Math.abs(numValue) < 1) {
-    return numValue.toFixed(6);
-  }
+// Render helpers for compact notation
+const formatPrice = (value) => {
+  const f = formatPriceValue(value);
+  if (f?.compact) return <>0.0<sub style={{ fontSize: '0.6em' }}>{f.zeros}</sub>{f.significant}</>;
+  return f;
+};
 
-  if (Math.abs(numValue) < 100) {
-    return numValue.toFixed(6);
-  }
-
-  return numValue.toFixed(4);
+const formatTradeDisplay = (value) => {
+  const f = formatTradeValue(value);
+  if (f?.compact) return <>0.0<sub style={{ fontSize: '0.6em' }}>{f.zeros}</sub>{f.significant}</>;
+  return f;
 };
 
 const abbreviateNumber = (num) => {
@@ -1204,7 +1193,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
               <Box>
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Balance</span>
                 <span style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
-                  {formatTradeValue(mockAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
+                  {formatTradeDisplay(mockAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
                 </span>
               </Box>
               <Box style={{ textAlign: 'right' }}>
@@ -1301,7 +1290,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                           </span>
                         </Box>
                         <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {formatTradeValue(trade.amount)} {tokenCurrency}
+                          {formatTradeDisplay(trade.amount)} {tokenCurrency}
                         </span>
                         <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
                           {formatXRPAmount(trade.total)} XRP
@@ -1316,7 +1305,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                           <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
                         </div>
                         <span style={{ flex: '1', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {formatTradeValue(trade.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
+                          {formatTradeDisplay(trade.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
                         </span>
                         <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                           {formatPrice(trade.price)}
@@ -1387,7 +1376,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
                         <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                            {formatTradeValue(tokenAmount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
+                            {formatTradeDisplay(tokenAmount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
                           </span>
                           <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                             @ {formatPrice(price)} XRP
@@ -2260,14 +2249,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 {/* Center: Amount → Total with fiat value */}
                 <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
                   <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
+                    {formatTradeDisplay(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
                   </span>
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>→</span>
                   <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
-                    {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
+                    {formatTradeDisplay(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
                     {activeFiatCurrency !== 'XRP' && (
                       <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', marginLeft: '4px' }}>
-                        ({currencySymbols[activeFiatCurrency]}{formatTradeValue((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)})
+                        ({currencySymbols[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)})
                       </span>
                     )}
                   </span>
@@ -2321,21 +2310,21 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Amount with colored bar */}
               <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isCreate={trade.type === 'create'} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                  {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(amountData.currency)}</span>
+                  {formatTradeDisplay(amountData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(amountData.currency)}</span>
                 </span>
               </BarCell>
 
               {/* Value with colored bar */}
               <BarCell barWidth={barWidth} isBuy={isBuy} isLP={isLiquidity} isCreate={trade.type === 'create'} isDark={isDark}>
                 <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                  {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
+                  {formatTradeDisplay(totalData.value)} <span style={{ opacity: 0.5, fontSize: '10px' }}>{decodeCurrency(totalData.currency)}</span>
                 </span>
               </BarCell>
 
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                  {currencySymbols[activeFiatCurrency]}{formatTradeValue((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
+                  {currencySymbols[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
                 </span>
               )}
 

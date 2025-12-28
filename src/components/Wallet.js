@@ -1297,7 +1297,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Returning user unlock flow state
   const [hasExistingWallet, setHasExistingWallet] = useState(false);
   const [walletMetadata, setWalletMetadata] = useState([]);
-  const [showPasswordUnlock, setShowPasswordUnlock] = useState(false);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
   const [unlockError, setUnlockError] = useState('');
@@ -2437,33 +2436,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Check for existing wallets when modal opens (for returning users)
   useEffect(() => {
-    const checkExistingWallets = async () => {
-      // Only check when modal is opening and user is not logged in
-      if (!openWalletModal || accountProfile) return;
+    if (!openWalletModal) {
+      // Reset state when modal closes
+      setUnlockPassword('');
+      setUnlockError('');
+      return;
+    }
 
+    // Only check when user is not logged in
+    if (accountProfile) return;
+
+    const checkExistingWallets = async () => {
       try {
         const hasWallet = await walletStorage.hasWallet();
         const metadata = hasWallet ? await walletStorage.getWalletMetadata() : [];
-
         setHasExistingWallet(hasWallet && metadata.length > 0);
         setWalletMetadata(metadata);
-
-        // Auto-show password unlock if wallets exist
-        if (hasWallet && metadata.length > 0) {
-          setShowPasswordUnlock(true);
-        }
       } catch (e) {
         console.error('[Wallet] Error checking existing wallets:', e);
       }
     };
     checkExistingWallets();
-
-    // Reset unlock state when modal closes
-    if (!openWalletModal) {
-      setShowPasswordUnlock(false);
-      setUnlockPassword('');
-      setUnlockError('');
-    }
   }, [openWalletModal, accountProfile, walletStorage]);
 
   // Handle password unlock for returning users
@@ -2503,7 +2496,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       doLogIn(allProfiles[0], allProfiles);
 
       setUnlockPassword('');
-      setShowPasswordUnlock(false);
       setOpenWalletModal(false);
       openSnackbar('Wallet unlocked', 'success');
     } catch (error) {
@@ -4015,7 +4007,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   {!showDeviceLogin ? (
                     <>
                       {/* Password Unlock for Returning Users */}
-                      {hasExistingWallet && showPasswordUnlock && (
+                      {hasExistingWallet && (
                         <div className="mb-4">
                           <p className={cn("text-[11px] mb-2", isDark ? "text-white/40" : "text-gray-400")}>
                             {walletMetadata.length} wallet{walletMetadata.length !== 1 ? 's' : ''} found
@@ -4052,57 +4044,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <p className="text-[11px] text-red-400 mb-2">{unlockError}</p>
                           )}
 
-                          <div className="flex gap-2">
-                            <button
-                              onClick={handlePasswordUnlock}
-                              disabled={isUnlocking}
-                              className={cn(
-                                "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
-                                "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                              )}
-                            >
-                              {isUnlocking ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : (
-                                'Unlock'
-                              )}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowPasswordUnlock(false);
-                                setUnlockPassword('');
-                                setUnlockError('');
-                              }}
-                              className={cn(
-                                "px-4 py-2.5 rounded-lg text-[13px] transition-colors",
-                                isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                              )}
-                            >
-                              Other
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Link to show unlock option when viewing OAuth options */}
-                      {hasExistingWallet && !showPasswordUnlock && (
-                        <div className="flex items-center gap-4 mb-4">
                           <button
-                            onClick={() => setShowPasswordUnlock(true)}
+                            onClick={handlePasswordUnlock}
+                            disabled={isUnlocking}
                             className={cn(
-                              "flex items-center gap-2 text-[11px] font-medium transition-colors",
-                              isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
+                              "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
+                              "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
                             )}
                           >
-                            <Lock size={12} />
-                            Unlock with password
+                            {isUnlocking ? <Loader2 size={14} className="animate-spin" /> : 'Unlock'}
                           </button>
-                          <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
+
+                          <button
+                            onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); setClearWarningAgreed(false); }}
+                            className={cn(
+                              "w-full mt-3 text-[11px] transition-colors",
+                              isDark ? "text-white/30 hover:text-red-400" : "text-gray-400 hover:text-red-500"
+                            )}
+                          >
+                            Forgot password? Reset wallet
+                          </button>
                         </div>
                       )}
 
-                      {/* Social Options - Grid Layout (hidden when password unlock is showing) */}
-                      {(!hasExistingWallet || !showPasswordUnlock) && (
+                      {/* Social Options - Only show if no existing wallet */}
+                      {!hasExistingWallet && (
                       <>
                       <div className="grid grid-cols-2 gap-2">
                         {/* Google */}
@@ -4328,15 +4294,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Encrypted and stored locally
                           </span>
                         </div>
-                        {(profiles.length > 0 || storedWalletCount > 0) && (
-                          !showClearConfirm ? (
-                            <button
-                              onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); setClearWarningAgreed(false); }}
-                              className={cn("text-[10px] mt-2.5 opacity-40 hover:opacity-70 transition-opacity", isDark ? "text-white" : "text-gray-500")}
-                            >
-                              Clear all wallets
-                            </button>
-                          ) : (
+                        {showClearConfirm && (
                             <div className={cn("mt-2 p-3 rounded-xl border-[1.5px] relative overflow-hidden", isDark ? "bg-black/40 border-red-500/20" : "bg-white border-red-200")}>
                               {/* Dot pattern background */}
                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(239,68,68,0.2) 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
@@ -4441,7 +4399,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 <button onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); setClearWarningAgreed(false); }} className={cn("w-full mt-2 py-1 text-[10px]", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>Cancel</button>
                               </div>
                             </div>
-                          )
                         )}
 
                         {/* Debug: Test entropy backup recovery */}

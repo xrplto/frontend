@@ -628,38 +628,42 @@ const PriceChartAdvanced = memo(({ token }) => {
           const isXRP = activeFiatCurrencyRef.current === 'XRP';
 
           if (isXRP) {
-            if (price < 0.000001) {
-              return symbol + price.toFixed(8);
-            } else if (price < 0.001) {
-              return symbol + price.toFixed(6);
+            if (price < 0.01) {
+              const str = price.toFixed(15);
+              const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+              if (zeros >= 4) {
+                const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                const subDigits = '₀₁₂₃₄₅₆₇₈₉';
+                const subZeros = String(zeros).split('').map(d => subDigits[parseInt(d)]).join('');
+                return symbol + '0.0' + subZeros + significant.slice(0, 4);
+              }
+              return symbol + price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
             } else if (price < 1) {
-              return symbol + price.toFixed(4);
+              return symbol + price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
             } else if (price < 100) {
-              return symbol + price.toFixed(3);
-            } else if (price < 1000) {
               return symbol + price.toFixed(2);
-            } else {
+            } else if (price < 1000) {
               return symbol + price.toFixed(1);
+            } else {
+              return symbol + Math.round(price).toLocaleString();
             }
           }
 
-          if (price < 0.001) {
-            const str = price.toFixed(20);
+          if (price < 0.01) {
+            const str = price.toFixed(15);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
             if (zeros >= 4) {
               const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              return symbol + '0.0(' + zeros + ')' + significant.slice(0, 4);
+              const subDigits = '₀₁₂₃₄₅₆₇₈₉';
+              const subZeros = String(zeros).split('').map(d => subDigits[parseInt(d)]).join('');
+              return symbol + '0.0' + subZeros + significant.slice(0, 4);
             }
-            return symbol + price.toFixed(8);
-          } else if (price < 0.01) {
-            return symbol + price.toFixed(6);
+            return symbol + price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
           } else if (price < 1) {
-            return symbol + price.toFixed(4);
+            return symbol + price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
           } else if (price < 100) {
-            return symbol + price.toFixed(3);
-          } else if (price < 1000) {
             return symbol + price.toFixed(2);
-          } else if (price < 10000) {
+          } else if (price < 1000) {
             return symbol + price.toFixed(1);
           } else {
             return symbol + Math.round(price).toLocaleString();

@@ -25,6 +25,22 @@ const fetchInFlight = new Map();
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 
+// Compact price formatter with subscript notation
+const formatCompactPrice = (price) => {
+  if (!price || !isFinite(price) || price === 0) return '0';
+  if (price < 0.01) {
+    const str = price.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return <>0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}</>;
+    }
+    return price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  if (price < 1) return price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  return fNumber(price);
+};
+
 import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
@@ -2217,15 +2233,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       </Typography>
                       <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
                         1 {token2?.name || token2?.currency} = {(() => {
-                          // Calculate rate as source/destination (XRP per token)
                           const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
                           const dstVal = parseFloat(swapQuoteCalc.destination_amount?.value || amount2);
                           const rate = dstVal > 0 && srcVal > 0 ? srcVal / dstVal : 0;
                           if (!rate || rate === 0) return '—';
-                          if (rate >= 1000000) return fNumber(rate);
-                          if (rate >= 1) return rate.toFixed(4);
-                          if (rate >= 0.0001) return rate.toFixed(8);
-                          return rate.toExponential(4);
+                          return formatCompactPrice(rate);
                         })()} {token1?.name || token1?.currency}
                       </Typography>
                     </Stack>
@@ -2378,7 +2390,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           Best Bid
                         </Typography>
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>
-                          {bestBid < 0.0001 ? bestBid.toFixed(8) : fNumber(bestBid)}
+                          {formatCompactPrice(bestBid)}
                         </Typography>
                       </Stack>
 
@@ -2408,7 +2420,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           Best Ask
                         </Typography>
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
-                          {bestAsk < 0.0001 ? bestAsk.toFixed(8) : fNumber(bestAsk)}
+                          {formatCompactPrice(bestAsk)}
                         </Typography>
                       </Stack>
                     </Stack>
