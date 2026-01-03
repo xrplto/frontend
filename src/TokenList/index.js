@@ -223,21 +223,18 @@ function TokenListComponent({
   const [customColumns, setCustomColumns] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('customTokenColumns');
-      const mobile = window.innerWidth < 960;
       if (saved) {
         const parsed = JSON.parse(saved);
+        const mobile = window.innerWidth < 960;
         // On mobile, allow any combination of fields
         if (mobile && parsed.length >= 2) {
           return [parsed[0], parsed[1]];
         }
         return parsed;
       }
-      // Default columns
-      return mobile
-        ? ['price', 'pro24h']
-        : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
     }
-    return ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
+    // No saved columns - return empty to fall through to classic view
+    return [];
   });
 
   const [customSettingsOpen, setCustomSettingsOpen] = useState(false);
@@ -723,7 +720,7 @@ function TokenListComponent({
               </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                 <button
-                  onClick={() => setTempCustomColumns(['price', 'pro24h'])}
+                  onClick={() => { setTempCustomColumns([]); setCustomColumns([]); localStorage.removeItem('customTokenColumns'); setCustomSettingsOpen(false); }}
                   style={{ flex: 1, padding: '10px', borderRadius: '8px', border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, background: 'transparent', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
                 >
                   Reset
@@ -765,7 +762,7 @@ function TokenListComponent({
               </ColumnsGrid>
               <ButtonRow>
                 <button
-                  onClick={() => setTempCustomColumns(['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'])}
+                  onClick={() => { setTempCustomColumns([]); setCustomColumns([]); localStorage.removeItem('customTokenColumns'); setCustomSettingsOpen(false); }}
                   style={{ padding: '10px 20px', borderRadius: '8px', border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, background: 'transparent', color: darkMode ? '#fff' : '#000', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
                 >
                   Reset

@@ -1130,13 +1130,24 @@ const getTransactionDescription = (txData) => {
       };
 
     case 'AMMWithdraw':
-      const withdrawAmount = LPTokenIn ? formatAmount(LPTokenIn) : null;
+      const withdrawLPAmount = LPTokenIn ? formatAmount(LPTokenIn) : null;
+      const withdrawAsset1 = Amount ? formatAmount(Amount) : null;
+      const withdrawAsset2 = Amount2 ? formatAmount(Amount2) : null;
+      const isSingleSided = (withdrawAsset1 || withdrawAsset2) && !withdrawLPAmount;
+      const withdrawDesc = withdrawLPAmount
+        ? `${withdrawLPAmount} LP tokens`
+        : withdrawAsset1 && withdrawAsset2
+          ? `${withdrawAsset1} + ${withdrawAsset2}`
+          : withdrawAsset1 || withdrawAsset2 || 'liquidity';
       return {
-        title: 'Removed Liquidity',
-        description: `${formatAccount(Account)} withdrew ${withdrawAmount || 'their liquidity'} from the pool.`,
+        title: isSingleSided ? 'Single-Sided Withdrawal' : 'Removed Liquidity',
+        description: `${formatAccount(Account)} withdrew ${withdrawDesc} from the AMM pool.`,
         details: [
           `Provider: ${formatAccount(Account)}`,
-          withdrawAmount ? `LP tokens: ${withdrawAmount}` : null,
+          withdrawLPAmount ? `LP tokens burned: ${withdrawLPAmount}` : null,
+          withdrawAsset1 ? `Withdrew: ${withdrawAsset1}` : null,
+          withdrawAsset2 ? `Also withdrew: ${withdrawAsset2}` : null,
+          isSingleSided ? 'Type: Single-sided withdrawal' : null,
           `Fee: ${dropsToXrp(Fee)} XRP`,
           isSuccess ? 'Withdrawn' : 'Failed'
         ].filter(Boolean)

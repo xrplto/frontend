@@ -72,10 +72,51 @@ export default function WalletPage() {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  // Update URL when tab changes (without full navigation)
+  useEffect(() => {
+    if (activeTab && activeTab !== initialTab) {
+      router.replace({ pathname: '/wallet', query: { tab: activeTab } }, undefined, { shallow: true });
+    }
+  }, [activeTab]);
+
+  // Form state - declare before restore effect
   const [sendAmount, setSendAmount] = useState('');
   const [sendTo, setSendTo] = useState('');
   const [sendTag, setSendTag] = useState('');
   const [selectedToken, setSelectedToken] = useState('XRP');
+  const [showPanel, setShowPanel] = useState(null); // 'send' | 'receive' | null
+  const [selectedCollection, setSelectedCollection] = useState(null);
+  const [tokenSort, setTokenSort] = useState('value');
+  const [hideZeroBalance, setHideZeroBalance] = useState(false);
+
+  // Restore wallet page state from sessionStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = sessionStorage.getItem('wallet_page_state');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.sendAmount) setSendAmount(data.sendAmount);
+        if (data.sendTo) setSendTo(data.sendTo);
+        if (data.sendTag) setSendTag(data.sendTag);
+        if (data.selectedToken) setSelectedToken(data.selectedToken);
+        if (data.showPanel) setShowPanel(data.showPanel);
+        if (data.selectedCollection) setSelectedCollection(data.selectedCollection);
+        if (data.tokenSort) setTokenSort(data.tokenSort);
+        if (data.hideZeroBalance !== undefined) setHideZeroBalance(data.hideZeroBalance);
+      } catch (e) {}
+    }
+  }, []);
+
+  // Persist wallet page state on change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem('wallet_page_state', JSON.stringify({
+      sendAmount, sendTo, sendTag, selectedToken, showPanel,
+      selectedCollection, tokenSort, hideZeroBalance
+    }));
+  }, [sendAmount, sendTo, sendTag, selectedToken, showPanel, selectedCollection, tokenSort, hideZeroBalance]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -83,12 +124,8 @@ export default function WalletPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const [showPanel, setShowPanel] = useState(null); // 'send' | 'receive' | null
-  const [selectedCollection, setSelectedCollection] = useState(null);
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
-  const [tokenSort, setTokenSort] = useState('value'); // value, name, change, balance
-  const [hideZeroBalance, setHideZeroBalance] = useState(false);
   const [nftToTransfer, setNftToTransfer] = useState(null);
   const [nftRecipient, setNftRecipient] = useState('');
   const [nftToSell, setNftToSell] = useState(null);

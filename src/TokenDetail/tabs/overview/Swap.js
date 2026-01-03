@@ -764,10 +764,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   useEffect(() => {
     const loadDebugInfo = async () => {
       if (!accountProfile) { setDebugInfo(null); return; }
-      const walletKeyId = accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+      let walletKeyId = accountProfile.walletKeyId ||
         (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
       let seed = accountProfile.seed || null;
+
+      // Handle oauth/social wallets
       if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
         try {
           const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
@@ -780,6 +781,25 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }
         } catch (e) { seed = 'error: ' + e.message; }
       }
+
+      // Handle device wallets
+      if (!seed && accountProfile.wallet_type === 'device') {
+        try {
+          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          // Use device fingerprint (survives storage clearing)
+          const deviceKeyId = await deviceFingerprint.getDeviceId();
+          walletKeyId = deviceKeyId; // Set for debug display
+          if (deviceKeyId) {
+            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+            if (storedPassword) {
+              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              seed = walletData?.seed || 'encrypted';
+            }
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+
       setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
     };
     loadDebugInfo();

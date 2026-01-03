@@ -14,6 +14,26 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = isDev ? (...args) => console.log('[WalletStorage]', ...args) : () => {};
 const devError = isDev ? (...args) => console.error('[WalletStorage]', ...args) : () => {};
 
+// Simple device ID using localStorage (100% accurate per browser)
+// Clears when user clears storage - acceptable trade-off
+const deviceFingerprint = {
+  _cachedDeviceId: null,
+
+  async getDeviceId() {
+    if (this._cachedDeviceId) return this._cachedDeviceId;
+    if (typeof window === 'undefined') return null;
+
+    let deviceId = localStorage.getItem('device_key_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('device_key_id', deviceId);
+    }
+
+    this._cachedDeviceId = deviceId;
+    return deviceId;
+  }
+};
+
 // Security utilities
 const securityUtils = {
   // Timing-safe string comparison to prevent timing attacks
@@ -1555,3 +1575,6 @@ export const EncryptedWalletStorage = UnifiedWalletStorage;
 
 // Export security utilities for use in components
 export { securityUtils };
+
+// Export device fingerprint for fraud detection
+export { deviceFingerprint };

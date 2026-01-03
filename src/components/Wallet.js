@@ -3,9 +3,6 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed, Client, xrpToDrops, dropsToXrp, isValidAddress } from 'xrpl';
 
-// Lazy load heavy dependencies
-let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToBuffer;
-
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
 const devLog = () => {};
@@ -17,8 +14,6 @@ import {
   EyeOff,
   Lock,
   Shield,
-  Fingerprint as FingerprintIcon,
-  Mail,
   X as XIcon,
   ChevronDown,
   Copy,
@@ -29,13 +24,13 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
-  ArrowLeft,
   Check,
   AlertTriangle,
   Send,
   History,
   ArrowUpRight,
   ArrowDownLeft,
+  ArrowLeftRight,
   Loader2,
   ExternalLink,
   RefreshCw,
@@ -53,17 +48,8 @@ import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
 
-// Base64url encoding helper
-const base64urlEncode = (buffer) => {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-};
-
-// Generate random wallet for passkeys - NO DETERMINISTIC (2025 security standard)
+// Generate random wallet with true random entropy
 const generateRandomWallet = () => {
-  // Generate true random entropy - no derivation from signatures
   const entropy = crypto.getRandomValues(new Uint8Array(32));
   return XRPLWallet.fromEntropy(Array.from(entropy));
 };
@@ -406,30 +392,6 @@ const Checkbox = ({ checked, onChange, size }) => (
 const Visibility = () => <Eye size={18} />;
 const VisibilityOff = () => <EyeOff size={18} />;
 
-// Social icons (replacing MUI icons)
-const Google = ({ sx }) => (
-  <svg style={{ width: sx?.fontSize || 18, height: sx?.fontSize || 18, marginRight: sx?.mr ? sx.mr * 8 : 0 }} viewBox="0 0 24 24">
-    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-  </svg>
-);
-
-const Email = ({ sx }) => (
-  <Mail size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
-);
-
-// X (Twitter) icon - using the imported XIcon from lucide but renamed
-const X = ({ sx }) => (
-  <XIcon size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
-);
-
-// SecurityOutlined icon (for Passkeys)
-const SecurityOutlined = ({ sx }) => (
-  <Shield size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
-);
-
 // Helper to convert MUI sx prop to inline styles
 const convertSxToStyle = (sx) => {
   if (!sx) return {};
@@ -518,7 +480,33 @@ const WalletContent = ({
   walletPage,
   setWalletPage,
   walletsPerPage,
-  walletStorage
+  walletStorage,
+  // Bridge props
+  showBridgeInDropdown,
+  setShowBridgeInDropdown,
+  currencies,
+  selectedCurrency,
+  setSelectedCurrency,
+  bridgeAmount,
+  setBridgeAmount,
+  bridgeLoading,
+  bridgeData,
+  setBridgeData,
+  bridgeError,
+  bridgeAddressCopied,
+  setBridgeAddressCopied,
+  estimatedXrp,
+  minAmount,
+  showCurrencyDropdown,
+  setShowCurrencyDropdown,
+  currencySearch,
+  setCurrencySearch,
+  handleCreateBridge,
+  initBridgeForm,
+  swapDirection,
+  setSwapDirection,
+  destAddress,
+  setDestAddress
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
@@ -787,360 +775,413 @@ const WalletContent = ({
   // ============================================
   // COMPACT DROPDOWN MODE
   // ============================================
+
+  // Bridge form view for logged-in users
+  if (showBridgeInDropdown) {
+    return (
+      <div className={isDark ? "text-white" : "text-gray-900"}>
+        {/* Header */}
+        <div className={cn(
+          "px-4 py-2.5 flex items-center justify-between",
+          isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
+        )}>
+          <button
+            onClick={() => { setShowBridgeInDropdown(false); setBridgeData(null); }}
+            className={cn("flex items-center gap-1.5 text-[12px] font-medium", isDark ? "text-white/60 hover:text-white" : "text-gray-500 hover:text-gray-700")}
+          >
+            <ChevronDown size={14} className="rotate-90" />
+            Back
+          </button>
+          <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>Bridge</span>
+          <button
+            onClick={onClose}
+            className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}
+          >
+            <XIcon size={14} />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {bridgeData ? (
+            // Bridge created - show deposit address
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                  <Check size={14} className="text-emerald-500" />
+                </div>
+                <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  Exchange Created
+                </span>
+              </div>
+
+              <div className={cn("rounded-xl border p-3", isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <div className="flex items-center gap-2 mb-2">
+                  {bridgeData.swapDirection === 'fromXrp' ? (
+                    <>
+                      <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                        Send {bridgeAmount} XRP
+                      </span>
+                      <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
+                      {selectedCurrency?.image && <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />}
+                      <span className="text-[11px] text-emerald-500 font-medium">
+                        ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} {selectedCurrency?.ticker?.toUpperCase()}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {selectedCurrency?.image && <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />}
+                      <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                        Send {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
+                      </span>
+                      <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
+                      <span className="text-[11px] text-emerald-500 font-medium">
+                        ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} XRP
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                  Deposit Address
+                </p>
+                <div className={cn("rounded-lg border p-2", isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white")}>
+                  <div className="flex items-center justify-between gap-2">
+                    <code className={cn("text-[10px] font-mono break-all flex-1", isDark ? "text-white/90" : "text-gray-900")}>
+                      {bridgeData.payinAddress}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(bridgeData.payinAddress);
+                        setBridgeAddressCopied(true);
+                        setTimeout(() => setBridgeAddressCopied(false), 2000);
+                      }}
+                      className={cn(
+                        "flex-shrink-0 p-1.5 rounded-lg transition-colors",
+                        bridgeAddressCopied
+                          ? "bg-emerald-500/15 text-emerald-500"
+                          : isDark ? "bg-white/10 text-white/60 hover:bg-white/15" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      )}
+                    >
+                      {bridgeAddressCopied ? <Check size={12} /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open(`/bridge/${bridgeData.id}`, '_blank')}
+                className="w-full py-2.5 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
+              >
+                <ExternalLink size={14} />
+                Track Exchange
+              </button>
+              <button
+                onClick={() => { setShowBridgeInDropdown(false); setBridgeData(null); }}
+                className={cn("w-full py-2 rounded-lg text-[11px] transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
+              >
+                Done
+              </button>
+            </div>
+          ) : (
+            // Bridge form
+            <>
+              {/* Direction Toggle */}
+              <div className="flex gap-1 p-1 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6' }}>
+                <button
+                  onClick={() => { setSwapDirection('toXrp'); setBridgeAmount(''); setDestAddress(''); }}
+                  className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                    swapDirection === 'toXrp'
+                      ? "bg-primary text-white"
+                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  Buy XRP
+                </button>
+                <button
+                  onClick={() => { setSwapDirection('fromXrp'); setBridgeAmount(''); setDestAddress(''); }}
+                  className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                    swapDirection === 'fromXrp'
+                      ? "bg-primary text-white"
+                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  Sell XRP
+                </button>
+              </div>
+
+              {/* Currency Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                  className={cn(
+                    "w-full flex items-center justify-between p-3 rounded-lg border transition-colors",
+                    isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-white/15" : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                  )}
+                >
+                  {selectedCurrency ? (
+                    <div className="flex items-center gap-2">
+                      {selectedCurrency.image && <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />}
+                      <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                        {selectedCurrency.ticker.toUpperCase()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+                      {currencies.length ? 'Select currency' : 'Loading...'}
+                    </span>
+                  )}
+                  <ChevronDown size={16} className={cn(isDark ? "text-white/40" : "text-gray-400", showCurrencyDropdown && "rotate-180")} />
+                </button>
+
+                {showCurrencyDropdown && (
+                  <div className={cn("absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden", isDark ? "border-white/10 bg-[#1a1a1a]" : "border-gray-200 bg-white")}>
+                    <div className="p-2 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                      <input
+                        type="text"
+                        value={currencySearch}
+                        onChange={(e) => setCurrencySearch(e.target.value)}
+                        placeholder="Search..."
+                        autoFocus
+                        className={cn("w-full px-2 py-1.5 rounded text-[12px] outline-none", isDark ? "bg-white/5 text-white placeholder:text-white/30" : "bg-gray-50 text-gray-900 placeholder:text-gray-400")}
+                      />
+                    </div>
+                    <div className="overflow-y-auto max-h-[200px]">
+                      {(() => {
+                        const filtered = currencies.filter(c => !currencySearch || c.ticker.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase()));
+                        const shown = filtered.slice(0, currencySearch ? 100 : 30);
+                        return shown.length === 0 ? (
+                          <div className={cn("px-3 py-4 text-center text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                            No results
+                          </div>
+                        ) : shown.map((c) => (
+                          <button
+                            key={`${c.ticker}-${c.network}`}
+                            onClick={() => { setSelectedCurrency(c); setShowCurrencyDropdown(false); setCurrencySearch(''); }}
+                            className={cn("w-full flex items-center gap-2 px-3 py-2 text-left transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}
+                          >
+                            {c.image && <img src={c.image} alt="" className="w-5 h-5 rounded-full" />}
+                            <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>{c.ticker.toUpperCase()}</span>
+                            <span className={cn("text-[10px] flex-1", isDark ? "text-white/30" : "text-gray-400")}>{c.name}</span>
+                          </button>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Destination Address (for selling XRP) */}
+              {swapDirection === 'fromXrp' && (
+                <div className={cn("rounded-lg border p-3", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50")}>
+                  <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
+                    {selectedCurrency?.ticker?.toUpperCase() || 'Destination'} Address
+                  </label>
+                  <input
+                    type="text"
+                    value={destAddress}
+                    onChange={(e) => setDestAddress(e.target.value)}
+                    placeholder={`Your ${selectedCurrency?.ticker?.toUpperCase() || ''} address`}
+                    className={cn("w-full mt-1 bg-transparent text-[13px] outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                  />
+                </div>
+              )}
+
+              {/* Amount */}
+              <div className={cn("rounded-lg border p-3", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50")}>
+                <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Amount</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="number"
+                    value={bridgeAmount}
+                    onChange={(e) => setBridgeAmount(e.target.value)}
+                    placeholder={minAmount ? `Min: ${minAmount}` : "0.00"}
+                    step="0.0001"
+                    min="0"
+                    className={cn("flex-1 bg-transparent text-[18px] font-medium outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                  />
+                  <span className={cn("text-[13px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>
+                    {swapDirection === 'toXrp' ? (selectedCurrency?.ticker?.toUpperCase() || '---') : 'XRP'}
+                  </span>
+                </div>
+                {estimatedXrp && (
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                    <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You'll receive</span>
+                    <span className="text-[13px] font-medium text-emerald-500">
+                      ~{estimatedXrp} {swapDirection === 'toXrp' ? 'XRP' : selectedCurrency?.ticker?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {bridgeError && (
+                <div className="p-2 rounded-lg text-[11px] bg-red-500/10 text-red-400 border border-red-500/20">
+                  {bridgeError}
+                </div>
+              )}
+
+              <button
+                onClick={() => handleCreateBridge(accountLogin)}
+                disabled={bridgeLoading || !bridgeAmount || !selectedCurrency || !estimatedXrp || (swapDirection === 'fromXrp' && !destAddress)}
+                className={cn(
+                  "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
+                  bridgeAmount && selectedCurrency && estimatedXrp && (swapDirection === 'toXrp' || destAddress)
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : isDark ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                )}
+              >
+                {bridgeLoading ? <Loader2 size={14} className="animate-spin" /> : <><ArrowLeftRight size={14} /> Create Exchange</>}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={isDark ? "text-white" : "text-gray-900"}>
-      {/* Header with gradient accent */}
+      {/* Header */}
       <div className={cn(
-        "px-4 py-3 flex items-center justify-between",
+        "px-4 py-2.5 flex items-center justify-between",
         isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
       )}>
         <button
           onClick={handleCopyAddress}
           className={cn(
             "flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg transition-all",
-            addressCopied
-              ? "bg-emerald-500/10"
-              : isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+            addressCopied ? "bg-emerald-500/10" : isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
           )}
         >
           <div className="relative">
-            <div className={cn("w-2 h-2 rounded-full", addressCopied ? "bg-emerald-400" : "bg-emerald-400")} />
+            <div className={cn("w-2 h-2 rounded-full", "bg-emerald-400")} />
             {!addressCopied && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />}
           </div>
-          <span className={cn(
-            "font-mono text-xs",
-            addressCopied ? "text-emerald-500" : isDark ? "text-white/60" : "text-gray-500"
-          )}>
+          <span className={cn("font-mono text-xs", addressCopied ? "text-emerald-500" : isDark ? "text-white/60" : "text-gray-500")}>
             {truncateAccount(accountLogin, 6)}
           </span>
-          {addressCopied ? (
-            <Check size={12} className="text-emerald-500" />
-          ) : (
-            <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
-          )}
+          {addressCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />}
         </button>
-        <div className="flex items-center gap-2">
-          {needsBackup && (
-            <button
-              onClick={onBackupSeed}
-              className="px-2 py-1 rounded-md text-[10px] font-medium text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-colors"
-            >
-              Backup
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className={cn(
-              "p-1.5 rounded-lg transition-colors",
-              isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-            )}
-          >
-            <XIcon size={14} />
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}
+        >
+          <XIcon size={14} />
+        </button>
       </div>
 
-      {/* Balance Section */}
-      <div className="px-5 pt-5 pb-3 text-center">
-        {/* Balance */}
-        <div className="flex items-baseline justify-center gap-1.5 mb-1">
-          <span className="font-mono text-2xl font-medium tracking-tight">
+      {/* Balance */}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-baseline gap-1.5 mb-0.5">
+          <span className="font-mono text-2xl font-semibold tracking-tight">
             {accountTotalXrp || accountBalance?.curr1?.value || '0'}
           </span>
-          <span className={cn("text-sm font-medium", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+          <span className={cn("text-sm", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
         </div>
-        {/* Balance Stats */}
-        <div className={cn("flex items-center justify-center gap-3 text-[10px] mb-4", isDark ? "text-white/35" : "text-gray-400")}>
-          <span>{accountBalance?.curr1?.value || '0'} available</span>
-          <span>•</span>
-          <span>{accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved</span>
+        <div className={cn("text-[11px] mb-4", isDark ? "text-white/35" : "text-gray-400")}>
+          {accountBalance?.curr1?.value || '0'} available · {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center justify-center gap-2">
-          <a
-            href="/wallet?tab=send"
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
-              isDark
-                ? "border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/50"
-                : "border-primary/30 text-primary bg-primary/5 hover:bg-primary/10"
-            )}
-          >
-            <Send size={13} />
+        {/* Actions */}
+        <div className="grid grid-cols-3 gap-2">
+          <a href="/wallet?tab=send" className={cn(
+            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
+            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          )}>
+            <Send size={16} className="text-primary" />
             Send
           </a>
-          <button
-            onClick={() => setShowQrCode(!showQrCode)}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
-              showQrCode
-                ? "border-primary/30 text-primary bg-primary/5"
-                : isDark
-                  ? "border-white/10 text-white/60 hover:border-white/20 hover:bg-white/[0.03]"
-                  : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-            )}
-          >
-            <QrCode size={13} />
+          <button onClick={() => setShowQrCode(!showQrCode)} className={cn(
+            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
+            showQrCode
+              ? "bg-primary/10 text-primary"
+              : isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          )}>
+            <QrCode size={16} className={showQrCode ? "text-primary" : isDark ? "text-white/50" : "text-gray-500"} />
             Receive
           </button>
-          <button
-            onClick={onBackupSeed}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium border transition-all",
-              isDark
-                ? "border-white/10 text-white/60 hover:border-white/20 hover:bg-white/[0.03]"
-                : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-            )}
-          >
-            <Shield size={13} />
-            Backup
+          <button onClick={() => { initBridgeForm(); setShowBridgeInDropdown(true); }} className={cn(
+            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
+            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          )}>
+            <ArrowLeftRight size={16} className="text-emerald-400" />
+            Bridge
           </button>
         </div>
-
-        {/* View Wallet Link */}
-        <a
-          href="/wallet"
-          className={cn(
-            "inline-flex items-center gap-1 text-[11px] font-medium mt-3 py-1.5 transition-colors",
-            isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
-          )}
-        >
-          View Full Wallet
-          <ChevronRight size={12} />
-        </a>
       </div>
 
-      {/* QR Code Section - Compact */}
+      {/* QR Code */}
       {showQrCode && (
-        <div className={cn("mx-4 mb-4 p-3 rounded-xl", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+        <div className={cn("mx-4 mb-3 p-3 rounded-xl", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
           <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-white rounded-lg flex-shrink-0">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
-                alt="QR"
-                className="w-[80px] h-[80px]"
-              />
+            <div className="p-1.5 bg-white rounded-lg">
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[72px] h-[72px]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Address</p>
-              <p className={cn("font-mono text-[10px] break-all leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>{accountLogin}</p>
-              <button
-                onClick={handleCopyAddress}
-                className={cn(
-                  "mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1 transition-all",
-                  addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90"
-                )}
-              >
-                {addressCopied ? <Check size={12} /> : <Copy size={12} />}
-                {addressCopied ? 'Copied' : 'Copy Address'}
+              <p className={cn("font-mono text-[10px] break-all leading-relaxed mb-2", isDark ? "text-white/50" : "text-gray-500")}>{accountLogin}</p>
+              <button onClick={handleCopyAddress} className={cn(
+                "w-full py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1",
+                addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90"
+              )}>
+                {addressCopied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Token Holdings - Mock */}
-      <div className={cn("mx-4 rounded-xl", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-        <div className={cn("px-3 py-2 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-          <p className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>Holdings</p>
-        </div>
-        <div className="py-1">
-          {[
-            { symbol: 'SOLO', name: 'Sologenic', amount: '1,250.00', value: '$45.20', change: '+2.4%', positive: true, color: '#00D4AA' },
-            { symbol: 'CSC', name: 'CasinoCoin', amount: '50,000', value: '$125.00', change: '-1.2%', positive: false, color: '#E91E63' },
-            { symbol: 'CORE', name: 'Coreum', amount: '320.50', value: '$89.40', change: '+5.1%', positive: true, color: '#25D695' },
-          ].map((token) => (
-            <div key={token.symbol} className={cn("flex items-center gap-2.5 px-3 py-2 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-100/50")}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>
-                {token.symbol[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={cn("text-[12px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
-                <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{token.amount}</p>
-              </div>
-              <div className="text-right">
-                <p className={cn("text-[11px] font-medium tabular-nums", isDark ? "text-white/80" : "text-gray-700")}>{token.value}</p>
-                <p className={cn("text-[10px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Accounts Section */}
-      <div className="px-4 pt-4">
-        <button
-          onClick={() => setShowAllAccounts(!showAllAccounts)}
-          className="w-full flex items-center gap-2"
-        >
-          <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>
-            Accounts
+      {/* Accounts */}
+      <div className={cn("mx-4 mb-3 rounded-xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+        <button onClick={() => setShowAllAccounts(!showAllAccounts)} className={cn(
+          "w-full px-3 py-2 flex items-center justify-between",
+          isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50"
+        )}>
+          <span className={cn("text-[11px] font-medium", isDark ? "text-white/60" : "text-gray-600")}>
+            Accounts <span className={cn("ml-1 px-1.5 py-0.5 rounded text-[9px]", isDark ? "bg-white/[0.06] text-white/40" : "bg-gray-200 text-gray-500")}>{profiles.length}</span>
           </span>
-          <span className={cn(
-            "px-1.5 py-0.5 rounded text-[9px] font-semibold",
-            isDark ? "bg-white/[0.06] text-white/50" : "bg-gray-100 text-gray-500"
-          )}>
-            {profiles.length}
-          </span>
-          <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
-          <ChevronDown
-            size={14}
-            className={cn(
-              "transition-transform duration-200",
-              showAllAccounts ? "rotate-180" : "",
-              isDark ? "text-white/40" : "text-gray-400"
-            )}
-          />
+          <ChevronDown size={14} className={cn("transition-transform", showAllAccounts && "rotate-180", isDark ? "text-white/30" : "text-gray-400")} />
         </button>
 
         {showAllAccounts && (
-          <div className={cn("border-t", isDark ? "border-white/[0.04]" : "border-gray-50")}>
-            {/* Pagination - Compact */}
+          <div className={cn("border-t max-h-[180px] overflow-y-auto", isDark ? "border-white/[0.04]" : "border-gray-100")}>
             {(() => {
-              const totalPages = Math.ceil(profiles.length / walletsPerPage);
-              return totalPages > 1 && (
-                <div className={cn(
-                  "px-4 py-2 flex items-center justify-center gap-3 border-b",
-                  isDark ? "border-white/[0.04]" : "border-gray-50"
-                )}>
-                  <button
-                    disabled={walletPage === 0}
-                    onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
-                    className={cn(
-                      "p-1 rounded transition-colors",
-                      walletPage === 0
-                        ? "opacity-30 cursor-not-allowed"
-                        : isDark ? "hover:bg-white/10 text-white/60" : "hover:bg-gray-100 text-gray-500"
-                    )}
-                  >
-                    <ChevronDown size={12} className="rotate-90" />
+              const currentAccount = profiles.find(p => p.account === accountLogin);
+              const others = profiles.filter(p => p.account !== accountLogin);
+              const sorted = [...(currentAccount ? [currentAccount] : []), ...others];
+              const startIndex = walletPage * walletsPerPage;
+              return sorted.slice(startIndex, startIndex + walletsPerPage).map((profile) => {
+                const isCurrent = profile.account === accountLogin;
+                const isInactive = accountsActivation[profile.account] === false;
+                return (
+                  <button key={profile.account} onClick={() => !isCurrent && onAccountSwitch(profile.account)}
+                    className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-all",
+                      isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
+                    )}>
+                    <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
+                    <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
+                      {truncateAccount(profile.account, 8)}
+                    </span>
+                    {isCurrent && <span className="text-[9px] font-medium text-emerald-500">Active</span>}
                   </button>
-                  <span className={cn("text-[10px] font-medium min-w-[50px] text-center", isDark ? "text-white/50" : "text-gray-400")}>
-                    {walletPage + 1} / {totalPages}
-                  </span>
-                  <button
-                    disabled={walletPage >= totalPages - 1}
-                    onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
-                    className={cn(
-                      "p-1 rounded transition-colors",
-                      walletPage >= totalPages - 1
-                        ? "opacity-30 cursor-not-allowed"
-                        : isDark ? "hover:bg-white/10 text-white/60" : "hover:bg-gray-100 text-gray-500"
-                    )}
-                  >
-                    <ChevronDown size={12} className="-rotate-90" />
-                  </button>
-                </div>
-              );
+                );
+              });
             })()}
-
-            {/* Wallets List - Enhanced */}
-            <div className="max-h-[240px] overflow-y-auto py-1">
-              {(() => {
-                const activeAccounts = [];
-                const inactiveAccounts = [];
-
-                profiles.forEach(profile => {
-                  if (accountsActivation[profile.account] === false) {
-                    inactiveAccounts.push(profile);
-                  } else {
-                    activeAccounts.push(profile);
-                  }
-                });
-
-                const sortByAddress = (a, b) => a.account.localeCompare(b.account);
-                activeAccounts.sort(sortByAddress);
-                inactiveAccounts.sort(sortByAddress);
-
-                const currentAccount = profiles.find(p => p.account === accountLogin);
-                const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
-                const sorted = [
-                  ...(currentAccount ? [currentAccount] : []),
-                  ...otherActive,
-                  ...inactiveAccounts
-                ];
-
-                const startIndex = walletPage * walletsPerPage;
-                const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
-
-                return paginatedProfiles.map((profile) => {
-                  const account = profile.account;
-                  const isCurrent = account === accountLogin;
-                  const isInactive = accountsActivation[account] === false;
-
-                  return (
-                    <button
-                      key={account}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!isCurrent) {
-                          onAccountSwitch(account);
-                        }
-                      }}
-                      className={cn(
-                        "w-full px-4 py-2.5 flex items-center gap-3 transition-all",
-                        isCurrent
-                          ? isDark
-                            ? "bg-primary/10 border-l-2 border-primary"
-                            : "bg-primary/5 border-l-2 border-primary"
-                          : isDark
-                            ? "hover:bg-white/[0.03] border-l-2 border-transparent"
-                            : "hover:bg-gray-50 border-l-2 border-transparent",
-                        !isCurrent && "cursor-pointer"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-1.5 h-1.5 rounded-full flex-shrink-0",
-                        isInactive ? "bg-amber-400/60" : "bg-emerald-400"
-                      )} />
-                      <span className={cn(
-                        "font-mono text-xs",
-                        isCurrent
-                          ? isDark ? "text-white" : "text-gray-900"
-                          : isDark ? "text-white/60" : "text-gray-600"
-                      )}>
-                        {truncateAccount(account, 8)}
-                      </span>
-                      {isCurrent && (
-                        <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide uppercase bg-emerald-500/20 text-emerald-500">
-                          Active
-                        </span>
-                      )}
-                    </button>
-                  );
-                });
-              })()}
-            </div>
           </div>
         )}
       </div>
 
-      {/* Footer Actions */}
-      <div className={cn(
-        "px-4 py-3 flex items-center justify-between border-t mt-2",
-        isDark ? "border-white/[0.06]" : "border-gray-100"
-      )}>
-        {onCreateNewAccount && profiles.length < 25 && (
-          <button
-            onClick={onCreateNewAccount}
-            className={cn(
-              "flex items-center gap-1.5 text-xs font-medium transition-colors",
-              isDark ? "text-primary hover:text-primary/80" : "text-primary hover:text-primary/80"
-            )}
-          >
-            <Plus size={14} />
-            Add Account
+      {/* Footer */}
+      <div className={cn("px-4 py-2.5 flex items-center justify-between border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+        {onCreateNewAccount && profiles.length < 25 ? (
+          <button onClick={onCreateNewAccount} className={cn("flex items-center gap-1 text-[11px] font-medium", "text-primary hover:text-primary/80")}>
+            <Plus size={13} /> Add
+          </button>
+        ) : <div />}
+        {needsBackup && (
+          <button onClick={onBackupSeed} className="flex items-center gap-1 text-[11px] font-medium text-amber-500 hover:text-amber-400">
+            <Shield size={13} /> Backup
           </button>
         )}
-        <button
-          onClick={onLogout}
-          className={cn(
-            "flex items-center gap-1.5 text-xs font-medium transition-colors ml-auto",
-            isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500"
-          )}
-        >
+        <button onClick={onLogout} className={cn("text-[11px] font-medium", isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500")}>
           Logout
         </button>
       </div>
@@ -1229,17 +1270,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState({});
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
-  const [showDeviceLogin, setShowDeviceLogin] = useState(false);
-  const [status, setStatus] = useState('idle');
-  const [showDevicePasswordInput, setShowDevicePasswordInput] = useState(false);
-  const [devicePassword, setDevicePassword] = useState('');
-  const [devicePasswordConfirm, setDevicePasswordConfirm] = useState('');
-  const [devicePasswordMode, setDevicePasswordMode] = useState('create'); // 'create' or 'verify'
-  const [pendingDeviceId, setPendingDeviceId] = useState(null);
-  const [showDevicePassword, setShowDevicePassword] = useState(false);
-  const [error, setError] = useState('');
-  const [walletInfo, setWalletInfo] = useState(null);
-  const [isLoadingDeps, setIsLoadingDeps] = useState(false);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
   const walletsPerPage = 5;
@@ -1249,34 +1279,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
   const [backupMode, setBackupMode] = useState(null); // 'seed' or 'full'
-  // OAuth wallet manager is now part of unified storage
-
-  // Removed additional wallet generation - each auth method has single wallet
-
-  // OAuth password setup state
-  const [showOAuthPasswordSetup, setShowOAuthPasswordSetup] = useState(false);
-  // eslint-disable-next-line react/hook-use-state
-  const [oauthPassword, setOAuthPassword] = useState('');
-  // eslint-disable-next-line react/hook-use-state
-  const [oauthConfirmPassword, setOAuthConfirmPassword] = useState('');
-  const [showOAuthPassword, setShowOAuthPassword] = useState(false);
-
-  // Email verification states
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
-  const [emailStep, setEmailStep] = useState('email'); // 'email', 'code', or 'password'
-  const [verificationEmail, setVerificationEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [emailPassword, setEmailPassword] = useState('');
-  // eslint-disable-next-line react/hook-use-state
-  const [oauthPasswordError, setOAuthPasswordError] = useState('');
-  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
-  const [showImportOption, setShowImportOption] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importMethod, setImportMethod] = useState('new'); // 'new', 'import', or 'seed'
-  const [importSeed, setImportSeed] = useState('');
-  const [importSeeds, setImportSeeds] = useState(['']); // Support multiple seeds
-  const [seedCount, setSeedCount] = useState(1);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
@@ -1301,6 +1304,102 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
   const [unlockError, setUnlockError] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
+
+  // New user create wallet state
+  const [createPassword, setCreatePassword] = useState('');
+  const [createPasswordConfirm, setCreatePasswordConfirm] = useState('');
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Post-creation backup screen state
+  const [newWalletData, setNewWalletData] = useState(null);
+  const [showNewWalletScreen, setShowNewWalletScreen] = useState(false);
+  const [backupConfirmed, setBackupConfirmed] = useState(false);
+  const [showNewSeed, setShowNewSeed] = useState(false);
+  const [newSeedCopied, setNewSeedCopied] = useState(false);
+  const [newAddressCopied, setNewAddressCopied] = useState(false);
+
+  // Crypto bridge state
+  const [showBridgeForm, setShowBridgeForm] = useState(false);
+  const [currencies, setCurrencies] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [bridgeAmount, setBridgeAmount] = useState('');
+  const [bridgeLoading, setBridgeLoading] = useState(false);
+  const [bridgeData, setBridgeData] = useState(null);
+  const [bridgeError, setBridgeError] = useState('');
+  const [bridgeAddressCopied, setBridgeAddressCopied] = useState(false);
+  const [estimatedXrp, setEstimatedXrp] = useState(null);
+  const [minAmount, setMinAmount] = useState(null);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [currencySearch, setCurrencySearch] = useState('');
+  const [showBridgeInDropdown, setShowBridgeInDropdown] = useState(false);
+  const [swapDirection, setSwapDirection] = useState('toXrp'); // 'toXrp' or 'fromXrp'
+  const [destAddress, setDestAddress] = useState(''); // destination address for fromXrp swaps
+
+  // Restore wallet modal state from sessionStorage on mount
+  // Note: setOpenWalletModal comes from AppContext, so the auto-open effect handles opening the modal
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = sessionStorage.getItem('wallet_modal_state');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        // Restore post-creation backup screen state
+        if (data.showNewWalletScreen && data.newWalletData) {
+          setShowNewWalletScreen(true);
+          setNewWalletData(data.newWalletData);
+          setBackupConfirmed(data.backupConfirmed || false);
+          setShowBridgeForm(data.showBridgeForm || false);
+          if (data.bridgeData) setBridgeData(data.bridgeData);
+          if (data.bridgeAmount) setBridgeAmount(data.bridgeAmount);
+          if (data.selectedCurrency) setSelectedCurrency(data.selectedCurrency);
+          if (data.estimatedXrp) setEstimatedXrp(data.estimatedXrp);
+        }
+        // Restore new account flow state (but not password)
+        if (data.showNewAccountFlow) {
+          setShowNewAccountFlow(true);
+          setNewAccountMode(data.newAccountMode || 'new');
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  // Persist wallet modal state to sessionStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // Only persist if we're in an important flow that shouldn't be lost
+    if (showNewWalletScreen && newWalletData) {
+      sessionStorage.setItem('wallet_modal_state', JSON.stringify({
+        showNewWalletScreen: true,
+        newWalletData: {
+          address: newWalletData.address,
+          publicKey: newWalletData.publicKey,
+          seed: newWalletData.seed, // Needed for backup display
+          createdAt: newWalletData.createdAt
+        },
+        backupConfirmed,
+        showBridgeForm,
+        bridgeData,
+        bridgeAmount,
+        selectedCurrency,
+        estimatedXrp
+      }));
+    } else if (showNewAccountFlow) {
+      sessionStorage.setItem('wallet_modal_state', JSON.stringify({
+        showNewAccountFlow: true,
+        newAccountMode
+      }));
+    } else {
+      // Clear when no active flow
+      sessionStorage.removeItem('wallet_modal_state');
+    }
+  }, [showNewWalletScreen, newWalletData, backupConfirmed, showBridgeForm, bridgeData, bridgeAmount, selectedCurrency, estimatedXrp, showNewAccountFlow, newAccountMode]);
+
+  // Clear persisted state when wallet setup is complete
+  const clearPersistedState = useCallback(() => {
+    sessionStorage.removeItem('wallet_modal_state');
+  }, []);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -1338,669 +1437,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
     checkWallets();
   }, []);
-
-  // Device Password handlers
-  const handleDevicePasswordSubmit = async () => {
-    if (devicePasswordMode === 'create') {
-      const strengthCheck = securityUtils.validatePasswordStrength(devicePassword);
-      if (!strengthCheck.valid) {
-        setError(strengthCheck.error);
-        return;
-      }
-      if (devicePassword !== devicePasswordConfirm) {
-        setError('Passwords do not match');
-        return;
-      }
-    } else if (!devicePassword) {
-      setError('Please enter your password');
-      return;
-    }
-
-    setShowDevicePasswordInput(false);
-    const password = devicePassword;
-    setDevicePassword('');
-    setDevicePasswordConfirm('');
-
-    if (devicePasswordMode === 'create' && pendingDeviceId) {
-      await completeDeviceRegistration(pendingDeviceId, password);
-    } else if (devicePasswordMode === 'verify' && pendingDeviceId) {
-      await completeDeviceAuthentication(pendingDeviceId, password);
-    }
-  };
-
-  const completeDeviceRegistration = async (deviceId, password) => {
-    try {
-      console.log('[Passkey] completeDeviceRegistration - deviceId:', deviceId);
-
-      // Store the password for future use
-      await walletStorage.storeWalletCredential(deviceId, password);
-
-      // Check if wallets already exist for this device
-      setStatus('discovering');
-      const existingWallets = await walletStorage.getAllWalletsForDevice(deviceId, password);
-      console.log('[Passkey] Existing wallets found:', existingWallets?.length || 0);
-
-      let wallets;
-      if (existingWallets && existingWallets.length > 0) {
-        // Use existing wallets
-        console.log('[Passkey] Using existing wallets');
-        wallets = existingWallets;
-      } else {
-        // Generate 1 new wallet
-        console.log('[Passkey] Creating new wallet');
-        setStatus('creating');
-        const wallet = generateRandomWallet();
-
-        const walletData = {
-          deviceKeyId: deviceId,
-          accountIndex: 0,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0',
-          createdAt: Date.now(),
-          seed: wallet.seed
-        };
-
-        await walletStorage.storeWallet(walletData, password);
-        wallets = [walletData];
-
-        // Mark new wallets as needing backup
-        wallets.forEach(w => {
-          localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
-        });
-      }
-
-      setError(''); // Clear progress message
-
-      // Update profiles
-      const allProfiles = [...profiles];
-      wallets.forEach(walletData => {
-        const profile = { ...walletData, tokenCreatedAt: Date.now() };
-        const exists = allProfiles.find(p => p.account === profile.account);
-        if (!exists) {
-          allProfiles.push(profile);
-        }
-      });
-
-      setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-      // Store first wallet info for display
-      setWalletInfo({
-        address: wallets[0].address,
-        publicKey: wallets[0].publicKey,
-        deviceKeyId: deviceId,
-        totalWallets: wallets.length
-      });
-
-      // Login with first wallet
-      doLogIn(wallets[0], allProfiles);
-      setStatus('success');
-
-      // Close modal after delay to ensure UI updates
-      setTimeout(() => {
-        setOpenWalletModal(false);
-        setOpen(false);
-        setStatus('idle');
-        setShowDeviceLogin(false);
-        setError('');
-        if (existingWallets && existingWallets.length > 0) {
-          openSnackbar('Wallet restored successfully!', 'success');
-        } else {
-          setTimeout(() => {
-            openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
-          }, 1000);
-        }
-      }, 800);
-    } catch (err) {
-      console.error('[Passkey] Registration error:', err);
-      setError('Failed to complete registration: ' + err.message);
-      setStatus('idle');
-    }
-  };
-
-  // Social login handlers
-  const handleGoogleConnect = () => {
-    try {
-      // Check if Google Sign-In is loaded
-      if (!window.google?.accounts?.id) {
-        openSnackbar('Google Sign-In is still loading, please try again', 'info');
-        return;
-      }
-
-      // Create a temporary div to render the Google button
-      const buttonDiv = document.createElement('div');
-      buttonDiv.id = 'temp-google-button';
-      buttonDiv.style.position = 'fixed';
-      buttonDiv.style.top = '-9999px';
-      document.body.appendChild(buttonDiv);
-
-      // Render the button (hidden)
-      window.google.accounts.id.renderButton(
-        buttonDiv,
-        {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard'
-        }
-      );
-
-      // Click it programmatically after a short delay
-      setTimeout(() => {
-        const button = buttonDiv.querySelector('div[role="button"]');
-        if (button) {
-          button.click();
-        }
-        // Clean up after click
-        setTimeout(() => {
-          buttonDiv.remove();
-        }, 500);
-      }, 100);
-
-    } catch (error) {
-      devError('Google connect error:', error);
-      openSnackbar('Google connect failed: ' + error.message, 'error');
-    }
-  };
-
-  const processGoogleConnect = async (jwtToken, userData) => {
-    console.log('[Wallet] processGoogleConnect called');
-    try {
-      // Use provided user data or decode JWT
-      let payload = userData;
-      if (!userData && jwtToken && jwtToken.includes('.')) {
-        try {
-          payload = JSON.parse(atob(jwtToken.split('.')[1]));
-        } catch {
-          payload = { id: 'google_user', provider: 'google' };
-        }
-      }
-      console.log('[Wallet] Payload:', { id: payload?.id || payload?.sub, provider: payload?.provider || 'google' });
-
-      // Check if user already has wallets loaded (from AppContext auto-load)
-      const walletId = `${payload.provider || 'google'}_${payload.sub || payload.id}`;
-      const hasPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-      console.log('[Wallet] hasPassword:', !!hasPassword, 'profiles.length:', profiles.length);
-
-      if (hasPassword && profiles.length > 0) {
-        console.log('[Wallet] Returning user with wallets - auto login');
-        await walletStorage.setSecureItem('jwt', jwtToken);
-        await walletStorage.setSecureItem('authMethod', 'google');
-        await walletStorage.setSecureItem('user', payload);
-        setOpenWalletModal(false);
-        return;
-      }
-
-      // Use unified wallet storage
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
-
-      // Create backend object with proper API URL
-      const backend = {
-        get: (url) => fetch(`https://api.xrpl.to${url}`, {
-          headers: { 'Authorization': `Bearer ${jwtToken}` }
-        }).then(r => r.json()),
-        post: (url, body) => fetch(`https://api.xrpl.to${url}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`
-          },
-          body: JSON.stringify(body)
-        }).then(r => r.json())
-      };
-
-      // Handle social login
-      console.log('[Wallet] Calling handleSocialLogin...');
-      const result = await walletStorageInstance.handleSocialLogin(
-        {
-          id: payload.sub || payload.id,
-          provider: 'google',
-          email: payload.email,
-          name: payload.name,
-          ...payload
-        },
-        jwtToken,
-        backend
-      );
-
-      console.log('[Wallet] handleSocialLogin result:', { requiresPassword: result.requiresPassword, hasWallet: !!result.wallet });
-
-      if (result.requiresPassword) {
-        console.log('[Wallet] Password required - redirecting to /wallet-setup');
-        // Store token temporarily for password setup
-        sessionStorage.setItem('oauth_temp_token', jwtToken);
-        sessionStorage.setItem('oauth_temp_provider', 'google');
-        sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload));
-        sessionStorage.setItem('oauth_action', result.action);
-
-        // Close modal and redirect to dedicated wallet-setup page
-        setOpenWalletModal(false);
-        window.location.href = '/wallet-setup';
-        return;
-      } else {
-        devLog('✅ No password required - auto login');
-        // Wallet already setup
-        await walletStorage.setSecureItem('jwt', jwtToken);
-        await walletStorage.setSecureItem('authMethod', 'google');
-        await walletStorage.setSecureItem('user', payload);
-
-        if (result.wallet) {
-          // Load ALL wallets for this provider into profiles
-          if (result.allWallets && result.allWallets.length > 0) {
-            const allProfiles = [];
-            result.allWallets.forEach(w => {
-              const walletProfile = {
-                account: w.address,
-                address: w.address,
-                publicKey: w.publicKey,
-                seed: w.seed,
-                wallet_type: 'oauth',
-                provider: payload.provider || 'google',
-                provider_id: payload.sub || payload.id,
-                createdAt: w.createdAt || Date.now(),
-                tokenCreatedAt: Date.now()
-              };
-              allProfiles.push(walletProfile);
-            });
-
-            setProfiles(allProfiles);
-            await syncProfilesToIndexedDB(allProfiles);
-            doLogIn(result.wallet, allProfiles);
-          } else {
-            doLogIn(result.wallet, profiles);
-          }
-          openSnackbar('Google connect successful!', 'success');
-        }
-        setOpenWalletModal(false);
-      }
-    } catch (error) {
-      console.error('[Wallet] Error processing Google connect:', error);
-      openSnackbar('Failed to process Google connect: ' + (error.message || 'Unknown error'), 'error');
-    }
-  };
-
-  const handleEmailConnect = () => {
-    setShowEmailVerification(true);
-    setEmailStep('email');
-    setVerificationEmail('');
-    setVerificationCode('');
-    setEmailPassword('');
-  };
-
-  const handleEmailPasswordLogin = async () => {
-    if (!emailPassword) {
-      setError('Please enter your password');
-      return;
-    }
-
-    try {
-      const walletId = `email_${verificationEmail}`;
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
-      const wallet = await walletStorageInstance.findWalletBySocialId(walletId, emailPassword);
-
-      if (wallet) {
-        // Create full profile for email wallet
-        const profile = {
-          account: wallet.address,
-          publicKey: wallet.publicKey,
-          seed: wallet.seed,
-          wallet_type: 'oauth',
-          provider: 'email',
-          provider_id: verificationEmail
-        };
-
-        // Store in localStorage for session
-        localStorage.setItem('authMethod', 'email');
-        localStorage.setItem('user', JSON.stringify({ email: verificationEmail }));
-
-        await doLogIn(profile);
-        setShowEmailVerification(false);
-        setEmailPassword('');
-        setOpen(false);
-      } else {
-        setError('Incorrect password');
-        setEmailPassword('');
-      }
-    } catch (error) {
-      devError('Email login error:', error);
-      setError('Incorrect password');
-      setEmailPassword('');
-    }
-  };
-
-  const handleEmailContinue = async () => {
-    if (!verificationEmail || !verificationEmail.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    try {
-      // Always check if wallet exists first
-      const walletId = `email_${verificationEmail}`;
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
-      const existingWallet = await walletStorageInstance.checkWalletExists(walletId);
-
-      if (existingWallet) {
-        // Existing user - go to password
-        devLog('Existing email wallet - show password');
-        setEmailStep('password');
-        setError('');
-        return;
-      }
-
-      // New user - send verification code
-      const sendResponse = await fetch('https://api.xrpl.to/api/oauth/email/send-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: verificationEmail })
-      });
-
-      if (!sendResponse.ok) {
-        const error = await sendResponse.json().catch(() => ({ error: 'Failed to send code' }));
-        setError(error.message || 'Failed to send verification code');
-        return;
-      }
-
-      setEmailStep('code');
-      setError('');
-    } catch (error) {
-      devError('Send code error:', error);
-      setError('Failed to send verification code');
-    }
-  };
-
-  const handleVerifyEmailCode = async () => {
-    if (!verificationCode || verificationCode.length !== 6) {
-      setError('Please enter a valid 6-digit code');
-      return;
-    }
-
-    try {
-      const verifyResponse = await fetch('https://api.xrpl.to/api/oauth/email/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: verificationEmail, code: verificationCode })
-      });
-
-      if (!verifyResponse.ok) {
-        const error = await verifyResponse.json().catch(() => ({ error: 'Invalid code' }));
-        setError(error.message || 'Invalid or expired code');
-        return;
-      }
-
-      const data = await verifyResponse.json();
-
-      if (!data.token) {
-        setError('No token received from server');
-        return;
-      }
-
-      // Store token temporarily
-      sessionStorage.setItem('oauth_temp_token', data.token);
-      sessionStorage.setItem('oauth_temp_provider', 'email');
-      sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: verificationEmail, email: verificationEmail, username: verificationEmail.split('@')[0] }));
-      sessionStorage.setItem('oauth_action', 'create');
-
-      // Handle as OAuth login
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
-      const result = await walletStorageInstance.handleSocialLogin(
-        { id: verificationEmail, provider: 'email', email: verificationEmail, username: verificationEmail.split('@')[0] },
-        data.token,
-        null
-      );
-
-      setShowEmailVerification(false);
-
-      if (result.requiresPassword) {
-        // Redirect to dedicated wallet-setup page (like Google flow)
-        setOpenWalletModal(false);
-        window.location.href = '/wallet-setup';
-        return;
-      } else if (result.wallet) {
-        localStorage.setItem('jwt', data.token);
-        localStorage.setItem('authMethod', 'email');
-        await doLogIn(result.wallet.account, result.wallet.publicKey, result.wallet.seed, 'oauth');
-        setOpenWalletModal(false);
-      }
-    } catch (error) {
-      console.error('Verify code error:', error);
-      setError('Email authentication failed. Please try again.');
-    }
-  };
-
-  const handleXConnect = async () => {
-    try {
-      // Use OAuth 1.0a instead of OAuth 2.0 for better rate limits and no token expiration
-      const callbackUrl = window.location.origin + '/callback';
-
-      // Store return URL for after auth
-      sessionStorage.setItem('auth_return_url', window.location.href);
-      sessionStorage.setItem('wallet_modal_open', 'true');
-
-      // Step 1: Get OAuth 1.0a request token and auth URL
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
-      const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          callbackUrl: callbackUrl
-        }),
-        signal: controller.signal
-      }).finally(() => clearTimeout(timeoutId));
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Request failed' }));
-        devError('Failed to get OAuth request token:', error);
-        setError('Twitter authentication is currently unavailable. Please try Passkeys or Google instead.');
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.auth_url || !data.oauth_token || !data.oauth_token_secret) {
-        devError('Invalid OAuth response:', data);
-        setError('Twitter authentication setup failed. Please try another login method.');
-        return;
-      }
-
-      // Store OAuth 1.0a tokens for callback
-      sessionStorage.setItem('oauth1_token', data.oauth_token);
-      sessionStorage.setItem('oauth1_token_secret', data.oauth_token_secret);
-      sessionStorage.setItem('oauth1_auth_start', Date.now().toString());
-
-      // Replace twitter.com with x.com to avoid redirect
-      const authUrl = data.auth_url.replace('api.twitter.com', 'api.x.com');
-      devLog('Redirecting to Twitter OAuth 1.0a:', authUrl);
-      window.location.href = authUrl;
-    } catch (error) {
-      devError('X connect error:', error);
-      if (error.name === 'AbortError') {
-        openSnackbar('X connect timed out. Please try again.', 'error');
-      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-        // Network/CORS error - API might be down
-        openSnackbar('X authentication unavailable. Try Google or Passkeys.', 'error');
-      } else {
-        openSnackbar('X connect failed: ' + (error.message || 'Unknown error'), 'error');
-      }
-    }
-  };
-
-  const handleDiscordConnect = async () => {
-    try {
-      const callbackUrl = window.location.origin + '/callback';
-      const clientId = '1416805602415612085';
-      const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=identify`;
-
-      // Store return URL for after auth
-      sessionStorage.setItem('auth_return_url', window.location.href);
-      sessionStorage.setItem('wallet_modal_open', 'true');
-
-      window.location.href = discordAuthUrl;
-    } catch (error) {
-      openSnackbar('Discord connect failed: ' + error.message, 'error');
-    }
-  };
-
-  // Handle OAuth password setup
-  const handleOAuthPasswordSetup = async () => {
-    // Validate password
-    if (importMethod === 'new') {
-      const strengthCheck = securityUtils.validatePasswordStrength(oauthPassword);
-      if (!strengthCheck.valid) {
-        setOAuthPasswordError(strengthCheck.error);
-        return;
-      }
-
-      if (oauthPassword !== oauthConfirmPassword) {
-        setOAuthPasswordError('Passwords do not match');
-        return;
-      }
-    } else {
-      // For import, just need any password (it will be validated during decryption)
-      if (!oauthPassword) {
-        setOAuthPasswordError('Please enter your wallet password');
-        return;
-      }
-    }
-
-    setOAuthPasswordError('');
-
-    // Handle different import methods
-    if (importMethod === 'import' && importFile) {
-      await handleImportWallet();
-      return;
-    } else if (importMethod === 'seed' && importSeed) {
-      await handleImportSeed();
-      return;
-    }
-
-    setIsCreatingWallet(true);
-
-    try {
-      // Get OAuth data from session
-      const token = sessionStorage.getItem('oauth_temp_token');
-      const provider = sessionStorage.getItem('oauth_temp_provider');
-      const userStr = sessionStorage.getItem('oauth_temp_user');
-      const action = sessionStorage.getItem('oauth_action');
-
-      if (!provider || !userStr) {
-        throw new Error('Missing OAuth data');
-      }
-
-      const user = JSON.parse(userStr);
-
-      // For existing email users logging in, we don't need token/action
-      if (provider === 'email' && !token && !action) {
-        devLog('Email login - checking existing wallet');
-        const walletId = `email_${user.email}`;
-        const wallet = await walletStorageInstance.findWalletBySocialId(walletId, oauthPassword);
-
-        if (wallet) {
-          // Successfully decrypted existing wallet
-          await doLogIn(wallet.address, wallet.publicKey, wallet.seed, 'oauth');
-          setShowOAuthPasswordSetup(false);
-          setOAuthPassword('');
-          setOAuthConfirmPassword('');
-          setOpen(false);
-          return;
-        } else {
-          throw new Error('Incorrect password or wallet not found');
-        }
-      }
-
-      if (!token) {
-        throw new Error('Missing OAuth token');
-      }
-
-      // Use unified wallet storage
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
-
-      // Create 1 wallet for OAuth
-      setOAuthPasswordError('Creating wallet...');
-      const wallet = generateRandomWallet();
-
-      const walletKeyId = `${provider}_${user.id}`;
-      const walletData = {
-        accountIndex: 0,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'oauth',
-        provider: provider,
-        provider_id: user.id,
-        walletKeyId: walletKeyId,
-        xrp: '0',
-        createdAt: Date.now(),
-        seed: wallet.seed
-      };
-
-      await walletStorageInstance.storeWallet(walletData, oauthPassword);
-      const wallets = [walletData];
-
-      setOAuthPasswordError(''); // Clear progress
-
-      if (wallets.length > 0) {
-        const result = { success: true, wallet: wallets[0] };
-
-        // Clear temporary session data IMMEDIATELY
-        sessionStorage.removeItem('oauth_temp_token');
-        sessionStorage.removeItem('oauth_temp_provider');
-        sessionStorage.removeItem('oauth_temp_user');
-        sessionStorage.removeItem('oauth_action');
-
-        // Store permanent auth data
-        await walletStorage.setSecureItem('jwt', token);
-        await walletStorage.setSecureItem('authMethod', provider);
-        await walletStorage.setSecureItem('user', user);
-
-        // Store password for provider (enables auto-loading all wallets on re-login)
-        const walletId = `${provider}_${user.id}`;
-        await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
-
-        // Mark wallet as needing backup (new wallet)
-        if (action === 'create') {
-          localStorage.setItem(`wallet_needs_backup_${result.wallet.address}`, 'true');
-        }
-
-        // Add all wallets to profiles
-        const allProfiles = [...profiles];
-        wallets.forEach(w => {
-          if (!allProfiles.find(p => p.account === w.address)) {
-            allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
-          }
-        });
-
-        // Login with first wallet
-        doLogIn(result.wallet, allProfiles);
-
-        // Close dialogs
-        setShowOAuthPasswordSetup(false);
-        setOpenWalletModal(false);
-        setOpen(false);  // Close the main modal
-
-        // Clear password fields
-        setOAuthPassword('');
-        setOAuthConfirmPassword('');
-
-        openSnackbar(`Wallet created successfully!`, 'success');
-      } else {
-        throw new Error('Failed to setup wallet');
-      }
-    } catch (error) {
-      devError('Wallet setup error:', error);
-      setOAuthPasswordError(error.message || 'Failed to setup wallet');
-    } finally {
-      setIsCreatingWallet(false);
-    }
-  };
-
-  // Removed additional wallet generation functions - single wallet per auth method
 
   const handleSeedPasswordSubmit = async () => {
     const profile = accountProfile;
@@ -2318,100 +1754,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-
-  const completeDeviceAuthentication = async (deviceId, password) => {
-    try {
-      console.log('[Passkey] completeDeviceAuthentication - deviceId:', deviceId);
-      setStatus('discovering');
-
-      // Store for future use
-      await walletStorage.storeWalletCredential(deviceId, password);
-
-      // Check if wallets already exist for this device
-      const existingWallets = await walletStorage.getAllWalletsForDevice(deviceId, password);
-      console.log('[Passkey] Existing wallets found:', existingWallets?.length || 0);
-
-      let wallets;
-      let isReturningUser = false;
-
-      if (existingWallets && existingWallets.length > 0) {
-        // Use existing wallets - returning user
-        console.log('[Passkey] Returning user - restoring wallets');
-        wallets = existingWallets;
-        isReturningUser = true;
-      } else {
-        // Generate 1 new wallet - new user
-        console.log('[Passkey] New user - creating wallet');
-        setStatus('creating');
-        const wallet = generateRandomWallet();
-
-        const walletData = {
-          deviceKeyId: deviceId,
-          accountIndex: 0,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0',
-          createdAt: Date.now(),
-          seed: wallet.seed
-        };
-
-        await walletStorage.storeWallet(walletData, password);
-        wallets = [walletData];
-
-        // Mark new wallets as needing backup
-        wallets.forEach(w => {
-          localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
-        });
-      }
-
-      setError(''); // Clear progress message
-
-      // Update profiles state
-      const allProfiles = [...profiles];
-      wallets.forEach(walletData => {
-        const profile = { ...walletData, tokenCreatedAt: Date.now() };
-        const exists = allProfiles.find(p => p.account === profile.account);
-        if (!exists) {
-          allProfiles.push(profile);
-        }
-      });
-
-      setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-      // Set wallet info for success message
-      setWalletInfo({
-        address: wallets[0].address,
-        publicKey: wallets[0].publicKey,
-        deviceKeyId: deviceId,
-        totalWallets: wallets.length
-      });
-
-      // Login with first wallet
-      doLogIn(wallets[0], allProfiles);
-      setStatus('success');
-
-      // Close modal after delay to ensure UI updates
-      setTimeout(() => {
-        setOpenWalletModal(false);
-        setOpen(false);
-        setStatus('idle');
-        setShowDeviceLogin(false);
-        setError('');
-        if (isReturningUser) {
-          openSnackbar('Wallet restored successfully!', 'success');
-        } else {
-          openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
-        }
-      }, 800);
-    } catch (err) {
-      console.error('[Passkey] Authentication error:', err);
-      setError('Failed to complete authentication: ' + err.message);
-      setStatus('idle');
-    }
-  };
   const {
     setActiveProfile,
     accountProfile,
@@ -2433,6 +1775,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     handleLogout,
     doLogIn
   } = useContext(AppContext);
+
+  // Auto-open modal if there's pending wallet setup flow
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Auto-open if ANY part of wallet setup is incomplete
+    // This includes: backup screen, bridge form, bridge in progress
+    const hasIncompleteSetup = showNewWalletScreen && newWalletData;
+    const hasPendingFlow = hasIncompleteSetup || showNewAccountFlow;
+
+    if (hasPendingFlow && !openWalletModal && !open) {
+      // Small delay to ensure DOM is ready after navigation/refresh
+      const timer = setTimeout(() => {
+        setOpenWalletModal(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showNewWalletScreen, newWalletData, showNewAccountFlow, openWalletModal, open, setOpenWalletModal]);
 
   // Check for existing wallets when modal opens (for returning users)
   useEffect(() => {
@@ -2477,6 +1837,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
+      // Get device fingerprint ID for device wallets (survives storage clearing)
+      const hasDeviceWallets = wallets.some(w => w.wallet_type === 'device');
+      let deviceKeyId = null;
+      if (hasDeviceWallets) {
+        const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        deviceKeyId = await deviceFingerprint.getDeviceId();
+      }
+
+      // Store password for auto-retrieval on device wallets
+      if (hasDeviceWallets && deviceKeyId) {
+        await walletStorage.storeWalletCredential(deviceKeyId, unlockPassword);
+      }
+
       // Convert to profile format
       const allProfiles = wallets.map((w, index) => ({
         account: w.address,
@@ -2485,7 +1858,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         wallet_type: w.wallet_type || 'oauth',
         provider: w.provider,
         provider_id: w.provider_id,
-        deviceKeyId: w.deviceKeyId,
+        deviceKeyId: w.wallet_type === 'device' ? (w.deviceKeyId || deviceKeyId) : w.deviceKeyId,
         accountIndex: w.accountIndex ?? index,
         createdAt: w.createdAt || Date.now(),
         tokenCreatedAt: Date.now()
@@ -2505,42 +1878,237 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  // Strict security dependency loading - NO FALLBACKS
-  const loadDependencies = async () => {
-    if (!startRegistration || !startAuthentication || !CryptoJS || !base64URLStringToBuffer) {
-      setIsLoadingDeps(true);
+  // Create new wallet with password (simplified device login)
+  const handlePasswordCreate = async () => {
+    const strengthCheck = securityUtils.validatePasswordStrength(createPassword);
+    if (!strengthCheck.valid) {
+      setCreateError(strengthCheck.error);
+      return;
+    }
+    if (createPassword !== createPasswordConfirm) {
+      setCreateError('Passwords do not match');
+      return;
+    }
 
-      try {
-        const [webauthnModule, cryptoModule, scryptModule] = await Promise.all([
-          import('@simplewebauthn/browser'),
-          import('crypto-js'),
-          import('scrypt-js') // REQUIRED for highest security - no fallback allowed
-        ]);
+    setIsCreating(true);
+    setCreateError('');
 
-        // Validate all required security functions are available
-        if (!webauthnModule.startRegistration || !webauthnModule.startAuthentication || !webauthnModule.base64URLStringToBuffer) {
-          throw new Error('WebAuthn module missing required security functions');
+    try {
+      const wallet = generateRandomWallet();
+
+      // Generate stable device fingerprint ID (survives storage clearing)
+      const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+
+      const walletData = {
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        deviceKeyId: deviceKeyId,
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
+
+      await walletStorage.storeWallet(walletData, createPassword);
+      // Store password for auto-retrieval (like OAuth wallets do)
+      await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
+      localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
+
+      const profile = {
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        deviceKeyId: deviceKeyId,
+        accountIndex: 0,
+        createdAt: Date.now(),
+        tokenCreatedAt: Date.now()
+      };
+
+      setProfiles([profile]);
+      localStorage.setItem('profiles', JSON.stringify([profile]));
+      doLogIn(profile, [profile]);
+
+      // Store wallet data for backup screen (includes seed)
+      setNewWalletData({ ...walletData, profile });
+      setShowNewWalletScreen(true);
+      setBackupConfirmed(false);
+      setShowNewSeed(false);
+      setNewSeedCopied(false);
+      setNewAddressCopied(false);
+      setShowBridgeForm(false);
+      setBridgeData(null);
+      setBridgeError('');
+
+      setCreatePassword('');
+      setCreatePasswordConfirm('');
+    } catch (error) {
+      setCreateError(error.message || 'Failed to create wallet');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Complete wallet setup after backup confirmation
+  const handleCompleteSetup = () => {
+    setShowNewWalletScreen(false);
+    setNewWalletData(null);
+    setShowBridgeForm(false);
+    setBridgeData(null);
+    setOpenWalletModal(false);
+    clearPersistedState(); // Clear sessionStorage
+    openSnackbar('Wallet ready!', 'success');
+  };
+
+  // Fetch available currencies
+  const fetchCurrencies = useCallback(async () => {
+    if (currencies.length > 0) return;
+    try {
+      const res = await fetch('https://api.xrpl.to/api/bridge/currencies');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      // Handle both array and object with currencies property
+      const currencyList = Array.isArray(data) ? data : (data.currencies || data.data || []);
+      if (!currencyList.length) throw new Error('Empty response');
+
+      const popular = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'sol', 'ada', 'doge', 'matic', 'ltc', 'trx', 'avax'];
+      const sorted = currencyList
+        .filter(c => c.ticker !== 'xrp')
+        .sort((a, b) => {
+          const aIdx = popular.indexOf(a.ticker);
+          const bIdx = popular.indexOf(b.ticker);
+          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          if (aIdx !== -1) return -1;
+          if (bIdx !== -1) return 1;
+          return (a.name || '').localeCompare(b.name || '');
+        });
+      setCurrencies(sorted);
+      if (sorted.length > 0 && !selectedCurrency) setSelectedCurrency(sorted[0]);
+    } catch (err) {
+      console.error('Currency fetch failed:', err);
+      setBridgeError('Failed to load currencies');
+    }
+  }, [currencies.length, selectedCurrency]);
+
+  // Fetch estimate when amount changes
+  const fetchEstimate = useCallback(async () => {
+    if (!selectedCurrency || !bridgeAmount) {
+      setEstimatedXrp(null);
+      return;
+    }
+    const isToXrp = swapDirection === 'toXrp';
+    const fromCurr = isToXrp ? selectedCurrency.ticker : 'xrp';
+    const toCurr = isToXrp ? 'xrp' : selectedCurrency.ticker;
+    const fromNet = isToXrp ? selectedCurrency.network : 'xrp';
+    const toNet = isToXrp ? 'xrp' : selectedCurrency.network;
+    try {
+      const minRes = await fetch(
+        `https://api.xrpl.to/api/bridge/min-amount?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromNetwork=${fromNet}&toNetwork=${toNet}`
+      );
+      if (minRes.ok) {
+        const minData = await minRes.json();
+        setMinAmount(minData.minAmount);
+        if (parseFloat(bridgeAmount) < minData.minAmount) {
+          setBridgeError(`Min: ${minData.minAmount} ${isToXrp ? selectedCurrency.ticker.toUpperCase() : 'XRP'}`);
+          setEstimatedXrp(null);
+          return;
         }
-
-        if (!cryptoModule.default) {
-          throw new Error('Crypto module not properly loaded');
-        }
-
-        if (!scryptModule || typeof scryptModule.scrypt !== 'function') {
-          throw new Error('Scrypt module required for maximum security - PBKDF2 fallback disabled');
-        }
-
-        startRegistration = webauthnModule.startRegistration;
-        startAuthentication = webauthnModule.startAuthentication;
-        base64URLStringToBuffer = webauthnModule.base64URLStringToBuffer;
-        CryptoJS = cryptoModule.default;
-        scrypt = scryptModule;
-
-        setIsLoadingDeps(false);
-      } catch (error) {
-        setIsLoadingDeps(false);
-        throw new Error(`Failed to load required security dependencies: ${error.message}`);
       }
+      setBridgeError('');
+      const estRes = await fetch(
+        `https://api.xrpl.to/api/bridge/estimate?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromAmount=${bridgeAmount}&fromNetwork=${fromNet}&toNetwork=${toNet}`
+      );
+      if (estRes.ok) {
+        const estData = await estRes.json();
+        setEstimatedXrp(estData.toAmount || estData.estimatedAmount);
+      }
+    } catch (err) {
+      console.warn('Estimate failed:', err);
+    }
+  }, [selectedCurrency, bridgeAmount, swapDirection]);
+
+  // Debounced estimate
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (selectedCurrency && bridgeAmount) fetchEstimate();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [selectedCurrency, bridgeAmount, fetchEstimate]);
+
+  // Show bridge form for crypto swap
+  const handleShowBridge = () => {
+    setShowBridgeForm(true);
+    setBridgeData(null);
+    setBridgeError('');
+    setBridgeAmount('');
+    setEstimatedXrp(null);
+    fetchCurrencies();
+  };
+
+  // Initialize bridge form for logged-in users dropdown
+  const initBridgeForm = () => {
+    setBridgeData(null);
+    setBridgeError('');
+    setBridgeAmount('');
+    setEstimatedXrp(null);
+    setSelectedCurrency(null);
+    setSwapDirection('toXrp');
+    setDestAddress('');
+    fetchCurrencies();
+  };
+
+  // Create bridge exchange
+  const handleCreateBridge = async (targetAddress = null) => {
+    const address = targetAddress || newWalletData?.address || accountLogin;
+    if (!bridgeAmount || !address || !selectedCurrency) return;
+
+    setBridgeLoading(true);
+    setBridgeError('');
+
+    const isToXrp = swapDirection === 'toXrp';
+    try {
+      const res = await fetch('https://api.xrpl.to/api/bridge/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromCurrency: isToXrp ? selectedCurrency.ticker : 'xrp',
+          toCurrency: isToXrp ? 'xrp' : selectedCurrency.ticker,
+          fromNetwork: isToXrp ? selectedCurrency.network : 'xrp',
+          toNetwork: isToXrp ? 'xrp' : selectedCurrency.network,
+          fromAmount: parseFloat(bridgeAmount),
+          address: isToXrp ? address : destAddress,
+          refundAddress: isToXrp ? undefined : address
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || errData.error || `Error ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.payinAddress) throw new Error('Invalid response');
+
+      setBridgeData({ ...data, swapDirection });
+
+      // Store for tracking
+      localStorage.setItem(`bridge_tx_${data.id}`, JSON.stringify({
+        id: data.id,
+        fromCurrency: isToXrp ? selectedCurrency.ticker : 'xrp',
+        toCurrency: isToXrp ? 'xrp' : selectedCurrency.ticker,
+        fromAmount: bridgeAmount,
+        expectedAmount: estimatedXrp,
+        address: address,
+        createdAt: Date.now()
+      }));
+    } catch (err) {
+      setBridgeError(err.message || 'Failed to create exchange');
+    } finally {
+      setBridgeLoading(false);
     }
   };
 
@@ -2586,29 +2154,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // The green/red dots will always show green now (optimistic)
     return;
   }, [profiles, accountProfile, walletPage, walletsPerPage]);
-
-  const generateWalletsFromDeviceKey = async (deviceKeyId) => {
-    const wallets = [];
-
-    // Generate only 1 wallet for performance
-    const i = 0;
-    // Generate random wallet (2025 security standard)
-    const wallet = generateRandomWallet();
-    const walletData = {
-      deviceKeyId,
-      accountIndex: i,
-      account: wallet.address,  // AppContext expects 'account' field
-      address: wallet.address,
-      publicKey: wallet.publicKey,
-      seed: wallet.seed, // Store the seed for backup purposes
-      wallet_type: 'device',
-      xrp: '0',
-      createdAt: Date.now()
-    };
-    wallets.push(walletData);
-    return wallets;
-  };
-
 
   const handleBackupSeed = async () => {
     const profile = accountProfile;
@@ -2705,18 +2250,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       openSnackbar('Backup failed: ' + (error.message === 'Invalid PIN' ? 'Incorrect password' : error.message), 'error');
       setBackupPassword('');
     }
-  };
-
-  const handleWalletConnect = () => {
-    setShowDeviceLogin(true);
-  };
-
-  const handleGoBack = () => {
-    setShowDeviceLogin(false);
-    setStatus('idle');
-    setError('');
-    setWalletInfo(null);
-    setIsCreatingWallet(false);
   };
 
   // Get wallet count, oldest date, and addresses from IndexedDB
@@ -2847,510 +2380,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  // Check if returning from OAuth and reopen wallet modal or show password setup
-  useEffect(() => {
-    // Check for OAuth wallet profile (auto-login)
-    const oauthWalletProfile = sessionStorage.getItem('oauth_wallet_profile');
-    if (oauthWalletProfile && sessionStorage.getItem('oauth_logged_in') === 'true') {
-      try {
-        const profile = JSON.parse(oauthWalletProfile);
-        devLog('OAuth auto-login with profile:', profile);
-
-        // Auto-login the OAuth user
-        doLogIn(profile);
-
-        // Clean up session storage
-        sessionStorage.removeItem('oauth_wallet_profile');
-        sessionStorage.removeItem('oauth_logged_in');
-        sessionStorage.removeItem('wallet_address');
-        sessionStorage.removeItem('wallet_public_key');
-
-        // Close modal if it was open
-        setOpenWalletModal(false);
-        return;
-      } catch (error) {
-        devError('Error parsing OAuth wallet profile:', error);
-      }
-    }
-
-    // Check if we need to show OAuth password setup
-    const oauthToken = sessionStorage.getItem('oauth_temp_token');
-    const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
-    const isOnSetupPage = window.location.pathname === '/wallet-setup';
-
-    if (oauthToken && oauthProvider) {
-      // User came from OAuth and needs password setup
-      // BUT: Only redirect if user is not already logged in AND not already on setup page
-      if (!accountProfile && !isOnSetupPage) {
-        // Redirect to dedicated setup page instead of showing modal
-        window.location.href = '/wallet-setup';
-        return;
-      } else if (accountProfile) {
-        // User is logged in - clear stale OAuth data
-        sessionStorage.removeItem('oauth_temp_token');
-        sessionStorage.removeItem('oauth_temp_provider');
-        sessionStorage.removeItem('oauth_temp_user');
-        sessionStorage.removeItem('oauth_action');
-      }
-      // If on setup page, let wallet-setup.js handle the OAuth data
-    } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
-      // Just reopening wallet modal after OAuth redirect
-      // BUT: Only if user is NOT already logged in AND not on auth pages
-      sessionStorage.removeItem('wallet_modal_open');
-      const isAuthPage = window.location.pathname === '/callback' || window.location.pathname === '/wallet-setup';
-      if (!accountProfile && !isAuthPage) {
-        setOpenWalletModal(true);
-      }
-    }
-
-    // Initialize Google Sign-In on mount
-    const initGoogleSignIn = () => {
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: '511415507514-bglt6vsg7458sfqed1daetsfvqahnkh4.apps.googleusercontent.com',
-          callback: window.handleGoogleResponse,
-          auto_select: false
-        });
-      }
-    };
-
-    // Set up Google response handler globally
-    window.handleGoogleResponse = async (response) => {
-      try {
-        console.log('[Wallet] Google OAuth response received');
-
-        // Decode Google's ID token directly (it's a signed JWT from Google)
-        // This is safe because: 1) Google signs it, 2) wallet encryption is local
-        const credential = response.credential;
-        if (!credential) {
-          throw new Error('No credential received from Google');
-        }
-
-        // Decode the JWT payload (Google's ID token)
-        const payload = JSON.parse(atob(credential.split('.')[1]));
-        console.log('[Wallet] Google user:', { sub: payload.sub, email: payload.email });
-
-        // Create user data from Google's token
-        const userData = {
-          id: payload.sub,
-          sub: payload.sub,
-          email: payload.email,
-          name: payload.name,
-          provider: 'google'
-        };
-
-        // Store for processing (use credential as token for consistency)
-        sessionStorage.setItem('google_jwt_token', credential);
-        sessionStorage.setItem('google_user_data', JSON.stringify(userData));
-
-        // Trigger re-render to process
-        console.log('[Wallet] Dispatching google-connect-success event');
-        window.dispatchEvent(new Event('google-connect-success'));
-      } catch (error) {
-        console.error('[Wallet] Google auth error:', error);
-        openSnackbar('Google authentication failed: ' + (error.message || 'Unknown error'), 'error');
-      }
-    };
-
-    // Try to init immediately if loaded, or wait for script
-    if (window.google?.accounts?.id) {
-      initGoogleSignIn();
-    } else {
-      const checkGoogle = setInterval(() => {
-        if (window.google?.accounts?.id) {
-          initGoogleSignIn();
-          clearInterval(checkGoogle);
-        }
-      }, 100);
-
-      // Stop checking after 5 seconds
-      setTimeout(() => clearInterval(checkGoogle), 5000);
-    }
-
-    // Listen for Google connect success
-    const handleGoogleSuccess = async () => {
-      console.log('[Wallet] google-connect-success event received');
-      const token = sessionStorage.getItem('google_jwt_token');
-      const userStr = sessionStorage.getItem('google_user_data');
-      if (token) {
-        console.log('[Wallet] Processing Google connect with token');
-        sessionStorage.removeItem('google_jwt_token');
-        sessionStorage.removeItem('google_user_data');
-        const userData = userStr ? JSON.parse(userStr) : null;
-        await processGoogleConnect(token, userData);
-      } else {
-        console.warn('[Wallet] No token found in sessionStorage');
-      }
-    };
-
-    window.addEventListener('google-connect-success', handleGoogleSuccess);
-
-    return () => {
-      window.removeEventListener('google-connect-success', handleGoogleSuccess);
-    };
-  }, [accountProfile]); // Re-run when accountProfile changes to clean up OAuth data
-
-  // Handle pending wallet auth from mobile menu
-  useEffect(() => {
-    if (openWalletModal && pendingWalletAuth) {
-      const timer = setTimeout(() => {
-        switch (pendingWalletAuth) {
-          case 'google':
-            handleGoogleConnect();
-            break;
-          case 'email':
-            handleEmailConnect();
-            break;
-          case 'email_code': {
-            const pendingEmail = sessionStorage.getItem('pending_email');
-            if (pendingEmail) {
-              setVerificationEmail(pendingEmail);
-              setShowEmailVerification(true);
-              setEmailStep('code');
-              sessionStorage.removeItem('pending_email');
-            }
-            break;
-          }
-          case 'twitter':
-            handleXConnect();
-            break;
-          case 'discord':
-            handleDiscordConnect();
-            break;
-          case 'passkey':
-            setShowDeviceLogin(true);
-            break;
-        }
-        setPendingWalletAuth(null);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [openWalletModal, pendingWalletAuth]);
-
   // Don't load profiles here - AppContext handles it
   // This was overwriting the auto-loaded profiles from IndexedDB
-
-
-  const handleRegister = async () => {
-    setStatus('registering');
-    setError('');
-
-    // Add global error handler for WebAuthn errors - only for unhandled cases
-    const originalOnError = window.onerror;
-    const originalUnhandledRejection = window.onunhandledrejection;
-
-    let errorHandled = false;
-
-    window.onerror = (msg, url, lineNo, columnNo, error) => {
-      const isWebAuthnCancelError = error && (
-        error.name === 'NotAllowedError' ||
-        error.constructor?.name === 'WebAuthnError' ||
-        (error.message && error.message.includes('NotAllowedError'))
-      );
-
-      if (isWebAuthnCancelError && !errorHandled) {
-        errorHandled = true;
-        setError('Registration cancelled. Please try again and allow the security prompt.');
-        setStatus('idle');
-        return true; // Prevent default error handling
-      }
-      return originalOnError ? originalOnError.apply(this, arguments) : false;
-    };
-
-    window.onunhandledrejection = (event) => {
-      const reason = event.reason;
-      const isWebAuthnCancelError = reason && (
-        reason.name === 'NotAllowedError' ||
-        reason.constructor?.name === 'WebAuthnError' ||
-        (reason.message && reason.message.includes('NotAllowedError')) ||
-        (reason.cause && reason.cause.name === 'NotAllowedError')
-      );
-
-      if (isWebAuthnCancelError && !errorHandled) {
-        errorHandled = true;
-        setError('Registration cancelled. Please try again and allow the security prompt.');
-        setStatus('idle');
-        event.preventDefault(); // Prevent error from showing in console
-        return;
-      }
-    };
-
-    try {
-      await loadDependencies();
-
-      if (!window.PublicKeyCredential) {
-        throw new Error('WebAuthn not supported in this browser');
-      }
-
-      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      if (!available) {
-        setError('Windows Hello, Touch ID, or Face ID must be enabled in your device settings first.');
-        setStatus('idle');
-        return;
-      }
-
-
-      const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
-      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
-      const userId = base64urlEncode(userIdBuffer);
-      const challenge = base64urlEncode(challengeBuffer);
-
-
-      const registrationOptions = {
-        rp: {
-          name: 'XRPL.to',
-          // Omit id for localhost to let browser handle it
-          ...(window.location.hostname !== 'localhost' && { id: window.location.hostname }),
-        },
-        user: {
-          id: userId,
-          name: `xrplto-${Date.now()}@xrpl.to`,
-          displayName: `xrplto-${Date.now()}@xrpl.to`, // Same as name to avoid Chrome bug
-        },
-        challenge: challenge,
-        pubKeyCredParams: [
-          { alg: -7, type: 'public-key' },  // ES256
-          { alg: -257, type: 'public-key' } // RS256
-        ],
-        timeout: 60000,
-        attestation: 'none',
-        excludeCredentials: [], // Explicitly set empty to avoid duplicate prevention
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
-          requireResidentKey: false,
-          residentKey: 'discouraged' // Prevent storing credentials on authenticator
-        }
-      };
-
-
-      let registrationResponse;
-
-      try {
-        registrationResponse = await startRegistration({ optionsJSON: registrationOptions });
-      } catch (error) {
-        // Immediately mark as handled to prevent global handlers from triggering
-        errorHandled = true;
-
-        const isUserCancellation = error.name === 'NotAllowedError' ||
-          error.constructor?.name === 'WebAuthnError' &&
-          (error.message?.includes('NotAllowedError') || error.cause?.name === 'NotAllowedError');
-
-        if (!isUserCancellation) {
-        }
-
-        // Check the error name property as documented
-        const errorName = error.name || error.constructor?.name;
-        switch (errorName) {
-          case 'NotAllowedError':
-            setError('Registration cancelled or not allowed. Please try again.');
-            break;
-          case 'InvalidStateError':
-            setError('A passkey is already registered. Try signing in instead.');
-            break;
-          case 'AbortError':
-            setError('Registration timed out. Please try again.');
-            break;
-          case 'NotSupportedError':
-            setError('Passkeys not supported on this device or browser.');
-            break;
-          case 'WebAuthnError':
-            // Handle SimpleWebAuthn specific errors
-            if (error.message?.includes('NotAllowedError') || error.cause?.name === 'NotAllowedError') {
-              setError('Registration cancelled or not allowed. Please try again.');
-            } else {
-              setError(`Registration failed: ${error.message || 'Unknown error'}`);
-            }
-            break;
-          default:
-            setError(`Registration failed: ${error.message || 'Unknown error'}`);
-        }
-
-        setStatus('idle');
-        return; // Exit the function
-      }
-
-      if (registrationResponse.id) {
-        // Redirect to wallet-setup like OAuth flows
-        console.log('[Passkey] Registration successful, redirecting to wallet-setup');
-        sessionStorage.setItem('oauth_temp_token', registrationResponse.id);
-        sessionStorage.setItem('oauth_temp_provider', 'passkey');
-        sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: registrationResponse.id, provider: 'passkey' }));
-        sessionStorage.setItem('oauth_action', 'create');
-        setOpenWalletModal(false);
-        setStatus('idle');
-        window.location.href = '/wallet-setup';
-        return;
-      }
-    } catch (err) {
-      errorHandled = true; // Mark error as handled
-
-      const errorName = err.name || err.cause?.name;
-      const errorMessage = err.message || err.cause?.message || '';
-
-      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
-        setError('Cancelled. Please try again and allow the security prompt.');
-      } else if (errorName === 'AbortError') {
-        setError('Timed out. Please try again.');
-      } else {
-        setError('Failed: ' + errorMessage);
-      }
-      setStatus('idle');
-    } finally {
-      // Restore original error handlers
-      window.onerror = originalOnError;
-      window.onunhandledrejection = originalUnhandledRejection;
-    }
-  };
-
-  const handleAuthenticate = async () => {
-    try {
-      setStatus('authenticating');
-      setError('');
-
-      await loadDependencies();
-
-      if (!window.PublicKeyCredential) {
-        throw new Error('WebAuthn not supported in this browser');
-      }
-
-      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
-      const challenge = base64urlEncode(challengeBuffer);
-
-      let authResponse;
-      try {
-        authResponse = await startAuthentication({
-          optionsJSON: {
-            challenge: challenge,
-            timeout: 60000,
-            userVerification: 'required'
-          }
-        });
-      } catch (innerErr) {
-        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
-          setError('Passkeys not supported on this device or browser.');
-        } else if (innerErr.message?.includes('InvalidStateError')) {
-          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
-        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
-          setError('Cancelled. Please try again and allow the security prompt.');
-        } else {
-          setError('Authentication failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
-        }
-        setStatus('idle');
-        return;
-      }
-
-      if (authResponse.id) {
-        console.log('[Passkey] Authentication successful, checking for existing wallets');
-
-        // Check if password exists for this passkey
-        const storedPassword = await walletStorage.getWalletCredential(authResponse.id);
-
-        if (storedPassword) {
-          // Returning user - try to restore wallets
-          console.log('[Passkey] Found stored password, restoring wallets');
-          const existingWallets = await walletStorage.getAllWalletsForDevice(authResponse.id, storedPassword);
-
-          if (existingWallets && existingWallets.length > 0) {
-            // Auto-login with existing wallets
-            console.log('[Passkey] Restoring', existingWallets.length, 'wallets');
-            const allProfiles = [...profiles];
-            existingWallets.forEach(w => {
-              const profile = { ...w, tokenCreatedAt: Date.now() };
-              if (!allProfiles.find(p => p.account === profile.account)) {
-                allProfiles.push(profile);
-              }
-            });
-            setProfiles(allProfiles);
-            await syncProfilesToIndexedDB(allProfiles);
-            doLogIn(existingWallets[0], allProfiles);
-            setOpenWalletModal(false);
-            setStatus('idle');
-            openSnackbar('Wallet restored successfully!', 'success');
-            return;
-          }
-        }
-
-        // New user or no wallets found - redirect to wallet-setup
-        console.log('[Passkey] No existing wallets, redirecting to wallet-setup');
-        sessionStorage.setItem('oauth_temp_token', authResponse.id);
-        sessionStorage.setItem('oauth_temp_provider', 'passkey');
-        sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: authResponse.id, provider: 'passkey' }));
-        sessionStorage.setItem('oauth_action', 'create');
-        setOpenWalletModal(false);
-        setStatus('idle');
-        window.location.href = '/wallet-setup';
-        return;
-      }
-    } catch (err) {
-
-      const errorName = err.name || err.cause?.name;
-      const errorMessage = err.message || err.cause?.message || '';
-
-      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
-        setError('Cancelled. Please try again and allow the security prompt.');
-      } else if (errorName === 'AbortError') {
-        setError('Timed out. Please try again.');
-      } else {
-        setError('Failed: ' + errorMessage);
-      }
-      setStatus('idle');
-    }
-  };
-
-
-  const handleAddPasskeyAccount = async () => {
-    try {
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      const challengeB64 = btoa(String.fromCharCode(...challenge))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-
-      // Authenticate with any available passkey
-      const authResponse = await startAuthentication({
-        optionsJSON: {
-          challenge: challengeB64,
-          timeout: 60000,
-          userVerification: 'required'
-        }
-      });
-
-      if (authResponse.id) {
-        // Generate wallet with random entropy (2025 security standard)
-        const wallets = await generateWalletsFromDeviceKey(authResponse.id);
-
-        // Check if any of these wallets already exist in profiles
-        const existingWallet = profiles.find(p =>
-          wallets.some(w => w.account === p.account)
-        );
-
-        // Profiles managed by context only
-
-        // Update profiles state with wallets
-        const allProfiles = [...profiles];
-        wallets.forEach(deviceProfile => {
-          if (!allProfiles.find(p => p.account === deviceProfile.account)) {
-            allProfiles.push(deviceProfile);
-          }
-        });
-        setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-        // Login with first wallet - pass the updated profiles
-        doLogIn(wallets[0], allProfiles);
-        if (existingWallet) {
-          openSnackbar(`Switched to device wallet ${wallets[0].address.slice(0, 8)}... (${wallets.length} total)`, 'success');
-        } else {
-          openSnackbar(`25 device wallets accessed`, 'success');
-        }
-
-        setOpen(false);
-      }
-    } catch (err) {
-      openSnackbar('Failed to create/access device wallet: ' + err.message, 'error');
-    }
-  };
 
   const handleCreateNewAccount = async () => {
     if (!newAccountPassword) {
@@ -3449,6 +2480,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setNewAccountSeed('');
       setNewAccountMode('new');
       setOpen(false);
+      clearPersistedState();
       requestAnimationFrame(() => {
         doLogIn(walletData, allProfiles);
       });
@@ -3483,6 +2515,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       {showButton && (
         <button
           onClick={() => {
+            // Prevent closing if wallet setup is incomplete (backup, bridge, etc.)
+            if (showNewWalletScreen && newWalletData) {
+              // Force open the modal to resume setup
+              if (!open && !openWalletModal) {
+                setOpenWalletModal(true);
+              }
+              return;
+            }
             if (accountProfile) {
               setOpen(!open);
             } else {
@@ -3496,38 +2536,53 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               : 'Connect wallet'
           }
           className={cn(
-            'group flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
+            'group relative flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
             accountProfile
               ? 'h-9 min-w-[130px] px-4'
               : 'h-9 px-5',
             isDark
               ? accountProfile
-                ? 'bg-white/[0.05] text-white hover:bg-white/[0.08] ring-1 ring-white/[0.06]'
+                ? showNewWalletScreen && newWalletData
+                  ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/15 ring-1 ring-amber-500/30'
+                  : 'bg-white/[0.05] text-white hover:bg-white/[0.08] ring-1 ring-white/[0.06]'
                 : 'bg-primary/10 text-primary hover:bg-primary/15 ring-1 ring-primary/20'
               : accountProfile
-                ? 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
+                ? showNewWalletScreen && newWalletData
+                  ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 ring-1 ring-amber-200'
+                  : 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
                 : 'bg-primary/5 text-primary hover:bg-primary/10 ring-1 ring-primary/20'
           )}
-          title={accountProfile ? 'Account Details' : 'Connect Wallet'}
+          title={showNewWalletScreen && newWalletData ? 'Complete wallet setup' : (accountProfile ? 'Account Details' : 'Connect Wallet')}
         >
+          {/* Pending setup indicator */}
+          {showNewWalletScreen && newWalletData && (
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+            </span>
+          )}
           {accountProfile ? (
             <>
               <div className="relative">
                 <div className={cn(
                   'h-2 w-2 rounded-full',
-                  accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
+                  showNewWalletScreen && newWalletData
+                    ? 'bg-amber-400'
+                    : accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
                 )} />
-                {accountsActivation[accountLogin] !== false && (
+                {!(showNewWalletScreen && newWalletData) && accountsActivation[accountLogin] !== false && (
                   <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
                 )}
               </div>
               <span className="font-mono text-[13px] tracking-tight">
-                {truncateAccount(accountLogin, 6)}
+                {showNewWalletScreen && newWalletData ? 'Setup' : truncateAccount(accountLogin, 6)}
               </span>
               <ChevronDown size={12} className={cn(
                 "transition-transform duration-200",
                 open ? "rotate-180" : "",
-                isDark ? "text-white/40" : "text-gray-400"
+                showNewWalletScreen && newWalletData
+                  ? "text-amber-500"
+                  : isDark ? "text-white/40" : "text-gray-400"
               )} />
             </>
           ) : (
@@ -3541,12 +2596,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       <Dialog
           open={!isAuthPage && (open || openWalletModal)}
           onClose={() => {
+            // Block close if wallet setup is incomplete (backup screen, bridge form, etc.)
+            if (showNewWalletScreen && newWalletData) return;
+            // Block/warn if user is in the middle of password entry
+            if (!accountProfile) {
+              const hasProgress = (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
+                                 (hasExistingWallet && unlockPassword);
+              if (hasProgress) {
+                if (!window.confirm('You have unsaved progress. Close anyway?')) return;
+                setCreatePassword('');
+                setCreatePasswordConfirm('');
+                setUnlockPassword('');
+              }
+            }
+            // Just close the modal
             setOpen(false);
             setOpenWalletModal(false);
-            setShowDeviceLogin(false);
-            setStatus('idle');
-            setError('');
-            setWalletInfo(null);
           }}
           disableScrollLock={true}
           maxWidth="sm"
@@ -3575,7 +2640,464 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         >
           <DialogContent sx={{ p: 0 }}>
             <StyledPopoverPaper isDark={isDark} isMobile={isMobileView}>
-            {accountProfile ? (
+            {/* Show backup screen even when logged in */}
+            {showNewWalletScreen && newWalletData ? (
+              <div className={isDark ? "text-white" : "text-gray-900"}>
+                {/* Header */}
+                <div className={cn(
+                  "px-5 py-4 flex items-center justify-between",
+                  isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"
+                )}>
+                  <h2 className="text-[15px] font-medium tracking-tight">Wallet Created</h2>
+                  <button
+                    onClick={() => {
+                      // X button disabled during entire setup - user must complete flow
+                      return;
+                    }}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-all duration-150 relative opacity-30 cursor-not-allowed",
+                      isDark ? "text-white/30" : "text-gray-400"
+                    )}
+                    title="Complete setup to close"
+                  >
+                    <XIcon size={16} />
+                    <Lock size={8} className="absolute -bottom-0.5 -right-0.5 text-amber-500" />
+                  </button>
+                </div>
+
+                {/* Backup Screen Content */}
+                <div className="px-5 py-4 space-y-4">
+                  {/* Success Header */}
+                  <div className="text-center pb-2">
+                    <div className={cn(
+                      "mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full",
+                      "bg-emerald-500/15"
+                    )}>
+                      <Check size={20} className="text-emerald-500" />
+                    </div>
+                    <h3 className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      Wallet Created
+                    </h3>
+                    <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/40" : "text-gray-400")}>
+                      Fund with 1+ XRP to activate
+                    </p>
+                  </div>
+
+                  {/* Backup Warning */}
+                  <div className={cn(
+                    "rounded-lg border p-3",
+                    "border-amber-500/20 bg-amber-500/5"
+                  )}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle size={12} className="text-amber-500" />
+                        <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                          Backup Secret Key
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowNewSeed(!showNewSeed)}
+                        className={cn(
+                          "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-colors",
+                          isDark ? "text-amber-400 hover:bg-amber-500/10" : "text-amber-600 hover:bg-amber-50"
+                        )}
+                      >
+                        {showNewSeed ? <EyeOff size={11} /> : <Eye size={11} />}
+                        {showNewSeed ? 'Hide' : 'Reveal'}
+                      </button>
+                    </div>
+
+                    {showNewSeed ? (
+                      <div className={cn(
+                        "rounded border p-2 mb-2",
+                        isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
+                      )}>
+                        <div className="flex items-center justify-between gap-2">
+                          <code className={cn(
+                            "text-[10px] font-mono break-all flex-1",
+                            isDark ? "text-white/90" : "text-gray-900"
+                          )}>
+                            {newWalletData.seed}
+                          </code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(newWalletData.seed);
+                              setNewSeedCopied(true);
+                              setTimeout(() => setNewSeedCopied(false), 2000);
+                            }}
+                            className={cn(
+                              "flex-shrink-0 p-1 rounded transition-colors",
+                              newSeedCopied
+                                ? "bg-emerald-500/15 text-emerald-500"
+                                : isDark
+                                ? "bg-white/10 text-white/60 hover:bg-white/15"
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            )}
+                          >
+                            {newSeedCopied ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={cn(
+                        "rounded border p-2 mb-2 text-center",
+                        isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
+                      )}>
+                        <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                          Click "Reveal" to view
+                        </span>
+                      </div>
+                    )}
+
+                    <label className="flex cursor-pointer items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={backupConfirmed}
+                        onChange={(e) => setBackupConfirmed(e.target.checked)}
+                        className="mt-0.5 h-3.5 w-3.5 rounded accent-amber-500"
+                      />
+                      <span className={cn("text-[10px] leading-relaxed", isDark ? "text-white/50" : "text-gray-500")}>
+                        I've saved my secret key securely
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Wallet Address with QR */}
+                  <div className={cn(
+                    "rounded-lg border p-3",
+                    isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+                  )}>
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-white p-1.5">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${newWalletData.address}`}
+                          alt="QR"
+                          width={60}
+                          height={60}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                          Your Address
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <code className={cn(
+                            "text-[11px] font-mono truncate",
+                            isDark ? "text-white/70" : "text-gray-700"
+                          )}>
+                            {newWalletData.address.slice(0, 10)}...{newWalletData.address.slice(-6)}
+                          </code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(newWalletData.address);
+                              setNewAddressCopied(true);
+                              setTimeout(() => setNewAddressCopied(false), 2000);
+                            }}
+                            className={cn(
+                              "p-1 rounded transition-colors",
+                              newAddressCopied
+                                ? "bg-emerald-500/15 text-emerald-500"
+                                : isDark
+                                ? "text-white/40 hover:text-white/60"
+                                : "text-gray-400 hover:text-gray-600"
+                            )}
+                          >
+                            {newAddressCopied ? <Check size={11} /> : <Copy size={11} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons / Bridge Form */}
+                  {showBridgeForm ? (
+                    <div className="space-y-3 pt-1">
+                      {bridgeData ? (
+                        // Bridge created - show deposit address
+                        <div className="space-y-3">
+                          {/* Success indicator */}
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                              <Check size={14} className="text-emerald-500" />
+                            </div>
+                            <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                              Exchange Created
+                            </span>
+                          </div>
+
+                          {/* Deposit info card */}
+                          <div className={cn(
+                            "rounded-xl border p-3",
+                            isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+                          )}>
+                            <div className="flex items-center gap-2 mb-2">
+                              {selectedCurrency?.image ? (
+                                <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                              ) : (
+                                <div className="w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center text-[9px] font-bold text-white">
+                                  {selectedCurrency?.ticker?.[0]?.toUpperCase() || '?'}
+                                </div>
+                              )}
+                              <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                                Send {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
+                              </span>
+                              <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
+                              <span className={cn("text-[11px] text-emerald-500 font-medium")}>
+                                ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} XRP
+                              </span>
+                            </div>
+
+                            <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                              Deposit Address
+                            </p>
+                            <div className={cn(
+                              "rounded-lg border p-2",
+                              isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
+                            )}>
+                              <div className="flex items-center justify-between gap-2">
+                                <code className={cn(
+                                  "text-[10px] font-mono break-all flex-1",
+                                  isDark ? "text-white/90" : "text-gray-900"
+                                )}>
+                                  {bridgeData.payinAddress}
+                                </code>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(bridgeData.payinAddress);
+                                    setBridgeAddressCopied(true);
+                                    setTimeout(() => setBridgeAddressCopied(false), 2000);
+                                  }}
+                                  className={cn(
+                                    "flex-shrink-0 p-1.5 rounded-lg transition-colors",
+                                    bridgeAddressCopied
+                                      ? "bg-emerald-500/15 text-emerald-500"
+                                      : isDark
+                                      ? "bg-white/10 text-white/60 hover:bg-white/15"
+                                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  )}
+                                >
+                                  {bridgeAddressCopied ? <Check size={12} /> : <Copy size={12} />}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              window.open(`/bridge/${bridgeData.id}`, '_blank');
+                              handleCompleteSetup();
+                            }}
+                            className="w-full py-2.5 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
+                          >
+                            <ExternalLink size={14} />
+                            Track Exchange
+                          </button>
+                          <button
+                            onClick={handleCompleteSetup}
+                            className={cn(
+                              "w-full py-2 rounded-lg text-[11px] transition-all",
+                              isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                            )}
+                          >
+                            Done
+                          </button>
+                        </div>
+                      ) : (
+                        // Bridge form
+                        <>
+                          {/* Currency Selector */}
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                              className={cn(
+                                "w-full flex items-center justify-between p-3 rounded-lg border transition-colors",
+                                isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-white/15" : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                              )}
+                            >
+                              {selectedCurrency ? (
+                                <div className="flex items-center gap-2">
+                                  {selectedCurrency.image && (
+                                    <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                                  )}
+                                  <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                                    {selectedCurrency.ticker.toUpperCase()}
+                                  </span>
+                                  <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
+                                    {selectedCurrency.name}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+                                  {currencies.length ? 'Select currency' : 'Loading...'}
+                                </span>
+                              )}
+                              <ChevronDown size={16} className={cn(isDark ? "text-white/40" : "text-gray-400", showCurrencyDropdown && "rotate-180")} />
+                            </button>
+
+                            {showCurrencyDropdown && (
+                              <div className={cn(
+                                "absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden",
+                                isDark ? "border-white/10 bg-[#1a1a1a]" : "border-gray-200 bg-white"
+                              )}>
+                                <div className="p-2 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                                  <input
+                                    type="text"
+                                    value={currencySearch}
+                                    onChange={(e) => setCurrencySearch(e.target.value)}
+                                    placeholder="Search..."
+                                    autoFocus
+                                    className={cn(
+                                      "w-full px-2 py-1.5 rounded text-[12px] outline-none",
+                                      isDark ? "bg-white/5 text-white placeholder:text-white/30" : "bg-gray-50 text-gray-900 placeholder:text-gray-400"
+                                    )}
+                                  />
+                                </div>
+                                <div className="overflow-y-auto max-h-[200px]">
+                                  {(() => {
+                                    const filtered = currencies.filter(c =>
+                                      !currencySearch ||
+                                      c.ticker.toLowerCase().includes(currencySearch.toLowerCase()) ||
+                                      c.name.toLowerCase().includes(currencySearch.toLowerCase())
+                                    );
+                                    const shown = filtered.slice(0, currencySearch ? 100 : 30);
+                                    return shown.length === 0 ? (
+                                      <div className={cn("px-3 py-4 text-center text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                                        No results for "{currencySearch}"
+                                      </div>
+                                    ) : shown.map((c) => (
+                                      <button
+                                        key={`${c.ticker}-${c.network}`}
+                                        onClick={() => { setSelectedCurrency(c); setShowCurrencyDropdown(false); setCurrencySearch(''); setEstimatedXrp(null); }}
+                                        className={cn(
+                                          "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
+                                          selectedCurrency?.ticker === c.ticker && selectedCurrency?.network === c.network
+                                            ? isDark ? "bg-white/10" : "bg-blue-50"
+                                            : isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                                        )}
+                                      >
+                                        {c.image && <img src={c.image} alt="" className="w-5 h-5 rounded-full" />}
+                                        <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                                          {c.ticker.toUpperCase()}
+                                        </span>
+                                        <span className={cn("text-[10px] flex-1", isDark ? "text-white/30" : "text-gray-400")}>
+                                          {c.name}
+                                        </span>
+                                        {c.network !== c.ticker && (
+                                          <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>
+                                            {c.network}
+                                          </span>
+                                        )}
+                                      </button>
+                                    ));
+                                  })()}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Amount Input */}
+                          <div className={cn(
+                            "rounded-lg border p-3",
+                            isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50"
+                          )}>
+                            <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
+                              Amount
+                            </label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <input
+                                type="number"
+                                value={bridgeAmount}
+                                onChange={(e) => setBridgeAmount(e.target.value)}
+                                placeholder={minAmount ? `Min: ${minAmount}` : "0.00"}
+                                step="0.0001"
+                                min="0"
+                                className={cn(
+                                  "flex-1 bg-transparent text-[18px] font-medium outline-none",
+                                  isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300"
+                                )}
+                              />
+                              <span className={cn("text-[13px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>
+                                {selectedCurrency?.ticker?.toUpperCase() || '---'}
+                              </span>
+                            </div>
+                            {/* Estimate display */}
+                            {estimatedXrp && (
+                              <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                                <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You'll receive</span>
+                                <span className={cn("text-[13px] font-medium text-emerald-500")}>~{estimatedXrp} XRP</span>
+                              </div>
+                            )}
+                          </div>
+                          {bridgeError && (
+                            <div className={cn("p-2 rounded-lg text-[11px]", "bg-red-500/10 text-red-400 border border-red-500/20")}>
+                              {bridgeError}
+                            </div>
+                          )}
+                          <button
+                            onClick={handleCreateBridge}
+                            disabled={bridgeLoading || !bridgeAmount || !selectedCurrency || !estimatedXrp}
+                            className={cn(
+                              "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
+                              bridgeAmount && selectedCurrency && estimatedXrp
+                                ? "bg-primary text-white hover:bg-primary/90"
+                                : isDark
+                                ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            )}
+                          >
+                            {bridgeLoading ? <Loader2 size={14} className="animate-spin" /> : (
+                              <>
+                                <ArrowLeftRight size={14} />
+                                {estimatedXrp ? `Swap to ~${estimatedXrp} XRP` : 'Enter amount'}
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setShowBridgeForm(false)}
+                            className={cn(
+                              "w-full py-2 rounded-lg text-[11px] transition-all",
+                              isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                            )}
+                          >
+                            Back
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2 pt-1">
+                      <button
+                        onClick={handleShowBridge}
+                        disabled={!backupConfirmed}
+                        className={cn(
+                          "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
+                          backupConfirmed
+                            ? "bg-primary text-white hover:bg-primary/90"
+                            : isDark
+                            ? "bg-white/5 text-white/30 cursor-not-allowed"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        )}
+                      >
+                        <ArrowLeftRight size={14} />
+                        Fund with Crypto Swap
+                      </button>
+                      <button
+                        onClick={handleCompleteSetup}
+                        disabled={!backupConfirmed}
+                        className={cn(
+                          "w-full py-2 rounded-lg text-[11px] transition-all",
+                          backupConfirmed
+                            ? isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                            : isDark ? "text-white/20 cursor-not-allowed" : "text-gray-300 cursor-not-allowed"
+                        )}
+                      >
+                        Skip, I'll fund later
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : accountProfile ? (
               <>
 
                 {!showSeedDialog && !showNewAccountFlow ? (
@@ -3587,7 +3109,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     accountTotalXrp={accountTotalXrp}
                     accountsActivation={accountsActivation}
                     profiles={profiles}
-                    onClose={() => setOpen(false)}
+                    onClose={() => { setOpen(false); setOpenWalletModal(false); }}
                     onAccountSwitch={(account) => {
                       if (account !== accountProfile?.account) {
                         setOpen(false);
@@ -3629,6 +3151,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setWalletPage={setWalletPage}
                     walletsPerPage={walletsPerPage}
                     walletStorage={walletStorage}
+                    showBridgeInDropdown={showBridgeInDropdown}
+                    setShowBridgeInDropdown={setShowBridgeInDropdown}
+                    currencies={currencies}
+                    selectedCurrency={selectedCurrency}
+                    setSelectedCurrency={setSelectedCurrency}
+                    bridgeAmount={bridgeAmount}
+                    setBridgeAmount={setBridgeAmount}
+                    bridgeLoading={bridgeLoading}
+                    bridgeData={bridgeData}
+                    setBridgeData={setBridgeData}
+                    bridgeError={bridgeError}
+                    bridgeAddressCopied={bridgeAddressCopied}
+                    setBridgeAddressCopied={setBridgeAddressCopied}
+                    estimatedXrp={estimatedXrp}
+                    minAmount={minAmount}
+                    showCurrencyDropdown={showCurrencyDropdown}
+                    setShowCurrencyDropdown={setShowCurrencyDropdown}
+                    currencySearch={currencySearch}
+                    setCurrencySearch={setCurrencySearch}
+                    handleCreateBridge={handleCreateBridge}
+                    initBridgeForm={initBridgeForm}
+                    swapDirection={swapDirection}
+                    setSwapDirection={setSwapDirection}
+                    destAddress={destAddress}
+                    setDestAddress={setDestAddress}
                   />
                 ) : showNewAccountFlow ? (
                   <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
@@ -3637,7 +3184,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       <div className="flex items-center justify-between">
                         <h3 className="text-base font-medium">Add Account</h3>
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); }}
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); clearPersistedState(); }}
                           className={cn(
                             "p-1.5 rounded-lg transition-colors",
                             isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
@@ -3753,7 +3300,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Actions */}
                       <div className="flex gap-3 pt-1">
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); }}
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); clearPersistedState(); }}
                           className={cn(
                             "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
                             isDark
@@ -3990,23 +3537,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   "px-5 py-4 flex items-center justify-between",
                   isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"
                 )}>
-                  <h2 className="text-[15px] font-medium tracking-tight">Connect Wallet</h2>
-                  <button
-                    onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all duration-150",
-                      isDark ? "hover:bg-white/[0.06] text-white/30 hover:text-white/50" : "hover:bg-gray-100 text-gray-400 hover:text-gray-500"
-                    )}
-                  >
-                    <XIcon size={16} />
-                  </button>
+                  <h2 className="text-[15px] font-medium tracking-tight">
+                    Connect Wallet
+                  </h2>
+                  {(() => {
+                    const hasProgress = (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
+                                       (hasExistingWallet && unlockPassword);
+                    return (
+                      <button
+                        onClick={() => {
+                          if (hasProgress && !window.confirm('You have unsaved progress. Close anyway?')) return;
+                          setOpenWalletModal(false);
+                          setCreatePassword('');
+                          setCreatePasswordConfirm('');
+                          setUnlockPassword('');
+                        }}
+                        className={cn(
+                          "p-1.5 rounded-lg transition-all duration-150 relative",
+                          isDark ? "hover:bg-white/[0.06] text-white/30 hover:text-white/50" : "hover:bg-gray-100 text-gray-400 hover:text-gray-500"
+                        )}
+                        title={hasProgress ? "You have unsaved progress" : "Close"}
+                      >
+                        <XIcon size={16} />
+                        {hasProgress && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                        )}
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {/* Content */}
                 <div className="px-5 py-4">
-                  {!showDeviceLogin ? (
-                    <>
-                      {/* Password Unlock for Returning Users */}
+                  {/* Password Unlock for Returning Users */}
                       {hasExistingWallet && (
                         <div className="mb-4">
                           <p className={cn("text-[11px] mb-2", isDark ? "text-white/40" : "text-gray-400")}>
@@ -4067,219 +3630,68 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </div>
                       )}
 
-                      {/* Social Options - Only show if no existing wallet */}
+                      {/* Create Wallet - Only show if no existing wallet */}
                       {!hasExistingWallet && (
-                      <>
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Google */}
-                        <button
-                          onClick={handleGoogleConnect}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-xl border-[1.5px] px-3.5 py-2.5 text-[13px] font-normal transition-all duration-200 group",
-                            isDark
-                              ? "border-white/[0.08] text-white hover:border-white/20 hover:bg-white/[0.04] active:scale-[0.98]"
-                              : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
+                        <div className="space-y-3">
+                          <p className={cn("text-[12px] mb-1", isDark ? "text-white/50" : "text-gray-500")}>
+                            Create a password to secure your wallet
+                          </p>
+
+                          <div className="relative">
+                            <input
+                              type={showCreatePassword ? 'text' : 'password'}
+                              value={createPassword}
+                              onChange={(e) => { setCreatePassword(e.target.value); setCreateError(''); }}
+                              onKeyDown={(e) => e.key === 'Enter' && createPasswordConfirm && handlePasswordCreate()}
+                              placeholder="Password"
+                              autoFocus
+                              className={cn(
+                                "w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors",
+                                isDark
+                                  ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
+                                  : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCreatePassword(!showCreatePassword)}
+                              className={cn(
+                                "absolute right-3 top-1/2 -translate-y-1/2",
+                                isDark ? "text-white/25 hover:text-white/40" : "text-gray-400 hover:text-gray-500"
+                              )}
+                            >
+                              {showCreatePassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
+                          </div>
+
+                          <input
+                            type={showCreatePassword ? 'text' : 'password'}
+                            value={createPasswordConfirm}
+                            onChange={(e) => { setCreatePasswordConfirm(e.target.value); setCreateError(''); }}
+                            onKeyDown={(e) => e.key === 'Enter' && handlePasswordCreate()}
+                            placeholder="Confirm Password"
+                            className={cn(
+                              "w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors",
+                              isDark
+                                ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
+                                : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
+                            )}
+                          />
+
+                          {createError && (
+                            <p className="text-[11px] text-red-400">{createError}</p>
                           )}
-                        >
-                          <svg className="h-[17px] w-[17px] flex-shrink-0" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                          </svg>
-                          <span>Google</span>
-                        </button>
 
-                        {/* Email */}
-                        <button
-                          onClick={handleEmailConnect}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-xl border-[1.5px] px-3.5 py-2.5 text-[13px] font-normal transition-all duration-200 group",
-                            isDark
-                              ? "border-white/[0.08] text-white hover:border-white/20 hover:bg-white/[0.04] active:scale-[0.98]"
-                              : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
-                          )}
-                        >
-                          <Mail size={17} className={isDark ? "text-white/60" : "text-gray-500"} />
-                          <span>Email</span>
-                        </button>
-
-                        {/* Twitter/X */}
-                        <button
-                          onClick={handleXConnect}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-xl border-[1.5px] px-3.5 py-2.5 text-[13px] font-normal transition-all duration-200 group",
-                            isDark
-                              ? "border-white/[0.08] text-white hover:border-white/20 hover:bg-white/[0.04] active:scale-[0.98]"
-                              : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
-                          )}
-                        >
-                          <svg className={cn("h-[17px] w-[17px] flex-shrink-0", isDark ? "text-white/60" : "text-gray-500")} viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                          </svg>
-                          <span>Twitter</span>
-                        </button>
-
-                        {/* Discord */}
-                        <button
-                          onClick={handleDiscordConnect}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-xl border-[1.5px] px-3.5 py-2.5 text-[13px] font-normal transition-all duration-200 group",
-                            isDark
-                              ? "border-white/[0.08] text-white hover:border-white/20 hover:bg-white/[0.04] active:scale-[0.98]"
-                              : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
-                          )}
-                        >
-                          <svg className={cn("h-[17px] w-[17px] flex-shrink-0", isDark ? "text-white/60" : "text-gray-500")} viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                          </svg>
-                          <span>Discord</span>
-                        </button>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="flex items-center gap-4 my-4">
-                        <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
-                        <span className={cn("text-[10px] uppercase tracking-wider font-medium", isDark ? "text-white/25" : "text-gray-400")}>
-                          or
-                        </span>
-                        <div className={cn("flex-1 h-px", isDark ? "bg-white/[0.06]" : "bg-gray-200")} />
-                      </div>
-
-                      {/* Passkeys - Most secure */}
-                      <button
-                        onClick={() => setShowDeviceLogin(true)}
-                        className={cn(
-                          "w-full flex items-center justify-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium text-white transition-all duration-200",
-                          "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/95 hover:to-primary/85",
-                          "shadow-[0_2px_8px_rgba(66,133,244,0.25)] hover:shadow-[0_4px_12px_rgba(66,133,244,0.35)]",
-                          "active:scale-[0.98]"
-                        )}
-                      >
-                        <FingerprintIcon size={17} />
-                        <span>Passkey</span>
-                      </button>
-                      </>
-                      )}
-
-                      {/* Email Verification UI - Enhanced */}
-                      {showEmailVerification && (
-                        <div className={cn(
-                          "mt-4 p-4 rounded-xl",
-                          isDark ? "bg-white/[0.03] ring-1 ring-white/[0.06]" : "bg-gray-50 ring-1 ring-gray-100"
-                        )}>
-                          {emailStep === 'email' ? (
-                            <>
-                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
-                                Enter your email address
-                              </p>
-                              <input
-                                type="email"
-                                placeholder="your@email.com"
-                                value={verificationEmail}
-                                onChange={(e) => setVerificationEmail(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleEmailContinue()}
-                                autoFocus
-                                className={cn(
-                                  "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
-                                  isDark
-                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={handleEmailContinue}
-                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
-                                >
-                                  Continue
-                                </button>
-                                <button
-                                  onClick={() => setShowEmailVerification(false)}
-                                  className={cn(
-                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
-                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
-                                  )}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </>
-                          ) : emailStep === 'code' ? (
-                            <>
-                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
-                                Enter the 6-digit code sent to <span className="font-medium">{verificationEmail}</span>
-                              </p>
-                              <input
-                                type="text"
-                                placeholder="000000"
-                                value={verificationCode}
-                                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                onKeyDown={(e) => e.key === 'Enter' && handleVerifyEmailCode()}
-                                autoFocus
-                                className={cn(
-                                  "w-full px-4 py-2.5 rounded-xl text-sm text-center font-mono tracking-[0.5em] outline-none mb-3",
-                                  isDark
-                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={handleVerifyEmailCode}
-                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
-                                >
-                                  Verify
-                                </button>
-                                <button
-                                  onClick={() => setEmailStep('email')}
-                                  className={cn(
-                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
-                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
-                                  )}
-                                >
-                                  Back
-                                </button>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
-                                Enter your password for <span className="font-medium">{verificationEmail}</span>
-                              </p>
-                              <input
-                                type="password"
-                                placeholder="Password"
-                                value={emailPassword}
-                                onChange={(e) => setEmailPassword(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleEmailPasswordLogin()}
-                                autoFocus
-                                className={cn(
-                                  "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
-                                  isDark
-                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                    : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={handleEmailPasswordLogin}
-                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
-                                >
-                                  Login
-                                </button>
-                                <button
-                                  onClick={() => { setEmailStep('email'); setEmailPassword(''); }}
-                                  className={cn(
-                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
-                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
-                                  )}
-                                >
-                                  Back
-                                </button>
-                              </div>
-                            </>
-                          )}
+                          <button
+                            onClick={handlePasswordCreate}
+                            disabled={isCreating || !createPassword || !createPasswordConfirm}
+                            className={cn(
+                              "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
+                              "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                            )}
+                          >
+                            {isCreating ? <Loader2 size={14} className="animate-spin" /> : 'Create Wallet'}
+                          </button>
                         </div>
                       )}
 
@@ -4383,8 +3795,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     document.addEventListener('touchend', handleEnd);
                                   }}
                                 >
-                                  <div className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500/30")} style={{ width: `${clearSliderValue}%` }} />
-                                  {clearSliderValue < 95 && <div className="absolute inset-0 opacity-30" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(239,68,68,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)', backgroundSize: '6px 6px' }} />}
+                                  <div className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500")} style={{ width: `${clearSliderValue}%` }} />
                                   <div
                                     className={cn("absolute top-1 bottom-1 w-8 rounded-md flex items-center justify-center", clearSliderValue >= 95 ? "bg-white" : clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/10" : "bg-white")}
                                     style={{ left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.32}px + 4px)`, transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none' }}
@@ -4401,631 +3812,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </div>
                         )}
 
-                        {/* Debug: Test entropy backup recovery */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <button
-                            onClick={() => {
-                              localStorage.removeItem('__wk_entropy__');
-                              alert('Deleted __wk_entropy__ from localStorage.\n\nNow log out and log back in with OAuth.\nIf IndexedDB backup works, you should auto-login without entering password.');
-                            }}
-                            className={cn("text-[10px] mt-2 block", isDark ? "text-orange-400/50 hover:text-orange-400" : "text-orange-400/60 hover:text-orange-500")}
-                          >
-                            [Debug] Delete entropy key
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Passkeys Section - Enhanced */}
-                      <div className="space-y-4">
-                        {/* Header with back button */}
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={handleGoBack}
-                            className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-[1.5px] text-xs font-normal transition-all",
-                              isDark
-                                ? "border-[#3f96fe]/20 text-white/60 hover:border-[#3f96fe]/40 hover:text-[#3f96fe]"
-                                : "border-blue-200 text-gray-500 hover:border-blue-400 hover:text-blue-600"
-                            )}
-                          >
-                            <ArrowLeft size={14} />
-                            Back
-                          </button>
-                          <div
-                            className="flex-1 h-[14px]"
-                            style={{
-                              backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                              backgroundSize: '8px 5px'
-                            }}
-                          />
-                          <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Passkey</span>
-                        </div>
-
-                        {/* Error Alert */}
-                        {error && (
-                          <div className={cn(
-                            "rounded-xl p-3.5 border",
-                            error.includes('Creating wallets')
-                              ? isDark ? "bg-primary/5 border-primary/20" : "bg-primary/5 border-primary/20"
-                              : isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200"
-                          )}>
-                            <div className="flex gap-2.5">
-                              {!error.includes('Creating wallets') && (
-                                <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                              )}
-                              <div>
-                                {!error.includes('Creating wallets') && (
-                                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Hardware Security Required</p>
-                                )}
-                                <p className={cn("text-xs mt-0.5 leading-relaxed", isDark ? "text-white/70" : "text-gray-600")}>
-                                  {error}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Password Input for Device Connect - Enhanced */}
-                        {showDevicePasswordInput && (
-                          <div className="space-y-3">
-                            <p className={cn("text-sm", isDark ? "text-white/80" : "text-gray-700")}>
-                              {devicePasswordMode === 'create'
-                                ? 'Create a password to secure your wallet'
-                                : 'Enter your password to access your wallet'}
-                            </p>
-
-                            <div className="relative">
-                              <input
-                                type={showDevicePassword ? 'text' : 'password'}
-                                value={devicePassword}
-                                onChange={(e) => { setDevicePassword(e.target.value); setError(''); }}
-                                onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
-                                placeholder="Password"
-                                autoFocus
-                                className={cn(
-                                  "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
-                                  isDark
-                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowDevicePassword(!showDevicePassword)}
-                                className={cn(
-                                  "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
-                                  isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
-                                )}
-                              >
-                                {showDevicePassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                              </button>
-                            </div>
-
-                            {devicePasswordMode === 'create' && (
-                              <input
-                                type={showDevicePassword ? 'text' : 'password'}
-                                value={devicePasswordConfirm}
-                                onChange={(e) => { setDevicePasswordConfirm(e.target.value); setError(''); }}
-                                onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
-                                placeholder="Confirm Password"
-                                className={cn(
-                                  "w-full px-4 py-3 rounded-xl text-sm outline-none transition-all",
-                                  isDark
-                                    ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                    : "bg-gray-50 border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                            )}
-
-                            <div className="flex gap-2 pt-1">
-                              <button
-                                onClick={() => {
-                                  setShowDevicePasswordInput(false);
-                                  setDevicePassword('');
-                                  setDevicePasswordConfirm('');
-                                  setStatus('idle');
-                                  setError('');
-                                }}
-                                className={cn(
-                                  "flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all",
-                                  isDark
-                                    ? "border-[#3f96fe]/20 text-white/70 hover:bg-[#3f96fe]/5"
-                                    : "border-blue-200 text-gray-600 hover:bg-blue-50"
-                                )}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={handleDevicePasswordSubmit}
-                                disabled={devicePasswordMode === 'create' ? !devicePassword || !devicePasswordConfirm : !devicePassword}
-                                className={cn(
-                                  "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
-                                  (devicePasswordMode === 'create' ? devicePassword && devicePasswordConfirm : devicePassword)
-                                    ? "bg-primary text-white hover:bg-primary/90"
-                                    : isDark
-                                      ? "bg-white/5 text-white/30 cursor-not-allowed"
-                                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                )}
-                              >
-                                {devicePasswordMode === 'create' ? 'Create Wallet' : 'Authenticate'}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Success State */}
-                        {status === 'success' && walletInfo && (
-                          <div className={cn(
-                            "rounded-xl p-4 border",
-                            isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
-                          )}>
-                            <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                <CheckCircle size={16} className="text-emerald-500" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                                  {walletInfo.isAdditional ? 'Wallet Accessed!' : 'Wallet Created!'}
-                                </p>
-                                <p className={cn("text-xs mt-1", isDark ? "text-white/60" : "text-gray-600")}>
-                                  Secured by hardware authentication
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Loading State */}
-                        {isLoadingDeps && (
-                          <div className={cn(
-                            "rounded-xl p-4 border flex items-center gap-3",
-                            isDark ? "bg-white/[0.02] border-white/[0.06]" : "bg-gray-50 border-gray-100"
-                          )}>
-                            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                            <span className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>
-                              Loading security modules...
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Action Buttons - Enhanced */}
-                        {!showDevicePasswordInput && (
-                          <div className="space-y-2.5">
-                            <button
-                              onClick={handleAuthenticate}
-                              disabled={status !== 'idle' || isLoadingDeps}
-                              className={cn(
-                                "w-full py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
-                                status === 'idle' && !isLoadingDeps
-                                  ? "bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25"
-                                  : isDark
-                                    ? "bg-white/5 text-white/30 cursor-not-allowed"
-                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              )}
-                            >
-                              <FingerprintIcon size={16} />
-                              {status === 'authenticating' ? 'Authenticating...' :
-                               status === 'discovering' ? 'Discovering...' :
-                               status === 'creating' ? 'Creating Wallet...' :
-                               'Sign In with Passkey'}
-                            </button>
-
-                            <button
-                              onClick={handleRegister}
-                              disabled={status !== 'idle' || isLoadingDeps}
-                              className={cn(
-                                "w-full py-3 rounded-xl text-sm font-medium transition-all border-[1.5px]",
-                                status === 'idle' && !isLoadingDeps
-                                  ? isDark
-                                    ? "border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
-                                    : "border-amber-500/30 text-amber-600 hover:bg-amber-50 hover:border-amber-500/50"
-                                  : isDark
-                                    ? "border-white/5 text-white/20 cursor-not-allowed"
-                                    : "border-gray-100 text-gray-300 cursor-not-allowed"
-                              )}
-                            >
-                              {status === 'registering' ? 'Creating...' : 'Create New Passkey'}
-                            </button>
-
-                            <div className="flex items-center justify-center gap-1.5 pt-2">
-                              <Shield size={11} className={isDark ? "text-white/30" : "text-gray-400"} />
-                              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
-                                Hardware secured authentication
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
             </StyledPopoverPaper>
           </DialogContent>
         </Dialog>
-
-        {/* OAuth Password Setup Dialog */}
-        <Dialog
-          open={!isAuthPage && showOAuthPasswordSetup}
-          onClose={() => {
-            if (!isCreatingWallet) {
-              setShowOAuthPasswordSetup(false);
-              // Clear OAuth session data when closing
-              sessionStorage.removeItem('oauth_temp_token');
-              sessionStorage.removeItem('oauth_temp_provider');
-              sessionStorage.removeItem('oauth_temp_user');
-              sessionStorage.removeItem('oauth_action');
-              // Clear input fields
-              setOAuthPassword('');
-              setOAuthConfirmPassword('');
-              setImportSeed('');
-              setImportFile(null);
-              setOAuthPasswordError('');
-                  }
-          }}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogContent>
-            <Stack spacing={2.5}>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '18px', mb: 0.5 }}>
-                  Setup Your Wallet
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '14px', opacity: 0.7 }}>
-                  Choose to create a new wallet or import an existing one.
-                </Typography>
-              </Box>
-
-              {/* Import/New Wallet Toggle */}
-              <Box sx={{
-                display: 'flex',
-                gap: 1
-              }} role="tablist" aria-label="Wallet setup method">
-                <Button
-                  variant={importMethod === 'new' ? 'contained' : 'outlined'}
-                  size="small"
-                  onClick={() => {
-                    setImportMethod('new');
-                    setImportFile(null);
-                    setImportSeeds(['']);
-                    setOAuthPassword('');
-                    setOAuthConfirmPassword('');
-                  }}
-                  role="tab"
-                  aria-selected={importMethod === 'new'}
-                  aria-label="Create new wallet"
-                  sx={{
-                    flex: 1,
-                    fontSize: '13px',
-                    py: 1,
-                    fontWeight: 400
-                  }}
-                >
-                  New
-                </Button>
-                <Button
-                  variant={importMethod === 'seed' ? 'contained' : 'outlined'}
-                  size="small"
-                  onClick={() => {
-                    setImportMethod('seed');
-                    setImportFile(null);
-                    setOAuthPassword('');
-                    setOAuthConfirmPassword('');
-                  }}
-                  role="tab"
-                  aria-selected={importMethod === 'seed'}
-                  aria-label="Import from seed phrase"
-                  sx={{
-                    flex: 1,
-                    fontSize: '13px',
-                    py: 1,
-                    fontWeight: 400
-                  }}
-                >
-                  Seed
-                </Button>
-                <Button
-                  variant={importMethod === 'import' ? 'contained' : 'outlined'}
-                  size="small"
-                  onClick={() => {
-                    setImportMethod('import');
-                    setImportSeeds(['']);
-                    setOAuthPassword('');
-                    setOAuthConfirmPassword('');
-                  }}
-                  role="tab"
-                  aria-selected={importMethod === 'import'}
-                  aria-label="Import from file"
-                  sx={{
-                    flex: 1,
-                    fontSize: '13px',
-                    py: 1,
-                    fontWeight: 400
-                  }}
-                >
-                  File
-                </Button>
-              </Box>
-
-              {oauthPasswordError && (
-                <Alert
-                  severity={oauthPasswordError.includes('...') || oauthPasswordError.includes('wallet') ? "info" : "error"}
-                  onClose={oauthPasswordError.includes('...') ? null : () => setOAuthPasswordError('')}
-                  icon={oauthPasswordError.includes('...') ? <Box sx={{ width: 20, height: 20 }} className="MuiCircularProgress-root MuiCircularProgress-colorPrimary"><svg className="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle className="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" strokeWidth="3.6" style={{ strokeDasharray: '80px, 200px', strokeDashoffset: 0, animation: 'MuiCircularProgress-keyframes-circular-rotate 1.4s linear infinite' }}></circle></svg></Box> : undefined}
-                >
-                  {oauthPasswordError}
-                </Alert>
-              )}
-
-              {/* Seed Input for Import */}
-              {importMethod === 'seed' && (
-                <Box>
-                  <Stack spacing={1.5}>
-                    {importSeeds.map((seed, index) => (
-                      <Box key={index}>
-                        <Stack direction="row" spacing={1} alignItems="flex-start">
-                          <TextField
-                            label={`Seed ${index + 1}${index === 0 ? ' (Primary)' : ''}`}
-                            placeholder="Enter seed starting with 's'"
-                            value={seed}
-                            onChange={(e) => {
-                              const newSeeds = [...importSeeds];
-                              newSeeds[index] = e.target.value;
-                              setImportSeeds(newSeeds);
-                            }}
-                            fullWidth
-                            multiline
-                            rows={2}
-                            inputProps={{
-                              'aria-label': `Seed phrase ${index + 1}`,
-                              'aria-describedby': `seed-helper-text-${index}`
-                            }}
-                            helperText={
-                              seed.startsWith('sEd') ? 'Valid Ed25519 seed' :
-                              seed.startsWith('s') ? 'Valid secp256k1 seed' :
-                              index === 0 ? 'Required: XRP Ledger secret (starts with "s")' :
-                              'Optional: Additional seed to import'
-                            }
-                            FormHelperTextProps={{
-                              id: `seed-helper-text-${index}`
-                            }}
-                            sx={{
-                              '& .MuiInputBase-input': {
-                                fontFamily: 'var(--font-mono)',
-                                fontSize: '14px'
-                              },
-                              '& .MuiFormHelperText-root': {
-                                color: seed.startsWith('s') ? 'success.main' : 'text.secondary',
-                                fontSize: '11px'
-                              }
-                            }}
-                          />
-                          {importSeeds.length > 1 && (
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                const newSeeds = importSeeds.filter((_, i) => i !== index);
-                                setImportSeeds(newSeeds);
-                              }}
-                              sx={{
-                                mt: 1,
-                                color: 'error.main',
-                                opacity: 0.6,
-                                '&:hover': { opacity: 1 }
-                              }}
-                              aria-label={`Remove seed ${index + 1}`}
-                            >
-                              <Box component="svg" sx={{ width: 20, height: 20 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M18 6L6 18M6 6l12 12"/>
-                              </Box>
-                            </IconButton>
-                          )}
-                        </Stack>
-                      </Box>
-                    ))}
-
-                    {importSeeds.length < 5 && (
-                      <Button
-                        variant="text"
-                        size="small"
-                        onClick={() => {
-                          if (importSeeds.length < 5) {
-                            setImportSeeds([...importSeeds, '']);
-                          }
-                        }}
-                        sx={{
-                          fontSize: '13px',
-                          fontWeight: 400,
-                          color: '#4285f4',
-                          textTransform: 'none',
-                          justifyContent: 'flex-start',
-                          pl: 1,
-                          '&:hover': {
-                            backgroundColor: alpha('#4285f4', 0.04)
-                          }
-                        }}
-                      >
-                        + Add another seed ({importSeeds.length}/5)
-                      </Button>
-                    )}
-                  </Stack>
-
-                  <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '11px' }}>
-                      <strong>Tip:</strong> Import up to 5 seeds. We'll create wallets from your seeds in order.
-                      {importSeeds.filter(s => s.trim()).length > 0 && importSeeds.filter(s => s.trim()).length < 5 &&
-                        ` (${5 - importSeeds.filter(s => s.trim()).length} random wallet${5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} will be added)`
-                      }
-                    </Typography>
-                  </Alert>
-                </Box>
-              )}
-
-              {/* File Upload for Import */}
-              {importMethod === 'import' && (
-                <Box>
-                  <Typography variant="body2" component="label" htmlFor="wallet-file-input" sx={{ mb: 1, fontSize: '14px' }}>
-                    Select your encrypted wallet backup file
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    aria-label={importFile ? `File selected: ${importFile.name}` : 'Choose wallet backup file'}
-                    sx={{
-                      py: 1,
-                      borderStyle: 'dashed',
-                      borderWidth: '1.5px',
-                      backgroundColor: importFile ? alpha(theme.palette.success.main, 0.04) : 'transparent',
-                      fontWeight: 400,
-                      fontSize: '14px'
-                    }}
-                  >
-                    {importFile ? `✓ ${importFile.name}` : 'Choose Wallet File'}
-                    <input
-                      id="wallet-file-input"
-                      type="file"
-                      hidden
-                      accept=".json,application/json"
-                      aria-label="Upload wallet backup file"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setImportFile(file);
-                        }
-                      }}
-                    />
-                  </Button>
-                </Box>
-              )}
-
-              <TextField
-                label={importMethod === 'import' ? 'Wallet Password' : 'Password'}
-                type={showOAuthPassword ? 'text' : 'password'}
-                value={oauthPassword}
-                onChange={(e) => setOAuthPassword(e.target.value)}
-                fullWidth
-                autoComplete="off"
-                inputProps={{
-                  'aria-label': importMethod === 'import' ? 'Wallet password' : 'New password',
-                  'aria-describedby': 'password-helper-text',
-                  autoComplete: 'off'
-                }}
-                helperText={importMethod === 'import' ?
-                  'Enter the password used when you backed up this wallet' :
-                  'Minimum 8 characters'}
-                FormHelperTextProps={{
-                  id: 'password-helper-text'
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowOAuthPassword(!showOAuthPassword)}
-                        edge="end"
-                        size="small"
-                        aria-label={showOAuthPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showOAuthPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              {importMethod === 'new' && (
-                <TextField
-                  label="Confirm Password"
-                  type={showOAuthPassword ? 'text' : 'password'}
-                  value={oauthConfirmPassword}
-                  onChange={(e) => setOAuthConfirmPassword(e.target.value)}
-                  fullWidth
-                  autoComplete="off"
-                  inputProps={{
-                    'aria-label': 'Confirm new password',
-                    autoComplete: 'off'
-                  }}
-                />
-              )}
-
-              <Alert severity="info" sx={{ py: 1 }}>
-                <Typography variant="body2" sx={{ fontSize: '13px' }}>
-                  {importMethod === 'import' ?
-                    <><strong>Note:</strong> You'll be importing your existing wallet with its current balance and history.</> :
-                    importMethod === 'seed' ? (
-                      importSeeds.filter(s => s.trim()).length === 0 ?
-                        <><strong>Note:</strong> Enter up to 5 seed phrases to import existing wallets. Any remaining slots will be filled with new wallets.</> :
-                      importSeeds.filter(s => s.trim()).length === 1 ?
-                        <><strong>Note:</strong> Your seed will be imported as wallet 1. We'll create 4 new wallets for the remaining slots (5 total).</> :
-                      importSeeds.filter(s => s.trim()).length === 5 ?
-                        <><strong>Perfect!</strong> All 5 wallet slots will be filled with your imported seeds. No new wallets will be created.</> :
-                        <><strong>Note:</strong> You're importing {importSeeds.filter(s => s.trim()).length} seeds. We'll create {5 - importSeeds.filter(s => s.trim()).length} new wallet{5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} for the remaining slots.</>
-                    ) :
-                    <><strong>Important:</strong> We'll create 5 wallets for you. Store this password safely - you'll need it to export your wallets or recover them on a new device.</>
-                  }
-                </Typography>
-              </Alert>
-
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => {
-                    setShowOAuthPasswordSetup(false);
-                    // Clear OAuth session data when canceling
-                    sessionStorage.removeItem('oauth_temp_token');
-                    sessionStorage.removeItem('oauth_temp_provider');
-                    sessionStorage.removeItem('oauth_temp_user');
-                    sessionStorage.removeItem('oauth_action');
-                    // Clear input fields
-                    setOAuthPassword('');
-                    setOAuthConfirmPassword('');
-                    setImportSeeds(['']);
-                    setImportFile(null);
-                    setOAuthPasswordError('');
-                              }}
-                  disabled={isCreatingWallet}
-                  aria-label="Cancel wallet setup"
-                  sx={{
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    py: 1
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleOAuthPasswordSetup}
-                  disabled={isCreatingWallet || !oauthPassword ||
-                    (importMethod === 'new' && !oauthConfirmPassword) ||
-                    (importMethod === 'import' && !importFile) ||
-                    (importMethod === 'seed' && !importSeeds.some(s => s.trim()))}
-                  aria-label={isCreatingWallet ? 'Processing wallet setup' :
-                    (importMethod === 'seed' ? 'Import wallet from seed' :
-                     importMethod === 'import' ? 'Import wallet from file' : 'Create new wallet')}
-                  sx={{
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    py: 1
-                  }}
-                >
-                  {isCreatingWallet ?
-                    (importMethod === 'seed' ? 'Importing Seed...' :
-                     importMethod === 'import' ? 'Importing File...' : 'Creating...') :
-                    (importMethod === 'seed' ? 'Import Seed' :
-                     importMethod === 'import' ? 'Import File' : 'Create Wallet')}
-                </Button>
-              </Box>
-            </Stack>
-          </DialogContent>
-        </Dialog>
-
     </div>
   );
 }

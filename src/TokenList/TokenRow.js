@@ -830,49 +830,19 @@ const DesktopTokenRow = ({
         );
 
       case 'custom':
-        // If customColumns is empty or undefined, show default columns
+        // If customColumns is empty or undefined, fall through to classic view
         if (!customColumns || customColumns.length === 0) {
-          return (
-            <>
-              {tokenCell}
-              {priceCell}
-              <StyledCell align="right" isDark={darkMode}>
-                <PercentText color={getPercentColor(pro24h)}>
-                  {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
-                    ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
-                    : '0.0%'}
-                </PercentText>
-              </StyledCell>
-              <StyledCell align="right" isDark={darkMode}>
-                {currencySymbols[activeFiatCurrency]}
-                {formatValue(convertedValues.volume)}
-              </StyledCell>
-              <StyledCell align="right" isDark={darkMode}>
-                <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatValue(convertedValues.marketCap)}
-                </span>
-              </StyledCell>
-              <StyledCell align="right" isDark={darkMode}>
-                {sparklineUrl ? (
-                  <SparklineChart url={sparklineUrl} darkMode={darkMode} />
-                ) : (
-                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
-                )}
-              </StyledCell>
-            </>
-          );
-        }
+          // Fall through to classic case
+        } else {
+          // Render custom columns with last column padding
+          const columnElements = [];
+          const lastColumnIndex = customColumns.length - 1;
 
-        // Render custom columns with last column padding
-        const columnElements = [];
-        const lastColumnIndex = customColumns.length - 1;
+          customColumns.forEach((column, index) => {
+            const isLastColumn = index === lastColumnIndex;
+            const extraStyle = {};
 
-        customColumns.forEach((column, index) => {
-          const isLastColumn = index === lastColumnIndex;
-          const extraStyle = {};
-
-          switch (column) {
+            switch (column) {
             case 'price':
               const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
               const customFormatted = formatPrice(customPrice);
@@ -1025,15 +995,17 @@ const DesktopTokenRow = ({
                 </StyledCell>
               );
               break;
-          }
-        });
+            }
+          });
 
-        return (
-          <>
-            {tokenCell}
-            {columnElements}
-          </>
-        );
+          return (
+            <>
+              {tokenCell}
+              {columnElements}
+            </>
+          );
+        }
+        // Fall through to classic when customColumns is empty
 
       case 'classic':
       default:
