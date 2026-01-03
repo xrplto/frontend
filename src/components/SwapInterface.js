@@ -586,7 +586,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   useEffect(() => {
     const loadDebugInfo = async () => {
       if (!accountProfile) { setDebugInfo(null); return; }
-      const walletKeyId = accountProfile.walletKeyId ||
+      let walletKeyId = accountProfile.walletKeyId ||
         (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
         (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
       let seed = accountProfile.seed || null;
@@ -599,6 +599,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           if (storedPassword) {
             const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
             seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      // Handle device wallets
+      if (!seed && accountProfile.wallet_type === 'device') {
+        try {
+          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const deviceKeyId = await deviceFingerprint.getDeviceId();
+          walletKeyId = deviceKeyId;
+          if (deviceKeyId) {
+            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+            if (storedPassword) {
+              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              seed = walletData?.seed || 'encrypted';
+            }
           }
         } catch (e) { seed = 'error: ' + e.message; }
       }
@@ -3023,6 +3039,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
                   <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
                   <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+                  <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
                 </div>
               </div>
             )}
