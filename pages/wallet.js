@@ -261,72 +261,69 @@ export default function WalletPage() {
             ))}
           </div>
 
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <div className="space-y-4">
-              {/* Portfolio Header */}
-              <div className={cn("rounded-xl p-6", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}>
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div>
-                    <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2", isDark ? "text-blue-400" : "text-blue-500")}>Portfolio Value</p>
-                    <p className={cn("text-5xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>$1,266.75</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-emerald-500 text-sm font-medium">+$45.20 (3.7%)</span>
-                      <span className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>24h</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowPanel('send')} className={cn("flex items-center gap-2 px-5 py-3 rounded-lg text-[13px] font-medium transition-all duration-200", showPanel === 'send' ? "bg-blue-500 text-white" : "bg-blue-500 text-white hover:bg-blue-600")}>
-                      <ArrowUpRight size={16} /> Send
-                    </button>
-                    <button onClick={() => setShowPanel('receive')} className={cn("flex items-center gap-2 px-5 py-3 rounded-lg text-[13px] font-medium transition-all duration-200", showPanel === 'receive' ? "bg-blue-500/10 text-blue-400" : isDark ? "bg-white/[0.04] text-white/70 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600")}>
-                      <ArrowDownLeft size={16} /> Receive
-                    </button>
-                  </div>
-                </div>
-              </div>
+          {/* Send/Receive Modal */}
+          {showPanel && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPanel(null)} />
 
-              {/* Send/Receive Modal */}
-              {showPanel && (
-                <div className={cn("rounded-xl p-6", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                  {showPanel === 'send' ? (
-                    <div className="max-w-md mx-auto">
-                      <div className="flex items-center justify-between mb-6">
-                        <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Send Token</h3>
-                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
-                      </div>
-                      <div className="space-y-4">
+              {/* Modal */}
+              <div className={cn("relative w-full max-w-md rounded-2xl overflow-hidden", isDark ? "bg-[#0c1118] border border-white/10" : "bg-white shadow-2xl")}>
+                {/* Header with Tabs */}
+                <div className={cn("flex items-center justify-between p-4 border-b", isDark ? "border-white/5" : "border-gray-100")}>
+                  <div className={cn("flex p-1 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-100")}>
+                    <button
+                      onClick={() => setShowPanel('send')}
+                      className={cn("flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                        showPanel === 'send'
+                          ? "bg-blue-500 text-white"
+                          : isDark ? "text-white/50 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+                      )}
+                    >
+                      <ArrowUpRight size={15} /> Send
+                    </button>
+                    <button
+                      onClick={() => setShowPanel('receive')}
+                      className={cn("flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                        showPanel === 'receive'
+                          ? "bg-emerald-500 text-white"
+                          : isDark ? "text-white/50 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+                      )}
+                    >
+                      <ArrowDownLeft size={15} /> Receive
+                    </button>
+                  </div>
+                  <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/5" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}>
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Content */}
+                {showPanel === 'send' ? (
+                  <div className="p-5">
+                    {/* Amount Section */}
+                    <div className={cn("rounded-xl p-4 mb-4", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
+                      <div className="flex items-center justify-between mb-2">
                         <div className="relative">
-                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Token</label>
-                          <button type="button" onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)} className={cn("w-full px-4 py-3 rounded-lg text-[13px] text-left flex items-center justify-between transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 hover:border-blue-500/30" : "bg-gray-50 border border-blue-200/50 hover:border-blue-300")}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: MOCK_TOKENS.find(t => t.symbol === selectedToken)?.color || '#333' }}>
-                                {MOCK_TOKENS.find(t => t.symbol === selectedToken)?.icon || selectedToken[0]}
-                              </div>
-                              <span>{selectedToken}</span>
-                              <span className={isDark ? "text-white/40" : "text-gray-400"}>—</span>
-                              <span className={isDark ? "text-white/60" : "text-gray-500"}>{MOCK_TOKENS.find(t => t.symbol === selectedToken)?.amount}</span>
+                          <button type="button" onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)} className={cn("flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm transition-colors", isDark ? "bg-white/[0.05] hover:bg-white/[0.08]" : "bg-white hover:bg-gray-100 border border-gray-200")}>
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: MOCK_TOKENS.find(t => t.symbol === selectedToken)?.color || '#333' }}>
+                              {MOCK_TOKENS.find(t => t.symbol === selectedToken)?.icon || selectedToken[0]}
                             </div>
-                            <ChevronDown size={16} className={cn("transition-transform", tokenDropdownOpen && "rotate-180", isDark ? "text-white/40" : "text-gray-400")} />
+                            <span className="font-medium">{selectedToken}</span>
+                            <ChevronDown size={14} className={cn("transition-transform duration-200", tokenDropdownOpen && "rotate-180", isDark ? "text-white/40" : "text-gray-400")} />
                           </button>
                           {tokenDropdownOpen && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setTokenDropdownOpen(false)} />
-                              <div className={cn("absolute z-50 w-full mt-2 rounded-xl overflow-hidden", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20 shadow-2xl shadow-blue-500/10" : "bg-white/98 backdrop-blur-xl border border-blue-200 shadow-xl shadow-blue-200/50")}>
-                                <div className={cn("max-h-[240px] overflow-y-auto", isDark ? "scrollbar-thin scrollbar-thumb-white/10" : "")}>
+                              <div className={cn("absolute z-50 left-0 top-full mt-1 w-56 rounded-xl overflow-hidden", isDark ? "bg-[#0a0f18] border border-white/10" : "bg-white border border-gray-200 shadow-lg")}>
+                                <div className="max-h-[180px] overflow-y-auto">
                                   {MOCK_TOKENS.map((t) => (
-                                    <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-4 py-3 flex items-center gap-3 text-left transition-all duration-150", selectedToken === t.symbol ? (isDark ? "bg-blue-500/10" : "bg-blue-50") : "", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: t.color }}>
+                                    <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-colors", selectedToken === t.symbol ? (isDark ? "bg-blue-500/10" : "bg-blue-50") : "", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0" style={{ background: t.color }}>
                                         {t.icon || t.symbol[0]}
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{t.symbol}</p>
-                                        <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{t.name}</p>
-                                      </div>
-                                      <div className="text-right shrink-0">
-                                        <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{t.amount}</p>
-                                        <p className={cn("text-[10px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{t.value}</p>
-                                      </div>
+                                      <span className={cn("text-sm font-medium flex-1", isDark ? "text-white/90" : "text-gray-900")}>{t.symbol}</span>
+                                      <span className={cn("text-xs tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{t.amount}</span>
                                     </button>
                                   ))}
                                 </div>
@@ -334,108 +331,258 @@ export default function WalletPage() {
                             </>
                           )}
                         </div>
-                        <div>
-                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Amount</label>
-                          <div className={cn("rounded-lg p-4", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}>
-                            <input type="text" inputMode="decimal" value={sendAmount} onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="0.00" className={cn("w-full text-3xl font-light bg-transparent outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")} />
-                            <p className={cn("text-[10px] mt-2", isDark ? "text-white/30" : "text-gray-400")}>≈ $0.00 USD</p>
+                        <p className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+                          Bal: <span className="font-medium">{MOCK_TOKENS.find(t => t.symbol === selectedToken)?.amount}</span>
+                        </p>
+                      </div>
+
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={sendAmount}
+                        onChange={(e) => setSendAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                        placeholder="0"
+                        className={cn("w-full text-4xl font-semibold bg-transparent outline-none tabular-nums text-center py-3", isDark ? "text-white placeholder:text-white/15" : "text-gray-900 placeholder:text-gray-300")}
+                      />
+                      <p className={cn("text-xs text-center mb-3", isDark ? "text-white/30" : "text-gray-400")}>≈ $0.00 USD</p>
+
+                      {/* Quick Amount Buttons */}
+                      <div className="flex items-center justify-center gap-1.5">
+                        {[25, 50, 75, 100].map(pct => {
+                          const maxAmt = parseFloat(MOCK_TOKENS.find(t => t.symbol === selectedToken)?.amount?.replace(/,/g, '') || '0');
+                          return (
+                            <button
+                              key={pct}
+                              type="button"
+                              onClick={() => setSendAmount((maxAmt * pct / 100).toFixed(2))}
+                              className={cn("px-3 py-1 rounded-md text-[11px] font-medium transition-colors", isDark ? "bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white" : "bg-white text-gray-600 hover:bg-gray-200 border border-gray-200")}
+                            >
+                              {pct === 100 ? 'MAX' : `${pct}%`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Recipient */}
+                    <div className="mb-3">
+                      <label className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1.5 block", isDark ? "text-white/40" : "text-gray-500")}>Recipient</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={sendTo}
+                          onChange={(e) => setSendTo(e.target.value)}
+                          placeholder="rAddress..."
+                          className={cn("w-full pl-3 pr-9 py-2.5 rounded-xl text-sm font-mono outline-none transition-all duration-150",
+                            isDark ? "bg-white/[0.03] text-white border placeholder:text-white/25" : "bg-gray-50 border placeholder:text-gray-400",
+                            sendTo && sendTo.startsWith('r') && sendTo.length >= 25
+                              ? (isDark ? "border-emerald-500/50" : "border-emerald-400")
+                              : sendTo
+                                ? (isDark ? "border-amber-500/50" : "border-amber-400")
+                                : (isDark ? "border-white/10 focus:border-blue-500/50" : "border-gray-200 focus:border-blue-400")
+                          )}
+                        />
+                        {sendTo && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {sendTo.startsWith('r') && sendTo.length >= 25
+                              ? <Check size={14} className="text-emerald-500" />
+                              : <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            }
                           </div>
-                        </div>
-                        <div>
-                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Recipient</label>
-                          <input type="text" value={sendTo} onChange={(e) => setSendTo(e.target.value)} placeholder="rAddress..." className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
-                        </div>
-                        <div>
-                          <label className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block", isDark ? "text-blue-400" : "text-blue-500")}>Destination Tag (optional)</label>
-                          <input type="text" value={sendTag} onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))} placeholder="e.g. 12345678" className={cn("w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15 placeholder:text-white/30 focus:border-blue-500/40" : "bg-gray-50 border border-blue-200/50 placeholder:text-gray-400 focus:border-blue-400")} />
-                        </div>
-                        <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 mt-2 transition-colors duration-200">
-                          <Send size={16} /> Send {selectedToken}
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Destination Tag */}
+                    <div className="mb-4">
+                      <label className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1.5 block", isDark ? "text-white/40" : "text-gray-500")}>
+                        Destination Tag <span className={isDark ? "text-white/20" : "text-gray-400"}>(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={sendTag}
+                        onChange={(e) => setSendTag(e.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 12345678"
+                        className={cn("w-full px-3 py-2.5 rounded-xl text-sm font-mono outline-none transition-colors duration-150", isDark ? "bg-white/[0.03] text-white border border-white/10 placeholder:text-white/25 focus:border-blue-500/50" : "bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400")}
+                      />
+                    </div>
+
+                    {/* Fee Display */}
+                    <div className={cn("flex items-center justify-between py-2.5 px-3 rounded-lg mb-4 text-xs", isDark ? "bg-white/[0.02] text-white/50" : "bg-gray-50 text-gray-500")}>
+                      <span>Network Fee</span>
+                      <span className="font-medium">~0.00001 XRP</span>
+                    </div>
+
+                    {/* Send Button */}
+                    <button
+                      disabled={!sendTo || !sendAmount || !(sendTo.startsWith('r') && sendTo.length >= 25)}
+                      className={cn("w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200",
+                        sendTo && sendAmount && sendTo.startsWith('r') && sendTo.length >= 25
+                          ? "bg-blue-500 text-white hover:bg-blue-600 active:scale-[0.98]"
+                          : isDark ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      )}
+                    >
+                      <Send size={15} /> Send {sendAmount || '0'} {selectedToken}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-5">
+                    <div className="flex flex-col items-center">
+                      {/* QR Code */}
+                      <div className="p-3 bg-white rounded-xl mb-4">
+                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${address}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-40 h-40" />
+                      </div>
+
+                      {/* Address Display */}
+                      <div className={cn("w-full rounded-xl p-3 mb-4", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+                        <p className={cn("font-mono text-[11px] text-center break-all leading-relaxed", isDark ? "text-white/70" : "text-gray-600")}>{address}</p>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 w-full">
+                        <button
+                          onClick={() => handleCopy(address)}
+                          className={cn("flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200",
+                            copied
+                              ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                              : "bg-emerald-500 text-white hover:bg-emerald-600"
+                          )}
+                        >
+                          {copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'Copied!' : 'Copy Address'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({ title: 'My XRP Address', text: address });
+                            } else {
+                              handleCopy(address);
+                            }
+                          }}
+                          className={cn("px-4 py-2.5 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white/[0.05] text-white/60 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                        >
+                          <ExternalLink size={15} />
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="max-w-sm mx-auto text-center">
-                      <div className="flex items-center justify-between mb-6">
-                        <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Receive</h3>
-                        <button onClick={() => setShowPanel(null)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>✕</button>
-                      </div>
-                      <div className="inline-block p-3 bg-white rounded-xl mb-4">
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${address}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[180px] h-[180px]" />
-                      </div>
-                      <p className={cn("font-mono text-[10px] break-all mb-4 px-4", isDark ? "text-white/50" : "text-gray-500")}>{address}</p>
-                      <button onClick={() => handleCopy(address)} className={cn("w-full py-3 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 transition-colors duration-200", copied ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500 text-white hover:bg-blue-600")}>
-                        {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy Address'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Token Holdings - Takes 2 columns */}
-                <div className={cn("lg:col-span-2 rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                  <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
-                    <div className="flex items-center gap-3">
-                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Top Assets</p>
-                      <span className={cn("text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide", isDark ? "bg-white/5 text-white/50 border border-white/10" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length} total</span>
-                    </div>
-                    <button onClick={() => setActiveTab('tokens')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All →</button>
                   </div>
-                  <div className="divide-y divide-blue-500/5">
-                    {MOCK_TOKENS.slice(0, 5).map((token) => (
-                      <div key={token.symbol} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
-                          {token.icon || token.symbol[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
-                          <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{token.value}</p>
-                          <p className={cn("text-[10px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {token.slug && (
-                            <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
-                              <ArrowRightLeft size={14} />
-                            </Link>
-                          )}
-                          <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
-                            <Send size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {MOCK_TOKENS.length > 5 && (
-                    <div className={cn("p-3 text-center border-t", isDark ? "border-blue-500/10" : "border-blue-100")}>
-                      <button onClick={() => setActiveTab('tokens')} className={cn("text-[11px] py-2 px-4 rounded-lg transition-colors duration-150", isDark ? "text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "text-gray-500 hover:bg-blue-50 hover:text-blue-600")}>
-                        +{MOCK_TOKENS.length - 5} more tokens
-                      </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="space-y-4">
+              {/* Portfolio Header */}
+              <div className={cn("rounded-xl p-5", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <p className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Portfolio Value</p>
+                    <p className={cn("text-4xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "text-gray-900")}>$1,266.75</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-emerald-500 text-xs font-medium">+$45.20 (3.7%)</span>
+                      <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>24h</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowPanel('send')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                      <ArrowUpRight size={16} /> Send
+                    </button>
+                    <button onClick={() => setShowPanel('receive')} className={cn("flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white/[0.05] text-white/80 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-700 hover:bg-gray-200")}>
+                      <ArrowDownLeft size={16} /> Receive
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Grid - Symmetrical 2 columns */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Left Column - Assets */}
+                <div className="space-y-4">
+                  {/* Token Holdings */}
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Top Assets</p>
+                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length}</span>
+                      </div>
+                      <button onClick={() => setActiveTab('tokens')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {MOCK_TOKENS.slice(0, 5).map((token) => (
+                        <div key={token.symbol} className={cn("flex items-center gap-3 px-4 py-2.5 transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>
+                            {token.icon || token.symbol[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-sm font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                            <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-500")}>{token.name}</p>
+                          </div>
+                          <div className="text-right mr-2">
+                            <p className={cn("text-xs font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{token.value}</p>
+                            <p className={cn("text-[10px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            {token.slug && (
+                              <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-lg transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}>
+                                <ArrowRightLeft size={14} />
+                              </Link>
+                            )}
+                            <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-1.5 rounded-lg transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}>
+                              <Send size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recent Activity */}
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Recent Activity</p>
+                      <button onClick={() => setActiveTab('trades')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {MOCK_TRADES.slice(0, 4).map((trade) => (
+                        <div key={trade.id} className={cn("flex items-center gap-3 px-4 py-2.5 transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", trade.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                            {trade.type === 'buy' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-sm font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{trade.type === 'buy' ? 'Bought' : 'Sold'} {trade.amount}</p>
+                            <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{trade.time}</p>
+                          </div>
+                          <p className={cn("text-xs font-medium tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{trade.total}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Right Sidebar */}
+                {/* Right Column - NFTs & Watchlist */}
                 <div className="space-y-4">
                   {/* NFT Collections */}
-                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
-                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>NFTs</p>
-                      <button onClick={() => setActiveTab('nfts')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Collections</p>
+                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{[...new Set(MOCK_NFTS.map(n => n.collection))].length}</span>
+                      </div>
+                      <button onClick={() => setActiveTab('nfts')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
                     </div>
                     <div className="p-3 grid grid-cols-2 gap-2">
                       {[...new Map(MOCK_NFTS.map(n => [n.collection, n])).values()].slice(0, 4).map((nft) => {
                         const count = MOCK_NFTS.filter(n => n.collection === nft.collection).length;
                         return (
-                          <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("rounded-lg overflow-hidden text-left transition-all duration-150", isDark ? "hover:ring-1 hover:ring-blue-500/30" : "hover:ring-1 hover:ring-blue-300")}>
-                            <img src={nft.image} alt={nft.collection} className="w-full aspect-square object-cover" />
-                            <div className="p-2">
-                              <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{nft.collection}</p>
-                              <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{count} items</p>
+                          <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("rounded-xl overflow-hidden text-left transition-all duration-150 group", isDark ? "hover:ring-1 hover:ring-white/20" : "hover:ring-1 hover:ring-gray-300")}>
+                            <div className="relative">
+                              <img src={nft.image} alt={nft.collection} className="w-full aspect-square object-cover" />
+                              <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity", isDark ? "bg-black/20" : "bg-black/10")} />
+                            </div>
+                            <div className="p-2.5">
+                              <p className={cn("text-xs font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{nft.collection}</p>
+                              <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{count} items</p>
                             </div>
                           </button>
                         );
@@ -443,51 +590,29 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  {/* Recent Activity */}
-                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
-                      <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Activity</p>
-                      <button onClick={() => setActiveTab('trades')} className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
-                    </div>
-                    <div className="p-2">
-                      {MOCK_TRADES.slice(0, 3).map((trade) => (
-                        <div key={trade.id} className={cn("flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", trade.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                            {trade.type === 'buy' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{trade.type === 'buy' ? 'Bought' : 'Sold'} {trade.amount}</p>
-                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.time}</p>
-                          </div>
-                          <p className={cn("text-[12px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{trade.total}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Watchlist Preview */}
-                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                    <div className="flex items-center justify-between p-4 border-b border-blue-500/10">
+                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                       <div className="flex items-center gap-2">
-                        <Star size={14} className="text-blue-400" />
-                        <p className={cn("text-[11px] font-semibold uppercase tracking-[0.15em]", isDark ? "text-blue-400" : "text-blue-500")}>Watchlist</p>
+                        <Star size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
+                        <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Watchlist</p>
                       </div>
-                      <Link href="/watchlist" className={cn("text-[11px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</Link>
+                      <Link href="/watchlist" className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</Link>
                     </div>
-                    <div className="p-3">
+                    <div className="p-4">
                       {watchList?.length > 0 ? (
-                        <div className="space-y-1">
-                          <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
-                            {watchList.length} token{watchList.length !== 1 ? 's' : ''} tracked
+                        <div className="space-y-3">
+                          <p className={cn("text-xs", isDark ? "text-white/50" : "text-gray-500")}>
+                            Tracking {watchList.length} token{watchList.length !== 1 ? 's' : ''}
                           </p>
-                          <Link href="/watchlist" className={cn("block text-[13px] py-2 text-center rounded-lg transition-colors duration-150", isDark ? "bg-white/[0.04] text-white/60 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600")}>
+                          <Link href="/watchlist" className={cn("block text-sm py-2.5 text-center rounded-xl font-medium transition-colors duration-150", isDark ? "bg-white/[0.03] text-white/60 hover:bg-blue-500/10 hover:text-blue-400 border border-white/5" : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-100")}>
                             View Watchlist
                           </Link>
                         </div>
                       ) : (
-                        <div className="text-center py-2">
-                          <p className={cn("text-[12px] mb-2", isDark ? "text-white/35" : "text-gray-400")}>No tokens tracked yet</p>
-                          <Link href="/" className={cn("text-[12px] transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>
+                        <div className="text-center py-4">
+                          <p className={cn("text-xs mb-3", isDark ? "text-white/40" : "text-gray-400")}>No tokens tracked yet</p>
+                          <Link href="/" className={cn("text-xs font-medium transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>
                             Browse tokens
                           </Link>
                         </div>

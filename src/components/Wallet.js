@@ -3567,12 +3567,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'success' && (
                         <div className="space-y-3">
-                          <div className={cn("p-3 rounded-lg", isDark ? "bg-[#3f96fe]/10 border border-[#3f96fe]/20" : "bg-blue-50 border border-blue-200")}>
-                            <p className={cn("text-[11px]", isDark ? "text-blue-400" : "text-blue-700")}>
-                              Wallet {profiles.findIndex(p => p.account === (backupTargetProfile?.account || accountProfile?.account)) + 1} of {profiles.length}
-                            </p>
-                            <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/50" : "text-gray-500")}>
-                              Use download backup for all wallets.
+                          <div className={cn("p-2.5 rounded-lg", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-200")}>
+                            <p className={cn("text-[10px]", isDark ? "text-red-400" : "text-red-600")}>
+                              Never share. Non-custodial — if lost, funds are unrecoverable.
                             </p>
                           </div>
 
