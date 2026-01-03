@@ -512,7 +512,6 @@ const WalletContent = ({
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
-  const [showQrCode, setShowQrCode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -1088,20 +1087,18 @@ const WalletContent = ({
         <div className="grid grid-cols-3 gap-2">
           <a href="/wallet?tab=send" className={cn(
             "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
-            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            "bg-blue-500 hover:bg-blue-600 text-white"
           )}>
-            <Send size={16} className="text-primary" />
+            <ArrowUpRight size={16} />
             Send
           </a>
-          <button onClick={() => setShowQrCode(!showQrCode)} className={cn(
+          <a href="/wallet?tab=receive" className={cn(
             "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
-            showQrCode
-              ? "bg-primary/10 text-primary"
-              : isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
           )}>
-            <QrCode size={16} className={showQrCode ? "text-primary" : isDark ? "text-white/50" : "text-gray-500"} />
+            <ArrowDownLeft size={16} className={isDark ? "text-emerald-400" : "text-emerald-500"} />
             Receive
-          </button>
+          </a>
           <button onClick={() => { initBridgeForm(); setShowBridgeInDropdown(true); }} className={cn(
             "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
             isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -1112,25 +1109,6 @@ const WalletContent = ({
         </div>
       </div>
 
-      {/* QR Code */}
-      {showQrCode && (
-        <div className={cn("mx-4 mb-3 p-3 rounded-xl", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-white rounded-lg">
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[72px] h-[72px]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={cn("font-mono text-[10px] break-all leading-relaxed mb-2", isDark ? "text-white/50" : "text-gray-500")}>{accountLogin}</p>
-              <button onClick={handleCopyAddress} className={cn(
-                "w-full py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1",
-                addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90"
-              )}>
-                {addressCopied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Accounts */}
       <div className={cn("mx-4 mb-3 rounded-xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>

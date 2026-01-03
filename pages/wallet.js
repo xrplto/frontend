@@ -68,7 +68,13 @@ export default function WalletPage() {
 
   // Sync tab with URL query parameter
   useEffect(() => {
-    if (initialTab && initialTab !== activeTab) {
+    if (initialTab === 'send') {
+      setShowPanel('send');
+      setActiveTab('overview');
+    } else if (initialTab === 'receive') {
+      setShowPanel('receive');
+      setActiveTab('overview');
+    } else if (initialTab && initialTab !== activeTab) {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
