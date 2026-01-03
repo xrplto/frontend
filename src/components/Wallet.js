@@ -34,7 +34,8 @@ import {
   Loader2,
   ExternalLink,
   RefreshCw,
-  ChevronRight
+  ChevronRight,
+  Settings
 } from 'lucide-react';
 
 // Context
@@ -512,7 +513,8 @@ const WalletContent = ({
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // account to delete
+  const [showSettings, setShowSettings] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Send state
   const [recipient, setRecipient] = useState('');
@@ -1153,37 +1155,16 @@ const WalletContent = ({
                 const isCurrent = profile.account === accountLogin;
                 const isInactive = accountsActivation[profile.account] === false;
                 return (
-                  <div key={profile.account} className={cn("flex items-center px-3 py-2 gap-2 transition-all",
-                    isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : deleteConfirm === profile.account ? (isDark ? "bg-red-500/10" : "bg-red-50") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
-                  )}>
-                    {deleteConfirm === profile.account ? (
-                      <div className="flex items-center gap-2 flex-1">
-                        <AlertTriangle size={12} className="text-red-400" />
-                        <span className={cn("text-[10px] flex-1", isDark ? "text-white/70" : "text-gray-600")}>Delete? Backup seed first!</span>
-                        <button onClick={() => { onRemoveProfile(profile.account); setDeleteConfirm(null); }} className="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500 text-white">Yes</button>
-                        <button onClick={() => setDeleteConfirm(null)} className={cn("px-2 py-0.5 rounded text-[10px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-200 text-gray-600")}>No</button>
-                      </div>
-                    ) : (
-                      <>
-                        <button onClick={() => !isCurrent && onAccountSwitch(profile.account)} className="flex items-center gap-2 flex-1 text-left">
-                          <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
-                          <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
-                            {truncateAccount(profile.account, 8)}
-                          </span>
-                        </button>
-                        {isCurrent ? (
-                          <span className="text-[9px] font-medium text-emerald-500">Active</span>
-                        ) : (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(profile.account); }}
-                            className={cn("p-1 rounded transition-colors", isDark ? "text-white/20 hover:text-red-400 hover:bg-red-500/10" : "text-gray-300 hover:text-red-500 hover:bg-red-50")}
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  <button key={profile.account} onClick={() => !isCurrent && onAccountSwitch(profile.account)}
+                    className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-all",
+                      isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
+                    )}>
+                    <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
+                    <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
+                      {truncateAccount(profile.account, 8)}
+                    </span>
+                    {isCurrent && <span className="text-[9px] font-medium text-emerald-500">Active</span>}
+                  </button>
                 );
               });
             })()}
@@ -1191,20 +1172,88 @@ const WalletContent = ({
         )}
       </div>
 
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className={cn("mx-4 mb-3 rounded-xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+          <div className={cn("px-3 py-2 flex items-center justify-between border-b", isDark ? "border-white/[0.04]" : "border-gray-100")}>
+            <span className={cn("text-[11px] font-medium", isDark ? "text-white/60" : "text-gray-600")}>Manage Accounts</span>
+            <button onClick={() => setShowSettings(false)} className={cn("p-0.5 rounded", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+              <XIcon size={12} />
+            </button>
+          </div>
+          <div className="max-h-[160px] overflow-y-auto">
+            {profiles.map((profile) => {
+              const isCurrent = profile.account === accountLogin;
+              return (
+                <div key={profile.account} className={cn("px-3 py-2 flex items-center gap-2", isDark ? "border-b border-white/[0.04] last:border-0" : "border-b border-gray-100 last:border-0")}>
+                  <span className={cn("font-mono text-[10px] flex-1", isDark ? "text-white/50" : "text-gray-500")}>
+                    {truncateAccount(profile.account, 6)}
+                  </span>
+                  {isCurrent && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Active</span>}
+                  <button
+                    onClick={() => { onBackupSeed(profile, true); setShowSettings(false); }}
+                    className={cn("p-1.5 rounded transition-colors", isDark ? "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10" : "text-amber-500 hover:text-amber-600 hover:bg-amber-50")}
+                    title="Backup seed"
+                  >
+                    <Shield size={12} />
+                  </button>
+                  {deleteConfirm === profile.account ? (
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => { onRemoveProfile(profile.account); setDeleteConfirm(null); }} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-500 text-white">Yes</button>
+                      <button onClick={() => setDeleteConfirm(null)} className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-200 text-gray-600")}>No</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => !isCurrent && setDeleteConfirm(profile.account)}
+                      disabled={isCurrent}
+                      className={cn("p-1.5 rounded transition-colors", isCurrent ? "opacity-30 cursor-not-allowed" : isDark ? "text-white/30 hover:text-red-400 hover:bg-red-500/10" : "text-gray-400 hover:text-red-500 hover:bg-red-50")}
+                      title="Delete account"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => { handleDownloadBackup(); setShowSettings(false); }}
+            className={cn("w-full px-3 py-2.5 flex items-center justify-center gap-2 text-[11px] font-medium border-t transition-colors",
+              isDark ? "border-white/[0.04] text-amber-500 hover:bg-amber-500/10" : "border-gray-100 text-amber-600 hover:bg-amber-50"
+            )}
+          >
+            <Download size={14} /> Download Encrypted Backup
+          </button>
+        </div>
+      )}
+
       {/* Footer */}
-      <div className={cn("px-4 py-2.5 flex items-center justify-between border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-        {onCreateNewAccount && profiles.length < 25 ? (
-          <button onClick={onCreateNewAccount} className={cn("flex items-center gap-1 text-[11px] font-medium", "text-primary hover:text-primary/80")}>
-            <Plus size={13} /> Add
-          </button>
-        ) : <div />}
-        {needsBackup && (
-          <button onClick={onBackupSeed} className="flex items-center gap-1 text-[11px] font-medium text-amber-500 hover:text-amber-400">
-            <Shield size={13} /> Backup
-          </button>
-        )}
-        <button onClick={onLogout} className={cn("text-[11px] font-medium", isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500")}>
-          Logout
+      <div className={cn("px-4 py-2.5 grid grid-cols-3 gap-2 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+        <button
+          onClick={onCreateNewAccount}
+          disabled={!onCreateNewAccount || profiles.length >= 25}
+          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
+            !onCreateNewAccount || profiles.length >= 25 ? "opacity-30 cursor-not-allowed" : "",
+            isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+          )}
+        >
+          <Plus size={14} /> Add
+        </button>
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
+            showSettings ? "text-primary bg-primary/10" : isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+          )}
+        >
+          <Settings size={14} /> Settings
+        </button>
+        <button
+          onClick={onLogout}
+          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
+            isDark ? "text-white/50 hover:text-red-400 hover:bg-red-500/10" : "text-gray-500 hover:text-red-500 hover:bg-red-50"
+          )}
+        >
+          <XIcon size={14} /> Logout
         </button>
       </div>
     </div>
@@ -1301,6 +1350,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
   const [backupMode, setBackupMode] = useState(null); // 'seed' or 'full'
+  const [backupTargetProfile, setBackupTargetProfile] = useState(null); // profile to backup
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
@@ -1461,7 +1511,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   }, []);
 
   const handleSeedPasswordSubmit = async () => {
-    const profile = accountProfile;
+    const profile = backupTargetProfile || accountProfile;
     if (!seedPassword) {
       openSnackbar('Please enter password', 'error');
       return;
@@ -2177,15 +2227,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     return;
   }, [profiles, accountProfile, walletPage, walletsPerPage]);
 
-  const handleBackupSeed = async () => {
-    const profile = accountProfile;
+  const handleBackupSeed = async (targetProfile = null, seedOnly = false) => {
+    const profile = targetProfile || accountProfile;
     if (!profile) return;
 
+    setBackupTargetProfile(profile);
     setShowSeedDialog(true);
-    setSeedAuthStatus('select-mode'); // Show mode selection first
-    setBackupMode(null);
     setSeedPassword('');
     setDisplaySeed('');
+
+    if (seedOnly) {
+      // Skip mode selection, go directly to seed backup
+      setBackupMode('seed');
+      setSeedAuthStatus('password-required');
+    } else {
+      setSeedAuthStatus('select-mode');
+      setBackupMode(null);
+    }
   };
 
   const handleDownloadBackup = async () => {
@@ -3373,6 +3431,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setSeedWarningAgreed(false);
                           setBackupMode(null);
                           setSeedPassword('');
+                          setBackupTargetProfile(null);
                         }}
                         className={cn("p-1 rounded-md transition-colors", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
                       >
@@ -3395,11 +3454,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             )}
                           >
                             <span className={cn("text-[13px]", isDark ? "text-white" : "text-gray-900")}>View Seed</span>
-                            <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1}</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Wallet {profiles.findIndex(p => p.account === (backupTargetProfile?.account || accountProfile?.account)) + 1}</span>
                           </button>
                           <button
                             onClick={() => {
                               setShowSeedDialog(false);
+                              setBackupTargetProfile(null);
                               handleDownloadBackup();
                             }}
                             className="w-full text-left p-3 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
@@ -3480,6 +3540,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setSeedPassword('');
                                 setShowSeedPassword(false);
                                 setSeedWarningAgreed(false);
+                                setBackupTargetProfile(null);
                               }}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
@@ -3508,7 +3569,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <div className="space-y-3">
                           <div className={cn("p-3 rounded-lg", isDark ? "bg-[#3f96fe]/10 border border-[#3f96fe]/20" : "bg-blue-50 border border-blue-200")}>
                             <p className={cn("text-[11px]", isDark ? "text-blue-400" : "text-blue-700")}>
-                              Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
+                              Wallet {profiles.findIndex(p => p.account === (backupTargetProfile?.account || accountProfile?.account)) + 1} of {profiles.length}
                             </p>
                             <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/50" : "text-gray-500")}>
                               Use download backup for all wallets.
