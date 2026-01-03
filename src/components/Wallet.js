@@ -512,6 +512,7 @@ const WalletContent = ({
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // account to delete
 
   // Send state
   const [recipient, setRecipient] = useState('');
@@ -1152,16 +1153,37 @@ const WalletContent = ({
                 const isCurrent = profile.account === accountLogin;
                 const isInactive = accountsActivation[profile.account] === false;
                 return (
-                  <button key={profile.account} onClick={() => !isCurrent && onAccountSwitch(profile.account)}
-                    className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-all",
-                      isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
-                    )}>
-                    <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
-                    <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
-                      {truncateAccount(profile.account, 8)}
-                    </span>
-                    {isCurrent && <span className="text-[9px] font-medium text-emerald-500">Active</span>}
-                  </button>
+                  <div key={profile.account} className={cn("flex items-center px-3 py-2 gap-2 transition-all",
+                    isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : deleteConfirm === profile.account ? (isDark ? "bg-red-500/10" : "bg-red-50") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
+                  )}>
+                    {deleteConfirm === profile.account ? (
+                      <div className="flex items-center gap-2 flex-1">
+                        <AlertTriangle size={12} className="text-red-400" />
+                        <span className={cn("text-[10px] flex-1", isDark ? "text-white/70" : "text-gray-600")}>Delete? Backup seed first!</span>
+                        <button onClick={() => { onRemoveProfile(profile.account); setDeleteConfirm(null); }} className="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500 text-white">Yes</button>
+                        <button onClick={() => setDeleteConfirm(null)} className={cn("px-2 py-0.5 rounded text-[10px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-200 text-gray-600")}>No</button>
+                      </div>
+                    ) : (
+                      <>
+                        <button onClick={() => !isCurrent && onAccountSwitch(profile.account)} className="flex items-center gap-2 flex-1 text-left">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
+                          <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
+                            {truncateAccount(profile.account, 8)}
+                          </span>
+                        </button>
+                        {isCurrent ? (
+                          <span className="text-[9px] font-medium text-emerald-500">Active</span>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(profile.account); }}
+                            className={cn("p-1 rounded transition-colors", isDark ? "text-white/20 hover:text-red-400 hover:bg-red-500/10" : "text-gray-300 hover:text-red-500 hover:bg-red-50")}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 );
               });
             })()}
@@ -2399,11 +2421,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Get stored password and compare directly
-      const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-      const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+      let storedPassword;
+      let rateLimitKey;
+      if (accountProfile.wallet_type === 'device') {
+        storedPassword = await walletStorage.getWalletCredential(accountProfile.deviceKeyId);
+        rateLimitKey = `new_account_${accountProfile.deviceKeyId}`;
+      } else {
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        rateLimitKey = `new_account_${walletId}`;
+      }
 
       // Rate limiting check
-      const rateLimitKey = `new_account_${walletId}`;
       const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
       if (!rateCheck.allowed) {
         openSnackbar(rateCheck.error, 'error');
@@ -2492,6 +2521,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setNewAccountPassword('');
     }
   };
+
   const accountLogin = accountProfile?.account;
   const accountLogo = accountProfile?.logo;
   const accountTotalXrp = accountProfile?.xrp;

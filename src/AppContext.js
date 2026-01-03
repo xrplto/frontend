@@ -289,10 +289,17 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setAccountBalance(null);
   };
 
-  const removeProfile = (account) => {
+  const removeProfile = async (account) => {
     const newProfiles = profiles.filter(obj => obj.account !== account);
     localStorage.setItem('profiles', JSON.stringify(newProfiles));
     setProfiles(newProfiles);
+    // Clean up encrypted wallet data and backup flag
+    try {
+      await walletStorage.deleteWallet(account);
+      localStorage.removeItem(`wallet_needs_backup_${account}`);
+    } catch (err) {
+      console.warn('Failed to clean up wallet data:', err);
+    }
   };
 
 
