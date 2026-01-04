@@ -14,14 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock data
-const MOCK_TOKENS = [
-  { symbol: 'XRP', name: 'XRP', amount: '1,250.50', value: '$625.25', change: '+2.4%', positive: true, color: '#23292F', icon: '◎', slug: null },
-  { symbol: 'SOLO', name: 'Sologenic', amount: '5,000.00', value: '$245.00', change: '+5.2%', positive: true, color: '#00D4AA', slug: 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00000000000000000000000000000000' },
-  { symbol: 'LUSD', name: 'LUSD', amount: '500.00', value: '$500.00', change: '+0.1%', positive: true, color: '#4285f4', slug: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000' },
-  { symbol: 'CSC', name: 'CasinoCoin', amount: '125,000', value: '$187.50', change: '-1.8%', positive: false, color: '#E91E63', slug: 'rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr-4353430000000000000000000000000000000000' },
-  { symbol: 'CORE', name: 'Coreum', amount: '820.00', value: '$164.00', change: '+3.1%', positive: true, color: '#25D695', slug: 'rcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D-434F524500000000000000000000000000000000' },
-];
+const BASE_URL = 'https://api.xrpl.to';
 
 const MOCK_TOKEN_OFFERS = [
   { id: 1, type: 'sell', from: '100 SOLO', to: '50 XRP', rate: '0.5 XRP/SOLO', created: '2h ago' },
@@ -137,12 +130,58 @@ export default function WalletPage() {
   const [nftToSell, setNftToSell] = useState(null);
   const [nftSellPrice, setNftSellPrice] = useState('');
 
+  // Tokens state
+  const [tokens, setTokens] = useState([]);
+  const [tokensLoading, setTokensLoading] = useState(false);
+  const [xrpData, setXrpData] = useState(null);
+
   // Withdrawal addresses state
   const [withdrawals, setWithdrawals] = useState([]);
   const [showAddWithdrawal, setShowAddWithdrawal] = useState(false);
   const [newWithdrawal, setNewWithdrawal] = useState({ name: '', address: '', tag: '' });
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalError, setWithdrawalError] = useState('');
+
+  // Load tokens from API
+  useEffect(() => {
+    const fetchTokens = async () => {
+      if (!address) return;
+      setTokensLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=50`);
+        const data = await res.json();
+        if (data.result === 'success') {
+          setXrpData(data.accountData);
+          const formatted = data.lines?.map(line => {
+            const t = line.token || {};
+            const change = t.pro24h ?? 0;
+            const displayName = t.name || t.user || 'Unknown';
+            return {
+              symbol: displayName,
+              name: t.user || displayName,
+              amount: parseFloat(line.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+              rawAmount: parseFloat(line.balance || 0),
+              value: line.value ? `${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP` : '0 XRP',
+              rawValue: line.value || 0,
+              change: `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`,
+              positive: change >= 0,
+              color: t.color || '#4285f4',
+              icon: t.icon || null,
+              slug: t.slug || null,
+              issuer: line.issuer,
+              md5: t.md5 || null
+            };
+          }) || [];
+          setTokens(formatted);
+        }
+      } catch (e) {
+        console.error('Failed to load tokens:', e);
+      } finally {
+        setTokensLoading(false);
+      }
+    };
+    fetchTokens();
+  }, [address]);
 
   // Load withdrawals from IndexedDB
   useEffect(() => {
@@ -194,6 +233,24 @@ export default function WalletPage() {
       console.error('Failed to delete withdrawal:', e);
     }
   };
+
+  // Computed tokens list with XRP at top
+  const xrpToken = xrpData ? {
+    symbol: 'XRP',
+    name: 'XRP',
+    amount: xrpData.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) || '0.00',
+    rawAmount: xrpData.balance || 0,
+    value: `${xrpData.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'} XRP`,
+    rawValue: xrpData.balance || 0,
+    change: '',
+    positive: true,
+    color: '#23292F',
+    icon: '◎',
+    slug: 'xrpl-xrp',
+    md5: '84e5efeb89c4eae8f68188982dc290d8'
+  } : null;
+  const allTokens = xrpToken ? [xrpToken, ...tokens] : tokens;
+  const totalValue = allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Wallet },
@@ -312,9 +369,11 @@ export default function WalletPage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="relative">
                           <button type="button" onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)} className={cn("flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm transition-colors", isDark ? "bg-white/[0.05] hover:bg-white/[0.08]" : "bg-white hover:bg-gray-100 border border-gray-200")}>
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: MOCK_TOKENS.find(t => t.symbol === selectedToken)?.color || '#333' }}>
-                              {MOCK_TOKENS.find(t => t.symbol === selectedToken)?.icon || selectedToken[0]}
-                            </div>
+                            {(() => { const t = allTokens.find(t => t.symbol === selectedToken); return t?.md5 ? (
+                              <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-5 h-5 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: t?.color || '#333' }}>{t?.icon || selectedToken[0]}</div>
+                            ); })()}
                             <span className="font-medium">{selectedToken}</span>
                             <ChevronDown size={14} className={cn("transition-transform duration-200", tokenDropdownOpen && "rotate-180", isDark ? "text-white/40" : "text-gray-400")} />
                           </button>
@@ -323,11 +382,13 @@ export default function WalletPage() {
                               <div className="fixed inset-0 z-40" onClick={() => setTokenDropdownOpen(false)} />
                               <div className={cn("absolute z-50 left-0 top-full mt-1 w-56 rounded-xl overflow-hidden", isDark ? "bg-[#0a0f18] border border-white/10" : "bg-white border border-gray-200 shadow-lg")}>
                                 <div className="max-h-[180px] overflow-y-auto">
-                                  {MOCK_TOKENS.map((t) => (
+                                  {allTokens.map((t) => (
                                     <button key={t.symbol} type="button" onClick={() => { setSelectedToken(t.symbol); setTokenDropdownOpen(false); }} className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-colors", selectedToken === t.symbol ? (isDark ? "bg-blue-500/10" : "bg-blue-50") : "", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
-                                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0" style={{ background: t.color }}>
-                                        {t.icon || t.symbol[0]}
-                                      </div>
+                                      {t.md5 ? (
+                                        <img src={`https://s1.xrpl.to/token/${t.md5}`} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                      ) : (
+                                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0" style={{ background: t.color }}>{t.icon || t.symbol[0]}</div>
+                                      )}
                                       <span className={cn("text-sm font-medium flex-1", isDark ? "text-white/90" : "text-gray-900")}>{t.symbol}</span>
                                       <span className={cn("text-xs tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{t.amount}</span>
                                     </button>
@@ -338,7 +399,7 @@ export default function WalletPage() {
                           )}
                         </div>
                         <p className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
-                          Bal: <span className="font-medium">{MOCK_TOKENS.find(t => t.symbol === selectedToken)?.amount}</span>
+                          Bal: <span className="font-medium">{allTokens.find(t => t.symbol === selectedToken)?.amount || '0'}</span>
                         </p>
                       </div>
 
@@ -355,7 +416,7 @@ export default function WalletPage() {
                       {/* Quick Amount Buttons */}
                       <div className="flex items-center justify-center gap-1.5">
                         {[25, 50, 75, 100].map(pct => {
-                          const maxAmt = parseFloat(MOCK_TOKENS.find(t => t.symbol === selectedToken)?.amount?.replace(/,/g, '') || '0');
+                          const maxAmt = allTokens.find(t => t.symbol === selectedToken)?.rawAmount || 0;
                           return (
                             <button
                               key={pct}
@@ -484,11 +545,12 @@ export default function WalletPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <p className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Portfolio Value</p>
-                    <p className={cn("text-4xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "text-gray-900")}>$1,266.75</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-emerald-500 text-xs font-medium">+$45.20 (3.7%)</span>
-                      <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>24h</span>
-                    </div>
+                    <p className={cn("text-4xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                      {tokensLoading ? '...' : `${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`}
+                    </p>
+                    <p className={cn("text-[10px] mt-1", isDark ? "text-white/30" : "text-gray-400")}>
+                      {allTokens.length} assets
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => setShowPanel('send')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
@@ -510,16 +572,20 @@ export default function WalletPage() {
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                       <div className="flex items-center gap-2">
                         <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Top Assets</p>
-                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{MOCK_TOKENS.length}</span>
+                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{allTokens.length}</span>
                       </div>
                       <button onClick={() => setActiveTab('tokens')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
                     </div>
                     <div className="divide-y divide-white/5">
-                      {MOCK_TOKENS.slice(0, 5).map((token) => (
+                      {tokensLoading ? (
+                        <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
+                      ) : allTokens.slice(0, 5).map((token) => (
                         <div key={token.symbol} className={cn("flex items-center gap-3 px-4 py-2.5 transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>
-                            {token.icon || token.symbol[0]}
-                          </div>
+                          {token.md5 ? (
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className={cn("text-sm font-medium", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
                             <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-500")}>{token.name}</p>
@@ -632,16 +698,16 @@ export default function WalletPage() {
 
           {/* Tokens Tab - Full Token Management */}
           {activeTab === 'tokens' && (() => {
-            const filteredTokens = MOCK_TOKENS
+            const filteredTokens = allTokens
               .filter(t => {
                 if (tokenSearch && !t.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) && !t.name.toLowerCase().includes(tokenSearch.toLowerCase())) return false;
-                if (hideZeroBalance && t.amount === '0') return false;
+                if (hideZeroBalance && t.rawAmount === 0) return false;
                 return true;
               })
               .sort((a, b) => {
                 if (tokenSort === 'name') return a.symbol.localeCompare(b.symbol);
                 if (tokenSort === 'change') return parseFloat(b.change) - parseFloat(a.change);
-                return parseFloat(b.value.replace(/[$,]/g, '')) - parseFloat(a.value.replace(/[$,]/g, ''));
+                return (b.rawValue || 0) - (a.rawValue || 0);
               });
 
             return (
@@ -682,7 +748,7 @@ export default function WalletPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3">
                     <span className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-400")}>
-                      {filteredTokens.length} of {MOCK_TOKENS.length} tokens
+                      {tokensLoading ? 'Loading...' : `${filteredTokens.length} of ${allTokens.length} tokens`}
                     </span>
                     {tokenSearch && (
                       <button onClick={() => setTokenSearch('')} className={cn("text-[11px] transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>Clear search</button>
@@ -711,9 +777,11 @@ export default function WalletPage() {
                       filteredTokens.map((token) => (
                         <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-all duration-150", isDark ? "border-blue-500/5 hover:bg-white/[0.02]" : "border-blue-50 hover:bg-gray-50")}>
                           <div className="col-span-4 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>
-                              {token.icon || token.symbol[0]}
-                            </div>
+                            {token.md5 ? (
+                              <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
+                            )}
                             <div className="min-w-0">
                               <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
                               <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
