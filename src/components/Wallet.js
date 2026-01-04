@@ -1361,6 +1361,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [createError, setCreateError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [createMode, setCreateMode] = useState('new'); // 'new' or 'import'
+  const [createSeed, setCreateSeed] = useState('');
 
   // Post-creation backup screen state
   const [newWalletData, setNewWalletData] = useState(null);
@@ -1939,12 +1941,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setCreateError('Passwords do not match');
       return;
     }
+    // Validate seed if importing
+    if (createMode === 'import') {
+      const validation = validateSeed(createSeed);
+      if (!validation.valid) {
+        setCreateError(validation.error || 'Invalid seed');
+        return;
+      }
+    }
 
     setIsCreating(true);
     setCreateError('');
 
     try {
-      const wallet = generateRandomWallet();
+      let wallet;
+      if (createMode === 'import' && createSeed) {
+        const algorithm = getAlgorithmFromSeed(createSeed.trim());
+        wallet = XRPLWallet.fromSeed(createSeed.trim(), { algorithm });
+      } else {
+        wallet = generateRandomWallet();
+      }
 
       // Generate stable device fingerprint ID (survives storage clearing)
       const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
@@ -1964,7 +1980,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       await walletStorage.storeWallet(walletData, createPassword);
       // Store password for auto-retrieval (like OAuth wallets do)
       await walletStorage.storeWalletCredential(deviceKeyId, createPassword);
-      localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
 
       const profile = {
         account: wallet.address,
@@ -1981,19 +1996,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       localStorage.setItem('profiles', JSON.stringify([profile]));
       doLogIn(profile, [profile]);
 
-      // Store wallet data for backup screen (includes seed)
-      setNewWalletData({ ...walletData, profile });
-      setShowNewWalletScreen(true);
-      setBackupConfirmed(false);
-      setShowNewSeed(false);
-      setNewSeedCopied(false);
-      setNewAddressCopied(false);
-      setShowBridgeForm(false);
-      setBridgeData(null);
-      setBridgeError('');
+      // For new wallets, show backup screen. For imports, skip (user already has seed)
+      if (createMode === 'new') {
+        localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
+        setNewWalletData({ ...walletData, profile });
+        setShowNewWalletScreen(true);
+        setBackupConfirmed(false);
+        setShowNewSeed(false);
+        setNewSeedCopied(false);
+        setNewAddressCopied(false);
+        setShowBridgeForm(false);
+        setBridgeData(null);
+        setBridgeError('');
+      } else {
+        // Import mode - show success notification
+        openSnackbar('Wallet imported successfully', 'success');
+      }
 
       setCreatePassword('');
       setCreatePasswordConfirm('');
+      setCreateSeed('');
+      setCreateMode('new');
     } catch (error) {
       setCreateError(error.message || 'Failed to create wallet');
     } finally {
@@ -2672,6 +2695,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 if (!window.confirm('You have unsaved progress. Close anyway?')) return;
                 setCreatePassword('');
                 setCreatePasswordConfirm('');
+                setCreateSeed('');
+                setCreateMode('new');
                 setUnlockPassword('');
               }
             }
@@ -3616,6 +3641,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setOpenWalletModal(false);
                           setCreatePassword('');
                           setCreatePasswordConfirm('');
+                          setCreateSeed('');
+                          setCreateMode('new');
                           setUnlockPassword('');
                         }}
                         className={cn(
@@ -3699,8 +3726,69 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Create Wallet - Only show if no existing wallet */}
                       {!hasExistingWallet && (
                         <div className="space-y-3">
-                          <p className={cn("text-[12px] mb-1", isDark ? "text-white/50" : "text-gray-500")}>
-                            Create a password to secure your wallet
+                          {/* Mode toggle: Create New / Import Existing */}
+                          <div className={cn("flex rounded-lg p-0.5", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                            <button
+                              onClick={() => { setCreateMode('new'); setCreateError(''); }}
+                              className={cn(
+                                "flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all",
+                                createMode === 'new'
+                                  ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
+                                  : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                              )}
+                            >
+                              Create New
+                            </button>
+                            <button
+                              onClick={() => { setCreateMode('import'); setCreateError(''); }}
+                              className={cn(
+                                "flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all",
+                                createMode === 'import'
+                                  ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
+                                  : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                              )}
+                            >
+                              Import Existing
+                            </button>
+                          </div>
+
+                          {/* Seed input for import mode */}
+                          {createMode === 'import' && (
+                            <div className="space-y-1">
+                              {(() => {
+                                const validation = validateSeed(createSeed);
+                                const hasInput = createSeed.trim().length > 0;
+                                return (
+                                  <>
+                                    <input
+                                      type="password"
+                                      value={createSeed}
+                                      onChange={(e) => { setCreateSeed(e.target.value); setCreateError(''); }}
+                                      placeholder="Enter your secret seed (s...)"
+                                      autoFocus
+                                      className={cn(
+                                        "w-full px-3 py-2.5 rounded-lg text-[13px] font-mono outline-none transition-colors",
+                                        isDark
+                                          ? "bg-white/[0.04] border text-white placeholder:text-white/25 focus:border-white/20"
+                                          : "bg-gray-50 border text-gray-900 placeholder:text-gray-400 focus:border-gray-300",
+                                        hasInput && !validation.valid
+                                          ? "border-red-500/50"
+                                          : hasInput && validation.valid
+                                            ? "border-emerald-500/50"
+                                            : isDark ? "border-white/[0.08]" : "border-gray-200"
+                                      )}
+                                    />
+                                    {hasInput && validation.error && (
+                                      <p className="text-[10px] text-red-400">{validation.error}</p>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          )}
+
+                          <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                            {createMode === 'import' ? 'Set a password to encrypt your imported wallet' : 'Create a password to secure your wallet'}
                           </p>
 
                           <div className="relative">
@@ -3708,9 +3796,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               type={showCreatePassword ? 'text' : 'password'}
                               value={createPassword}
                               onChange={(e) => { setCreatePassword(e.target.value); setCreateError(''); }}
-                              onKeyDown={(e) => e.key === 'Enter' && createPasswordConfirm && handlePasswordCreate()}
+                              onKeyDown={(e) => e.key === 'Enter' && createPasswordConfirm && (createMode === 'new' || validateSeed(createSeed).valid) && handlePasswordCreate()}
                               placeholder="Password"
-                              autoFocus
+                              autoFocus={createMode === 'new'}
                               className={cn(
                                 "w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors",
                                 isDark
@@ -3734,7 +3822,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             type={showCreatePassword ? 'text' : 'password'}
                             value={createPasswordConfirm}
                             onChange={(e) => { setCreatePasswordConfirm(e.target.value); setCreateError(''); }}
-                            onKeyDown={(e) => e.key === 'Enter' && handlePasswordCreate()}
+                            onKeyDown={(e) => e.key === 'Enter' && (createMode === 'new' || validateSeed(createSeed).valid) && handlePasswordCreate()}
                             placeholder="Confirm Password"
                             className={cn(
                               "w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors",
@@ -3750,13 +3838,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                           <button
                             onClick={handlePasswordCreate}
-                            disabled={isCreating || !createPassword || !createPasswordConfirm}
+                            disabled={isCreating || !createPassword || !createPasswordConfirm || (createMode === 'import' && !validateSeed(createSeed).valid)}
                             className={cn(
                               "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
                               "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
                             )}
                           >
-                            {isCreating ? <Loader2 size={14} className="animate-spin" /> : 'Create Wallet'}
+                            {isCreating ? <Loader2 size={14} className="animate-spin" /> : (createMode === 'import' ? 'Import Wallet' : 'Create Wallet')}
                           </button>
                         </div>
                       )}
