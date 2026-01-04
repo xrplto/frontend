@@ -555,7 +555,7 @@ export default function WalletPage() {
 
       <Header />
 
-      {false && !accountLogin ? ( // TODO: restore check
+      {!address ? (
         <div className={cn("min-h-[calc(100vh-64px)] flex items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
           <div className={cn("text-center p-10 rounded-xl max-w-md", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
             <div className={cn("w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6", isDark ? "bg-blue-500/10" : "bg-blue-50")}>

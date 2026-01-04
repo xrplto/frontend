@@ -45,6 +45,8 @@ const OverView = ({ account }) => {
   const [txSearch, setTxSearch] = useState('');
   const [activeTab, setActiveTab] = useState('tokens');
   const [xrpPrice, setXrpPrice] = useState(null);
+  const [accountAI, setAccountAI] = useState(null);
+  const [accountAILoading, setAccountAILoading] = useState(false);
 
   // Fetch XRP price from /api/rates
   useEffect(() => {
@@ -68,6 +70,8 @@ const OverView = ({ account }) => {
     setTxSearch('');
     setTxFilter('all');
     setLoading(true);
+    setAccountAI(null);
+    setAccountAILoading(false);
 
     const fetchData = async () => {
       try {
@@ -180,6 +184,19 @@ const OverView = ({ account }) => {
     return Array.from(types);
   };
 
+  const handleAccountAI = async () => {
+    if (accountAILoading || accountAI) return;
+    setAccountAILoading(true);
+    try {
+      const res = await axios.get(`https://api.xrpl.to/api/account-tx-explain/${account}?limit=200`);
+      setAccountAI(res.data);
+    } catch (err) {
+      setAccountAI({ error: 'Failed to analyze account activity' });
+    } finally {
+      setAccountAILoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <PageWrapper>
@@ -276,6 +293,27 @@ const OverView = ({ account }) => {
                     Manage
                   </button>
                 )}
+                {!accountAI && !accountAILoading && (
+                  <button
+                    onClick={handleAccountAI}
+                    className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors">
+                      <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
+                      <path d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z" fill="currentColor"/>
+                    </svg>
+                    <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">Explain with AI</span>
+                  </button>
+                )}
+                {accountAILoading && (
+                  <span className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 bg-[#8b5cf6]/10 text-[12px] text-[#c4b5fd]">
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Analyzing...
+                  </span>
+                )}
               </div>
               {data?.firstTradeDate && (
                 <span className={cn("text-[12px] md:text-[13px] md:ml-auto", isDark ? "text-white/40" : "text-gray-400")}>
@@ -283,6 +321,77 @@ const OverView = ({ account }) => {
                 </span>
               )}
             </div>
+
+            {/* AI Analysis Panel */}
+            {(accountAILoading || accountAI) && (
+              <div className={cn("mb-4 p-4 rounded-xl border", isDark ? "bg-[#0d0d0d] border-white/[0.06]" : "bg-white border-gray-200")}>
+                {accountAILoading ? (
+                  <div className="space-y-2.5">
+                    {[95, 80, 88, 65, 92, 100, 70].map((w, i) => (
+                      <div key={i} className="h-[6px] rounded-sm overflow-hidden relative" style={{ width: `${w}%` }}>
+                        <div className="absolute inset-0 rounded-sm animate-pulse" style={{ background: i === 5 ? 'rgba(139,92,246,0.4)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+                      </div>
+                    ))}
+                    <p className={cn("mt-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>Analyzing account activity...</p>
+                  </div>
+                ) : accountAI?.error ? (
+                  <p className="text-[13px] text-[#ef4444]">{accountAI.error}</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className={cn("px-2 py-1 rounded text-[11px] font-medium uppercase", accountAI.analysis?.profile === 'trader' ? "bg-[#3b82f6]/10 text-[#60a5fa]" : accountAI.analysis?.profile === 'bot' ? "bg-[#f59e0b]/10 text-[#fbbf24]" : accountAI.analysis?.profile === 'holder' ? "bg-[#22c55e]/10 text-[#4ade80]" : "bg-white/10 text-white/60")}>
+                          {accountAI.analysis?.profile || 'User'}
+                        </span>
+                        <span className={cn("px-2 py-1 rounded text-[11px]", accountAI.analysis?.riskLevel === 'low' ? "bg-[#22c55e]/10 text-[#4ade80]" : accountAI.analysis?.riskLevel === 'medium' ? "bg-[#f59e0b]/10 text-[#fbbf24]" : "bg-[#ef4444]/10 text-[#f87171]")}>
+                          {accountAI.analysis?.riskLevel || 'unknown'} risk
+                        </span>
+                        <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>{accountAI.period}</span>
+                      </div>
+                      <button onClick={() => setAccountAI(null)} className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/30" : "hover:bg-gray-100 text-gray-400")}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <p className={cn("text-[14px] leading-relaxed", isDark ? "text-white/80" : "text-gray-700")}>{accountAI.analysis?.headline}</p>
+                    {accountAI.analysis?.riskReason && (
+                      <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>{accountAI.analysis.riskReason}</p>
+                    )}
+                    {accountAI.stats && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
+                        <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Txns:</span> <span className={isDark ? "text-white/70" : "text-gray-600"}>{accountAI.txCount}</span></div>
+                        <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Success:</span> <span className="text-[#22c55e]">{accountAI.stats.successRate}%</span></div>
+                        {accountAI.stats.tradeCount > 0 && <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Trades:</span> <span className={isDark ? "text-white/70" : "text-gray-600"}>{accountAI.stats.tradeCount}</span></div>}
+                        {accountAI.stats.swapCount > 0 && <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Swaps:</span> <span className={isDark ? "text-white/70" : "text-gray-600"}>{accountAI.stats.swapCount}</span></div>}
+                        <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Fees:</span> <span className={isDark ? "text-white/70" : "text-gray-600"}>{accountAI.stats.totalFees} XRP</span></div>
+                        {accountAI.stats.xrpNet !== 0 && <div><span className={isDark ? "text-white/40" : "text-gray-400"}>XRP Net:</span> <span className={accountAI.stats.xrpNet >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}>{accountAI.stats.xrpNet >= 0 ? '+' : ''}{accountAI.stats.xrpNet}</span></div>}
+                        {accountAI.stats.tokens?.length > 0 && <div><span className={isDark ? "text-white/40" : "text-gray-400"}>Tokens:</span> <span className={isDark ? "text-white/70" : "text-gray-600"}>{accountAI.stats.tokens.slice(0, 5).join(', ')}{accountAI.stats.tokens.length > 5 ? ` +${accountAI.stats.tokens.length - 5}` : ''}</span></div>}
+                      </div>
+                    )}
+                    {accountAI.analysis?.keyFindings?.length > 0 && (
+                      <ul className="space-y-1.5">
+                        {accountAI.analysis.keyFindings.map((f, i) => (
+                          <li key={i} className={cn("text-[12px] flex items-start gap-2", isDark ? "text-white/60" : "text-gray-500")}>
+                            <span className="text-[#8b5cf6]">•</span>
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {accountAI.topAddresses?.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>Top:</span>
+                        {accountAI.topAddresses.slice(0, 3).map((a, i) => (
+                          <Link key={i} href={`/address/${a.address}`} className={cn("text-[11px] px-2 py-0.5 rounded", isDark ? "bg-white/5 text-white/50 hover:text-white/70" : "bg-gray-100 text-gray-500 hover:text-gray-700")}>
+                            {a.label || `${a.address.slice(0, 6)}...`} ({a.interactions})
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                    <p className={cn("text-[10px] pt-2 border-t", isDark ? "border-white/5 text-white/30" : "border-gray-100 text-gray-400")}>{accountAI.disclaimer}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Account Not Activated */}
             {holdings?.accountActive === false && (
