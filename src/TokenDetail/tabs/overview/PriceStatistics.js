@@ -2,7 +2,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext, useRef } from 'react';
 import styled from '@emotion/styled';
-import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert, ArrowUpRight, ArrowDownLeft, Droplet, Flame, ArrowLeftRight, BarChart2, X, Link2, Settings, FileText } from 'lucide-react';
+import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert, ArrowUpRight, ArrowDownLeft, Droplet, Flame, ArrowLeftRight, BarChart2, X, Link2, Settings, FileText, ChevronDown } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -307,31 +307,29 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   // AI Review state
   const [aiReview, setAiReview] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiExpanded, setAiExpanded] = useState(false);
   const aiAbortRef = useRef(null);
 
-  // Fetch AI review
+  // Fetch AI review (always detailed)
   useEffect(() => {
     if (!token.md5) return;
     if (aiAbortRef.current) aiAbortRef.current.abort();
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
+    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}?detailed=true`, { signal: aiAbortRef.current.signal })
       .then(res => res.json())
       .then(data => {
         if (data?.review) {
-          const review = data.review;
-          // Handle safetyScore (new, 10=safe) or riskScore (old, 10=risky)
-          const score = review.safetyScore ?? review.riskScore;
-          if (typeof score === 'number') {
-            setAiReview({
-              safetyScore: review.safetyScore,
-              riskScore: review.riskScore,
-              risks: Array.isArray(review.risks) ? review.risks : [],
-              positives: Array.isArray(review.positives) ? review.positives : [],
-              timestamp: data.timestamp
-            });
-          }
+          const r = data.review;
+          setAiReview({
+            safetyScore: r.safetyScore,
+            riskLevel: data.riskLevel,
+            risks: r.risks || [],
+            positives: r.positives || [],
+            blackholed: data.blackholed,
+            timestamp: data.timestamp
+          });
         }
         setAiLoading(false);
       })
@@ -614,88 +612,84 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           </Stack>
 
           {aiReview && (() => {
-              const score = aiReview.safetyScore ?? aiReview.riskScore;
-              const isGreen = score <= 4;
-              const isYellow = score >= 5 && score <= 7;
-              const color = isGreen ? '#22c55e' : isYellow ? '#f59e0b' : '#ef4444';
-              const label = score <= 2 ? 'Very Safe' : score <= 4 ? 'Low Risk' : score === 5 ? 'Neutral' : score <= 7 ? 'Elevated Risk' : score <= 9 ? 'High Risk' : 'Scam';
-              const Icon = isGreen ? ShieldCheck : isYellow ? ShieldAlert : AlertTriangle;
+              const score = aiReview.safetyScore;
+              const isGreen = score <= 2;
+              const isYellow = score >= 3 && score <= 4;
+              const isOrange = score >= 5 && score <= 6;
+              const color = isGreen ? '#22c55e' : isYellow ? '#84cc16' : isOrange ? '#f59e0b' : '#ef4444';
+              const label = aiReview.riskLevel || (score <= 2 ? 'Low' : score <= 4 ? 'Moderate' : score <= 6 ? 'Elevated' : score <= 8 ? 'High' : 'Critical');
+              const Icon = isGreen ? ShieldCheck : (isYellow || isOrange) ? ShieldAlert : AlertTriangle;
 
               return (
             <>
               {/* Score Display */}
-              <Stack direction="row" alignItems="center" style={{ gap: '14px', marginBottom: '14px' }}>
-                <div style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '12px',
-                  background: isDark ? `${color}15` : `${color}10`,
-                  border: `1.5px solid ${color}30`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Icon size={24} color={color} strokeWidth={1.5} />
-                </div>
-                <Stack style={{ flex: 1 }}>
-                  <Stack direction="row" alignItems="baseline" style={{ gap: '3px' }}>
-                    <Typography style={{ fontSize: '28px', fontWeight: 600, color, lineHeight: 1, letterSpacing: '-0.02em' }}>
-                      {score}
-                    </Typography>
-                    <Typography style={{ fontSize: '14px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', fontWeight: 400 }}>/10</Typography>
-                  </Stack>
-                  <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: '2px' }}>
-                    {label}
-                  </Typography>
+              <Stack direction="row" alignItems="center" style={{ gap: '10px', marginBottom: '8px' }}>
+                <Icon size={18} color={color} strokeWidth={1.5} />
+                <Stack direction="row" alignItems="baseline" style={{ gap: '2px', flex: 1 }}>
+                  <Typography style={{ fontSize: '20px', fontWeight: 600, color, lineHeight: 1 }}>{score}</Typography>
+                  <Typography style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)' }}>/10</Typography>
+                  <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', marginLeft: '8px' }}>{label}</Typography>
                 </Stack>
-                {/* Progress bar */}
-                <div style={{ width: '70px' }}>
-                  <div style={{ height: '5px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                    <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '3px', background: color }} />
-                  </div>
-                </div>
               </Stack>
+              {/* Progress bar */}
+              <div style={{ height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '2px', background: color }} />
+              </div>
 
-              {/* Risks & Positives in two columns */}
-              <Stack direction="row" style={{ gap: '12px' }}>
-                {aiReview.risks?.length > 0 && (
-                  <Stack style={{ flex: 1, gap: '5px' }}>
-                    {aiReview.risks.map((r, i) => {
-                      const rLower = r.toLowerCase();
-                      let riskColor = '#f59e0b';
-                      if (rLower.includes('scam') || rLower.includes('rug') || rLower.includes('honeypot')) {
-                        riskColor = '#ef4444';
-                      } else if (rLower.includes('from ath') || rLower.includes('down')) {
-                        const athMatch = r.match(/(\d+)%/);
-                        if (athMatch) {
-                          const pct = parseInt(athMatch[1], 10);
-                          riskColor = pct >= 80 ? '#ef4444' : pct >= 50 ? '#f59e0b' : '#eab308';
-                        }
-                      } else if (rLower.includes('creator sell') || rLower.includes('dumping')) {
-                        riskColor = '#ef4444';
-                      } else if (rLower.includes('concentration') || rLower.includes('consecutive') || rLower.includes('wash') || rLower.includes('low liquidity') || rLower.includes('few holder')) {
-                        riskColor = '#f59e0b';
-                      }
-                      return (
-                        <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '6px' }}>
-                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: riskColor, marginTop: '6px', flexShrink: 0 }} />
-                          <Typography style={{ fontSize: '11px', color: riskColor, lineHeight: 1.5 }}>{r}</Typography>
-                        </Stack>
-                      );
-                    })}
-                  </Stack>
-                )}
-                {aiReview.positives?.length > 0 && (
-                  <Stack style={{ flex: 1, gap: '5px' }}>
-                    {aiReview.positives.map((p, i) => (
-                      <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '6px' }}>
-                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e', marginTop: '6px', flexShrink: 0 }} />
-                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)', lineHeight: 1.5 }}>{p}</Typography>
+              {/* Summary + expand toggle */}
+              {(aiReview.risks?.length > 0 || aiReview.positives?.length > 0) && (
+                <>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    onClick={() => setAiExpanded(!aiExpanded)}
+                    style={{ gap: '12px', cursor: 'pointer', padding: '4px 0' }}
+                  >
+                    {aiReview.risks?.length > 0 && (
+                      <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b' }} />
+                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
+                          {aiReview.risks.length} risk{aiReview.risks.length !== 1 ? 's' : ''}
+                        </Typography>
                       </Stack>
-                    ))}
+                    )}
+                    {aiReview.positives?.length > 0 && (
+                      <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e' }} />
+                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
+                          {aiReview.positives.length} positive{aiReview.positives.length !== 1 ? 's' : ''}
+                        </Typography>
+                      </Stack>
+                    )}
+                    <ChevronDown size={14} style={{ marginLeft: 'auto', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', transform: aiExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                   </Stack>
-                )}
-              </Stack>
+
+                  {aiExpanded && (
+                    <Stack direction="row" style={{ gap: '12px', marginTop: '6px' }}>
+                      {aiReview.risks?.length > 0 && (
+                        <Stack style={{ flex: 1, gap: '4px' }}>
+                          {aiReview.risks.map((r, i) => (
+                            <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '5px' }}>
+                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b', marginTop: '5px', flexShrink: 0 }} />
+                              <Typography style={{ fontSize: '11px', color: '#f59e0b', lineHeight: 1.4 }}>{r}</Typography>
+                            </Stack>
+                          ))}
+                        </Stack>
+                      )}
+                      {aiReview.positives?.length > 0 && (
+                        <Stack style={{ flex: 1, gap: '4px' }}>
+                          {aiReview.positives.map((p, i) => (
+                            <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '5px' }}>
+                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e', marginTop: '5px', flexShrink: 0 }} />
+                              <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', lineHeight: 1.4 }}>{p}</Typography>
+                            </Stack>
+                          ))}
+                        </Stack>
+                      )}
+                    </Stack>
+                  )}
+                </>
+              )}
             </>
               );
           })()}

@@ -151,7 +151,7 @@ export default function WalletPage() {
         const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=50`);
         const data = await res.json();
         if (data.result === 'success') {
-          setXrpData(data.accountData);
+          setXrpData({ ...data.accountData, xrp: data.xrp });
           const formatted = data.lines?.map(line => {
             const t = line.token || {};
             const change = t.pro24h ?? 0;
@@ -235,20 +235,25 @@ export default function WalletPage() {
   };
 
   // Computed tokens list with XRP at top
-  const xrpToken = xrpData ? {
-    symbol: 'XRP',
-    name: 'XRP',
-    amount: xrpData.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) || '0.00',
-    rawAmount: xrpData.balance || 0,
-    value: `${xrpData.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'} XRP`,
-    rawValue: xrpData.balance || 0,
-    change: '',
-    positive: true,
-    color: '#23292F',
-    icon: '◎',
-    slug: 'xrpl-xrp',
-    md5: '84e5efeb89c4eae8f68188982dc290d8'
-  } : null;
+  const xrpToken = xrpData ? (() => {
+    const x = xrpData.xrp || {};
+    const bal = parseFloat(x.balance || xrpData.balance || 0);
+    const change = x.pro24h ?? 0;
+    return {
+      symbol: 'XRP',
+      name: 'XRP',
+      amount: bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+      rawAmount: bal,
+      value: x.usd ? `$${parseFloat(x.usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${bal.toFixed(2)} XRP`,
+      rawValue: x.value || bal,
+      change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '',
+      positive: change >= 0,
+      color: '#23292F',
+      icon: '◎',
+      slug: 'xrpl-xrp',
+      md5: x.md5 || '84e5efeb89c4eae8f68188982dc290d8'
+    };
+  })() : null;
   const allTokens = xrpToken ? [xrpToken, ...tokens] : tokens;
   const totalValue = allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0);
 
