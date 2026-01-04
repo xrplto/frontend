@@ -13,7 +13,6 @@ import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode, getNftCoverUrl 
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import CryptoJS from 'crypto-js';
-import { getHashIcon } from 'src/utils/formatters';
 
 function formatDecimal(decimal, decimalPlaces = null) {
   let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
@@ -78,7 +77,7 @@ const Card = ({ children, sx, ...p }) => <div style={{ borderRadius: '12px', ...
 const CardContent = ({ children, sx, ...p }) => <div style={{ padding: '16px', ...sx2style(sx) }} {...p}>{children}</div>;
 const Chip = ({ label, sx, ...p }) => <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '9999px', padding: '2px 8px', fontSize: '12px', ...sx2style(sx) }} {...p}>{label}</span>;
 const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => <div style={{ display: 'flex', flexDirection: direction === 'row' ? 'row' : 'column', gap: `${spacing * 8}px`, alignItems, ...sx2style(sx) }} {...p}>{children}</div>;
-const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
+const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img key={src} src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
 const Tooltip = ({ children, title, onOpen, ...p }) => {
   const [show, setShow] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -646,16 +645,6 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       <Box sx={{ cursor: 'pointer', display: 'inline-flex' }}>{link}</Box>
     </Tooltip>
   );
-};
-
-const AccountAvatar = ({ account }) => {
-  const [imgSrc, setImgSrc] = useState(`https://s1.xrpl.to/account/${account}`);
-
-  const handleImageError = () => {
-    setImgSrc(getHashIcon(account));
-  };
-
-  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 20, height: 20, mr: 0.5 }} />;
 };
 
 const TokenDisplay = ({ slug, currency, rawCurrency, variant = 'body1' }) => {
@@ -2711,8 +2700,7 @@ const TransactionDetails = ({ txData }) => {
                     {isConversion && Account === Destination ? (
                       <DetailRow label="Account">
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <AccountAvatar account={Account} />
-                          <Link href={`/address/${Account}`} passHref>
+                                                    <Link href={`/address/${Account}`} passHref>
                             <Typography
                               component="span"
                               variant="body2"
@@ -2733,8 +2721,7 @@ const TransactionDetails = ({ txData }) => {
                       <>
                         <DetailRow label="From">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <AccountAvatar account={Account} />
-                            <Link href={`/address/${Account}`} passHref>
+                                                        <Link href={`/address/${Account}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body2"
@@ -2753,8 +2740,7 @@ const TransactionDetails = ({ txData }) => {
                         </DetailRow>
                         <DetailRow label="To">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <AccountAvatar account={Destination} />
-                            <Link href={`/address/${Destination}`} passHref>
+                                                        <Link href={`/address/${Destination}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body2"
@@ -2886,8 +2872,7 @@ const TransactionDetails = ({ txData }) => {
                       <>
                         <DetailRow label="Token Issuer">
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <AccountAvatar account={LimitAmount.issuer} />
-                            <Link href={`/address/${LimitAmount.issuer}`} passHref>
+                                                        <Link href={`/address/${LimitAmount.issuer}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body1"
@@ -2981,8 +2966,7 @@ const TransactionDetails = ({ txData }) => {
                                   sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
                                 >
                                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <AccountAvatar account={offer.Destination} />
-                                    <Link href={`/address/${offer.Destination}`} passHref>
+                                                                        <Link href={`/address/${offer.Destination}`} passHref>
                                       <Typography
                                         component="span"
                                         variant="body1"
@@ -3080,16 +3064,14 @@ const TransactionDetails = ({ txData }) => {
                     )}
                     <DetailRow label="From">
                       <div className="flex items-center gap-2">
-                        <AccountAvatar account={acceptedOfferDetails.seller} />
-                        <Link href={`/address/${acceptedOfferDetails.seller}`}>
+                                                <Link href={`/address/${acceptedOfferDetails.seller}`}>
                           <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.seller}</span>
                         </Link>
                       </div>
                     </DetailRow>
                     <DetailRow label="To">
                       <div className="flex items-center gap-2">
-                        <AccountAvatar account={acceptedOfferDetails.buyer} />
-                        <Link href={`/address/${acceptedOfferDetails.buyer}`}>
+                                                <Link href={`/address/${acceptedOfferDetails.buyer}`}>
                           <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.buyer}</span>
                         </Link>
                       </div>
@@ -3150,8 +3132,7 @@ const TransactionDetails = ({ txData }) => {
                               <div className="flex items-center gap-2">
                                 <span className={cn("text-[11px] uppercase w-16", isDark ? "text-white/40" : "text-gray-400")}>Issuer</span>
                                 <div className="flex items-center gap-1">
-                                  <AccountAvatar account={acceptedNftInfo.issuer} />
-                                  <Link href={`/address/${acceptedNftInfo.issuer}`}>
+                                                                    <Link href={`/address/${acceptedNftInfo.issuer}`}>
                                     <span className="text-[12px] text-[#4285f4] hover:underline font-mono">
                                       {acceptedNftInfo.issuer.slice(0, 8)}...{acceptedNftInfo.issuer.slice(-4)}
                                     </span>
@@ -3212,8 +3193,7 @@ const TransactionDetails = ({ txData }) => {
                         </DetailRow>
                         <DetailRow label="Issuer">
                           <div className="flex items-center gap-2">
-                            <AccountAvatar account={offerNftInfo.issuer} />
-                            <Link href={`/address/${offerNftInfo.issuer}`}>
+                                                        <Link href={`/address/${offerNftInfo.issuer}`}>
                               <span className="text-primary text-[13px] hover:underline">{offerNftInfo.issuer}</span>
                             </Link>
                           </div>
@@ -3229,8 +3209,7 @@ const TransactionDetails = ({ txData }) => {
                     {Owner && (
                       <DetailRow label="NFT Owner">
                         <div className="flex items-center gap-2">
-                          <AccountAvatar account={Owner} />
-                          <Link href={`/address/${Owner}`}>
+                                                    <Link href={`/address/${Owner}`}>
                             <span className="text-primary text-[13px] hover:underline">{Owner}</span>
                           </Link>
                         </div>
@@ -3249,8 +3228,7 @@ const TransactionDetails = ({ txData }) => {
                     {Destination && (
                       <DetailRow label="Destination">
                         <div className="flex items-center gap-2">
-                          <AccountAvatar account={Destination} />
-                          <Link href={`/address/${Destination}`}>
+                                                    <Link href={`/address/${Destination}`}>
                             <span className="text-primary text-[13px] hover:underline">{Destination}</span>
                           </Link>
                         </div>
@@ -3841,8 +3819,7 @@ const TransactionDetails = ({ txData }) => {
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-[280px] flex-1">
-                    <AccountAvatar account={account} />
-                    <Link href={`/address/${account}`} passHref>
+                                        <Link href={`/address/${account}`} passHref>
                       <span className="text-primary text-[13px] font-mono hover:underline break-all">
                         {account}
                       </span>

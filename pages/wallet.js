@@ -239,6 +239,7 @@ export default function WalletPage() {
     } else if (type === 'TrustSet') {
       label = 'Trustline';
     }
+    const counterparty = isOutgoing ? tx.Destination : tx.Account;
     return {
       id: tx.hash || tx.ctid,
       type: isOutgoing ? 'out' : 'in',
@@ -246,7 +247,8 @@ export default function WalletPage() {
       amount,
       isDust,
       time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
-      hash: tx.hash
+      hash: tx.hash,
+      counterparty
     };
   };
 
@@ -573,7 +575,7 @@ export default function WalletPage() {
         </div>
       ) : (
       <div className={cn("min-h-screen", isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900")}>
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="max-w-[1920px] mx-auto w-full px-4 py-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Wallet</h1>
@@ -934,6 +936,7 @@ export default function WalletPage() {
                       <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
                         <Image size={24} className="mx-auto mb-2 opacity-50" />
                         <p className="text-[11px]">No NFTs found</p>
+                        <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-400 hover:underline mt-1 inline-block">Browse collections</a>
                       </div>
                     ) : (
                       <div className="divide-y divide-white/5">
@@ -979,21 +982,25 @@ export default function WalletPage() {
                     <thead>
                       <tr className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>
                         <th className="text-left px-4 py-2 font-medium">Type</th>
+                        <th className="text-left px-4 py-2 font-medium">From/To</th>
                         <th className="text-left px-4 py-2 font-medium">Date</th>
                         <th className="text-right px-4 py-2 font-medium">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {transactions.slice(0, 20).map((tx) => (
-                        <tr key={tx.id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                        <tr key={tx.id} onClick={() => window.open(`/tx/${tx.hash}`, '_blank')} className={cn("transition-colors cursor-pointer", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                           <td className="px-4 py-2.5">
-                            <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0", tx.type === 'in' ? "bg-emerald-500/10" : "bg-red-500/10")}>
                                 {tx.type === 'in' ? <ArrowDownLeft size={12} className="text-emerald-500" /> : <ArrowUpRight size={12} className="text-red-400" />}
                               </div>
                               <span className={cn("text-sm font-medium", isDark ? "text-white/90" : "text-gray-900")}>{tx.label}</span>
                               {tx.isDust && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
-                            </a>
+                            </div>
+                          </td>
+                          <td className={cn("px-4 py-2.5 text-xs font-mono", isDark ? "text-white/50" : "text-gray-500")}>
+                            {tx.counterparty ? `${tx.counterparty.slice(0, 4)}...${tx.counterparty.slice(-4)}` : '-'}
                           </td>
                           <td className={cn("px-4 py-2.5 text-xs", isDark ? "text-white/50" : "text-gray-500")}>{tx.time ? new Date(tx.time).toLocaleString() : ''}</td>
                           <td className={cn("px-4 py-2.5 text-right text-xs font-medium tabular-nums whitespace-nowrap", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount || '-'}</td>
@@ -1465,6 +1472,7 @@ export default function WalletPage() {
                     <div className={cn("rounded-xl p-12 text-center", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
                       <Image size={40} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
                       <p className={cn("text-[13px] font-medium mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
+                      <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-400 hover:underline">Browse collections</a>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1504,6 +1512,7 @@ export default function WalletPage() {
                   <Image size={40} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
                   <p className={cn("text-[13px] font-medium mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
                   <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>NFTs you own will appear here</p>
+                  <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-400 hover:underline mt-2 inline-block">Browse collections</a>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
