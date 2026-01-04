@@ -6,6 +6,7 @@ import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { withdrawalStorage } from 'src/utils/withdrawalStorage';
+import { getNftCoverUrl } from 'src/utils/parseUtils';
 import {
   Send, ArrowDownLeft, ArrowUpRight, Copy, Check, QrCode,
   Wallet, Image, RotateCcw, TrendingUp, Building2,
@@ -36,16 +37,6 @@ const MOCK_TRADES = [
   { id: 4, type: 'sell', pair: 'SOLO/XRP', amount: '200 SOLO', price: '0.051 XRP', total: '10.2 XRP', time: '1d ago' },
 ];
 
-const MOCK_NFTS = [
-  { id: 1, name: 'xPunk #1234', collection: 'xPunks', collectionSlug: 'xpunks', nftId: '00081388D65E6C7B1F4E9366B0B6D1C8B9F6D9D5F7F8B2C3A4E5D6C7B8A9F0E1', image: 'https://placehold.co/200x200/1a1a2e/white?text=1234', floor: '50 XRP' },
-  { id: 2, name: 'xPunk #892', collection: 'xPunks', collectionSlug: 'xpunks', nftId: '00081388D65E6C7B1F4E9366B0B6D1C8B9F6D9D5F7F8B2C3A4E5D6C7B8A9F0E2', image: 'https://placehold.co/200x200/1a1a2e/white?text=892', floor: '55 XRP' },
-  { id: 3, name: 'xPunk #3001', collection: 'xPunks', collectionSlug: 'xpunks', nftId: '00081388D65E6C7B1F4E9366B0B6D1C8B9F6D9D5F7F8B2C3A4E5D6C7B8A9F0E3', image: 'https://placehold.co/200x200/1a1a2e/white?text=3001', floor: '48 XRP' },
-  { id: 4, name: 'XS Tower #89', collection: 'XS Tower', collectionSlug: 'xs-tower-apartments', nftId: '00081F40ADAB283F8972AAA140FFD5FB528A39470C05996D308D4C87057F67EB', image: 'https://placehold.co/200x200/3d1a4d/white?text=89', floor: '35 XRP' },
-  { id: 5, name: 'XS Tower #412', collection: 'XS Tower', collectionSlug: 'xs-tower-apartments', nftId: '00081F40ADAB283F8972AAA140FFD5FB528A39470C05996D308D4C87057F67EC', image: 'https://placehold.co/200x200/3d1a4d/white?text=412', floor: '40 XRP' },
-  { id: 6, name: 'xSpectar Land #12', collection: 'xSpectar', collectionSlug: 'xspectar', nftId: '00082A5B7C8D9E0F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F', image: 'https://placehold.co/200x200/1e3a5f/white?text=12', floor: '200 XRP' },
-  { id: 7, name: 'XRPL Ape #567', collection: 'XRPL Apes', collectionSlug: 'xrpl-apes', nftId: '00083B6C8D9E0F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5A', image: 'https://placehold.co/200x200/2d132c/white?text=567', floor: '120 XRP' },
-  { id: 8, name: 'XRPL Ape #88', collection: 'XRPL Apes', collectionSlug: 'xrpl-apes', nftId: '00083B6C8D9E0F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8F9A0B1C2D3E4F5B', image: 'https://placehold.co/200x200/2d132c/white?text=88', floor: '115 XRP' },
-];
 
 export default function WalletPage() {
   const router = useRouter();
@@ -53,7 +44,7 @@ export default function WalletPage() {
   const { themeName, accountProfile, setOpenWalletModal, watchList } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
-  const address = accountLogin;
+  const address = 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm'; // TODO: remove hardcode - was: accountLogin
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
@@ -135,6 +126,10 @@ export default function WalletPage() {
   const [tokensLoading, setTokensLoading] = useState(false);
   const [xrpData, setXrpData] = useState(null);
 
+  // NFTs state
+  const [nfts, setNfts] = useState([]);
+  const [nftsLoading, setNftsLoading] = useState(false);
+
   // Withdrawal addresses state
   const [withdrawals, setWithdrawals] = useState([]);
   const [showAddWithdrawal, setShowAddWithdrawal] = useState(false);
@@ -195,6 +190,55 @@ export default function WalletPage() {
       }
     };
     loadWithdrawals();
+  }, [address]);
+
+  // Load NFTs from API
+  useEffect(() => {
+    const fetchNfts = async () => {
+      if (!address) return;
+      setNftsLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/nft/accounts/${address}/nfts?limit=50&skip=0`);
+        const data = await res.json();
+        console.log('NFT API response:', data); // DEBUG
+        if (data.collections) {
+          const formatted = [];
+          data.collections.forEach(col => {
+            col.nfts?.forEach(nft => {
+              // Convert IPFS image paths
+              let imageUrl = '';
+              if (nft.image) {
+                if (nft.image.startsWith('ipfs://')) {
+                  imageUrl = `https://ipfs.io/ipfs/${nft.image.replace('ipfs://', '')}`;
+                } else if (nft.image.startsWith('Qm') || nft.image.startsWith('bafy')) {
+                  imageUrl = `https://ipfs.io/ipfs/${nft.image}`;
+                } else if (nft.image) {
+                  imageUrl = nft.image;
+                }
+              }
+              formatted.push({
+                id: nft._id,
+                nftId: nft._id,
+                name: nft.name || 'Unnamed NFT',
+                collection: col.name,
+                collectionSlug: col.slug || col._id,
+                collectionLogo: col.logoImage ? `https://s1.xrpl.to/nft-collection/${col.logoImage}` : '',
+                image: imageUrl,
+                floor: nft.cost ? `${nft.cost.amount} ${nft.cost.currency}` : '-',
+                rarity: nft.rarity_rank || 0
+              });
+            });
+          });
+          console.log('Formatted NFTs:', formatted); // DEBUG
+          setNfts(formatted);
+        }
+      } catch (e) {
+        console.error('Failed to load NFTs:', e);
+      } finally {
+        setNftsLoading(false);
+      }
+    };
+    fetchNfts();
   }, [address]);
 
   // Add withdrawal handler
@@ -274,7 +318,7 @@ export default function WalletPage() {
 
       <Header />
 
-      {!accountLogin ? (
+      {false && !accountLogin ? ( // TODO: restore check
         <div className={cn("min-h-[calc(100vh-64px)] flex items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
           <div className={cn("text-center p-10 rounded-xl max-w-md", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
             <div className={cn("w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6", isDark ? "bg-blue-500/10" : "bg-blue-50")}>
@@ -644,27 +688,38 @@ export default function WalletPage() {
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
                       <div className="flex items-center gap-2">
                         <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Collections</p>
-                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{[...new Set(MOCK_NFTS.map(n => n.collection))].length}</span>
+                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded font-medium", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{[...new Set(nfts.map(n => n.collection))].length}</span>
                       </div>
                       <button onClick={() => setActiveTab('nfts')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
                     </div>
-                    <div className="p-3 grid grid-cols-2 gap-2">
-                      {[...new Map(MOCK_NFTS.map(n => [n.collection, n])).values()].slice(0, 4).map((nft) => {
-                        const count = MOCK_NFTS.filter(n => n.collection === nft.collection).length;
-                        return (
-                          <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("rounded-xl overflow-hidden text-left transition-all duration-150 group", isDark ? "hover:ring-1 hover:ring-white/20" : "hover:ring-1 hover:ring-gray-300")}>
-                            <div className="relative">
-                              <img src={nft.image} alt={nft.collection} className="w-full aspect-square object-cover" />
-                              <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity", isDark ? "bg-black/20" : "bg-black/10")} />
-                            </div>
-                            <div className="p-2.5">
-                              <p className={cn("text-xs font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{nft.collection}</p>
-                              <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{count} items</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {nftsLoading ? (
+                      <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
+                    ) : nfts.length === 0 ? (
+                      <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                        <Image size={24} className="mx-auto mb-2 opacity-50" />
+                        <p className="text-[11px]">No NFTs found</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-white/5">
+                        {[...new Map(nfts.map(n => [n.collection, n])).values()].slice(0, 5).map((nft) => {
+                          const count = nfts.filter(n => n.collection === nft.collection).length;
+                          return (
+                            <button key={nft.collection} onClick={() => { setSelectedCollection(nft.collection); setActiveTab('nfts'); }} className={cn("w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                              {nft.collectionLogo || nft.image ? (
+                                <img src={nft.collectionLogo || nft.image} alt={nft.collection} className="w-8 h-8 rounded-lg object-cover shrink-0" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
+                                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-[10px] shrink-0", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className={cn("text-sm font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{nft.collection}</p>
+                                <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-500")}>{count} item{count !== 1 ? 's' : ''}</p>
+                              </div>
+                              <ChevronRight size={14} className={isDark ? "text-white/20" : "text-gray-300"} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Watchlist Preview */}
@@ -1088,31 +1143,45 @@ export default function WalletPage() {
                   <button onClick={() => setSelectedCollection(null)} className={cn("ml-auto text-[11px] px-2 py-1 rounded-lg transition-colors duration-150", isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600")}>Clear</button>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {MOCK_NFTS.filter(nft => !selectedCollection || nft.collection === selectedCollection).map((nft) => (
-                  <div key={nft.id} className={cn("rounded-xl overflow-hidden group", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                    <div className="relative">
-                      <img src={nft.image} alt={nft.name} className="w-full aspect-square object-cover" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Link href={`/nft/${nft.nftId}`} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
-                          <ExternalLink size={12} /> View
-                        </Link>
-                        <button onClick={() => setNftToTransfer(nft)} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
-                          <Send size={12} /> Send
-                        </button>
-                        <button onClick={() => setNftToSell(nft)} className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[11px] font-medium flex items-center gap-1 transition-colors">
-                          <ArrowUpRight size={12} /> Sell
-                        </button>
+              {nftsLoading ? (
+                <div className={cn("p-12 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading NFTs...</div>
+              ) : nfts.length === 0 ? (
+                <div className={cn("rounded-xl p-12 text-center", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                  <Image size={40} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                  <p className={cn("text-[13px] font-medium mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
+                  <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>NFTs you own will appear here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {nfts.filter(nft => !selectedCollection || nft.collection === selectedCollection).map((nft) => (
+                    <div key={nft.id} className={cn("rounded-xl overflow-hidden group", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                      <div className="relative">
+                        {nft.image ? (
+                          <img src={nft.image} alt={nft.name} className="w-full aspect-square object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <div className={cn("w-full aspect-square flex items-center justify-center text-[11px]", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>No image</div>
+                        )}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Link href={`/nft/${nft.nftId}`} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                            <ExternalLink size={12} /> View
+                          </Link>
+                          <button onClick={() => setNftToTransfer(nft)} className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                            <Send size={12} /> Send
+                          </button>
+                          <button onClick={() => setNftToSell(nft)} className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[11px] font-medium flex items-center gap-1 transition-colors">
+                            <ArrowUpRight size={12} /> Sell
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{nft.name}</p>
+                        <Link href={`/collection/${nft.collectionSlug}`} className={cn("text-[10px] truncate block transition-colors", isDark ? "text-white/35 hover:text-blue-400" : "text-gray-400 hover:text-blue-600")}>{nft.collection}</Link>
+                        <p className={cn("text-[10px] mt-2", isDark ? "text-white/50" : "text-gray-500")}>Floor: {nft.floor}</p>
                       </div>
                     </div>
-                    <div className="p-3">
-                      <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{nft.name}</p>
-                      <Link href={`/collection/${nft.collectionSlug}`} className={cn("text-[10px] truncate block transition-colors", isDark ? "text-white/35 hover:text-blue-400" : "text-gray-400 hover:text-blue-600")}>{nft.collection}</Link>
-                      <p className={cn("text-[10px] mt-2", isDark ? "text-white/50" : "text-gray-500")}>Floor: {nft.floor}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
