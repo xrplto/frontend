@@ -51,9 +51,9 @@ export async function getStaticProps() {
   }
 
   const ogp = {
-    canonical: 'https://xrpl.to/collections',
+    canonical: 'https://xrpl.to/nfts',
     title: 'NFT Collections | XRPL.to',
-    url: 'https://xrpl.to/collections',
+    url: 'https://xrpl.to/nfts',
     imgUrl: 'https://xrpl.to/static/ogp.webp',
     desc: 'Browse NFT collections on the XRP Ledger. Discover, trade, and collect digital art and collectibles. Community-centered marketplace for XRPL NFTs.'
   };

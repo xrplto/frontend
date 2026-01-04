@@ -528,7 +528,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   // NFT menu items
   const nftMenuItems = [
-    { path: '/collections', name: 'Collections', desc: 'Browse NFT collections', icon: <PawPrint size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
+    { path: '/nfts', name: 'Collections', desc: 'Browse NFT collections', icon: <PawPrint size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/nft-traders', name: 'NFT Traders', desc: 'Top traders leaderboard', icon: <Sparkles size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }
   ];
 
@@ -697,7 +697,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 onMouseLeave={handleNftsClose}
               >
                 <a
-                  href="/collections"
+                  href="/nfts"
                   className={cn(
                     'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
                     isNftsActive

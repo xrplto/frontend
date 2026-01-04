@@ -28,7 +28,7 @@ export default function WalletPage() {
   const exchRate = metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
   const currencySymbols = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
   const accountLogin = accountProfile?.account;
-  const address = 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm'; // TODO: remove hardcode - was: accountLogin
+  const address = accountLogin;
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
@@ -114,6 +114,51 @@ export default function WalletPage() {
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalError, setWithdrawalError] = useState('');
 
+  // Debug info state
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug info loader
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      let walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || null;
+
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+
+      if (!seed && accountProfile.wallet_type === 'device') {
+        try {
+          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const deviceKeyId = await deviceFingerprint.getDeviceId();
+          walletKeyId = deviceKeyId;
+          if (deviceKeyId) {
+            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+            if (storedPassword) {
+              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              seed = walletData?.seed || 'encrypted';
+            }
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
+
   // Token parsing helper
   const parseTokenLine = (line) => {
     const t = line.token || {};
@@ -137,6 +182,23 @@ export default function WalletPage() {
   };
 
   // Transaction parsing helper
+  // Decode hex currency to readable name
+  const decodeCurrency = (currency) => {
+    if (!currency || currency === 'XRP' || currency.length <= 3) return currency;
+    if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+      try {
+        const hex = currency.replace(/(00)+$/, '');
+        let ascii = '';
+        for (let i = 0; i < hex.length; i += 2) {
+          const byte = parseInt(hex.substr(i, 2), 16);
+          if (byte > 0) ascii += String.fromCharCode(byte);
+        }
+        return ascii || currency;
+      } catch { return currency; }
+    }
+    return currency;
+  };
+
   const parseTx = (tx) => {
     const type = tx.TransactionType;
     const isOutgoing = tx.Account === address;
@@ -150,7 +212,7 @@ export default function WalletPage() {
         amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
         isDust = !isOutgoing && xrpAmt < 0.001;
       } else if (delivered?.value) {
-        amount = `${parseFloat(delivered.value).toFixed(2)} ${delivered.currency}`;
+        amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
       }
       label = isOutgoing ? 'Sent' : 'Received';
     } else if (type === 'OfferCreate') {
@@ -169,7 +231,7 @@ export default function WalletPage() {
           const xrpAmt = parseInt(offerAmt) / 1000000;
           amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
         } else if (offerAmt?.value) {
-          amount = `${parseFloat(offerAmt.value).toFixed(2)} ${offerAmt.currency}`;
+          amount = `${parseFloat(offerAmt.value).toFixed(2)} ${decodeCurrency(offerAmt.currency)}`;
         }
         const isSeller = offer?.Owner === address;
         label = isSeller ? 'Sold NFT' : 'Bought NFT';
@@ -293,18 +355,20 @@ export default function WalletPage() {
         const [dexData, nftData] = await Promise.all([dexRes.json(), nftRes.json()]);
         if (dexData.result === 'success' && dexData.offers) {
           setTokenOffers(dexData.offers.map(offer => {
-            const taker = offer.taker_gets || offer.TakerGets;
-            const pays = offer.taker_pays || offer.TakerPays;
-            const getTsAmt = typeof taker === 'string' ? (parseInt(taker) / 1000000) : parseFloat(taker?.value || 0);
-            const getsCur = typeof taker === 'string' ? 'XRP' : (taker?.currency || '');
-            const paysAmt = typeof pays === 'string' ? (parseInt(pays) / 1000000) : parseFloat(pays?.value || 0);
-            const paysCur = typeof pays === 'string' ? 'XRP' : (pays?.currency || '');
+            const gets = offer.gets || offer.taker_gets || offer.TakerGets;
+            const pays = offer.pays || offer.taker_pays || offer.TakerPays;
+            const getsAmt = parseFloat(gets?.value || 0);
+            const getsCur = gets?.name || gets?.currency || 'XRP';
+            const paysAmt = parseFloat(pays?.value || 0);
+            const paysCur = pays?.name || pays?.currency || 'XRP';
+            const rate = getsAmt > 0 ? paysAmt / getsAmt : 0;
+            const rateDisplay = rate > 0 ? (rate >= 1 ? rate.toLocaleString(undefined, { maximumFractionDigits: 4 }) : rate.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')) : '';
             return {
               id: offer.seq || offer.Sequence,
               type: paysCur === 'XRP' ? 'buy' : 'sell',
-              from: `${getTsAmt.toFixed(2)} ${getsCur}`,
-              to: `${paysAmt.toFixed(2)} ${paysCur}`,
-              rate: paysAmt > 0 ? `${(getTsAmt / paysAmt).toFixed(4)} ${getsCur}/${paysCur}` : '',
+              from: `${getsAmt.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${getsCur}`,
+              to: `${paysAmt.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${paysCur}`,
+              rate: rateDisplay ? `${rateDisplay} ${paysCur}/${getsCur}` : '',
               seq: offer.seq || offer.Sequence,
               funded: offer.funded !== false
             };
@@ -932,7 +996,7 @@ export default function WalletPage() {
                             </a>
                           </td>
                           <td className={cn("px-4 py-2.5 text-xs", isDark ? "text-white/50" : "text-gray-500")}>{tx.time ? new Date(tx.time).toLocaleString() : ''}</td>
-                          <td className={cn("px-4 py-2.5 text-right text-xs font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount || '-'}</td>
+                          <td className={cn("px-4 py-2.5 text-right text-xs font-medium tabular-nums whitespace-nowrap", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1097,11 +1161,11 @@ export default function WalletPage() {
                       <div className="divide-y divide-blue-500/5">
                         {tokenOffers.map((offer) => (
                           <div key={offer.id} className={cn("flex items-center gap-3 px-3 py-2.5 transition-all duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", offer.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", offer.type === 'buy' ? "bg-emerald-500/10" : "bg-red-500/10")}>
                               {offer.type === 'buy' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
                             </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-1.5">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{offer.from} → {offer.to}</p>
                                 {!offer.funded && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Unfunded</span>}
                               </div>
@@ -1197,8 +1261,8 @@ export default function WalletPage() {
                         </div>
                         <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{tx.time ? new Date(tx.time).toLocaleString() : ''}</p>
                       </div>
-                      <div className="text-right">
-                        {tx.amount && <p className={cn("text-[12px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount}</p>}
+                      <div className="text-right shrink-0">
+                        {tx.amount && <p className={cn("text-[12px] font-medium tabular-nums whitespace-nowrap", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount}</p>}
                       </div>
                     </a>
                   ))}
@@ -1237,8 +1301,8 @@ export default function WalletPage() {
 
               {/* Add Withdrawal Modal */}
               {showAddWithdrawal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAddWithdrawal(false)}>
-                  <div className={cn("w-full max-w-md rounded-xl p-6", isDark ? "bg-[#070b12]/98 backdrop-blur-xl border border-blue-500/20" : "bg-white/98 backdrop-blur-xl border border-blue-200")} onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddWithdrawal(false)}>
+                  <div className={cn("w-full max-w-md rounded-2xl p-6", isDark ? "bg-[#09090b] border-[1.5px] border-white/15" : "bg-white border border-gray-200")} onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-between mb-6">
                       <h3 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Add Withdrawal Address</h3>
                       <button onClick={() => setShowAddWithdrawal(false)} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}><X size={18} /></button>
@@ -1464,6 +1528,16 @@ export default function WalletPage() {
           )}
         </div>
       </div>
+      )}
+
+      {/* Debug Info */}
+      {debugInfo && (
+        <div className={cn("max-w-5xl mx-auto px-4 py-4 mb-4 rounded-xl text-[11px] font-mono", isDark ? "bg-white/[0.02] border border-white/10" : "bg-gray-50 border border-gray-200")}>
+          <div className={isDark ? "text-white/50" : "text-gray-500"}>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+          <div className={isDark ? "text-white/50" : "text-gray-500"}>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+          <div className={isDark ? "text-white/50" : "text-gray-500"}>walletKeyId: <span className={debugInfo.walletKeyId ? "text-emerald-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+          <div className={isDark ? "text-white/50" : "text-gray-500"}>seed: <span className="text-emerald-400 break-all">{debugInfo.seed}</span></div>
+        </div>
       )}
 
       <Footer />
