@@ -35,7 +35,7 @@ const MOCK_NFT_OFFERS = [
 export default function WalletPage() {
   const router = useRouter();
   const { tab: initialTab } = router.query;
-  const { themeName, accountProfile, setOpenWalletModal, watchList } = useContext(AppContext);
+  const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const address = 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm'; // TODO: remove hardcode - was: accountLogin
@@ -68,6 +68,8 @@ export default function WalletPage() {
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [tokenSort, setTokenSort] = useState('value');
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
+  const [tokenPage, setTokenPage] = useState(1);
+  const tokensPerPage = 20;
 
   
   const handleCopy = (text) => {
@@ -957,7 +959,7 @@ export default function WalletPage() {
                       <select
                         value={tokenSort}
                         onChange={(e) => setTokenSort(e.target.value)}
-                        className={cn("px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150", isDark ? "bg-white/[0.04] text-white border border-blue-500/15" : "bg-gray-50 border border-blue-200/50")}
+                        className={cn("px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150", isDark ? "bg-[#1a1a1a] text-white border border-white/10 [&>option]:bg-[#1a1a1a]" : "bg-gray-50 border border-blue-200/50")}
                       >
                         <option value="value">Sort by Value</option>
                         <option value="name">Sort by Name</option>
@@ -994,43 +996,63 @@ export default function WalletPage() {
                   </div>
 
                   {/* Token Rows */}
-                  <div className="max-h-[500px] overflow-y-auto">
-                    {filteredTokens.length === 0 ? (
-                      <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                        <p className="text-[13px]">No tokens found</p>
-                      </div>
-                    ) : (
-                      filteredTokens.map((token) => (
-                        <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-all duration-150", isDark ? "border-blue-500/5 hover:bg-white/[0.02]" : "border-blue-50 hover:bg-gray-50")}>
-                          <div className="col-span-4 flex items-center gap-3">
-                            {token.md5 ? (
-                              <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
-                            )}
-                            <div className="min-w-0">
-                              <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
-                              <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
-                            </div>
-                          </div>
-                          <div className={cn("col-span-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.amount}</div>
-                          <div className={cn("col-span-2 text-right text-[12px] font-medium tabular-nums", isDark ? "text-white/90" : "text-gray-900")}>{token.value}</div>
-                          <div className={cn("col-span-2 text-right text-[12px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</div>
-                          <div className="col-span-2 flex items-center justify-end gap-1">
-                            {token.slug && (
-                              <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
-                                <ArrowRightLeft size={14} />
-                              </Link>
-                            )}
-                            <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
-                              <Send size={14} />
-                            </button>
+                  {filteredTokens.length === 0 ? (
+                    <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                      <p className="text-[13px]">No tokens found</p>
+                    </div>
+                  ) : (
+                    filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
+                      <div key={token.symbol} className={cn("grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 transition-all duration-150", isDark ? "border-blue-500/5 hover:bg-white/[0.02]" : "border-blue-50 hover:bg-gray-50")}>
+                        <div className="col-span-4 flex items-center gap-3">
+                          {token.md5 ? (
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
+                          )}
+                          <div className="min-w-0">
+                            <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                            <p className={cn("text-[10px] truncate", isDark ? "text-white/35" : "text-gray-500")}>{token.name}</p>
                           </div>
                         </div>
-                      ))
-                    )}
-                  </div>
+                        <div className={cn("col-span-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.amount}</div>
+                        <div className={cn("col-span-2 text-right text-[12px] font-medium tabular-nums", isDark ? "text-white/90" : "text-gray-900")}>{token.value}</div>
+                        <div className={cn("col-span-2 text-right text-[12px] tabular-nums", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</div>
+                        <div className="col-span-2 flex items-center justify-end gap-1">
+                          {token.slug && (
+                            <Link href={`/token/${token.slug}`} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
+                              <ArrowRightLeft size={14} />
+                            </Link>
+                          )}
+                          <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-2 rounded-lg transition-colors duration-150", isDark ? "hover:bg-blue-500/5 text-white/40 hover:text-blue-400" : "hover:bg-blue-50 text-gray-400 hover:text-blue-600")}>
+                            <Send size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
+
+                {/* Pagination */}
+                {filteredTokens.length > tokensPerPage && (
+                  <div className={cn("rounded-xl p-3 flex items-center justify-between", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
+                    <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+                      Showing {(tokenPage - 1) * tokensPerPage + 1}-{Math.min(tokenPage * tokensPerPage, filteredTokens.length)} of {filteredTokens.length}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setTokenPage(p => Math.max(1, p - 1))} disabled={tokenPage === 1} className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors disabled:opacity-30", isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                        Prev
+                      </button>
+                      {Array.from({ length: Math.ceil(filteredTokens.length / tokensPerPage) }, (_, i) => i + 1).slice(Math.max(0, tokenPage - 3), tokenPage + 2).map(p => (
+                        <button key={p} onClick={() => setTokenPage(p)} className={cn("w-8 h-8 rounded-lg text-[11px] font-medium transition-colors", p === tokenPage ? "bg-blue-500 text-white" : isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                          {p}
+                        </button>
+                      ))}
+                      <button onClick={() => setTokenPage(p => Math.min(Math.ceil(filteredTokens.length / tokensPerPage), p + 1))} disabled={tokenPage >= Math.ceil(filteredTokens.length / tokensPerPage)} className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors disabled:opacity-30", isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })()}
