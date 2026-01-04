@@ -1,7 +1,9 @@
 import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useSelector } from 'react-redux';
 import { AppContext } from 'src/AppContext';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -20,8 +22,11 @@ const BASE_URL = 'https://api.xrpl.to';
 export default function WalletPage() {
   const router = useRouter();
   const { tab: initialTab } = router.query;
-  const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
+  const { themeName, accountProfile, setOpenWalletModal, activeFiatCurrency } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
+  const currencySymbols = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
   const accountLogin = accountProfile?.account;
   const address = 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm'; // TODO: remove hardcode - was: accountLogin
 
@@ -89,6 +94,7 @@ export default function WalletPage() {
   // NFTs state
   const [collections, setCollections] = useState([]);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const [nftPortfolioValue, setNftPortfolioValue] = useState(0);
   const [collectionNfts, setCollectionNfts] = useState([]);
   const [collectionNftsLoading, setCollectionNftsLoading] = useState(false);
 
@@ -258,8 +264,10 @@ export default function WalletPage() {
             count: col.count,
             logo: col.logoImage ? `https://s1.xrpl.to/nft-collection/${col.logoImage}` : '',
             floor: col.floor || 0,
-            floor24hAgo: col.floor24hAgo || 0
+            floor24hAgo: col.floor24hAgo || 0,
+            value: col.value || 0
           })));
+          setNftPortfolioValue(data.portfolioValue || 0);
         }
       } catch (e) {
         if (e.name !== 'AbortError') console.error('Failed to load collections:', e);
@@ -628,7 +636,19 @@ export default function WalletPage() {
                         placeholder="0"
                         className={cn("w-full text-4xl font-semibold bg-transparent outline-none tabular-nums text-center py-3", isDark ? "text-white placeholder:text-white/15" : "text-gray-900 placeholder:text-gray-300")}
                       />
-                      <p className={cn("text-xs text-center mb-3", isDark ? "text-white/30" : "text-gray-400")}>≈ $0.00 USD</p>
+                      {(() => {
+                        const amt = parseFloat(sendAmount) || 0;
+                        const token = allTokens.find(t => t.symbol === selectedToken);
+                        const pricePerToken = token?.rawAmount > 0 ? (token.rawValue / token.rawAmount) : 0;
+                        const valueInXrp = amt * pricePerToken;
+                        const displayValue = activeFiatCurrency === 'XRP' ? valueInXrp : valueInXrp / exchRate;
+                        const symbol = currencySymbols[activeFiatCurrency] || '$';
+                        return (
+                          <p className={cn("text-xs text-center mb-3", isDark ? "text-white/30" : "text-gray-400")}>
+                            ≈ {symbol}{displayValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {activeFiatCurrency}
+                          </p>
+                        );
+                      })()}
 
                       {/* Quick Amount Buttons */}
                       <div className="flex items-center justify-center gap-1.5">
@@ -763,10 +783,12 @@ export default function WalletPage() {
                   <div>
                     <p className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Portfolio Value</p>
                     <p className={cn("text-4xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "text-gray-900")}>
-                      {tokensLoading ? '...' : `${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`}
+                      {tokensLoading ? '...' : `${(totalValue + nftPortfolioValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`}
                     </p>
-                    <p className={cn("text-[10px] mt-1", isDark ? "text-white/30" : "text-gray-400")}>
-                      {allTokens.length} assets
+                    <p className={cn("text-[10px] mt-1 flex items-center gap-2", isDark ? "text-white/30" : "text-gray-400")}>
+                      <span>{allTokens.length} tokens · {totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
+                      <span>•</span>
+                      <span>{collections.length} NFTs · {nftPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
                     </p>
                   </div>
                   <div className="flex gap-2">
