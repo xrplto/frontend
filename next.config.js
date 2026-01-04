@@ -226,7 +226,7 @@ const config = {
       }
     ];
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
   devIndicators: false,
   compress: true,
   experimental: {

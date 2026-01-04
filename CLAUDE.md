@@ -12,6 +12,9 @@ Never use `process.env` for API URLs in client-side code.
 ### Performance
 Never disable features to fix performance. Use memoization, virtualization, lazy loading instead.
 
+### No Speculation
+Do not speculate or guess. Always provide factual, verifiable data. If uncertain, say "I don't know" and suggest how to investigate.
+
 ## Project Overview
 
 XRPL.to - XRP Ledger analytics platform with token prices, NFT marketplace, DEX trading, portfolio management.

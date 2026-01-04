@@ -57,12 +57,7 @@ export default function WalletPage() {
     }
   }, [initialTab]);
 
-  // Update URL when tab changes (without full navigation)
-  useEffect(() => {
-    if (activeTab && activeTab !== initialTab) {
-      router.replace({ pathname: '/wallet', query: { tab: activeTab } }, undefined, { shallow: true });
-    }
-  }, [activeTab]);
+  // URL sync removed - was causing slowness
 
   // Form state - declare before restore effect
   const [sendAmount, setSendAmount] = useState('');
@@ -74,34 +69,7 @@ export default function WalletPage() {
   const [tokenSort, setTokenSort] = useState('value');
   const [hideZeroBalance, setHideZeroBalance] = useState(false);
 
-  // Restore wallet page state from sessionStorage
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = sessionStorage.getItem('wallet_page_state');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.sendAmount) setSendAmount(data.sendAmount);
-        if (data.sendTo) setSendTo(data.sendTo);
-        if (data.sendTag) setSendTag(data.sendTag);
-        if (data.selectedToken) setSelectedToken(data.selectedToken);
-        if (data.showPanel) setShowPanel(data.showPanel);
-        if (data.selectedCollection) setSelectedCollection(data.selectedCollection);
-        if (data.tokenSort) setTokenSort(data.tokenSort);
-        if (data.hideZeroBalance !== undefined) setHideZeroBalance(data.hideZeroBalance);
-      } catch (e) {}
-    }
-  }, []);
-
-  // Persist wallet page state on change
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem('wallet_page_state', JSON.stringify({
-      sendAmount, sendTo, sendTag, selectedToken, showPanel,
-      selectedCollection, tokenSort, hideZeroBalance
-    }));
-  }, [sendAmount, sendTo, sendTag, selectedToken, showPanel, selectedCollection, tokenSort, hideZeroBalance]);
-
+  
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -139,11 +107,12 @@ export default function WalletPage() {
 
   // Load tokens from API
   useEffect(() => {
+    const controller = new AbortController();
     const fetchTokens = async () => {
       if (!address) return;
       setTokensLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=50`);
+        const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=5`, { signal: controller.signal });
         const data = await res.json();
         if (data.result === 'success') {
           setXrpData({ ...data.accountData, xrp: data.xrp });
@@ -170,12 +139,13 @@ export default function WalletPage() {
           setTokens(formatted);
         }
       } catch (e) {
-        console.error('Failed to load tokens:', e);
+        if (e.name !== 'AbortError') console.error('Failed to load tokens:', e);
       } finally {
-        setTokensLoading(false);
+        if (!controller.signal.aborted) setTokensLoading(false);
       }
     };
     fetchTokens();
+    return () => controller.abort();
   }, [address]);
 
   // Load withdrawals from IndexedDB
@@ -194,11 +164,12 @@ export default function WalletPage() {
 
   // Load recent transactions
   useEffect(() => {
+    const controller = new AbortController();
     const fetchTx = async () => {
       if (!address) return;
       setTxLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=10`);
+        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=20`, { signal: controller.signal });
         const data = await res.json();
         if (data.result === 'success' && data.txs) {
           setTransactions(data.txs.map(tx => {
@@ -260,21 +231,23 @@ export default function WalletPage() {
           }));
         }
       } catch (e) {
-        console.error('Failed to load transactions:', e);
+        if (e.name !== 'AbortError') console.error('Failed to load transactions:', e);
       } finally {
-        setTxLoading(false);
+        if (!controller.signal.aborted) setTxLoading(false);
       }
     };
     fetchTx();
+    return () => controller.abort();
   }, [address]);
 
   // Load NFT collections summary
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCollections = async () => {
       if (!address) return;
       setCollectionsLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/nft/account/${address}/nfts`);
+        const res = await fetch(`${BASE_URL}/api/nft/account/${address}/nfts`, { signal: controller.signal });
         const data = await res.json();
         if (data.collections) {
           setCollections(data.collections.map(col => ({
@@ -286,13 +259,128 @@ export default function WalletPage() {
           })));
         }
       } catch (e) {
-        console.error('Failed to load collections:', e);
+        if (e.name !== 'AbortError') console.error('Failed to load collections:', e);
       } finally {
-        setCollectionsLoading(false);
+        if (!controller.signal.aborted) setCollectionsLoading(false);
       }
     };
     fetchCollections();
+    return () => controller.abort();
   }, [address]);
+
+  // Fetch more tokens when Tokens tab opened
+  useEffect(() => {
+    if (activeTab !== 'tokens' || !address || tokens.length >= 50) return;
+    const controller = new AbortController();
+    const fetchMore = async () => {
+      setTokensLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=50`, { signal: controller.signal });
+        const data = await res.json();
+        if (data.result === 'success') {
+          setXrpData({ ...data.accountData, xrp: data.xrp });
+          const formatted = data.lines?.map(line => {
+            const t = line.token || {};
+            const change = t.pro24h ?? 0;
+            const displayName = t.name || t.user || 'Unknown';
+            return {
+              symbol: displayName,
+              name: t.user || displayName,
+              amount: parseFloat(line.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }),
+              rawAmount: parseFloat(line.balance || 0),
+              value: line.value ? `${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP` : '0 XRP',
+              rawValue: line.value || 0,
+              change: `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`,
+              positive: change >= 0,
+              color: t.color || '#4285f4',
+              icon: t.icon || null,
+              slug: t.slug || null,
+              issuer: line.issuer,
+              md5: t.md5 || null
+            };
+          }) || [];
+          setTokens(formatted);
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') console.error('Failed to load more tokens:', e);
+      } finally {
+        if (!controller.signal.aborted) setTokensLoading(false);
+      }
+    };
+    fetchMore();
+    return () => controller.abort();
+  }, [activeTab, address]);
+
+  // Fetch more transactions when History tab opened
+  useEffect(() => {
+    if (activeTab !== 'trades' || !address || transactions.length >= 50) return;
+    const controller = new AbortController();
+    const fetchMore = async () => {
+      setTxLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=50`, { signal: controller.signal });
+        const data = await res.json();
+        if (data.result === 'success' && data.txs) {
+          setTransactions(data.txs.map(tx => {
+            const type = tx.TransactionType;
+            const isOutgoing = tx.Account === address;
+            let label = type;
+            let amount = '';
+            let isDust = false;
+            if (type === 'Payment') {
+              const delivered = tx.meta?.delivered_amount || tx.DeliverMax || tx.Amount;
+              if (typeof delivered === 'string') {
+                const xrpAmt = parseInt(delivered) / 1000000;
+                amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+                isDust = !isOutgoing && xrpAmt < 0.001;
+              } else if (delivered?.value) {
+                amount = `${parseFloat(delivered.value).toFixed(2)} ${delivered.currency}`;
+              }
+              label = isOutgoing ? 'Sent' : 'Received';
+            } else if (type === 'OfferCreate') {
+              label = 'Trade';
+            } else if (type === 'NFTokenAcceptOffer') {
+              const offerNode = tx.meta?.AffectedNodes?.find(n => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer');
+              const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
+              const offerAmt = offer?.Amount;
+              const isZeroAmount = !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
+              if (isZeroAmount) {
+                const isSender = offer?.Owner === address;
+                label = isSender ? 'Sent NFT' : 'Received NFT';
+                amount = 'FREE';
+              } else {
+                if (typeof offerAmt === 'string') {
+                  const xrpAmt = parseInt(offerAmt) / 1000000;
+                  amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+                } else if (offerAmt?.value) {
+                  amount = `${parseFloat(offerAmt.value).toFixed(2)} ${offerAmt.currency}`;
+                }
+                const isSeller = offer?.Owner === address;
+                label = isSeller ? 'Sold NFT' : 'Bought NFT';
+              }
+            } else if (type === 'TrustSet') {
+              label = 'Trustline';
+            }
+            return {
+              id: tx.hash || tx.ctid,
+              type: isOutgoing ? 'out' : 'in',
+              label,
+              amount,
+              isDust,
+              time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
+              hash: tx.hash
+            };
+          }));
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') console.error('Failed to load more transactions:', e);
+      } finally {
+        if (!controller.signal.aborted) setTxLoading(false);
+      }
+    };
+    fetchMore();
+    return () => controller.abort();
+  }, [activeTab, address]);
 
   // Load NFTs for selected collection (using collection slug endpoint for full data with thumbnails)
   useEffect(() => {
@@ -694,6 +782,9 @@ export default function WalletPage() {
                     <button onClick={() => setShowPanel('receive')} className={cn("flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white/[0.05] text-white/80 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-700 hover:bg-gray-200")}>
                       <ArrowDownLeft size={16} /> Receive
                     </button>
+                    <Link href="/watchlist" className={cn("flex items-center justify-center w-10 h-10 rounded-xl transition-colors", isDark ? "bg-white/[0.05] text-white/60 hover:bg-white/[0.08] hover:text-amber-400" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-amber-500")} title="Watchlist">
+                      <Star size={18} />
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -744,39 +835,7 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  {/* Recent Activity */}
-                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Recent Activity</p>
-                      <button onClick={() => setActiveTab('trades')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
-                    </div>
-                    {txLoading ? (
-                      <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
-                    ) : transactions.length === 0 ? (
-                      <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                        <p className="text-[11px]">No recent activity</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-white/5">
-                        {transactions.slice(0, 4).map((tx) => (
-                          <a key={tx.id} href={`/tx/${tx.hash}`} className={cn("flex items-center gap-3 px-4 py-2.5 transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", tx.type === 'in' ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                              {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className={cn("text-sm font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{tx.label}</p>
-                                {tx.isDust && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
-                              </div>
-                              <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{tx.time ? new Date(tx.time).toLocaleDateString() : ''}</p>
-                            </div>
-                            {tx.amount && <p className={cn("text-xs font-medium tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{tx.amount}</p>}
-                          </a>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                </div>
 
                 {/* Right Column - NFTs & Watchlist */}
                 <div className="space-y-4">
@@ -816,36 +875,49 @@ export default function WalletPage() {
                     )}
                   </div>
 
-                  {/* Watchlist Preview */}
-                  <div className={cn("rounded-xl", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                      <div className="flex items-center gap-2">
-                        <Star size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
-                        <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Watchlist</p>
-                      </div>
-                      <Link href="/watchlist" className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</Link>
-                    </div>
-                    <div className="p-4">
-                      {watchList?.length > 0 ? (
-                        <div className="space-y-3">
-                          <p className={cn("text-xs", isDark ? "text-white/50" : "text-gray-500")}>
-                            Tracking {watchList.length} token{watchList.length !== 1 ? 's' : ''}
-                          </p>
-                          <Link href="/watchlist" className={cn("block text-sm py-2.5 text-center rounded-xl font-medium transition-colors duration-150", isDark ? "bg-white/[0.03] text-white/60 hover:bg-blue-500/10 hover:text-blue-400 border border-white/5" : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-100")}>
-                            View Watchlist
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="text-center py-4">
-                          <p className={cn("text-xs mb-3", isDark ? "text-white/40" : "text-gray-400")}>No tokens tracked yet</p>
-                          <Link href="/" className={cn("text-xs font-medium transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>
-                            Browse tokens
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
+              </div>
+
+              {/* Recent Activity - Full Width */}
+              <div className={cn("rounded-xl mt-4", isDark ? "bg-white/[0.03] border border-white/10" : "bg-white border border-gray-200")}>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                  <p className={cn("text-[10px] font-semibold uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Recent Activity</p>
+                  <button onClick={() => setActiveTab('trades')} className={cn("text-[10px] font-medium uppercase tracking-wide transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>View All</button>
+                </div>
+                {txLoading ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
+                ) : transactions.length === 0 ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <p className="text-[11px]">No recent activity</p>
+                  </div>
+                ) : (
+                  <table className="w-full">
+                    <thead>
+                      <tr className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>
+                        <th className="text-left px-4 py-2 font-medium">Type</th>
+                        <th className="text-left px-4 py-2 font-medium">Date</th>
+                        <th className="text-right px-4 py-2 font-medium">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {transactions.slice(0, 20).map((tx) => (
+                        <tr key={tx.id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                          <td className="px-4 py-2.5">
+                            <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0", tx.type === 'in' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                                {tx.type === 'in' ? <ArrowDownLeft size={12} className="text-emerald-500" /> : <ArrowUpRight size={12} className="text-red-400" />}
+                              </div>
+                              <span className={cn("text-sm font-medium", isDark ? "text-white/90" : "text-gray-900")}>{tx.label}</span>
+                              {tx.isDust && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                            </a>
+                          </td>
+                          <td className={cn("px-4 py-2.5 text-xs", isDark ? "text-white/50" : "text-gray-500")}>{tx.time ? new Date(tx.time).toLocaleString() : ''}</td>
+                          <td className={cn("px-4 py-2.5 text-right text-xs font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{tx.amount || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}
