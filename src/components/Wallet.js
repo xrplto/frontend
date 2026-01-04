@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Wallet as XRPLWallet, encodeSeed, Client, xrpToDrops, dropsToXrp, isValidAddress } from 'xrpl';
 
 // Development logging helper
@@ -1071,19 +1072,25 @@ const WalletContent = ({
         </button>
       </div>
 
-      {/* Balance */}
-      <div className="px-4 pt-4 pb-3">
+      {/* Balance - clickable to view full wallet */}
+      <Link href="/wallet" className={cn(
+        "block px-4 pt-4 pb-3 -mx-0 rounded-lg transition-colors",
+        isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
+      )}>
         <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="font-mono text-2xl font-semibold tracking-tight">
             {accountTotalXrp || accountBalance?.curr1?.value || '0'}
           </span>
           <span className={cn("text-sm", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+          <ChevronRight size={14} className={cn("ml-auto", isDark ? "text-white/20" : "text-gray-300")} />
         </div>
-        <div className={cn("text-[11px] mb-4", isDark ? "text-white/35" : "text-gray-400")}>
+        <div className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-400")}>
           {accountBalance?.curr1?.value || '0'} available · {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved
         </div>
+      </Link>
 
-        {/* Actions */}
+      {/* Actions */}
+      <div className="px-4 pb-3">
         <div className="grid grid-cols-3 gap-2">
           <a href="/wallet?tab=send" className={cn(
             "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
