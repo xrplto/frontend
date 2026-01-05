@@ -747,17 +747,12 @@ const FormControlLabel = styled.label`
 `;
 
 const Tabs = styled.div`
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
-  border: none;
-  border-radius: 10px;
+  display: flex;
+  gap: 8px;
   margin-bottom: 12px;
-  overflow: hidden;
   @media (max-width: 640px) {
     width: 100%;
-    display: flex;
+    gap: 6px;
   }
 `;
 
@@ -765,21 +760,23 @@ const Tab = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
   font-weight: 500;
-  padding: 8px 16px;
-  background: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
-  border: 1px solid ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
-  border-radius: 8px;
-  color: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  letter-spacing: 0.05em;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  border-radius: 6px;
+  color: ${props => props.selected ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  text-transform: uppercase;
   &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
   }
   @media (max-width: 640px) {
     flex: 1;

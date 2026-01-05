@@ -1949,25 +1949,21 @@ export default function CollectionView({ collection }) {
       >
         <TabContext value={value}>
           <div className="flex justify-between items-center px-2.5 pt-2 pb-1">
-            <div
-              className="inline-flex overflow-hidden rounded-[10px]"
-              style={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}
-            >
+            <div className="flex items-center gap-2">
               {[
-                { id: 'tab-nfts', label: 'NFTs', icon: <Package size={14} /> },
-                { id: 'tab-holders', label: 'Holders', icon: <Users size={14} /> },
-                { id: 'tab-creator-transactions', label: 'Activity', icon: <Activity size={14} /> }
-              ].map((tab, idx, arr) => (
+                { id: 'tab-nfts', label: 'NFTS', icon: <Package size={15} /> },
+                { id: 'tab-holders', label: 'HOLDERS', icon: <Users size={15} /> },
+                { id: 'tab-creator-transactions', label: 'ACTIVITY', icon: <Activity size={15} /> }
+              ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setValue(tab.id)}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-[13px] font-medium uppercase tracking-wide transition-all"
-                  style={{
-                    background: value === tab.id ? (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent',
-                    color: value === tab.id ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
-                    borderRight: idx < arr.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` : 'none',
-                    letterSpacing: '0.02em'
-                  }}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all",
+                    value === tab.id
+                      ? isDark ? "border-white/20 text-white" : "border-gray-300 text-gray-900"
+                      : isDark ? "border-white/10 text-white/40 hover:text-white/60 hover:border-white/15" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  )}
                 >
                   {tab.icon}
                   <span>{tab.label}</span>

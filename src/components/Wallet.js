@@ -1056,8 +1056,8 @@ const WalletContent = ({
           )}
         >
           <div className="relative">
-            <div className={cn("w-2 h-2 rounded-full", "bg-emerald-400")} />
-            {!addressCopied && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />}
+            <div className={cn("w-2 h-2 rounded-full", accountsActivation[accountLogin] === false ? "bg-amber-400/60" : "bg-emerald-400")} />
+            {!addressCopied && accountsActivation[accountLogin] !== false && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />}
           </div>
           <span className={cn("font-mono text-xs", addressCopied ? "text-emerald-500" : isDark ? "text-white/60" : "text-gray-500")}>
             {truncateAccount(accountLogin, 6)}
@@ -1149,6 +1149,7 @@ const WalletContent = ({
                       {truncateAccount(profile.account, 8)}
                     </span>
                     {isCurrent && <span className="text-[9px] font-medium text-emerald-500">Active</span>}
+                    {isInactive && <span className="text-[9px] font-medium text-amber-400" title="Fund with 1 XRP to activate">Inactive</span>}
                   </button>
                 );
               });
@@ -1169,12 +1170,14 @@ const WalletContent = ({
           <div className="max-h-[160px] overflow-y-auto">
             {profiles.map((profile) => {
               const isCurrent = profile.account === accountLogin;
+              const isInactiveAccount = accountsActivation[profile.account] === false;
               return (
                 <div key={profile.account} className={cn("px-3 py-2 flex items-center gap-2", isDark ? "border-b border-white/[0.04] last:border-0" : "border-b border-gray-100 last:border-0")}>
                   <span className={cn("font-mono text-[10px] flex-1", isDark ? "text-white/50" : "text-gray-500")}>
                     {truncateAccount(profile.account, 6)}
                   </span>
-                  {isCurrent && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Active</span>}
+                  {isInactiveAccount && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400" title="Fund with 1 XRP to activate">Inactive</span>}
+                  {isCurrent && !isInactiveAccount && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Active</span>}
                   <button
                     onClick={() => { onBackupSeed(profile, true); setShowSettings(false); }}
                     className={cn("p-1.5 rounded transition-colors", isDark ? "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10" : "text-amber-500 hover:text-amber-600 hover:bg-amber-50")}
@@ -2208,14 +2211,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return false;
       } else {
         // Production
-        const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
-        if (response.status === 404) return false;
+        const response = await fetch(`https://api.xrpl.to/api/account/balance/${address}?simple=true`);
         if (!response.ok) return false;
 
         const data = await response.json();
-        if (data.account_data?.Balance) {
-          const balance = parseFloat(data.account_data.Balance) / 1000000;
-          return balance >= 1;
+        if (data.status === false || data.err) return false;
+        if (data.balance !== undefined) {
+          return data.balance >= 1;
         }
         return false;
       }
@@ -2226,14 +2228,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Removed visibleWalletCount - now showing all accounts by default with search/pagination
 
-  // Disabled - activation checks were slowing down modal open
-  // Accounts now show green by default (optimistic UI)
-  // Balance is shown from profile.xrp which is updated on account switch
+  // Check activation status for visible accounts
   useEffect(() => {
-    // Skip activation checks - instant display is more important
-    // The green/red dots will always show green now (optimistic)
-    return;
-  }, [profiles, accountProfile, walletPage, walletsPerPage]);
+    if (!profiles?.length) return;
+
+    const checkActivations = async () => {
+      const start = walletPage * walletsPerPage;
+      const visible = profiles.slice(start, start + walletsPerPage);
+
+      for (const profile of visible) {
+        if (accountsActivation[profile.account] !== undefined) continue;
+        const isActive = await checkAccountActivity(profile.account);
+        setAccountsActivation(prev => ({ ...prev, [profile.account]: isActive }));
+      }
+    };
+
+    checkActivations();
+  }, [profiles, walletPage, walletsPerPage, checkAccountActivity, accountsActivation]);
 
   const handleBackupSeed = async (targetProfile = null, seedOnly = false) => {
     const profile = targetProfile || accountProfile;

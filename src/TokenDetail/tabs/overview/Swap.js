@@ -411,24 +411,24 @@ const Alert = styled.div`
 
 const Tabs = styled.div`
   display: flex;
-  width: fit-content;
-  gap: 4px;
+  gap: 8px;
 `;
 
 const Tab = styled.button`
-  padding: 6px 16px;
+  padding: 10px 16px;
   font-size: 12px;
-  text-transform: none;
-  border: none;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
   border-radius: 6px;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
-  color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   cursor: pointer;
-  font-weight: ${props => props.isActive ? 500 : 400};
   transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)') : (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
   }
 `;
 

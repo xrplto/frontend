@@ -279,12 +279,7 @@ const OverView = ({ account }) => {
                     AMM
                   </span>
                 )}
-                {data?.tradePercentage > 1000 && (
-                  <span className="text-[11px] h-5 px-2 rounded bg-[#f59e0b]/10 text-[#f59e0b] font-normal flex items-center gap-1" title={`Trade percentage: ${data.tradePercentage}% - Unusually high trading activity`}>
-                    ⚠ Wash Trading
-                  </span>
-                )}
-                {isOwnAccount && (
+                                {isOwnAccount && (
                   <button
                     onClick={() => setOpenWalletModal(true)}
                     className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
@@ -442,9 +437,9 @@ const OverView = ({ account }) => {
                   {/* Main Stats Row */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-6">
                     <div>
-                      <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#1e3a5f] to-[#0f172a] border border-[#3b82f6]/30">
+                      <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", isDark ? "bg-gradient-to-r from-[#1e3a5f] to-[#0f172a] border-[#3b82f6]/30" : "bg-[#3b82f6]/10 border-[#3b82f6]/20")}>
                         <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-[#60a5fa]">Balance</span>
+                        <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-[#60a5fa]" : "text-[#3b82f6]")}>Balance</span>
                       </div>
                       <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
                         {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'}
@@ -454,9 +449,9 @@ const OverView = ({ account }) => {
                       </p>
                     </div>
                     <div>
-                      <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", totalPnL >= 0 ? "bg-gradient-to-r from-[#14532d]/50 to-[#052e16]/50 border-[#22c55e]/30" : "bg-gradient-to-r from-[#450a0a]/50 to-[#1c0606]/50 border-[#ef4444]/30")}>
+                      <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", totalPnL >= 0 ? (isDark ? "bg-gradient-to-r from-[#14532d]/50 to-[#052e16]/50 border-[#22c55e]/30" : "bg-[#22c55e]/10 border-[#22c55e]/20") : (isDark ? "bg-gradient-to-r from-[#450a0a]/50 to-[#1c0606]/50 border-[#ef4444]/30" : "bg-[#ef4444]/10 border-[#ef4444]/20"))}>
                         <div className={cn("w-1.5 h-1.5 rounded-full", totalPnL >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} />
-                        <span className={cn("text-[10px] font-medium uppercase tracking-wider", totalPnL >= 0 ? "text-[#4ade80]" : "text-[#f87171]")}>P&L</span>
+                        <span className={cn("text-[10px] font-medium uppercase tracking-wider", totalPnL >= 0 ? (isDark ? "text-[#4ade80]" : "text-[#16a34a]") : (isDark ? "text-[#f87171]" : "text-[#dc2626]"))}>P&L</span>
                       </div>
                       <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", totalPnL >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
                         {fCurrency5(totalPnL)}
@@ -466,8 +461,8 @@ const OverView = ({ account }) => {
                       </p>
                     </div>
                     <div>
-                      <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#1e293b] to-[#0f172a] border border-white/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                      <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", isDark ? "bg-gradient-to-r from-[#1e293b] to-[#0f172a] border-white/10" : "bg-gray-100 border-gray-200")}>
+                        <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-white/40" : "bg-gray-400")} />
                         <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/60" : "text-gray-500")}>Trades</span>
                       </div>
                       <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
@@ -478,9 +473,9 @@ const OverView = ({ account }) => {
                       </p>
                     </div>
                     <div>
-                      <div className="inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded bg-gradient-to-r from-[#312e81]/50 to-[#1e1b4b]/50 border border-[#8b5cf6]/30">
+                      <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 mb-3 rounded border", isDark ? "bg-gradient-to-r from-[#312e81]/50 to-[#1e1b4b]/50 border-[#8b5cf6]/30" : "bg-[#8b5cf6]/10 border-[#8b5cf6]/20")}>
                         <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-[#a78bfa]">Volume</span>
+                        <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-[#a78bfa]" : "text-[#7c3aed]")}>Volume</span>
                       </div>
                       <p className={cn("text-[28px] font-normal tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>
                         {fCurrency5(data.totalVolume)}
@@ -496,9 +491,6 @@ const OverView = ({ account }) => {
                     {[
                       { label: 'WIN RATE', value: `${fCurrency5(winRate)}%`, color: winRate >= 50 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
                       { label: 'ROI', value: `${(data.roi || 0) >= 0 ? '+' : ''}${fCurrency5(data.roi || 0)}%`, color: (data.roi || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                      { label: 'PROFIT FACTOR', value: (data.profitFactor || 0).toFixed(2), color: (data.profitFactor || 0) >= 1 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                      { label: 'SHARPE', value: (data.sharpeRatio || 0).toFixed(2), color: (data.sharpeRatio || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                      { label: 'MAX DD', value: fCurrency5(data.maxDrawdown || 0), color: 'text-[#ef4444]' },
                       { label: 'BEST', value: `+${fCurrency5(data.maxProfitTrade || 0)}`, color: 'text-[#22c55e]' },
                       { label: 'WORST', value: fCurrency5(data.maxLossTrade || 0), color: 'text-[#ef4444]' }
                     ].map((stat, idx) => (
@@ -553,7 +545,7 @@ const OverView = ({ account }) => {
             )}
 
             {/* Tabs */}
-            <div className={cn("flex items-center gap-8 border-b mb-6", isDark ? "border-white/10" : "border-gray-200")}>
+            <div className="flex items-center gap-2 mb-6">
               {[
                 { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: 0 },
@@ -563,15 +555,15 @@ const OverView = ({ account }) => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex items-center gap-2 py-3 text-[13px] font-medium tracking-wider border-b-2 -mb-px transition-colors",
+                    "flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all",
                     activeTab === tab.id
-                      ? "text-[#c53030] border-[#c53030]"
-                      : cn("border-transparent", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
+                      ? cn(isDark ? "border-white/20 text-white" : "border-gray-300 text-gray-900")
+                      : cn(isDark ? "border-white/10 text-white/40 hover:text-white/60 hover:border-white/15" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300")
                   )}
                 >
-                  <tab.icon size={16} strokeWidth={1.5} />
+                  <tab.icon size={15} strokeWidth={1.5} />
                   {tab.label}
-                  <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>{tab.count}</span>
+                  <span className={cn("text-[11px]", activeTab === tab.id ? (isDark ? "text-white/50" : "text-gray-500") : (isDark ? "text-white/20" : "text-gray-400"))}>{tab.count}</span>
                 </button>
               ))}
             </div>

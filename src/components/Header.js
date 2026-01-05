@@ -1471,9 +1471,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
                   accountProfile
-                    ? isDark
-                      ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
-                      : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
+                    ? parseFloat(accountProfile.xrp || 0) < 1
+                      ? isDark
+                        ? 'bg-amber-500/5 text-white border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/10'
+                        : 'bg-amber-50 text-gray-900 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50'
+                      : isDark
+                        ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
+                        : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
                     : isDark
                       ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
                       : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
@@ -1482,12 +1486,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {accountProfile ? (
                   <>
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      {parseFloat(accountProfile.xrp || 0) >= 1 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />}
+                      <span className={cn("relative inline-flex h-2 w-2 rounded-full", parseFloat(accountProfile.xrp || 0) < 1 ? "bg-amber-400/60" : "bg-emerald-500")} />
                     </span>
                     <span className="font-medium tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
                     {profiles?.length > 1 && (
-                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : parseFloat(accountProfile.xrp || 0) < 1 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
                     )}
                     <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </>
@@ -1510,9 +1514,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 className={cn(
                   'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
                   accountProfile
-                    ? isDark
-                      ? 'bg-emerald-500/5 text-white border-emerald-500/20'
-                      : 'bg-emerald-50 text-gray-900 border-emerald-200'
+                    ? parseFloat(accountProfile.xrp || 0) < 1
+                      ? isDark
+                        ? 'bg-amber-500/5 text-white border-amber-500/20'
+                        : 'bg-amber-50 text-gray-900 border-amber-200'
+                      : isDark
+                        ? 'bg-emerald-500/5 text-white border-emerald-500/20'
+                        : 'bg-emerald-50 text-gray-900 border-emerald-200'
                     : isDark
                       ? 'bg-white/[0.04] text-white/60 border-white/15'
                       : 'bg-gray-50 text-gray-500 border-gray-200'
@@ -1521,8 +1529,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {accountProfile ? (
                   <>
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      {parseFloat(accountProfile.xrp || 0) >= 1 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />}
+                      <span className={cn("relative inline-flex h-1.5 w-1.5 rounded-full", parseFloat(accountProfile.xrp || 0) < 1 ? "bg-amber-400/60" : "bg-emerald-500")} />
                     </span>
                     <span className="tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(1)}</span>
                   </>
@@ -1725,18 +1733,22 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     }}
                     className={cn(
                       'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
-                      isDark
-                        ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
-                        : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'bg-amber-500/5 text-white border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/10'
+                          : 'bg-amber-50 text-gray-900 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50'
+                        : isDark
+                          ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
+                          : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
                     )}
                   >
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      {parseFloat(accountProfile.xrp || 0) >= 1 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />}
+                      <span className={cn("relative inline-flex h-2 w-2 rounded-full", parseFloat(accountProfile.xrp || 0) < 1 ? "bg-amber-400/60" : "bg-emerald-500")} />
                     </span>
                     <span className="font-medium tabular-nums">{parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP</span>
                     {profiles?.length > 1 && (
-                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-semibold', isDark ? 'bg-white/10 text-white/60' : parseFloat(accountProfile.xrp || 0) < 1 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600')}>{profiles.length}</span>
                     )}
                   </button>
                 ) : (

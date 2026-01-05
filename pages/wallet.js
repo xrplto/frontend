@@ -13,7 +13,7 @@ import {
   Send, ArrowDownLeft, ArrowUpRight, Copy, Check,
   Wallet, Image, RotateCcw, TrendingUp, Building2,
   ChevronRight, ExternalLink, ArrowRightLeft, ChevronDown,
-  Search, Eye, EyeOff, Plus, Trash2, X, Star
+  Search, Eye, EyeOff, Plus, Trash2, X, Star, Coins
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -592,20 +592,20 @@ export default function WalletPage() {
           </div>
 
           {/* Tabs */}
-          <div className={cn("flex gap-1 p-1 rounded-xl mb-6 overflow-x-auto", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all duration-200",
+                  "flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all whitespace-nowrap",
                   activeTab === tab.id
-                    ? isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600"
-                    : isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/5" : "text-gray-500 hover:text-blue-600 hover:bg-blue-50/50"
+                    ? cn(isDark ? "border-white/20 text-white" : "border-gray-300 text-gray-900")
+                    : cn(isDark ? "border-white/10 text-white/40 hover:text-white/60 hover:border-white/15" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300")
                 )}
               >
-                <tab.icon size={14} />
-                {tab.label}
+                <tab.icon size={15} strokeWidth={1.5} />
+                {tab.label.toUpperCase()}
               </button>
             ))}
           </div>
@@ -887,6 +887,12 @@ export default function WalletPage() {
                     <div className="divide-y divide-white/5">
                       {tokensLoading ? (
                         <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
+                      ) : allTokens.length === 0 ? (
+                        <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                          <Coins size={24} className="mx-auto mb-2 opacity-50" />
+                          <p className="text-[11px]">No tokens found</p>
+                          <a href="/" className="text-[10px] text-blue-400 hover:underline mt-1 inline-block">Browse tokens</a>
+                        </div>
                       ) : allTokens.slice(0, 5).map((token) => (
                         <div key={token.symbol} className={cn("flex items-center gap-3 px-4 py-2.5 transition-colors duration-150", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                           {token.md5 ? (
