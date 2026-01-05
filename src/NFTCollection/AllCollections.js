@@ -1,4 +1,5 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import CollectionList from './CollectionList';
 import { fVolume, fIntNumber } from 'src/utils/formatters';
@@ -426,14 +427,23 @@ const formatNumberWithDecimals = (num) => {
 };
 
 function Collections({ initialCollections, initialTotal, initialGlobalMetrics, tags }) {
+  const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [globalMetrics, setGlobalMetrics] = useState(initialGlobalMetrics);
   const [tagsDrawerOpen, setTagsDrawerOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(router.query.tag || null);
   const [copied, setCopied] = useState(false);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+
+  // Sync selectedTag with URL query
+  useEffect(() => {
+    const urlTag = router.query.tag || null;
+    if (urlTag !== selectedTag) {
+      setSelectedTag(urlTag);
+    }
+  }, [router.query.tag]);
 
   const visibleTagCount = isMobile ? 5 : 10;
 
@@ -449,12 +459,11 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
   };
 
   const handleTagClick = (tag) => {
-    if (selectedTag === tag) {
-      setSelectedTag(null); // Deselect if clicking same tag
-    } else {
-      setSelectedTag(tag);
-    }
+    const newTag = selectedTag === tag ? null : tag;
+    setSelectedTag(newTag);
     setTagsDrawerOpen(false);
+    // Update URL without full page reload
+    router.push(newTag ? `/nfts?tag=${encodeURIComponent(newTag)}` : '/nfts', undefined, { shallow: true });
   };
 
   const filteredTags = useMemo(() => {

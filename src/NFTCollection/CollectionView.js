@@ -1678,7 +1678,10 @@ export default function CollectionView({ collection }) {
     linkedToken,
     tokenMatchType,
     tags,
-    offers
+    offers,
+    floor30dPercent,
+    daily_txs,
+    daily_users
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
@@ -1760,7 +1763,7 @@ export default function CollectionView({ collection }) {
             <span className={cn("text-base font-semibold", isDark ? "text-white" : "text-gray-900")}>{name}</span>
             {verified >= 1 && <span className={cn("px-2 py-0.5 text-[10px] font-semibold uppercase rounded", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
             {tags?.length > 0 && tags.slice(0, 4).map((tag, i) => (
-              <Link key={i} href={`/view/${encodeURIComponent(tag)}`} className={cn("px-2 py-0.5 text-[10px] rounded transition-colors", isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700")}>
+              <Link key={i} href={`/nfts?tag=${encodeURIComponent(tag)}`} className={cn("px-2 py-0.5 text-[10px] rounded transition-colors", isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700")}>
                 {tag}
               </Link>
             ))}
@@ -1864,6 +1867,11 @@ export default function CollectionView({ collection }) {
                   7d {floor7dPercent > 0 ? '+' : ''}{floor7dPercent.toFixed(1)}%
                 </span>
               )}
+              {floor30dPercent !== undefined && floor30dPercent !== 0 && (
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", floor30dPercent >= 0 ? (isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600") : (isDark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-600"))}>
+                  30d {floor30dPercent > 0 ? '+' : ''}{floor30dPercent.toFixed(1)}%
+                </span>
+              )}
             </div>
           </div>
 
@@ -1899,6 +1907,20 @@ export default function CollectionView({ collection }) {
               <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Bids</div>
               <span className={cn("text-[15px] font-medium", isDark ? "text-purple-400" : "text-purple-600")}>{fIntNumber(offers)}</span>
             </div>
+          )}
+
+          {/* Daily Activity */}
+          {(daily_txs > 0 || daily_users > 0) && (
+            <>
+              <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
+              <div className="flex-shrink-0">
+                <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>24h Activity</div>
+                <div className="flex items-baseline gap-2">
+                  {daily_txs > 0 && <span className={cn("text-[15px] font-medium", isDark ? "text-orange-400" : "text-orange-600")}>{fIntNumber(daily_txs)} <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>txs</span></span>}
+                  {daily_users > 0 && <span className={cn("text-[15px] font-medium", isDark ? "text-pink-400" : "text-pink-600")}>{fIntNumber(daily_users)} <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>users</span></span>}
+                </div>
+              </div>
+            </>
           )}
 
           <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
