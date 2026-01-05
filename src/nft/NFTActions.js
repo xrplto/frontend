@@ -454,7 +454,7 @@ export default function NFTActions({ nft }) {
 
                 {/* Collection name */}
                 {cslug ? (
-                  <Link href={`/collection/${cslug}`} className="inline-flex items-center gap-2 group">
+                  <Link href={`/nfts/${cslug}`} className="inline-flex items-center gap-2 group">
                     <span className={cn(
                       "text-[13px] font-medium uppercase tracking-wider transition-colors",
                       isDark ? "text-primary/70 group-hover:text-primary" : "text-primary/80 group-hover:text-primary"

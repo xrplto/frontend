@@ -420,8 +420,8 @@ export default function ImportCollection() {
       formdata.append('account', accountAdmin);
       formdata.append('data', JSON.stringify(data));
 
-      // https://api.xrpl.to/api/collection/import
-      res = await axios.post(`${BASE_URL}/collection/import`, formdata, {
+      // https://api.xrpl.to/api/nfts/import
+      res = await axios.post(`${BASE_URL}/nfts/import`, formdata, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'x-access-account': accountAdmin,
@@ -912,7 +912,7 @@ export default function ImportCollection() {
           id="id_collection_slug"
           placeholder="my-xrpl-nfts"
           type="COLLECTION_SLUG"
-          startText="https://xrpnft.com/collection/"
+          startText="https://xrpnft.com/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {

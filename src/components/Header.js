@@ -502,7 +502,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     setSearchOpen(false);
     setFullSearch(false);
     setSearchQuery('');
-    window.location.href = type === 'token' ? `/token/${item.slug}` : `/collection/${item.slug}`;
+    window.location.href = type === 'token' ? `/token/${item.slug}` : `/nfts/${item.slug}`;
   }, [recentSearches]);
 
   const clearRecentSearches = useCallback(() => {

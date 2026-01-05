@@ -61,8 +61,8 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     title = customTitle || `${name} Collection - XRPL.to`;
     desc = customDesc || `${name} - ${collection.nfts || 0} NFTs on XRP Ledger.`;
     const params = new URLSearchParams({ name, nfts: collection.nfts || '', image: collection.image || '' });
-    image = customImage || `${OG_API}/collection/${collection.slug}?${params}`;
-    url = `${BASE}/collection/${collection.slug}`;
+    image = customImage || `${OG_API}/nfts/${collection.slug}?${params}`;
+    url = `${BASE}/nfts/${collection.slug}`;
   } else if (type === 'tag' && tag) {
     title = customTitle || `${tag} Tokens - XRPL.to`;
     desc = customDesc || `Browse ${tag} tokens on XRP Ledger.`;
@@ -94,7 +94,7 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     title = customTitle || `Edit ${editName} - XRPL.to`;
     desc = customDesc || `Manage your NFT collection.`;
     image = customImage || `${OG_API}/collection-edit?name=${encodeURIComponent(editName)}`;
-    url = `${BASE}/collection/${collection.slug}/edit`;
+    url = `${BASE}/nfts/${collection.slug}/edit`;
   } else {
     title = customTitle || 'XRPL.to';
     desc = customDesc || 'XRP Ledger analytics platform.';

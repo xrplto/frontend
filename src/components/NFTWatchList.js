@@ -120,7 +120,7 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
         <div className="flex items-center gap-1">
           {slug !== 'uncategorized' && data.collectionId && (
             <Link
-              href={`/collection/${slug}`}
+              href={`/nfts/${slug}`}
               onClick={(e) => e.stopPropagation()}
               className={cn('p-1.5 rounded transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200')}
             >

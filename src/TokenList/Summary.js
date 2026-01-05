@@ -318,27 +318,30 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     if (!data || data.length === 0 || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
 
-    // Get last 30 days of data
-    const chartData = data.slice(-30);
-    const chartValues = chartData.map((d) => d.Tokens || 0);
-    if (chartValues.length === 0) return;
+    const draw = () => {
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
 
-    // Set canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      // Get last 30 days of data
+      const chartData = data.slice(-30);
+      const chartValues = chartData.map((d) => d.Tokens || 0);
+      if (chartValues.length === 0) return;
 
-    const width = rect.width;
-    const height = rect.height;
-    const padding = 4;
+      // Set canvas size
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 4;
 
-    if (chartValues.length < 2) return;
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      if (chartValues.length < 2) return;
 
     // Calculate min/max for scaling
     const minValue = Math.min(...chartValues);
@@ -391,6 +394,15 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       ctx.lineJoin = 'round';
       ctx.stroke();
     }
+    };
+
+    // Use rAF to ensure layout is complete
+    const rafId = requestAnimationFrame(draw);
+    window.addEventListener('resize', draw);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', draw);
+    };
   }, [data]);
 
   // Tooltip Portal Component

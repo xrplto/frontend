@@ -366,7 +366,7 @@ export default function EditCollection({ collection }) {
       formdata.append('account', account);
       formdata.append('data', JSON.stringify(data));
 
-      res = await axios.post(`${BASE_URL}/collection/edit`, formdata, {
+      res = await axios.post(`${BASE_URL}/nfts/edit`, formdata, {
         headers: { 'Content-Type': 'multipart/form-data', 'x-access-token': accountToken }
       });
 
@@ -761,7 +761,7 @@ export default function EditCollection({ collection }) {
           placeholder="my-xrpl-nfts"
           type="EDIT_COLLECTION_SLUG"
           uuid={collection.uuid}
-          startText="https://xrpnft.com/collection/"
+          startText="https://xrpnft.com/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {

@@ -1,9 +1,13 @@
 import styled from '@emotion/styled';
 
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import CreateCollection from 'src/NFTCollection/Create';
+import ImportCollection from 'src/NFTCollection/Import';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`
@@ -11,17 +15,15 @@ const OverviewWrapper = styled.div`
 `;
 
 export default function Overview({ data }) {
-  const handleCreate = (slug) => {
-    window.location.href = `/congrats/nfts/${data.slug}`;
-  };
+  const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+
+  const isAdmin = accountProfile?.admin;
 
   return (
     <OverviewWrapper>
       <Header />
 
-      <div id="back-to-top-anchor" className="mx-auto max-w-2xl px-4 mt-4">
-        <CreateCollection onCreate={handleCreate} />
-      </div>
+      <div id="back-to-top-anchor" className="mx-auto max-w-2xl px-4 mt-4">{isAdmin && <ImportCollection />}</div>
 
       <ScrollToTop />
 

@@ -987,7 +987,7 @@ const CollectionRow = memo(
     const { slug } = collection;
 
     const handleRowClick = useCallback(() => {
-      window.location.href = `/collection/${slug}`;
+      window.location.href = `/nfts/${slug}`;
     }, [slug]);
 
     if (isMobile) {

@@ -1570,7 +1570,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             {linkedCollections.map((col) => (
               <Link
                 key={col.id}
-                href={`/collection/${col.slug}`}
+                href={`/nfts/${col.slug}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

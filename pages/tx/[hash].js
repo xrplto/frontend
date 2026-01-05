@@ -3112,7 +3112,7 @@ const TransactionDetails = ({ txData }) => {
                                   </h3>
                                 </Link>
                                 {acceptedNftInfo.collection && (
-                                  <Link href={`/collection/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}>
+                                  <Link href={`/nfts/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}>
                                     <span className="text-[12px] text-[#4285f4] hover:underline cursor-pointer">
                                       {acceptedNftInfo.collection}
                                     </span>

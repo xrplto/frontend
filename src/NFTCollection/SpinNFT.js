@@ -266,7 +266,7 @@ export default function SpinNFT({ collection, setView }) {
               className="absolute inset-0 m-auto block w-full h-full object-cover"
             />
             {account === collection.account && (
-              <a href={`/collection/${slug}/edit`} className="block">
+              <a href={`/nfts/${slug}/edit`} className="block">
                 <div className="absolute inset-0 flex flex-col justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <Edit size={32} className="text-primary" />
                 </div>

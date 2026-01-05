@@ -81,7 +81,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
     addTokenToTabs({ slug: col.slug, name: normalizedName, type: 'collection', logoImage: col.logoImage });
     setSearchOpen(false);
     setQuery('');
-    window.location.href = `/collection/${col.slug}`;
+    window.location.href = `/nfts/${col.slug}`;
   }, []);
 
   const openSearch = useCallback(() => {
@@ -100,7 +100,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
       {(isNftWithCollection || isCollection || isToken) && (
         <>
           <a
-            href={isNftWithCollection ? `/collection/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
+            href={isNftWithCollection ? `/nfts/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
             className={cn(
               'flex items-center gap-0.5 px-2 h-6 rounded text-[11px] font-medium transition-all shrink-0',
               isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -127,7 +127,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
         const isAccount = tab.type === 'account';
         const tabId = tab.md5 || tab.slug;
         const isActive = tab.md5 === currentMd5 || tab.slug === currentMd5;
-        const href = isAccount ? `/address/${tab.slug}` : isNft ? `/nft/${tab.slug}` : isCollection ? `/collection/${tab.slug}` : `/token/${tab.slug}`;
+        const href = isAccount ? `/address/${tab.slug}` : isNft ? `/nft/${tab.slug}` : isCollection ? `/nfts/${tab.slug}` : `/token/${tab.slug}`;
         const imgSrc = isAccount
           ? getHashIcon(tab.slug)
           : isNft

@@ -501,7 +501,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             {cslug && (
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/collection/${cslug}`}
+                  href={`/nfts/${cslug}`}
                   className={cn(
                     "text-[13px] font-medium uppercase tracking-wider hover:text-primary transition-colors",
                     isDark ? "text-primary/70" : "text-primary/80"
@@ -555,7 +555,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               return (
                 <Link
                   key={`${type}-${value}`}
-                  href={cslug ? `/collection/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'}
+                  href={cslug ? `/nfts/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'}
                   className={cn(
                     "group p-2.5 text-center rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.97]",
                     isDark

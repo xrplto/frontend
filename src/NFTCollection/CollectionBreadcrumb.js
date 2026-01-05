@@ -29,7 +29,7 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
       </a>
       <ChevronRight size={12} className="mt-0.5" />
       <a
-        href={`/collection/${collection.collection.slug || ''}`}
+        href={`/nfts/${collection.collection.slug || ''}`}
         rel="noreferrer noopener nofollow"
         className="text-primary hover:underline text-[13px] font-normal"
       >

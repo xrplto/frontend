@@ -549,7 +549,7 @@ const NFTGrid = React.memo(({ collection, isDark }) => {
 
     const hasChanged = JSON.stringify(query) !== JSON.stringify(currentQuery);
     if (hasChanged) {
-      router.replace({ pathname: `/collection/${slug}`, query }, undefined, { shallow: true });
+      router.replace({ pathname: `/nfts/${slug}`, query }, undefined, { shallow: true });
     }
   }, [sortBy, listed, filterAttrs, slug, router.isReady, traits.length]);
 
@@ -1690,7 +1690,7 @@ export default function CollectionView({ collection }) {
     ? rawDescription.collection_description || ''
     : rawDescription || '';
 
-  const shareUrl = `https://xrpl.to/collection/${slug}`;
+  const shareUrl = `https://xrpl.to/nfts/${slug}`;
   const shareTitle = name;
   const totalVol = totalVolume || volume || 0;
 
@@ -1834,7 +1834,7 @@ export default function CollectionView({ collection }) {
               )}
             </div>
             {accountLogin === collection.account && (
-              <Link href={`/collection/${slug}/edit`} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Edit</Link>
+              <Link href={`/nfts/${slug}/edit`} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Edit</Link>
             )}
           </div>
         </div>

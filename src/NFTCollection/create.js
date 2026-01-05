@@ -312,7 +312,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
       formdata.append('account', account);
       formdata.append('data', JSON.stringify(data));
 
-      res = await axios.post(`${BASE_URL}/collection/create`, formdata, {
+      res = await axios.post(`${BASE_URL}/nfts/create`, formdata, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'x-access-token': accountToken
@@ -683,7 +683,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           id="id_collection_slug"
           placeholder="my-xrpl-nfts"
           type="COLLECTION_SLUG"
-          startText="https://xrpnft.com/collection/"
+          startText="https://xrpnft.com/nfts/"
           value={slug}
           setValid={setValid2}
           onChange={(e) => {
