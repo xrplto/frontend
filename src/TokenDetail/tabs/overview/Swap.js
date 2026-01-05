@@ -1280,7 +1280,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           setAccountPairBalance(balanceRes.data.pair);
         }
       } catch (err) {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+        // 404 = account not activated - silently ignore
+        if (err.response?.status === 404) {
+          setAccountPairBalance(null);
+        } else if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
           console.error('Balance fetch error:', err);
         }
       }
@@ -1288,42 +1291,31 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const fetchAllTrustlines = async () => {
         try {
           let allTrustlines = [];
-          let currentPage = 0;
-          let totalTrustlines = 0;
+          let marker = null;
 
-          const firstResponse = await axios.get(
-            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`
-          );
-          if (!mounted) return [];
+          do {
+            const url = marker
+              ? `${BASE_URL}/api/account/trustlines/${account}?limit=400&marker=${encodeURIComponent(marker)}`
+              : `${BASE_URL}/api/account/trustlines/${account}?limit=400`;
 
-          if (firstResponse.status === 200 && firstResponse.data) {
-            allTrustlines = firstResponse.data.lines || [];
-            totalTrustlines = firstResponse.data.total || 0;
+            const response = await axios.get(url);
+            if (!mounted) return [];
 
-            if (totalTrustlines > 50) {
-              const totalPages = Math.ceil(totalTrustlines / 50);
-              const additionalRequests = [];
-
-              for (let page = 1; page < totalPages; page++) {
-                additionalRequests.push(
-                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`)
-                );
-              }
-
-              const additionalResponses = await Promise.all(additionalRequests);
-
-              additionalResponses.forEach((response, index) => {
-                if (response.status === 200 && response.data.lines) {
-                  allTrustlines = allTrustlines.concat(response.data.lines);
-                }
-              });
+            if (response.status === 200 && response.data?.result === 'success') {
+              const lines = response.data.lines || [];
+              allTrustlines = allTrustlines.concat(lines);
+              marker = response.data.marker || null;
+            } else {
+              break;
             }
+          } while (marker);
 
-            return allTrustlines;
-          }
-
-          return [];
+          return allTrustlines;
         } catch (error) {
+          // 404 = account not activated/found - return empty array
+          if (error.response?.status === 404) {
+            return [];
+          }
           return [];
         }
       };
@@ -1484,7 +1476,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       }
 
       setLoadingPrice(true);
-      const promise = axios.get(`${BASE_URL}/rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
+      const promise = axios.get(`${BASE_URL}/stats/rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
       fetchInFlight.set(pairKey, promise);
 
       try {

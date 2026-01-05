@@ -117,6 +117,9 @@ export default function WalletPage() {
   // Debug info state
   const [debugInfo, setDebugInfo] = useState(null);
 
+  // Account status
+  const [isInactive, setIsInactive] = useState(false);
+
   // Debug info loader
   useEffect(() => {
     const loadDebugInfo = async () => {
@@ -258,12 +261,19 @@ export default function WalletPage() {
     const fetchTokens = async () => {
       if (!address) return;
       setTokensLoading(true);
+      setIsInactive(false);
       try {
         const res = await fetch(`${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true`, { signal: controller.signal });
         const data = await res.json();
         if (data.result === 'success') {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
+          setIsInactive(false);
+        } else if (data.error || data.result !== 'success') {
+          // Account not found or other error - treat as inactive
+          setIsInactive(true);
+          setXrpData(null);
+          setTokens([]);
         }
       } catch (e) {
         if (e.name !== 'AbortError') console.error('Failed to load tokens:', e);
@@ -579,16 +589,22 @@ export default function WalletPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>Wallet</h1>
-            <button
-              onClick={() => handleCopy(address)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150",
-                copied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+            <div className="flex items-center gap-2">
+              {isInactive && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400" title="Fund with 1 XRP to activate">Inactive</span>
               )}
-            >
-              {address?.slice(0, 8)}...{address?.slice(-6)}
-              {copied ? <Check size={12} /> : <Copy size={12} />}
-            </button>
+              <button
+                onClick={() => handleCopy(address)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150",
+                  copied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400" : "bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                )}
+              >
+                <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
+                {address?.slice(0, 8)}...{address?.slice(-6)}
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -851,11 +867,17 @@ export default function WalletPage() {
                     <p className={cn("text-4xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "text-gray-900")}>
                       {tokensLoading ? '...' : `${(totalValue + nftPortfolioValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`}
                     </p>
-                    <p className={cn("text-[10px] mt-1 flex items-center gap-2", isDark ? "text-white/30" : "text-gray-400")}>
-                      <span>{allTokens.length} tokens · {totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
-                      <span>•</span>
-                      <span>{collections.length} NFTs · {nftPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
-                    </p>
+                    {isInactive ? (
+                      <p className="text-[10px] mt-1 text-amber-400">
+                        Fund with 1 XRP to activate this wallet
+                      </p>
+                    ) : (
+                      <p className={cn("text-[10px] mt-1 flex items-center gap-2", isDark ? "text-white/30" : "text-gray-400")}>
+                        <span>{allTokens.length} tokens · {totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
+                        <span>•</span>
+                        <span>{collections.length} NFTs · {nftPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP</span>
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => setShowPanel('send')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">

@@ -292,7 +292,7 @@ const NFTSkeleton = React.memo(({ isDark }) => (
 
 // Ultra-light NFT Card - hover effects + listed badge
 const NFTCard = React.memo(({ nft, isDark, priority }) => {
-  const { cost, meta, NFTokenID, rarity_rank } = nft;
+  const { cost, meta, NFTokenID, rarity_rank, is_burned } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = meta?.name || meta?.Name || 'No Name';
   const listPrice = cost?.amount && cost.currency === 'XRP' ? cost.amount : null;
@@ -332,15 +332,19 @@ const NFTCard = React.memo(({ nft, isDark, priority }) => {
               </div>
             ) : <div />}
 
-            {/* Listed badge */}
-            {listPrice && (
+            {/* Listed or Burned badge */}
+            {is_burned ? (
+              <div className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm bg-red-500/90 text-white">
+                Burned
+              </div>
+            ) : listPrice ? (
               <div className={cn(
                 "px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm",
                 "bg-emerald-500/90 text-white"
               )}>
                 Listed
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Price overlay on hover */}

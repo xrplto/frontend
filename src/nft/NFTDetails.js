@@ -214,6 +214,12 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
       {/* Media */}
       <div className={cn("relative w-full", isDark ? "bg-gray-900" : "bg-gray-100")}>
+        {/* Burned Badge */}
+        {nft?.is_burned && (
+          <div className="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-lg bg-red-500/90 text-white text-[11px] font-semibold uppercase tracking-wide">
+            Burned
+          </div>
+        )}
         {/* IPFS Debug Badge */}
         {isIPFS && (
           <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-orange-500/90 text-white text-[11px] font-medium">
@@ -456,6 +462,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       <div className="mb-3 w-full">
         <NFTPreviewComponent nft={nft} showDetails={false} />
       </div>
+
+      {/* Burned Status Banner */}
+      {nft.is_burned && (
+        <div className={cn(
+          "mb-3 px-4 py-3 rounded-xl border-[1.5px] flex items-center gap-3",
+          isDark ? "border-red-500/30 bg-red-500/10" : "border-red-200 bg-red-50"
+        )}>
+          <Info size={18} className="text-red-400 shrink-0" />
+          <p className={cn("text-sm font-medium", isDark ? "text-red-400" : "text-red-600")}>
+            This NFT has been burned and no longer exists on the XRPL.
+          </p>
+        </div>
+      )}
 
       {/* Title and Collection - Futuristic */}
       <div className={cn(

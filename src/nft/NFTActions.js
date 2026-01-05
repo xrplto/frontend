@@ -167,7 +167,7 @@ export default function NFTActions({ nft }) {
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
-  const [burnt, setBurnt] = useState(status === NFToken.BURNT);
+  const [burnt, setBurnt] = useState(status === NFToken.BURNT || nft.is_burned === true);
   const [sellOffers, setSellOffers] = useState([]);
   const [buyOffers, setBuyOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -819,12 +819,14 @@ export default function NFTActions({ nft }) {
                                 </span>
                               )}
                             </div>
-                            <button
-                              onClick={() => handleCancelOffer(offer)}
-                              className="px-3 py-1.5 rounded-lg text-[11px] font-normal border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
-                            >
-                              Cancel
-                            </button>
+                            {!burnt && (
+                              <button
+                                onClick={() => handleCancelOffer(offer)}
+                                className="px-3 py-1.5 rounded-lg text-[11px] font-normal border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -835,17 +837,19 @@ export default function NFTActions({ nft }) {
                     "py-8 text-center rounded-xl border border-dashed",
                     isDark ? "border-gray-700/50 bg-white/[0.02]" : "border-gray-300 bg-gray-50"
                   )}>
-                    <p className="text-sm text-gray-500">No sell offers available</p>
-                    <button
-                      onClick={handleCreateSellOffer}
-                      className={cn(
-                        "mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border transition-colors",
-                        isDark ? "border-gray-700/50 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-400"
-                      )}
-                    >
-                      <Tag size={14} />
-                      Create Sell Offer
-                    </button>
+                    <p className="text-sm text-gray-500">{burnt ? 'NFT has been burned' : 'No sell offers available'}</p>
+                    {!burnt && (
+                      <button
+                        onClick={handleCreateSellOffer}
+                        className={cn(
+                          "mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border transition-colors",
+                          isDark ? "border-gray-700/50 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-300 text-gray-600 hover:border-gray-400"
+                        )}
+                      >
+                        <Tag size={14} />
+                        Create Sell Offer
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -954,7 +958,7 @@ export default function NFTActions({ nft }) {
                                 </div>
                               )}
                             </div>
-                            {isOwner ? (
+                            {!burnt && (isOwner ? (
                               acceptOffer && acceptOffer.nft_offer_index === offer.nft_offer_index ? (
                                 <div className="flex items-center gap-2">
                                   {isScamLevel && (
@@ -982,7 +986,7 @@ export default function NFTActions({ nft }) {
                               )
                             ) : accountLogin === offer.owner ? (
                               <button onClick={() => handleCancelOffer(offer)} className="px-2.5 py-1 rounded text-[11px] border border-red-500/40 text-red-400 hover:bg-red-500/10">Cancel</button>
-                            ) : null}
+                            ) : null)}
                           </div>
                         </div>
                       </div>
