@@ -618,6 +618,14 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
           <TagsContainer isDark={isDark}>
             <TagsRow>
               <TagsScrollArea>
+                {/* All NFTs button - always visible */}
+                <TagChip
+                  isDark={isDark}
+                  selected={!selectedTag}
+                  onClick={() => setSelectedTag(null)}
+                >
+                  All NFTs
+                </TagChip>
                 {selectedTag && (
                   <TagChip
                     isDark={isDark}
@@ -627,7 +635,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                     <span>{selectedTag}</span> <X size={12} />
                   </TagChip>
                 )}
-                {tags.slice(0, selectedTag ? visibleTagCount - 1 : visibleTagCount).filter(t => getTagName(t) !== selectedTag).map((t) => {
+                {tags.slice(0, selectedTag ? visibleTagCount - 2 : visibleTagCount - 1).filter(t => getTagName(t) !== selectedTag).map((t) => {
                   const tagName = getTagName(t);
                   return (
                     <TagChip

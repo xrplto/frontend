@@ -100,7 +100,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
       {(isNftWithCollection || isCollection || isToken) && (
         <>
           <a
-            href={isNftWithCollection ? `/nfts/${currentTab.collectionSlug}` : isCollection ? '/collections' : '/'}
+            href={isNftWithCollection ? `/nfts/${currentTab.collectionSlug}` : isCollection ? '/nfts' : '/'}
             className={cn(
               'flex items-center gap-0.5 px-2 h-6 rounded text-[11px] font-medium transition-all shrink-0',
               isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'

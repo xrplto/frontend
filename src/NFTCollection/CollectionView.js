@@ -1701,7 +1701,7 @@ export default function CollectionView({ collection }) {
   const topOfferAmount = topOfferData?.amount || 0;
 
   const statsData = [
-    { label: 'Floor', value: fNumber(floor?.amount || 0), prefix: '✕', color: 'text-green-500' },
+    { label: 'Floor', value: fNumber(typeof floor === 'number' ? floor : (floor?.amount || 0)), prefix: '✕', color: 'text-green-500' },
     floor7dPercent !== undefined && floor7dPercent !== 0 && {
       label: '7d',
       value: `${floor7dPercent > 0 ? '+' : ''}${floor7dPercent.toFixed(1)}%`,
@@ -1840,14 +1840,15 @@ export default function CollectionView({ collection }) {
         </div>
 
         {/* Stats Row */}
-        <div className="flex items-center gap-6 overflow-x-auto pb-1 scrollbar-hide">
-          {/* Floor Price */}
-          <div className="flex-shrink-0">
-            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Floor Price</div>
+        <div className="flex items-center gap-4 overflow-x-auto pb-1 scrollbar-hide">
+          {/* Floor Price - Primary Stat */}
+          <div className={cn("flex-shrink-0 px-3 py-2 rounded-lg", isDark ? "bg-green-500/10" : "bg-green-50")}>
+            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-green-400/70" : "text-green-600")}>Floor</div>
             <div className="flex items-center gap-1.5">
-              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fNumber(floor?.amount || 0)} <span className={isDark ? "text-white/30" : "text-gray-400"}>XRP</span></span>
+              <span className={cn("text-[17px] font-semibold", isDark ? "text-green-400" : "text-green-600")}>{fNumber(typeof floor === 'number' ? floor : (floor?.amount || 0))}</span>
+              <span className={cn("text-[13px]", isDark ? "text-green-400/50" : "text-green-600/50")}>XRP</span>
               {floor1dPercent !== undefined && floor1dPercent !== 0 && (
-                <span className={cn("text-[11px]", floor1dPercent >= 0 ? "text-green-500" : "text-red-500")}>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", floor1dPercent >= 0 ? (isDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600") : (isDark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-600"))}>
                   {floor1dPercent > 0 ? '+' : ''}{floor1dPercent.toFixed(1)}%
                 </span>
               )}
@@ -1858,14 +1859,22 @@ export default function CollectionView({ collection }) {
           {topOfferAmount > 0 && (
             <div className="flex-shrink-0">
               <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Top Offer</div>
-              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fNumber(topOfferAmount)} <span className={isDark ? "text-white/30" : "text-gray-400"}>XRP</span></span>
+              <div className="flex items-baseline gap-1">
+                <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fNumber(topOfferAmount)}</span>
+                <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+              </div>
             </div>
           )}
+
+          <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
 
           {/* 24h Vol */}
           <div className="flex-shrink-0">
             <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>24h Vol</div>
-            <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fVolume(totalVol24h)} <span className={isDark ? "text-white/30" : "text-gray-400"}>XRP</span></span>
+            <div className="flex items-baseline gap-1">
+              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fVolume(totalVol24h)}</span>
+              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+            </div>
           </div>
 
           {/* 24h Sales */}
@@ -1876,6 +1885,17 @@ export default function CollectionView({ collection }) {
             </div>
           )}
 
+          <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
+
+          {/* All Vol */}
+          <div className="flex-shrink-0">
+            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Total Vol</div>
+            <div className="flex items-baseline gap-1">
+              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fVolume(totalVol)}</span>
+              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+            </div>
+          </div>
+
           {/* Total Sales */}
           {totalSales > 0 && (
             <div className="flex-shrink-0">
@@ -1884,42 +1904,42 @@ export default function CollectionView({ collection }) {
             </div>
           )}
 
-          {/* All Vol */}
-          <div className="flex-shrink-0">
-            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>All Vol</div>
-            <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fVolume(totalVol)} <span className={isDark ? "text-white/30" : "text-gray-400"}>XRP</span></span>
-          </div>
-
           {/* Market Cap */}
           {marketcap > 0 && (
-            <div className="flex-shrink-0">
-              <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Market Cap</div>
-              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>${fVolume(marketcap)}</span>
-            </div>
+            <>
+              <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
+              <div className="flex-shrink-0">
+                <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Mkt Cap</div>
+                <span className={cn("text-[15px] font-medium", isDark ? "text-yellow-400" : "text-yellow-600")}>${fVolume(marketcap)}</span>
+              </div>
+            </>
           )}
+
+          <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
 
           {/* Listed / Supply */}
           <div className="flex-shrink-0">
-            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Listed / Supply</div>
-            <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {fIntNumber(listedCount || 0)} / {fIntNumber(items || 0)}
-              <span className={cn("text-[11px] ml-1", isDark ? "text-white/40" : "text-gray-400")}>
-                {items > 0 ? `${((listedCount || 0) / items * 100).toFixed(1)}%` : '0%'}
+            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Listed</div>
+            <div className="flex items-baseline gap-1">
+              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fIntNumber(listedCount || 0)}</span>
+              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>/ {fIntNumber(items || 0)}</span>
+              <span className={cn("text-[10px] px-1 py-0.5 rounded", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
+                {items > 0 ? `${((listedCount || 0) / items * 100).toFixed(0)}%` : '0%'}
               </span>
-            </span>
+            </div>
           </div>
 
           {/* Owners */}
           <div className="flex-shrink-0">
             <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Owners</div>
-            <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {fIntNumber(owners || 0)}
+            <div className="flex items-baseline gap-1">
+              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fIntNumber(owners || 0)}</span>
               {items > 0 && owners > 0 && (
-                <span className={cn("text-[11px] ml-1", isDark ? "text-white/40" : "text-gray-400")}>
-                  {((owners / items) * 100).toFixed(1)}%
+                <span className={cn("text-[10px] px-1 py-0.5 rounded", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
+                  {((owners / items) * 100).toFixed(0)}%
                 </span>
               )}
-            </span>
+            </div>
           </div>
         </div>
       </div>
