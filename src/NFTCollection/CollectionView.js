@@ -1676,7 +1676,9 @@ export default function CollectionView({ collection }) {
     website,
     floor1dPercent,
     linkedToken,
-    tokenMatchType
+    tokenMatchType,
+    tags,
+    offers
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
@@ -1754,9 +1756,14 @@ export default function CollectionView({ collection }) {
         {/* Top Row: Logo + Name + Actions */}
         <div className="flex items-center gap-3 mb-3">
           <Image src={`https://s1.xrpl.to/nft-collection/${logoImage}`} alt={name} width={40} height={40} className="rounded-lg" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={cn("text-base font-semibold", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-            {verified >= 1 && <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+            {verified >= 1 && <span className={cn("px-2 py-0.5 text-[10px] font-semibold uppercase rounded", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
+            {tags?.length > 0 && tags.slice(0, 4).map((tag, i) => (
+              <Link key={i} href={`/view/${encodeURIComponent(tag)}`} className={cn("px-2 py-0.5 text-[10px] rounded transition-colors", isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70" : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700")}>
+                {tag}
+              </Link>
+            ))}
             {twitter && (
               <a href={`https://x.com/${twitter}`} target="_blank" rel="noopener noreferrer" className={cn("p-1 rounded transition-colors", isDark ? "text-white/40 hover:text-primary" : "text-gray-400 hover:text-primary")}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1849,7 +1856,12 @@ export default function CollectionView({ collection }) {
               <span className={cn("text-[13px]", isDark ? "text-green-400/50" : "text-green-600/50")}>XRP</span>
               {floor1dPercent !== undefined && floor1dPercent !== 0 && (
                 <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", floor1dPercent >= 0 ? (isDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600") : (isDark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-600"))}>
-                  {floor1dPercent > 0 ? '+' : ''}{floor1dPercent.toFixed(1)}%
+                  1d {floor1dPercent > 0 ? '+' : ''}{floor1dPercent.toFixed(1)}%
+                </span>
+              )}
+              {floor7dPercent !== undefined && floor7dPercent !== 0 && (
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", floor7dPercent >= 0 ? (isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600") : (isDark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-600"))}>
+                  7d {floor7dPercent > 0 ? '+' : ''}{floor7dPercent.toFixed(1)}%
                 </span>
               )}
             </div>
@@ -1863,6 +1875,29 @@ export default function CollectionView({ collection }) {
                 <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fNumber(topOfferAmount)}</span>
                 <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
               </div>
+            </div>
+          )}
+
+          {/* Listed */}
+          {listedCount > 0 && (
+            <div className="flex-shrink-0">
+              <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Listed</div>
+              <div className="flex items-baseline gap-1">
+                <span className={cn("text-[15px] font-medium", isDark ? "text-cyan-400" : "text-cyan-600")}>{fIntNumber(listedCount)}</span>
+                {items > 0 && (
+                  <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                    {((listedCount / items) * 100).toFixed(0)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Bids (Buy Offers) */}
+          {offers > 0 && (
+            <div className="flex-shrink-0">
+              <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Bids</div>
+              <span className={cn("text-[15px] font-medium", isDark ? "text-purple-400" : "text-purple-600")}>{fIntNumber(offers)}</span>
             </div>
           )}
 
@@ -1917,16 +1952,10 @@ export default function CollectionView({ collection }) {
 
           <div className={cn("w-px h-8 flex-shrink-0", isDark ? "bg-white/10" : "bg-gray-200")} />
 
-          {/* Listed / Supply */}
+          {/* Supply */}
           <div className="flex-shrink-0">
-            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Listed</div>
-            <div className="flex items-baseline gap-1">
-              <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fIntNumber(listedCount || 0)}</span>
-              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>/ {fIntNumber(items || 0)}</span>
-              <span className={cn("text-[10px] px-1 py-0.5 rounded", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
-                {items > 0 ? `${((listedCount || 0) / items * 100).toFixed(0)}%` : '0%'}
-              </span>
-            </div>
+            <div className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Supply</div>
+            <span className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{fIntNumber(items || 0)}</span>
           </div>
 
           {/* Owners */}
