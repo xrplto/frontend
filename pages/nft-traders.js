@@ -6,7 +6,7 @@ import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { ChevronsLeft, ChevronsRight, ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
@@ -46,13 +46,13 @@ const MetricsGrid = styled.div`
 const MetricBox = styled.div`
   padding: 12px;
   border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    border-color: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)')};
-    background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.04)')};
+    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')};
+    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)')};
   }
 `;
 
@@ -166,21 +166,13 @@ const Badge = styled.span`
 `;
 
 const CollectionImg = styled.img`
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid ${({ darkMode }) => (darkMode ? '#0a0a0a' : '#fff')};
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? '#0a0a0a' : '#fff')};
   object-fit: cover;
 `;
 
-const MarketBadge = styled.span`
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)')};
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
-`;
 
 // Pagination Components
 const PaginationContainer = styled.div`
@@ -192,8 +184,8 @@ const PaginationContainer = styled.div`
   padding: 6px 10px;
   min-height: 36px;
   border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)')};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
 `;
 
 const NavButton = styled.button`
@@ -237,15 +229,16 @@ const EmptyState = styled.div`
 `;
 
 const TABLE_HEAD = [
-  { id: 'rank', label: '#', align: 'center', width: '50px' },
-  { id: 'trader', label: 'TRADER', align: 'left', width: '180px' },
-  { id: 'balance', label: 'BALANCE', align: 'right', width: '100px', sortable: true, tooltip: 'Current XRP balance' },
-  { id: 'buyVolume', label: 'BOUGHT (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'XRP spent buying NFTs in 24h' },
-  { id: 'sellVolume', label: 'SOLD (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'XRP received from selling NFTs in 24h' },
-  { id: 'totalVolume', label: 'VOLUME (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'Total trading volume in 24h' },
-  { id: 'collections', label: 'COLLECTIONS', align: 'right', width: '100px', tooltip: 'Collections traded in 24h' },
-  { id: 'lastActive', label: 'LAST ACTIVE', align: 'right', width: '100px', tooltip: 'Time since last trade' },
-  { id: 'marketplaces', label: 'MARKETS', align: 'right', width: '120px', tooltip: 'Marketplaces used' },
+  { id: 'rank', label: '#', align: 'center', width: '40px' },
+  { id: 'trader', label: 'TRADER', align: 'left', width: '160px' },
+  { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '100px', sortable: true },
+  { id: 'totalTrades', label: 'TRADES', align: 'right', width: '70px', sortable: true },
+  { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '100px', sortable: true },
+  { id: 'sellVolume', label: 'SOLD', align: 'right', width: '100px', sortable: true },
+  { id: 'balance', label: 'BALANCE', align: 'right', width: '90px', sortable: true },
+  { id: 'collections', label: 'COLLECTIONS', align: 'right', width: '100px' },
+  { id: 'lastActive', label: 'ACTIVE', align: 'right', width: '80px' },
+  { id: 'marketplaces', label: 'SOURCE', align: 'right', width: '100px' },
 ];
 
 export default function TradersPage({ traders = [], sortBy = 'totalVolume', globalMetrics = null }) {
@@ -281,7 +274,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
 
   const metrics = globalMetrics ? [
     { label: 'Active Traders', value: fNumber(globalMetrics.activeTraders24h || 0) },
-    { label: 'Total Liquidity', value: `${fVolume(globalMetrics.totalLiquidity24h || 0)} XRP` },
+    { label: 'Total Balance', value: `${fVolume(globalMetrics.totalLiquidity24h || 0)} XRP` },
     { label: '24h Volume', value: `${fVolume(globalMetrics.total24hVolume || 0)} XRP` },
     { label: '24h Sales', value: fNumber(globalMetrics.total24hSales || 0) },
     { label: '24h Mints', value: fNumber(globalMetrics.total24hMints || 0) },
@@ -344,7 +337,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                 </StyledTableHead>
                 <StyledTbody darkMode={darkMode}>
                   {paginatedTraders.map((trader, idx) => {
-                    const addr = trader._id || trader.address;
+                    const addr = trader._id || trader.account || trader.address;
                     return (
                       <tr key={addr || idx}>
                         <StyledTd align="center" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}>
@@ -358,40 +351,44 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                             {trader.traderType && <Badge type={trader.traderType}>{trader.traderType}</Badge>}
                           </div>
                         </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500 }}>
+                          {fVolume(trader.totalVolume || 0)}
+                        </StyledTd>
                         <StyledTd align="right" darkMode={darkMode}>
-                          {fNumber(trader.balance || 0)}
+                          <span style={{ color: '#3b82f6' }}>{trader.buyCount || 0}</span>
+                          <span style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : '#919EAB' }}> / </span>
+                          <span style={{ color: '#ef4444' }}>{trader.sellCount || 0}</span>
                         </StyledTd>
                         <StyledTd align="right" color="#3b82f6">
-                          {fNumber(trader.buyVolume || 0)}
+                          {fVolume(trader.buyVolume || 0)}
                         </StyledTd>
-                        <StyledTd align="right" color="#EF5350">
-                          {fNumber(trader.sellVolume || 0)}
+                        <StyledTd align="right" color="#ef4444">
+                          {fVolume(trader.sellVolume || 0)}
+                        </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'}>
+                          {fNumber(trader.balance || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode}>
-                          {fNumber(trader.totalVolume || 0)}
-                        </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode}>
-                          {Array.isArray(trader.collectionsInfo) && trader.collectionsInfo.length > 0 ? (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-                              <div style={{ display: 'flex', marginLeft: -4 }}>
-                                {trader.collectionsInfo.slice(0, 2).map((col) => (
+                          {Array.isArray(trader.collections) && trader.collections.length > 0 ? (
+                            <div
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}
+                              title={trader.collections.map(c => c.slug).join(', ')}
+                            >
+                              {trader.collections.slice(0, 3).map((col, i) => (
+                                <Link key={col.cid} href={`/collection/${col.slug}`} style={{ marginLeft: i > 0 ? 4 : 0 }}>
                                   <CollectionImg
-                                    key={col._id}
-                                    src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                                    alt={typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
+                                    src={`https://s1.xrpl.to/nft-collection/${col.logo}`}
+                                    alt={col.slug}
                                     darkMode={darkMode}
-                                    style={{ marginLeft: -4 }}
                                   />
-                                ))}
-                              </div>
-                              <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB', fontSize: 11 }}>
-                                {trader.collectionsInfo.length}
+                                </Link>
+                              ))}
+                              <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381', fontSize: 11, minWidth: 16 }}>
+                                {trader.collectionsCount || trader.collections.length}
                               </span>
                             </div>
                           ) : (
-                            <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB' }}>
-                              {trader.collectionsTraded || 0}
-                            </span>
+                            <span style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : '#919EAB' }}>-</span>
                           )}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'}>
@@ -401,16 +398,10 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode}>
                           {Array.isArray(trader.marketplaces) && trader.marketplaces.length > 0 ? (
-                            <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                              {trader.marketplaces.slice(0, 2).map((mp, i) => (
-                                <MarketBadge key={i} darkMode={darkMode}>{mp}</MarketBadge>
-                              ))}
-                              {trader.marketplaces.length > 2 && (
-                                <span style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : '#919EAB', fontSize: 11 }}>
-                                  +{trader.marketplaces.length - 2}
-                                </span>
-                              )}
-                            </div>
+                            <span style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>
+                              {trader.marketplaces.slice(0, 2).join(', ')}
+                              {trader.marketplaces.length > 2 && ` +${trader.marketplaces.length - 2}`}
+                            </span>
                           ) : (
                             <span style={{ color: darkMode ? 'rgba(255,255,255,0.3)' : '#919EAB' }}>-</span>
                           )}
