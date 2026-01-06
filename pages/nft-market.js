@@ -200,11 +200,15 @@ const METRICS = [
   { key: 'avgPrice', label: 'Avg Price', format: v => (v || 0).toFixed(2) + ' XRP' },
   { key: 'uniqueBuyers', label: 'Buyers', format: fNumber },
   { key: 'uniqueSellers', label: 'Sellers', format: fNumber },
+  { key: 'uniqueCollections', label: 'Collections', format: fNumber },
   { key: 'mints', label: 'Mints', format: fNumber },
   { key: 'burns', label: 'Burns', format: fNumber },
   { key: 'transfers', label: 'Transfers', format: fNumber },
+  { key: 'buyOffers', label: 'Buy Offers', format: fNumber },
+  { key: 'sellOffers', label: 'Sell Offers', format: fNumber },
+  { key: 'cancelledOffers', label: 'Cancelled', format: fNumber },
   { key: 'royalties', label: 'Royalties', format: fVolume },
-  { key: 'brokerFees', label: 'Broker Fees', format: fVolume }
+  { key: 'brokerFees', label: 'Fees', format: fVolume }
 ];
 
 export default function NFTMarketPage({ stats }) {
@@ -497,7 +501,7 @@ export default function NFTMarketPage({ stats }) {
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.total24hBrokerFees || 0)}</Td>
                   </tr>
                   <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Liquidity</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Traders Balance</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>
                       {fVolume(stats.totalLiquidity24h || 0)}
                       <span style={{ marginLeft: 6, fontSize: 10, color: stats.totalLiquidityPct >= 0 ? '#10b981' : '#ef4444' }}>
