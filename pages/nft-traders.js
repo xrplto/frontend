@@ -1,6 +1,5 @@
 import { useState, useContext } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
@@ -32,43 +31,6 @@ const Subtitle = styled.p`
   color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.5)' : '#637381')};
 `;
 
-const MetricsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-`;
-
-const MetricBox = styled.div`
-  padding: 12px;
-  border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  transition: border-color 0.2s ease, background 0.2s ease;
-
-  &:hover {
-    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')};
-    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)')};
-  }
-`;
-
-const MetricLabel = styled.div`
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
-  margin-bottom: 4px;
-`;
-
-const MetricValue = styled.div`
-  font-size: 15px;
-  font-weight: 500;
-  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-`;
 
 const TableContainer = styled.div`
   overflow-x: auto;
@@ -223,82 +185,43 @@ const EmptyState = styled.div`
   border: 1.5px dashed ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
 `;
 
-const PeriodTabs = styled.div`
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  padding: 4px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)')};
-  border-radius: 8px;
-  width: fit-content;
-`;
-
-const PeriodTab = styled.button`
-  padding: 6px 14px;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: ${({ active }) => (active ? '#3b82f6' : 'transparent')};
-  color: ${({ active, darkMode }) => (active ? '#fff' : (darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'))};
-
-  &:hover:not(:disabled) {
-    background: ${({ active }) => (active ? '#2563eb' : 'rgba(59,130,246,0.1)')};
-  }
-`;
-
-
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
-  { id: 'trader', label: 'TRADER', align: 'left', width: '130px' },
-  { id: 'volume', label: 'VOL', align: 'right', width: '75px', sortable: true },
-  { id: 'profit', label: 'P/L', align: 'right', width: '75px', sortable: true },
-  { id: 'roi', label: 'ROI', align: 'right', width: '50px', sortable: true },
-  { id: 'trades', label: 'B/S', align: 'right', width: '55px', sortable: true },
-  { id: 'winRate', label: 'WIN', align: 'right', width: '45px', sortable: true },
-  { id: 'profitFactor', label: 'PF', align: 'right', width: '40px', sortable: true },
-  { id: 'maxProfit', label: 'MAX+', align: 'right', width: '60px' },
-  { id: 'maxLoss', label: 'MAX-', align: 'right', width: '55px' },
-  { id: 'hold', label: 'HOLD', align: 'right', width: '45px' },
-  { id: 'lastActive', label: 'ACTIVE', align: 'right', width: '60px' },
+  { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
+  { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '75px', sortable: true },
+  { id: 'combinedProfit', label: 'TOTAL P/L', align: 'right', width: '80px', sortable: true },
+  { id: 'profit', label: 'REALIZED', align: 'right', width: '75px', sortable: true },
+  { id: 'unrealizedProfit', label: 'UNREALIZED', align: 'right', width: '80px', sortable: true },
+  { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
+  { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
+  { id: 'winRate', label: 'WIN %', align: 'right', width: '55px', sortable: true },
+  { id: 'lastActive', label: 'LAST TRADE', align: 'right', width: '80px' },
 ];
 
-const PERIODS = [
-  { key: '24h', label: '24H' },
-  { key: '7d', label: '7D' },
-  { key: '30d', label: '30D' },
-  { key: '90d', label: '90D' },
-];
-
-export default function TradersPage({ traders = [], sortBy = 'volume', period = '24h', globalMetrics = null }) {
+export default function TradersPage({ traders: initialTraders = [] }) {
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
-  const router = useRouter();
   const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState('combinedProfit');
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const rowsPerPage = 20;
 
+  // Client-side sorting
+  const sortedTraders = [...initialTraders].sort((a, b) => {
+    const aVal = a[sortBy] ?? 0;
+    const bVal = b[sortBy] ?? 0;
+    return bVal - aVal;
+  });
+
   const handleSortChange = (key) => {
     setPage(0);
-    router.push(`/nft-traders?sortBy=${key}&period=${period}`, undefined, { shallow: true });
+    setSortBy(key);
   };
 
-  const handlePeriodChange = (newPeriod) => {
-    setPage(0);
-    router.push(`/nft-traders?sortBy=${sortBy}&period=${newPeriod}`, undefined, { shallow: true });
-  };
-
-  // Get period-specific values
-  const getVolume = (t) => t[`vol${period}`] ?? t.totalVolume ?? 0;
-  const getProfit = (t) => t[`profit${period}`] ?? t.profit ?? 0;
-  const getRoi = (t) => t[`roi${period}`] ?? t.roi ?? 0;
-  const getTrades = (t) => t[`trades${period}`] ?? t.totalTrades ?? 0;
   const getLastActive = (t) => t.lastTrade ? formatDistanceToNowStrict(new Date(t.lastTrade)) : '-';
 
-  const paginatedTraders = traders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-  const totalPages = Math.ceil(traders.length / rowsPerPage);
+  const paginatedTraders = sortedTraders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const totalPages = Math.ceil(sortedTraders.length / rowsPerPage);
 
   const getPageNumbers = () => {
     const pages = [];
@@ -315,14 +238,6 @@ export default function TradersPage({ traders = [], sortBy = 'volume', period = 
     return pages;
   };
 
-  const metrics = globalMetrics ? [
-    { label: '24h Volume', value: `${fVolume(globalMetrics.total24hVolume || 0)} XRP`, pct: globalMetrics.volumePct },
-    { label: '24h Sales', value: fNumber(globalMetrics.total24hSales || 0), pct: globalMetrics.salesPct },
-    { label: 'Active Traders', value: fNumber(globalMetrics.activeTraders24h || 0), pct: globalMetrics.activeTradersPct },
-    { label: 'Avg Trade', value: `${fVolume(globalMetrics.avgTradeSize24h || 0)} XRP` },
-    { label: 'Buyers / Sellers', value: `${fNumber(globalMetrics.uniqueBuyers24h || 0)} / ${fNumber(globalMetrics.uniqueSellers24h || 0)}` },
-    { label: 'Total Traders', value: fNumber(globalMetrics.totalTraders || 0) },
-  ] : null;
 
   return (
     <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
@@ -334,40 +249,10 @@ export default function TradersPage({ traders = [], sortBy = 'volume', period = 
 
       <Container>
         <Title darkMode={darkMode}>NFT Traders Leaderboard</Title>
-        <Subtitle darkMode={darkMode}>Top NFT traders ranked by {sortBy === 'profit' ? 'profit' : sortBy === 'trades' ? 'trades' : 'volume'}</Subtitle>
+        <Subtitle darkMode={darkMode}>Click column headers to sort</Subtitle>
 
-        <PeriodTabs darkMode={darkMode}>
-          {PERIODS.map((p) => (
-            <PeriodTab
-              key={p.key}
-              active={period === p.key}
-              darkMode={darkMode}
-              onClick={() => handlePeriodChange(p.key)}
-            >
-              {p.label}
-            </PeriodTab>
-          ))}
-        </PeriodTabs>
 
-        {metrics && (
-          <MetricsGrid>
-            {metrics.map((m) => (
-              <MetricBox key={m.label} darkMode={darkMode}>
-                <MetricLabel darkMode={darkMode}>{m.label}</MetricLabel>
-                <MetricValue darkMode={darkMode}>
-                  {m.value}
-                  {m.pct !== undefined && (
-                    <span style={{ fontSize: 11, marginLeft: 6, color: m.pct >= 0 ? '#10b981' : '#ef4444' }}>
-                      {m.pct >= 0 ? '+' : ''}{m.pct.toFixed(1)}%
-                    </span>
-                  )}
-                </MetricValue>
-              </MetricBox>
-            ))}
-          </MetricsGrid>
-        )}
-
-        {traders.length === 0 ? (
+        {initialTraders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
             <div style={{ fontSize: 16, marginBottom: 8, color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>
               No Traders Data
@@ -400,11 +285,11 @@ export default function TradersPage({ traders = [], sortBy = 'volume', period = 
                 </StyledTableHead>
                 <StyledTbody darkMode={darkMode}>
                   {paginatedTraders.map((trader, idx) => {
-                    const addr = trader._id || trader.account || trader.address;
-                    const vol = getVolume(trader);
-                    const pft = getProfit(trader);
-                    const roi = getRoi(trader);
-                    const pf = trader.profitFactor || 0;
+                    const addr = trader._id || trader.address;
+                    const cp = trader.combinedProfit || 0;
+                    const rp = trader.profit || 0;
+                    const up = trader.unrealizedProfit || 0;
+                    const roi = trader.roi || 0;
                     return (
                       <tr key={addr || idx}>
                         <StyledTd align="center" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}>
@@ -419,33 +304,25 @@ export default function TradersPage({ traders = [], sortBy = 'volume', period = 
                           </div>
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
-                          {fVolume(vol)}
+                          {fVolume(trader.totalVolume || 0)}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: pft >= 0 ? '#10b981' : '#ef4444', fontWeight: 500, fontSize: 12 }}>
-                          {pft >= 0 ? '+' : ''}{fVolume(pft)}
+                        <StyledTd align="right" style={{ color: cp >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: 12 }}>
+                          {cp >= 0 ? '+' : ''}{fVolume(cp)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: rp >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
+                          {rp >= 0 ? '+' : ''}{fVolume(rp)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: up >= 0 ? '#10b981' : '#ef4444', fontSize: 11, opacity: 0.8 }}>
+                          {up >= 0 ? '+' : ''}{fVolume(up)}
                         </StyledTd>
                         <StyledTd align="right" style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
-                          {roi >= 0 ? '+' : ''}{roi.toFixed(0)}%
+                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
-                          <span style={{ color: '#3b82f6' }}>{trader.buyCount || 0}</span>
-                          <span style={{ opacity: 0.4 }}>/</span>
-                          <span style={{ color: '#ef4444' }}>{trader.sellCount || 0}</span>
+                          {fNumber(trader.totalTrades || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {(trader.winRate || 0).toFixed(0)}%
-                        </StyledTd>
-                        <StyledTd align="right" style={{ fontSize: 11, color: pf >= 2 ? '#10b981' : pf >= 1 ? (darkMode ? '#fff' : '#212B36') : '#ef4444' }}>
-                          {pf.toFixed(1)}
-                        </StyledTd>
-                        <StyledTd align="right" style={{ color: '#10b981', fontSize: 11 }}>
-                          +{fVolume(trader.maxProfit || 0)}
-                        </StyledTd>
-                        <StyledTd align="right" style={{ color: '#ef4444', fontSize: 11 }}>
-                          {fVolume(trader.maxLoss || 0)}
-                        </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
-                          {(trader.avgHoldingDays || 0).toFixed(0)}d
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
                           {getLastActive(trader)}
@@ -486,27 +363,13 @@ export default function TradersPage({ traders = [], sortBy = 'volume', period = 
   );
 }
 
-export async function getServerSideProps(context) {
-  const { sortBy = 'volume', period = '24h' } = context.query;
-
-  // Map UI sort keys to API keys
-  const sortMap = {
-    volume: 'totalVolume',
-    profit: 'profit',
-    roi: 'roi',
-    trades: 'totalTrades',
-    winRate: 'winRate',
-    profitFactor: 'profitFactor',
-  };
-  const apiSortBy = sortMap[sortBy] || 'totalVolume';
-
+export async function getServerSideProps() {
   try {
-    const response = await axios.get(`${BASE_URL}/nft/traders/active?sortBy=${apiSortBy}&limit=100&includeGlobalMetrics=true`);
+    const response = await axios.get(`${BASE_URL}/nft/analytics/traders?sortBy=combinedProfit&limit=100`);
     const traders = response.data.traders || [];
-    const globalMetrics = response.data.globalMetrics || null;
-    return { props: { traders, sortBy, period, globalMetrics } };
+    return { props: { traders } };
   } catch (error) {
     console.error('Failed to fetch traders:', error.message);
-    return { props: { traders: [], sortBy, period, globalMetrics: null } };
+    return { props: { traders: [] } };
   }
 }
