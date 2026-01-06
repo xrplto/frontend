@@ -10,9 +10,10 @@ import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
+import { getNftCoverUrl } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Wallet, Copy, ExternalLink, Coins, Image, Clock } from 'lucide-react';
+import { Wallet, Copy, ExternalLink, Coins, Image, Clock, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 
 // Same wrapper as index.js for consistent width
@@ -48,6 +49,15 @@ const OverView = ({ account }) => {
   const [accountAI, setAccountAI] = useState(null);
   const [accountAILoading, setAccountAILoading] = useState(false);
   const [nftStats, setNftStats] = useState(null);
+  const [nftCollections, setNftCollections] = useState([]);
+  const [nftCollectionsLoading, setNftCollectionsLoading] = useState(false);
+  const [selectedNftCollection, setSelectedNftCollection] = useState(null);
+  const [collectionNfts, setCollectionNfts] = useState([]);
+  const [collectionNftsLoading, setCollectionNftsLoading] = useState(false);
+  const [nftTrades, setNftTrades] = useState([]);
+  const [nftTradesLoading, setNftTradesLoading] = useState(false);
+  const [nftCollectionStats, setNftCollectionStats] = useState([]);
+  const [nftCollectionStatsLoading, setNftCollectionStatsLoading] = useState(false);
 
   // Fetch XRP price from /api/rates
   useEffect(() => {
@@ -74,6 +84,11 @@ const OverView = ({ account }) => {
     setAccountAI(null);
     setAccountAILoading(false);
     setNftStats(null);
+    setNftCollections([]);
+    setSelectedNftCollection(null);
+    setCollectionNfts([]);
+    setNftTrades([]);
+    setNftCollectionStats([]);
 
     const fetchData = async () => {
       try {
@@ -93,8 +108,8 @@ const OverView = ({ account }) => {
         // Fetch transaction history via xrpl.to API
         axios.get(`https://api.xrpl.to/api/account/tx/${account}?limit=200`)
           .then(res => {
-            if (res.data?.result === 'success' || res.data?.transactions) {
-              const txs = res.data.transactions || [];
+            if (res.data?.result === 'success' || res.data?.txs || res.data?.transactions) {
+              const txs = res.data.txs || res.data.transactions || [];
               setTxHistory(txs);
               setFilteredTxHistory(txs);
             }
@@ -130,13 +145,72 @@ const OverView = ({ account }) => {
       .catch(err => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
 
+  // Fetch NFT collections when tab changes to 'nfts'
+  useEffect(() => {
+    if (activeTab !== 'nfts' || !account || nftCollections.length > 0) return;
+    setNftCollectionsLoading(true);
+    axios.get(`https://api.xrpl.to/api/nft/account/${account}/nfts`)
+      .then(res => {
+        const cols = res.data?.collections || [];
+        setNftCollections(cols.map(c => ({
+          id: c._id || c.cid || c.id,
+          name: c.name,
+          slug: c.slug,
+          logo: c.logoImage ? `https://s1.xrpl.to/nft-collection/${c.logoImage}` : '',
+          count: c.count || 0,
+          value: c.value || 0
+        })));
+      })
+      .catch(err => console.error('Failed to fetch NFT collections:', err))
+      .finally(() => setNftCollectionsLoading(false));
+  }, [activeTab, account]);
+
+  // Fetch NFT collection trading stats when NFTs tab is viewed
+  useEffect(() => {
+    if (activeTab !== 'nfts' || !account || nftCollectionStats.length > 0) return;
+    setNftCollectionStatsLoading(true);
+    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/collections`)
+      .then(res => setNftCollectionStats(res.data?.collections || []))
+      .catch(err => console.error('Failed to fetch NFT collection stats:', err))
+      .finally(() => setNftCollectionStatsLoading(false));
+  }, [activeTab, account]);
+
+  // Fetch NFTs when a collection is selected
+  useEffect(() => {
+    if (!selectedNftCollection || !account) return;
+    setCollectionNftsLoading(true);
+    axios.get(`https://api.xrpl.to/api/nft/collections/${selectedNftCollection.slug}/nfts?limit=50&skip=0&owner=${account}`)
+      .then(res => {
+        const nfts = res.data?.nfts || [];
+        setCollectionNfts(nfts.map(nft => ({
+          id: nft._id || nft.NFTokenID,
+          nftId: nft.NFTokenID || nft._id,
+          name: nft.name || nft.meta?.name || 'Unnamed NFT',
+          image: getNftCoverUrl(nft, 'large') || '',
+          rarity: nft.rarity_rank || 0
+        })));
+      })
+      .catch(err => console.error('Failed to fetch collection NFTs:', err))
+      .finally(() => setCollectionNftsLoading(false));
+  }, [selectedNftCollection, account]);
+
+  // Fetch NFT trades when activity tab is viewed
+  useEffect(() => {
+    if (activeTab !== 'activity' || !account || nftTrades.length > 0) return;
+    setNftTradesLoading(true);
+    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/trades?limit=50`)
+      .then(res => setNftTrades(res.data?.trades || []))
+      .catch(err => console.error('Failed to fetch NFT trades:', err))
+      .finally(() => setNftTradesLoading(false));
+  }, [activeTab, account]);
+
   useEffect(() => {
     let filtered = txHistory;
 
     // Filter by transaction type
     if (txFilter !== 'all') {
       filtered = filtered.filter(tx => {
-        const txData = tx.tx_json || tx.tx;
+        const txData = tx.tx_json || tx.tx || tx;
         return txData.TransactionType === txFilter;
       });
     }
@@ -145,7 +219,7 @@ const OverView = ({ account }) => {
     if (txSearch.trim()) {
       const search = txSearch.toLowerCase().trim();
       filtered = filtered.filter(tx => {
-        const txData = tx.tx_json || tx.tx;
+        const txData = tx.tx_json || tx.tx || tx;
         const hash = (txData.hash || tx.hash || '').toLowerCase();
         const account = (txData.Account || '').toLowerCase();
         const destination = (txData.Destination || '').toLowerCase();
@@ -180,12 +254,88 @@ const OverView = ({ account }) => {
   const getAvailableTxTypes = () => {
     const types = new Set(['all']);
     txHistory.forEach(tx => {
-      const txData = tx.tx_json || tx.tx;
+      const txData = tx.tx_json || tx.tx || tx;
       if (txData.TransactionType) {
         types.add(txData.TransactionType);
       }
     });
     return Array.from(types);
+  };
+
+  // Decode hex currency
+  const decodeCurrency = (code) => {
+    if (!code || code === 'XRP') return 'XRP';
+    if (code.length === 3) return code;
+    try {
+      const hex = code.replace(/0+$/, '');
+      const decoded = Buffer.from(hex, 'hex').toString('utf8').replace(/\0/g, '');
+      return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : code.substring(0, 6);
+    } catch { return code.substring(0, 6); }
+  };
+
+  // Parse transaction for simple list display (wallet.js style)
+  const parseTx = (tx) => {
+    const txData = tx.tx_json || tx.tx || tx;
+    const meta = tx.meta;
+    const type = txData.TransactionType;
+    const isOutgoing = txData.Account === account;
+    let label = type;
+    let amount = '';
+    let isDust = false;
+
+    if (type === 'Payment') {
+      const delivered = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
+      if (typeof delivered === 'string') {
+        const xrpAmt = parseInt(delivered) / 1000000;
+        amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        isDust = !isOutgoing && xrpAmt < 0.001;
+      } else if (delivered?.value) {
+        amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
+      }
+      label = isOutgoing ? 'Sent' : 'Received';
+    } else if (type === 'OfferCreate') {
+      label = 'Trade';
+    } else if (type === 'NFTokenAcceptOffer') {
+      const offerNode = meta?.AffectedNodes?.find(n => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer');
+      const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
+      const offerAmt = offer?.Amount;
+      const isZeroAmount = !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
+      if (isZeroAmount) {
+        const isSender = offer?.Owner === account;
+        label = isSender ? 'Sent NFT' : 'Received NFT';
+        amount = 'FREE';
+      } else {
+        if (typeof offerAmt === 'string') {
+          const xrpAmt = parseInt(offerAmt) / 1000000;
+          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        } else if (offerAmt?.value) {
+          amount = `${parseFloat(offerAmt.value).toFixed(2)} ${decodeCurrency(offerAmt.currency)}`;
+        }
+        const isSeller = offer?.Owner === account;
+        label = isSeller ? 'Sold NFT' : 'Bought NFT';
+      }
+    } else if (type === 'TrustSet') {
+      label = 'Trustline';
+    } else if (type === 'NFTokenMint') {
+      label = 'Mint NFT';
+    } else if (type === 'NFTokenCreateOffer') {
+      label = 'NFT Offer';
+    } else if (type === 'NFTokenCancelOffer') {
+      label = 'Cancel Offer';
+    } else if (type === 'NFTokenBurn') {
+      label = 'Burn NFT';
+    }
+
+    const txId = txData.hash || tx.hash || txData.ctid || tx.ctid;
+    return {
+      id: txId,
+      type: isOutgoing ? 'out' : 'in',
+      label,
+      amount,
+      isDust,
+      time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
+      hash: txId
+    };
   };
 
   const handleAccountAI = async () => {
@@ -789,479 +939,196 @@ const OverView = ({ account }) => {
 
             {/* NFTs Tab */}
             {activeTab === 'nfts' && (
-              <div className="space-y-4">
-                {/* Mock NFT Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className={cn("rounded-xl border overflow-hidden", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
-                      <div className={cn("aspect-square", isDark ? "bg-white/[0.03]" : "bg-black/[0.02]")} />
-                      <div className="p-3">
-                        <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/80" : "text-gray-800")}>NFT #{i}</p>
-                        <p className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Collection</p>
-                      </div>
+              <div>
+                {selectedNftCollection ? (
+                  <>
+                    {/* Breadcrumb */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <button onClick={() => { setSelectedNftCollection(null); setCollectionNfts([]); }} className={cn("text-[11px] transition-colors", isDark ? "text-white/35 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
+                        All Collections
+                      </button>
+                      <span className={isDark ? "text-white/20" : "text-gray-300"}>/</span>
+                      <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{selectedNftCollection.name}</span>
+                      <button onClick={() => { setSelectedNftCollection(null); setCollectionNfts([]); }} className={cn("ml-auto text-[11px] px-2 py-1 rounded-lg transition-colors", isDark ? "bg-white/[0.04] text-white/50 hover:bg-white/10" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}>
+                        Clear
+                      </button>
                     </div>
-                  ))}
-                </div>
-                <p className={cn("text-center text-[12px] py-4", isDark ? "text-white/30" : "text-gray-400")}>
-                  NFT display coming soon
-                </p>
+                    {/* NFTs Grid */}
+                    {collectionNftsLoading ? (
+                      <div className={cn("p-12 text-center text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>Loading NFTs...</div>
+                    ) : collectionNfts.length === 0 ? (
+                      <div className={cn("rounded-xl p-12 text-center border", isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200")}>
+                        <Image size={32} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                        <p className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found in this collection</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {collectionNfts.map(nft => (
+                          <Link key={nft.id} href={`/nft/${nft.nftId}`} className={cn("rounded-xl border overflow-hidden group transition-colors", isDark ? "border-white/[0.06] bg-white/[0.015] hover:border-white/15" : "border-gray-200 bg-white hover:border-gray-300")}>
+                            <div className="relative">
+                              {nft.image ? (
+                                <img src={nft.image} alt={nft.name} className="w-full aspect-square object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
+                                <div className={cn("w-full aspect-square flex items-center justify-center text-[10px]", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>No image</div>
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{nft.name}</p>
+                              {nft.rarity > 0 && <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-500")}>Rank #{nft.rarity}</p>}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : nftCollectionsLoading ? (
+                  <div className={cn("p-12 text-center text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>Loading collections...</div>
+                ) : nftCollections.length === 0 ? (
+                  <div className={cn("rounded-xl p-12 text-center border", isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200")}>
+                    <Image size={32} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                    <p className={cn("text-[13px] mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
+                    <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>NFTs owned by this account will appear here</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {nftCollections.map(col => (
+                      <button key={col.id} onClick={() => setSelectedNftCollection(col)} className={cn("rounded-xl border overflow-hidden text-left group transition-colors", isDark ? "border-white/[0.06] bg-white/[0.015] hover:border-white/15" : "border-gray-200 bg-white hover:border-gray-300")}>
+                        <div className="relative">
+                          {col.logo ? (
+                            <img src={col.logo} alt={col.name} className="w-full aspect-square object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <div className={cn("w-full aspect-square flex items-center justify-center text-[10px]", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>No image</div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</p>
+                          <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-500")}>{col.count} item{col.count !== 1 ? 's' : ''}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Collection Trading Stats */}
+                {nftCollectionStats.length > 0 && !selectedNftCollection && (
+                  <div className={cn("rounded-xl border mt-4", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                    <div className={cn("p-4 border-b", isDark ? "border-white/10" : "border-gray-100")}>
+                      <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Trading Stats by Collection</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[12px]">
+                        <thead>
+                          <tr className={cn("text-left text-[10px] uppercase", isDark ? "text-white/40" : "text-gray-400")}>
+                            <th className="px-4 py-3">Collection</th>
+                            <th className="px-4 py-3 text-right">Volume</th>
+                            <th className="px-4 py-3 text-right">P/L</th>
+                            <th className="px-4 py-3 text-right">ROI</th>
+                            <th className="px-4 py-3 text-right">Trades</th>
+                          </tr>
+                        </thead>
+                        <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                          {nftCollectionStats.slice(0, 15).map(c => (
+                            <tr key={c.cid} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                              <td className="px-4 py-3">
+                                <Link href={`/collection/${c.slug}`} className="flex items-center gap-2 group">
+                                  {c.logo && <img src={`https://s1.xrpl.to/nft-collection/${c.logo}`} alt="" className="w-6 h-6 rounded object-cover" />}
+                                  <span className={cn("group-hover:text-blue-500 truncate max-w-[120px]", isDark ? "text-white/90" : "text-gray-900")}>{c.name}</span>
+                                </Link>
+                              </td>
+                              <td className={cn("px-4 py-3 text-right tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{c.volume?.toFixed(1) || 0} XRP</td>
+                              <td className={cn("px-4 py-3 text-right tabular-nums font-medium", c.profit >= 0 ? "text-emerald-500" : "text-red-400")}>{c.profit >= 0 ? '+' : ''}{c.profit?.toFixed(1) || 0}</td>
+                              <td className={cn("px-4 py-3 text-right tabular-nums", c.roi >= 0 ? "text-emerald-500" : "text-red-400")}>{c.roi?.toFixed(1) || 0}%</td>
+                              <td className={cn("px-4 py-3 text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{c.trades || 0}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Activity Tab */}
             {activeTab === 'activity' && (
-              <>
-                {/* Transaction History */}
-                {txHistory.length > 0 && (
-                  <div>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3 px-1">
-                      <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-800")}>
-                        Account transactions ({filteredTxHistory.length})
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Search..."
-                          value={txSearch}
-                          onChange={(e) => setTxSearch(e.target.value)}
-                          className={cn(
-                            "text-[12px] px-3 py-1.5 rounded-lg border outline-none flex-1 md:w-40",
-                            isDark
-                              ? "bg-transparent border-white/10 text-white/70 placeholder:text-white/30 focus:border-white/20"
-                              : "bg-white border-gray-200 text-gray-600 placeholder:text-gray-400 focus:border-gray-300"
-                          )}
-                        />
-                        <select
-                          value={txFilter}
-                          onChange={(e) => setTxFilter(e.target.value)}
-                          className={cn(
-                            "text-[12px] px-3 py-1.5 rounded-lg border cursor-pointer outline-none",
-                            isDark
-                              ? "bg-transparent border-white/10 text-white/60"
-                              : "bg-white border-gray-200 text-gray-500"
-                          )}
-                          style={isDark ? { colorScheme: 'dark' } : {}}
-                        >
-                          {getAvailableTxTypes().map(filter => (
-                            <option key={filter} value={filter}>
-                              {filter === 'all' ? 'All types' : filter}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Table */}
-                    <div className="overflow-hidden rounded-xl w-full bg-white/[0.02] border border-white/10">
-                      {/* Header */}
-                      <div className="hidden md:flex items-center gap-6 px-5 py-3 border-b border-white/10 text-[11px] uppercase tracking-wider text-white/40">
-                        <span className="w-20">Type</span>
-                        <span className="flex-1">Info</span>
-                        <span className="w-24 text-center">Source</span>
-                        <span className="w-20 text-center">Time</span>
-                        <span className="w-36 text-right">Signature</span>
-                      </div>
-
-                      {/* Rows */}
-                      {filteredTxHistory.slice(txPage * 20, txPage * 20 + 20).map((tx, idx) => {
-                        const txData = tx.tx_json || tx.tx;
-                        const meta = tx.meta;
-                        const date = new Date((txData.date + 946684800) * 1000);
-                        const txHash = txData.hash || tx.hash;
-                        const shortHash = txHash ? `${txHash.substring(0, 6)}...${txHash.substring(txHash.length - 6)}` : '';
-
-                        // Decode hex currency
-                        const decodeCurrency = (code) => {
-                          if (!code || code === 'XRP') return 'XRP';
-                          if (code.length === 3) return code;
-                          try {
-                            const hex = code.replace(/0+$/, '');
-                            const decoded = Buffer.from(hex, 'hex').toString('utf8').replace(/\0/g, '');
-                            return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : code.substring(0, 6);
-                          } catch { return code.substring(0, 6); }
-                        };
-
-                        // Get token icon URL - uses original currency code (not decoded) for MD5
-                        const getTokenIcon = (currencyCode, issuer) => {
-                          if (!currencyCode || currencyCode === 'XRP') return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
-                          if (!issuer) return null;
-                          const slug = `${issuer}_${currencyCode}`;
-                          const md5 = CryptoJS.MD5(slug).toString();
-                          return `https://s1.xrpl.to/token/${md5}`;
-                        };
-
-                        // Format number with K/M/B suffix
-                        const formatNum = (n) => {
-                          if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-                          if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-                          if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
-                          return n < 1 ? n.toFixed(4) : n.toFixed(2);
-                        };
-
-                        // Token with icon component - currencyCode is original (for icon), displayName is decoded (for display)
-                        const TokenBadge = ({ currencyCode, displayName, issuer, amount, isNegative }) => {
-                          const icon = getTokenIcon(currencyCode, issuer);
-                          return (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5">
-                              <span className={isNegative ? "w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold bg-red-500/20 text-red-400" : "w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold bg-green-500/20 text-green-400"}>
-                                {isNegative ? '−' : '+'}
-                              </span>
-                              {icon && <img src={icon} className="w-4 h-4 rounded-full" onError={(e) => e.target.style.display='none'} alt="" />}
-                              <span className="font-medium text-white">{formatNum(amount)}</span>
-                              <span className="text-white/40">{displayName}</span>
-                            </span>
-                          );
-                        };
-
-                        // Determine type label and info
-                        let typeLabel = 'Transaction';
-                        let info = null;
-
-                        if (txData.TransactionType === 'Payment') {
-                          const isSender = txData.Account === account;
-
-                          // Check dusting attack
-                          if (!isSender && typeof txData.Amount === 'string' && parseInt(txData.Amount) < 1000) {
-                            typeLabel = 'Payment';
-                            info = <span className="text-[#c53030]">Dusting attack from {txData.Account?.substring(0, 8)}...</span>;
-                          }
-                          // Check swap (Payment with SendMax)
-                          else if (txData.SendMax && meta?.delivered_amount) {
-                            const sendIsXRP = typeof txData.SendMax === 'string';
-                            const recvIsXRP = typeof meta.delivered_amount === 'string';
-
-                            if (sendIsXRP !== recvIsXRP) {
-                              typeLabel = 'Swap';
-                              const sendAmt = sendIsXRP ? parseInt(txData.SendMax) / 1e6 : parseFloat(txData.SendMax.value);
-                              const sendCurrCode = sendIsXRP ? 'XRP' : txData.SendMax.currency;
-                              const sendCurrDisplay = sendIsXRP ? 'XRP' : decodeCurrency(txData.SendMax.currency);
-                              const sendIssuer = sendIsXRP ? null : txData.SendMax.issuer;
-                              const recvAmt = recvIsXRP ? parseInt(meta.delivered_amount) / 1e6 : parseFloat(meta.delivered_amount.value);
-                              const recvCurrCode = recvIsXRP ? 'XRP' : meta.delivered_amount.currency;
-                              const recvCurrDisplay = recvIsXRP ? 'XRP' : decodeCurrency(meta.delivered_amount.currency);
-                              const recvIssuer = recvIsXRP ? null : meta.delivered_amount.issuer;
-
-                              info = (
-                                <span className="flex items-center gap-3">
-                                  <TokenBadge currencyCode={sendCurrCode} displayName={sendCurrDisplay} issuer={sendIssuer} amount={sendAmt} isNegative />
-                                  <span className="text-white/30">→</span>
-                                  <TokenBadge currencyCode={recvCurrCode} displayName={recvCurrDisplay} issuer={recvIssuer} amount={recvAmt} />
-                                </span>
-                              );
-                            }
-                          }
-
-                          if (!info) {
-                            typeLabel = 'Payment';
-                            const dest = isSender ? txData.Destination : txData.Account;
-                            const delivered = meta?.delivered_amount || txData.Amount;
-                            const amtIsXRP = typeof delivered === 'string';
-                            const amt = amtIsXRP ? parseInt(delivered) / 1e6 : parseFloat(delivered?.value || 0);
-                            const currCode = amtIsXRP ? 'XRP' : delivered?.currency;
-                            const currDisplay = amtIsXRP ? 'XRP' : decodeCurrency(delivered?.currency);
-                            const issuer = amtIsXRP ? null : delivered?.issuer;
-                            info = (
-                              <span className="flex items-center gap-2">
-                                <TokenBadge currencyCode={currCode} displayName={currDisplay} issuer={issuer} amount={amt} isNegative={isSender} />
-                                <span className="text-white/40">{isSender ? 'to' : 'from'}</span>
-                                <span className="text-white/70">{dest?.substring(0, 8)}...</span>
-                              </span>
-                            );
-                          }
-                        } else if (txData.TransactionType === 'OfferCreate') {
-                          typeLabel = 'Swap';
-                          const getsVal = typeof txData.TakerGets === 'string' ? parseInt(txData.TakerGets) / 1e6 : parseFloat(txData.TakerGets?.value || 0);
-                          const getsCurrCode = typeof txData.TakerGets === 'string' ? 'XRP' : txData.TakerGets?.currency;
-                          const getsCurrDisplay = typeof txData.TakerGets === 'string' ? 'XRP' : decodeCurrency(txData.TakerGets?.currency);
-                          const getsIssuer = typeof txData.TakerGets === 'string' ? null : txData.TakerGets?.issuer;
-                          const paysVal = typeof txData.TakerPays === 'string' ? parseInt(txData.TakerPays) / 1e6 : parseFloat(txData.TakerPays?.value || 0);
-                          const paysCurrCode = typeof txData.TakerPays === 'string' ? 'XRP' : txData.TakerPays?.currency;
-                          const paysCurrDisplay = typeof txData.TakerPays === 'string' ? 'XRP' : decodeCurrency(txData.TakerPays?.currency);
-                          const paysIssuer = typeof txData.TakerPays === 'string' ? null : txData.TakerPays?.issuer;
-
-                          info = (
-                            <span className="flex items-center gap-3">
-                              <TokenBadge currencyCode={getsCurrCode} displayName={getsCurrDisplay} issuer={getsIssuer} amount={getsVal} isNegative />
-                              <span className="text-white/30">→</span>
-                              <TokenBadge currencyCode={paysCurrCode} displayName={paysCurrDisplay} issuer={paysIssuer} amount={paysVal} />
-                            </span>
-                          );
-                        } else if (txData.TransactionType === 'TrustSet') {
-                          typeLabel = 'TrustSet';
-                          const currCode = txData.LimitAmount?.currency;
-                          const currDisplay = decodeCurrency(txData.LimitAmount?.currency);
-                          const issuer = txData.LimitAmount?.issuer;
-                          const icon = getTokenIcon(currCode, issuer);
-                          info = (
-                            <span className="flex items-center gap-1.5">
-                              {icon && <img src={icon} className="w-4 h-4 rounded-full" onError={(e) => e.target.style.display = 'none'} alt="" />}
-                              <span className="text-white/70">Trust line for {currDisplay}</span>
-                            </span>
-                          );
-                        } else {
-                          typeLabel = txData.TransactionType?.length > 10 ? txData.TransactionType.substring(0, 10) + '...' : txData.TransactionType;
-                          info = <span className="text-white/50">See more details</span>;
-                        }
-
-                        const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
-                        const sourceTag = txData.SourceTag;
-                        const destTag = txData.DestinationTag;
-                        const isExpanded = expandedTx === txHash;
-
-                        const handleExplainWithAI = async (e) => {
-                          e.stopPropagation();
-                          if (aiLoading[txHash] || aiExplanation[txHash]) return;
-                          setAiLoading(prev => ({ ...prev, [txHash]: true }));
-                          try {
-                            const res = await axios.get(`https://api.xrpl.to/api/ai/${txHash}`);
-                            setAiExplanation(prev => ({ ...prev, [txHash]: res.data }));
-                          } catch {
-                            setAiExplanation(prev => ({ ...prev, [txHash]: { summary: { summary: `${typeLabel} transaction ${isSuccess ? 'completed successfully' : 'failed'}.`, keyPoints: [] } } }));
-                          } finally {
-                            setAiLoading(prev => ({ ...prev, [txHash]: false }));
-                          }
-                        };
-
-                        // Type icon based on transaction
-                        const isSent = txData.Account === account;
-                        const typeIcon = typeLabel === 'Payment' ? (isSent ? '↗' : '✓') :
-                                        typeLabel === 'Swap' ? '⇌' :
-                                        typeLabel === 'TrustSet' ? '✦' : '•';
-                        const typeIconColor = typeLabel === 'Payment' ? (isSent ? 'text-[#dc2626]' : 'text-[#16a34a]') :
-                                             typeLabel === 'Swap' ? 'text-white/60' :
-                                             typeLabel === 'TrustSet' ? 'text-[#f59e0b]' : 'text-white/50';
-                        const typeName = typeLabel === 'Payment' ? (isSent ? 'Sent' : 'Received') : typeLabel;
-
-                        // Format date like "19 Dec" (short) or "19 Dec 2024" (if different year)
-                        const formatDate = (d) => {
-                          const day = d.getDate();
-                          const month = d.toLocaleString('en', { month: 'short' });
-                          const year = d.getFullYear();
-                          const currentYear = new Date().getFullYear();
-                          return year === currentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
-                        };
-
-                        return (
-                          <div key={idx}>
-                            <div
-                              onClick={() => setExpandedTx(isExpanded ? null : txHash)}
-                              className="px-5 py-4 cursor-pointer border-b border-white/10 hover:bg-white/5"
-                            >
-                              {/* Desktop layout */}
-                              <div className="hidden md:flex items-center gap-6 text-[13px]">
-                                <div className="w-20 flex items-center gap-2">
-                                  <span className={typeIconColor}>{typeIcon}</span>
-                                  <span className="font-medium text-white">{typeName}</span>
-                                </div>
-                                <div className="flex-1 flex items-center gap-2">
-                                  {info}
-                                  {destTag && <span className="ml-2 px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/40">DT:{destTag}</span>}
-                                </div>
-                                <div className="w-24 text-center">
-                                  {sourceTag ? <span className="text-[12px] font-mono text-[#60a5fa]">{sourceTag}</span> : <span className="text-white/20">—</span>}
-                                </div>
-                                <div className="w-20 text-center text-white/50">{formatDate(date)}</div>
-                                <div className="w-36 flex items-center justify-end gap-2">
-                                  <Link href={`/tx/${txHash}`} onClick={(e) => e.stopPropagation()} className="text-[12px] font-mono text-white/40 hover:text-white/60">
-                                    {txHash?.substring(0, 10)}...{txHash?.substring(txHash.length - 6)}
-                                  </Link>
-                                  <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(txHash); }} className="p-0.5 text-white/20 hover:text-white/40">
-                                    <Copy size={11} />
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* Mobile layout */}
-                              <div className="md:hidden space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className={cn("text-[14px]", typeIconColor)}>{typeIcon}</span>
-                                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{typeName}</span>
-                                  </div>
-                                  <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>
-                                    {formatDate(date)}
-                                  </span>
-                                </div>
-                                <div className="text-[13px]">{info}</div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    {sourceTag && <span className={cn("px-2 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>ST:{sourceTag}</span>}
-                                    {destTag && <span className={cn("px-2 py-0.5 rounded text-[10px]", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>DT:{destTag}</span>}
-                                  </div>
-                                  <Link
-                                    href={`/tx/${txHash}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={cn("text-[12px] font-mono", isDark ? "text-white/40" : "text-gray-400")}
-                                  >
-                                    {shortHash}
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Expanded Section */}
-                            {isExpanded && (
-                              <div className={cn(
-                                "border-l-2 border-l-[#c53030] px-4 py-4",
-                                isDark ? "bg-[#0a0a0a]" : "bg-gray-50"
-                              )}>
-                                {/* Transaction Summary */}
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4 text-[11px]">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-white/30">Status</span>
-                                    <span className={isSuccess ? "text-[#22c55e]" : "text-[#ef4444]"}>{isSuccess ? 'Success' : 'Failed'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-white/30">Fee</span>
-                                    <span className="text-white/60">{txData.Fee ? (parseInt(txData.Fee) / 1e6).toFixed(6) : '0'} XRP</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-white/30">Ledger</span>
-                                    <span className="text-white/60">#{txData.ledger_index || 'N/A'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-white/30">Sequence</span>
-                                    <span className="text-white/60">{txData.Sequence || 'N/A'}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-white/30">Date</span>
-                                    <span className="text-white/60">{date.toLocaleString()}</span>
-                                  </div>
-                                </div>
-
-                                {/* AI Loading/Explanation Box */}
-                                {(aiLoading[txHash] || aiExplanation[txHash]) && (
-                                  <div className={cn(
-                                    "mb-4 p-4 rounded-lg border",
-                                    isDark ? "bg-[#0d0d0d] border-white/[0.06]" : "bg-white border-gray-200"
-                                  )}>
-                                    <style jsx>{`
-                              @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-                              @keyframes glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-                              @keyframes pulse-bar { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.35; } }
-                            `}</style>
-                                    {aiLoading[txHash] ? (
-                                      <>
-                                        <div className="space-y-2.5">
-                                          {[95, 80, 88, 65, 92, 100, 70, 85].map((w, i) => (
-                                            <div key={i} className="h-[6px] rounded-sm overflow-hidden relative" style={{ width: `${w}%` }}>
-                                              <div className="absolute inset-0 rounded-sm" style={{ background: i === 5 ? 'rgba(197,48,48,0.4)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', animation: 'pulse-bar 2s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
-                                              <div className="absolute inset-0 rounded-sm" style={{ background: i === 5 ? 'linear-gradient(90deg, transparent, #c53030, transparent)' : `linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}, transparent)`, animation: 'scanline 1.8s ease-in-out infinite', animationDelay: `${i * 0.08}s` }} />
-                                            </div>
-                                          ))}
-                                        </div>
-                                        <div className={cn("mt-4 text-[12px] flex items-center gap-1", isDark ? "text-white/50" : "text-gray-500")}>
-                                          Analyzing
-                                          {[0, 1, 2].map(i => <span key={i} className="inline-block w-1 h-1 rounded-full bg-current ml-0.5" style={{ animation: 'glow 1.2s ease-in-out infinite', animationDelay: `${i * 0.25}s` }} />)}
-                                        </div>
-                                      </>
-                                    ) : (() => {
-                                      let summaryText = 'AI analysis complete.';
-                                      let keyPoints = [];
-                                      const raw = aiExplanation[txHash]?.summary?.raw || aiExplanation[txHash]?.summary;
-                                      if (typeof raw === 'string') {
-                                        const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
-                                        if (summaryMatch) summaryText = summaryMatch[1];
-                                        const keyPointsMatch = raw.match(/"keyPoints"\s*:\s*\[([^\]]*)/);
-                                        if (keyPointsMatch) {
-                                          const points = keyPointsMatch[1].match(/"([^"]+)"/g);
-                                          if (points) keyPoints = points.map(p => p.replace(/"/g, ''));
-                                        }
-                                      } else if (typeof raw === 'object' && raw?.summary) {
-                                        summaryText = raw.summary;
-                                        keyPoints = raw.keyPoints || [];
-                                      }
-                                      return (
-                                        <>
-                                          <p className={cn("text-[13px] leading-relaxed font-mono", isSuccess ? "text-[#3b82f6]" : "text-[#ef4444]")}>
-                                            {typeLabel} ({isSuccess ? 'Success' : 'Failed'}): {summaryText}
-                                          </p>
-                                          {keyPoints.length > 0 && (
-                                            <>
-                                              <p className={cn("mt-4 mb-2 text-[11px] uppercase tracking-widest font-medium", isDark ? "text-white/40" : "text-gray-500")}>Key Points</p>
-                                              <ul className="space-y-1.5">
-                                                {keyPoints.map((point, i) => (
-                                                  <li key={i} className={cn("text-[12px] flex items-start gap-2 font-mono", isDark ? "text-white/70" : "text-gray-600")}>
-                                                    <span className="text-[#3b82f6]">•</span>
-                                                    <span>{point}</span>
-                                                  </li>
-                                                ))}
-                                              </ul>
-                                            </>
-                                          )}
-                                          <p className={cn("mt-4 mb-1 text-[11px] uppercase tracking-widest font-medium", isDark ? "text-white/40" : "text-gray-500")}>Additional Information</p>
-                                          <p className={cn("text-[12px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>
-                                            Transaction on XRPL • Fee: {txData.Fee ? (parseInt(txData.Fee) / 1e6).toFixed(6) : '0'} XRP • Ledger: {txData.ledger_index || 'N/A'}
-                                          </p>
-                                        </>
-                                      );
-                                    })()}
-                                  </div>
-                                )}
-
-                                {/* Action Row */}
-                                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2">
-                                  <Link
-                                    href={`/tx/${txHash}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200"
-                                  >
-                                    <ExternalLink size={13} className="text-white/50 group-hover:text-white/70 transition-colors" />
-                                    <span className="text-[12px] text-white/70 group-hover:text-white/90 transition-colors">Advanced Details</span>
-                                  </Link>
-
-                                  {!aiLoading[txHash] && !aiExplanation[txHash] ? (
-                                    <button
-                                      onClick={handleExplainWithAI}
-                                      className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
-                                    >
-                                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors">
-                                        <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
-                                        <path d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z" fill="currentColor"/>
-                                      </svg>
-                                      <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">Explain with AI</span>
-                                    </button>
-                                  ) : (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); setAiExplanation(prev => { const n = { ...prev }; delete n[txHash]; return n; }); setAiLoading(prev => { const n = { ...prev }; delete n[txHash]; return n; }); }}
-                                      className="w-full md:w-9 h-9 flex items-center justify-center rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200"
-                                    >
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
-                                        <path d="M18 6L6 18M6 6l12 12"/>
-                                      </svg>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
+              <div className={cn("rounded-xl border", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
+                  <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Transaction History</p>
+                  <span className={cn("text-[10px] px-2 py-0.5 rounded", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{txHistory.length}</span>
+                </div>
+                {txHistory.length === 0 ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <p className="text-[13px]">No transactions found</p>
+                  </div>
+                ) : (
+                  <div className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                    {txHistory.slice(0, 50).map((tx) => {
+                      const parsed = parseTx(tx);
+                      return (
+                        <Link key={parsed.id} href={`/tx/${parsed.hash}`} className={cn("flex items-center gap-3 px-4 py-3 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", parsed.type === 'in' ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                            {parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
                           </div>
-                        );
-                      })}
-                    </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{parsed.label}</p>
+                              {parsed.isDust && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                            </div>
+                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{parsed.time ? new Date(parsed.time).toLocaleString() : ''}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {parsed.amount && <p className={cn("text-[12px] font-medium tabular-nums whitespace-nowrap", isDark ? "text-white/70" : "text-gray-700")}>{parsed.amount}</p>}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between px-4 py-2.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>Transactions per page</span>
-                        <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>20</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setTxPage(0)} disabled={txPage === 0} className={cn("px-1 text-[11px]", txPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>«</button>
-                        <button onClick={() => setTxPage(Math.max(0, txPage - 1))} disabled={txPage === 0} className={cn("px-1 text-[11px]", txPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>‹</button>
-                        <span className={cn("text-[11px] px-2", isDark ? "text-white/40" : "text-gray-400")}>Page {txPage + 1}</span>
-                        <button onClick={() => setTxPage(txPage + 1)} disabled={txPage >= Math.ceil(filteredTxHistory.length / 20) - 1} className={cn("px-1 text-[11px]", txPage >= Math.ceil(filteredTxHistory.length / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>›</button>
-                        <button onClick={() => setTxPage(Math.ceil(filteredTxHistory.length / 20) - 1)} disabled={txPage >= Math.ceil(filteredTxHistory.length / 20) - 1} className={cn("px-1 text-[11px]", txPage >= Math.ceil(filteredTxHistory.length / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600"))}>»</button>
-                      </div>
-                    </div>
+              {/* NFT Trades Section */}
+              <div className={cn("rounded-xl border mt-4", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
+                  <div className="flex items-center gap-2">
+                    <Image size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
+                    <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Trades</p>
+                  </div>
+                  <span className={cn("text-[10px] px-2 py-0.5 rounded", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{nftTrades.length}</span>
+                </div>
+                {nftTradesLoading ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <p className="text-[13px]">Loading NFT trades...</p>
+                  </div>
+                ) : nftTrades.length === 0 ? (
+                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <p className="text-[13px]">No NFT trades found</p>
+                  </div>
+                ) : (
+                  <div className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                    {nftTrades.slice(0, 20).map((trade) => {
+                      const isSeller = trade.seller === account;
+                      const label = isSeller ? 'Sold NFT' : 'Bought NFT';
+                      const amt = trade.costXRP || 0;
+                      return (
+                        <Link key={trade._id} href={`/tx/${trade.hash}`} className={cn("flex items-center gap-3 px-4 py-3 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", isSeller ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                            {isSeller ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{label}</p>
+                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.time ? new Date(trade.time).toLocaleString() : ''}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className={cn("text-[12px] font-medium tabular-nums", isSeller ? "text-emerald-500" : "text-red-400")}>{isSeller ? '+' : '-'}{amt.toFixed(2)} XRP</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
-                {txHistory.length === 0 && (
-                  <div className={cn("text-center py-10 rounded-xl border", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
-                    <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No activity yet</p>
-                  </div>
-                )}
-              </>
+              </div>
             )}
+
           </div>
         </div>
       </div>
