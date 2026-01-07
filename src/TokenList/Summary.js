@@ -561,8 +561,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                   <span style={{ opacity: 0.8 }}>{token.name}</span>
                 </div>
                 <span style={{ fontWeight: 500 }}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(token.marketcap || 0)}
+                  {formatNumberWithDecimals(token.marketcap || 0)} XRP
                 </span>
               </div>
             ))}
@@ -895,7 +894,7 @@ export default function Summary() {
       : [];
   }, [tokenCreation, fiatRate]);
 
-  const latestToken = chartData[chartData.length - 1]?.tokensInvolved?.[0];
+  const latestToken = chartData[chartData.length - 1]?.tokensInvolved?.slice(-1)[0];
 
   const activePlatforms = Object.keys(platformColors).filter((platform) => {
     if (platform === 'Other') return false;
@@ -1187,8 +1186,9 @@ export default function Summary() {
                             {isUp ? '↑' : '↓'}
                           </span>
                           {latestToken && (
-                            <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.55rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
-                              {latestToken.name}
+                            <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.55rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
+                              <span style={{ maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestToken.name}</span>
+                              <span style={{ color: '#10b981', fontWeight: 500 }}>{formatNumberWithDecimals(latestToken.marketcap || 0)} XRP</span>
                             </Link>
                           )}
                         </div>
@@ -1214,8 +1214,9 @@ export default function Summary() {
                         <span style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
                         <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
                         {latestToken && (
-                          <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', maxWidth: '45px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
-                            {latestToken.name}
+                          <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
+                            <span style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestToken.name}</span>
+                            <span style={{ color: '#10b981', fontWeight: 500 }}>{formatNumberWithDecimals(latestToken.marketcap || 0)} XRP</span>
                           </Link>
                         )}
                       </div>

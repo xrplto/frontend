@@ -505,110 +505,81 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Technical Info Modal */}
       {showInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
-          <div
-            className={cn(
-              "w-full max-w-lg rounded-2xl border p-5 max-h-[80vh] overflow-y-auto",
-              isDark ? "bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInfo(false)}>
+          <div className={cn("w-full max-w-md rounded-xl border max-h-[85vh] overflow-hidden", isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200")} onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
               <div className="flex items-center gap-3 flex-1">
-                <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Technical Information</span>
+                <span className={cn("text-[10px] font-semibold uppercase tracking-widest", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Token Details</span>
                 <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
               </div>
-              <button onClick={() => setShowInfo(false)} className={cn("p-1.5 rounded-lg transition-all ml-2", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-black/[0.04] text-gray-400")}>
-                <X size={14} />
-              </button>
+              <button onClick={() => setShowInfo(false)} className={cn("p-1 rounded-md", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-gray-100 text-gray-400")}><X size={14} /></button>
             </div>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Issuer', value: issuer },
-                { label: 'Currency', value: currency },
-                ...(AMM ? [{ label: 'AMM Account', value: AMM }] : []),
-                ...(creator ? [{ label: 'Creator', value: creator }] : []),
-                { label: 'MD5', value: md5 }
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    navigator.clipboard.writeText(item.value);
-                    setCopiedField(item.label);
-                    setTimeout(() => setCopiedField(null), 1500);
-                  }}
-                  className={cn(
-                    "group w-full text-left rounded-lg px-3 py-2 transition-all flex items-center gap-3 cursor-pointer",
-                    isDark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.03]"
-                  )}
-                >
-                  <div className="flex-1 min-w-0">
-                    <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</span>
-                    <div className={cn("font-mono text-[11px] truncate", isDark ? "text-white/80" : "text-gray-700")}>{item.value}</div>
-                  </div>
-                  <span className={cn("flex-shrink-0 transition-all", copiedField === item.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/50" : "text-gray-300 group-hover:text-gray-500")}>
-                    {copiedField === item.label ? <Check size={14} /> : <Copy size={14} />}
-                  </span>
-                </button>
-              ))}
-              {/* API Section */}
-              <div className={cn("mt-4 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
-                <button
-                  onClick={() => setShowApi(!showApi)}
-                  className={cn("flex items-center gap-3 w-full text-left transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
-                >
-                  <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>API Endpoints</span>
+
+            {/* Content */}
+            <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
+              {/* Token Info */}
+              <div className="p-3 space-y-1">
+                {[
+                  { label: 'Issuer', value: issuer },
+                  { label: 'Currency', value: currency },
+                  ...(AMM ? [{ label: 'AMM', value: AMM }] : []),
+                  ...(creator ? [{ label: 'Creator', value: creator }] : []),
+                  { label: 'MD5', value: md5 }
+                ].map((item) => (
+                  <button key={item.label} onClick={() => { navigator.clipboard.writeText(item.value); setCopiedField(item.label); setTimeout(() => setCopiedField(null), 1200); }}
+                    className={cn("group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                    <span className={cn("text-[10px] w-14 flex-shrink-0", isDark ? "text-white/40" : "text-gray-400")}>{item.label}</span>
+                    <span className={cn("font-mono text-[11px] truncate flex-1", isDark ? "text-white/70" : "text-gray-600")}>{item.value}</span>
+                    <span className={cn("flex-shrink-0", copiedField === item.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/40" : "text-gray-300 group-hover:text-gray-400")}>
+                      {copiedField === item.label ? <Check size={12} /> : <Copy size={12} />}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* API Endpoints */}
+              <div className={cn("border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+                <button onClick={() => setShowApi(!showApi)} className={cn("w-full flex items-center gap-3 px-4 py-2.5", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}>
+                  <span className={cn("text-[10px] font-semibold uppercase tracking-widest", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>API Endpoints</span>
                   <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                   <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{showApi ? '▲' : '▼'}</span>
                 </button>
                 {showApi && (
-                  <div className="space-y-1 mt-2">
+                  <div className="px-3 pb-3 space-y-0.5">
                     {[
-                      { label: 'Token Info', url: `https://api.xrpl.to/api/token/${md5}` },
+                      { label: 'Token', url: `https://api.xrpl.to/api/token/${md5}` },
                       { label: 'Rich List', url: `https://api.xrpl.to/api/richlist/${md5}` },
                       { label: 'Order Book', url: `https://api.xrpl.to/api/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
-                      { label: 'Trade History', url: `https://api.xrpl.to/api/history?token=${md5}` },
-                      { label: 'OHLC Data', url: `https://api.xrpl.to/api/ohlc/${md5}` },
-                      { label: 'Top Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
-                      { label: 'AMM Pools', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
-                      { label: 'Swap Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
-                      { label: 'Pair Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
-                    ].map((endpoint) => (
-                      <button
-                        key={endpoint.label}
-                        onClick={() => {
-                          navigator.clipboard.writeText(endpoint.url);
-                          setCopiedField(endpoint.label);
-                          setTimeout(() => setCopiedField(null), 1500);
-                        }}
-                        className={cn(
-                          "group w-full text-left rounded-lg px-3 py-1.5 transition-all cursor-pointer flex items-center gap-3",
-                          isDark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.03]"
-                        )}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{endpoint.label}</span>
-                            {endpoint.method && <span className={cn("text-[8px] px-1 py-0.5 rounded", isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-600")}>{endpoint.method}</span>}
-                          </div>
-                          <div className={cn("font-mono text-[10px] truncate", isDark ? "text-blue-400/70" : "text-blue-600")}>{endpoint.url}</div>
-                        </div>
-                        <span className={cn("flex-shrink-0 transition-all", copiedField === endpoint.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/50" : "text-gray-300 group-hover:text-gray-500")}>
-                          {copiedField === endpoint.label ? <Check size={14} /> : <Copy size={14} />}
+                      { label: 'History', url: `https://api.xrpl.to/api/history?token=${md5}` },
+                      { label: 'OHLC', url: `https://api.xrpl.to/api/ohlc/${md5}` },
+                      { label: 'Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
+                      { label: 'AMM', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
+                      { label: 'Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
+                      { label: 'Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
+                    ].map((ep) => (
+                      <button key={ep.label} onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedField(ep.label); setTimeout(() => setCopiedField(null), 1200); }}
+                        className={cn("group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                        <span className={cn("text-[9px] w-14 flex-shrink-0 flex items-center gap-1", isDark ? "text-white/35" : "text-gray-400")}>
+                          {ep.label}
+                          {ep.method && <span className={cn("text-[7px] px-1 rounded", isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-600")}>{ep.method}</span>}
+                        </span>
+                        <span className={cn("font-mono text-[9px] truncate flex-1", isDark ? "text-blue-400/60" : "text-blue-600/70")}>{ep.url.replace('https://api.xrpl.to', '')}</span>
+                        <span className={cn("flex-shrink-0", copiedField === ep.label ? "text-green-500" : isDark ? "text-white/15 group-hover:text-white/30" : "text-gray-200 group-hover:text-gray-400")}>
+                          {copiedField === ep.label ? <Check size={10} /> : <Copy size={10} />}
                         </span>
                       </button>
                     ))}
-                    <a
-                      href="/docs"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn("block text-center text-[10px] mt-2 py-1.5 rounded-lg transition-all", isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-black/[0.03]")}
-                    >
-                      View Full API Docs →
-                    </a>
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Footer */}
+            <div className={cn("px-4 py-2.5 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+              <a href="/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[10px] py-1.5 rounded-md", isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50")}>
+                Full API Documentation
+              </a>
             </div>
           </div>
         </div>
