@@ -58,6 +58,7 @@ const OverView = ({ account }) => {
   const [nftTradesLoading, setNftTradesLoading] = useState(false);
   const [nftCollectionStats, setNftCollectionStats] = useState([]);
   const [nftCollectionStatsLoading, setNftCollectionStatsLoading] = useState(false);
+  const [nftHistory, setNftHistory] = useState([]);
 
   // Fetch XRP price from /api/rates
   useEffect(() => {
@@ -89,6 +90,7 @@ const OverView = ({ account }) => {
     setCollectionNfts([]);
     setNftTrades([]);
     setNftCollectionStats([]);
+    setNftHistory([]);
 
     const fetchData = async () => {
       try {
@@ -173,6 +175,14 @@ const OverView = ({ account }) => {
       .then(res => setNftCollectionStats(res.data?.collections || []))
       .catch(err => console.error('Failed to fetch NFT collection stats:', err))
       .finally(() => setNftCollectionStatsLoading(false));
+  }, [activeTab, account]);
+
+  // Fetch NFT trading history when NFTs tab is viewed
+  useEffect(() => {
+    if (activeTab !== 'nfts' || !account || nftHistory.length > 0) return;
+    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/history?limit=90`)
+      .then(res => setNftHistory(res.data?.history || []))
+      .catch(err => console.error('Failed to fetch NFT history:', err));
   }, [activeTab, account]);
 
   // Fetch NFTs when a collection is selected
@@ -1009,6 +1019,51 @@ const OverView = ({ account }) => {
                   </div>
                 )}
 
+                {/* NFT Trading History Chart */}
+                {nftHistory.length > 0 && !selectedNftCollection && (
+                  <div className={cn("rounded-xl border mt-4 overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
+                      <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Trading Activity (90d)</p>
+                      <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>{nftHistory.length} days</span>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-end gap-[2px] h-[80px]">
+                        {(() => {
+                          const maxVol = Math.max(...nftHistory.map(d => d.volume || 0), 1);
+                          return nftHistory.map((d, i) => (
+                            <div
+                              key={d.date}
+                              className="flex-1 flex flex-col justify-end gap-[1px] group relative"
+                              title={`${d.date}\nVol: ${(d.volume || 0).toFixed(1)} XRP\nTrades: ${d.trades || 0}`}
+                            >
+                              {d.sellVolume > 0 && (
+                                <div
+                                  className="w-full bg-red-400/60 rounded-t-sm"
+                                  style={{ height: `${(d.sellVolume / maxVol) * 100}%`, minHeight: d.sellVolume > 0 ? 2 : 0 }}
+                                />
+                              )}
+                              {d.buyVolume > 0 && (
+                                <div
+                                  className="w-full bg-emerald-400/60 rounded-t-sm"
+                                  style={{ height: `${(d.buyVolume / maxVol) * 100}%`, minHeight: d.buyVolume > 0 ? 2 : 0 }}
+                                />
+                              )}
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                      <div className={cn("flex justify-between mt-2 text-[9px]", isDark ? "text-white/25" : "text-gray-300")}>
+                        <span>{nftHistory[0]?.date}</span>
+                        <div className="flex gap-3">
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400/60" /> Buy</span>
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-400/60" /> Sell</span>
+                        </div>
+                        <span>{nftHistory[nftHistory.length - 1]?.date}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Collection Trading Stats */}
                 {nftCollectionStats.length > 0 && !selectedNftCollection && (
                   <div className={cn("rounded-xl border mt-4", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
@@ -1051,6 +1106,7 @@ const OverView = ({ account }) => {
 
             {/* Activity Tab */}
             {activeTab === 'activity' && (
+              <>
               <div className={cn("rounded-xl border", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
                 <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
                   <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Transaction History</p>
@@ -1127,6 +1183,7 @@ const OverView = ({ account }) => {
                   </div>
                 )}
               </div>
+              </>
             )}
 
           </div>

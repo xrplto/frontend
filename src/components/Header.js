@@ -47,7 +47,8 @@ import {
   ArrowRight,
   Layers,
   Rocket,
-  Activity
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -523,9 +524,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     { path: '/gainers/24h', name: 'Top Gainers', desc: 'Best performing tokens', icon: <TrendingUp size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/new', name: 'New Listings', desc: 'Recently added tokens', icon: <Newspaper size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/token-traders', name: 'Top Traders', desc: 'Token traders leaderboard', icon: <Sparkles size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
+    { path: '/token-market', name: 'Market Stats', desc: 'DEX trading analytics', icon: <BarChart3 size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/rsi-analysis', name: 'RSI Analysis', desc: 'Technical indicators', icon: <Activity size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/amm-pools', name: 'AMM Pools', desc: 'Liquidity pools & APY', icon: <Waves size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Star size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }] : [])
+    { path: '/amm-pools', name: 'AMM Pools', desc: 'Liquidity pools & APY', icon: <Waves size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }
   ];
 
   // NFT menu items
