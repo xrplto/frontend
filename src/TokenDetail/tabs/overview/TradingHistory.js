@@ -1866,7 +1866,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
-  // Reset pagination when filters change (debounced 300ms)
+  // Reset pagination when filters change
   useEffect(() => {
     console.log(`[TradingHistory] 🔄 Filter useEffect triggered - tokenId: ${tokenId}`);
     setCursor(null);
@@ -1878,23 +1878,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     previousTradesRef.current = new Set();
     setLoading(true);
 
-    // Debounce fetch to avoid rapid re-requests on filter changes
-    const debounceId = setTimeout(() => {
-      console.log(`[TradingHistory] ⏰ Debounce complete, calling fetchTradingHistory`);
-      fetchTradingHistory(null, false, 'desc');
-    }, 300);
-
-    return () => {
-      console.log(`[TradingHistory] 🧹 Cleanup: clearing debounce timeout`);
-      clearTimeout(debounceId);
-    };
+    // Fetch immediately
+    console.log(`[TradingHistory] Calling fetchTradingHistory`);
+    fetchTradingHistory(null, false, 'desc');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
   // WebSocket for real-time trade updates (only for page 1 with desc direction, no account filter)
   useEffect(() => {
     let isMounted = true;
-    let connectTimeout = null;
 
     if (!tokenId || currentPage !== 1 || direction !== 'desc' || accountFilter) {
       // Close existing WS if conditions not met
@@ -1915,100 +1907,96 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       wsPingRef.current = null;
     }
 
-    // Delay connection to avoid interruption during initial render
-    connectTimeout = setTimeout(() => {
+    // Connect immediately
+    const wsParams = new URLSearchParams({ limit: String(limit) });
+    if (pairType) wsParams.set('pairType', pairType);
+    if (historyType !== 'all') wsParams.set('type', historyType);
+
+    const ws = new WebSocket(`wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      wsPingRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 30000);
+    };
+
+    ws.onmessage = (event) => {
       if (!isMounted) return;
+      const msg = JSON.parse(event.data);
 
-      const wsParams = new URLSearchParams({ limit: String(limit) });
-      if (pairType) wsParams.set('pairType', pairType);
-      if (historyType !== 'all') wsParams.set('type', historyType);
+      // Helper to filter trades based on current filters
+      const applyClientFilters = (trades) => {
+        return trades.filter(t => {
+          // Filter by historyType (trades vs liquidity)
+          if (historyType === 'trades' && t.isLiquidity) return false;
+          if (historyType === 'liquidity' && !t.isLiquidity) return false;
 
-      const ws = new WebSocket(`wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`);
-      wsRef.current = ws;
+          // Filter by liquidityType (deposit/withdraw/create)
+          if (liquidityType && t.isLiquidity && t.type !== liquidityType) return false;
 
-      ws.onopen = () => {
-        wsPingRef.current = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
+          // Filter by pairType (xrp vs token pairs)
+          if (pairType) {
+            const hasXrp = t.paid?.currency === 'XRP' || t.got?.currency === 'XRP';
+            if (pairType === 'xrp' && !hasXrp) return false;
+            if (pairType === 'token' && hasXrp) return false;
           }
-        }, 30000);
-      };
 
-      ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-
-        // Helper to filter trades based on current filters
-        const applyClientFilters = (trades) => {
-          return trades.filter(t => {
-            // Filter by historyType (trades vs liquidity)
-            if (historyType === 'trades' && t.isLiquidity) return false;
-            if (historyType === 'liquidity' && !t.isLiquidity) return false;
-
-            // Filter by liquidityType (deposit/withdraw/create)
-            if (liquidityType && t.isLiquidity && t.type !== liquidityType) return false;
-
-            // Filter by pairType (xrp vs token pairs)
-            if (pairType) {
-              const hasXrp = t.paid?.currency === 'XRP' || t.got?.currency === 'XRP';
-              if (pairType === 'xrp' && !hasXrp) return false;
-              if (pairType === 'token' && hasXrp) return false;
+          // Filter by minimum XRP amount
+          if (xrpAmount) {
+            const minXrp = parseFloat(xrpAmount);
+            if (!isNaN(minXrp) && minXrp > 0) {
+              const tradeXrp = t.paid?.currency === 'XRP'
+                ? parseFloat(t.paid?.value || 0)
+                : parseFloat(t.got?.value || 0);
+              if (tradeXrp < minXrp) return false;
             }
-
-            // Filter by minimum XRP amount
-            if (xrpAmount) {
-              const minXrp = parseFloat(xrpAmount);
-              if (!isNaN(minXrp) && minXrp > 0) {
-                const tradeXrp = t.paid?.currency === 'XRP'
-                  ? parseFloat(t.paid?.value || 0)
-                  : parseFloat(t.got?.value || 0);
-                if (tradeXrp < minXrp) return false;
-              }
-            }
-
-            return true;
-          });
-        };
-
-        if (msg.type === 'initial' && msg.trades) {
-          // WebSocket doesn't properly filter by type/pairType, so only use initial data when no filters active
-          // Let HTTP fetch handle initial data when filters are set
-          if (historyType !== 'liquidity' && !pairType) {
-            const filteredTrades = applyClientFilters(msg.trades);
-            setTrades(filteredTrades.slice(0, 50));
-            setLoading(false);
           }
-          previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
-        } else if (msg.e === 'trades' && msg.trades?.length > 0) {
-          const currentIds = previousTradesRef.current;
-          const newTrades = msg.trades.filter(t => !currentIds.has(t._id || t.id));
-          const filteredNewTrades = applyClientFilters(newTrades);
 
-          if (filteredNewTrades.length > 0) {
-            setNewTradeIds(new Set(filteredNewTrades.map(t => t._id || t.id)));
-            setTrades(prev => [...filteredNewTrades, ...prev].slice(0, 50));
-            filteredNewTrades.forEach(t => currentIds.add(t._id || t.id));
-            setTimeout(() => setNewTradeIds(new Set()), 1000);
-          }
-          // Still track all trade IDs to prevent duplicates later
-          newTrades.forEach(t => currentIds.add(t._id || t.id));
+          return true;
+        });
+      };
+
+      if (msg.type === 'initial' && msg.trades) {
+        // WebSocket doesn't properly filter by type/pairType, so only use initial data when no filters active
+        // Let HTTP fetch handle initial data when filters are set
+        if (historyType !== 'liquidity' && !pairType) {
+          const filteredTrades = applyClientFilters(msg.trades);
+          setTrades(filteredTrades.slice(0, 50));
+          setLoading(false);
         }
-      };
+        previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
+      } else if (msg.e === 'trades' && msg.trades?.length > 0) {
+        const currentIds = previousTradesRef.current;
+        const newTrades = msg.trades.filter(t => !currentIds.has(t._id || t.id));
+        const filteredNewTrades = applyClientFilters(newTrades);
 
-      ws.onerror = () => {
-        // Silently handle - HTTP fallback already loads data
-      };
-
-      ws.onclose = () => {
-        if (wsPingRef.current) {
-          clearInterval(wsPingRef.current);
-          wsPingRef.current = null;
+        if (filteredNewTrades.length > 0) {
+          setNewTradeIds(new Set(filteredNewTrades.map(t => t._id || t.id)));
+          setTrades(prev => [...filteredNewTrades, ...prev].slice(0, 50));
+          filteredNewTrades.forEach(t => currentIds.add(t._id || t.id));
+          setTimeout(() => setNewTradeIds(new Set()), 1000);
         }
-      };
-    }, 500); // 500ms delay to let page stabilize
+        // Still track all trade IDs to prevent duplicates later
+        newTrades.forEach(t => currentIds.add(t._id || t.id));
+      }
+    };
+
+    ws.onerror = () => {
+      // Silently handle - HTTP fallback already loads data
+    };
+
+    ws.onclose = () => {
+      if (wsPingRef.current) {
+        clearInterval(wsPingRef.current);
+        wsPingRef.current = null;
+      }
+    };
 
     return () => {
       isMounted = false;
-      if (connectTimeout) clearTimeout(connectTimeout);
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;

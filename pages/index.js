@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useRouter } from 'next/router';
-import { getTokens, debounce } from 'src/utils/formatters';
+import { getTokens } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 
 // Import all components directly
@@ -71,7 +71,7 @@ function Overview({ data }) {
   const isDark = themeName === 'XrplToDarkTheme';
 
   useEffect(() => {
-    const checkMobile = debounce(() => setIsMobile(window.innerWidth <= 600), 150);
+    const checkMobile = () => setIsMobile(window.innerWidth <= 600);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);

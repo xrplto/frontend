@@ -54,16 +54,6 @@ import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } fr
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
-// Native debounce implementation
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(null, args), delay);
-  };
-};
-
-
 // Inline Tab Components
 const TabContextProvider = createContext();
 

@@ -24,12 +24,8 @@ function Detail({ data }) {
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const tokenName = token.name || 'Token';
 
-  // Delay WebSocket connection to avoid rate limits during navigation
-  const [wsEnabled, setWsEnabled] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setWsEnabled(true), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // WebSocket connection enabled immediately
+  const [wsEnabled, setWsEnabled] = useState(true);
 
   // Handle token updates from WebSocket (supports delta mode)
   const handleTokenUpdate = useCallback(

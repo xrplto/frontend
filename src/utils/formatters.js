@@ -175,15 +175,6 @@ export function formatMonthYearDate(time) {
 
 // ==== UTILITY FUNCTIONS ====
 
-export function debounce(fn, wait = 100) {
-  let timeout;
-  return function debounced(...args) {
-    const ctx = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn.apply(ctx, args), wait);
-  };
-}
-
 export function throttle(fn, wait = 100) {
   let timeout, lastRan;
   return function(...args) {

@@ -13,9 +13,6 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 
-// Module-level cache to prevent duplicate fetches in StrictMode
-const fetchInFlight = new Map(); // stores pending promises
-
 // Process OHLC data
 const processOhlc = (ohlc) => {
   const MAX_CHART_VALUE = 90071992547409;

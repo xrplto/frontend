@@ -17,9 +17,6 @@ const currencySymbols = {
   XRP: ''
 };
 
-// Simple cache for sparkline data
-const sparklineCache = new Map();
-
 // Inline Sparkline - SVG based with filled area like Orb design
 const SparklineChart = memo(({ url }) => {
   const [linePath, setLinePath] = useState('');
@@ -39,13 +36,6 @@ const SparklineChart = memo(({ url }) => {
 
   useEffect(() => {
     if (!visible || !url) return;
-    const cached = sparklineCache.get(url);
-    if (cached && Date.now() - cached.ts < 300000) {
-      setLinePath(cached.linePath);
-      setAreaPath(cached.areaPath);
-      setColor(cached.color);
-      return;
-    }
     axios.get(url).then(res => {
       const prices = res.data?.data?.prices?.map(Number) || [];
       if (prices.length < 2) return;
@@ -55,7 +45,6 @@ const SparklineChart = memo(({ url }) => {
       const line = 'M' + pts.map(p => p.join(',')).join('L');
       const area = line + `L${w},${h}L0,${h}Z`;
       const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
-      sparklineCache.set(url, { linePath: line, areaPath: area, color: c, ts: Date.now() });
       setLinePath(line);
       setAreaPath(area);
       setColor(c);

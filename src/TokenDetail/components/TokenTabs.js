@@ -52,8 +52,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
       return;
     }
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setLoading(true);
+    setLoading(true);
+    (async () => {
       try {
         const res = await axios.post(`${BASE_URL}/search`, { search: query }, { signal: controller.signal });
         setResults({
@@ -62,8 +62,8 @@ const TokenTabs = memo(({ currentMd5 }) => {
         });
       } catch {}
       setLoading(false);
-    }, 150);
-    return () => { clearTimeout(timer); controller.abort(); };
+    })();
+    return () => controller.abort();
   }, [query, searchOpen]);
 
   const handleSelectToken = useCallback((token) => {

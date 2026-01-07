@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { memo, useCallback, useMemo, useRef } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
 
@@ -46,9 +46,6 @@ const Overview = memo(
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
     const [pairs, setPairs] = useState([]);
-    // LRU cache with max 50 entries to prevent unbounded memory growth
-    const pairsCache = useRef(new Map());
-    const CACHE_MAX_SIZE = 50;
 
     // Markdown parser removed for build simplicity
 
@@ -56,22 +53,13 @@ const Overview = memo(
       setDescription(text);
     }, []);
 
-    // Fetch pairs data with caching and debouncing
+    // Fetch pairs data immediately
     useEffect(() => {
       if (!token.md5) return;
 
-      // Check cache first (LRU: move to end on access)
-      if (pairsCache.current.has(token.md5)) {
-        const cachedPairs = pairsCache.current.get(token.md5);
-        // Move to end for LRU
-        pairsCache.current.delete(token.md5);
-        pairsCache.current.set(token.md5, cachedPairs);
-        requestAnimationFrame(() => setPairs(cachedPairs));
-        return;
-      }
-
       const controller = new AbortController();
-      const timeoutId = setTimeout(async () => {
+
+      (async () => {
         try {
           const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`, {
             signal: controller.signal
@@ -81,23 +69,16 @@ const Overview = memo(
 
           const data = await response.json();
           if (data.pairs) {
-            // LRU eviction: remove oldest entries if cache is full
-            while (pairsCache.current.size >= CACHE_MAX_SIZE) {
-              const oldestKey = pairsCache.current.keys().next().value;
-              pairsCache.current.delete(oldestKey);
-            }
-            pairsCache.current.set(token.md5, data.pairs);
-            requestAnimationFrame(() => setPairs(data.pairs));
+            setPairs(data.pairs);
           }
         } catch (error) {
           if (error.name !== 'AbortError') {
             console.error('Error fetching pairs:', error);
           }
         }
-      }, 300);
+      })();
 
       return () => {
-        clearTimeout(timeoutId);
         controller.abort();
       };
     }, [token.md5, BASE_URL]);

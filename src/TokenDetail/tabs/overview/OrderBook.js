@@ -18,9 +18,6 @@ import { BookOpen } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-// Module-level cache to prevent duplicate fetches in StrictMode
-const fetchInFlight = new Map();
-
 const Container = styled.div`
   border-radius: 12px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb'};

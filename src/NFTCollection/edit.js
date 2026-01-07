@@ -65,20 +65,13 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   };
 
   useEffect(() => {
-    var timer = null;
-
     const handleValue = () => {
       if (!value) setStatus(TEXT_EMPTY);
       else checkValidation(value, uuid);
     };
 
     setValid(false);
-    timer = setTimeout(handleValue, 500);
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
+    handleValue();
   }, [value, uuid]);
 
   useEffect(() => {

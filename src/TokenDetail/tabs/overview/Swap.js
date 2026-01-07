@@ -20,8 +20,6 @@ const currencySymbols = {
 };
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL', md5: '84e5efeb89c4eae8f68188982dc290d8', name: 'XRP' };
 
-// Module-level cache to prevent duplicate fetches in StrictMode
-const fetchInFlight = new Map();
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 
@@ -960,11 +958,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       return;
     }
 
-    const timeoutId = setTimeout(async () => {
-      if (quoteAbortRef.current) quoteAbortRef.current.abort();
-      quoteAbortRef.current = new AbortController();
+    if (quoteAbortRef.current) quoteAbortRef.current.abort();
+    quoteAbortRef.current = new AbortController();
 
-      setQuoteLoading(true);
+    setQuoteLoading(true);
+    (async () => {
       try {
         const destAmount = token2.currency === 'XRP'
           ? { currency: 'XRP', value: amount2 }
@@ -996,9 +994,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       } finally {
         setQuoteLoading(false);
       }
-    }, 400);
+    })();
 
-    return () => clearTimeout(timeoutId);
+    return () => quoteAbortRef.current?.abort();
   }, [amount2, token1, token2, accountProfile?.account, slippage, orderType]);
 
   // Client-side fallback quote calculation from orderbook
@@ -1048,36 +1046,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   useEffect(() => {
     if (!isXRPTokenPage) return;
     let mounted = true;
-    const cacheKey = 'swap-rlusd';
 
     async function fetchRLUSD() {
-      if (fetchInFlight.has(cacheKey)) {
-        try {
-          const token = await fetchInFlight.get(cacheKey);
-          if (mounted && token) applyRLUSD(token);
-        } catch {}
-        return;
-      }
-
-      const promise = axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`).then(r => r.data?.token);
-      fetchInFlight.set(cacheKey, promise);
-
       try {
-        const token = await promise;
-        if (mounted && token) applyRLUSD(token);
-        fetchInFlight.delete(cacheKey);
+        const res = await axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`);
+        const token = res.data?.token;
+        if (mounted && token) {
+          setToken2({
+            ...token,
+            currency: token.currency || 'USD',
+            issuer: token.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
+          });
+        }
       } catch (err) {
-        fetchInFlight.delete(cacheKey);
         console.error('RLUSD fetch error:', err);
       }
-    }
-
-    function applyRLUSD(rlusdToken) {
-      setToken2({
-        ...rlusdToken,
-        currency: rlusdToken.currency || 'USD',
-        issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
-      });
     }
 
     fetchRLUSD();
@@ -1102,9 +1085,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (token2.currency !== 'XRP' && !token2.issuer) return;
     let mounted = true;
 
-    const pairKey = `swap-ob-${token1Md5}-${token2Md5}`;
-
-    async function fetchOrderbook(isUpdate = false) {
+    async function fetchOrderbook() {
       if (!mounted) return;
 
       const params = new URLSearchParams({
@@ -1115,24 +1096,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (token2.currency !== 'XRP') params.append('base_issuer', token2.issuer);
       if (token1.currency !== 'XRP') params.append('quote_issuer', token1.issuer);
 
-      // Reuse in-flight request (StrictMode protection) - only for initial load
-      if (!isUpdate && fetchInFlight.has(pairKey)) {
-        try {
-          const data = await fetchInFlight.get(pairKey);
-          if (mounted && data) processOrderbookData(data);
-        } catch {}
-        return;
-      }
-
-      const fetchPromise = axios.get(`${BASE_URL}/orderbook?${params}`).then(r => r.data);
-      if (!isUpdate) fetchInFlight.set(pairKey, fetchPromise);
-
       try {
-        const data = await fetchPromise;
+        const res = await axios.get(`${BASE_URL}/orderbook?${params}`);
+        const data = res.data;
         if (mounted && data?.success) processOrderbookData(data);
-        fetchInFlight.delete(pairKey);
       } catch (err) {
-        fetchInFlight.delete(pairKey);
         console.error('Orderbook fetch error:', err);
       }
     }
@@ -1160,12 +1128,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
 
     fetchOrderbook();
-    const timer = setInterval(() => fetchOrderbook(true), 5000);
+    const timer = setInterval(fetchOrderbook, 5000);
 
     return () => {
       mounted = false;
       clearInterval(timer);
-      fetchInFlight.delete(pairKey);
     };
   }, [token1Md5, token2Md5, shouldFetchOrderbook]);
 
@@ -1377,8 +1344,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (!token1Md5 || !token2Md5) return;
     let mounted = true;
 
-    const pairKey = `pr-${token1Md5}-${token2Md5}`;
-
     // Fallback to token.exch when pair-rates API fails or returns no data
     const applyFallbackRates = () => {
       const token1IsXRP = token1?.currency === 'XRP';
@@ -1393,31 +1358,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     };
 
     async function getTokenPrice() {
-      if (fetchInFlight.has(pairKey)) {
-        try {
-          const data = await fetchInFlight.get(pairKey);
-          if (mounted && data) {
-            const r1 = data.rate1 || 0;
-            const r2 = data.rate2 || 0;
-            if (r1 > 0 || r2 > 0) {
-              setTokenExch1(r1);
-              setTokenExch2(r2);
-            } else {
-              applyFallbackRates();
-            }
-          }
-        } catch {
-          applyFallbackRates();
-        }
-        return;
-      }
-
       setLoadingPrice(true);
-      const promise = axios.get(`${BASE_URL}/stats/rates?md51=${token1Md5}&md52=${token2Md5}`).then(r => r.data);
-      fetchInFlight.set(pairKey, promise);
-
       try {
-        const data = await promise;
+        const res = await axios.get(`${BASE_URL}/stats/rates?md51=${token1Md5}&md52=${token2Md5}`);
+        const data = res.data;
         if (mounted && data) {
           const r1 = data.rate1 || 0;
           const r2 = data.rate2 || 0;
@@ -1428,9 +1372,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             applyFallbackRates();
           }
         }
-        fetchInFlight.delete(pairKey);
       } catch (err) {
-        fetchInFlight.delete(pairKey);
         if (mounted) applyFallbackRates();
       } finally {
         if (mounted) setLoadingPrice(false);
@@ -1439,7 +1381,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     getTokenPrice();
 
-    return () => { mounted = false; fetchInFlight.delete(pairKey); };
+    return () => { mounted = false; };
   }, [token1Md5, token2Md5, token1, token2]);
 
   // Legacy Xaman polling code removed - feature disabled

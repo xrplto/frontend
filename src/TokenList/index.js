@@ -16,7 +16,7 @@ import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/s
 import { TokenListHead } from './TokenListControls';
 import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
 import React, { memo, lazy, Suspense } from 'react';
-import { debounce, throttle } from 'src/utils/formatters';
+import { throttle } from 'src/utils/formatters';
 import { useRouter } from 'next/router';
 import { TokenListToolbar } from './TokenListControls';
 import { useTokenSync } from 'src/hooks/useTokenSync';
@@ -400,12 +400,8 @@ function TokenListComponent({
   // React 18 transition hook
   const [isPending, startTransition] = useTransition();
 
-  // Delay WebSocket connection to avoid rate limits
-  const [wsEnabled, setWsEnabled] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setWsEnabled(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  // WebSocket connection enabled immediately
+  const [wsEnabled, setWsEnabled] = useState(true);
 
   // Handle token updates from WebSocket
   const handleTokensUpdate = useCallback(

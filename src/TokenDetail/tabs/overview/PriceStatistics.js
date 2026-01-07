@@ -11,9 +11,6 @@ import { AppContext } from 'src/AppContext';
 // Helper
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
-// Module-level cache for AI safety scores (5 min TTL)
-const aiCache = new Map();
-const AI_CACHE_TTL = 5 * 60 * 1000;
 
 // Custom components
 const Box = styled.div``;
@@ -314,16 +311,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [aiExpanded, setAiExpanded] = useState(false);
   const aiAbortRef = useRef(null);
 
-  // Fetch AI review with cache (5 min TTL)
+  // Fetch AI review immediately
   useEffect(() => {
     if (!token.md5) return;
-
-    // Check cache first
-    const cached = aiCache.get(token.md5);
-    if (cached && Date.now() - cached.ts < AI_CACHE_TTL) {
-      setAiReview(cached.data);
-      return;
-    }
 
     if (aiAbortRef.current) aiAbortRef.current.abort();
     aiAbortRef.current = new AbortController();
@@ -342,7 +332,6 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             blackholed: data.blackholed,
             timestamp: data.timestamp
           };
-          aiCache.set(token.md5, { data: review, ts: Date.now() });
           setAiReview(review);
         }
         setAiLoading(false);

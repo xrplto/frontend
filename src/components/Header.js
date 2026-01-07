@@ -438,8 +438,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setSearchLoading(true);
+    setSearchLoading(true);
+    (async () => {
       try {
         const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
         setSearchResults({
@@ -452,8 +452,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         });
       } catch {}
       setSearchLoading(false);
-    }, 150);
-    return () => { clearTimeout(timer); controller.abort(); };
+    })();
+    return () => controller.abort();
   }, [searchQuery, searchOpen, fullSearch]);
 
   const handleSearchSelect = useCallback((item, type) => {

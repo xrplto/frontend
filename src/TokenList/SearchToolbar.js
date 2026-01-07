@@ -659,7 +659,6 @@ const SearchToolbar = memo(function SearchToolbar({
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
-  const tagWidthCache = useRef(new Map());
 
   // Calculate how many tags can fit dynamically
   useEffect(() => {
@@ -687,116 +686,59 @@ const SearchToolbar = memo(function SearchToolbar({
       let totalTagWidth = 0;
       let count = 0;
 
-      // Create cache key based on viewport
-      const cacheKey = isMobile ? 'mobile' : 'desktop';
-
-      // Create temporary container only if we need to measure new tags
-      let tempContainer = null;
+      // Create temporary container for measuring
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText =
+        'position:absolute;visibility:hidden;display:flex;gap:4px';
+      document.body.appendChild(tempContainer);
 
       for (let i = 0; i < tags.length; i++) {
         const tag = tags[i];
-        const tagCacheKey = `${cacheKey}-${tag}`;
 
-        let tagWidth;
+        // Measure the tag
+        const tempTag = document.createElement('button');
+        tempTag.className = 'measure-tag';
+        tempTag.style.cssText = `
+          padding: ${isMobile ? '0px 4px' : '2px 8px'};
+          font-size: ${isMobile ? '0.55rem' : '0.7rem'};
+          font-weight: 400;
+          white-space: nowrap;
+          border: 1.5px solid transparent;
+        `;
 
-        // Check cache first
-        if (tagWidthCache.current.has(tagCacheKey)) {
-          tagWidth = tagWidthCache.current.get(tagCacheKey);
-        } else {
-          // Create temp container if not already created
-          if (!tempContainer) {
-            tempContainer = document.createElement('div');
-            tempContainer.style.cssText =
-              'position:absolute;visibility:hidden;display:flex;gap:4px';
-            document.body.appendChild(tempContainer);
-          }
-
-          // Measure the tag
-          const tempTag = document.createElement('button');
-          tempTag.className = 'measure-tag';
-          tempTag.style.cssText = `
-            padding: ${isMobile ? '0px 4px' : '2px 8px'};
-            font-size: ${isMobile ? '0.55rem' : '0.7rem'};
-            font-weight: 400;
-            white-space: nowrap;
-            border: 1.5px solid transparent;
-          `;
-
-          // Just measure text width without icons since icons have consistent width
-          tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
-          tempContainer.appendChild(tempTag);
-        }
+        // Just measure text width without icons since icons have consistent width
+        tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
+        tempContainer.appendChild(tempTag);
       }
 
       // Batch all DOM reads after all modifications are done
-      if (tempContainer) {
-        const tempTags = tempContainer.querySelectorAll('.measure-tag');
-        let tempIndex = 0;
+      const tempTags = tempContainer.querySelectorAll('.measure-tag');
 
-        for (let i = 0; i < tags.length; i++) {
-          const tag = tags[i];
-          const tagCacheKey = `${cacheKey}-${tag}`;
+      for (let i = 0; i < tags.length; i++) {
+        const tagWidth = tempTags[i].offsetWidth + (isMobile ? 3 : 10); // gap
 
-          let tagWidth;
-
-          if (tagWidthCache.current.has(tagCacheKey)) {
-            tagWidth = tagWidthCache.current.get(tagCacheKey);
-          } else {
-            // Read the width from the temp element
-            tagWidth = tempTags[tempIndex].offsetWidth + (isMobile ? 3 : 10); // gap
-            tempIndex++;
-
-            // Cache the width (limit cache size to 100 entries)
-            if (tagWidthCache.current.size > 100) {
-              const firstKey = tagWidthCache.current.keys().next().value;
-              tagWidthCache.current.delete(firstKey);
-            }
-            tagWidthCache.current.set(tagCacheKey, tagWidth);
-          }
-
-          if (totalTagWidth + tagWidth <= availableWidth) {
-            totalTagWidth += tagWidth;
-            count++;
-          } else {
-            break;
-          }
-        }
-      } else {
-        // Original loop for when no measuring is needed
-        for (let i = 0; i < tags.length; i++) {
-          const tag = tags[i];
-          const tagCacheKey = `${cacheKey}-${tag}`;
-
-          if (tagWidthCache.current.has(tagCacheKey)) {
-            const tagWidth = tagWidthCache.current.get(tagCacheKey);
-            if (totalTagWidth + tagWidth <= availableWidth) {
-              totalTagWidth += tagWidth;
-              count++;
-            } else {
-              break;
-            }
-          }
+        if (totalTagWidth + tagWidth <= availableWidth) {
+          totalTagWidth += tagWidth;
+          count++;
+        } else {
+          break;
         }
       }
 
-      // Clean up temp container if created
-      if (tempContainer) {
-        document.body.removeChild(tempContainer);
-      }
+      // Clean up temp container
+      document.body.removeChild(tempContainer);
 
       // Set the visible count - show more tags by default
       setVisibleTagCount(Math.max(isMobile ? 5 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
 
-    // Initial calculation
-    const timeoutId = setTimeout(calculateVisibleTags, 50);
+    // Initial calculation immediately
+    calculateVisibleTags();
 
-    // Debounced resize handler
-    let resizeTimeout;
+    // Resize handler
     const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(calculateVisibleTags, 150);
+      calculateVisibleTags();
     };
 
     window.addEventListener('resize', handleResize);
@@ -808,8 +750,6 @@ const SearchToolbar = memo(function SearchToolbar({
     }
 
     return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
       observer.disconnect();
     };
