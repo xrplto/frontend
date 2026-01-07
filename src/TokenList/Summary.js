@@ -26,6 +26,7 @@ const currencySymbols = {
 import { AppContext } from 'src/AppContext';
 // Removed ECharts dependency
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 // Styled Components
 const Container = styled.div`
@@ -363,24 +364,20 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       return { x, y };
     });
 
-    // Draw gradient-colored segments
+    // Calculate median marketcap for threshold
+    const marketcaps = chartData.map(d => Math.max(...(d.tokensInvolved?.map(t => t.marketcap || 0) || [0])));
+    const sortedMc = [...marketcaps].sort((a, b) => a - b);
+    const medianMc = sortedMc[Math.floor(sortedMc.length / 2)] || 1000;
+
+    // Draw segments - green for above-median performers, blue for others
     for (let i = 0; i < points.length - 1; i++) {
-      const maxMarketcap = Math.max(...(chartData[i].tokensInvolved?.map(t => t.marketcap || 0) || [0]));
+      const maxMc = marketcaps[i];
+      const isHighPerformer = maxMc > medianMc * 1.5;
+      const segmentColor = isHighPerformer ? '#10b981' : '#3b82f6';
 
-      let segmentColor;
-      if (maxMarketcap > 10000) {
-        segmentColor = '#10b981'; // Green for very high
-      } else if (maxMarketcap > 5000) {
-        segmentColor = '#a855f7'; // Purple for high
-      } else if (maxMarketcap > 2000) {
-        segmentColor = '#eab308'; // Yellow for medium
-      } else {
-        segmentColor = '#3b82f6'; // Default blue theme color
-      }
-
-      // Draw gradient fill for segment
+      // Area fill
       const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
-      gradient.addColorStop(0, segmentColor + '66');
+      gradient.addColorStop(0, segmentColor + '40');
       gradient.addColorStop(1, segmentColor + '00');
 
       ctx.beginPath();
@@ -392,7 +389,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       ctx.fillStyle = gradient;
       ctx.fill();
 
-      // Draw line segment
+      // Line
       ctx.beginPath();
       ctx.moveTo(points[i].x, points[i].y);
       ctx.lineTo(points[i + 1].x, points[i + 1].y);
@@ -899,6 +896,8 @@ export default function Summary() {
       : [];
   }, [tokenCreation, fiatRate]);
 
+  const latestToken = chartData[chartData.length - 1]?.tokensInvolved?.[0];
+
   const activePlatforms = Object.keys(platformColors).filter((platform) => {
     if (platform === 'Other') return false;
     return chartData.some((d) => (d.platforms?.[platform] || 0) > 0);
@@ -1178,7 +1177,7 @@ export default function Summary() {
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
                         <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
                             {today}
                           </span>
@@ -1188,6 +1187,11 @@ export default function Summary() {
                           <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
                             {isUp ? '↑' : '↓'}
                           </span>
+                          {latestToken && (
+                            <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.55rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
+                              {latestToken.name}
+                            </Link>
+                          )}
                         </div>
                       </div>
                       <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />
@@ -1206,10 +1210,15 @@ export default function Summary() {
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{today}</span>
                         <span style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
                         <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
+                        {latestToken && (
+                          <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', maxWidth: '45px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
+                            {latestToken.name}
+                          </Link>
+                        )}
                       </div>
                     </div>
                     <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />

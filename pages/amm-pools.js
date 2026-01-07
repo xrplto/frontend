@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useContext, useCallback, useMemo, memo, useRef } from 'react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -306,7 +306,7 @@ const StatusBadge = styled.span`
   border: 1.5px solid ${p => p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)'};
 `;
 
-function AMMPoolsPage({ data }) {
+function AMMPoolsPage({ data, initialQuery }) {
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
@@ -315,14 +315,14 @@ function AMMPoolsPage({ data }) {
   const [pools, setPools] = useState(data?.pools || []);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(data?.totalPages || 0);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(initialQuery?.page || 0);
   const [summary, setSummary] = useState(data?.summary || null);
 
   const [params, setParams] = useState({
-    sortBy: 'fees',
-    status: 'active',
-    page: 0,
-    limit: 50,
+    sortBy: initialQuery?.sortBy || 'fees',
+    status: initialQuery?.status || 'active',
+    page: initialQuery?.page || 0,
+    limit: initialQuery?.limit || 50,
     includeAPY: true
   });
 
@@ -362,8 +362,20 @@ function AMMPoolsPage({ data }) {
     }
   }, [params, BASE_URL]);
 
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     loadPools();
+    const query = {};
+    if (params.sortBy !== 'fees') query.sortBy = params.sortBy;
+    if (params.status !== 'active') query.status = params.status;
+    if (params.page > 0) query.page = params.page;
+    if (params.limit !== 50) query.limit = params.limit;
+    router.push({ pathname: '/amm-pools', query }, undefined, { shallow: true });
   }, [params.sortBy, params.status, params.limit, params.page]);
 
   const updateParam = (key, value) => {
@@ -639,16 +651,16 @@ function AMMPoolsPage({ data }) {
 
 export default AMMPoolsPage;
 
-export async function getStaticProps() {
+export async function getServerSideProps({ query }) {
   const BASE_URL = 'https://api.xrpl.to';
+  const sortBy = query.sortBy || 'fees';
+  const status = query.status || 'active';
+  const page = parseInt(query.page) || 0;
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 50));
 
   try {
     const res = await axios.get(`${BASE_URL}/api/amm`, {
-      params: {
-        sortBy: 'fees',
-        limit: 50,
-        includeAPY: true
-      }
+      params: { sortBy, status, page, limit, includeAPY: true }
     });
 
     return {
@@ -658,6 +670,7 @@ export async function getStaticProps() {
           summary: res.data?.summary || null,
           totalPages: res.data?.totalPages || 0
         },
+        initialQuery: { sortBy, status, page, limit },
         ogp: {
           canonical: 'https://xrpl.to/amm-pools',
           title: 'AMM Pools | XRPL Automated Market Maker Analytics',
@@ -666,14 +679,23 @@ export async function getStaticProps() {
           desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
           keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
         }
-      },
-      revalidate: 60
+      }
     };
   } catch (error) {
     console.error('Error fetching AMM pools:', error);
     return {
-      props: { data: { pools: [] } },
-      revalidate: 60
+      props: {
+        data: { pools: [], summary: null, totalPages: 0 },
+        initialQuery: { sortBy: 'fees', status: 'active', page: 0, limit: 50 },
+        ogp: {
+          canonical: 'https://xrpl.to/amm-pools',
+          title: 'AMM Pools | XRPL Automated Market Maker Analytics',
+          url: 'https://xrpl.to/amm-pools',
+          imgUrl: 'https://xrpl.to/static/ogp.webp',
+          desc: 'Explore XRPL AMM pools with real-time liquidity, volume, fees, and APY analytics',
+          keywords: 'AMM pools, XRPL, automated market maker, liquidity pools, DEX, APY'
+        }
+      }
     };
   }
 }
