@@ -111,6 +111,9 @@ function NewsPage() {
   }));
   const [sourcesStats, setSourcesStats] = useState({});
   const [searchSentimentScore, setSearchSentimentScore] = useState(null);
+  const [chartData, setChartData] = useState(null);
+  const [chartPeriod, setChartPeriod] = useState(30);
+  const [chartHover, setChartHover] = useState(null);
 
   const filteredNews = useMemo(() => (Array.isArray(news) ? news : []), [news]);
   const totalPages = useMemo(
@@ -280,6 +283,19 @@ function NewsPage() {
     fetchNews();
   }, [currentPage, itemsPerPage, selectedSource, searchQuery]);
 
+  useEffect(() => {
+    const fetchChart = async () => {
+      try {
+        const days = chartPeriod === 'all' ? 9999 : chartPeriod;
+        const res = await fetch(`https://api.xrpl.to/api/news/sentiment-chart?days=${days}`);
+        if (res.ok) setChartData(await res.json());
+      } catch {}
+    };
+    fetchChart();
+    const interval = setInterval(fetchChart, 60000);
+    return () => clearInterval(interval);
+  }, [chartPeriod]);
+
   const getSentimentColor = (sentiment) => {
     switch (sentiment?.toLowerCase()) {
       case 'bullish':
@@ -366,12 +382,107 @@ function NewsPage() {
               </form>
             </div>
 
-            {/* Sentiment Summary - Compact horizontal */}
-            <div className={cn("mb-4 rounded-xl p-3", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            {/* Sentiment Chart & Summary */}
+            <div className={cn("mb-4 rounded-xl border-[1.5px] p-3", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-400")}>
                   Sentiment
                 </span>
+                <div className="flex items-center gap-1">
+                  {[7, 30, 90, 'all'].map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setChartPeriod(p)}
+                      className={cn(
+                        "rounded px-2 py-0.5 text-[10px] font-medium transition-colors",
+                        chartPeriod === p
+                          ? "bg-primary text-white"
+                          : isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"
+                      )}
+                    >
+                      {p === 'all' ? 'All' : `${p}D`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chart */}
+              {chartData && chartData.labels?.length > 0 && (() => {
+                const maxVal = Math.max(...chartData.bullish, ...chartData.bearish, 1);
+                const w = 100, h = 40;
+                const pts = chartData.labels.length;
+                const getY = (val) => h - (val / maxVal) * h;
+                const getPath = (data) => {
+                  if (!data.length) return '';
+                  const step = w / Math.max(pts - 1, 1);
+                  return data.map((v, i) => `${i === 0 ? 'M' : 'L'}${i * step},${getY(v)}`).join(' ');
+                };
+                const getArea = (data) => {
+                  if (!data.length) return '';
+                  const step = w / Math.max(pts - 1, 1);
+                  const path = data.map((v, i) => `${i === 0 ? 'M' : 'L'}${i * step},${getY(v)}`).join(' ');
+                  return `${path} L${(pts - 1) * step},${h} L0,${h} Z`;
+                };
+                const totalBull = chartData.bullish.reduce((a, b) => a + b, 0);
+                const totalBear = chartData.bearish.reduce((a, b) => a + b, 0);
+
+                const step = w / Math.max(pts - 1, 1);
+
+                return (
+                  <div className="flex items-end gap-4">
+                    <div className="relative flex-1">
+                      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-[60px]" preserveAspectRatio="none" onMouseLeave={() => setChartHover(null)}>
+                        <path d={getArea(chartData.bullish)} fill="#10B981" fillOpacity="0.15" />
+                        <path d={getArea(chartData.bearish)} fill="#EF4444" fillOpacity="0.1" />
+                        <path d={getPath(chartData.bullish)} fill="none" stroke="#10B981" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                        <path d={getPath(chartData.bearish)} fill="none" stroke="#EF4444" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                        {chartData.labels.map((_, i) => (
+                          <rect
+                            key={i}
+                            x={i * step - step / 2}
+                            y="0"
+                            width={step}
+                            height={h}
+                            fill="transparent"
+                            onMouseEnter={() => setChartHover(i)}
+                          />
+                        ))}
+                        {chartHover !== null && (
+                          <line x1={chartHover * step} y1="0" x2={chartHover * step} y2={h} stroke={isDark ? "#fff" : "#000"} strokeOpacity="0.2" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                        )}
+                      </svg>
+                      {chartHover !== null && chartData.labels[chartHover] && (
+                        <div
+                          className={cn("absolute top-0 -translate-y-full -translate-x-1/2 mb-1 px-2 py-1 rounded text-[10px] whitespace-nowrap pointer-events-none z-10", isDark ? "bg-gray-800 text-white" : "bg-gray-900 text-white")}
+                          style={{ left: `${(chartHover / (pts - 1)) * 100}%` }}
+                        >
+                          <div className="font-medium">{chartData.labels[chartHover]}</div>
+                          <div className="flex gap-2">
+                            <span className="text-green-400">{chartData.bullish[chartHover]}</span>
+                            <span className="text-red-400">{chartData.bearish[chartHover]}</span>
+                            <span className="text-yellow-400">{chartData.neutral?.[chartHover] || 0}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="shrink-0 flex items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-green-500" />
+                        <span className={cn("text-[10px]", isDark ? "text-gray-500" : "text-gray-400")}>Bullish</span>
+                        <span className="text-[11px] text-green-500 tabular-nums font-medium">{totalBull.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                        <span className={cn("text-[10px]", isDark ? "text-gray-500" : "text-gray-400")}>Bearish</span>
+                        <span className="text-[11px] text-red-500 tabular-nums font-medium">{totalBear.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Period bars */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 pt-3 border-t border-white/5">
                 {[
                   { period: '24H', stats: sentimentStats.last24h },
                   { period: '7D', stats: sentimentStats.last7d },

@@ -21,7 +21,7 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
 
     messages.forEach((msg) => {
       if (msg.exch) {
-        metrics = { exch: msg.exch, total: msg.total, H24: msg.H24, global: msg.global };
+        metrics = { exch: msg.exch, total: msg.total, H24: msg.H24, global: msg.global, tokenCreation: msg.tokenCreation };
       }
       if (msg.tags) tags = msg.tags;
       msg.tokens?.forEach((t) => tokens.set(t.md5, t));

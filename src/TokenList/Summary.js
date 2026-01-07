@@ -320,8 +320,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     const canvas = canvasRef.current;
 
     const draw = () => {
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const rect = canvas.getBoundingClientRect();
+      // Skip drawing if canvas is not visible (0 dimensions)
       if (rect.width === 0 || rect.height === 0) return;
 
       // Get last 30 days of data
@@ -340,6 +342,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
+
+      // Handle single data point by duplicating it for display
+      if (chartValues.length === 1) {
+        chartValues.push(chartValues[0]);
+        chartData.push(chartData[0]);
+      }
 
       if (chartValues.length < 2) return;
 
@@ -399,9 +407,22 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     // Use rAF to ensure layout is complete
     const rafId = requestAnimationFrame(draw);
     window.addEventListener('resize', draw);
+
+    // Use ResizeObserver to detect when canvas becomes visible
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(draw);
+      });
+      resizeObserver.observe(canvas);
+    }
+
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', draw);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, [data]);
 
