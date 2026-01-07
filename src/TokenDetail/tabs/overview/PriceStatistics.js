@@ -1464,7 +1464,24 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
                               }}>
-                                {hasToken ? `${fNumber(tokenAmount)} ${displayCurrency}` : '—'}
+                                {hasToken ? (
+                                  <>
+                                    {fNumber(tokenAmount)} {displayCurrency}
+                                    {(side === 'check_receive' || side === 'check_incoming') && amount > 0 && tokenAmount > 0 && (
+                                      <span style={{
+                                        marginLeft: '6px',
+                                        padding: '1px 5px',
+                                        borderRadius: '4px',
+                                        fontSize: '9px',
+                                        fontWeight: 600,
+                                        background: ((tokenAmount / amount) * 100) >= 6 ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.12)',
+                                        color: ((tokenAmount / amount) * 100) >= 6 ? '#ef4444' : '#f59e0b'
+                                      }}>
+                                        {((tokenAmount / amount) * 100).toFixed(((tokenAmount / amount) * 100) < 0.01 ? 4 : 2)}%
+                                      </span>
+                                    )}
+                                  </>
+                                ) : '—'}
                               </Typography>
 
                               {/* XRP Value */}
