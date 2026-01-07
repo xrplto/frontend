@@ -14,10 +14,19 @@ import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 export const AppContext = createContext({});
 
+// Module-level singleton to prevent re-initialization on every render
+let _walletStorageSingleton = null;
+const getWalletStorage = () => {
+  if (!_walletStorageSingleton) {
+    _walletStorageSingleton = new EncryptedWalletStorage();
+  }
+  return _walletStorageSingleton;
+};
+
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
   const BASE_URL = 'https://api.xrpl.to/api';
-  const walletStorage = new EncryptedWalletStorage();
+  const walletStorage = useMemo(() => getWalletStorage(), []);
 
   // Define constants first before using them
   const KEY_ACCOUNT_PROFILE = 'account_profile_2';

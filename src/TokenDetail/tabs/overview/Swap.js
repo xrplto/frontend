@@ -1263,6 +1263,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
     async function getAccountInfo() {
       if (!accountProfile || !accountProfile.account) return;
@@ -1270,170 +1271,106 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       const account = accountProfile.account;
 
-      try {
-        const balanceRes = await axios.get(
-          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
-        );
-        if (!mounted) return;
-
-        if (balanceRes.status === 200 && balanceRes.data) {
-          setAccountPairBalance(balanceRes.data.pair);
-        }
-      } catch (err) {
-        // 404 = account not activated - silently ignore
-        if (err.response?.status === 404) {
-          setAccountPairBalance(null);
-        } else if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('Balance fetch error:', err);
-        }
-      }
-
-      const fetchAllTrustlines = async () => {
+      // Fetch balance and trustlines in PARALLEL with timeout
+      const fetchBalance = async () => {
         try {
-          let allTrustlines = [];
-          let marker = null;
-
-          do {
-            const url = marker
-              ? `${BASE_URL}/api/account/trustlines/${account}?limit=400&marker=${encodeURIComponent(marker)}`
-              : `${BASE_URL}/api/account/trustlines/${account}?limit=400`;
-
-            const response = await axios.get(url);
-            if (!mounted) return [];
-
-            if (response.status === 200 && response.data?.result === 'success') {
-              const lines = response.data.lines || [];
-              allTrustlines = allTrustlines.concat(lines);
-              marker = response.data.marker || null;
-            } else {
-              break;
-            }
-          } while (marker);
-
-          return allTrustlines;
-        } catch (error) {
-          // 404 = account not activated/found - return empty array
-          if (error.response?.status === 404) {
-            return [];
-          }
-          return [];
+          const balanceRes = await axios.get(
+            `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`,
+            { signal: controller.signal, timeout: 5000 }
+          );
+          if (!mounted) return null;
+          return balanceRes.status === 200 ? balanceRes.data?.pair : null;
+        } catch (err) {
+          return null; // Silently fail - don't block UI
         }
       };
 
-      fetchAllTrustlines()
-        .then((allTrustlines) => {
-          setTrustlines(allTrustlines);
+      const fetchAllTrustlines = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/account/trustlines/${account}?limit=400`,
+            { signal: controller.signal, timeout: 5000 }
+          );
+          if (!mounted) return [];
+          return response.status === 200 && response.data?.result === 'success'
+            ? response.data.lines || []
+            : [];
+        } catch (error) {
+          return []; // Silently fail - don't block UI
+        }
+      };
 
-          const normalizeCurrency = (currency) => {
-            if (!currency) return '';
-            if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
-              return currency.replace(/00+$/, '').toUpperCase();
-            }
-            return currency.toUpperCase();
-          };
+      // Run in parallel
+      const [balance, trustlines] = await Promise.all([fetchBalance(), fetchAllTrustlines()]);
 
-          const currenciesMatch = (curr1, curr2) => {
-            if (!curr1 || !curr2) return false;
+      if (!mounted) return;
+      setAccountPairBalance(balance);
+      setTrustlines(trustlines);
 
-            if (curr1 === curr2) return true;
+      // Process trustlines
+      if (trustlines.length > 0) {
+        const normalizeCurrency = (currency) => {
+          if (!currency) return '';
+          if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+            return currency.replace(/00+$/, '').toUpperCase();
+          }
+          return currency.toUpperCase();
+        };
 
-            const norm1 = normalizeCurrency(curr1);
-            const norm2 = normalizeCurrency(curr2);
-            if (norm1 === norm2) return true;
-
-            try {
-              const convertHexToAscii = (hex) => {
-                if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
-                  const cleanHex = hex.replace(/00+$/, '');
-                  let ascii = '';
-                  for (let i = 0; i < cleanHex.length; i += 2) {
-                    const byte = parseInt(cleanHex.substr(i, 2), 16);
-                    if (byte > 0) ascii += String.fromCharCode(byte);
-                  }
-                  return ascii.toLowerCase();
+        const currenciesMatch = (c1, c2) => {
+          if (!c1 || !c2) return false;
+          if (c1 === c2) return true;
+          const norm1 = normalizeCurrency(c1);
+          const norm2 = normalizeCurrency(c2);
+          if (norm1 === norm2) return true;
+          try {
+            const convertHexToAscii = (hex) => {
+              if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
+                const cleanHex = hex.replace(/00+$/, '');
+                let ascii = '';
+                for (let i = 0; i < cleanHex.length; i += 2) {
+                  const byte = parseInt(cleanHex.substr(i, 2), 16);
+                  if (byte > 0) ascii += String.fromCharCode(byte);
                 }
-                return hex.toLowerCase();
-              };
+                return ascii.toLowerCase();
+              }
+              return hex.toLowerCase();
+            };
+            return convertHexToAscii(c1) === convertHexToAscii(c2);
+          } catch (e) {}
+          return false;
+        };
 
-              const ascii1 = convertHexToAscii(curr1);
-              const ascii2 = convertHexToAscii(curr2);
-              if (ascii1 === ascii2) return true;
-            } catch (e) {}
+        const issuersMatch = (line, expectedIssuer) => {
+          const lineIssuers = [line.account, line.issuer, line._token1, line._token2, line.Balance?.issuer, line.HighLimit?.issuer, line.LowLimit?.issuer].filter(Boolean);
+          return lineIssuers.some((issuer) => issuer === expectedIssuer);
+        };
 
-            return false;
-          };
-
-          const issuersMatch = (line, expectedIssuer) => {
-            const lineIssuers = [
-              line.account,
-              line.issuer,
-              line._token1,
-              line._token2,
-              line.Balance?.issuer,
-              line.HighLimit?.issuer,
-              line.LowLimit?.issuer
-            ].filter(Boolean);
-
-            return lineIssuers.some((issuer) => issuer === expectedIssuer);
-          };
-
-          const hasCurr1Trustline =
-            curr1.currency === 'XRP' ||
-            allTrustlines.some((line) => {
-              const lineCurrencies = [
-                line.Balance?.currency,
-                line.currency,
-                line._currency,
-                line.HighLimit?.currency,
-                line.LowLimit?.currency
-              ].filter(Boolean);
-
-              const currencyMatch = lineCurrencies.some((lineCurrency) =>
-                currenciesMatch(lineCurrency, curr1.currency)
-              );
-
-              if (!currencyMatch) return false;
-
-              const issuerMatch = issuersMatch(line, curr1.issuer);
-              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
-
-              return currencyMatch && (issuerMatch || isStandardCurrency);
-            });
-
-          const hasCurr2Trustline =
-            curr2.currency === 'XRP' ||
-            allTrustlines.some((line) => {
-              const lineCurrencies = [
-                line.Balance?.currency,
-                line.currency,
-                line._currency,
-                line.HighLimit?.currency,
-                line.LowLimit?.currency
-              ].filter(Boolean);
-
-              const currencyMatch = lineCurrencies.some((lineCurrency) =>
-                currenciesMatch(lineCurrency, curr2.currency)
-              );
-
-              if (!currencyMatch) return false;
-
-              const issuerMatch = issuersMatch(line, curr2.issuer);
-              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
-
-              return currencyMatch && (issuerMatch || isStandardCurrency);
-            });
-
-          setHasTrustline1(hasCurr1Trustline);
-          setHasTrustline2(hasCurr2Trustline);
-        })
-        .catch((err) => {
-          console.error('Trustline fetch error:', err);
+        const hasCurr1Trustline = curr1.currency === 'XRP' || trustlines.some((line) => {
+          const lineCurrencies = [line.Balance?.currency, line.currency, line._currency, line.HighLimit?.currency, line.LowLimit?.currency].filter(Boolean);
+          const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr1.currency));
+          if (!currencyMatch) return false;
+          return issuersMatch(line, curr1.issuer) || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
         });
+
+        const hasCurr2Trustline = curr2.currency === 'XRP' || trustlines.some((line) => {
+          const lineCurrencies = [line.Balance?.currency, line.currency, line._currency, line.HighLimit?.currency, line.LowLimit?.currency].filter(Boolean);
+          const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr2.currency));
+          if (!currencyMatch) return false;
+          return issuersMatch(line, curr2.issuer) || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
+        });
+
+        setHasTrustline1(hasCurr1Trustline);
+        setHasTrustline2(hasCurr2Trustline);
+      }
     }
 
     getAccountInfo();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
   useEffect(() => {

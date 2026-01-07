@@ -71,7 +71,7 @@ const SOURCE_TAGS = {
   80008000: 'Orchestra'
 };
 
-const getSourceTagName = (sourceTag) => SOURCE_TAGS[sourceTag] || (sourceTag ? 'Unknown' : null);
+const getSourceTagName = (sourceTag) => SOURCE_TAGS[sourceTag] || (sourceTag ? 'Source Unknown' : null);
 
 const decodeCurrency = (currency) => {
   if (!currency || currency === 'XRP') return currency || 'XRP';
@@ -1770,7 +1770,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   };
 
   const fetchTradingHistory = useCallback(async (useCursor = null, isRefresh = false, useDirection = 'desc') => {
+    const fetchStart = performance.now();
+    console.log(`[TradingHistory] 🚀 fetchTradingHistory called - tokenId: ${tokenId}, cursor: ${useCursor}, refresh: ${isRefresh}`);
+
     if (!tokenId) {
+      console.log(`[TradingHistory] ⚠️ No tokenId, skipping`);
       setLoading(false);
       return;
     }
@@ -1822,8 +1826,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         }
       }
 
+      console.log(`[TradingHistory] 📡 Fetching: /api/history?${params}`);
       const response = await fetch(`https://api.xrpl.to/api/history?${params}`);
       const data = await response.json();
+      console.log(`[TradingHistory] ✅ History fetch complete - ${(performance.now() - fetchStart).toFixed(0)}ms, records: ${data.hists?.length || 0}`);
 
       if (data.result === 'success') {
         const currentTradeIds = previousTradesRef.current;
@@ -1860,8 +1866,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change (debounced 300ms)
   useEffect(() => {
+    console.log(`[TradingHistory] 🔄 Filter useEffect triggered - tokenId: ${tokenId}`);
     setCursor(null);
     setNextCursor(null);
     setCursorHistory([]);
@@ -1870,7 +1877,17 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     setIsLastPage(false);
     previousTradesRef.current = new Set();
     setLoading(true);
-    fetchTradingHistory(null, false, 'desc');
+
+    // Debounce fetch to avoid rapid re-requests on filter changes
+    const debounceId = setTimeout(() => {
+      console.log(`[TradingHistory] ⏰ Debounce complete, calling fetchTradingHistory`);
+      fetchTradingHistory(null, false, 'desc');
+    }, 300);
+
+    return () => {
+      console.log(`[TradingHistory] 🧹 Cleanup: clearing debounce timeout`);
+      clearTimeout(debounceId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
@@ -2357,7 +2374,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
               {/* Source */}
               <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {isLiquidity ? 'AMM' : (getSourceTagName(trade.sourceTag) || '')}
+                {getSourceTagName(trade.sourceTag) || (isLiquidity ? 'AMM' : '')}
               </span>
 
               {/* Animal tier icon */}

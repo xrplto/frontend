@@ -126,11 +126,13 @@ const securityUtils = {
 };
 
 export class UnifiedWalletStorage {
+  // Static shared DB promise - ensures only ONE connection across ALL instances
+  static _sharedDbPromise = null;
+
   constructor() {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'wallets';
     this.version = 1;
-    this.dbPromise = null; // Singleton promise for DB initialization
     this._entropyNeedsCheck = false; // Flag to check IndexedDB for existing backup
     this._entropyRestored = false; // Track if entropy restoration was attempted
     this.localStorageKey = this.generateLocalStorageKey();
@@ -437,15 +439,14 @@ export class UnifiedWalletStorage {
   }
 
   async initDB() {
-    // Singleton pattern: reuse existing DB promise to prevent race conditions
-    if (this.dbPromise) {
-      console.log('[initDB] Returning cached DB promise');
-      return this.dbPromise;
+    // Module-level singleton: reuse existing DB promise across ALL instances
+    if (UnifiedWalletStorage._sharedDbPromise) {
+      return UnifiedWalletStorage._sharedDbPromise;
     }
 
     console.log('[initDB] Creating new DB connection...');
-    this.dbPromise = this._initDBInternal();
-    return this.dbPromise;
+    UnifiedWalletStorage._sharedDbPromise = this._initDBInternal();
+    return UnifiedWalletStorage._sharedDbPromise;
   }
 
   async _initDBInternal() {
@@ -1572,6 +1573,15 @@ export class UnifiedWalletStorage {
 
 // Backward compatibility
 export const EncryptedWalletStorage = UnifiedWalletStorage;
+
+// Singleton instance for shared use (prevents multiple DB connections)
+let _instance = null;
+export const getWalletStorageInstance = () => {
+  if (!_instance) {
+    _instance = new UnifiedWalletStorage();
+  }
+  return _instance;
+};
 
 // Export security utilities for use in components
 export { securityUtils };

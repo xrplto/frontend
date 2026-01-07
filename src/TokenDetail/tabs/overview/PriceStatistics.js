@@ -11,6 +11,10 @@ import { AppContext } from 'src/AppContext';
 // Helper
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
+// Module-level cache for AI safety scores (5 min TTL)
+const aiCache = new Map();
+const AI_CACHE_TTL = 5 * 60 * 1000;
+
 // Custom components
 const Box = styled.div``;
 const Stack = styled.div`
@@ -310,9 +314,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [aiExpanded, setAiExpanded] = useState(false);
   const aiAbortRef = useRef(null);
 
-  // Fetch AI review (always detailed)
+  // Fetch AI review with cache (5 min TTL)
   useEffect(() => {
     if (!token.md5) return;
+
+    // Check cache first
+    const cached = aiCache.get(token.md5);
+    if (cached && Date.now() - cached.ts < AI_CACHE_TTL) {
+      setAiReview(cached.data);
+      return;
+    }
+
     if (aiAbortRef.current) aiAbortRef.current.abort();
     aiAbortRef.current = new AbortController();
 
@@ -322,14 +334,16 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       .then(data => {
         if (data?.review) {
           const r = data.review;
-          setAiReview({
+          const review = {
             safetyScore: r.safetyScore,
             riskLevel: data.riskLevel,
             risks: r.risks || [],
             positives: r.positives || [],
             blackholed: data.blackholed,
             timestamp: data.timestamp
-          });
+          };
+          aiCache.set(token.md5, { data: review, ts: Date.now() });
+          setAiReview(review);
         }
         setAiLoading(false);
       })
@@ -349,55 +363,51 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     setNoTokenActivity(false);
 
     try {
-      // First try creator-activity API (token-specific)
       let url = `https://api.xrpl.to/api/creators/${creator}?limit=12`;
       if (filter === 'swaps') url += '&side=sell,buy';
       else if (filter === 'transfers') url += '&side=transfer_out,receive';
       else if (filter === 'checks') url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
       else if (filter === 'lp') url += '&side=deposit,withdraw,amm_create';
 
-      const res = await fetch(url, { signal });
+      // Parallel fetch for 'all' filter (creators + tx fallback)
+      const fetches = [fetch(url, { signal }).then(r => r.json())];
+      if (filter === 'all') {
+        fetches.push(fetch(`https://api.xrpl.to/api/tx/${creator}?limit=12`, { signal }).then(r => r.json()));
+      }
+
+      const [data, txData] = await Promise.all(fetches);
       if (signal?.aborted) return;
-      const data = await res.json();
 
       if (data?.events?.length > 0) {
         setTransactions(data.events);
         setHasWarning(data.signals?.length > 0 || data.warning || false);
         setSignals(data.signals || []);
         setCreatorStats(data.stats || null);
-      } else if (filter === 'all') {
-        // Fallback to tx for general activity
+      } else if (filter === 'all' && txData?.result === 'success' && txData?.transactions) {
+        // Use pre-fetched tx fallback
         setNoTokenActivity(true);
-        const txRes = await fetch(`https://api.xrpl.to/api/tx/${creator}?limit=12`, { signal });
-        if (signal?.aborted) return;
-        const txData = await txRes.json();
-        if (txData?.result === 'success' && txData?.transactions) {
-          const mapped = txData.transactions.map(t => {
-            const tx = t.tx_json || t.tx || {};
-            const meta = t.meta || {};
-            const amt = meta.delivered_amount || meta.DeliveredAmount || tx.Amount;
-            const isXrp = typeof amt === 'string';
-            const isOutgoing = tx.Account === creator;
-            return {
-              hash: tx.hash || t.hash,
-              type: tx.TransactionType,
-              side: tx.TransactionType === 'Payment' ? (isOutgoing ? 'send' : 'receive') : null,
-              result: meta.TransactionResult || 'tesSUCCESS',
-              time: tx.date ? (tx.date + 946684800) * 1000 : Date.now(),
-              ledger: tx.ledger_index || tx.inLedger,
-              tokenAmount: !isXrp && amt?.value ? parseFloat(amt.value) : 0,
-              xrpAmount: isXrp ? parseInt(amt) / 1e6 : 0,
-              currency: !isXrp && amt?.currency ? (amt.currency.length > 3 ? Buffer.from(amt.currency, 'hex').toString().replace(/\0/g, '').trim() : amt.currency) : 'XRP',
-              destination: tx.Destination
-            };
-          });
-          setTransactions(mapped);
-          // Check for failed in last 24h
-          const day = 24 * 60 * 60 * 1000;
-          setHasWarning(mapped.some(t => t.result !== 'tesSUCCESS' && (Date.now() - t.time) < day));
-        } else {
-          setTransactions([]);
-        }
+        const mapped = txData.transactions.map(t => {
+          const tx = t.tx_json || t.tx || {};
+          const meta = t.meta || {};
+          const amt = meta.delivered_amount || meta.DeliveredAmount || tx.Amount;
+          const isXrp = typeof amt === 'string';
+          const isOutgoing = tx.Account === creator;
+          return {
+            hash: tx.hash || t.hash,
+            type: tx.TransactionType,
+            side: tx.TransactionType === 'Payment' ? (isOutgoing ? 'send' : 'receive') : null,
+            result: meta.TransactionResult || 'tesSUCCESS',
+            time: tx.date ? (tx.date + 946684800) * 1000 : Date.now(),
+            ledger: tx.ledger_index || tx.inLedger,
+            tokenAmount: !isXrp && amt?.value ? parseFloat(amt.value) : 0,
+            xrpAmount: isXrp ? parseInt(amt) / 1e6 : 0,
+            currency: !isXrp && amt?.currency ? (amt.currency.length > 3 ? Buffer.from(amt.currency, 'hex').toString().replace(/\0/g, '').trim() : amt.currency) : 'XRP',
+            destination: tx.Destination
+          };
+        });
+        setTransactions(mapped);
+        const day = 24 * 60 * 60 * 1000;
+        setHasWarning(mapped.some(t => t.result !== 'tesSUCCESS' && (Date.now() - t.time) < day));
       } else {
         setTransactions([]);
       }

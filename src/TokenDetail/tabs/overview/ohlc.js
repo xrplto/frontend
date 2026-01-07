@@ -343,15 +343,15 @@ const PriceChartAdvanced = memo(({ token }) => {
     const needsHttpFetch = true;
 
     const fetchHistoricalData = async () => {
-      // Candle resolution per timeframe (like Dexscreener)
+      // Candle resolution per timeframe - optimized for fast initial load
       const presets = {
-        '1d':  { resolution: '1',   cb: 43200 }, // 1min candles, 30 days
-        '5d':  { resolution: '5',   cb: 8640  }, // 5min candles, 30 days (default)
+        '1d':  { resolution: '1',   cb: 1440  }, // 1min candles, 1 day
+        '5d':  { resolution: '5',   cb: 1440  }, // 5min candles, 5 days
         '1m':  { resolution: '30',  cb: 1440  }, // 30min candles, 30 days
-        '3m':  { resolution: '120', cb: 1080  }, // 2h candles, 90 days (we don't have 6m, using 3m)
+        '3m':  { resolution: '120', cb: 1080  }, // 2h candles, 90 days
         '1y':  { resolution: 'W',   cb: 52    }, // 1 week candles, 1 year
         '5y':  { resolution: 'W',   cb: 260   }, // 1 week candles, 5 years
-        'all': { resolution: 'D',   cb: 5000  }  // Daily candles, all time
+        'all': { resolution: 'D',   cb: 2000  }  // Daily candles, all time (reduced)
       };
       const preset = presets[timeRange];
       if (!preset) return;
@@ -368,7 +368,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           setHasMore(timeRange !== 'all');
         }
       } catch (error) {
-        console.error('Historical fetch error:', error.message);
+        console.error('[OHLC] ❌ Historical fetch error:', error.message);
       } finally {
         if (mounted) setLoading(false);
       }
