@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
 import styled from '@emotion/styled';
 import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon, Layers, CheckCircle, Sparkles, ShieldCheck, ShieldAlert, ArrowUpRight, ArrowDownLeft, Droplet, Flame, ArrowLeftRight, BarChart2, X, Link2, Settings, FileText, ChevronDown } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -181,6 +181,18 @@ const SectionLabel = styled.span`
   color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'};
 `;
 
+// Shared mobile hook to avoid duplicate listeners
+const useIsMobile = (breakpoint = 600) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [breakpoint]);
+  return isMobile;
+};
+
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -229,18 +241,11 @@ const PriceDisplay = ({ price, symbol = '' }) => {
 export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [openScamWarning, setOpenScamWarning] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 600);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const {
     name,
@@ -430,51 +435,49 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     };
   }, [activityOpen, creator, activityFilter]);
 
-  const voldivmarket =
+  const voldivmarket = useMemo(() =>
     marketcap > 0 && vol24hxrp != null
       ? new Decimal(vol24hxrp || 0).div(marketcap || 1).toNumber()
-      : 0;
+      : 0,
+    [marketcap, vol24hxrp]
+  );
 
-  // Create enhanced tags array that includes origin-based tags (same as UserDesc.js)
-  const getOriginTag = (origin) => {
-    switch (origin) {
-      case 'FirstLedger':
-        return 'FirstLedger';
-      case 'XPMarket':
-        return 'XPMarket';
-      case 'LedgerMeme':
-        return 'LedgerMeme';
-      case 'Horizon':
-        return 'Horizon';
-      case 'aigent.run':
-        return 'aigent.run';
-      case 'Magnetic X':
-        return 'Magnetic X';
-      case 'xrp.fun':
-        return 'xrp.fun';
-      default:
-        return null;
-    }
-  };
-
-  const enhancedTags = (() => {
+  // Memoized enhanced tags array
+  const enhancedTags = useMemo(() => {
     const baseTags = tags || [];
-    const originTag = getOriginTag(origin);
-
+    const originMap = {
+      'FirstLedger': 'FirstLedger',
+      'XPMarket': 'XPMarket',
+      'LedgerMeme': 'LedgerMeme',
+      'Horizon': 'Horizon',
+      'aigent.run': 'aigent.run',
+      'Magnetic X': 'Magnetic X',
+      'xrp.fun': 'xrp.fun'
+    };
+    const originTag = originMap[origin] || null;
     if (originTag && !baseTags.includes(originTag)) {
       return [originTag, ...baseTags];
     }
-
     return baseTags;
-  })();
+  }, [tags, origin]);
 
-  const hasScamTag = enhancedTags.some((tag) => tag.toLowerCase() === 'scam');
+  const hasScamTag = useMemo(() => enhancedTags.some((tag) => tag.toLowerCase() === 'scam'), [enhancedTags]);
 
   useEffect(() => {
     if (hasScamTag) {
       setOpenScamWarning(true);
     }
   }, [hasScamTag]);
+
+  // Memoize copy handler
+  const handleCopyCreator = useCallback(() => {
+    navigator.clipboard.writeText(creator).then(() => {
+      openSnackbar('Copied!', 'success');
+    });
+  }, [creator, openSnackbar]);
+
+  // Memoize toggle handler
+  const toggleActivity = useCallback(() => setActivityOpen(prev => !prev), []);
 
   return (
     <Box
@@ -1083,7 +1086,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   <Tooltip title="Click to view activity">
                     <Chip
                       size="small"
-                      onClick={() => setActivityOpen(!activityOpen)}
+                      onClick={toggleActivity}
                       style={{
                         paddingLeft: '10px',
                         paddingRight: '10px',
@@ -1114,11 +1117,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   </Tooltip>
                   <Tooltip title="Copy address">
                     <IconButton
-                      onClick={() => {
-                        navigator.clipboard.writeText(creator).then(() => {
-                          openSnackbar('Copied!', 'success');
-                        });
-                      }}
+                      onClick={handleCopyCreator}
                       size="small"
                       style={{
                         padding: '4px',
@@ -1674,19 +1673,14 @@ const getFullUrl = (platform, handle) => {
 };
 
 // Compact social links component for header integration
-export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', isDark = false, fullWidth = false }) => {
-  const [isMobile, setIsMobile] = useState(false);
+export const CompactSocialLinks = memo(({ social, toggleLinksDrawer, size = 'small', isDark = false, fullWidth = false }) => {
+  const isMobile = useIsMobile();
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 600);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const socialEntries = useMemo(() =>
+    social ? Object.entries(social).filter(([, value]) => value) : [],
+    [social]
+  );
 
-  if (!social) return null;
-
-  const socialEntries = Object.entries(social).filter(([key, value]) => value);
   if (socialEntries.length === 0) return null;
 
   const getIcon = (platform) => {
@@ -1787,10 +1781,10 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
       ))}
     </Stack>
   );
-};
+});
 
 // Compact tags component for inline integration
-export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDark = false }) => {
+export const CompactTags = memo(({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDark = false }) => {
   if (!enhancedTags || enhancedTags.length === 0) return null;
 
   return (
@@ -1841,10 +1835,10 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
       )}
     </Stack>
   );
-};
+});
 
 // Combined component for easy usage
-export const CompactSocialAndTags = ({
+export const CompactSocialAndTags = memo(({
   social,
   enhancedTags,
   toggleLinksDrawer,
@@ -1852,35 +1846,24 @@ export const CompactSocialAndTags = ({
   maxTags = 3,
   socialSize = 'small',
   isDark = false
-}) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 600);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      spacing={1}
-      style={{ flexWrap: 'wrap', gap: '8px' }}
-    >
-      <CompactTags
-        enhancedTags={enhancedTags}
-        toggleTagsDrawer={toggleTagsDrawer}
-        maxTags={maxTags}
-        isDark={isDark}
-      />
-      <CompactSocialLinks
-        social={social}
-        toggleLinksDrawer={toggleLinksDrawer}
-        size={socialSize}
-        isDark={isDark}
-      />
-    </Stack>
-  );
-};
+}) => (
+  <Stack
+    direction="row"
+    alignItems="center"
+    spacing={1}
+    style={{ flexWrap: 'wrap', gap: '8px' }}
+  >
+    <CompactTags
+      enhancedTags={enhancedTags}
+      toggleTagsDrawer={toggleTagsDrawer}
+      maxTags={maxTags}
+      isDark={isDark}
+    />
+    <CompactSocialLinks
+      social={social}
+      toggleLinksDrawer={toggleLinksDrawer}
+      size={socialSize}
+      isDark={isDark}
+    />
+  </Stack>
+));

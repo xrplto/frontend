@@ -8,41 +8,25 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 
 // Dynamic imports for heavy components (code splitting)
-// DEBUG: PriceChart (ohlc.js) commented out for debugging
-// const PriceChart = dynamic(() => import('./ohlc'), {
-//   loading: () => (
-//     <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5">
-//       <div className="flex justify-between mb-2">
-//         <div className="h-4 w-32 animate-pulse bg-white/10 rounded" />
-//         <div className="flex gap-1">
-//           <div className="h-6 w-20 animate-pulse bg-white/10 rounded" />
-//           <div className="h-6 w-28 animate-pulse bg-white/10 rounded" />
-//         </div>
-//       </div>
-//       <div className="h-[360px] md:h-[570px] animate-pulse bg-white/5 rounded-lg" />
-//     </div>
-//   ),
-//   ssr: false
-// });
-const PriceChart = () => (
-  <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5">
-    <div className="h-[360px] md:h-[570px] flex items-center justify-center text-white/50 text-sm">
-      [Chart disabled for debugging]
+const PriceChart = dynamic(() => import('./ohlc'), {
+  loading: () => (
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5">
+      <div className="flex justify-between mb-2">
+        <div className="h-4 w-32 animate-pulse bg-white/10 rounded" />
+        <div className="flex gap-1">
+          <div className="h-6 w-20 animate-pulse bg-white/10 rounded" />
+          <div className="h-6 w-28 animate-pulse bg-white/10 rounded" />
+        </div>
+      </div>
+      <div className="h-[360px] md:h-[570px] animate-pulse bg-white/5 rounded-lg" />
     </div>
-  </div>
-);
-// DEBUG: TradingHistory commented out for debugging
-// const TradingHistory = dynamic(() => import('./TradingHistory'), {
-//   loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
-//   ssr: false
-// });
-const TradingHistory = () => (
-  <div className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3.5">
-    <div className="h-[300px] flex items-center justify-center text-white/50 text-sm">
-      [TradingHistory disabled for debugging]
-    </div>
-  </div>
-);
+  ),
+  ssr: false
+});
+const TradingHistory = dynamic(() => import('./TradingHistory'), {
+  loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
 
 // Lighter components - static imports
 import PriceStatistics from './PriceStatistics';
