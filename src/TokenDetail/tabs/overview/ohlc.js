@@ -599,7 +599,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           top: 0.05,
           bottom: 0.25
         },
-        mode: 0,
+        mode: 1, // Logarithmic scale - better for tokens with large price swings
         autoScale: true,
         borderVisible: true,
         visible: true,

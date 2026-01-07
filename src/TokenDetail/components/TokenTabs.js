@@ -162,6 +162,7 @@ const TokenTabs = memo(({ currentMd5 }) => {
               alt=""
               className={cn('w-3.5 h-3.5 shrink-0 object-cover', isCollection || isNft ? 'rounded' : 'rounded-full')}
               onError={(e) => (e.target.src = '/static/alt.webp')}
+              suppressHydrationWarning={isAccount}
             />
             <span className="max-w-[90px] truncate">{label}</span>
             <button

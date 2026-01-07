@@ -324,20 +324,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}?detailed=true`, { signal: aiAbortRef.current.signal })
+    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
       .then(res => res.json())
       .then(data => {
-        if (data?.review) {
-          const r = data.review;
-          const review = {
-            safetyScore: r.safetyScore,
-            riskLevel: data.riskLevel,
-            risks: r.risks || [],
-            positives: r.positives || [],
-            blackholed: data.blackholed,
-            timestamp: data.timestamp
-          };
-          setAiReview(review);
+        if (data?.score !== undefined) {
+          setAiReview(data);
         }
         setAiLoading(false);
       })
@@ -614,7 +605,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           </Stack>
 
           {aiReview && (() => {
-              const score = aiReview.safetyScore;
+              const score = aiReview.score;
               const isGreen = score <= 2;
               const isYellow = score >= 3 && score <= 4;
               const isOrange = score >= 5 && score <= 6;
@@ -638,59 +629,26 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '2px', background: color }} />
               </div>
 
-              {/* Summary + expand toggle */}
-              {(aiReview.risks?.length > 0 || aiReview.positives?.length > 0) && (
-                <>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    onClick={() => setAiExpanded(!aiExpanded)}
-                    style={{ gap: '12px', cursor: 'pointer', padding: '4px 0' }}
-                  >
-                    {aiReview.risks?.length > 0 && (
-                      <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b' }} />
-                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
-                          {aiReview.risks.length} risk{aiReview.risks.length !== 1 ? 's' : ''}
-                        </Typography>
-                      </Stack>
-                    )}
-                    {aiReview.positives?.length > 0 && (
-                      <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e' }} />
-                        <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
-                          {aiReview.positives.length} positive{aiReview.positives.length !== 1 ? 's' : ''}
-                        </Typography>
-                      </Stack>
-                    )}
-                    <ChevronDown size={14} style={{ marginLeft: 'auto', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', transform: aiExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                  </Stack>
-
-                  {aiExpanded && (
-                    <Stack direction="row" style={{ gap: '12px', marginTop: '6px' }}>
-                      {aiReview.risks?.length > 0 && (
-                        <Stack style={{ flex: 1, gap: '4px' }}>
-                          {aiReview.risks.map((r, i) => (
-                            <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '5px' }}>
-                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b', marginTop: '5px', flexShrink: 0 }} />
-                              <Typography style={{ fontSize: '11px', color: '#f59e0b', lineHeight: 1.4 }}>{r}</Typography>
-                            </Stack>
-                          ))}
-                        </Stack>
-                      )}
-                      {aiReview.positives?.length > 0 && (
-                        <Stack style={{ flex: 1, gap: '4px' }}>
-                          {aiReview.positives.map((p, i) => (
-                            <Stack key={i} direction="row" alignItems="flex-start" style={{ gap: '5px' }}>
-                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e', marginTop: '5px', flexShrink: 0 }} />
-                              <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', lineHeight: 1.4 }}>{p}</Typography>
-                            </Stack>
-                          ))}
-                        </Stack>
-                      )}
+              {/* Summary counts */}
+              {(aiReview.riskCount > 0 || aiReview.positiveCount > 0) && (
+                <Stack direction="row" alignItems="center" style={{ gap: '12px', padding: '4px 0' }}>
+                  {aiReview.riskCount > 0 && (
+                    <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
+                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b' }} />
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
+                        {aiReview.riskCount} risk{aiReview.riskCount !== 1 ? 's' : ''}
+                      </Typography>
                     </Stack>
                   )}
-                </>
+                  {aiReview.positiveCount > 0 && (
+                    <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
+                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e' }} />
+                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
+                        {aiReview.positiveCount} positive{aiReview.positiveCount !== 1 ? 's' : ''}
+                      </Typography>
+                    </Stack>
+                  )}
+                </Stack>
               )}
             </>
               );

@@ -217,12 +217,14 @@ export function isEqual(a, b) {
 // ==== XRPL SPECIFIC HELPERS ====
 
 export function getHashIcon(account) {
-  let url = '/static/account_logo.webp';
+  const fallback = '/static/account_logo.webp';
+  if (typeof window === 'undefined' || !account) return fallback;
   try {
-    const icon = hashicon(account);
-    url = icon.toDataURL();
-  } catch (e) {}
-  return url;
+    const icon = hashicon(account, { size: 64 });
+    return icon.toDataURL();
+  } catch (e) {
+    return fallback;
+  }
 }
 
 export function checkExpiration(expiration) {
