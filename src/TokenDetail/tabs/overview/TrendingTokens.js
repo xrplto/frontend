@@ -249,8 +249,16 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
   const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
-  const [trendingList, setTrendingList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [trendingList, setTrendingList] = useState(() => {
+    // Use cached data for instant render
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('trendingTokens');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return [];
+  });
   const [error, setError] = useState(null);
   const fetchedRef = useRef(false);
 
@@ -261,33 +269,32 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
 
+    const controller = new AbortController();
+
     const getRelatedTokens = async () => {
-      setLoading(true);
-      setError(null);
       try {
-        // Fetch tokens with same tag, fall back to trending if no tag
-        const tagParam = primaryTag ? `&tags=${encodeURIComponent(primaryTag)}` : '';
         const res = await axios.get(
-          `${BASE_URL}/tokens?start=0&limit=16&sortBy=trendingScore&sortType=desc&filter=${tagParam}&showNew=false&showSlug=false`
+          `${BASE_URL}/tokens?start=0&limit=15&sortBy=trendingScore&sortType=desc&skipMetrics=true`,
+          { signal: controller.signal }
         );
-        if (res.status === 200 && res.data && res.data.tokens) {
-          // Filter out current token from results
+        if (res.data?.tokens) {
           const filtered = token?.md5
             ? res.data.tokens.filter(t => t.md5 !== token.md5)
             : res.data.tokens;
-          setTrendingList(filtered.slice(0, 15));
-        } else {
-          setError('No related tokens available');
+          setTrendingList(filtered);
+          // Cache for instant load next time
+          try { sessionStorage.setItem('trendingTokens', JSON.stringify(filtered)); } catch {}
         }
       } catch (err) {
-        console.error('Error fetching related tokens:', err);
-        setError('Failed to load related tokens');
-      } finally {
-        setLoading(false);
+        if (!axios.isCancel(err)) {
+          setError('Failed to load');
+        }
       }
     };
     getRelatedTokens();
-  }, [primaryTag, token?.md5]);
+
+    return () => controller.abort();
+  }, [token?.md5]);
 
   // Memoize formatting functions to avoid recalculation on every render
   const formatPrice = useMemo(() => {
@@ -340,40 +347,6 @@ const TrendingTokens = ({ horizontal = false, token = null }) => {
       return `${symbol}${Math.round(converted)}${suffix}`;
     };
   }, [activeFiatCurrency, exchRate]);
-
-  if (loading) {
-    return (
-      <Container isDark={darkMode}>
-        {/* Header Skeleton */}
-        <Box
-          style={{
-            marginBottom: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: isMobile ? '6px' : '8px',
-            borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-            paddingBottom: '6px'
-          }}
-        >
-          <Skeleton variant="text" width={140} height={24} />
-          <Skeleton variant="text" width={80} height={24} />
-        </Box>
-
-        {/* Column Headers Skeleton */}
-        <Box style={{ padding: '8px 10px', marginBottom: '2px', marginTop: '8px' }}>
-          <Skeleton variant="text" width="100%" height={16} />
-        </Box>
-
-        {/* Token List Skeleton */}
-        <Stack spacing={0.25} sx={{ padding: isMobile ? '6px' : '8px', paddingBottom: isMobile ? '6px' : '8px' }}>
-          {[...Array(isMobile ? 5 : 15)].map((_, i) => (
-            <Skeleton key={`trending-skeleton-${i}`} variant="rounded" height={58} sx={{ borderRadius: '12px' }} />
-          ))}
-        </Stack>
-      </Container>
-    );
-  }
 
   if (error) {
     return (
