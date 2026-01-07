@@ -280,6 +280,8 @@ export default function TopTraders({ token }) {
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought</th>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold</th>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70')}>Wash</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
                     </>
                   )}
                   <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
@@ -331,6 +333,14 @@ export default function TopTraders({ token }) {
                           </td>
                           <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
                             {formatCompactNumber(volume)}
+                          </td>
+                          <td className="py-2.5 px-2 text-right">
+                            <span className={cn('text-[12px] tabular-nums', trader.washTradingScore > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
+                              {trader.washTradingScore > 0 ? formatCompactNumber(trader.washTradingScore) : '-'}
+                            </span>
+                          </td>
+                          <td className={cn('py-2.5 px-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            {trader.lastTradeDate ? new Date(trader.lastTradeDate).toLocaleDateString() : '-'}
                           </td>
                         </>
                       )}

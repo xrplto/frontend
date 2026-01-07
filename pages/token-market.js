@@ -227,8 +227,8 @@ export default function TokenMarketPage({ stats }) {
 
   const maxValue = useMemo(() => Math.max(...chartData.map(d => d[metric] || 0), 1), [chartData, metric]);
 
-  const topTokens = stats?.topTokens || [];
-  const maxTokenVol = topTokens[0]?.volume || 1;
+  const topWashTraders = stats?.topWashTraders || [];
+  const maxWashScore = topWashTraders[0]?.washScore || 1;
 
   if (!stats) {
     return (
@@ -387,31 +387,33 @@ export default function TokenMarketPage({ stats }) {
           <Section>
             <TableContainer darkMode={darkMode}>
               <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Top Tokens by Volume (24h)</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Top Wash Traders (24h)</span>
               </div>
               <Table>
                 <thead>
                   <tr>
                     <Th darkMode={darkMode}>#</Th>
-                    <Th darkMode={darkMode}>Token</Th>
+                    <Th darkMode={darkMode}>Address</Th>
+                    <Th darkMode={darkMode} align="right">Score</Th>
                     <Th darkMode={darkMode} align="right">Volume</Th>
-                    <Th darkMode={darkMode} align="right">Trades</Th>
                   </tr>
                 </thead>
                 <tbody>
-                  {topTokens.slice(0, 10).map((token, idx) => (
-                    <tr key={token.tokenId || idx}>
+                  {topWashTraders.map((trader, idx) => (
+                    <tr key={trader.address || idx}>
                       <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB', width: 32 }}>
                         {idx + 1}
                       </Td>
                       <Td darkMode={darkMode}>
-                        <TokenLink href={`/token/${token.tokenId}`}>{token.name}</TokenLink>
+                        <TokenLink href={`/address/${trader.address}`}>
+                          {trader.address ? `${trader.address.slice(0,6)}...${trader.address.slice(-4)}` : '-'}
+                        </TokenLink>
                         <VolumeBar darkMode={darkMode}>
-                          <VolumeFill style={{ width: `${(token.volume / maxTokenVol) * 100}%` }} />
+                          <VolumeFill style={{ width: `${(trader.washScore / maxWashScore) * 100}%` }} />
                         </VolumeBar>
                       </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(token.volume)}</Td>
-                      <Td darkMode={darkMode} align="right">{fNumber(token.trades)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(trader.washScore)}</Td>
+                      <Td darkMode={darkMode} align="right">{fVolume(trader.volume24h)}</Td>
                     </tr>
                   ))}
                 </tbody>
@@ -586,10 +588,8 @@ export async function getServerSideProps() {
     let totalVolume = 0, totalTrades = 0, totalFees = 0;
     days.forEach(d => { totalVolume += d.volume || 0; totalTrades += d.trades || 0; totalFees += d.totalFees || 0; });
 
-    // Top tokens - backend should provide rolling 24h data in topTokens24h field
-    const topTokens = (lastDay?.topTokens24h || lastDay?.topTokens || [])
-      .slice(0, 10)
-      .map(t => ({ tokenId: t.tokenId || t.md5, name: t.name, volume: t.volume || t.vol24hxrp || 0, trades: t.trades || 0 }));
+    // Top wash traders (24h rolling)
+    const topWashTraders = (lastDay?.topWashTraders24h || []).slice(0, 10);
 
     const stats = {
       volume24h, trades24h, totalMarketcap: marketcap24h,
@@ -603,7 +603,7 @@ export async function getServerSideProps() {
       volumeAMM, volumeNonAMM, tradesAMM, tradesNonAMM,
       uniqueTradersAMM, uniqueTradersNonAMM,
       platforms,
-      history, topTokens
+      history, topWashTraders
     };
 
     return { props: { stats } };

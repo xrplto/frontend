@@ -173,6 +173,7 @@ const TABLE_HEAD = [
   { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
   { id: 'winRate', label: 'WIN %', align: 'right', width: '55px', sortable: true },
+  { id: 'washTradingScore', label: 'WASH', align: 'right', width: '60px', sortable: true },
   { id: 'lastActive', label: 'LAST TRADE', align: 'right', width: '80px' },
 ];
 
@@ -195,7 +196,7 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
     setSortBy(key);
   };
 
-  const getLastActive = (t) => t.lastTrade ? formatDistanceToNowStrict(new Date(t.lastTrade)) : '-';
+  const getLastActive = (t) => t.lastTradeDate ? formatDistanceToNowStrict(new Date(t.lastTradeDate)) : '-';
 
   const paginatedTraders = sortedTraders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const totalPages = Math.ceil(sortedTraders.length / rowsPerPage);
@@ -260,7 +261,7 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
                 </StyledTableHead>
                 <StyledTbody darkMode={darkMode}>
                   {paginatedTraders.map((trader, idx) => {
-                    const addr = trader._id || trader.address;
+                    const addr = trader.address;
                     const tp = trader.totalProfit || 0;
                     const dp = trader.dexProfit || 0;
                     const ap = trader.ammProfit || 0;
@@ -295,6 +296,9 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {(trader.winRate || 0).toFixed(0)}%
+                        </StyledTd>
+                        <StyledTd align="right" style={{ fontSize: 11, color: trader.washTradingScore > 0 ? '#f59e0b' : (darkMode ? 'rgba(255,255,255,0.3)' : '#d1d5db') }}>
+                          {trader.washTradingScore > 0 ? fNumber(trader.washTradingScore) : '-'}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
                           {getLastActive(trader)}
