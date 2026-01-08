@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, memo, useMemo, Suspense, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo, useContext, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
@@ -8,38 +8,11 @@ import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCw, Sparkles } from 'lucide-react';
+import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Sparkles } from 'lucide-react';
 
-const currencySymbols = {
-  USD: '$',
-  EUR: '€',
-  JPY: '¥',
-  CNH: '¥',
-  XRP: '✕'
-};
+const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
-// Custom styled components
-const Box = styled.div``;
-const Stack = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
-`;
-const Spinner = styled(Loader2)`
-  animation: spin 1s linear infinite;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'};
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-const Typography = styled.div`
-  font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'caption' ? '11px' : '12px'};
-  font-weight: ${props => props.fontWeight || 400};
-  color: ${props =>
-    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') :
-    props.color === 'success.main' ? '#22c55e' :
-    (props.isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a')};
-`;
+const Spinner = styled(Loader2)`animation: spin 1s linear infinite; @keyframes spin { to { transform: rotate(360deg); } }`;
 
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
@@ -87,354 +60,32 @@ const decodeCurrency = (currency) => {
   return currency;
 };
 
-// Wallet tier SVG icons with box button style
-const TierIconBox = ({ children, isDark }) => (
-  <span style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '22px',
-    height: '22px',
-    borderRadius: '4px',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-    background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'
-  }}>{children}</span>
-);
+// Simple tier icons - text-based for performance
+const TIER_CONFIG = [
+  { max: 100, label: '🦐', color: '#6b7280' },   // Shrimp
+  { max: 500, label: '🐟', color: '#60a5fa' },   // Fish
+  { max: 2000, label: '🗡', color: '#3b82f6' },  // Swordfish
+  { max: 5000, label: '🦈', color: '#4285f4' },  // Shark
+  { max: 20000, label: '🐋', color: '#2563eb' }, // Orca
+  { max: Infinity, label: '🐳', color: '#22c55e' } // Whale
+];
 
-const ShrimpIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 823.528 795.746" width={size} height={size * 0.97} style={{ display: 'block' }}>
-      <g transform="translate(-808.445 -84.967)" fill="none" stroke="#6b7280" strokeLinecap="round" strokeWidth="30">
-        <line x2="247" y2="100" transform="translate(1011.5 104.5)" />
-        <line x1="144" y2="34" transform="translate(867.5 104.5)" />
-        <line y1="88" x2="13" transform="translate(854.5 138.5)" />
-        <line x2="157" y2="125" transform="translate(854.5 226.5)" />
-        <line x2="170" y2="106" transform="translate(829.5 279.5)" />
-        <line y1="75" x2="96" transform="translate(829.5 204.5)" />
-        <line x1="270" y1="19" transform="translate(925.5 204.5)" />
-        <line x1="98" y1="11" transform="translate(1288.5 286.5)" />
-        <line y1="55" x2="204" transform="translate(1084.5 286.5)" />
-        <line x1="43" y2="38" transform="translate(1041.5 341.5)" />
-        <line x1="48" y1="42" transform="translate(1041.5 379.5)" />
-        <line y1="47" x2="236" transform="translate(1089.5 374.5)" />
-        <line x2="72" y2="154" transform="translate(1288.5 292.5)" />
-        <line x2="271" y2="25" transform="translate(1089.5 421.5)" />
-        <line x1="30" y2="146" transform="translate(1360.5 300.5)" />
-        <line x2="153" y2="90" transform="translate(1390.5 300.5)" />
-        <line x1="69" y1="174" transform="translate(1543.5 390.5)" />
-        <line x1="45" y2="164" transform="translate(1567.5 564.5)" />
-        <line y1="76" x2="82" transform="translate(1485.5 728.5)" />
-        <line x1="113" y2="55" transform="translate(1372.5 804.5)" />
-        <line x2="76" y2="75" transform="translate(1296.5 784.5)" />
-        <line x2="110" y2="13" transform="translate(1296.5 784.5)" />
-        <line x1="37" y2="26" transform="translate(1406.5 771.5)" />
-        <line y1="38" x2="35" transform="translate(1443.5 733.5)" />
-        <line x1="24" y2="102" transform="translate(1478.5 631.5)" />
-        <line x1="48" y1="130" transform="translate(1454.5 501.5)" />
-        <line x2="99" y2="62" transform="translate(1355.5 439.5)" />
-        <line y1="49" x2="178" transform="translate(1355.5 390.5)" />
-        <line y1="114" x2="75" transform="translate(1458.5 390.5)" />
-        <line x2="148" y2="60" transform="translate(1458.5 504.5)" />
-        <line y1="65" x2="101" transform="translate(1505.5 564.5)" />
-        <line x2="55" y2="88" transform="translate(1505.5 629.5)" />
-        <line x2="79" y2="2" transform="translate(1481.5 728.5)" />
-        <line x2="43" y2="16" transform="translate(1411.5 800.5)" />
-        <line x1="14" y2="36" transform="translate(1411.5 693.5)" />
-        <line y1="18" x2="27" transform="translate(1425.5 675.5)" />
-        <line y1="3" x2="38" transform="translate(1409.5 616.5)" />
-        <line y1="4" x2="53" transform="translate(1375.5 550.5)" />
-        <line x2="46.5" transform="translate(1331.5 501.5)" />
-        <line x1="27" y2="61" transform="translate(1304.5 501.5)" />
-        <line x1="27" y2="58" transform="translate(1348.5 554.5)" />
-        <line x1="36" y2="54" transform="translate(1373.5 619.5)" />
-        <line x1="47" y2="55" transform="translate(1216.5 473.5)" />
-        <line x2="158" y2="60" transform="translate(1058.5 468.5)" />
-        <line x1="44" y2="71" transform="translate(1014.5 468.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
-
-const FishIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 999.334 735.299" width={size} height={size * 0.74} style={{ display: 'block' }}>
-      <g transform="translate(-649.816 -154.867)" fill="none" stroke="#60a5fa" strokeLinecap="round" strokeWidth="38">
-        <line x2="189" y2="44" transform="translate(1073.5 227.5)" />
-        <line x1="139" y1="42" transform="translate(1266.5 262.5)" />
-        <line y1="123" x2="161" transform="translate(1405.5 181.5)" />
-        <line x2="384" transform="translate(1182.5 181.5)" />
-        <line x1="109" y2="46" transform="translate(1073.5 181.5)" />
-        <line x1="306" y2="64" transform="translate(1221.5 195.5)" />
-        <line y1="27" x2="190" transform="translate(883.5 227.5)" />
-        <line x2="60" y2="216" transform="translate(883.5 259.5)" />
-        <line x1="119" y2="74" transform="translate(764.5 254.5)" />
-        <line y1="168" x2="89" transform="translate(675.5 328.5)" />
-        <line x2="80" y2="166" transform="translate(675.5 496.5)" />
-        <line x1="123" y1="68" transform="translate(755.5 662.5)" />
-        <line x2="75" y2="93" transform="translate(856.5 722.5)" />
-        <line x1="116" y1="48" transform="translate(931.5 815.5)" />
-        <line x1="92" y1="118" transform="translate(955.5 745.5)" />
-        <line x1="683" y1="71" transform="translate(883.5 733.5)" />
-        <line y1="49" x2="54" transform="translate(1001.5 755.5)" />
-        <line x1="144" y2="192" transform="translate(1105.5 563.5)" />
-        <line x1="132" y2="8" transform="translate(1117.5 563.5)" />
-        <line x2="3" y2="79" transform="translate(1114.5 492.5)" />
-        <line x1="171" y1="13" transform="translate(943.5 479.5)" />
-        <line y1="95" x2="40" transform="translate(898.5 479.5)" />
-        <line x1="81" y2="45" transform="translate(817.5 574.5)" />
-        <line y1="40" x2="28" transform="translate(782.5 622.5)" />
-        <line x1="249" y2="39" transform="translate(689.5 463.5)" />
-        <line x1="152" y2="42" transform="translate(931.5 385.5)" />
-        <line y1="102" x2="149" transform="translate(1091.5 283.5)" />
-        <line x1="178" y1="114" transform="translate(913.5 271.5)" />
-        <line x2="170" y2="172" transform="translate(1079.5 385.5)" />
-        <line y1="43" transform="translate(1117.5 571.5)" />
-        <line x1="84" y2="65" transform="translate(1033.5 614.5)" />
-        <line x2="131" y2="108" transform="translate(902.5 571.5)" />
-        <line x2="179" y2="86" transform="translate(926.5 522.5)" />
-        <line y1="67" x2="119" transform="translate(870.5 655.5)" />
-        <line x2="156" y2="41" transform="translate(1249.5 567.5)" />
-        <line y1="94" x2="123" transform="translate(1266.5 608.5)" />
-        <line x1="111" y2="43" transform="translate(1155.5 702.5)" />
-        <line x1="41" y2="32" transform="translate(1397.5 571.5)" />
-        <line x1="49" y2="91" transform="translate(1389.5 571.5)" />
-        <line x1="177" y1="142" transform="translate(1389.5 662.5)" />
-        <line x1="251" y1="74" transform="translate(1275.5 706.5)" />
-        <line x2="27" y2="123" transform="translate(1405.5 304.5)" />
-        <line x1="193" y2="45" transform="translate(1432.5 382.5)" />
-        <line x1="41" y2="137" transform="translate(1584.5 382.5)" />
-        <line x1="33" y1="89" transform="translate(1584.5 519.5)" />
-        <line x1="175" y1="37" transform="translate(1442.5 571.5)" />
-        <line x2="28" y2="57" transform="translate(1410.5 514.5)" />
-        <line x1="140" y2="43" transform="translate(1270.5 514.5)" />
-        <line y1="87" x2="22" transform="translate(1410.5 427.5)" />
-        <line x2="315" y2="41" transform="translate(1117.5 393.5)" />
-        <line x2="176" y2="148" transform="translate(1257 272)" />
-        <line x1="182" y2="96" transform="translate(1429.5 406.5)" />
-        <line x1="149" y1="17" transform="translate(1429.5 502.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
-
-const SwordfishIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322.431 487.538" width={size} height={size * 0.37} style={{ display: 'block' }}>
-      <g transform="translate(-268.911 -233.804)" fill="none" stroke="#3b82f6" strokeLinecap="round" strokeWidth="34">
-        <line x2="806" y2="98.204" transform="translate(652.5 417.296)" />
-        <line x1="122" y2="74.204" transform="translate(530.5 417.296)" />
-        <line y1="24" x2="243" transform="translate(287.5 491.5)" />
-        <line x2="175" y2="49" transform="translate(403.5 504.5)" />
-        <line y1="23" x2="69" transform="translate(437.5 540.5)" />
-        <line x2="247" y2="63" transform="translate(437.5 563.5)" />
-        <line x1="132" y1="8" transform="translate(684.5 626.5)" />
-        <line y1="20" x2="239" transform="translate(816.5 614.5)" />
-        <line x1="339" y2="86" transform="translate(1055.5 528.5)" />
-        <line x1="126" y1="45" transform="translate(1055.5 614.5)" />
-        <line x1="14" y1="29" transform="translate(1167.5 630.5)" />
-        <line x1="48" y2="49" transform="translate(1167.5 581.5)" />
-        <line x2="62" y2="10" transform="translate(1215.5 581.5)" />
-        <line x1="68" y2="45" transform="translate(1277.5 546.5)" />
-        <line y1="48" x2="141" transform="translate(1317.5 515.5)" />
-        <line x1="104" y1="182" transform="translate(1463.5 515.5)" />
-        <line x1="196" y1="151" transform="translate(1371.5 546.5)" />
-        <line x1="104" y2="204" transform="translate(1463.5 311.5)" />
-        <line x1="81" y2="45" transform="translate(1486.5 311.5)" />
-        <line y1="133" x2="119" transform="translate(1367.5 356.5)" />
-        <line y1="81" x2="140" transform="translate(1375.5 408.5)" />
-        <line x1="73" y1="11" transform="translate(1302.5 466.5)" />
-        <line x2="37" y2="26" transform="translate(1265.5 440.5)" />
-        <line x1="50" y2="32" transform="translate(1215.5 440.5)" />
-        <line x2="395" y2="76" transform="translate(840.5 380.5)" />
-        <line x1="51" y1="48" transform="translate(789.5 332.5)" />
-        <line x1="4" y2="75" transform="translate(789.5 257.5)" />
-        <line x1="82" y2="58" transform="translate(711.5 257.5)" />
-        <line y1="93" x2="54" transform="translate(657.5 315.5)" />
-        <line y1="73" x2="117" transform="translate(669.5 335.5)" />
-        <line y1="37" x2="144" transform="translate(716.5 386.5)" />
-        <line x2="71" y2="106" transform="translate(657.5 423.5)" />
-        <line x1="49" y2="9" transform="translate(728.5 520.5)" />
-        <line y1="80" x2="14" transform="translate(777.5 440.5)" />
-        <line x1="180" y1="106" transform="translate(791.5 440.5)" />
-        <line y1="26" x2="378" transform="translate(971.5 520.5)" />
-        <line y1="53" x2="204" transform="translate(956.5 480.5)" />
-        <line x2="143" y2="67" transform="translate(912.5 539.5)" />
-        <line x1="142" y1="19" transform="translate(770.5 520.5)" />
-        <line x1="135" y2="45" transform="translate(777.5 546.5)" />
-        <line x2="77" transform="translate(700.5 591.5)" />
-        <line y1="83" x2="39" transform="translate(684.5 539.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
-
-const SharkIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1484.298 620.562" width={size} height={size * 0.42} style={{ display: 'block' }}>
-      <g transform="translate(-180.241 -154.605)" fill="none" stroke="#4285f4" strokeLinecap="round" strokeWidth="36">
-        <line x2="366" y2="69" transform="translate(902.5 329.5)" />
-        <line x1="39" y1="37" transform="translate(886.5 292.5)" />
-        <line x2="24" y2="113" transform="translate(862.5 179.5)" />
-        <line x1="54" y2="35" transform="translate(808.5 179.5)" />
-        <line y1="91" x2="72" transform="translate(736.5 214.5)" />
-        <line x2="166" y2="24" transform="translate(736.5 305.5)" />
-        <line x1="342" y2="42" transform="translate(394.5 305.5)" />
-        <line y1="51" x2="189" transform="translate(205.5 347.5)" />
-        <line x2="56" y2="72" transform="translate(205.5 398.5)" />
-        <line x1="579" y1="85" transform="translate(261.5 470.5)" />
-        <line y1="75" x2="600" transform="translate(840.5 480.5)" />
-        <line x1="116" y2="66" transform="translate(1440.5 414.5)" />
-        <line y1="217" x2="71" transform="translate(1556.5 197.5)" />
-        <line y1="68" x2="105" transform="translate(1522.5 197.5)" />
-        <line x1="114" y2="140" transform="translate(1408.5 265.5)" />
-        <line x2="140" y2="7" transform="translate(1268.5 398.5)" />
-        <line x1="153" y1="69" transform="translate(1408.5 405.5)" />
-        <line x2="78" y2="113" transform="translate(1561.5 474.5)" />
-        <line x2="136" y2="43" transform="translate(1503.5 544.5)" />
-        <line x1="83" y1="59" transform="translate(1420.5 485.5)" />
-        <line y1="111" x2="335" transform="translate(1085.5 485.5)" />
-        <line x1="334" y2="20" transform="translate(751.5 596.5)" />
-        <line x2="10" y2="185" transform="translate(746.5 551.5)" />
-        <line x1="141" y1="61" transform="translate(649.5 690.5)" />
-        <line x2="67" y2="161" transform="translate(582.5 529.5)" />
-        <line x1="316" y1="93" transform="translate(300.5 523.5)" />
-        <line x1="30" y2="33" transform="translate(300.5 490.5)" />
-        <line y1="44" x2="164" transform="translate(330.5 446.5)" />
-        <line x1="122" y2="18" transform="translate(494.5 428.5)" />
-        <line x2="163" y2="6" transform="translate(616.5 428.5)" />
-        <line x1="340" y1="73" transform="translate(779.5 434.5)" />
-        <line y1="98" x2="149" transform="translate(1119.5 409.5)" />
-        <line x2="64" y2="111" transform="translate(784.5 616.5)" />
-        <line x2="92" y2="16" transform="translate(756.5 711.5)" />
-        <line x1="83" y2="81" transform="translate(835.5 470.5)" />
-        <line x1="12" y1="123" transform="translate(906.5 347.5)" />
-        <line x1="201" y1="151" transform="translate(918.5 343.5)" />
-        <line y1="115" x2="51" transform="translate(1095.5 375.5)" />
-        <line y1="40" x2="354" transform="translate(1095.5 440.5)" />
-        <line y2="169" transform="translate(1522.5 265.5)" />
-        <line x2="5" y2="51" transform="translate(1556.5 419.5)" />
-        <line x1="218" y2="172" transform="translate(673.5 343.5)" />
-        <line x1="94" y2="76.5" transform="translate(533.5 428.5)" />
-        <line x1="72" y1="99" transform="translate(555.5 329.5)" />
-        <line x1="72" y1="99" transform="translate(700.5 326)" />
-        <line x1="132" y1="143" transform="translate(401.5 347.5)" />
-        <line x1="154" y1="78" transform="translate(240.5 393.5)" />
-        <line x2="79" y2="32" transform="translate(1074.5 600.5)" />
-        <line y2="53" transform="translate(1153.5 579.5)" />
-        <line x2="22" y2="49" transform="translate(1131.5 583.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
-
-const OrcaIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1185.935 605.365" width={size} height={size * 0.51} style={{ display: 'block' }}>
-      <g transform="translate(-431.545 -170.466)" fill="none" stroke="#2563eb" strokeLinecap="round" strokeWidth="34">
-        <line y1="69" x2="301" transform="translate(498.5 400.5)" />
-        <line x1="43" y2="51" transform="translate(455.5 469.5)" />
-        <line x1="15" y1="39" transform="translate(455.5 520.5)" />
-        <line x2="183" y2="72" transform="translate(470.5 559.5)" />
-        <line x2="20" y2="88" transform="translate(646.5 577.5)" />
-        <line x1="42" y1="41" transform="translate(604.5 536.5)" />
-        <line y1="4" x2="134" transform="translate(470.5 536.5)" />
-        <line x1="126" y2="53" transform="translate(604.5 483.5)" />
-        <line y1="66" x2="22" transform="translate(730.5 417.5)" />
-        <line x2="398" y2="37" transform="translate(739.5 469.5)" />
-        <line x2="51" y2="86" transform="translate(730.5 480.5)" />
-        <line y1="8" x2="125" transform="translate(656.5 566.5)" />
-        <line x1="59" y1="44" transform="translate(781.5 566.5)" />
-        <line x2="11" y2="101" transform="translate(840.5 610.5)" />
-        <line y1="40" x2="35" transform="translate(816.5 711.5)" />
-        <line x1="72" transform="translate(744.5 751.5)" />
-        <line x2="74" y2="77" transform="translate(670.5 674.5)" />
-        <line x1="139" y2="19" transform="translate(799.5 381.5)" />
-        <line y1="95" x2="97" transform="translate(938.5 286.5)" />
-        <line x2="8" y2="92" transform="translate(1027.5 194.5)" />
-        <line x1="60" y2="57" transform="translate(967.5 194.5)" />
-        <line y1="117" x2="40" transform="translate(927.5 251.5)" />
-        <line x2="164" y2="16" transform="translate(914.5 384.5)" />
-        <line x2="43" y2="117" transform="translate(1035.5 283.5)" />
-        <line x1="237" y1="88" transform="translate(1078.5 400.5)" />
-        <line x2="154" y2="87" transform="translate(1315.5 488.5)" />
-        <line x1="59" y1="79" transform="translate(1469.5 575.5)" />
-        <line x2="79" y2="5" transform="translate(1518.5 641.5)" />
-        <line y1="106" x2="21" transform="translate(1576.5 646.5)" />
-        <line x1="113" y1="68" transform="translate(1463.5 684.5)" />
-        <line x1="51" y2="38" transform="translate(1463.5 646.5)" />
-        <line x1="94" y1="7" transform="translate(1489.5 665.5)" />
-        <line x1="365" y1="148" transform="translate(1140.5 506.5)" />
-        <line y1="36" x2="55" transform="translate(1414.5 575.5)" />
-        <line x2="14" y2="69" transform="translate(1406.5 611.5)" />
-        <line x1="49" y1="4" transform="translate(1420.5 680.5)" />
-        <line x2="17" y2="80" transform="translate(1306.5 488.5)" />
-        <line y1="61" x2="59" transform="translate(1264.5 580.5)" />
-        <line x1="62" y1="103" transform="translate(1078.5 400.5)" />
-        <line x1="11" y2="62" transform="translate(1129.5 510.5)" />
-        <line x1="40" y2="105" transform="translate(978.5 506.5)" />
-        <line x1="207" y1="95" transform="translate(811.5 402.5)" />
-        <line x1="119" y2="111" transform="translate(837.5 488.5)" />
-        <line x2="233" y2="98" transform="translate(1131.5 572.5)" />
-        <line x1="56" y1="10" transform="translate(1364.5 670.5)" />
-        <line x1="285" y2="20" transform="translate(1011.5 646.5)" />
-        <line x1="97" y1="24" transform="translate(1267.5 646.5)" />
-        <line x2="160" y2="8" transform="translate(851.5 658.5)" />
-        <line y1="3" x2="120" transform="translate(858.5 611.5)" />
-        <line x1="157" y2="45" transform="translate(978.5 566.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
-
-const WhaleIcon = ({ size = 18, isDark }) => (
-  <TierIconBox isDark={isDark}>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1329.594 627.908" width={size} height={size * 0.47} style={{ display: 'block' }}>
-      <g transform="translate(-312.905 -143.901)" fill="none" stroke="#22c55e" strokeLinecap="round" strokeWidth="32">
-        <line x2="512" y2="100" transform="translate(570.5 371.5)" />
-        <line x1="230" y2="44" transform="translate(1082.5 427.5)" />
-        <line y1="93" x2="95" transform="translate(1303.5 328.5)" />
-        <line x2="15" y2="67" transform="translate(1383.5 261.5)" />
-        <line x1="86" y1="95" transform="translate(1297.5 166.5)" />
-        <line x1="43" y1="205" transform="translate(1297.5 166.5)" />
-        <line x1="101" y1="18" transform="translate(1398.5 328.5)" />
-        <line x2="19" transform="translate(1499.5 346.5)" />
-        <line x1="103" y1="44" transform="translate(1518.5 346.5)" />
-        <line x1="240" y2="51" transform="translate(1381.5 390.5)" />
-        <line x2="94" y2="5" transform="translate(1297.5 432.5)" />
-        <line y1="74" x2="83" transform="translate(1312.5 441.5)" />
-        <line x1="167" y1="46" transform="translate(1154.5 461.5)" />
-        <line x1="389" y2="204" transform="translate(923.5 515.5)" />
-        <line x1="428" y2="136" transform="translate(884.5 515.5)" />
-        <line x1="17" y1="54" transform="translate(878.5 651.5)" />
-        <line x2="62" y2="44" transform="translate(895.5 705.5)" />
-        <line y1="3" x2="131" transform="translate(826.5 749.5)" />
-        <line x2="128" transform="translate(694.5 745.5)" />
-        <line x2="110" y2="108" transform="translate(712.5 637.5)" />
-        <line x1="104" y1="137" transform="translate(608.5 500.5)" />
-        <line x1="197" y2="61" transform="translate(895.5 628.5)" />
-        <line y1="114" x2="15" transform="translate(1067.5 474.5)" />
-        <line x1="248" y1="3" transform="translate(819.5 585.5)" />
-        <line x1="54" y1="60" transform="translate(819.5 585.5)" />
-        <line x2="207" y2="85" transform="translate(612.5 500.5)" />
-        <line y1="61" x2="283" transform="translate(612.5 439.5)" />
-        <line x1="115" y2="7" transform="translate(497.5 500.5)" />
-        <line x2="163" y2="74" transform="translate(334.5 433.5)" />
-        <line y1="56" x2="107" transform="translate(334.5 377.5)" />
-        <line x1="129" y2="6" transform="translate(441.5 371.5)" />
-        <line x2="21" y2="67" transform="translate(334.5 433.5)" />
-        <line x1="147" y1="165" transform="translate(355.5 500.5)" />
-        <line x2="192" y2="80" transform="translate(502.5 665.5)" />
-        <line x2="192" y2="8" transform="translate(588.5 697.5)" />
-        <line x1="206" y1="235" transform="translate(388.5 462.5)" />
-        <line x1="130" y1="138" transform="translate(491.5 507.5)" />
-        <line x2="102" y2="14" transform="translate(621.5 645.5)" />
-        <line x2="53" y2="6" transform="translate(612.5 574.5)" />
-        <line x1="50" y1="56" transform="translate(562.5 518.5)" />
-        <line x1="43" y1="49" transform="translate(605.5 507.5)" />
-      </g>
-    </svg>
-  </TierIconBox>
-);
+const TierIcon = ({ xrpValue, isDark }) => {
+  const tier = TIER_CONFIG.find(t => xrpValue < t.max) || TIER_CONFIG[5];
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '22px',
+      height: '22px',
+      borderRadius: '4px',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+      background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)',
+      fontSize: '12px'
+    }}>{tier.label}</span>
+  );
+};
 
 // Tier tooltip component
 const TierHelpIcon = ({ isDark }) => (
@@ -904,16 +555,8 @@ const formatRelativeTime = (timestamp, includeAgo = false) => {
   }
 };
 
-// Wallet tier indicator - returns animal icon based on XRP value
-const getTradeSizeInfo = (value) => {
-  const xrpValue = parseFloat(value);
-  if (xrpValue < 100) return { Icon: ShrimpIcon, opacity: 1 };       // 0 - 100 XRP
-  if (xrpValue < 500) return { Icon: FishIcon, opacity: 1 };         // 100 - 500 XRP
-  if (xrpValue < 2000) return { Icon: SwordfishIcon, opacity: 1 };   // 500 - 2K XRP
-  if (xrpValue < 5000) return { Icon: SharkIcon, opacity: 1 };       // 2K - 5K XRP
-  if (xrpValue < 20000) return { Icon: OrcaIcon, opacity: 1 };       // 5K - 20K XRP
-  return { Icon: WhaleIcon, opacity: 1 };                            // 20K+ XRP
-};
+// Wallet tier indicator - returns XRP value for TierIcon
+const getTradeSizeInfo = (value) => parseFloat(value) || 0;
 
 const formatTradeValue = (value) => {
   const numValue = typeof value === 'string' ? Number(value) : value;
@@ -1061,7 +704,6 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
   const handleCancelOffer = (offerId) => {
     // TODO: Implement offer cancellation
-    console.log('Cancel offer:', offerId);
   };
 
   const SubTab = styled.button`
@@ -1117,7 +759,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
   // Empty state when not connected
   const notConnectedState = (
-    <Box
+    <div
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -1130,13 +772,13 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       }}
     >
       <Wallet size={40} strokeWidth={1.5} style={{ marginBottom: '12px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }} />
-      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>
+      <span style={{ color: "inherit" }}>
         Connect Wallet to View Activity
-      </Typography>
-      <Typography variant="body2" color="text.secondary" isDark={isDark} style={{ fontSize: '12px', opacity: 0.7, textAlign: 'center' }}>
+      </span>
+      <span style={{ color: "inherit" }}>
         Your trading history and open offers will appear here
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 
   const isConnected = !!(accountProfile?.account || accountProfile?.address);
@@ -1146,9 +788,9 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   }
 
   return (
-    <Stack spacing={1.5}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       {/* Sub-tabs */}
-      <Box style={{
+      <div style={{
         display: 'inline-flex',
         gap: '0',
         padding: '0',
@@ -1179,69 +821,69 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
         >
           Open Offers ({offersTotal})
         </SubTab>
-      </Box>
+      </div>
 
       {/* Assets */}
       {activeSubTab === 'assets' && (
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* Balance Card */}
           <OfferCard isDark={isDark}>
-            <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-              <Box>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Balance</span>
                 <span style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeDisplay(mockAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
                 </span>
-              </Box>
-              <Box style={{ textAlign: 'right' }}>
+              </div>
+              <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Value</span>
                 <span style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
                   {mockAssets.totalValue.toFixed(2)} <span style={{ fontSize: '12px', opacity: 0.5 }}>XRP</span>
                 </span>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </OfferCard>
 
           {/* P&L Card */}
-          <Box style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
             <OfferCard isDark={isDark}>
               <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Unrealized P&L</span>
-              <Box style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 <span style={{ fontSize: '18px', fontWeight: 600, color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
                   {mockAssets.pnl >= 0 ? '+' : ''}{mockAssets.pnl.toFixed(2)} XRP
                 </span>
                 <span style={{ fontSize: '12px', fontWeight: 500, color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
                   ({mockAssets.pnl >= 0 ? '+' : ''}{mockAssets.pnlPercent.toFixed(2)}%)
                 </span>
-              </Box>
+              </div>
             </OfferCard>
 
             <OfferCard isDark={isDark}>
               <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
-              <Box style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                 <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>
                   {formatPrice(mockAssets.avgBuyPrice)}
                 </span>
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>XRP</span>
-              </Box>
+              </div>
             </OfferCard>
-          </Box>
+          </div>
 
           {/* Trustline Info */}
           <OfferCard isDark={isDark}>
-            <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: mockAssets.trustlineSet ? '#22c55e' : '#ef4444' }} />
                 <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
                   Trustline {mockAssets.trustlineSet ? 'Active' : 'Not Set'}
                 </span>
-              </Box>
+              </div>
               <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                 Limit: {abbreviateNumber(mockAssets.limitAmount)}
               </span>
-            </Box>
+            </div>
           </OfferCard>
-        </Box>
+        </div>
       )}
 
       {/* My Trading History */}
@@ -1261,7 +903,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
           )}
 
           {mockMyTrades.length === 0 ? (
-            <Box
+            <div
               style={{
                 textAlign: 'center',
                 padding: '24px',
@@ -1269,32 +911,32 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                 borderRadius: '10px'
               }}
             >
-              <Typography variant="body2" color="text.secondary" isDark={isDark}>
+              <span style={{ color: "inherit" }}>
                 No trades yet for this token
-              </Typography>
-            </Box>
+              </span>
+            </div>
           ) : (
-            <Stack spacing={0}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {mockMyTrades.map((trade) => (
                 <Card key={trade._id} isDark={isDark}>
                   <CardContent style={{ padding: isMobile ? '10px 0' : '10px 0' }}>
                     {isMobile ? (
-                      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
                           <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                             {formatRelativeTime(trade.time)}
                           </span>
-                        </Box>
+                        </div>
                         <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
                           {formatTradeDisplay(trade.amount)} {tokenCurrency}
                         </span>
                         <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
                           {formatXRPAmount(trade.total)} XRP
                         </span>
-                      </Box>
+                      </div>
                     ) : (
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ flex: '0.8', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                           {formatRelativeTime(trade.time)}
                         </span>
@@ -1318,12 +960,12 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                             <ExternalLink size={12} />
                           </IconButton>
                         </div>
-                      </Box>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
               ))}
-            </Stack>
+            </div>
           )}
         </>
       )}
@@ -1332,11 +974,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {activeSubTab === 'offers' && (
         <>
           {loading ? (
-            <Box style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
               <Spinner size={24} />
-            </Box>
+            </div>
           ) : openOffers.length === 0 ? (
-            <Box
+            <div
               style={{
                 textAlign: 'center',
                 padding: '24px',
@@ -1344,12 +986,12 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                 borderRadius: '10px'
               }}
             >
-              <Typography variant="body2" color="text.secondary" isDark={isDark}>
+              <span style={{ color: "inherit" }}>
                 No open offers for this token
-              </Typography>
-            </Box>
+              </span>
+            </div>
           ) : (
-            <Stack spacing={1}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {openOffers.map((offer) => {
                 const isBuy = offer.takerGets?.currency === 'XRP' || offer.takerGets?.value;
                 const type = isBuy ? 'BUY' : 'SELL';
@@ -1364,35 +1006,35 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
                 return (
                   <OfferCard key={offer.seq || offer._id} isDark={isDark}>
-                    <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                       {/* Left side - Offer details */}
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                         <TradeTypeChip tradetype={type} style={{ fontSize: '12px', fontWeight: 600 }}>
                           {type}
                         </TradeTypeChip>
 
-                        <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
                             {formatTradeDisplay(tokenAmount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
                           </span>
                           <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                             @ {formatPrice(price)} XRP
                           </span>
-                        </Box>
+                        </div>
 
-                        <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
                           <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
                             {formatXRPAmount(total)} <span style={{ opacity: 0.5 }}>XRP</span>
                           </span>
                           <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
                             Total value
                           </span>
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
 
                       {/* Right side - Sequence and actions */}
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <Box style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
                           <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block' }}>
                             Seq #{offer.seq}
                           </span>
@@ -1401,7 +1043,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                               Expires {formatRelativeTime(offer.expiration * 1000)}
                             </span>
                           )}
-                        </Box>
+                        </div>
 
                         <CancelButton
                           onClick={() => handleCancelOffer(offer.seq)}
@@ -1409,17 +1051,17 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                         >
                           Cancel
                         </CancelButton>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   </OfferCard>
                 );
               })}
-            </Stack>
+            </div>
           )}
 
           {/* Pagination */}
           {offersTotal > offersLimit && (
-            <Box style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
               <button
                 onClick={() => setOffersPage(p => Math.max(0, p - 1))}
                 disabled={offersPage === 0}
@@ -1455,11 +1097,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
               >
                 Next
               </button>
-            </Box>
+            </div>
           )}
 
           {/* Info note */}
-          <Box style={{
+          <div style={{
             padding: '12px 14px',
             background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)',
             borderRadius: '8px',
@@ -1469,10 +1111,10 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
             <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
               Open offers are stored on the XRP Ledger. Cancelling an offer requires a transaction fee.
             </span>
-          </Box>
+          </div>
         </>
       )}
-    </Stack>
+    </div>
   );
 };
 
@@ -1770,11 +1412,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   };
 
   const fetchTradingHistory = useCallback(async (useCursor = null, isRefresh = false, useDirection = 'desc') => {
-    const fetchStart = performance.now();
-    console.log(`[TradingHistory] 🚀 fetchTradingHistory called - tokenId: ${tokenId}, cursor: ${useCursor}, refresh: ${isRefresh}`);
-
     if (!tokenId) {
-      console.log(`[TradingHistory] ⚠️ No tokenId, skipping`);
       setLoading(false);
       return;
     }
@@ -1826,10 +1464,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         }
       }
 
-      console.log(`[TradingHistory] 📡 Fetching: /api/history?${params}`);
       const response = await fetch(`https://api.xrpl.to/api/history?${params}`);
       const data = await response.json();
-      console.log(`[TradingHistory] ✅ History fetch complete - ${(performance.now() - fetchStart).toFixed(0)}ms, records: ${data.hists?.length || 0}`);
 
       if (data.result === 'success') {
         const currentTradeIds = previousTradesRef.current;
@@ -1868,7 +1504,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
   // Reset pagination when filters change
   useEffect(() => {
-    console.log(`[TradingHistory] 🔄 Filter useEffect triggered - tokenId: ${tokenId}`);
     setCursor(null);
     setNextCursor(null);
     setCursorHistory([]);
@@ -1877,9 +1512,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     setIsLastPage(false);
     previousTradesRef.current = new Set();
     setLoading(true);
-
-    // Fetch immediately
-    console.log(`[TradingHistory] Calling fetchTradingHistory`);
     fetchTradingHistory(null, false, 'desc');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
@@ -2230,9 +1862,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <Card key={trade._id || trade.id || index} isNew={newTradeIds.has(trade._id || trade.id)} isDark={isDark}>
             <VolumeIndicator volume={volumePercentage} isDark={isDark} />
             <CardContent>
-              <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                 {/* Left: Type + Time */}
-                <Box style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '75px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '75px' }}>
                   {isLiquidity ? (
                     <span style={{
                       fontSize: '11px',
@@ -2247,9 +1879,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                     {formatRelativeTime(trade.time)}
                   </span>
-                </Box>
+                </div>
                 {/* Center: Amount → Total with fiat value */}
-                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
                   <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                     {formatTradeDisplay(amountData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(amountData.currency)}</span>
                   </span>
@@ -2258,16 +1890,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     {formatTradeDisplay(totalData.value)} <span style={{ opacity: 0.5, fontSize: '11px' }}>{decodeCurrency(totalData.currency)}</span>
                     {activeFiatCurrency !== 'XRP' && (
                       <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)', marginLeft: '4px' }}>
-                        ({currencySymbols[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)})
+                        ({SYMBOLS[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)})
                       </span>
                     )}
                   </span>
-                </Box>
+                </div>
                 {/* Right: Link */}
                 <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark} style={{ padding: '4px' }}>
                   <ExternalLink size={16} />
                 </IconButton>
-              </Box>
+              </div>
             </CardContent>
           </Card>
         );
@@ -2280,7 +1912,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       return (
         <Card key={trade._id || trade.id || index} isNew={newTradeIds.has(trade._id || trade.id)} isDark={isDark}>
           <CardContent style={{ padding: '4px 0' }}>
-            <Box
+            <div
               style={{ display: 'grid', gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`, gap: '8px', alignItems: 'center', cursor: 'pointer' }}
               onClick={() => setExpandedTradeId(expandedTradeId === (trade._id || trade.id) ? null : (trade._id || trade.id))}
             >
@@ -2326,7 +1958,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Fiat Value */}
               {activeFiatCurrency !== 'XRP' && (
                 <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                  {currencySymbols[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
+                  {SYMBOLS[activeFiatCurrency]}{formatTradeDisplay((xrpAmount > 0 ? xrpAmount : (parseFloat(amountData.value) * (token?.exch || 0))) / exchRate)}
                 </span>
               )}
 
@@ -2366,15 +1998,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </span>
 
               {/* Animal tier icon */}
-              {(() => {
-                const { Icon } = getTradeSizeInfo(xrpAmount);
-                return (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={16} isDark={isDark} />
-                  </div>
-                );
-              })()}
-            </Box>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <TierIcon xrpValue={xrpAmount} isDark={isDark} />
+              </div>
+            </div>
           </CardContent>
           {/* Inline expanded details */}
           {expandedTradeId === (trade._id || trade.id) && (
@@ -2388,16 +2015,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
   if (loading) {
     return (
-      <Stack spacing={1}>
-        <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
           <Spinner size={32} />
-        </Box>
-      </Stack>
+        </div>
+      </div>
     );
   }
 
   const emptyState = (
-    <Box
+    <div
       style={{
         textAlign: 'center',
         padding: '24px',
@@ -2406,18 +2033,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
       }}
     >
-      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px' }}>
+      <span style={{ color: "inherit" }}>
         {historyType === 'liquidity' ? 'No Liquidity Events' : historyType === 'all' ? 'No Activity' : 'No Recent Trades'}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" isDark={isDark}>
+      </span>
+      <span style={{ color: "inherit" }}>
         {historyType === 'liquidity' ? 'AMM liquidity events will appear here' : 'Trading activity will appear here when available'}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 
   return (
-    <Stack spacing={1} style={{ width: '100%', flex: 1, position: 'relative', zIndex: 0 }}>
-      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', flex: 1, position: 'relative', zIndex: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
           <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}><Activity size={14} /><span>Trades</span></Tab>
           <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}><Droplets size={14} /><span>Pools</span></Tab>
@@ -2552,13 +2179,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             />
           </div>
         )}
-      </Box>
+      </div>
 
       {tabValue === 0 && (
         <>
           {/* Desktop header - hidden on mobile */}
           {!isMobile && (
-            <Box style={{
+            <div style={{
               display: 'grid',
               gridTemplateColumns: '70px 50px 90px 1fr 1fr 95px 70px 40px',
               gap: '8px',
@@ -2579,12 +2206,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Trader</div>
               <div style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Source</div>
               <div></div>
-            </Box>
+            </div>
           )}
 
           {/* Mobile header with column labels */}
           {isMobile && (
-            <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: '4px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: '4px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '65px' }}>
                 <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Type</span>
                 <LiveIndicator isDark={isDark}>
@@ -2593,13 +2220,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </div>
               <span style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Amount</span>
               <span style={{ width: '28px' }}></span>
-            </Box>
+            </div>
           )}
 
           {trades.length === 0 ? emptyState : (
-            <Stack spacing={0} style={{ flex: 1, overflow: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'auto' }}>
               {renderedTrades}
-            </Stack>
+            </div>
           )}
 
           {/* Cursor-based pagination */}
@@ -2629,15 +2256,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
 
       {tabValue === 1 && (
-        <Box>
+        <div>
           {ammLoading ? (
-            <Box style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
               <Spinner size={20} />
-            </Box>
+            </div>
           ) : ammPools.length === 0 ? (
-            <Box style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
+            <div style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No pools found</span>
-            </Box>
+            </div>
           ) : isMobile ? (
             /* Mobile compact pool rows - grid layout for alignment */
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -2781,7 +2408,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               })}
             </div>
           )}
-        </Box>
+        </div>
       )}
 
       {tabValue === 2 && token && <TopTraders token={token} />}
@@ -2808,7 +2435,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </DialogTitle>
             <DialogContent isDark={isDark}>
               {addLiquidityDialog.pool && (
-                <Stack spacing={2.5}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {/* Pool Info */}
                   <div style={{
                     display: 'flex',
@@ -2917,7 +2544,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   >
                     Add Liquidity
                   </button>
-                </Stack>
+                </div>
               )}
             </DialogContent>
           </DialogPaper>
@@ -2925,7 +2552,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         document.body
       )}
 
-    </Stack>
+    </div>
   );
 };
 
