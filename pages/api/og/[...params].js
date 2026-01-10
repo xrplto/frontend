@@ -3,7 +3,8 @@ import { ImageResponse } from 'next/og';
 export const runtime = 'edge';
 
 const BRAND_BLUE = '#3f96fe';
-const BG_DARK = '#0a0a0a';
+const BG_DARK = '#000000';
+const API_BASE = 'https://api.xrpl.to/api';
 
 // Cache font at module level
 let fontCache = null;
@@ -13,6 +14,20 @@ async function getFont() {
     'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff2'
   ).then((r) => r.arrayBuffer());
   return fontCache;
+}
+
+// Fetch token data from API
+async function fetchTokenData(slug) {
+  try {
+    const res = await fetch(`${API_BASE}/token/${slug}?desc=yes`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.token || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 // All page templates
@@ -43,15 +58,22 @@ const PAGES = {
 };
 
 // Dynamic page handlers
-function getTokenConfig(data) {
-  const name = data.name || data.currency || 'Token';
-  const change = parseFloat(data.change || '0');
+function getTokenConfig(token) {
+  // Token name/ticker
+  const name = token.name || token.currency || 'Token';
+  // Issuer display name
+  const user = token.user || '';
+  // Description (truncate for OG image)
+  const desc = token.description ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '') : '';
+  // Token logo from md5 hash
+  const logo = token.md5 ? `https://s1.xrpl.to/token/${token.md5}` : null;
+
   return {
     title: name,
-    subtitle: `${data.currency || 'Token'} on XRP Ledger`,
-    accent: change >= 0 ? '#22c55e' : '#ef4444',
-    price: data.price ? `$${data.price}` : null,
-    change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}%` : null,
+    user: user,
+    description: desc,
+    image: logo,
+    isToken: true,
   };
 }
 
@@ -121,13 +143,21 @@ export default async function handler(req) {
     if (PAGES[type]) {
       config = { ...PAGES[type], accent: BRAND_BLUE };
     } else if (type === 'token') {
-      config = getTokenConfig({
-        name: searchParams.get('name'),
-        currency: pathParts[1],
-        issuer: pathParts[2],
-        price: searchParams.get('price'),
-        change: searchParams.get('change'),
-      });
+      // Fetch token data from API
+      const slug = pathParts[1];
+      const tokenData = await fetchTokenData(slug);
+      if (tokenData) {
+        config = getTokenConfig(tokenData);
+      } else {
+        // Fallback if API fails - use query params
+        config = {
+          title: searchParams.get('name') || slug || 'Token',
+          user: '',
+          description: '',
+          image: searchParams.get('md5') ? `https://s1.xrpl.to/token/${searchParams.get('md5')}` : null,
+          isToken: true,
+        };
+      }
     } else if (type === 'collection') {
       config = getCollectionConfig({
         name: searchParams.get('name'),
@@ -163,9 +193,38 @@ export default async function handler(req) {
 
     const accent = config.accent || BRAND_BLUE;
     const font = await getFont();
+    const isToken = !!config.isToken;
 
     const image = new ImageResponse(
-      (
+      isToken ? (
+        // Token layout (side-by-side like Pump.Fun)
+        <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: BG_DARK, padding: 60 }}>
+          {/* Left content */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, paddingRight: 40 }}>
+            {/* Logo */}
+            <img src="https://xrpl.to/logo/xrpl-to-logo-white.svg" height={36} style={{ marginBottom: 32 }} />
+            {/* Token name/ticker */}
+            <div style={{ fontSize: 64, fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: 8 }}>{config.title}</div>
+            {/* User/Issuer */}
+            {config.user && (
+              <div style={{ fontSize: 28, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginBottom: 16 }}>{config.user}</div>
+            )}
+            {/* Description */}
+            {config.description && (
+              <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, maxWidth: 500 }}>{config.description}</div>
+            )}
+          </div>
+          {/* Right side - Token logo */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 340, height: 340, borderRadius: 32, backgroundColor: 'rgba(63,150,254,0.1)', border: '2px solid rgba(63,150,254,0.2)', overflow: 'hidden' }}>
+            {config.image ? (
+              <img src={config.image} width={340} height={340} style={{ objectFit: 'cover' }} />
+            ) : (
+              <div style={{ fontSize: 120, fontWeight: 700, color: BRAND_BLUE }}>{config.title.charAt(0)}</div>
+            )}
+          </div>
+        </div>
+      ) : (
+        // Static page layout (centered)
         <div
           style={{
             width: '100%',
@@ -175,48 +234,23 @@ export default async function handler(req) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: BG_DARK,
-            backgroundImage: `radial-gradient(circle at 20% 20%, ${accent}20 0%, transparent 40%), radial-gradient(circle at 80% 80%, ${BRAND_BLUE}15 0%, transparent 40%)`,
             padding: 60,
           }}
         >
           {/* Top bar */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${BRAND_BLUE})` }} />
-
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 32 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 10, background: `linear-gradient(135deg, ${BRAND_BLUE}, #65abfe)`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
-              <span style={{ fontSize: 30, fontWeight: 700, color: '#fff' }}>X</span>
-            </div>
-            <span style={{ fontSize: 26, color: 'rgba(255,255,255,0.85)' }}>XRPL.to</span>
-          </div>
-
+          <img src="https://xrpl.to/logo/xrpl-to-logo-white.svg" height={45} style={{ marginBottom: 32 }} />
           {/* Image if present */}
           {config.image && (
             <img src={config.image} width={100} height={100} style={{ borderRadius: 14, marginBottom: 20, border: '2px solid rgba(255,255,255,0.1)' }} />
           )}
-
           {/* Title */}
-          <div style={{ fontSize: 58, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.15, marginBottom: 12, maxWidth: 900 }}>
-            {config.title}
-          </div>
-
-          {/* Price + Change for tokens */}
-          {config.price && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
-              <span style={{ fontSize: 42, fontWeight: 700, color: accent }}>{config.price}</span>
-              {config.change && <span style={{ fontSize: 28, color: accent }}>{config.change}</span>}
-            </div>
-          )}
-
+          <div style={{ fontSize: 58, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.15, marginBottom: 12, maxWidth: 900 }}>{config.title}</div>
           {/* Subtitle */}
-          <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.55)', textAlign: 'center', maxWidth: 650 }}>
-            {config.subtitle}
-          </div>
-
+          <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.55)', textAlign: 'center', maxWidth: 650 }}>{config.subtitle}</div>
           {/* Domain */}
-          <div style={{ position: 'absolute', bottom: 36, right: 56, fontSize: 18, color: BRAND_BLUE }}>
-            xrpl.to
-          </div>
+          <div style={{ position: 'absolute', bottom: 36, right: 56, fontSize: 18, color: BRAND_BLUE }}>xrpl.to</div>
         </div>
       ),
       {

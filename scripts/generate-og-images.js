@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
  * OG Image Generator for XRPL.to
- * Generates Open Graph images for all static pages
+ * Generates Open Graph images for all static pages and tokens
  *
- * Usage: node scripts/generate-og-images.js
+ * Usage:
+ *   node scripts/generate-og-images.js          # Generate static pages only
+ *   node scripts/generate-og-images.js --tokens # Generate all token OG images
  *
- * Requires: npm install satori @resvg/resvg-js
+ * Requires: npm install satori @resvg/resvg-js sharp
  */
 
 const fs = require('fs');
 const path = require('path');
 const satori = require('satori').default;
 const { Resvg } = require('@resvg/resvg-js');
+const sharp = require('sharp');
 
 // OG Image dimensions (standard)
 const WIDTH = 1200;
@@ -19,12 +22,43 @@ const HEIGHT = 630;
 
 // Brand colors
 const BRAND_BLUE = '#3f96fe';
-const BG_DARK = '#0a0a0a';
+const BG_DARK = '#000000';
 const TEXT_WHITE = '#ffffff';
 const TEXT_MUTED = 'rgba(255, 255, 255, 0.6)';
 
-// Output directory
+// API base
+const API_BASE = 'https://api.xrpl.to/api';
+
+// Output directories
 const OUTPUT_DIR = path.join(__dirname, '../public/og');
+const TOKEN_OUTPUT_DIR = path.join(__dirname, '../public/og/token');
+
+// Logo path
+const LOGO_PATH = path.join(__dirname, '../public/logo/xrpl-to-logo-white.svg');
+
+// Check flags
+const GENERATE_TOKENS = process.argv.includes('--tokens');
+const TEST_MODE = process.argv.includes('--test'); // Only generate 1 token for testing
+
+// Fetch token image and convert webp to PNG base64
+async function fetchTokenImage(md5) {
+  try {
+    const url = `https://s1.xrpl.to/token/${md5}`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const buffer = await response.arrayBuffer();
+    const pngBuffer = await sharp(Buffer.from(buffer))
+      .resize(340, 340, { fit: 'cover' })
+      .png()
+      .toBuffer();
+
+    return `data:image/png;base64,${pngBuffer.toString('base64')}`;
+  } catch (error) {
+    console.log(`    Warning: Could not fetch token image for ${md5}`);
+    return null;
+  }
+}
 
 // Page configurations
 const PAGES = [
@@ -68,13 +102,13 @@ const ICONS = {
 
 // Load fonts
 async function loadFonts() {
-  // Use system fonts or download Inter from Google Fonts
+  // Use Inter from fontsource CDN (TTF format required by satori)
   const interRegular = await fetch(
-    'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2'
+    'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf'
   ).then((res) => res.arrayBuffer());
 
   const interBold = await fetch(
-    'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff2'
+    'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf'
   ).then((res) => res.arrayBuffer());
 
   return [
@@ -83,8 +117,8 @@ async function loadFonts() {
   ];
 }
 
-// Create OG image component (Satori uses JSX-like objects)
-function createOGImage(page) {
+// Create OG image for static pages (centered layout)
+function createStaticOGImage(page, logoDataUrl) {
   return {
     type: 'div',
     props: {
@@ -96,8 +130,6 @@ function createOGImage(page) {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: BG_DARK,
-        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(63, 150, 254, 0.15) 0%, transparent 50%),
-                          radial-gradient(circle at 75% 75%, rgba(63, 150, 254, 0.1) 0%, transparent 50%)`,
         padding: 60,
         position: 'relative',
       },
@@ -116,57 +148,15 @@ function createOGImage(page) {
             },
           },
         },
-        // Logo area
+        // Logo
         {
-          type: 'div',
+          type: 'img',
           props: {
+            src: logoDataUrl,
             style: {
-              display: 'flex',
-              alignItems: 'center',
+              height: 50,
               marginBottom: 40,
             },
-            children: [
-              // X logo mark (simplified)
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    width: 64,
-                    height: 64,
-                    borderRadius: 12,
-                    background: `linear-gradient(135deg, ${BRAND_BLUE}, #65abfe)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: 20,
-                  },
-                  children: {
-                    type: 'span',
-                    props: {
-                      style: {
-                        fontSize: 36,
-                        fontWeight: 700,
-                        color: TEXT_WHITE,
-                      },
-                      children: 'X',
-                    },
-                  },
-                },
-              },
-              // XRPL.to text
-              {
-                type: 'span',
-                props: {
-                  style: {
-                    fontSize: 32,
-                    fontWeight: 400,
-                    color: TEXT_WHITE,
-                    letterSpacing: '-0.02em',
-                  },
-                  children: 'XRPL.to',
-                },
-              },
-            ],
           },
         },
         // Main title
@@ -198,26 +188,182 @@ function createOGImage(page) {
             children: page.subtitle,
           },
         },
-        // Bottom domain
+      ],
+    },
+  };
+}
+
+// Create OG image for tokens (side-by-side layout like Pump.Fun)
+function createTokenOGImage(page, logoDataUrl, tokenImage) {
+  return {
+    type: 'div',
+    props: {
+      style: {
+        width: WIDTH,
+        height: HEIGHT,
+        display: 'flex',
+        backgroundColor: BG_DARK,
+        padding: 60,
+        position: 'relative',
+      },
+      children: [
+        // Left content
         {
           type: 'div',
           props: {
             style: {
-              position: 'absolute',
-              bottom: 40,
-              right: 60,
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flex: 1,
+              paddingRight: 40,
             },
             children: [
+              // XRPL.to logo
               {
-                type: 'span',
+                type: 'img',
+                props: {
+                  src: logoDataUrl,
+                  style: {
+                    height: 32,
+                    marginBottom: 48,
+                  },
+                },
+              },
+              // Token ticker (large)
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    fontSize: 72,
+                    fontWeight: 700,
+                    color: TEXT_WHITE,
+                    lineHeight: 1.1,
+                    marginBottom: 8,
+                  },
+                  children: page.title,
+                },
+              },
+              // Issuer name (bold, prominent)
+              ...(page.user ? [{
+                type: 'div',
+                props: {
+                  style: {
+                    fontSize: 32,
+                    fontWeight: 700,
+                    color: TEXT_WHITE,
+                    marginBottom: 16,
+                  },
+                  children: page.user,
+                },
+              }] : []),
+              // Description
+              ...(page.description ? [{
+                type: 'div',
                 props: {
                   style: {
                     fontSize: 20,
-                    color: BRAND_BLUE,
+                    color: TEXT_MUTED,
+                    maxWidth: 450,
+                    lineHeight: 1.5,
                   },
-                  children: 'xrpl.to',
+                  children: page.description,
+                },
+              }] : []),
+              // TRADE button
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex',
+                    marginTop: 32,
+                  },
+                  children: [
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          display: 'flex',
+                          alignItems: 'center',
+                          backgroundColor: BRAND_BLUE,
+                          paddingLeft: 28,
+                          paddingRight: 28,
+                          paddingTop: 14,
+                          paddingBottom: 14,
+                          borderRadius: 50,
+                          gap: 8,
+                        },
+                        children: [
+                          {
+                            type: 'div',
+                            props: {
+                              style: { fontSize: 18, fontWeight: 700, color: TEXT_WHITE },
+                              children: 'TRADE',
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        // Right side - Token logo
+        {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 360,
+              height: 360,
+              borderRadius: 24,
+              overflow: 'hidden',
+            },
+            children: tokenImage ? [
+              {
+                type: 'img',
+                props: {
+                  src: tokenImage,
+                  width: 360,
+                  height: 360,
+                  style: {
+                    width: 360,
+                    height: 360,
+                    objectFit: 'cover',
+                    borderRadius: 24,
+                  },
+                },
+              },
+            ] : [
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    width: 360,
+                    height: 360,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(63, 150, 254, 0.15)',
+                    borderRadius: 24,
+                  },
+                  children: [
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: 120,
+                          fontWeight: 700,
+                          color: BRAND_BLUE,
+                        },
+                        children: page.title.charAt(0),
+                      },
+                    },
+                  ],
                 },
               },
             ],
@@ -228,9 +374,24 @@ function createOGImage(page) {
   };
 }
 
+// Create OG image component (Satori uses JSX-like objects)
+function createOGImage(page, logoDataUrl, tokenImage) {
+  // Use token layout for pages with md5 (token pages)
+  if (page.md5) {
+    return createTokenOGImage(page, logoDataUrl, tokenImage);
+  }
+  return createStaticOGImage(page, logoDataUrl);
+}
+
 // Generate SVG and convert to PNG
-async function generateImage(page, fonts) {
-  const element = createOGImage(page);
+async function generateImage(page, fonts, logoDataUrl) {
+  // Fetch token image if md5 is provided
+  let tokenImage = null;
+  if (page.md5) {
+    tokenImage = await fetchTokenImage(page.md5);
+  }
+
+  const element = createOGImage(page, logoDataUrl, tokenImage);
 
   const svg = await satori(element, {
     width: WIDTH,
@@ -242,7 +403,71 @@ async function generateImage(page, fonts) {
     fitTo: { mode: 'width', value: WIDTH },
   });
 
-  return resvg.render().asPng();
+  const png = resvg.render().asPng();
+  // Convert to webp for smaller file size
+  return sharp(png).webp({ quality: 85 }).toBuffer();
+}
+
+// Fetch all tokens from API with pagination
+async function fetchAllTokens() {
+  const tokens = [];
+  let offset = 0;
+  const limit = TEST_MODE ? 1 : 100;
+
+  console.log(TEST_MODE ? 'TEST MODE: Fetching 1 token...' : 'Fetching tokens from API...');
+
+  while (true) {
+    try {
+      const url = `${API_BASE}/tokens?limit=${limit}&start=${offset}&sortBy=vol24hxrp&sortType=desc`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error(`API error at offset ${offset}: ${res.status}`);
+        break;
+      }
+
+      const data = await res.json();
+      const batch = data.tokens || [];
+
+      if (batch.length === 0) break;
+
+      tokens.push(...batch);
+      if (!TEST_MODE) console.log(`  Fetched ${tokens.length} tokens...`);
+
+      if (batch.length < limit || TEST_MODE) break;
+      offset += limit;
+
+      await new Promise(r => setTimeout(r, 100));
+    } catch (e) {
+      console.error(`Error fetching tokens at offset ${offset}:`, e.message);
+      break;
+    }
+  }
+
+  return tokens;
+}
+
+// Fetch single token with description
+async function fetchTokenWithDescription(slug) {
+  try {
+    const res = await fetch(`${API_BASE}/token/${slug}?desc=yes`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.token || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Generate token OG image
+async function generateTokenImage(token, fonts, logoDataUrl) {
+  const page = {
+    title: token.name || token.currency || 'Token',
+    user: token.user || '',
+    description: token.description ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '') : '',
+    md5: token.md5,
+  };
+
+  return generateImage(page, fonts, logoDataUrl);
 }
 
 // Main function
@@ -250,35 +475,132 @@ async function main() {
   console.log('OG Image Generator for XRPL.to');
   console.log('================================\n');
 
-  // Ensure output directory exists
+  // Ensure output directories exist
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     console.log(`Created output directory: ${OUTPUT_DIR}\n`);
   }
+
+  if (GENERATE_TOKENS && !fs.existsSync(TOKEN_OUTPUT_DIR)) {
+    fs.mkdirSync(TOKEN_OUTPUT_DIR, { recursive: true });
+    console.log(`Created token output directory: ${TOKEN_OUTPUT_DIR}\n`);
+  }
+
+  // Load logo as data URL
+  console.log('Loading logo...');
+  const logoSvg = fs.readFileSync(LOGO_PATH, 'utf-8');
+  const logoDataUrl = `data:image/svg+xml;base64,${Buffer.from(logoSvg).toString('base64')}`;
+  console.log('Logo loaded.\n');
 
   // Load fonts
   console.log('Loading fonts...');
   const fonts = await loadFonts();
   console.log('Fonts loaded.\n');
 
-  // Generate images for each page
-  console.log('Generating OG images...\n');
+  // Generate images for static pages
+  console.log('Generating static page OG images...\n');
 
   for (const page of PAGES) {
     try {
-      const png = await generateImage(page, fonts);
-      const outputPath = path.join(OUTPUT_DIR, `${page.slug}.png`);
+      const png = await generateImage(page, fonts, logoDataUrl);
+      const outputPath = path.join(OUTPUT_DIR, `${page.slug}.webp`);
       fs.writeFileSync(outputPath, png);
-      console.log(`  [OK] ${page.slug}.png - ${page.title}`);
+      console.log(`  [OK] ${page.slug}.webp - ${page.title}`);
     } catch (error) {
       console.error(`  [ERROR] ${page.slug}: ${error.message}`);
     }
   }
 
+  console.log(`\nGenerated ${PAGES.length} static page OG images.`);
+
+  // Generate token OG images if --tokens flag is passed
+  if (GENERATE_TOKENS) {
+    console.log('\n================================');
+    console.log('Generating token OG images...\n');
+
+    // Fetch all tokens
+    const tokens = await fetchAllTokens();
+    console.log(`\nFound ${tokens.length} tokens to process.\n`);
+
+    let success = 0;
+    let failed = 0;
+    let skipped = 0;
+
+    // Process tokens in batches for better performance
+    const BATCH_SIZE = 10;
+    const CONCURRENCY = 5;
+
+    for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
+      const batch = tokens.slice(i, i + BATCH_SIZE);
+
+      // Process batch with concurrency limit
+      const results = await Promise.allSettled(
+        batch.map(async (token) => {
+          const md5 = token.md5;
+          if (!md5) return { status: 'skip', reason: 'no md5' };
+
+          const outputPath = path.join(TOKEN_OUTPUT_DIR, `${md5}.webp`);
+
+          // Skip if already exists (incremental generation)
+          if (fs.existsSync(outputPath)) {
+            return { status: 'skip', md5 };
+          }
+
+          try {
+            // Fetch token with description
+            const tokenWithDesc = await fetchTokenWithDescription(token.slug || md5);
+            const tokenData = tokenWithDesc || token;
+
+            const png = await generateTokenImage(tokenData, fonts, logoDataUrl);
+            fs.writeFileSync(outputPath, png);
+            return { status: 'ok', md5, name: tokenData.name };
+          } catch (e) {
+            return { status: 'error', md5, error: e.message };
+          }
+        })
+      );
+
+      // Process results
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const r = result.value;
+          if (r.status === 'ok') {
+            success++;
+            console.log(`  [OK] ${r.md5}.webp - ${r.name}`);
+          } else if (r.status === 'skip') {
+            skipped++;
+          } else if (r.status === 'error') {
+            failed++;
+            console.error(`  [ERROR] ${r.md5}: ${r.error}`);
+          }
+        } else {
+          failed++;
+          console.error(`  [ERROR] Batch error: ${result.reason}`);
+        }
+      }
+
+      // Progress update every 100 tokens
+      if ((i + BATCH_SIZE) % 100 === 0 || i + BATCH_SIZE >= tokens.length) {
+        console.log(`\n  Progress: ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length} (${success} new, ${skipped} skipped, ${failed} failed)\n`);
+      }
+
+      // Small delay between batches
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    console.log('\n================================');
+    console.log(`Token OG generation complete:`);
+    console.log(`  New: ${success}`);
+    console.log(`  Skipped (existing): ${skipped}`);
+    console.log(`  Failed: ${failed}`);
+    console.log(`  Total: ${tokens.length}`);
+  }
+
   console.log('\n================================');
-  console.log(`Generated ${PAGES.length} OG images in ${OUTPUT_DIR}`);
-  console.log('\nAdd to your pages:');
-  console.log('  <meta property="og:image" content="https://xrpl.to/og/{slug}.png" />');
+  console.log('Done!');
+  console.log('\nUsage in pages:');
+  console.log('  Static: <meta property="og:image" content="https://xrpl.to/og/{slug}.webp" />');
+  console.log('  Tokens: <meta property="og:image" content="https://xrpl.to/og/token/{slug}.webp" />');
 }
 
 main().catch(console.error);

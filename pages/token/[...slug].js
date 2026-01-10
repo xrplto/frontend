@@ -201,30 +201,14 @@ export async function getStaticProps({ params }) {
       seoTitle = `${name}: ${priceDisplay}${changeDisplay ? ` ${changeDisplay}` : ''}`;
     }
 
-    // Enhanced Open Graph image handling with optimized dimensions
+    // Pre-generated OG image (static file)
     const getOptimalImage = () => {
-      // Optimal dimensions for social media (1.91:1 ratio, smaller for performance)
-      const width = 300;
-      const height = 157;
-
-      // Primary: Token image if md5 is available
-      if (md5) {
-        return {
-          url: `https://s1.xrpl.to/ogp/${md5}`,
-          width,
-          height,
-          type: 'image/webp',
-          alt: `${name} token logo`
-        };
-      }
-
-      // Fallback: XRPL.to logo when no md5r
       return {
-        url: 'https://xrpl.to/logo/xrpl-to-logo-white.svg',
-        width,
-        height,
-        type: 'image/svg+xml',
-        alt: 'XRPL.to - XRPL Token Trading Platform'
+        url: `https://xrpl.to/og/token/${md5}.webp`,
+        width: 1200,
+        height: 630,
+        type: 'image/webp',
+        alt: `${name} price chart on XRPL.to`
       };
     };
 
