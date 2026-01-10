@@ -57,7 +57,7 @@ const RichList = ({ token }) => {
   const [searchInput, setSearchInput] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef(null);
-  const rowsPerPage = isMobile ? 10 : 20;
+  const rowsPerPage = 20;
 
   // WebSocket for real-time updates (only on page 1, no search)
   useEffect(() => {
@@ -321,10 +321,7 @@ const RichList = ({ token }) => {
               <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
               {!isMobile && (
-                <>
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h %</th>
-                  <th className={cn('py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Status</th>
-                </>
+                <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h %</th>
               )}
               <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Share</th>
             </tr>
@@ -355,47 +352,38 @@ const RichList = ({ token }) => {
                     </span>
                   </td>
                   <td className="py-2.5 px-2">
-                    <Link
-                      href={`/address/${holder.account}`}
-                      className={cn(
-                        'text-[12px] font-mono hover:text-primary transition-colors',
-                        isDark ? 'text-white/80' : 'text-gray-700'
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/address/${holder.account}`}
+                        className={cn(
+                          'text-[12px] font-mono hover:text-primary transition-colors min-w-[120px]',
+                          isDark ? 'text-white/80' : 'text-gray-700'
+                        )}
+                      >
+                        {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
+                      </Link>
+                      {(isAMM || isCreator || isFrozen) && (
+                        <div className="flex items-center gap-1">
+                          {isAMM && <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>}
+                          {isCreator && <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Creator</span>}
+                          {isFrozen && <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>}
+                        </div>
                       )}
-                    >
-                      {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
-                    </Link>
+                    </div>
                   </td>
                   <td className={cn('py-2.5 px-2 text-right text-[12px] font-medium tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                     {formatNumber(holder.balance)}
                   </td>
                   {!isMobile && (
-                    <>
-                      <td className="py-2.5 px-2 text-right">
-                        {change24h !== null ? (
-                          <span className={cn('text-[12px] tabular-nums', change24h >= 0 ? 'text-green-500' : 'text-red-500')}>
-                            {change24h >= 0 ? '+' : ''}{change24h.toFixed(1)}%
-                          </span>
-                        ) : (
-                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-2 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {isAMM && (
-                          <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>
-                        )}
-                        {isCreator && (
-                          <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Creator</span>
-                        )}
-                        {isFrozen && (
-                          <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>
-                        )}
-                        {!isAMM && !isCreator && !isFrozen && (
-                          <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
-                        )}
-                      </div>
+                    <td className="py-2.5 px-2 text-right">
+                      {change24h !== null ? (
+                        <span className={cn('text-[12px] tabular-nums', change24h >= 0 ? 'text-green-500' : 'text-red-500')}>
+                          {Math.abs(change24h) < 0.01 ? '~0' : `${change24h >= 0 ? '+' : ''}${Math.abs(change24h) < 0.1 ? change24h.toFixed(2) : change24h.toFixed(1)}`}%
+                        </span>
+                      ) : (
+                        <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                      )}
                     </td>
-                    </>
                   )}
                   <td className="py-2.5 pl-2 text-right">
                     <div className="flex items-center justify-end gap-2">
