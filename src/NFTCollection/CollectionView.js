@@ -41,8 +41,19 @@ import {
   Activity,
   Grid2X2,
   Grid3X3,
-  LayoutGrid
+  LayoutGrid,
+  Code2,
+  Copy,
+  Check
 } from 'lucide-react';
+
+const COLLECTION_API_ENDPOINTS = [
+  { label: 'Collection', url: 'https://api.xrpl.to/api/nft/collection/{slug}' },
+  { label: 'NFTs', url: 'https://api.xrpl.to/api/nft/collection/{slug}/nfts', params: 'start, limit, sortBy, listed' },
+  { label: 'Activity', url: 'https://api.xrpl.to/api/nft/collection/{slug}/activity', params: 'start, limit' },
+  { label: 'Holders', url: 'https://api.xrpl.to/api/nft/collection/{slug}/holders', params: 'start, limit' },
+  { label: 'Stats', url: 'https://api.xrpl.to/api/nft/collection/{slug}/stats' }
+];
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
@@ -1712,6 +1723,9 @@ export default function CollectionView({ collection }) {
 
   const [openShare, setOpenShare] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
+  const [openApi, setOpenApi] = useState(false);
+  const [copiedApiIdx, setCopiedApiIdx] = useState(null);
+  const apiDropdownRef = useRef(null);
   const [value, setValue] = useState('tab-nfts');
   const [debugInfo, setDebugInfo] = useState(null);
   const [showChart, setShowChart] = useState(() => {
@@ -1808,6 +1822,9 @@ export default function CollectionView({ collection }) {
       }
       if (infoDropdownRef.current && !infoDropdownRef.current.contains(e.target)) {
         setOpenInfo(false);
+      }
+      if (apiDropdownRef.current && !apiDropdownRef.current.contains(e.target)) {
+        setOpenApi(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -1979,6 +1996,31 @@ export default function CollectionView({ collection }) {
             )}
           </div>
           <div className="flex items-center gap-2 ml-auto">
+            {/* API */}
+            <div className="relative" ref={apiDropdownRef}>
+              <button onClick={() => setOpenApi(!openApi)} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors border", isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50")}>
+                <Code2 size={13} />
+                API
+              </button>
+              {openApi && (
+                <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 w-[300px]', isDark ? 'bg-black/95 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white border-gray-200 shadow-lg')}>
+                  <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Collection API Endpoints</div>
+                  {COLLECTION_API_ENDPOINTS.map((ep, idx) => (
+                    <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{ep.label}</span>
+                        <button onClick={() => { navigator.clipboard.writeText(ep.url.replace('{slug}', slug)); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600"))}>
+                          {copiedApiIdx === idx ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                      </div>
+                      <code className={cn("text-[10px] break-all", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>{ep.url.replace('{slug}', slug)}</code>
+                      {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
+                    </div>
+                  ))}
+                  <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
+                </div>
+              )}
+            </div>
             {/* Info */}
             <div className="relative" ref={infoDropdownRef}>
               <button onClick={() => setOpenInfo(!openInfo)} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Info</button>

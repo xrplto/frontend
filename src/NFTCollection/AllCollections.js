@@ -4,7 +4,15 @@ import styled from '@emotion/styled';
 import CollectionList from './CollectionList';
 import { fVolume, fIntNumber } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
-import { X, Search, Copy, Check } from 'lucide-react';
+import { X, Search, Copy, Check, Code2 } from 'lucide-react';
+
+const NFT_API_ENDPOINTS = [
+  { label: 'Collections', url: 'https://api.xrpl.to/api/nft/collections', params: 'tag, start, limit, sortBy, sortType' },
+  { label: 'Collection Detail', url: 'https://api.xrpl.to/api/nft/collection/{taxon}', params: 'issuer' },
+  { label: 'NFT Detail', url: 'https://api.xrpl.to/api/nft/{nftokenid}' },
+  { label: 'NFT Sales', url: 'https://api.xrpl.to/api/nft/sales/{nftokenid}', params: 'start, limit' },
+  { label: 'Categories', url: 'https://api.xrpl.to/api/nft/tags' }
+];
 // Constants
 const CollectionListType = {
   ALL: 'ALL',
@@ -414,6 +422,50 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
+// API Modal Component
+const NftApiModal = ({ open, onClose, isDark }) => {
+  const [copiedIdx, setCopiedIdx] = useState(null);
+  if (!open) return null;
+  const handleCopy = (url, idx) => {
+    navigator.clipboard.writeText(url);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1500);
+  };
+  return (
+    <Drawer open={open}>
+      <DrawerBackdrop onClick={onClose} />
+      <DrawerPaper isDark={isDark} style={{ maxHeight: '60vh' }}>
+        <DrawerHeader>
+          <div className="flex items-center gap-4 flex-1">
+            <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', whiteSpace: 'nowrap' }}>
+              NFT API Endpoints
+            </span>
+            <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+          </div>
+          <DrawerClose isDark={isDark} onClick={onClose}><X size={18} /></DrawerClose>
+        </DrawerHeader>
+        <div style={{ padding: '0 16px 16px', overflowY: 'auto' }}>
+          {NFT_API_ENDPOINTS.map((ep, idx) => (
+            <div key={ep.label} style={{ marginBottom: '12px', padding: '10px 12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontWeight: 500, fontSize: '13px', color: isDark ? '#fff' : '#000' }}>{ep.label}</span>
+                <button onClick={() => handleCopy(ep.url, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: copiedIdx === idx ? '#10b981' : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') }}>
+                  {copiedIdx === idx ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+              <code style={{ fontSize: '11px', color: isDark ? '#3f96fe' : '#0891b2', wordBreak: 'break-all' }}>{ep.url}</code>
+              {ep.params && <div style={{ marginTop: '4px', fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
+            </div>
+          ))}
+          <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '8px', fontSize: '12px', color: isDark ? '#3f96fe' : '#0891b2' }}>
+            Full API Documentation →
+          </a>
+        </div>
+      </DrawerPaper>
+    </Drawer>
+  );
+};
+
 const normalizeTag = (tag) => {
   if (!tag) return '';
   return tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
@@ -435,6 +487,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
   const [tagSearch, setTagSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState(router.query.tag || null);
   const [copied, setCopied] = useState(false);
+  const [apiModalOpen, setApiModalOpen] = useState(false);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   // Sync selectedTag with URL query
@@ -484,6 +537,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
         position: 'relative'
       }}
     >
+      {/* API Modal */}
+      <NftApiModal open={apiModalOpen} onClose={() => setApiModalOpen(false)} isDark={isDark} />
+
       {/* Tags Drawer */}
       {tagsDrawerOpen && (
         <Drawer open={tagsDrawerOpen}>
@@ -658,9 +714,31 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                 })}
               </TagsScrollArea>
               <AllButtonWrapper>
-                <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
-                  <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
-                </AllTagsButton>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => setApiModalOpen(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      border: `1px solid ${isDark ? 'rgba(63, 150, 254, 0.2)' : 'rgba(8, 145, 178, 0.2)'}`,
+                      borderRadius: '6px',
+                      background: 'transparent',
+                      color: isDark ? '#3f96fe' : '#0891b2',
+                      fontSize: '0.7rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      height: '26px'
+                    }}
+                  >
+                    <Code2 size={13} />
+                    API
+                  </button>
+                  <AllTagsButton isDark={isDark} onClick={() => setTagsDrawerOpen(true)}>
+                    <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
+                  </AllTagsButton>
+                </div>
               </AllButtonWrapper>
             </TagsRow>
           </TagsContainer>

@@ -18,8 +18,16 @@ import {
   RefreshCw,
   ExternalLink,
   Hand,
-  Tag
+  Tag,
+  Code2
 } from 'lucide-react';
+
+const NFT_ACTION_API_ENDPOINTS = [
+  { label: 'NFT Detail', url: 'https://api.xrpl.to/api/nft/{nftokenid}' },
+  { label: 'Offers', url: 'https://api.xrpl.to/api/nft/{nftokenid}/offers' },
+  { label: 'History', url: 'https://api.xrpl.to/api/nft/{nftokenid}/history', params: 'start, limit' },
+  { label: 'Accept/Cancel', url: 'https://api.xrpl.to/api/offers/acceptcancel', params: 'account, NFTokenID, index' }
+];
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
@@ -164,6 +172,9 @@ export default function NFTActions({ nft }) {
   const isBurnable = (flag & 0x00000001) > 0;
 
   const [openShare, setOpenShare] = useState(false);
+  const [openApi, setOpenApi] = useState(false);
+  const [copiedApiIdx, setCopiedApiIdx] = useState(null);
+  const apiDropdownRef = useRef(null);
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
@@ -227,6 +238,9 @@ export default function NFTActions({ nft }) {
     const handleClickOutside = (e) => {
       if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target)) {
         setOpenShare(false);
+      }
+      if (apiDropdownRef.current && !apiDropdownRef.current.contains(e.target)) {
+        setOpenApi(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -510,8 +524,40 @@ export default function NFTActions({ nft }) {
                 </div>
               </div>
 
-              {/* Share Button */}
+              {/* Action Buttons */}
               <div className="flex gap-2">
+                {/* API Button */}
+                <div className="relative" ref={apiDropdownRef}>
+                  <button
+                    onClick={() => setOpenApi(!openApi)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-lg border text-[13px] font-medium transition-colors",
+                      isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50"
+                    )}
+                  >
+                    <Code2 size={14} />
+                    API
+                  </button>
+                  {openApi && (
+                    <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 w-[280px]', isDark ? 'bg-black/95 backdrop-blur-xl border-[#3f96fe]/10 shadow-lg' : 'bg-white border-gray-200 shadow-lg')}>
+                      <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>NFT API Endpoints</div>
+                      {NFT_ACTION_API_ENDPOINTS.map((ep, idx) => (
+                        <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{ep.label}</span>
+                            <button onClick={() => { navigator.clipboard.writeText(ep.url.replace('{nftokenid}', NFTokenID)); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (isDark ? "text-white/40" : "text-gray-400"))}>
+                              {copiedApiIdx === idx ? <Check size={12} /> : <Copy size={12} />}
+                            </button>
+                          </div>
+                          <code className={cn("text-[10px] break-all block", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>{ep.url.replace('{nftokenid}', NFTokenID)}</code>
+                          {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
+                        </div>
+                      ))}
+                      <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
+                    </div>
+                  )}
+                </div>
+                {/* Share Button */}
                 <div className="relative" ref={shareDropdownRef}>
                   <button
                     onClick={() => setOpenShare(!openShare)}

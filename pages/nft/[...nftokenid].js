@@ -11,7 +11,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
-const NFTDetail = lazy(() => import('src/NFT'));
+const NFTDetail = lazy(() => import('src/nft'));
 
 import { AppContext } from 'src/AppContext';
 
