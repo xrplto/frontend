@@ -120,7 +120,7 @@ const FooterLink = ({ href, children, isDark }) => {
 // Predefine immutable link groups to avoid re-creation on each render
 const PRODUCTS = [
   { href: '/', label: 'Tokens' },
-  { href: '/collections', label: 'NFTs' },
+  { href: '/nfts', label: 'NFTs' },
   { href: '/swap', label: 'Swap' },
   { href: '/news', label: 'News' },
   { href: '/docs', label: 'API' },

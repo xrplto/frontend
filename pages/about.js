@@ -16,10 +16,14 @@ const PageWrapper = styled.div`
 `;
 
 const Container = styled.div`
-  max-width: 900px;
+  max-width: 1920px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   width: 100%;
+
+  @media (min-width: 768px) {
+    padding: 0 16px;
+  }
 `;
 
 // Hero Section
@@ -150,6 +154,43 @@ const FeatureTitle = styled.h3`
 const FeatureText = styled.p`
   font-size: 11px;
   line-height: 1.5;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
+`;
+
+// Fees Section
+const FeesSection = styled.div`
+  margin: 32px 0;
+`;
+
+const FeesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FeeCard = styled.div`
+  text-align: center;
+  padding: 20px 16px;
+  background: transparent;
+  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+`;
+
+const FeeAmount = styled.div`
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #3b82f6;
+  margin-bottom: 4px;
+`;
+
+const FeeLabel = styled.div`
+  font-size: 11px;
   color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
 `;
 
@@ -345,7 +386,7 @@ function AboutPage() {
     },
     {
       question: 'What are the fees for trading on xrpl.to?',
-      answer: 'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Additionally, some wallets may charge their own fees, so we recommend checking your wallet\'s fee structure. These minimal network costs ensure fast transaction processing and network security.'
+      answer: 'Xrpl.to charges a 1% trading fee for both token and NFT trades. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Some wallets may also charge their own fees, so we recommend checking your wallet\'s fee structure.'
     },
     {
       question: 'How do I list my token on xrpl.to?',
@@ -439,6 +480,21 @@ function AboutPage() {
             })}
           </FeatureGrid>
         </FeaturesSection>
+
+        {/* Fees Section */}
+        <FeesSection>
+          <SectionTitle isDark={isDark}>Trading Fees</SectionTitle>
+          <FeesGrid>
+            <FeeCard isDark={isDark}>
+              <FeeAmount>1%</FeeAmount>
+              <FeeLabel isDark={isDark}>Token Trading</FeeLabel>
+            </FeeCard>
+            <FeeCard isDark={isDark}>
+              <FeeAmount>1%</FeeAmount>
+              <FeeLabel isDark={isDark}>NFT Trading</FeeLabel>
+            </FeeCard>
+          </FeesGrid>
+        </FeesSection>
 
         {/* Timeline Section */}
         <TimelineSection>
@@ -536,7 +592,7 @@ export async function getStaticProps() {
           name: 'What are the fees for trading on xrpl.to?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
+            text: 'Xrpl.to charges a 1% trading fee for both token and NFT trades. Additionally, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
           }
         },
         {
