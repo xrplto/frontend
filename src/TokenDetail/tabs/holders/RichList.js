@@ -33,7 +33,7 @@ const formatNumber = (num) => {
   return value.toFixed(2);
 };
 
-const RichList = ({ token, amm }) => {
+const RichList = ({ token }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
@@ -58,8 +58,6 @@ const RichList = ({ token, amm }) => {
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef(null);
   const rowsPerPage = isMobile ? 10 : 20;
-
-  const ammAccount = amm || token?.AMM;
 
   // WebSocket for real-time updates (only on page 1, no search)
   useEffect(() => {
@@ -132,6 +130,8 @@ const RichList = ({ token, amm }) => {
         const data = await response.json();
 
         if (data.result === 'success' && mounted) {
+          // Skip if WebSocket took over (race condition)
+          if (page === 1 && !searchTerm && wsRef.current?.readyState === WebSocket.OPEN) return;
           setRichList(data.richList || []);
           if (data.summary) setSummary(data.summary);
           const actualHolders = data.length || data.richList?.length || 0;
@@ -333,8 +333,8 @@ const RichList = ({ token, amm }) => {
             {richList.map((holder, index) => {
               const rank = holder.id || (page - 1) * rowsPerPage + index + 1;
               const percentOfSupply = holder.holding || 0;
-              const isAMM = ammAccount && holder.account === ammAccount;
-              const isIssuer = token.issuer && holder.account === token.issuer;
+              const isAMM = holder.isAMM;
+              const isCreator = holder.isCreator;
               const isFrozen = holder.freeze;
               const change24h = holder.balance24h ? ((holder.balance - holder.balance24h) / holder.balance24h) * 100 : null;
 
@@ -384,13 +384,13 @@ const RichList = ({ token, amm }) => {
                         {isAMM && (
                           <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>
                         )}
-                        {isIssuer && (
-                          <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Issuer</span>
+                        {isCreator && (
+                          <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Creator</span>
                         )}
                         {isFrozen && (
                           <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>
                         )}
-                        {!isAMM && !isIssuer && !isFrozen && (
+                        {!isAMM && !isCreator && !isFrozen && (
                           <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
                         )}
                       </div>

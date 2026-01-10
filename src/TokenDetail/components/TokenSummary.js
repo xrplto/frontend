@@ -553,7 +553,7 @@ const TokenSummary = memo(({ token }) => {
                       { label: 'Order Book', url: `https://api.xrpl.to/api/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
                       { label: 'History', url: `https://api.xrpl.to/api/history?token=${md5}` },
                       { label: 'OHLC', url: `https://api.xrpl.to/api/ohlc/${md5}` },
-                      { label: 'Traders', url: `https://api.xrpl.to/api/analytics/top-traders/${md5}` },
+                      { label: 'Traders', url: `https://api.xrpl.to/api/traders/token-traders/${md5}` },
                       { label: 'AMM', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
                       { label: 'Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
                       { label: 'Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }

@@ -290,7 +290,7 @@ Base URL: https://api.xrpl.to/api
 
 GET /analytics/token/{tokenId} - Token analytics (OMCF)
 GET /analytics/trader/{address}/{tokenId} - Trader metrics for token
-GET /analytics/top-traders/{tokenId} - Top traders (page, limit, sortBy: volume24h)
+GET /traders/token-traders/{tokenId} - Top traders (page, limit, sortBy: pnl|trades|volume)
 GET /analytics/trader-stats/{address} - Cumulative trader stats
 
 GET /analytics/cumulative-stats - All traders stats (10min cache)
@@ -1065,7 +1065,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 {[
                   ['GET', '/api/analytics/token/{tokenId}', 'Token analytics (OMCF)'],
                   ['GET', '/api/analytics/trader/{address}/{tokenId}', 'Trader metrics for token'],
-                  ['GET', '/api/analytics/top-traders/{tokenId}', 'Top traders (sortBy: volume24h)'],
+                  ['GET', '/api/traders/token-traders/{tokenId}', 'Top traders (sortBy: pnl|trades|volume)'],
                   ['GET', '/api/analytics/trader-stats/{address}', 'Cumulative trader stats'],
                   ['GET', '/api/analytics/cumulative-stats', 'All traders (10min cache, minTrades, minProfit, minROI, minTokens, activePeriod)'],
                   ['GET', '/api/analytics/market-metrics', 'Daily market metrics (startDate required)'],

@@ -654,9 +654,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         })
         .sort((a, b) => a.time - b.time);
 
+      // Always recreate markers to avoid stale state
       if (seriesRefs.current.markers) {
-        seriesRefs.current.markers.setMarkers(markers);
-      } else {
+        try { seriesRefs.current.markers.setMarkers([]); } catch {}
+        seriesRefs.current.markers = null;
+      }
+      if (markers.length > 0) {
         seriesRefs.current.markers = createSeriesMarkers(priceSeries, markers);
       }
     }

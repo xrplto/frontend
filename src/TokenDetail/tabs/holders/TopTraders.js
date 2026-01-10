@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, TrendingDown, Activity, Target, Zap, Search, X } from 'lucide-react';
+import { Loader2, TrendingUp, Activity, Target, Zap } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
@@ -15,12 +15,12 @@ function formatCompactNumber(num) {
   return num.toFixed(2);
 }
 
-// Time period options
+// Time period options - maps to API interval param
 const TIME_PERIODS = [
   { key: '24h', label: '24H' },
   { key: '7d', label: '7D' },
-  { key: '1m', label: '1M' },
-  { key: '3m', label: '3M' }
+  { key: '30d', label: '30D' },
+  { key: 'all', label: 'All' }
 ];
 
 // Sort options - grouped by category
@@ -41,21 +41,7 @@ export default function TopTraders({ token }) {
   const [loading, setLoading] = useState(true);
   const [sortType, setSortType] = useState('profit');
   const [timePeriod, setTimePeriod] = useState('7d');
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [mobileChecked, setMobileChecked] = useState(false);
-  const [searchAddress, setSearchAddress] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const rowsPerPage = isMobile ? 10 : 20;
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchAddress);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchAddress]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -77,7 +63,7 @@ export default function TopTraders({ token }) {
       return;
     }
 
-    const limit = isMobile ? 10 : 20;
+    const limit = isMobile ? 25 : 50;
     const fetchTopTraders = async () => {
       setLoading(true);
       try {
@@ -87,65 +73,62 @@ export default function TopTraders({ token }) {
           const sortMap = { profit: 'buyVolume', volume: 'volume24h', roi: 'sellVolume', winRate: 'winRate' };
           const sortBy = sortMap[sortType] || 'volume24h';
           response = await axios.get(
-            `${BASE_URL}/analytics/cumulative-stats?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
+            `${BASE_URL}/analytics/cumulative-stats?limit=${limit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.data) ? response.data.data : [];
             setTraders(tradersArray);
-            setTotalCount(response.data.pagination?.total || tradersArray.length);
           }
         } else {
-          // Token-specific traders
-          const sortOption = SORT_OPTIONS.find(o => o.key === sortType);
-          const sortBy = sortOption?.timeBased ? `${sortType}${timePeriod}` : sortType;
-          const addressParam = debouncedSearch ? `&address=${encodeURIComponent(debouncedSearch)}` : '';
+          // Token-specific traders - valid sortBy: pnl, trades, volume (default)
+          const sortMap = { profit: 'pnl', volume: 'volume', roi: 'trades', winRate: 'trades' };
+          const sortBy = sortMap[sortType] || 'volume';
+          const interval = timePeriod || '7d';
           response = await axios.get(
-            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${limit}&sortBy=${sortBy}${addressParam}`
+            `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${limit}&sortBy=${sortBy}`
           );
           if (response.status === 200) {
-            // API returns { traders, total, page, limit, totalPages }
             const tradersArray = Array.isArray(response.data.traders) ? response.data.traders : [];
             setTraders(tradersArray);
-            setTotalCount(response.data.total || tradersArray.length);
           }
         }
       } catch (error) {
         setTraders([]);
-        setTotalCount(0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, page, isMobile, mobileChecked, debouncedSearch]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
     return traders.map((trader) => ({
       ...trader,
       address: trader.address || 'Unknown',
-      profit: trader.totalProfit || trader.profit || 0,
-      volume: trader.totalVolume || 0,
-      trades: trader.totalTrades || 0
+      profit: trader.profit || 0,
+      volume: trader.volume || 0,
+      trades: trader.trades || 0,
+      roi: trader.roi || 0,
+      tokensBought: trader.tokensBought || 0,
+      tokensSold: trader.tokensSold || 0,
+      avgBuyPrice: trader.avgBuyPrice || 0,
+      avgSellPrice: trader.avgSellPrice || 0
     }));
   }, [traders]);
 
   const handleSortChange = (newSortType) => {
     if (sortType !== newSortType) {
       setSortType(newSortType);
-      setPage(1);
     }
   };
 
   const handlePeriodChange = (newPeriod) => {
     if (timePeriod !== newPeriod) {
       setTimePeriod(newPeriod);
-      setPage(1);
     }
   };
-
-  const totalPages = Math.ceil(totalCount / rowsPerPage);
 
   if (loading) {
     return (
@@ -162,27 +145,13 @@ export default function TopTraders({ token }) {
           'text-center py-12 rounded-xl border-[1.5px] border-dashed',
           isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
         )}>
-          {debouncedSearch ? (
-            <>
-              <Search className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
-              <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
-                No Results
-              </h3>
-              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                No traders found for "{debouncedSearch}"
-              </p>
-            </>
-          ) : (
-            <>
-              <Activity className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
-              <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
-                No Traders Found
-              </h3>
-              <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                Trading data will appear here when available
-              </p>
-            </>
-          )}
+          <Activity className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
+          <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
+            No Traders Found
+          </h3>
+          <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+            Trading data will appear here when available
+          </p>
         </div>
       ) : (
         <>
@@ -237,32 +206,6 @@ export default function TopTraders({ token }) {
                 })}
               </div>
 
-              {/* Search by address */}
-              {!isXRPToken && (
-                <div className="relative">
-                  <Search size={14} className={cn('absolute left-2.5 top-1/2 -translate-y-1/2', isDark ? 'text-white/40' : 'text-gray-400')} />
-                  <input
-                    type="text"
-                    placeholder="Search address..."
-                    value={searchAddress}
-                    onChange={(e) => setSearchAddress(e.target.value)}
-                    className={cn(
-                      'h-7 w-36 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
-                      isDark
-                        ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
-                        : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
-                    )}
-                  />
-                  {searchAddress && (
-                    <button
-                      onClick={() => setSearchAddress('')}
-                      className={cn('absolute right-2 top-1/2 -translate-y-1/2', isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600')}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -273,30 +216,34 @@ export default function TopTraders({ token }) {
                 <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
                   <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
                   <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
                   {!isMobile && (
                     <>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought</th>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70')}>Wash</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
                     </>
                   )}
-                  <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
+                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
+                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+                  {!isMobile && (
+                    <>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70')}>Wash</th>
+                      <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {processedTraders.map((trader, index) => {
-                  const rank = (page - 1) * rowsPerPage + index + 1;
+                  const rank = index + 1;
                   const isTopTrader = rank <= 3;
-                  const pnl = trader.totalProfit ?? trader.profit ?? 0;
+                  const pnl = trader.profit ?? 0;
                   const roi = trader.roi ?? 0;
-                  const bought = trader.buyVolume ?? 0;
-                  const sold = trader.sellVolume ?? 0;
-                  const volume = trader.totalVolume ?? 0;
-                  const trades = trader.totalTrades ?? trader.trades ?? 0;
+                  const bought = trader.tokensBought ?? 0;
+                  const sold = trader.tokensSold ?? 0;
+                  const volume = trader.volume ?? 0;
+                  const trades = trader.trades ?? 0;
                   return (
                     <tr key={trader.address + '-' + index} className={cn('border-b', isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50')}>
                       <td className="py-2.5 pr-2">
@@ -310,20 +257,13 @@ export default function TopTraders({ token }) {
                           {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>
-                      <td className="py-2.5 px-2 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {pnl >= 0 ? <TrendingUp size={10} className="text-green-500" /> : <TrendingDown size={10} className="text-red-500" />}
-                          <span className={cn('text-[12px] font-medium tabular-nums', pnl >= 0 ? 'text-green-500' : 'text-red-500')}>
-                            {pnl >= 0 ? '+' : ''}{formatCompactNumber(pnl)}
-                          </span>
-                        </div>
-                      </td>
                       {!isMobile && (
                         <>
-                          <td className="py-2.5 px-2 text-right">
-                            <span className={cn('text-[12px] tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
-                              {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                            </span>
+                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            {formatCompactNumber(volume)}
+                          </td>
+                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                            {fNumber(trades)}
                           </td>
                           <td className="py-2.5 px-2 text-right">
                             <span className="text-[12px] tabular-nums text-green-500">{formatCompactNumber(bought)}</span>
@@ -331,22 +271,30 @@ export default function TopTraders({ token }) {
                           <td className="py-2.5 px-2 text-right">
                             <span className="text-[12px] tabular-nums text-red-500">{formatCompactNumber(sold)}</span>
                           </td>
-                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                            {formatCompactNumber(volume)}
-                          </td>
+                        </>
+                      )}
+                      <td className="py-2.5 px-2 text-right">
+                        <span className={cn('text-[12px] font-medium tabular-nums', pnl >= 0 ? 'text-green-500' : 'text-red-500')}>
+                          {pnl >= 0 ? '+' : ''}{formatCompactNumber(pnl)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 text-right">
+                        <span className={cn('text-[12px] tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                        </span>
+                      </td>
+                      {!isMobile && (
+                        <>
                           <td className="py-2.5 px-2 text-right">
                             <span className={cn('text-[12px] tabular-nums', trader.washTradingScore > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
                               {trader.washTradingScore > 0 ? formatCompactNumber(trader.washTradingScore) : '-'}
                             </span>
                           </td>
-                          <td className={cn('py-2.5 px-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
+                          <td className={cn('py-2.5 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
                             {trader.lastTradeDate ? new Date(trader.lastTradeDate).toLocaleDateString() : '-'}
                           </td>
                         </>
                       )}
-                      <td className={cn('py-2.5 pl-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                        {fNumber(trades)}
-                      </td>
                     </tr>
                   );
                 })}
@@ -354,59 +302,6 @@ export default function TopTraders({ token }) {
             </table>
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                Showing {(page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, totalCount)} of {totalCount.toLocaleString()}
-              </span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
-                  )}
-                >
-                  <ChevronsLeft size={14} />
-                </button>
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 1}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
-                  )}
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <span className={cn('px-3 text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>
-                  {page} / {totalPages.toLocaleString()}
-                </span>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page === totalPages}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
-                  )}
-                >
-                  <ChevronRight size={14} />
-                </button>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
-                  )}
-                >
-                  <ChevronsRight size={14} />
-                </button>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
