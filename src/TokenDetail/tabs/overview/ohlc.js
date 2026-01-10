@@ -26,7 +26,9 @@ const processOhlc = (ohlc) => {
       creatorSold: c[6] || 0,
       creatorBought: c[7] || 0,
       creatorWithdraw: c[8] || 0,
-      creatorDeposit: c[9] || 0
+      creatorDeposit: c[9] || 0,
+      creatorCheckCash: c[10] || 0,
+      creatorCheckCreate: c[11] || 0
     }))
     .sort((a, b) => a.time - b.time);
 };
@@ -206,7 +208,9 @@ const PriceChartAdvanced = memo(({ token }) => {
             creatorSold: +k.cSold || 0,
             creatorBought: +k.cBought || 0,
             creatorWithdraw: +k.cWithdraw || 0,
-            creatorDeposit: +k.cDeposit || 0
+            creatorDeposit: +k.cDeposit || 0,
+            creatorCheckCash: +k.cCheckCash || 0,
+            creatorCheckCreate: +k.cCheckCreate || 0
           };
           setData(prev => {
             if (!prev?.length) return prev;
@@ -494,24 +498,28 @@ const PriceChartAdvanced = memo(({ token }) => {
           const col = candle.close >= candle.open ? '#22c55e' : '#ef4444';
           html += row('O', sym + fp(candle.open)) + row('H', sym + fp(candle.high)) + row('L', sym + fp(candle.low)) + row('C', sym + fp(candle.close), col) + sep + row('Vol', candle.volume.toLocaleString()) + row('Chg', chg + '%', col);
           // Creator activity
-          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0;
+          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0 || candle.creatorCheckCash > 0 || candle.creatorCheckCreate > 0;
           if (hasCreatorActivity) {
             html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
             if (candle.creatorSold > 0) html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
             if (candle.creatorBought > 0) html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
             if (candle.creatorWithdraw > 0) html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
             if (candle.creatorDeposit > 0) html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+            if (candle.creatorCheckCreate > 0) html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#a855f7');
+            if (candle.creatorCheckCash > 0) html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#8b5cf6');
           }
         } else if (ct === 'line') {
           html += row('Price', sym + fp(candle.close || candle.value)) + row('Vol', (candle.volume || 0).toLocaleString());
           // Creator activity for line chart
-          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0;
+          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0 || candle.creatorCheckCash > 0 || candle.creatorCheckCreate > 0;
           if (hasCreatorActivity) {
             html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
             if (candle.creatorSold > 0) html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
             if (candle.creatorBought > 0) html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
             if (candle.creatorWithdraw > 0) html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
             if (candle.creatorDeposit > 0) html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+            if (candle.creatorCheckCreate > 0) html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#a855f7');
+            if (candle.creatorCheckCash > 0) html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#8b5cf6');
           }
         } else {
           html += row('Holders', (candle.holders || candle.value).toLocaleString());
@@ -624,7 +632,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     const priceSeries = seriesRefs.current.candle || seriesRefs.current.line;
     if (chartType !== 'holders' && priceSeries && data) {
       const markers = data
-        .filter(d => d.creatorSold > 0 || d.creatorBought > 0 || d.creatorWithdraw > 0 || d.creatorDeposit > 0)
+        .filter(d => d.creatorSold > 0 || d.creatorBought > 0 || d.creatorWithdraw > 0 || d.creatorDeposit > 0 || d.creatorCheckCash > 0 || d.creatorCheckCreate > 0)
         .flatMap(d => {
           const arr = [];
           if (d.creatorSold > 0) {
@@ -638,6 +646,9 @@ const PriceChartAdvanced = memo(({ token }) => {
           }
           if (d.creatorDeposit > 0) {
             arr.push({ time: d.time, position: 'belowBar', color: '#3b82f6', shape: 'circle', text: 'D' });
+          }
+          if (d.creatorCheckCash > 0 || d.creatorCheckCreate > 0) {
+            arr.push({ time: d.time, position: 'aboveBar', color: '#a855f7', shape: 'square', text: '✓' });
           }
           return arr;
         })
