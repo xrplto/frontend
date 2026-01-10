@@ -63,6 +63,13 @@ const OverView = ({ account }) => {
   const [collectionNftsLoading, setCollectionNftsLoading] = useState(false);
   const [nftTrades, setNftTrades] = useState([]);
   const [nftTradesLoading, setNftTradesLoading] = useState(false);
+  const [historyView, setHistoryView] = useState('tokens');
+  const [tokenHistory, setTokenHistory] = useState([]);
+  const [tokenHistoryLoading, setTokenHistoryLoading] = useState(false);
+  const [tokenHistoryCursor, setTokenHistoryCursor] = useState(null);
+  const [tokenHistoryHasMore, setTokenHistoryHasMore] = useState(false);
+  const [tokenHistoryType, setTokenHistoryType] = useState('all');
+  const [tokenHistoryPairType, setTokenHistoryPairType] = useState('');
   const [nftCollectionStats, setNftCollectionStats] = useState([]);
   const [nftCollectionStatsLoading, setNftCollectionStatsLoading] = useState(false);
   const [nftHistory, setNftHistory] = useState([]);
@@ -116,16 +123,6 @@ const OverView = ({ account }) => {
         setHoldings(holdingsRes.data);
         setNftStats(nftRes.data);
 
-        // Fetch transaction history via xrpl.to API
-        axios.get(`https://api.xrpl.to/api/account/tx/${account}?limit=200`)
-          .then(res => {
-            if (res.data?.result === 'success' || res.data?.txs || res.data?.transactions) {
-              const txs = res.data.txs || res.data.transactions || [];
-              setTxHistory(txs);
-              setFilteredTxHistory(txs);
-            }
-          })
-          .catch(err => console.error('TX history fetch failed:', err));
       } catch (err) {
         console.error('Failed to fetch profile:', err);
       } finally {
@@ -213,6 +210,20 @@ const OverView = ({ account }) => {
       .finally(() => setCollectionNftsLoading(false));
   }, [selectedNftCollection, account]);
 
+  // Fetch onchain history when onchain view is selected
+  useEffect(() => {
+    if (activeTab !== 'activity' || historyView !== 'onchain' || !account || txHistory.length > 0) return;
+    axios.get(`https://api.xrpl.to/api/account/tx/${account}?limit=200`)
+      .then(res => {
+        if (res.data?.result === 'success' || res.data?.txs || res.data?.transactions) {
+          const txs = res.data.txs || res.data.transactions || [];
+          setTxHistory(txs);
+          setFilteredTxHistory(txs);
+        }
+      })
+      .catch(err => console.error('TX history fetch failed:', err));
+  }, [activeTab, historyView, account]);
+
   // Fetch NFT trades when activity tab is viewed
   useEffect(() => {
     if (activeTab !== 'activity' || !account || nftTrades.length > 0) return;
@@ -222,6 +233,42 @@ const OverView = ({ account }) => {
       .catch(err => console.error('Failed to fetch NFT trades:', err))
       .finally(() => setNftTradesLoading(false));
   }, [activeTab, account]);
+
+  // Build token history URL with filters
+  const buildTokenHistoryUrl = (cursor = null) => {
+    let url = `https://api.xrpl.to/api/history?account=${account}&limit=50`;
+    if (tokenHistoryType && tokenHistoryType !== 'all') url += `&type=${tokenHistoryType}`;
+    if (tokenHistoryPairType) url += `&pairType=${tokenHistoryPairType}`;
+    if (cursor) url += `&cursor=${cursor}`;
+    return url;
+  };
+
+  // Fetch token history when tokens view is selected or filters change
+  useEffect(() => {
+    if (activeTab !== 'activity' || historyView !== 'tokens' || !account) return;
+    setTokenHistoryLoading(true);
+    axios.get(buildTokenHistoryUrl())
+      .then(res => {
+        setTokenHistory(res.data?.hists || []);
+        setTokenHistoryCursor(res.data?.nextCursor || null);
+        setTokenHistoryHasMore(!!res.data?.nextCursor);
+      })
+      .catch(err => console.error('Failed to fetch token history:', err))
+      .finally(() => setTokenHistoryLoading(false));
+  }, [activeTab, historyView, account, tokenHistoryType, tokenHistoryPairType]);
+
+  const loadMoreTokenHistory = () => {
+    if (!tokenHistoryCursor || tokenHistoryLoading) return;
+    setTokenHistoryLoading(true);
+    axios.get(buildTokenHistoryUrl(tokenHistoryCursor))
+      .then(res => {
+        setTokenHistory(prev => [...prev, ...(res.data?.hists || [])]);
+        setTokenHistoryCursor(res.data?.nextCursor || null);
+        setTokenHistoryHasMore(!!res.data?.nextCursor);
+      })
+      .catch(err => console.error('Failed to fetch more token history:', err))
+      .finally(() => setTokenHistoryLoading(false));
+  };
 
   useEffect(() => {
     let filtered = txHistory;
@@ -309,11 +356,37 @@ const OverView = ({ account }) => {
         amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
         isDust = !isOutgoing && xrpAmt < 0.001;
       } else if (delivered?.value) {
-        amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
+        const val = parseFloat(delivered.value);
+        const valStr = val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val);
+        amount = `${valStr} ${decodeCurrency(delivered.currency)}`;
       }
       label = isOutgoing ? 'Sent' : 'Received';
     } else if (type === 'OfferCreate') {
-      label = 'Trade';
+      // Parse trade amounts from TakerGets/TakerPays
+      const takerGets = txData.TakerGets;
+      const takerPays = txData.TakerPays;
+
+      // Format amount helper
+      const formatAmt = (amt) => {
+        if (!amt) return null;
+        if (typeof amt === 'string') {
+          const xrpAmt = parseInt(amt) / 1000000;
+          return { value: xrpAmt, currency: 'XRP' };
+        }
+        return { value: parseFloat(amt.value), currency: decodeCurrency(amt.currency) };
+      };
+
+      const gets = formatAmt(takerGets);
+      const pays = formatAmt(takerPays);
+
+      if (gets && pays) {
+        // Show what they're trading: selling gets for pays
+        const fmtVal = (v) => v >= 1 ? v.toFixed(2) : v >= 0.01 ? v.toFixed(4) : String(v);
+        label = `Trade`;
+        amount = `${fmtVal(gets.value)} ${gets.currency} → ${fmtVal(pays.value)} ${pays.currency}`;
+      } else {
+        label = 'Trade';
+      }
     } else if (type === 'NFTokenAcceptOffer') {
       const offerNode = meta?.AffectedNodes?.find(n => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer');
       const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
@@ -324,11 +397,12 @@ const OverView = ({ account }) => {
         label = isSender ? 'Sent NFT' : 'Received NFT';
         amount = 'FREE';
       } else {
+        const fmtVal = (v) => v >= 1 ? v.toFixed(2) : v >= 0.01 ? v.toFixed(4) : String(v);
         if (typeof offerAmt === 'string') {
           const xrpAmt = parseInt(offerAmt) / 1000000;
-          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+          amount = `${fmtVal(xrpAmt)} XRP`;
         } else if (offerAmt?.value) {
-          amount = `${parseFloat(offerAmt.value).toFixed(2)} ${decodeCurrency(offerAmt.currency)}`;
+          amount = `${fmtVal(parseFloat(offerAmt.value))} ${decodeCurrency(offerAmt.currency)}`;
         }
         const isSeller = offer?.Owner === account;
         label = isSeller ? 'Sold NFT' : 'Bought NFT';
@@ -818,7 +892,7 @@ const OverView = ({ account }) => {
               {[
                 { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: nftStats?.holdingsCount || 0 },
-                { id: 'activity', label: 'HISTORY', icon: Clock, count: txHistory.length }
+                { id: 'activity', label: 'HISTORY', icon: Clock }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -1210,82 +1284,264 @@ const OverView = ({ account }) => {
             {/* Activity Tab */}
             {activeTab === 'activity' && (
               <>
-              <div className={cn("rounded-xl border", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
-                  <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Transaction History</p>
-                  <span className={cn("text-[10px] px-2 py-0.5 rounded", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{txHistory.length}</span>
-                </div>
-                {txHistory.length === 0 ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                    <p className="text-[13px]">No transactions found</p>
-                  </div>
-                ) : (
-                  <div className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
-                    {txHistory.slice(0, 50).map((tx) => {
-                      const parsed = parseTx(tx);
-                      return (
-                        <Link key={parsed.id} href={`/tx/${parsed.hash}`} className={cn("flex items-center gap-3 px-4 py-3 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", parsed.type === 'in' ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                            {parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{parsed.label}</p>
-                              {parsed.isDust && <span className={cn("text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
-                            </div>
-                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{parsed.time ? new Date(parsed.time).toLocaleString() : ''}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            {parsed.amount && <p className={cn("text-[12px] font-medium tabular-nums whitespace-nowrap", isDark ? "text-white/70" : "text-gray-700")}>{parsed.amount}</p>}
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+              {/* History View Toggle */}
+              <div className="flex gap-1 mb-4">
+                {['tokens', 'onchain'].map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setHistoryView(view)}
+                    className={cn(
+                      "px-3 py-1.5 text-[12px] font-medium rounded-lg transition-colors capitalize",
+                      historyView === view
+                        ? isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white"
+                        : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                    )}
+                  >
+                    {view}
+                  </button>
+                ))}
               </div>
 
-              {/* NFT Trades Section */}
-              <div className={cn("rounded-xl border mt-4", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "border-white/10" : "border-gray-100")}>
-                  <div className="flex items-center gap-2">
-                    <Image size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
-                    <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Trades</p>
-                  </div>
-                  <span className={cn("text-[10px] px-2 py-0.5 rounded", isDark ? "bg-white/5 text-white/40" : "bg-gray-100 text-gray-500")}>{nftTrades.length}</span>
+              {/* Onchain History */}
+              {historyView === 'onchain' && (
+              <div className={cn("rounded-xl border overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40 border-b border-white/10" : "text-gray-400 border-b border-gray-100")}>
+                        <th className="text-left font-medium px-4 py-3">Type</th>
+                        <th className="text-left font-medium px-4 py-3">Info</th>
+                        <th className="text-left font-medium px-4 py-3">Time</th>
+                        <th className="text-right font-medium px-4 py-3">Hash</th>
+                      </tr>
+                    </thead>
+                    <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                      {txHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>No transactions found</td>
+                        </tr>
+                      ) : txHistory.slice(0, 50).map((tx) => {
+                        const parsed = parseTx(tx);
+                        return (
+                          <tr key={parsed.id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {parsed.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-white/40" />}
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{parsed.label}</span>
+                                {parsed.isDust && <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {parsed.amount ? (
+                                <span className={cn("text-[13px] tabular-nums", parsed.type === 'in' ? "text-emerald-400" : isDark ? "text-white/70" : "text-gray-700")}>{parsed.type === 'in' ? '+' : ''} {parsed.amount}</span>
+                              ) : (
+                                <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>-</span>
+                              )}
+                            </td>
+                            <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                              {parsed.time ? new Date(parsed.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Link href={`/tx/${parsed.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
+                                {parsed.hash?.slice(0, 4)}...{parsed.hash?.slice(-4)}
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                {nftTradesLoading ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                    <p className="text-[13px]">Loading NFT trades...</p>
+              </div>
+              )}
+
+              {/* Token History */}
+              {historyView === 'tokens' && (
+              <div className={cn("rounded-xl border overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                {/* Filters */}
+                <div className={cn("px-4 py-3 flex flex-wrap items-center gap-4 border-b", isDark ? "border-white/10" : "border-gray-100")}>
+                  <div className="flex gap-1">
+                    {['all', 'trades', 'liquidity'].map((t) => (
+                      <button key={t} onClick={() => setTokenHistoryType(t)} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors capitalize", tokenHistoryType === t ? (isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white") : (isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"))}>{t}</button>
+                    ))}
                   </div>
-                ) : nftTrades.length === 0 ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                    <p className="text-[13px]">No NFT trades found</p>
+                  <div className={cn("w-px h-4", isDark ? "bg-white/10" : "bg-gray-200")} />
+                  <div className="flex gap-1">
+                    {[{ v: '', l: 'All Pairs' }, { v: 'xrp', l: 'XRP' }, { v: 'token', l: 'Token' }].map((p) => (
+                      <button key={p.v} onClick={() => setTokenHistoryPairType(p.v)} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors", tokenHistoryPairType === p.v ? (isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white") : (isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"))}>{p.l}</button>
+                    ))}
                   </div>
-                ) : (
-                  <div className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
-                    {nftTrades.slice(0, 20).map((trade) => {
-                      const isSeller = trade.seller === account;
-                      const label = isSeller ? 'Sold NFT' : 'Bought NFT';
-                      const amt = trade.costXRP || 0;
-                      return (
-                        <Link key={trade._id} href={`/tx/${trade.hash}`} className={cn("flex items-center gap-3 px-4 py-3 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", isSeller ? "bg-emerald-500/10" : "bg-red-500/10")}>
-                            {isSeller ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{label}</p>
-                            <p className={cn("text-[10px]", isDark ? "text-white/35" : "text-gray-400")}>{trade.time ? new Date(trade.time).toLocaleString() : ''}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className={cn("text-[12px] font-medium tabular-nums", isSeller ? "text-emerald-500" : "text-red-400")}>{isSeller ? '+' : '-'}{amt.toFixed(2)} XRP</p>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                  {tokenHistoryLoading && <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Loading...</span>}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40 border-b border-white/10" : "text-gray-400 border-b border-gray-100")}>
+                        <th className="text-left font-medium px-4 py-3">Type</th>
+                        <th className="text-left font-medium px-4 py-3">Paid</th>
+                        <th className="text-left font-medium px-4 py-3">Got</th>
+                        <th className="text-left font-medium px-4 py-3">Time</th>
+                        <th className="text-right font-medium px-4 py-3">Hash</th>
+                      </tr>
+                    </thead>
+                    <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                      {tokenHistoryLoading && tokenHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>Loading...</td>
+                        </tr>
+                      ) : tokenHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-10">
+                            <div className="flex flex-col items-center">
+                              <div className="relative w-24 h-24 mb-4">
+                                <div className={cn("absolute -top-1.5 left-1.5 w-7 h-7 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                                <div className={cn("absolute -top-1.5 right-1.5 w-7 h-7 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                                <div className={cn("absolute top-0.5 left-3 w-3.5 h-3.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                                <div className={cn("absolute top-0.5 right-3 w-3.5 h-3.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                                <div className={cn("absolute top-4 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                                  <div className="absolute top-6 left-4 w-3 h-2.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                                  <div className="absolute top-6 right-4 w-3 h-2.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                                  <div className={cn("absolute bottom-4 left-1/2 -translate-x-1/2 w-7 h-5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                                    <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-[#0a0a0a]" />
+                                  </div>
+                                  <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 rounded-t-full border-t-2 border-l-2 border-r-2", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                                </div>
+                                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-20 flex flex-col justify-start gap-[3px] pointer-events-none overflow-hidden rounded-full">
+                                  {[...Array(14)].map((_, i) => (
+                                    <div key={i} className={cn("h-[3px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>No trades found</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : tokenHistory.map((trade) => {
+                        const isMaker = trade.maker === account;
+                        const fmtVal = (v) => {
+                          const n = parseFloat(v);
+                          return n >= 1 ? n.toFixed(2) : n >= 0.01 ? n.toFixed(4) : String(n);
+                        };
+                        const fmtCurrency = (c) => {
+                          if (!c || c === 'XRP') return 'XRP';
+                          if (c.length === 3) return c;
+                          if (c.length === 40) {
+                            try {
+                              const hex = c.replace(/0+$/, '');
+                              let decoded = '';
+                              for (let i = 0; i < hex.length; i += 2) {
+                                const char = parseInt(hex.substr(i, 2), 16);
+                                if (char) decoded += String.fromCharCode(char);
+                              }
+                              return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : c.slice(0, 6);
+                            } catch { return c.slice(0, 6); }
+                          }
+                          return c;
+                        };
+                        const paidIsXRP = trade.paid?.currency === 'XRP';
+                        const gotIsXRP = trade.got?.currency === 'XRP';
+                        const isTokenToToken = !paidIsXRP && !gotIsXRP;
+                        const isBuy = paidIsXRP;
+                        const tradeType = trade.isLiquidity ? (trade.type || 'Liquidity') : isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell';
+                        return (
+                          <tr key={trade._id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {isTokenToToken ? <ArrowUpRight size={14} className={isDark ? "text-white/40" : "text-gray-400"} /> : isBuy ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                <span className={cn("text-[13px] font-medium capitalize", isTokenToToken ? (isDark ? "text-white/70" : "text-gray-600") : isBuy ? "text-emerald-500" : "text-red-400")}>{tradeType}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={cn("text-[13px] tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>
+                                {fmtVal(trade.paid?.value)} {fmtCurrency(trade.paid?.currency)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-[13px] tabular-nums text-emerald-400">
+                                +{fmtVal(trade.got?.value)} {fmtCurrency(trade.got?.currency)}
+                              </span>
+                            </td>
+                            <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                              {trade.time ? (() => {
+                                const diff = Date.now() - trade.time;
+                                const mins = Math.floor(diff / 60000);
+                                const hrs = Math.floor(diff / 3600000);
+                                const days = Math.floor(diff / 86400000);
+                                if (mins < 1) return 'just now';
+                                if (mins < 60) return `${mins}m ago`;
+                                if (hrs < 24) return `${hrs}h ago`;
+                                if (days < 30) return `${days}d ago`;
+                                return new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                              })() : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Link href={`/tx/${trade.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
+                                {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {tokenHistoryHasMore && (
+                  <div className={cn("px-4 py-3 border-t", isDark ? "border-white/10" : "border-gray-100")}>
+                    <button
+                      onClick={loadMoreTokenHistory}
+                      disabled={tokenHistoryLoading}
+                      className={cn("w-full py-2 text-[12px] font-medium rounded-lg transition-colors", isDark ? "bg-white/5 hover:bg-white/10 text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-600")}
+                    >
+                      {tokenHistoryLoading ? 'Loading...' : 'Load More'}
+                    </button>
                   </div>
                 )}
               </div>
+              )}
+
+              {/* NFT Trades Section */}
+              {nftTrades.length > 0 && (
+              <div className={cn("rounded-xl border mt-4 overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                <div className={cn("px-4 py-3 border-b flex items-center gap-2", isDark ? "border-white/10" : "border-gray-100")}>
+                  <Image size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
+                  <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Trades</p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
+                      {nftTrades.slice(0, 20).map((trade) => {
+                        const isSeller = trade.seller === account;
+                        const label = isSeller ? 'Sold NFT' : 'Bought NFT';
+                        const amt = trade.costXRP ?? trade.cost ?? 0;
+                        const currency = trade.currency || 'XRP';
+                        const amtStr = amt >= 1 ? amt.toFixed(2) : amt >= 0.01 ? amt.toFixed(4) : String(amt);
+                        return (
+                          <tr key={trade._id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {isSeller ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-white/40" />}
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{label}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={cn("text-[13px] tabular-nums", isSeller ? "text-emerald-400" : isDark ? "text-white/70" : "text-gray-700")}>{isSeller ? '+' : '-'}{amtStr} {currency}</span>
+                            </td>
+                            <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                              {trade.time ? new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Link href={`/tx/${trade.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
+                                {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              )}
               </>
             )}
 

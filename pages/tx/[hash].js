@@ -3996,21 +3996,30 @@ const TxPage = ({ txData, error }) => {
             "rounded-xl border-[1.5px] p-8 text-center max-w-md mx-auto mt-8",
             isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50/50"
           )}>
-            <div className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5",
-              isDark ? "bg-red-500/10" : "bg-red-50"
-            )}>
-              <AlertCircle size={32} className="text-red-500" />
+            <div className="relative w-16 h-16 mx-auto mb-5">
+              <div className={cn("absolute -top-1 left-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+              <div className={cn("absolute -top-1 right-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+              <div className={cn("absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+              <div className={cn("absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+              <div className={cn("absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                <div className="absolute top-4 left-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                <div className="absolute top-4 right-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                <div className={cn("absolute bottom-2.5 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-1 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+              </div>
+              <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                {[...Array(10)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+              </div>
             </div>
-            <h2 className={cn(
-              "text-xl font-medium mb-2",
-              isDark ? "text-white" : "text-gray-900"
-            )}>
-              Transaction Not Found
-            </h2>
             <p className={cn(
-              "text-[14px] mb-6",
-              isDark ? "text-white/60" : "text-gray-500"
+              "text-sm font-medium tracking-widest mb-2",
+              isDark ? "text-white/80" : "text-gray-600"
+            )}>
+              TX NOT FOUND
+            </p>
+            <p className={cn(
+              "text-xs mb-6",
+              isDark ? "text-white/30" : "text-gray-400"
             )}>
               {error}
             </p>

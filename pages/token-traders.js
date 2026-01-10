@@ -231,10 +231,27 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
 
         {initialTraders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
-            <div style={{ fontSize: 16, marginBottom: 8, color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>
-              No Traders Data
+            <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 16px' }}>
+              <div style={{ position: 'absolute', top: -4, left: 4, width: 20, height: 20, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }} />
+              <div style={{ position: 'absolute', top: -4, right: 4, width: 20, height: 20, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }} />
+              <div style={{ position: 'absolute', top: 2, left: 8, width: 10, height: 10, borderRadius: '50%', background: darkMode ? '#3b78e7' : '#3b82f6' }} />
+              <div style={{ position: 'absolute', top: 2, right: 8, width: 10, height: 10, borderRadius: '50%', background: darkMode ? '#3b78e7' : '#3b82f6' }} />
+              <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 48, height: 48, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }}>
+                <div style={{ position: 'absolute', top: 16, left: 10, width: 8, height: 6, borderRadius: '50%', background: '#0a0a0a', transform: 'rotate(-10deg)' }} />
+                <div style={{ position: 'absolute', top: 16, right: 10, width: 8, height: 6, borderRadius: '50%', background: '#0a0a0a', transform: 'rotate(10deg)' }} />
+                <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', width: 16, height: 10, borderRadius: '50%', background: darkMode ? '#5a9fff' : '#93c5fd' }}>
+                  <div style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 4, borderRadius: '50%', background: '#0a0a0a' }} />
+                </div>
+                <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', width: 10, height: 5, borderRadius: '8px 8px 0 0', borderTop: '2px solid #0a0a0a', borderLeft: '2px solid #0a0a0a', borderRight: '2px solid #0a0a0a' }} />
+              </div>
+              <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2, pointerEvents: 'none' }}>
+                {[...Array(10)].map((_, i) => (<div key={i} style={{ height: 2, width: '100%', background: darkMode ? 'rgba(10,10,10,0.4)' : 'rgba(255,255,255,0.4)' }} />))}
+              </div>
             </div>
-            <div style={{ fontSize: 13, color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB' }}>
+            <div style={{ fontSize: 12, fontWeight: 500, letterSpacing: '0.1em', marginBottom: 4, color: darkMode ? 'rgba(255,255,255,0.8)' : '#4b5563' }}>
+              NO TRADERS DATA
+            </div>
+            <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>
               Trader data will appear here when available
             </div>
           </EmptyState>

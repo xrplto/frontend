@@ -180,16 +180,26 @@ export default function TopTraders({ token }) {
     <div className="space-y-3">
       {processedTraders.length === 0 ? (
         <div className={cn(
-          'text-center py-12 rounded-xl border-[1.5px] border-dashed',
+          'text-center py-12 px-8 rounded-xl border-[1.5px] border-dashed',
           isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
         )}>
-          <Activity className={cn('w-8 h-8 mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
-          <h3 className={cn('text-sm font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
-            No Traders Found
-          </h3>
-          <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-            Trading data will appear here when available
-          </p>
+          <div className="relative w-14 h-14 mx-auto mb-4">
+            <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+            <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+            <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+            <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+            <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+              <div className="absolute top-3 left-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+              <div className="absolute top-3 right-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+              <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+              <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+            </div>
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+              {[...Array(10)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+            </div>
+          </div>
+          <p className={cn("text-xs font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>NO TRADERS</p>
+          <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>Trading data will appear here when available</p>
         </div>
       ) : (
         <>

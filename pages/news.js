@@ -420,13 +420,27 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
             <div className="space-y-2">
               {news.length === 0 ? (
                 <div className="py-16 text-center">
-                  <div className={cn("mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl", isDark ? "bg-white/5" : "bg-gray-100")}>
-                    <svg className={cn("h-7 w-7", isDark ? "text-gray-600" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
+                  <div className="relative w-16 h-16 mx-auto mb-4">
+                    <div className={cn("absolute -top-1 left-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute -top-1 right-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-2.5 left-1/2 -translate-x-1/2 w-13 h-13 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} style={{ width: '52px', height: '52px' }}>
+                      <div className="absolute top-4 left-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                      <div className="absolute top-4 right-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                      <div className={cn("absolute bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-3 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+                      </div>
+                      <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1.5 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                    </div>
+                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full" style={{ width: '52px', height: '52px' }}>
+                      {[...Array(12)].map((_, i) => (
+                        <div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
+                      ))}
+                    </div>
                   </div>
-                  <p className={cn("text-[14px] font-medium", isDark ? "text-gray-400" : "text-gray-600")}>No news found</p>
-                  <p className={cn("text-[12px]", isDark ? "text-gray-600" : "text-gray-500")}>Try adjusting your search or filters</p>
+                  <p className={cn("text-sm font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>NO NEWS FOUND</p>
+                  <p className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>Try adjusting your search or filters</p>
                 </div>
               ) : (
                 news.map((article) => <NewsArticle key={article._id} article={article} isDark={isDark} extractTitle={extractTitle} />)
