@@ -549,14 +549,16 @@ const TokenSummary = memo(({ token }) => {
                   <div className="px-3 pb-3 space-y-0.5">
                     {[
                       { label: 'Token', url: `https://api.xrpl.to/api/token/${md5}` },
-                      { label: 'Rich List', url: `https://api.xrpl.to/api/richlist/${md5}` },
+                      { label: 'Holders', url: `https://api.xrpl.to/api/holders/list/${md5}` },
                       { label: 'Order Book', url: `https://api.xrpl.to/api/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
                       { label: 'History', url: `https://api.xrpl.to/api/history?token=${md5}` },
                       { label: 'OHLC', url: `https://api.xrpl.to/api/ohlc/${md5}` },
                       { label: 'Traders', url: `https://api.xrpl.to/api/traders/token-traders/${md5}` },
                       { label: 'AMM', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
+                      { label: 'AI Summary', url: `https://api.xrpl.to/api/ai/token/${md5}` },
                       { label: 'Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
-                      { label: 'Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` }
+                      { label: 'Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` },
+                      ...(creator ? [{ label: 'Creator', url: `https://api.xrpl.to/api/creators/${creator}` }] : [])
                     ].map((ep) => (
                       <button key={ep.label} onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedField(ep.label); setTimeout(() => setCopiedField(null), 1200); }}
                         className={cn("group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
