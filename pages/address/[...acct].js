@@ -929,50 +929,54 @@ const OverView = ({ account }) => {
                           )}
                         />
                       </div>
-                      {/* Table Header */}
-                      <div className={cn("grid gap-4 py-2 border-b", isDark ? "border-white/10" : "border-gray-200")} style={{ gridTemplateColumns: '180px 100px 80px 1fr 1fr' }}>
-                        <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>TOKEN</span>
-                        <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>VOLUME</span>
-                        <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>TRADES</span>
-                        <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>RETURN</span>
-                        <span className={cn("text-[10px] uppercase tracking-wider text-right", isDark ? "text-white/30" : "text-gray-400")}>PROFIT</span>
+                      {/* Table */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className={cn("border-b", isDark ? "border-white/5" : "border-gray-100")}>
+                              <th className={cn("py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Token</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Volume</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Trades</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70")}>Bought</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70")}>Sold</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>ROI</th>
+                              <th className={cn("py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>PNL</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {displayTokens.map((token, idx) => {
+                              const roi = token.roi || 0;
+                              const profit = token.profit || 0;
+                              const bought = token.xrpBought || 0;
+                              const sold = token.xrpSold || 0;
+                              return (
+                                <tr key={idx} className={cn("border-b", isDark ? "border-white/5 hover:bg-white/[0.02]" : "border-gray-100 hover:bg-gray-50")}>
+                                  <td className="py-2.5 pr-2">
+                                    <Link href={`/token/${token.tokenId}`} className="flex items-center gap-2">
+                                      <img src={`https://s1.xrpl.to/token/${token.tokenId}`} className="w-5 h-5 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
+                                      <span className={cn("text-[12px] hover:text-primary transition-colors", isDark ? "text-white/80" : "text-gray-700")}>{token.name}</span>
+                                    </Link>
+                                  </td>
+                                  <td className={cn("py-2.5 px-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{fCurrency5(token.volume || 0)}</td>
+                                  <td className={cn("py-2.5 px-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{fCurrency5(token.trades || 0)}</td>
+                                  <td className="py-2.5 px-2 text-right"><span className="text-[12px] tabular-nums text-green-500">{fCurrency5(bought)}</span></td>
+                                  <td className="py-2.5 px-2 text-right"><span className="text-[12px] tabular-nums text-red-500">{fCurrency5(sold)}</span></td>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className={cn("text-[12px] tabular-nums", roi >= 0 ? "text-green-500" : "text-red-500")}>
+                                      {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 pl-2 text-right">
+                                    <span className={cn("text-[12px] font-medium tabular-nums", profit >= 0 ? "text-green-500" : "text-red-500")}>
+                                      {profit >= 0 ? '+' : ''}{fCurrency5(profit)}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </div>
-                      {/* Table Rows */}
-                      {displayTokens.map((token, idx) => {
-                        const roi = token.roi || 0;
-                        const profit = token.profit || 0;
-                        const roiWidth = Math.min(Math.abs(roi) / maxRoi * 100, 100);
-                        const profitWidth = Math.min(Math.abs(profit) / maxProfit * 100, 100);
-
-                        return (
-                          <div key={idx} className={cn("grid gap-4 py-3 items-center transition-colors", isDark ? "border-b border-white/[0.04] hover:bg-white/[0.02]" : "border-b border-gray-100 hover:bg-gray-50")} style={{ gridTemplateColumns: '180px 100px 80px 1fr 1fr' }}>
-                            <div className="flex items-center gap-3">
-                              <img src={`https://s1.xrpl.to/token/${token.tokenId}`} className="w-6 h-6 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />
-                              <span className={cn("text-[14px]", isDark ? "text-white" : "text-gray-900")}>{token.name}</span>
-                            </div>
-                            <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(token.volume || 0)}</span>
-                            <span className={cn("text-[14px] text-right tabular-nums", isDark ? "text-white/60" : "text-gray-500")}>{fCurrency5(token.trades || 0)}</span>
-                            {/* Return with progress bar */}
-                            <div className="flex items-center gap-2 justify-end">
-                              <div className={cn("h-2 rounded-sm", roi >= 0 ? "bg-[#22c55e]/20" : "bg-[#ef4444]/20")} style={{ width: '60px' }}>
-                                <div className={cn("h-full rounded-sm", roi >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} style={{ width: `${roiWidth}%` }} />
-                              </div>
-                              <span className={cn("text-[13px] tabular-nums font-medium min-w-[70px] text-right", roi >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
-                                {roi >= 0 ? '+' : ''}{fCurrency5(roi)}%
-                              </span>
-                            </div>
-                            {/* Profit with progress bar */}
-                            <div className="flex items-center gap-2 justify-end">
-                              <div className={cn("h-2 rounded-sm", profit >= 0 ? "bg-[#22c55e]/20" : "bg-[#ef4444]/20")} style={{ width: '60px' }}>
-                                <div className={cn("h-full rounded-sm", profit >= 0 ? "bg-[#22c55e]" : "bg-[#ef4444]")} style={{ width: `${profitWidth}%` }} />
-                              </div>
-                              <span className={cn("text-[13px] tabular-nums font-medium min-w-[70px] text-right", profit >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
-                                {profit >= 0 ? '+' : ''}{fCurrency5(profit)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
                       {filteredTokens.length > 10 && (
                         <button onClick={() => setShowAllTokens(!showAllTokens)} className={cn("w-full text-center py-3 text-[12px] mt-4 transition-colors", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}>
                           {showAllTokens ? 'Show less' : `Show all ${filteredTokens.length} tokens`}

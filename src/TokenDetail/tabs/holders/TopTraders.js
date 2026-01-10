@@ -123,8 +123,8 @@ export default function TopTraders({ token }) {
       volume: trader.volume || 0,
       trades: trader.trades || 0,
       roi: trader.roi || 0,
-      tokensBought: trader.tokensBought || 0,
-      tokensSold: trader.tokensSold || 0,
+      xrpBought: trader.xrpBought || 0,
+      xrpSold: trader.xrpSold || 0,
       avgBuyPrice: trader.avgBuyPrice || 0,
       avgSellPrice: trader.avgSellPrice || 0
     }));
@@ -297,8 +297,8 @@ export default function TopTraders({ token }) {
                   const isTopTrader = rank <= 3;
                   const pnl = trader.profit ?? 0;
                   const roi = trader.roi ?? 0;
-                  const bought = trader.tokensBought ?? 0;
-                  const sold = trader.tokensSold ?? 0;
+                  const bought = trader.xrpBought ?? 0;
+                  const sold = trader.xrpSold ?? 0;
                   const volume = trader.volume ?? 0;
                   const trades = trader.trades ?? 0;
                   return (

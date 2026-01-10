@@ -167,11 +167,11 @@ const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
   { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
   { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '75px', sortable: true },
-  { id: 'totalProfit', label: 'TOTAL P/L', align: 'right', width: '80px', sortable: true },
-  { id: 'dexProfit', label: 'DEX P/L', align: 'right', width: '75px', sortable: true },
-  { id: 'ammProfit', label: 'AMM P/L', align: 'right', width: '75px', sortable: true },
-  { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
+  { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '75px', sortable: true, color: 'buy' },
+  { id: 'sellVolume', label: 'SOLD', align: 'right', width: '75px', sortable: true, color: 'sell' },
+  { id: 'totalProfit', label: 'P/L', align: 'right', width: '80px', sortable: true },
+  { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
   { id: 'winRate', label: 'WIN %', align: 'right', width: '55px', sortable: true },
   { id: 'washTradingScore', label: 'WASH', align: 'right', width: '60px', sortable: true },
   { id: 'lastActive', label: 'LAST TRADE', align: 'right', width: '80px' },
@@ -263,9 +263,9 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
                   {paginatedTraders.map((trader, idx) => {
                     const addr = trader.address;
                     const tp = trader.totalProfit || 0;
-                    const dp = trader.dexProfit || 0;
-                    const ap = trader.ammProfit || 0;
                     const roi = trader.roi || 0;
+                    const bought = trader.buyVolume || 0;
+                    const sold = trader.sellVolume || 0;
                     return (
                       <tr key={addr || idx}>
                         <StyledTd align="center" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}>
@@ -279,20 +279,20 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
                         <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
                           {fVolume(trader.totalVolume || 0)}
                         </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                          {fNumber(trader.totalTrades || 0)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: '#10b981', fontSize: 12 }}>
+                          {fVolume(bought)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: '#ef4444', fontSize: 12 }}>
+                          {fVolume(sold)}
+                        </StyledTd>
                         <StyledTd align="right" style={{ color: tp >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: 12 }}>
                           {tp >= 0 ? '+' : ''}{fVolume(tp)}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: dp >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
-                          {dp >= 0 ? '+' : ''}{fVolume(dp)}
-                        </StyledTd>
-                        <StyledTd align="right" style={{ color: ap >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
-                          {ap >= 0 ? '+' : ''}{fVolume(ap)}
-                        </StyledTd>
                         <StyledTd align="right" style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
                           {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
-                        </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
-                          {fNumber(trader.totalTrades || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {(trader.winRate || 0).toFixed(0)}%
