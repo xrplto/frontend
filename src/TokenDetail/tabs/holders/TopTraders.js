@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Loader2, Activity, Search, X } from 'lucide-react';
+import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
@@ -44,6 +44,8 @@ export default function TopTraders({ token }) {
   const [mobileChecked, setMobileChecked] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Debounce search input
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function TopTraders({ token }) {
       return;
     }
 
-    const limit = isMobile ? 25 : 50;
+    const fetchLimit = 20;
     const fetchTopTraders = async () => {
       setLoading(true);
       try {
@@ -81,11 +83,12 @@ export default function TopTraders({ token }) {
           const sortMap = { profit: 'buyVolume', volume: 'volume24h', roi: 'sellVolume', winRate: 'winRate' };
           const sortBy = sortMap[sortType] || 'volume24h';
           response = await axios.get(
-            `${BASE_URL}/analytics/cumulative-stats?limit=${limit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
+            `${BASE_URL}/analytics/cumulative-stats?limit=${fetchLimit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.data) ? response.data.data : [];
             setTraders(tradersArray);
+            setTotalCount(tradersArray.length);
           }
         } else {
           // Token-specific traders - sortBy: volume, trades, pnl, roi, bought, sold, wash
@@ -93,11 +96,12 @@ export default function TopTraders({ token }) {
           const interval = timePeriod || '7d';
           const searchParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : '';
           response = await axios.get(
-            `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${limit}&sortBy=${sortBy}${searchParam}`
+            `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${fetchLimit}&offset=${offset}&sortBy=${sortBy}${searchParam}`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.traders) ? response.data.traders : [];
             setTraders(tradersArray);
+            setTotalCount(response.data.count || 0);
           }
         }
       } catch (error) {
@@ -108,7 +112,7 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked, debouncedSearch]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked, debouncedSearch, offset]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
@@ -126,15 +130,41 @@ export default function TopTraders({ token }) {
     }));
   }, [traders]);
 
+  const limit = 20;
+
   const handleSortChange = (newSortType) => {
     if (sortType !== newSortType) {
       setSortType(newSortType);
+      setOffset(0);
     }
   };
 
   const handlePeriodChange = (newPeriod) => {
     if (timePeriod !== newPeriod) {
       setTimePeriod(newPeriod);
+      setOffset(0);
+    }
+  };
+
+  // Reset offset when search changes
+  useEffect(() => {
+    setOffset(0);
+  }, [debouncedSearch]);
+
+  const currentPage = Math.floor(offset / limit) + 1;
+  const hasPrev = offset > 0;
+  // API count returns page count, not total - detect hasNext by checking if we got a full page
+  const hasNext = processedTraders.length === limit;
+
+  const handlePrevPage = () => {
+    if (hasPrev) {
+      setOffset(Math.max(0, offset - limit));
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasNext) {
+      setOffset(offset + limit);
     }
   };
 
@@ -263,7 +293,7 @@ export default function TopTraders({ token }) {
               </thead>
               <tbody>
                 {processedTraders.map((trader, index) => {
-                  const rank = index + 1;
+                  const rank = offset + index + 1;
                   const isTopTrader = rank <= 3;
                   const pnl = trader.profit ?? 0;
                   const roi = trader.roi ?? 0;
@@ -329,6 +359,57 @@ export default function TopTraders({ token }) {
             </table>
           </div>
 
+          {/* Pagination */}
+          <div className={cn(
+            'flex items-center justify-center pt-3 mt-2 border-t gap-3',
+            isDark ? 'border-white/5' : 'border-gray-100'
+          )}>
+            <button
+              type="button"
+              onClick={() => {
+                if (hasPrev) {
+                  setOffset(Math.max(0, offset - limit));
+                }
+              }}
+              disabled={!hasPrev}
+              className={cn(
+                'p-2 rounded-lg transition-all',
+                hasPrev
+                  ? isDark
+                    ? 'text-white bg-white/10 hover:bg-white/20 cursor-pointer'
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
+                  : isDark
+                    ? 'text-white/20 bg-white/5 cursor-not-allowed'
+                    : 'text-gray-300 bg-gray-50 cursor-not-allowed'
+              )}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className={cn('text-[13px] font-medium tabular-nums min-w-[80px] text-center', isDark ? 'text-white/80' : 'text-gray-600')}>
+              Page {currentPage}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                if (hasNext) {
+                  setOffset(offset + limit);
+                }
+              }}
+              disabled={!hasNext}
+              className={cn(
+                'p-2 rounded-lg transition-all',
+                hasNext
+                  ? isDark
+                    ? 'text-white bg-white/10 hover:bg-white/20 cursor-pointer'
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
+                  : isDark
+                    ? 'text-white/20 bg-white/5 cursor-not-allowed'
+                    : 'text-gray-300 bg-gray-50 cursor-not-allowed'
+              )}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </>
       )}
     </div>
