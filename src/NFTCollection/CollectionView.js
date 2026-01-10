@@ -1645,6 +1645,7 @@ const TradersTab = React.memo(({ slug }) => {
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Win%</th>
+              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70">Flips</th>
               <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
             </tr>
           </thead>
@@ -1670,8 +1671,14 @@ const TradersTab = React.memo(({ slug }) => {
                   </td>
                   <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>{fVolume(vol)}</td>
                   <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>{trades}</td>
-                  <td className="py-2.5 px-2 text-right text-[12px] tabular-nums text-green-500">{t.buys || 0}</td>
-                  <td className="py-2.5 px-2 text-right text-[12px] tabular-nums text-red-500">{t.sells || 0}</td>
+                  <td className="py-2.5 px-2 text-right">
+                    <div className="text-[12px] tabular-nums text-green-500">{fVolume(t.buyVolume || 0)}</div>
+                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{t.buys || 0} NFTs</div>
+                  </td>
+                  <td className="py-2.5 px-2 text-right">
+                    <div className="text-[12px] tabular-nums text-red-500">{fVolume(t.sellVolume || 0)}</div>
+                    <div className={cn('text-[9px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>{t.sells || 0} NFTs</div>
+                  </td>
                   <td className="py-2.5 px-2 text-right">
                     <span className={cn('text-[12px] font-medium tabular-nums', profit >= 0 ? 'text-green-500' : 'text-red-500')}>
                       {profit >= 0 ? '+' : ''}{fVolume(profit)}
@@ -1683,6 +1690,9 @@ const TradersTab = React.memo(({ slug }) => {
                     </span>
                   </td>
                   <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', winRate >= 50 ? 'text-green-500' : 'text-red-500')}>{winRate.toFixed(0)}%</td>
+                  <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', t.flips > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
+                    {t.flips > 0 ? t.flips : '-'}
+                  </td>
                   <td className={cn('py-2.5 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
                     {t.lastTrade ? new Date(t.lastTrade).toLocaleDateString() : '-'}
                   </td>
