@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } f
 import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, Loader2 } from 'lucide-react';
-import { createChart, CandlestickSeries, HistogramSeries, AreaSeries } from 'lightweight-charts';
+import { createChart, CandlestickSeries, HistogramSeries, AreaSeries, createSeriesMarkers } from 'lightweight-charts';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -16,7 +16,18 @@ const processOhlc = (ohlc) => {
   const MAX = 90071992547409, MIN = 1e-12;
   return ohlc
     .filter(c => c[1] > MIN && c[1] < MAX && c[2] > MIN && c[2] < MAX && c[3] > MIN && c[3] < MAX && c[4] > MIN && c[4] < MAX)
-    .map(c => ({ time: Math.floor(c[0] / 1000), open: c[1], high: c[2], low: c[3], close: c[4], volume: c[5] || 0 }))
+    .map(c => ({
+      time: Math.floor(c[0] / 1000),
+      open: c[1],
+      high: c[2],
+      low: c[3],
+      close: c[4],
+      volume: c[5] || 0,
+      creatorSold: c[6] || 0,
+      creatorBought: c[7] || 0,
+      creatorWithdraw: c[8] || 0,
+      creatorDeposit: c[9] || 0
+    }))
     .sort((a, b) => a.time - b.time);
 };
 
@@ -66,7 +77,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   // Refs
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
-  const seriesRefs = useRef({ candle: null, line: null, volume: null });
+  const seriesRefs = useRef({ candle: null, line: null, volume: null, markers: null });
   const dataRef = useRef(null);
   const holderDataRef = useRef(null);
   const wsRef = useRef(null);
@@ -185,7 +196,18 @@ const PriceChartAdvanced = memo(({ token }) => {
         const msg = JSON.parse(e.data);
         if (msg.e === 'kline' && msg.k && !refs.current.isZoomed) {
           const k = msg.k;
-          const candle = { time: Math.floor(k.t / 1000), open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v || 0 };
+          const candle = {
+            time: Math.floor(k.t / 1000),
+            open: +k.o,
+            high: +k.h,
+            low: +k.l,
+            close: +k.c,
+            volume: +k.v || 0,
+            creatorSold: +k.cs || 0,
+            creatorBought: +k.cb || 0,
+            creatorWithdraw: +k.cw || 0,
+            creatorDeposit: +k.cd || 0
+          };
           setData(prev => {
             if (!prev?.length) return prev;
             const arr = [...prev];
@@ -415,7 +437,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: ${isMobile ? '105px' : '120px'}; position: absolute; display: none; padding: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(10,15,22,0.95)' : 'rgba(255,255,255,0.95)'}; backdrop-filter: blur(8px); color: ${isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a'}; border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`;
+    toolTip.style = `width: ${isMobile ? '120px' : '140px'}; position: absolute; display: none; padding: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(10,15,22,0.95)' : 'rgba(255,255,255,0.95)'}; backdrop-filter: blur(8px); color: ${isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a'}; border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 
@@ -471,8 +493,26 @@ const PriceChartAdvanced = memo(({ token }) => {
           const chg = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
           const col = candle.close >= candle.open ? '#22c55e' : '#ef4444';
           html += row('O', sym + fp(candle.open)) + row('H', sym + fp(candle.high)) + row('L', sym + fp(candle.low)) + row('C', sym + fp(candle.close), col) + sep + row('Vol', candle.volume.toLocaleString()) + row('Chg', chg + '%', col);
+          // Creator activity
+          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0;
+          if (hasCreatorActivity) {
+            html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
+            if (candle.creatorSold > 0) html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
+            if (candle.creatorBought > 0) html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
+            if (candle.creatorWithdraw > 0) html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
+            if (candle.creatorDeposit > 0) html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+          }
         } else if (ct === 'line') {
           html += row('Price', sym + fp(candle.close || candle.value)) + row('Vol', (candle.volume || 0).toLocaleString());
+          // Creator activity for line chart
+          const hasCreatorActivity = candle.creatorSold > 0 || candle.creatorBought > 0 || candle.creatorWithdraw > 0 || candle.creatorDeposit > 0;
+          if (hasCreatorActivity) {
+            html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
+            if (candle.creatorSold > 0) html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
+            if (candle.creatorBought > 0) html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
+            if (candle.creatorWithdraw > 0) html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
+            if (candle.creatorDeposit > 0) html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+          }
         } else {
           html += row('Holders', (candle.holders || candle.value).toLocaleString());
           if (candle.top10 !== undefined) html += sep + row('Top 10', candle.top10.toFixed(1) + '%') + row('Top 20', candle.top20.toFixed(1) + '%') + row('Top 50', candle.top50.toFixed(1) + '%');
@@ -481,7 +521,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         const w = chartContainerRef.current.clientWidth;
         toolTip.innerHTML = html;
         toolTip.style.display = 'block';
-        toolTip.style.left = Math.max(0, Math.min(w - 130, param.point.x - 50)) + 'px';
+        toolTip.style.left = Math.max(0, Math.min(w - 150, param.point.x - 60)) + 'px';
         toolTip.style.top = (param.point.y > chartContainerRef.current.clientHeight / 2 ? 8 : param.point.y + 20) + 'px';
       });
     });
@@ -536,7 +576,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       toolTipRef.current?.remove();
       toolTipRef.current = null;
       if (chartRef.current) { try { chartRef.current.remove(); } catch {} chartRef.current = null; }
-      seriesRefs.current = { candle: null, line: null, volume: null };
+      seriesRefs.current = { candle: null, line: null, volume: null, markers: null };
     };
   }, [chartType, isDark, isMobile, hasData, loadMoreData]);
 
@@ -578,6 +618,36 @@ const PriceChartAdvanced = memo(({ token }) => {
         time: d.time, value: d.volume || 0,
         color: d.close >= d.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
       })));
+    }
+
+    // Creator activity markers
+    const priceSeries = seriesRefs.current.candle || seriesRefs.current.line;
+    if (chartType !== 'holders' && priceSeries && data) {
+      const markers = data
+        .filter(d => d.creatorSold > 0 || d.creatorBought > 0 || d.creatorWithdraw > 0 || d.creatorDeposit > 0)
+        .flatMap(d => {
+          const arr = [];
+          if (d.creatorSold > 0) {
+            arr.push({ time: d.time, position: 'aboveBar', color: '#ef4444', shape: 'arrowDown', text: 'S' });
+          }
+          if (d.creatorWithdraw > 0) {
+            arr.push({ time: d.time, position: 'aboveBar', color: '#f59e0b', shape: 'circle', text: 'W' });
+          }
+          if (d.creatorBought > 0) {
+            arr.push({ time: d.time, position: 'belowBar', color: '#22c55e', shape: 'arrowUp', text: 'B' });
+          }
+          if (d.creatorDeposit > 0) {
+            arr.push({ time: d.time, position: 'belowBar', color: '#3b82f6', shape: 'circle', text: 'D' });
+          }
+          return arr;
+        })
+        .sort((a, b) => a.time - b.time);
+
+      if (seriesRefs.current.markers) {
+        seriesRefs.current.markers.setMarkers(markers);
+      } else {
+        seriesRefs.current.markers = createSeriesMarkers(priceSeries, markers);
+      }
     }
 
     if (isNew) {
