@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Loader2, TrendingUp, Activity, Target, Zap } from 'lucide-react';
+import { Loader2, Activity, Search, X } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
@@ -23,12 +23,12 @@ const TIME_PERIODS = [
   { key: 'all', label: 'All' }
 ];
 
-// Sort options - grouped by category
+// Sort options - maps to API sortBy param
 const SORT_OPTIONS = [
-  { key: 'profit', label: 'Profit', icon: TrendingUp, timeBased: true },
-  { key: 'volume', label: 'Volume', icon: Activity, timeBased: true },
-  { key: 'roi', label: 'ROI', icon: Target, timeBased: false },
-  { key: 'winRate', label: 'Win%', icon: Zap, timeBased: false }
+  { key: 'volume', label: 'Volume' },
+  { key: 'trades', label: 'Trades' },
+  { key: 'pnl', label: 'PNL' },
+  { key: 'roi', label: 'ROI' }
 ];
 
 export default function TopTraders({ token }) {
@@ -39,9 +39,17 @@ export default function TopTraders({ token }) {
 
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortType, setSortType] = useState('profit');
+  const [sortType, setSortType] = useState('volume');
   const [timePeriod, setTimePeriod] = useState('7d');
   const [mobileChecked, setMobileChecked] = useState(false);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchAddress), 300);
+    return () => clearTimeout(timer);
+  }, [searchAddress]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -80,12 +88,12 @@ export default function TopTraders({ token }) {
             setTraders(tradersArray);
           }
         } else {
-          // Token-specific traders - valid sortBy: pnl, trades, volume (default)
-          const sortMap = { profit: 'pnl', volume: 'volume', roi: 'trades', winRate: 'trades' };
-          const sortBy = sortMap[sortType] || 'volume';
+          // Token-specific traders - sortBy: volume, trades, pnl, roi, bought, sold, wash
+          const sortBy = sortType || 'volume';
           const interval = timePeriod || '7d';
+          const searchParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : '';
           response = await axios.get(
-            `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${limit}&sortBy=${sortBy}`
+            `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${limit}&sortBy=${sortBy}${searchParam}`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.traders) ? response.data.traders : [];
@@ -100,7 +108,7 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked, debouncedSearch]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
@@ -157,55 +165,74 @@ export default function TopTraders({ token }) {
         <>
           {/* Controls */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Time Period - only for time-based sorts */}
-            {SORT_OPTIONS.find(o => o.key === sortType)?.timeBased && (
-              <div className="flex items-center gap-1">
-                {TIME_PERIODS.map((period) => (
-                  <button
-                    key={period.key}
-                    onClick={() => handlePeriodChange(period.key)}
-                    className={cn(
-                      'px-2.5 py-1 text-[11px] font-medium rounded-md transition-all',
-                      timePeriod === period.key
-                        ? 'bg-primary text-white'
-                        : isDark
-                          ? 'text-white/60 hover:text-white hover:bg-white/5'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                    )}
-                  >
-                    {period.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Time Period */}
+            <div className="flex items-center gap-1">
+              {TIME_PERIODS.map((period) => (
+                <button
+                  key={period.key}
+                  onClick={() => handlePeriodChange(period.key)}
+                  className={cn(
+                    'px-2.5 py-1 text-[11px] font-medium rounded-md transition-all',
+                    timePeriod === period.key
+                      ? 'bg-primary text-white'
+                      : isDark
+                        ? 'text-white/60 hover:text-white hover:bg-white/5'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  )}
+                >
+                  {period.label}
+                </button>
+              ))}
+            </div>
 
             {/* Right side: Sort Options + Search */}
             <div className="flex items-center gap-3 ml-auto">
               {/* Sort Options */}
               <div className="flex items-center gap-1">
-                {SORT_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  const isActive = sortType === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      onClick={() => handleSortChange(option.key)}
-                      className={cn(
-                        'flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md transition-all',
-                        isActive
-                          ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
-                          : isDark
-                            ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                      )}
-                    >
-                      <Icon size={12} />
-                      <span className="hidden sm:inline">{option.label}</span>
-                    </button>
-                  );
-                })}
+                {SORT_OPTIONS.map((option) => (
+                  <button
+                    key={option.key}
+                    onClick={() => handleSortChange(option.key)}
+                    className={cn(
+                      'px-2 py-1 text-[11px] font-medium rounded-md transition-all',
+                      sortType === option.key
+                        ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
+                        : isDark
+                          ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
 
+              {/* Search */}
+              {!isXRPToken && (
+                <div className="relative">
+                  <Search size={14} className={cn('absolute left-2.5 top-1/2 -translate-y-1/2', isDark ? 'text-white/40' : 'text-gray-400')} />
+                  <input
+                    type="text"
+                    placeholder="Search address..."
+                    value={searchAddress}
+                    onChange={(e) => setSearchAddress(e.target.value)}
+                    className={cn(
+                      'h-7 w-36 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+                      isDark
+                        ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
+                        : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
+                    )}
+                  />
+                  {searchAddress && (
+                    <button
+                      onClick={() => setSearchAddress('')}
+                      className={cn('absolute right-2 top-1/2 -translate-y-1/2', isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600')}
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
