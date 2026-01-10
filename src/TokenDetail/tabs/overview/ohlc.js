@@ -203,10 +203,10 @@ const PriceChartAdvanced = memo(({ token }) => {
             low: +k.l,
             close: +k.c,
             volume: +k.v || 0,
-            creatorSold: +k.cs || 0,
-            creatorBought: +k.cb || 0,
-            creatorWithdraw: +k.cw || 0,
-            creatorDeposit: +k.cd || 0
+            creatorSold: +k.cSold || 0,
+            creatorBought: +k.cBought || 0,
+            creatorWithdraw: +k.cWithdraw || 0,
+            creatorDeposit: +k.cDeposit || 0
           };
           setData(prev => {
             if (!prev?.length) return prev;
