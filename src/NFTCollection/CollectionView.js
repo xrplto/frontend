@@ -1480,33 +1480,15 @@ const HoldersTab = React.memo(({ slug }) => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-1 pt-2">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page === 1}
-                className={cn(
-                  "p-1.5 rounded-md transition-colors",
-                  page === 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
-                  isDark ? "text-white/50" : "text-gray-500"
-                )}
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page >= totalPages}
-                className={cn(
-                  "p-1.5 rounded-md transition-colors",
-                  page >= totalPages ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
-                  isDark ? "text-white/50" : "text-gray-500"
-                )}
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              hasPrev={page > 1}
+              hasNext={page < totalPages}
+              onPrev={() => setPage(Math.max(1, page - 1))}
+              onNext={() => setPage(Math.min(totalPages, page + 1))}
+              className="pt-2"
+            />
           )}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useContext, memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
-import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, List, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -1026,37 +1026,35 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
         <Text isDark={isDark}>tokens</Text>
       </InfoBox>
 
-      <CenterBox>
-        <PaginationContainer isDark={isDark}>
-          <NavButton isDark={isDark} onClick={handleFirstPage} disabled={page === 0} title="First page">
-            <ChevronsLeft size={12} />
-          </NavButton>
-
-          {getPageNumbers().map((pageNum, idx) => {
-            if (pageNum === '...') {
-              return (
-                <span key={`ellipsis-${idx}`} style={{ padding: '0 2px', fontSize: '10px', opacity: 0.5 }}>
-                  ...
-                </span>
-              );
-            }
-            return (
-              <PageButton
-                key={pageNum}
-                isDark={isDark}
-                selected={pageNum === page + 1}
-                onClick={() => handleChangePage(pageNum - 1)}
-              >
-                {pageNum}
-              </PageButton>
-            );
-          })}
-
-          <NavButton isDark={isDark} onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
-            <ChevronsRight size={12} />
-          </NavButton>
-        </PaginationContainer>
-      </CenterBox>
+      <div className="flex items-center justify-center gap-1 pt-3">
+        <button
+          type="button"
+          onClick={() => handleChangePage(page - 1)}
+          disabled={page === 0}
+          className={cn(
+            "p-1.5 rounded-md transition-colors",
+            page === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+            isDark ? "text-white/50" : "text-gray-500"
+          )}
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+          {page + 1} / {page_count}
+        </span>
+        <button
+          type="button"
+          onClick={() => handleChangePage(page + 1)}
+          disabled={page === page_count - 1}
+          className={cn(
+            "p-1.5 rounded-md transition-colors",
+            page === page_count - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+            isDark ? "text-white/50" : "text-gray-500"
+          )}
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
 
       <RowsSelector isDark={isDark}>
         <List size={12} />

@@ -360,54 +360,33 @@ export default function TopTraders({ token }) {
           </div>
 
           {/* Pagination */}
-          <div className={cn(
-            'flex items-center justify-center pt-3 mt-2 border-t gap-3',
-            isDark ? 'border-white/5' : 'border-gray-100'
-          )}>
+          <div className="flex items-center justify-center gap-1 pt-3">
             <button
               type="button"
-              onClick={() => {
-                if (hasPrev) {
-                  setOffset(Math.max(0, offset - limit));
-                }
-              }}
+              onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={!hasPrev}
               className={cn(
-                'p-2 rounded-lg transition-all',
-                hasPrev
-                  ? isDark
-                    ? 'text-white bg-white/10 hover:bg-white/20 cursor-pointer'
-                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                  : isDark
-                    ? 'text-white/20 bg-white/5 cursor-not-allowed'
-                    : 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                "p-1.5 rounded-md transition-colors",
+                !hasPrev ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                isDark ? "text-white/50" : "text-gray-500"
               )}
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={14} />
             </button>
-            <span className={cn('text-[13px] font-medium tabular-nums min-w-[80px] text-center', isDark ? 'text-white/80' : 'text-gray-600')}>
+            <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
               Page {currentPage}
             </span>
             <button
               type="button"
-              onClick={() => {
-                if (hasNext) {
-                  setOffset(offset + limit);
-                }
-              }}
+              onClick={() => setOffset(offset + limit)}
               disabled={!hasNext}
               className={cn(
-                'p-2 rounded-lg transition-all',
-                hasNext
-                  ? isDark
-                    ? 'text-white bg-white/10 hover:bg-white/20 cursor-pointer'
-                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                  : isDark
-                    ? 'text-white/20 bg-white/5 cursor-not-allowed'
-                    : 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                "p-1.5 rounded-md transition-colors",
+                !hasNext ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                isDark ? "text-white/50" : "text-gray-500"
               )}
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={14} />
             </button>
           </div>
         </>

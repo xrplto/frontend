@@ -5,42 +5,6 @@ import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { fNumber } from 'src/utils/formatters';
 
-// Compact Pagination Component
-function Pagination({ total, page, setPage, isDark }) {
-  const pageCount = Math.ceil(total / 20);
-  if (pageCount <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center gap-1 pt-4">
-      <button
-        onClick={() => setPage(Math.max(0, page - 1))}
-        disabled={page === 0}
-        className={cn(
-          "p-1.5 rounded-md transition-colors",
-          page === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
-          isDark ? "text-white/50" : "text-gray-500"
-        )}
-      >
-        <ChevronLeft size={14} />
-      </button>
-      <span className={cn("text-[11px] px-2", isDark ? "text-white/40" : "text-gray-500")}>
-        {page + 1} / {pageCount}
-      </span>
-      <button
-        onClick={() => setPage(Math.min(pageCount - 1, page + 1))}
-        disabled={page >= pageCount - 1}
-        className={cn(
-          "p-1.5 rounded-md transition-colors",
-          page >= pageCount - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
-          isDark ? "text-white/50" : "text-gray-500"
-        )}
-      >
-        <ChevronRight size={14} />
-      </button>
-    </div>
-  );
-}
-
 // Filter type labels
 const FILTER_TYPES = [
   { value: '', label: 'All' },
@@ -345,7 +309,48 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
               </div>
 
               {/* Pagination */}
-              <Pagination total={total} page={page} setPage={setPage} isDark={isDark} />
+              {(() => {
+                const currentPage = page + 1;
+                const totalPages = Math.ceil(total / 20);
+                const hasPrev = page > 0;
+                const hasNext = page < totalPages - 1;
+                const onPrevHandler = () => setPage(Math.max(0, page - 1));
+                const onNextHandler = () => setPage(page + 1);
+
+                if (totalPages <= 1) return null;
+
+                return (
+                  <div className="flex items-center justify-center gap-1 pt-3">
+                    <button
+                      type="button"
+                      onClick={onPrevHandler}
+                      disabled={!hasPrev}
+                      className={cn(
+                        "p-1.5 rounded-md transition-colors",
+                        !hasPrev ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                        isDark ? "text-white/50" : "text-gray-500"
+                      )}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={onNextHandler}
+                      disabled={!hasNext}
+                      className={cn(
+                        "p-1.5 rounded-md transition-colors",
+                        !hasNext ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                        isDark ? "text-white/50" : "text-gray-500"
+                      )}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>

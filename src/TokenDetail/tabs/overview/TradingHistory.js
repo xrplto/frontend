@@ -9,6 +9,7 @@ import RichList from 'src/TokenDetail/tabs/holders/RichList';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Sparkles } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
@@ -1061,41 +1062,33 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
           {/* Pagination */}
           {offersTotal > offersLimit && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
+            <div className="flex items-center justify-center gap-1 pt-3">
               <button
                 onClick={() => setOffersPage(p => Math.max(0, p - 1))}
                 disabled={offersPage === 0}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '11px',
-                  background: 'transparent',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-                  borderRadius: '6px',
-                  color: isDark ? '#fff' : '#1a1a1a',
-                  cursor: offersPage === 0 ? 'not-allowed' : 'pointer',
-                  opacity: offersPage === 0 ? 0.5 : 1
-                }}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  offersPage === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                  isDark ? "text-white/50" : "text-gray-500"
+                )}
+                title="Previous"
               >
-                Previous
+                <ChevronLeft size={14} />
               </button>
-              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', padding: '6px 8px' }}>
-                Page {offersPage + 1} of {Math.ceil(offersTotal / offersLimit)}
+              <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+                {offersPage + 1}<span style={{ opacity: 0.5 }}>/</span>{Math.ceil(offersTotal / offersLimit)}
               </span>
               <button
                 onClick={() => setOffersPage(p => p + 1)}
                 disabled={(offersPage + 1) * offersLimit >= offersTotal}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '11px',
-                  background: 'transparent',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-                  borderRadius: '6px',
-                  color: isDark ? '#fff' : '#1a1a1a',
-                  cursor: (offersPage + 1) * offersLimit >= offersTotal ? 'not-allowed' : 'pointer',
-                  opacity: (offersPage + 1) * offersLimit >= offersTotal ? 0.5 : 1
-                }}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  (offersPage + 1) * offersLimit >= offersTotal ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+                  isDark ? "text-white/50" : "text-gray-500"
+                )}
+                title="Next"
               >
-                Next
+                <ChevronRight size={14} />
               </button>
             </div>
           )}

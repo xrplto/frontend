@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -420,47 +420,31 @@ const RichList = ({ token }) => {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1 pt-3">
           <button
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-            className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
-            )}
-          >
-            <ChevronsLeft size={14} />
-          </button>
-          <button
+            type="button"
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              "p-1.5 rounded-md transition-colors",
+              page === 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+              isDark ? "text-white/50" : "text-gray-500"
             )}
           >
             <ChevronLeft size={14} />
           </button>
-          <span className={cn('px-3 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+          <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
             {page} / {totalPages}
           </span>
           <button
+            type="button"
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              "p-1.5 rounded-md transition-colors",
+              page === totalPages ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+              isDark ? "text-white/50" : "text-gray-500"
             )}
           >
             <ChevronRight size={14} />
-          </button>
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-            className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
-            )}
-          >
-            <ChevronsRight size={14} />
           </button>
         </div>
       )}

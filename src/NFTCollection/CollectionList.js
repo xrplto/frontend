@@ -5,7 +5,8 @@ import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
-import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, List, ChevronDown } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 // Optimized chart wrapper with direct canvas rendering
 const OptimizedChart = memo(
@@ -389,23 +390,6 @@ const StyledToolbar = styled.div`
   }
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  min-height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-
-  @media (max-width: 900px) {
-    width: 100%;
-    justify-content: center;
-    padding: 4px 8px;
-    gap: 2px;
-  }
-`;
 
 const RowsSelector = styled.div`
   display: flex;
@@ -424,31 +408,6 @@ const RowsSelector = styled.div`
   }
 `;
 
-const InfoBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding: 0;
-  min-height: 32px;
-  border: none;
-  background: transparent;
-
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    justify-content: flex-start;
-    gap: 4px;
-  }
-`;
-
-const Chip = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  padding: 0;
-  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
-`;
 
 const Text = styled.span`
   font-size: 11px;
@@ -1023,9 +982,10 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
   if (num % 1 !== 0) page_count++;
   page_count = Math.max(page_count, 1);
 
-  const start = total > 0 ? page * rows + 1 : 0;
-  let end = start + rows - 1;
-  if (end > total) end = total;
+  const currentPage = page + 1;
+  const totalPages = page_count;
+  const hasPrev = page > 0;
+  const hasNext = page < page_count - 1;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1052,87 +1012,22 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
     }
   }, []);
 
-  const handleChangePage = useCallback(
-    (newPage) => {
-      setPage(newPage);
+  const onPrevHandler = useCallback(() => {
+    if (hasPrev) {
+      setPage(page - 1);
       gotoTop({ target: document });
-    },
-    [setPage, gotoTop]
-  );
-
-  const handleFirstPage = useCallback(() => {
-    setPage(0);
-    gotoTop({ target: document });
-  }, [setPage, gotoTop]);
-
-  const handleLastPage = useCallback(() => {
-    setPage(page_count - 1);
-    gotoTop({ target: document });
-  }, [setPage, gotoTop, page_count]);
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const current = page + 1;
-    const total = page_count;
-
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (current <= 3) {
-        for (let i = 1; i <= 5; i++) pages.push(i);
-        pages.push('...');
-        pages.push(total);
-      } else if (current >= total - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = total - 4; i <= total; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push('...');
-        for (let i = current - 1; i <= current + 1; i++) pages.push(i);
-        pages.push('...');
-        pages.push(total);
-      }
     }
-    return pages;
-  };
+  }, [page, hasPrev, setPage, gotoTop]);
+
+  const onNextHandler = useCallback(() => {
+    if (hasNext) {
+      setPage(page + 1);
+      gotoTop({ target: document });
+    }
+  }, [page, hasNext, setPage, gotoTop]);
 
   return (
     <StyledToolbar>
-      <InfoBox darkMode={darkMode}>
-        <Chip darkMode={darkMode}>{`${start}-${end} of ${total.toLocaleString()}`}</Chip>
-        <Text darkMode={darkMode}>collections</Text>
-      </InfoBox>
-
-      <CenterBox>
-        <PaginationContainer darkMode={darkMode}>
-          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page" darkMode={darkMode}>
-            <ChevronsLeft size={12} />
-          </NavButton>
-
-          {getPageNumbers().map((pageNum, idx) => {
-            if (pageNum === '...') {
-              return (
-                <span key={`ellipsis-${idx}`} style={{ padding: '0 2px', fontSize: '11px' }}>
-                  ...
-                </span>
-              );
-            }
-            return (
-              <PageButton key={pageNum} selected={pageNum === page + 1} onClick={() => handleChangePage(pageNum - 1)} darkMode={darkMode}>
-                {pageNum}
-              </PageButton>
-            );
-          })}
-
-          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page" darkMode={darkMode}>
-            <ChevronsRight size={12} />
-          </NavButton>
-        </PaginationContainer>
-      </CenterBox>
-
       <RowsSelector darkMode={darkMode}>
         <List size={12} />
         <Text darkMode={darkMode}>Rows</Text>
@@ -1150,6 +1045,36 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           )}
         </Select>
       </RowsSelector>
+
+      <div className="flex items-center justify-center gap-1 pt-3">
+        <button
+          type="button"
+          onClick={onPrevHandler}
+          disabled={!hasPrev}
+          className={cn(
+            "p-1.5 rounded-md transition-colors",
+            !hasPrev ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+            darkMode ? "text-white/50" : "text-gray-500"
+          )}
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span className={cn("text-[11px] px-2 tabular-nums", darkMode ? "text-white/40" : "text-gray-500")}>
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          type="button"
+          onClick={onNextHandler}
+          disabled={!hasNext}
+          className={cn(
+            "p-1.5 rounded-md transition-colors",
+            !hasNext ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
+            darkMode ? "text-white/50" : "text-gray-500"
+          )}
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
     </StyledToolbar>
   );
 });
