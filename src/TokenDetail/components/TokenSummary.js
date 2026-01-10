@@ -452,10 +452,10 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleSetTrust}
             disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
               isRemove
-                ? isDark ? "text-red-400 hover:bg-red-500/10" : "text-red-500 hover:bg-red-50"
-                : isDark ? "text-green-400 hover:bg-green-500/10" : "text-green-500 hover:bg-green-50",
+                ? isDark ? "text-red-400 border-red-500/20 hover:bg-red-500/10 hover:border-red-500/30" : "text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
+                : isDark ? "text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30" : "text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300",
               (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
             )}
           >
@@ -465,8 +465,8 @@ const TokenSummary = memo(({ token }) => {
           <button
             onClick={() => setShowInfo(true)}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
-              isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.06]" : "text-gray-400 hover:text-gray-600 hover:bg-black/[0.04]"
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
+              isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 hover:border-[#3f96fe]/30" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300"
             )}
           >
             <Code2 size={13} />

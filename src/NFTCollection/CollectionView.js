@@ -280,7 +280,7 @@ const NFTSkeleton = React.memo(({ isDark }) => (
   </div>
 ));
 
-// Ultra-light NFT Card - hover effects + listed badge
+// Ultra-light NFT Card - hover effects
 const NFTCard = React.memo(({ nft, isDark, priority }) => {
   const { cost, meta, NFTokenID, rarity_rank, is_burned } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
@@ -314,28 +314,12 @@ const NFTCard = React.memo(({ nft, isDark, priority }) => {
             <span className="absolute inset-0 flex items-center justify-center text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>No image</span>
           )}
 
-          {/* Top badges row */}
-          <div className="absolute top-2 left-2 right-2 flex justify-between items-start z-10">
-            {rarity_rank > 0 ? (
-              <div className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-black/70 backdrop-blur-sm text-white">
-                #{rarity_rank}
-              </div>
-            ) : <div />}
-
-            {/* Listed or Burned badge */}
-            {is_burned ? (
-              <div className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm bg-red-500/90 text-white">
-                Burned
-              </div>
-            ) : listPrice ? (
-              <div className={cn(
-                "px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm",
-                "bg-emerald-500/90 text-white"
-              )}>
-                Listed
-              </div>
-            ) : null}
-          </div>
+          {/* Burned badge */}
+          {is_burned && (
+            <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm bg-red-500/90 text-white z-10">
+              Burned
+            </div>
+          )}
 
           {/* Price overlay on hover */}
           {listPrice && (
@@ -356,15 +340,22 @@ const NFTCard = React.memo(({ nft, isDark, priority }) => {
           "px-2 py-2",
           isDark ? "bg-white/[0.02]" : "bg-gray-50/50"
         )}>
-          <p className={cn(
-            "text-[11px] font-medium truncate",
-            isDark ? "text-white/80" : "text-gray-700"
-          )}>{name}</p>
-          {listPrice ? (
-            <span className="text-[11px] font-semibold text-primary">{fNumber(listPrice)} XRP</span>
-          ) : (
-            <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>Not listed</span>
-          )}
+          <div className="flex justify-between items-center">
+            <p className={cn(
+              "text-[11px] font-medium truncate flex-1",
+              isDark ? "text-white/80" : "text-gray-700"
+            )}>{name}</p>
+            {rarity_rank && (
+              <span className={cn("text-[10px] ml-1", isDark ? "text-white/40" : "text-gray-400")}>#{rarity_rank}</span>
+            )}
+          </div>
+          <div className="flex justify-between items-center">
+            {listPrice ? (
+              <span className="text-[11px] font-semibold text-primary">{fNumber(listPrice)} XRP</span>
+            ) : (
+              <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>Not listed</span>
+            )}
+          </div>
         </div>
       </div>
     </a>
