@@ -21,8 +21,8 @@ import { useRouter } from 'next/router';
 import { TokenListToolbar } from './TokenListControls';
 import { useTokenSync } from 'src/hooks/useTokenSync';
 
-// Simple memoization
-const MemoizedTokenRow = memo(TokenRow);
+// TokenRow is already memoized in TokenRow.js
+const MemoizedTokenRow = TokenRow;
 const LazyEditTokenDialog = lazy(
   () => import(/* webpackChunkName: "edit-token-dialog" */ 'src/components/EditTokenDialog')
 );

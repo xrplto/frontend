@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { LRUCache } from 'lru-cache';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { Copy, ArrowLeftRight, Wallet, TrendingUp, AlertCircle, Home, Search, Share2, Send, Link as LinkIcon, FileText, Scale, Settings, Code, ChevronRight, Check, X } from 'lucide-react';
@@ -126,23 +125,6 @@ const Grid = ({ children, container, spacing = 0, size, sx, ...p }) => {
   const xs = size?.xs || 12, md = size?.md;
   const width = md ? undefined : `${(xs / 12) * 100}%`;
   return <div style={{ flex: md ? `0 0 ${(md / 12) * 100}%` : `0 0 ${width}`, maxWidth: md ? `${(md / 12) * 100}%` : width, ...sx2style(sx) }} {...p}>{children}</div>;
-};
-
-// Create transaction cache with 1 hour TTL and max 100 entries
-const txCache = new LRUCache({
-  max: 100,
-  ttl: 1000 * 60 * 60, // 1 hour in milliseconds
-  updateAgeOnGet: true,
-  updateAgeOnHas: true
-});
-
-// Utility function to clear cache (useful for debugging)
-export const clearTransactionCache = (hash) => {
-  if (hash) {
-    txCache.delete(hash);
-  } else {
-    txCache.clear();
-  }
 };
 
 // Parse date from either ISO string (api.xrpl.to) or ripple epoch (raw XRPL)
@@ -4079,19 +4061,6 @@ export async function getServerSideProps(context) {
     };
   }
 
-  // Check cache first
-  const cachedData = txCache.get(hash);
-  if (cachedData) {
-    // Set cache headers for browser caching
-    context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
-    return {
-      props: {
-        txData: cachedData,
-        error: null
-      }
-    };
-  }
-
   const response = await axios.get(`https://api.xrpl.to/api/tx/${hash}`).catch(() => null);
 
   if (!response || !response.data) {
@@ -4119,9 +4088,6 @@ export async function getServerSideProps(context) {
     const { tx_json, meta, ...rest } = response.data;
     // Flatten tx_json into the response for compatibility
     const txData = { ...rest, ...tx_json, meta: meta ?? null };
-
-    // Cache the successful response
-    txCache.set(hash, txData);
 
     // Set cache headers for browser caching
     context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');

@@ -36,7 +36,9 @@ const SparklineChart = memo(({ url }) => {
 
   useEffect(() => {
     if (!visible || !url) return;
+    let cancelled = false;
     axios.get(url).then(res => {
+      if (cancelled) return;
       const prices = res.data?.data?.prices?.map(Number) || [];
       if (prices.length < 2) return;
       const w = 120, h = 32;
@@ -49,6 +51,7 @@ const SparklineChart = memo(({ url }) => {
       setAreaPath(area);
       setColor(c);
     }).catch(() => {});
+    return () => { cancelled = true; };
   }, [visible, url]);
 
   const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
@@ -694,7 +697,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -772,7 +775,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -810,7 +813,7 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
-                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
               )}
@@ -977,7 +980,7 @@ const DesktopTokenRow = ({
               columnElements.push(
                 <StyledCell key="sparkline" align="right" isDark={darkMode}>
                   {sparklineUrl ? (
-                    <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+                    <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
                   ) : (
                     <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
                   )}
@@ -1005,7 +1008,7 @@ const DesktopTokenRow = ({
             {/* Trendline after price */}
             <td style={{ padding: '14px 4px', width: 128, maxWidth: 128 }}>
               {sparklineUrl ? (
-                <SparklineChart url={sparklineUrl} darkMode={darkMode} />
+                <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
                 <div style={{ width: 120, height: 32, background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: 4 }} />
               )}
@@ -1202,12 +1205,9 @@ const FTokenRow = memo(
 
     const sparklineUrl = useMemo(() => {
       if (!BASE_URL || !md5 || isMobile) return null;
-      // Use 30 second cache for /new page, 10 minutes for others
-      const isNewPage = window.location.pathname === '/new';
-      const cacheMs = isNewPage ? 30000 : 600000; // 30s or 10min
-      const cacheTime = Math.floor(Date.now() / cacheMs);
-      return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=50&cache=${cacheTime}`;
-    }, [BASE_URL, md5, isMobile]);
+      const vsCurrency = activeFiatCurrency === 'XRP' ? 'XRP' : 'USD';
+      return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=50&vs_currency=${vsCurrency}`;
+    }, [BASE_URL, md5, isMobile, activeFiatCurrency]);
 
     if (isMobile) {
       return (
@@ -1267,6 +1267,7 @@ const FTokenRow = memo(
       prevProps.isMobile === nextProps.isMobile &&
       prevProps.viewMode === nextProps.viewMode &&
       prevProps.rows === nextProps.rows &&
+      prevProps.activeFiatCurrency === nextProps.activeFiatCurrency &&
       // Watchlist check
       (prevProps.watchList === nextProps.watchList ||
         (prevProps.watchList.includes(prev.md5) === nextProps.watchList.includes(next.md5)))
