@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { fNumber } from 'src/utils/formatters';
+import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
 
 function formatCompactNumber(num) {
   if (num === 0 || num === null || num === undefined) return '0';
@@ -277,8 +277,8 @@ export default function TopTraders({ token }) {
                     <>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
                       <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought (XRP)</th>
+                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold (XRP)</th>
                     </>
                   )}
                   <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
@@ -348,7 +348,7 @@ export default function TopTraders({ token }) {
                             </span>
                           </td>
                           <td className={cn('py-2.5 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
-                            {trader.lastTradeDate ? new Date(trader.lastTradeDate).toLocaleDateString() : '-'}
+                            {trader.lastTradeDate ? formatDistanceToNowStrict(new Date(trader.lastTradeDate)) : '-'}
                           </td>
                         </>
                       )}

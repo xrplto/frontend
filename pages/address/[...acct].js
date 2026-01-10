@@ -712,72 +712,104 @@ const OverView = ({ account }) => {
                 )}
 
                 {/* NFT Trading */}
-                {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) && (
-                  <div className={cn("p-4 rounded-lg border", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Image size={14} className="text-[#a855f7]" />
-                        <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-[#c084fc]" : "text-[#9333ea]")}>NFT Trading</span>
-                        {nftStats.holdingsCount > 0 && <span className={cn("text-[10px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{nftStats.holdingsCount} held</span>}
-                      </div>
-                      <div className={cn("flex items-center gap-2 text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
-                        <span className="text-[#22c55e]">{nftStats.buyCount || 0} buys</span>
-                        <span>/</span>
-                        <span className="text-[#ef4444]">{nftStats.sellCount || 0} sells</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-3 mb-3">
-                      {[
-                        { label: 'P&L', value: fCurrency5(nftStats.combinedProfit || 0), color: (nftStats.combinedProfit || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                        { label: 'ROI', value: `${(nftStats.roi || 0).toFixed(1)}%`, color: (nftStats.roi || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                        { label: 'WIN', value: `${(nftStats.winRate || 0).toFixed(0)}%`, color: (nftStats.winRate || 0) >= 50 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
-                        { label: 'VOLUME', value: fCurrency5(nftStats.totalVolume || 0), color: isDark ? 'text-white' : 'text-gray-900' }
-                      ].map(s => (
-                        <div key={s.label}>
-                          <p className={cn("text-[9px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
-                          <p className={cn("text-[13px] font-medium tabular-nums", s.color)}>{s.value}</p>
+                <div className={cn("p-4 rounded-lg border", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+                  {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
+                    <>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Image size={14} className="text-[#a855f7]" />
+                          <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-[#c084fc]" : "text-[#9333ea]")}>NFT Trading</span>
+                          {nftStats.holdingsCount > 0 && <span className={cn("text-[10px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>{nftStats.holdingsCount} held</span>}
                         </div>
-                      ))}
-                    </div>
-                    {/* Flips & Hold Time */}
-                    {(nftStats.flips || nftStats.avgHoldingDays) && (
-                      <div className={cn("flex items-center gap-4 pb-3 mb-3 text-[10px]", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
-                        {nftStats.flips > 0 && (
-                          <>
-                            <span className={isDark ? "text-white/30" : "text-gray-400"}>FLIPS</span>
-                            <span className={isDark ? "text-white/70" : "text-gray-600"}>{nftStats.flips}</span>
-                          </>
-                        )}
-                        {nftStats.avgHoldingDays > 0 && (
-                          <>
-                            <span className={isDark ? "text-white/30" : "text-gray-400"}>AVG HOLD</span>
-                            <span className={isDark ? "text-white/70" : "text-gray-600"}>{nftStats.avgHoldingDays.toFixed(0)}d</span>
-                          </>
-                        )}
+                        <div className={cn("flex items-center gap-2 text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
+                          <span className="text-[#22c55e]">{nftStats.buyCount || 0} buys</span>
+                          <span>/</span>
+                          <span className="text-[#ef4444]">{nftStats.sellCount || 0} sells</span>
+                        </div>
                       </div>
-                    )}
-                    <div className={cn("flex items-center gap-3 text-[11px]", !nftStats.flips && !nftStats.avgHoldingDays ? "pt-3 border-t border-white/10" : "")}>
-                      <span className={isDark ? "text-white/30" : "text-gray-400"}>7D</span>
-                      <span className={cn("tabular-nums", (nftStats.profit7d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit7d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit7d || 0)}</span>
-                      <span className={isDark ? "text-white/30" : "text-gray-400"}>30D</span>
-                      <span className={cn("tabular-nums", (nftStats.profit30d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit30d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit30d || 0)}</span>
-                      <span className={isDark ? "text-white/30" : "text-gray-400"}>90D</span>
-                      <span className={cn("tabular-nums", (nftStats.profit90d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit90d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit90d || 0)}</span>
-                    </div>
-                    {/* Top Collections */}
-                    {nftStats.collections?.length > 0 && (
-                      <div className={cn("flex flex-wrap gap-1.5 pt-3 mt-3", isDark ? "border-t border-white/10" : "border-t border-gray-100")}>
-                        {nftStats.collections.slice(0, 3).map(c => (
-                          <a key={c.slug} href={`/collection/${c.slug}`} className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-[10px] transition-colors", isDark ? "bg-white/5 hover:bg-white/10" : "bg-gray-50 hover:bg-gray-100")}>
-                            {c.logo && <img src={`https://s1.xrpl.to/nft-collection/${c.logo}`} className="w-4 h-4 rounded" alt="" />}
-                            <span className={isDark ? "text-white/60" : "text-gray-600"}>{c.name?.slice(0, 10)}</span>
-                            <span className={cn("tabular-nums", (c.profit || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(c.profit || 0) >= 0 ? '+' : ''}{fCurrency5(c.profit || 0)}</span>
-                          </a>
+                      <div className="grid grid-cols-4 gap-3 mb-3">
+                        {[
+                          { label: 'P&L', value: fCurrency5(nftStats.combinedProfit || 0), color: (nftStats.combinedProfit || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+                          { label: 'ROI', value: `${(nftStats.roi || 0).toFixed(1)}%`, color: (nftStats.roi || 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+                          { label: 'WIN', value: `${(nftStats.winRate || 0).toFixed(0)}%`, color: (nftStats.winRate || 0) >= 50 ? 'text-[#22c55e]' : 'text-[#ef4444]' },
+                          { label: 'VOLUME', value: fCurrency5(nftStats.totalVolume || 0), color: isDark ? 'text-white' : 'text-gray-900' }
+                        ].map(s => (
+                          <div key={s.label}>
+                            <p className={cn("text-[9px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
+                            <p className={cn("text-[13px] font-medium tabular-nums", s.color)}>{s.value}</p>
+                          </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                )}
+                      {/* Flips & Hold Time */}
+                      {(nftStats.flips || nftStats.avgHoldingDays) && (
+                        <div className={cn("flex items-center gap-4 pb-3 mb-3 text-[10px]", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                          {nftStats.flips > 0 && (
+                            <>
+                              <span className={isDark ? "text-white/30" : "text-gray-400"}>FLIPS</span>
+                              <span className={isDark ? "text-white/70" : "text-gray-600"}>{nftStats.flips}</span>
+                            </>
+                          )}
+                          {nftStats.avgHoldingDays > 0 && (
+                            <>
+                              <span className={isDark ? "text-white/30" : "text-gray-400"}>AVG HOLD</span>
+                              <span className={isDark ? "text-white/70" : "text-gray-600"}>{nftStats.avgHoldingDays.toFixed(0)}d</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      <div className={cn("flex items-center gap-3 text-[11px]", !nftStats.flips && !nftStats.avgHoldingDays ? "pt-3 border-t border-white/10" : "")}>
+                        <span className={isDark ? "text-white/30" : "text-gray-400"}>7D</span>
+                        <span className={cn("tabular-nums", (nftStats.profit7d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit7d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit7d || 0)}</span>
+                        <span className={isDark ? "text-white/30" : "text-gray-400"}>30D</span>
+                        <span className={cn("tabular-nums", (nftStats.profit30d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit30d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit30d || 0)}</span>
+                        <span className={isDark ? "text-white/30" : "text-gray-400"}>90D</span>
+                        <span className={cn("tabular-nums", (nftStats.profit90d || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(nftStats.profit90d || 0) >= 0 ? '+' : ''}{fCurrency5(nftStats.profit90d || 0)}</span>
+                      </div>
+                      {/* Top Collections */}
+                      {nftStats.collections?.length > 0 && (
+                        <div className={cn("flex flex-wrap gap-1.5 pt-3 mt-3", isDark ? "border-t border-white/10" : "border-t border-gray-100")}>
+                          {nftStats.collections.slice(0, 3).map(c => (
+                            <a key={c.slug} href={`/collection/${c.slug}`} className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-[10px] transition-colors", isDark ? "bg-white/5 hover:bg-white/10" : "bg-gray-50 hover:bg-gray-100")}>
+                              {c.logo && <img src={`https://s1.xrpl.to/nft-collection/${c.logo}`} className="w-4 h-4 rounded" alt="" />}
+                              <span className={isDark ? "text-white/60" : "text-gray-600"}>{c.name?.slice(0, 10)}</span>
+                              <span className={cn("tabular-nums", (c.profit || 0) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>{(c.profit || 0) >= 0 ? '+' : ''}{fCurrency5(c.profit || 0)}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <div className="relative w-14 h-14 mb-4">
+                        {/* Ears */}
+                        <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        {/* Face */}
+                        <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                          {/* Eyes */}
+                          <div className="absolute top-3 left-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                          <div className="absolute top-3 right-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                          {/* Snout */}
+                          <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                            <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+                          </div>
+                          {/* Frown */}
+                          <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                        </div>
+                        {/* Scanlines */}
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                          {[...Array(10)].map((_, i) => (
+                            <div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className={cn("text-xs font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>NO NFT TRADES</p>
+                      <p className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>NFT trading activity will appear here</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -937,8 +969,8 @@ const OverView = ({ account }) => {
                               <th className={cn("py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Token</th>
                               <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Volume</th>
                               <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Trades</th>
-                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70")}>Bought</th>
-                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70")}>Sold</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70")}>Bought (XRP)</th>
+                              <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70")}>Sold (XRP)</th>
                               <th className={cn("py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>ROI</th>
                               <th className={cn("py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>PNL</th>
                             </tr>
@@ -959,8 +991,14 @@ const OverView = ({ account }) => {
                                   </td>
                                   <td className={cn("py-2.5 px-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{fCurrency5(token.volume || 0)}</td>
                                   <td className={cn("py-2.5 px-2 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{fCurrency5(token.trades || 0)}</td>
-                                  <td className="py-2.5 px-2 text-right"><span className="text-[12px] tabular-nums text-green-500">{fCurrency5(bought)}</span></td>
-                                  <td className="py-2.5 px-2 text-right"><span className="text-[12px] tabular-nums text-red-500">{fCurrency5(sold)}</span></td>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className="text-[12px] tabular-nums text-green-500">{fCurrency5(bought)}</span>
+                                    {token.avgBuyPrice > 0 && <span className={cn("text-[10px] ml-1", isDark ? "text-white/30" : "text-gray-400")}>@{token.avgBuyPrice < 0.001 ? token.avgBuyPrice.toExponential(1) : fCurrency5(token.avgBuyPrice)}</span>}
+                                  </td>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className="text-[12px] tabular-nums text-red-500">{fCurrency5(sold)}</span>
+                                    {token.avgSellPrice > 0 && <span className={cn("text-[10px] ml-1", isDark ? "text-white/30" : "text-gray-400")}>@{token.avgSellPrice < 0.001 ? token.avgSellPrice.toExponential(1) : fCurrency5(token.avgSellPrice)}</span>}
+                                  </td>
                                   <td className="py-2.5 px-2 text-right">
                                     <span className={cn("text-[12px] tabular-nums", roi >= 0 ? "text-green-500" : "text-red-500")}>
                                       {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
@@ -1035,10 +1073,34 @@ const OverView = ({ account }) => {
                 ) : nftCollectionsLoading ? (
                   <div className={cn("p-12 text-center text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>Loading collections...</div>
                 ) : nftCollections.length === 0 ? (
-                  <div className={cn("rounded-xl p-12 text-center border", isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200")}>
-                    <Image size={32} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
-                    <p className={cn("text-[13px] mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
-                    <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>NFTs owned by this account will appear here</p>
+                  <div className={cn("rounded-xl py-16 px-8 text-center", isDark ? "bg-[#0a0a0a]" : "bg-gray-50")}>
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                      {/* Ears */}
+                      <div className={cn("absolute -top-1 left-1 w-6 h-6 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute -top-1 right-1 w-6 h-6 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute top-0.5 left-2 w-3 h-3 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      <div className={cn("absolute top-0.5 right-2 w-3 h-3 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      {/* Face */}
+                      <div className={cn("absolute top-3 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                        {/* Eyes - sad droopy */}
+                        <div className="absolute top-5 left-3 w-2.5 h-2 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                        <div className="absolute top-5 right-3 w-2.5 h-2 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                        {/* Snout */}
+                        <div className={cn("absolute bottom-3 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full bg-[#0a0a0a]" />
+                        </div>
+                        {/* Frown */}
+                        <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1.5 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                      </div>
+                      {/* Scanlines */}
+                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-16 flex flex-col justify-start gap-[3px] pointer-events-none overflow-hidden rounded-full">
+                        {[...Array(12)].map((_, i) => (
+                          <div key={i} className={cn("h-[3px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className={cn("text-sm font-medium tracking-widest mb-2", isDark ? "text-white/80" : "text-gray-600")}>NO NFTS FOUND</p>
+                    <p className={cn("text-xs", isDark ? "text-white/30" : "text-gray-400")}>Once this wallet has NFTs, you'll be able to see them here</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">

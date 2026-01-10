@@ -168,8 +168,9 @@ const TABLE_HEAD = [
   { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
   { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '75px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
-  { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '75px', sortable: true, color: 'buy' },
-  { id: 'sellVolume', label: 'SOLD', align: 'right', width: '75px', sortable: true, color: 'sell' },
+  { id: 'buyVolume', label: 'BOUGHT (XRP)', align: 'right', width: '85px', sortable: true, color: 'buy' },
+  { id: 'sellVolume', label: 'SOLD (XRP)', align: 'right', width: '85px', sortable: true, color: 'sell' },
+  { id: 'dexAmm', label: 'DEX / AMM', align: 'center', width: '100px' },
   { id: 'totalProfit', label: 'P/L', align: 'right', width: '80px', sortable: true },
   { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
   { id: 'winRate', label: 'WIN %', align: 'right', width: '55px', sortable: true },
@@ -287,6 +288,23 @@ export default function TokenTradersPage({ traders: initialTraders = [] }) {
                         </StyledTd>
                         <StyledTd align="right" style={{ color: '#ef4444', fontSize: 12 }}>
                           {fVolume(sold)}
+                        </StyledTd>
+                        <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 11 }}>
+                          {(() => {
+                            const dex = trader.dexVolume || 0;
+                            const amm = trader.ammVolume || 0;
+                            const total = dex + amm;
+                            if (total === 0) return '-';
+                            const dexPct = Math.round((dex / total) * 100);
+                            const ammPct = 100 - dexPct;
+                            return (
+                              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                                <span style={{ color: '#3b82f6' }}>{dexPct}%</span>
+                                <span style={{ color: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>/</span>
+                                <span style={{ color: '#8b5cf6' }}>{ammPct}%</span>
+                              </span>
+                            );
+                          })()}
                         </StyledTd>
                         <StyledTd align="right" style={{ color: tp >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: 12 }}>
                           {tp >= 0 ? '+' : ''}{fVolume(tp)}
