@@ -217,7 +217,7 @@ export default function TopTraders({ token }) {
                     value={searchAddress}
                     onChange={(e) => setSearchAddress(e.target.value)}
                     className={cn(
-                      'h-7 w-36 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+                      'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
                       isDark
                         ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
                         : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
@@ -280,7 +280,7 @@ export default function TopTraders({ token }) {
                         )}>{rank}</span>
                       </td>
                       <td className="py-2.5 px-2">
-                        <Link href={`/address/${trader.address}`} className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
+                        <Link href={`/address/${trader.address}`} target="_blank" className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
                           {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>

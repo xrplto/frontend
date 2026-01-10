@@ -1513,6 +1513,20 @@ const HoldersTab = React.memo(({ slug }) => {
 });
 
 // Traders Tab Component
+const INTERVAL_OPTIONS = [
+  { key: '24h', label: '24H' },
+  { key: '7d', label: '7D' },
+  { key: '30d', label: '30D' },
+  { key: 'all', label: 'All' }
+];
+const SORT_OPTIONS_TRADERS = [
+  { key: 'volume', label: 'Volume' },
+  { key: 'profit', label: 'Profit' },
+  { key: 'trades', label: 'Trades' },
+  { key: 'roi', label: 'ROI' },
+  { key: 'winRate', label: 'Win%' }
+];
+
 const TradersTab = React.memo(({ slug }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { themeName } = useContext(AppContext);
@@ -1521,15 +1535,25 @@ const TradersTab = React.memo(({ slug }) => {
   const [loading, setLoading] = useState(true);
   const [traders, setTraders] = useState([]);
   const [sortBy, setSortBy] = useState('volume');
+  const [interval, setInterval] = useState('7d');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    axios.get(`${BASE_URL}/nft/analytics/collection/${slug}/traders?limit=50&sortBy=${sortBy}`)
+    const searchParam = debouncedSearch ? `&address=${encodeURIComponent(debouncedSearch)}` : '';
+    axios.get(`${BASE_URL}/nft/analytics/collection/${slug}/traders?limit=50&sortBy=${sortBy}&interval=${interval}${searchParam}`)
       .then(res => setTraders(res.data?.traders || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [slug, sortBy]);
+  }, [slug, sortBy, interval, debouncedSearch]);
 
   if (loading) {
     return (
@@ -1545,74 +1569,122 @@ const TradersTab = React.memo(({ slug }) => {
 
   return (
     <div className="space-y-3">
-      {/* Sort */}
-      <div className="flex items-center gap-2">
-        <span className={cn('text-[10px] uppercase', isDark ? 'text-white/40' : 'text-gray-500')}>Sort:</span>
-        {[
-          { key: 'volume', label: 'Volume' },
-          { key: 'profit', label: 'Profit' },
-          { key: 'roi', label: 'ROI' },
-          { key: 'sales', label: 'Sales' }
-        ].map(s => (
-          <button
-            key={s.key}
-            onClick={() => setSortBy(s.key)}
+      {/* Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Interval */}
+        <div className="flex items-center gap-1">
+          {INTERVAL_OPTIONS.map(i => (
+            <button
+              key={i.key}
+              onClick={() => setInterval(i.key)}
+              className={cn(
+                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-all',
+                interval === i.key
+                  ? 'bg-primary text-white'
+                  : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              )}
+            >
+              {i.label}
+            </button>
+          ))}
+        </div>
+        {/* Sort */}
+        <div className="flex items-center gap-1">
+          {SORT_OPTIONS_TRADERS.map(s => (
+            <button
+              key={s.key}
+              onClick={() => setSortBy(s.key)}
+              className={cn(
+                'px-2 py-1 text-[11px] font-medium rounded-md transition-all',
+                sortBy === s.key
+                  ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
+                  : isDark ? 'text-white/50 hover:text-white/80 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        {/* Search */}
+        <div className="relative">
+          <Search size={14} className={cn('absolute left-2.5 top-1/2 -translate-y-1/2', isDark ? 'text-white/40' : 'text-gray-400')} />
+          <input
+            type="text"
+            placeholder="Search address..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className={cn(
-              'px-2 py-1 text-[10px] uppercase rounded transition-colors',
-              sortBy === s.key
-                ? 'bg-primary/20 text-primary'
-                : isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-500 hover:text-gray-700'
+              'h-7 w-40 rounded-md border pl-8 pr-7 text-[12px] outline-none transition-colors',
+              isDark
+                ? 'border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-primary'
+                : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-primary'
             )}
-          >
-            {s.label}
-          </button>
-        ))}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className={cn('absolute right-2 top-1/2 -translate-y-1/2', isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600')}
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full">
           <thead>
-            <tr className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40 border-b border-white/10' : 'text-gray-500 border-b border-gray-200')}>
-              <th className="px-2 py-2 w-6">#</th>
-              <th className="px-2 py-2">Trader</th>
-              <th className="px-2 py-2 text-right">Volume</th>
-              <th className="px-2 py-2 text-right">Profit</th>
-              <th className="px-2 py-2 text-right">ROI</th>
-              <th className="px-2 py-2 text-right">Win</th>
-              <th className="px-2 py-2 text-center">B/S</th>
-              <th className="px-2 py-2 text-right">Hold</th>
+            <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+              <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
+              <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
+              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
+              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
+              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70">Bought</th>
+              <th className="py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70">Sold</th>
+              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
+              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Win%</th>
+              <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
             </tr>
           </thead>
           <tbody>
             {traders.map((t, idx) => {
               const addr = t.address || t._id;
-              const profit = t.profit || 0;
+              const key = interval === 'all' ? 'All' : interval;
+              const vol = t[`vol${key}`] ?? 0;
+              const profit = t[`profit${key}`] ?? 0;
+              const trades = t[`trades${key}`] ?? 0;
               const roi = t.roi || 0;
-              const hold = t.avgHoldingDays || 0;
+              const winRate = t.winRate || 0;
+              const isTop = idx < 3;
               return (
-                <tr key={addr} className={cn('transition-colors', isDark ? 'border-b border-white/5 hover:bg-white/5' : 'border-b border-gray-100 hover:bg-gray-50')}>
-                  <td className={cn('px-2 py-2 text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>{idx + 1}</td>
-                  <td className="px-2 py-2">
-                    <Link href={`/address/${addr}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/70' : 'text-gray-600')}>
-                      {addr.slice(0, 6)}...{addr.slice(-4)}
+                <tr key={addr} className={cn('border-b', isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50')}>
+                  <td className="py-2.5 pr-2">
+                    <span className={cn('text-[11px] font-medium', isTop ? idx === 0 ? 'text-yellow-500' : idx === 1 ? 'text-gray-400' : 'text-amber-600' : isDark ? 'text-white/30' : 'text-gray-400')}>{idx + 1}</span>
+                  </td>
+                  <td className="py-2.5 px-2">
+                    <Link href={`/address/${addr}`} target="_blank" className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
+                      {addr.slice(0, 6)}...{addr.slice(-6)}
                     </Link>
                   </td>
-                  <td className={cn('px-2 py-2 text-right text-[11px] tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{fVolume(t.volume || 0)}</td>
-                  <td className={cn('px-2 py-2 text-right text-[11px] tabular-nums', profit >= 0 ? 'text-emerald-500' : 'text-red-500')}>
-                    {profit >= 0 ? '+' : ''}{fVolume(profit)}
+                  <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>{fVolume(vol)}</td>
+                  <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>{trades}</td>
+                  <td className="py-2.5 px-2 text-right text-[12px] tabular-nums text-green-500">{t.buys || 0}</td>
+                  <td className="py-2.5 px-2 text-right text-[12px] tabular-nums text-red-500">{t.sells || 0}</td>
+                  <td className="py-2.5 px-2 text-right">
+                    <span className={cn('text-[12px] font-medium tabular-nums', profit >= 0 ? 'text-green-500' : 'text-red-500')}>
+                      {profit >= 0 ? '+' : ''}{fVolume(profit)}
+                    </span>
                   </td>
-                  <td className={cn('px-2 py-2 text-right text-[10px] tabular-nums', roi >= 0 ? 'text-emerald-500' : 'text-red-500')}>
-                    {roi >= 0 ? '+' : ''}{roi.toFixed(0)}%
+                  <td className="py-2.5 px-2 text-right">
+                    <span className={cn('text-[12px] tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                      {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                    </span>
                   </td>
-                  <td className={cn('px-2 py-2 text-right text-[10px] tabular-nums', (t.winRate || 0) >= 50 ? 'text-emerald-500' : 'text-red-500')}>{(t.winRate || 0).toFixed(0)}%</td>
-                  <td className="px-2 py-2 text-center text-[10px] tabular-nums">
-                    <span className="text-red-400">{t.buys || 0}</span>
-                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>/</span>
-                    <span className="text-emerald-400">{t.sells || 0}</span>
-                  </td>
-                  <td className={cn('px-2 py-2 text-right text-[10px] tabular-nums', isDark ? 'text-white/40' : 'text-gray-500')}>
-                    {hold < 1 ? '<1d' : hold < 30 ? `${hold.toFixed(0)}d` : `${(hold/30).toFixed(0)}mo`}
+                  <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', winRate >= 50 ? 'text-green-500' : 'text-red-500')}>{winRate.toFixed(0)}%</td>
+                  <td className={cn('py-2.5 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    {t.lastTrade ? new Date(t.lastTrade).toLocaleDateString() : '-'}
                   </td>
                 </tr>
               );

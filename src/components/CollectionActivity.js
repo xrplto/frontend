@@ -61,7 +61,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [filterType, setFilterType] = useState('');
+  const [filterType, setFilterType] = useState('SALE');
 
   const fetchHistory = async () => {
     if (!collectionSlug) return;
