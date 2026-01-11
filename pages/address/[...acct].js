@@ -1398,22 +1398,22 @@ const OverView = ({ account }) => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40 border-b border-white/10" : "text-gray-400 border-b border-gray-100")}>
-                        <th className="text-left font-medium px-4 py-3">Type</th>
-                        <th className="text-left font-medium px-4 py-3">Paid</th>
-                        <th className="text-left font-medium px-4 py-3">Got</th>
-                        <th className="text-left font-medium px-4 py-3">Time</th>
-                        <th className="text-right font-medium px-4 py-3">Hash</th>
+                      <tr>
+                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '60px' }}>Time</th>
+                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '45px' }}>Type</th>
+                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")}>Amount</th>
+                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")}>Total</th>
+                        <th className={cn("text-right text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '40px' }}></th>
                       </tr>
                     </thead>
                     <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
                       {tokenHistoryLoading && tokenHistory.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>Loading...</td>
+                          <td colSpan={5} className={cn("py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>Loading...</td>
                         </tr>
                       ) : tokenHistory.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-10">
+                          <td colSpan={5} className="py-10">
                             <div className="flex flex-col items-center">
                               <div className="relative w-24 h-24 mb-4">
                                 <div className={cn("absolute -top-1.5 left-1.5 w-7 h-7 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
@@ -1465,40 +1465,49 @@ const OverView = ({ account }) => {
                         const isTokenToToken = !paidIsXRP && !gotIsXRP;
                         const isBuy = paidIsXRP;
                         const tradeType = trade.isLiquidity ? (trade.type || 'Liquidity') : isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell';
+                        const getTokenMd5 = (t) => t?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : t?.issuer ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString() : null;
+                        const paidMd5 = getTokenMd5(trade.paid);
+                        const gotMd5 = getTokenMd5(trade.got);
+                        const xrpAmount = paidIsXRP ? parseFloat(trade.paid?.value || 0) : gotIsXRP ? parseFloat(trade.got?.value || 0) : 0;
+                        const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
+                        const barColor = isBuy ? 'rgba(34,197,94,' : 'rgba(239,68,68,';
                         return (
-                          <tr key={trade._id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                {isTokenToToken ? <ArrowUpRight size={14} className={isDark ? "text-white/40" : "text-gray-400"} /> : isBuy ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                                <span className={cn("text-[13px] font-medium capitalize", isTokenToToken ? (isDark ? "text-white/70" : "text-gray-600") : isBuy ? "text-emerald-500" : "text-red-400")}>{tradeType}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={cn("text-[13px] tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>
-                                {fmtVal(trade.paid?.value)} {fmtCurrency(trade.paid?.currency)}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className="text-[13px] tabular-nums text-emerald-400">
-                                +{fmtVal(trade.got?.value)} {fmtCurrency(trade.got?.currency)}
-                              </span>
-                            </td>
-                            <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                          <tr key={trade._id} className={cn("transition-colors relative", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <td className={cn("py-2 text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
                               {trade.time ? (() => {
                                 const diff = Date.now() - trade.time;
                                 const mins = Math.floor(diff / 60000);
                                 const hrs = Math.floor(diff / 3600000);
                                 const days = Math.floor(diff / 86400000);
-                                if (mins < 1) return 'just now';
-                                if (mins < 60) return `${mins}m ago`;
-                                if (hrs < 24) return `${hrs}h ago`;
-                                if (days < 30) return `${days}d ago`;
+                                if (mins < 1) return 'now';
+                                if (mins < 60) return `${mins}m`;
+                                if (hrs < 24) return `${hrs}h`;
+                                if (days < 30) return `${days}d`;
                                 return new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
                               })() : '-'}
                             </td>
-                            <td className="px-4 py-3 text-right">
-                              <Link href={`/tx/${trade.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
-                                {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                            <td className="py-2">
+                              <span className={cn("text-[11px] font-medium", isTokenToToken ? (isDark ? "text-white/50" : "text-gray-500") : isBuy ? "text-[#22c55e]" : "text-[#ef4444]")}>{tradeType}</span>
+                            </td>
+                            <td className="py-2">
+                              <div className="relative flex items-center gap-1.5 px-2 py-1 h-[26px]">
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[22px] rounded" style={{ width: `${barWidth}%`, background: `linear-gradient(90deg, ${barColor}${isDark ? '0.12' : '0.08'}) 0%, ${barColor}${isDark ? '0.22' : '0.18'}) 100%)`, borderLeft: `2px solid ${barColor}0.5)` }} />
+                                {paidMd5 && <img src={`https://s1.xrpl.to/token/${paidMd5}`} className="relative z-10 w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                <span className={cn("relative z-10 text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.paid?.value)}</span>
+                                <span className={cn("relative z-10 text-[10px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.paid?.currency)}</span>
+                              </div>
+                            </td>
+                            <td className="py-2">
+                              <div className="relative flex items-center gap-1.5 px-2 py-1 h-[26px]">
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[22px] rounded" style={{ width: `${barWidth}%`, background: `linear-gradient(90deg, ${barColor}${isDark ? '0.12' : '0.08'}) 0%, ${barColor}${isDark ? '0.22' : '0.18'}) 100%)`, borderLeft: `2px solid ${barColor}0.5)` }} />
+                                {gotMd5 && <img src={`https://s1.xrpl.to/token/${gotMd5}`} className="relative z-10 w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                <span className={cn("relative z-10 text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.got?.value)}</span>
+                                <span className={cn("relative z-10 text-[10px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.got?.currency)}</span>
+                              </div>
+                            </td>
+                            <td className="py-2 text-right">
+                              <Link href={`/tx/${trade.hash}`} className={cn("inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/[0.06]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}>
+                                <ExternalLink size={14} />
                               </Link>
                             </td>
                           </tr>
