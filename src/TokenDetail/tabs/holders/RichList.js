@@ -82,7 +82,10 @@ const RichList = ({ token }) => {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === 'initial' || msg.e === 'update') {
-          if (msg.holders) setRichList(msg.holders);
+          // Only use WS data if it includes acquisition fields
+          if (msg.holders?.length && msg.holders[0].acquisition !== undefined) {
+            setRichList(msg.holders);
+          }
           if (msg.summary) setSummary(msg.summary);
           if (msg.total) {
             setTotalHolders(msg.total);
@@ -321,6 +324,9 @@ const RichList = ({ token }) => {
               <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
               {!isMobile && (
+                <th className={cn('py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Acquisition</th>
+              )}
+              {!isMobile && (
                 <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h %</th>
               )}
               <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Share</th>
@@ -362,11 +368,26 @@ const RichList = ({ token }) => {
                       >
                         {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
                       </Link>
-                      {(isAMM || isCreator || isFrozen) && (
-                        <div className="flex items-center gap-1">
+                      {(isAMM || isCreator || isFrozen || holder.source) && (
+                        <div className="flex items-center gap-1 flex-wrap">
                           {isAMM && <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>}
                           {isCreator && <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Creator</span>}
                           {isFrozen && <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>}
+                          {holder.source && (
+                            <span className={cn(
+                              'rounded px-1.5 py-0.5 text-[9px] font-medium',
+                              holder.source === 'traded' ? 'bg-emerald-500/15 text-emerald-400' :
+                              holder.source === 'mixed' ? 'bg-amber-500/15 text-amber-400' :
+                              'bg-white/10 text-white/50'
+                            )}>
+                              {holder.source === 'traded' ? 'Trader' : holder.source === 'mixed' ? 'Mixed' : 'Transfer'}
+                            </span>
+                          )}
+                          {holder.tradeCount > 0 && (
+                            <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                              {holder.tradeCount} trades
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -374,6 +395,35 @@ const RichList = ({ token }) => {
                   <td className={cn('py-2.5 px-2 text-right text-[12px] font-medium tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                     {formatNumber(holder.balance)}
                   </td>
+                  {!isMobile && (
+                    <td className="py-2.5 px-2">
+                      {holder.acquisition ? (
+                        <div className="flex items-center justify-center gap-1">
+                          <div className={cn('flex h-1.5 w-16 overflow-hidden rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                            {holder.acquisition.dexPct > 0 && (
+                              <div className="h-full bg-emerald-500" style={{ width: `${holder.acquisition.dexPct}%` }} title={`DEX ${holder.acquisition.dexPct}%`} />
+                            )}
+                            {holder.acquisition.ammPct > 0 && (
+                              <div className="h-full bg-primary" style={{ width: `${holder.acquisition.ammPct}%` }} title={`AMM ${holder.acquisition.ammPct}%`} />
+                            )}
+                            {holder.acquisition.lpPct > 0 && (
+                              <div className="h-full bg-purple-500" style={{ width: `${holder.acquisition.lpPct}%` }} title={`LP ${holder.acquisition.lpPct}%`} />
+                            )}
+                            {holder.acquisition.transferPct > 0 && (
+                              <div className="h-full bg-gray-500" style={{ width: `${holder.acquisition.transferPct}%` }} title={`Transfer ${holder.acquisition.transferPct}%`} />
+                            )}
+                          </div>
+                          <span className={cn('text-[9px] tabular-nums min-w-[28px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                            {holder.tradedPct > 0 ? `${holder.tradedPct}%` : 'T'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex justify-center">
+                          <span className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                        </div>
+                      )}
+                    </td>
+                  )}
                   {!isMobile && (
                     <td className="py-2.5 px-2 text-right">
                       {change24h !== null ? (
