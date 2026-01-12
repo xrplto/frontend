@@ -8,12 +8,52 @@ import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Sparkles } from 'lucide-react';
+import { ExternalLink, X, Plus, Loader2, Activity, Droplets, Users, PieChart, Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Sparkles, ChevronDown, ChevronUp, TrendingUp, TrendingDown, ArrowUpDown, Filter } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 
 const Spinner = styled(Loader2)`animation: spin 1s linear infinite; @keyframes spin { to { transform: rotate(360deg); } }`;
+
+// Mini Sparkline SVG Component for TVL trends
+const MiniSparkline = memo(({ data, width = 60, height = 24, color = '#3b82f6', isDark = false }) => {
+  if (!data || data.length < 2) return null;
+
+  const values = data.map(d => d.tvl || 0);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  // Calculate trend (compare first half avg to second half avg)
+  const midpoint = Math.floor(values.length / 2);
+  const firstHalfAvg = values.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+  const secondHalfAvg = values.slice(midpoint).reduce((a, b) => a + b, 0) / (values.length - midpoint);
+  const isUp = secondHalfAvg >= firstHalfAvg;
+  const trendColor = isUp ? '#22c55e' : '#ef4444';
+
+  // Generate path
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width;
+    const y = height - ((v - min) / range) * (height - 4) - 2;
+    return `${x},${y}`;
+  });
+
+  const pathD = `M ${points.join(' L ')}`;
+  const areaD = `${pathD} L ${width},${height} L 0,${height} Z`;
+
+  return (
+    <svg width={width} height={height} style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id={`sparkGrad-${isUp ? 'up' : 'down'}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={trendColor} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={trendColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#sparkGrad-${isUp ? 'up' : 'down'})`} />
+      <path d={pathD} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+});
 
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
@@ -529,7 +569,7 @@ const VolumeIndicator = styled.div`
   top: 0;
   height: 100%;
   width: ${props => props.volume}%;
-  background: ${props => props.isDark ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0.03)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
   transition: width 0.2s;
 `;
 
@@ -780,7 +820,7 @@ const Button = styled.button`
   gap: 4px;
   transition: all 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'};
     color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'};
   }
 `;
@@ -837,7 +877,7 @@ const TextField = styled.input`
   background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)'};
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
   transition: border-color 0.15s ease;
-  &:focus { outline: none; border-color: rgba(59,130,246,0.4); }
+  &:focus { outline: none; border-color: rgba(255,255,255,0.25); }
   &::placeholder { color: ${props => props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)'}; }
 `;
 
@@ -1058,11 +1098,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
   const OfferCard = styled.div`
     background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-    border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+    border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
     border-radius: 12px;
     padding: 14px;
     &:hover {
-      border-color: ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'};
+      border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
     }
   `;
 
@@ -1695,6 +1735,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const [depositAmount2, setDepositAmount2] = useState('');
   const [depositMode, setDepositMode] = useState('double'); // 'double', 'single1', 'single2'
 
+  // Pool UI enhancements
+  const [expandedPoolId, setExpandedPoolId] = useState(null);
+  const [poolChartData, setPoolChartData] = useState({}); // Cache: { ammAccount: chartData[] }
+  const [poolChartLoading, setPoolChartLoading] = useState({});
+  const [poolTypeFilter, setPoolTypeFilter] = useState('all'); // 'all', 'xrp', 'token'
+  const [poolSortBy, setPoolSortBy] = useState('liquidity'); // 'liquidity', 'apy', 'volume', 'fees'
+  const [poolSortDir, setPoolSortDir] = useState('desc'); // 'asc', 'desc'
+
   const handleTxClick = (hash, tradeAccount) => {
     if (onTransactionClick) {
       onTransactionClick(hash, tradeAccount);
@@ -1722,6 +1770,36 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           return 0; // Keep API order (by fees) for non-main pools
         });
         setAmmPools(pools);
+
+        // Fetch chart data for all pools (for sparklines)
+        pools.forEach(async (pool) => {
+          const poolAccount = pool.ammAccount || pool.account || pool._id;
+          if (poolAccount) {
+            try {
+              // Try 1m first, fall back to 1w if no data
+              let chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
+              let chartData = await chartRes.json();
+
+              // If no data for 1m, try 1w
+              if (chartData.result === 'success' && (!chartData.data || chartData.data.length < 2)) {
+                chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
+                chartData = await chartRes.json();
+              }
+
+              // If still no data, try all time
+              if (chartData.result === 'success' && (!chartData.data || chartData.data.length < 2)) {
+                chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
+                chartData = await chartRes.json();
+              }
+
+              if (chartData.result === 'success' && chartData.data && chartData.data.length >= 2) {
+                setPoolChartData(prev => ({ ...prev, [poolAccount]: chartData.data }));
+              }
+            } catch (err) {
+              console.error('Error fetching pool chart for', poolAccount, err);
+            }
+          }
+        });
       } catch (error) {
         console.error('Error fetching AMM pools:', error);
       } finally {
@@ -2097,6 +2175,109 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // TODO: Implement AMM deposit using proper wallet integration
     handleCloseDialog();
   };
+
+  // Fetch chart data for a specific pool
+  const fetchPoolChartData = useCallback(async (poolAccount) => {
+    if (!poolAccount || poolChartData[poolAccount] || poolChartLoading[poolAccount]) return;
+
+    setPoolChartLoading(prev => ({ ...prev, [poolAccount]: true }));
+    try {
+      // Try 1m first, fall back to 1w, then all
+      let res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
+      let data = await res.json();
+
+      if (data.result === 'success' && (!data.data || data.data.length < 2)) {
+        res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
+        data = await res.json();
+      }
+
+      if (data.result === 'success' && (!data.data || data.data.length < 2)) {
+        res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
+        data = await res.json();
+      }
+
+      if (data.result === 'success' && data.data && data.data.length >= 2) {
+        setPoolChartData(prev => ({ ...prev, [poolAccount]: data.data }));
+      }
+    } catch (error) {
+      console.error('Error fetching pool chart:', error);
+    } finally {
+      setPoolChartLoading(prev => ({ ...prev, [poolAccount]: false }));
+    }
+  }, [poolChartData, poolChartLoading]);
+
+  // Handle pool row expansion
+  const handlePoolExpand = useCallback((poolId, pool) => {
+    if (expandedPoolId === poolId) {
+      setExpandedPoolId(null);
+    } else {
+      setExpandedPoolId(poolId);
+      const poolAccount = pool.ammAccount || pool.account || pool._id;
+      fetchPoolChartData(poolAccount);
+    }
+  }, [expandedPoolId, fetchPoolChartData]);
+
+  // Handle pool sorting
+  const handlePoolSort = useCallback((column) => {
+    if (poolSortBy === column) {
+      setPoolSortDir(prev => prev === 'desc' ? 'asc' : 'desc');
+    } else {
+      setPoolSortBy(column);
+      setPoolSortDir('desc');
+    }
+  }, [poolSortBy]);
+
+  // Filter and sort pools
+  const filteredAndSortedPools = useMemo(() => {
+    let filtered = [...ammPools];
+
+    // Apply type filter
+    if (poolTypeFilter === 'xrp') {
+      filtered = filtered.filter(pool =>
+        pool.asset1?.currency === 'XRP' || pool.asset2?.currency === 'XRP'
+      );
+    } else if (poolTypeFilter === 'token') {
+      filtered = filtered.filter(pool =>
+        pool.asset1?.currency !== 'XRP' && pool.asset2?.currency !== 'XRP'
+      );
+    }
+
+    // Sort - always keep main pool first
+    filtered.sort((a, b) => {
+      const aIsMain = (a.asset1?.currency === 'XRP' && a.asset2?.issuer === token?.issuer && a.asset2?.currency === token?.currency) ||
+                      (a.asset2?.currency === 'XRP' && a.asset1?.issuer === token?.issuer && a.asset1?.currency === token?.currency);
+      const bIsMain = (b.asset1?.currency === 'XRP' && b.asset2?.issuer === token?.issuer && b.asset2?.currency === token?.currency) ||
+                      (b.asset2?.currency === 'XRP' && b.asset1?.issuer === token?.issuer && b.asset1?.currency === token?.currency);
+
+      if (aIsMain && !bIsMain) return -1;
+      if (!aIsMain && bIsMain) return 1;
+
+      // Apply sorting
+      let aVal = 0, bVal = 0;
+      switch (poolSortBy) {
+        case 'apy':
+          aVal = a.apy7d?.apy || 0;
+          bVal = b.apy7d?.apy || 0;
+          break;
+        case 'volume':
+          aVal = a.apy7d?.volume || 0;
+          bVal = b.apy7d?.volume || 0;
+          break;
+        case 'fees':
+          aVal = a.apy7d?.fees || 0;
+          bVal = b.apy7d?.fees || 0;
+          break;
+        case 'liquidity':
+        default:
+          aVal = a.apy7d?.liquidity || 0;
+          bVal = b.apy7d?.liquidity || 0;
+      }
+
+      return poolSortDir === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+
+    return filtered;
+  }, [ammPools, poolTypeFilter, poolSortBy, poolSortDir, token]);
 
   const calculatePrice = useCallback((trade) => {
     const xrpAmount = trade.got.currency === 'XRP' ? trade.got.value : trade.paid.value;
@@ -2578,152 +2759,401 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
       {tabValue === 1 && (
         <div>
+          {/* Pool Controls - Filter & Sort */}
+          {!ammLoading && ammPools.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {/* Pool Type Filter */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[
+                  { value: 'all', label: 'All' },
+                  { value: 'xrp', label: 'XRP Pools' },
+                  { value: 'token', label: 'Token Pools' }
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setPoolTypeFilter(value)}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '11px',
+                      fontWeight: poolTypeFilter === value ? 500 : 400,
+                      borderRadius: '6px',
+                      border: poolTypeFilter === value ? '1px solid #3b82f6' : (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)'),
+                      background: poolTypeFilter === value ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'transparent',
+                      color: poolTypeFilter === value ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {/* Sort Control */}
+              {!isMobile && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase' }}>Sort:</span>
+                  <select
+                    value={poolSortBy}
+                    onChange={(e) => setPoolSortBy(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      borderRadius: '5px',
+                      border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+                      background: isDark ? 'rgba(0,0,0,0.4)' : '#fff',
+                      color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="liquidity">TVL</option>
+                    <option value="apy">APY</option>
+                    <option value="volume">Volume</option>
+                    <option value="fees">Fees</option>
+                  </select>
+                  <button
+                    onClick={() => setPoolSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
+                    style={{
+                      padding: '4px 6px',
+                      fontSize: '11px',
+                      borderRadius: '5px',
+                      border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+                      background: 'transparent',
+                      color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={poolSortDir === 'desc' ? 'Highest first' : 'Lowest first'}
+                  >
+                    {poolSortDir === 'desc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {ammLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
               <Spinner size={20} />
             </div>
           ) : ammPools.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
+            <div style={{ textAlign: 'center', padding: '20px', border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.1)', borderRadius: '8px' }}>
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No pools found</span>
             </div>
+          ) : filteredAndSortedPools.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px', border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.1)', borderRadius: '8px' }}>
+              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No {poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found</span>
+            </div>
           ) : isMobile ? (
-            /* Mobile compact pool rows - grid layout for alignment */
+            /* Mobile compact pool rows */
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {/* Mobile header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: '6px 0', marginBottom: '4px', borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 70px 32px', gap: '6px', alignItems: 'center', padding: '6px 0', marginBottom: '4px', borderBottom: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Pool</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>APY</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>TVL</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'center' }}>Trend</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>APY / TVL</span>
                 <span></span>
               </div>
-              {ammPools.map((pool) => {
+              {filteredAndSortedPools.map((pool) => {
                 const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
                 const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
                 const hasApy = pool.apy7d?.apy > 0;
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
+                const poolAccount = pool.ammAccount || pool.account || pool._id;
+                const chartData = poolChartData[poolAccount];
+                const isChartLoading = poolChartLoading[poolAccount];
+                const isExpanded = expandedPoolId === pool._id;
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: isMainPool ? '10px 8px' : '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', borderRadius: isMainPool ? '6px' : '0', marginBottom: isMainPool ? '4px' : '0' }}>
-                    {/* Pool pair */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                      <div style={{ display: 'flex', flexShrink: 0 }}>
-                        <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%' }} />
-                        <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
+                  <div key={pool._id}>
+                    <div
+                      onClick={() => handlePoolExpand(pool._id, pool)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 60px 70px 32px',
+                        gap: '6px',
+                        alignItems: 'center',
+                        padding: isMainPool ? '10px 8px' : '8px 0',
+                        borderBottom: isExpanded ? 'none' : (isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)'),
+                        background: isMainPool ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') : 'transparent',
+                        borderLeft: isMainPool ? '3px solid #3b82f6' : 'none',
+                        borderRadius: isMainPool ? '6px' : '0',
+                        marginBottom: isMainPool && !isExpanded ? '4px' : '0',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {/* Pool pair */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexShrink: 0 }}>
+                          <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%' }} />
+                          <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset1}/{asset2}</span>
+                        {isMainPool && <span style={{ fontSize: '8px', fontWeight: 600, padding: '2px 4px', borderRadius: '3px', background: '#3b82f6', color: '#fff', flexShrink: 0 }}>MAIN</span>}
                       </div>
-                      <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset1}/{asset2}</span>
-                      {isMainPool && <span style={{ fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', flexShrink: 0, letterSpacing: '0.5px', boxShadow: '0 1px 3px rgba(59,130,246,0.3)' }}>MAIN</span>}
+                      {/* Mini Chart */}
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        {chartData && chartData.length >= 2 ? (
+                          <MiniSparkline data={chartData} width={50} height={20} isDark={isDark} />
+                        ) : isChartLoading ? (
+                          <Spinner size={12} style={{ opacity: 0.5 }} />
+                        ) : (
+                          <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 500 }}>NEW</span>
+                        )}
+                      </div>
+                      {/* APY & TVL */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') }}>
+                          {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
+                        </span>
+                        <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          {pool.apy7d?.liquidity > 0 ? `${abbreviateNumber(pool.apy7d.liquidity)}` : '-'}
+                        </span>
+                      </div>
+                      {/* Expand/Add */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleAddLiquidity(pool); }}
+                        style={{ padding: '4px 8px', fontSize: '10px', fontWeight: 500, borderRadius: '5px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Plus size={12} />
+                      </button>
                     </div>
-                    {/* APY */}
-                    <span style={{ fontSize: '12px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), textAlign: 'right' }}>
-                      {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
-                    </span>
-                    {/* TVL */}
-                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', textAlign: 'right' }}>
-                      {pool.apy7d?.liquidity > 0 ? `${abbreviateNumber(pool.apy7d.liquidity)}` : '-'}
-                    </span>
-                    {/* Add button */}
-                    <button onClick={() => handleAddLiquidity(pool)} style={{ padding: '4px 8px', fontSize: '10px', fontWeight: 500, borderRadius: '5px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Plus size={12} />
-                    </button>
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div style={{
+                        padding: '12px',
+                        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                        borderRadius: '0 0 8px 8px',
+                        marginBottom: '8px',
+                        borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)'
+                      }}>
+                        {/* Chart section - conditional */}
+                        {isChartLoading ? (
+                          <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+                            <Spinner size={16} />
+                          </div>
+                        ) : chartData && chartData.length > 0 ? (
+                          <div style={{ marginBottom: '12px' }}>
+                            <MiniSparkline data={chartData} width={280} height={60} isDark={isDark} />
+                          </div>
+                        ) : null}
+                        {/* Stats Grid - always show */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                          <div style={{ padding: '8px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '9px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '2px' }}>Fee</div>
+                            <div style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-'}%</div>
+                          </div>
+                          <div style={{ padding: '8px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '9px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '2px' }}>Vol 7d</div>
+                            <div style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}</div>
+                          </div>
+                          <div style={{ padding: '8px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '9px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '2px' }}>Fees 7d</div>
+                            <div style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}</div>
+                          </div>
+                          <div style={{ padding: '8px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '9px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '2px' }}>Last Trade</div>
+                            <div style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            /* Desktop grid layout */
+            /* Desktop grid layout with expandable rows */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
               {/* Header */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1.5fr) repeat(6, 1fr) 70px', gap: '16px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px', gap: '12px', padding: '8px 0', borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Pool</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'center' }}>Trend</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fee</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>APY</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fees (7d)</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Vol (7d)</span>
-                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Liquidity</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right', cursor: 'pointer' }} onClick={() => handlePoolSort('apy')}>
+                  APY {poolSortBy === 'apy' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right', cursor: 'pointer' }} onClick={() => handlePoolSort('volume')}>
+                  Vol 7d {poolSortBy === 'volume' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right', cursor: 'pointer' }} onClick={() => handlePoolSort('liquidity')}>
+                  TVL {poolSortBy === 'liquidity' && <span>{poolSortDir === 'desc' ? '↓' : '↑'}</span>}
+                </span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Last</span>
+                <span></span>
                 <span></span>
               </div>
               {/* Rows */}
-              {ammPools.map((pool) => {
+              {filteredAndSortedPools.map((pool) => {
                 const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
                 const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
                 const feePercent = pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-';
                 const hasApy = pool.apy7d?.apy > 0;
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
+                const poolAccount = pool.ammAccount || pool.account || pool._id;
+                const chartData = poolChartData[poolAccount];
+                const isExpanded = expandedPoolId === pool._id;
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1.5fr) repeat(6, 1fr) 70px', gap: '16px', padding: isMainPool ? '12px 10px 12px 12px' : '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', borderRadius: isMainPool ? '8px' : '0', borderLeft: isMainPool ? '3px solid #3b82f6' : 'none', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', marginBottom: isMainPool ? '6px' : '0' }}>
-                    {/* Pool pair */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ display: 'flex' }}>
-                        <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%' }} />
-                        <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{asset1}/{asset2}</span>
-                      {isMainPool && (
-                        <span style={{ fontSize: '9px', fontWeight: 600, padding: '3px 8px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', letterSpacing: '0.5px', boxShadow: '0 1px 3px rgba(59,130,246,0.3)' }}>MAIN</span>
-                      )}
-                    </div>
-                    {/* Fee */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{feePercent}%</span>
-                    </div>
-                    {/* APY */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') }}>
-                        {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
-                      </span>
-                    </div>
-                    {/* Fees */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                        {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
-                      </span>
-                    </div>
-                    {/* Volume */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                        {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
-                      </span>
-                    </div>
-                    {/* Liquidity */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      {pool.apy7d?.liquidity > 0 ? (
-                        <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>{abbreviateNumber(pool.apy7d.liquidity)} <span style={{ opacity: 0.5 }}>XRP</span></span>
-                      ) : pool.currentLiquidity ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.3 }}>
-                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}</span>
-                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}</span>
+                  <div key={pool._id}>
+                    <div
+                      onClick={() => handlePoolExpand(pool._id, pool)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'minmax(140px, 1.5fr) 70px repeat(5, 1fr) 70px 28px',
+                        gap: '12px',
+                        padding: isMainPool ? '12px 10px 12px 12px' : '10px 0',
+                        borderBottom: isExpanded ? 'none' : (isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)'),
+                        alignItems: 'center',
+                        background: isMainPool ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)') : (isExpanded ? (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)') : 'transparent'),
+                        borderRadius: isMainPool || isExpanded ? '8px 8px 0 0' : '0',
+                        borderLeft: isMainPool ? '3px solid #3b82f6' : 'none',
+                        marginLeft: isMainPool ? '-4px' : '0',
+                        marginRight: isMainPool ? '-4px' : '0',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s ease'
+                      }}
+                    >
+                      {/* Pool pair */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex' }}>
+                          <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 20, height: 20, borderRadius: '50%' }} />
+                          <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 20, height: 20, borderRadius: '50%', marginLeft: -7 }} />
                         </div>
-                      ) : <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>}
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{asset1}/{asset2}</span>
+                        {isMainPool && (
+                          <span style={{ fontSize: '9px', fontWeight: 600, padding: '3px 8px', borderRadius: '4px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', letterSpacing: '0.5px', boxShadow: '0 1px 3px rgba(59,130,246,0.3)' }}>MAIN</span>
+                        )}
+                      </div>
+                      {/* Mini Chart */}
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        {chartData && chartData.length >= 2 ? (
+                          <MiniSparkline data={chartData} width={60} height={24} isDark={isDark} />
+                        ) : poolChartLoading[poolAccount] ? (
+                          <Spinner size={12} style={{ opacity: 0.5 }} />
+                        ) : (
+                          <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 500 }}>NEW</span>
+                        )}
+                      </div>
+                      {/* Fee */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{feePercent}%</span>
+                      </div>
+                      {/* APY */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') }}>
+                          {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
+                        </span>
+                      </div>
+                      {/* Volume */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                          {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
+                        </span>
+                      </div>
+                      {/* Liquidity/TVL */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        {pool.apy7d?.liquidity > 0 ? (
+                          <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>{abbreviateNumber(pool.apy7d.liquidity)} <span style={{ opacity: 0.5 }}>XRP</span></span>
+                        ) : pool.currentLiquidity ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.3 }}>
+                            <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}</span>
+                            <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}</span>
+                          </div>
+                        ) : <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>}
+                      </div>
+                      {/* Last Trade */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
+                        </span>
+                      </div>
+                      {/* Action */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleAddLiquidity(pool); }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#3b82f6',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Plus size={12} /> Add
+                        </button>
+                      </div>
+                      {/* Expand indicator */}
+                      <div style={{ display: 'flex', justifyContent: 'center', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </div>
                     </div>
-                    {/* Last Trade */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                        {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
-                      </span>
-                    </div>
-                    {/* Action */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => handleAddLiquidity(pool)}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: '11px',
-                          fontWeight: 500,
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: '#3b82f6',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <Plus size={12} /> Add
-                      </button>
-                    </div>
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div style={{
+                        padding: '16px',
+                        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                        borderRadius: '0 0 8px 8px',
+                        marginBottom: '8px',
+                        borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
+                        marginLeft: isMainPool ? '-4px' : '0',
+                        marginRight: isMainPool ? '-4px' : '0',
+                        borderLeft: isMainPool ? '3px solid #3b82f6' : 'none'
+                      }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: chartData && chartData.length > 0 ? '1fr 280px' : '1fr', gap: '20px', alignItems: 'start' }}>
+                          {/* Stats - Always shown */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                              <div style={{ fontSize: '10px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>Fees Earned (7d)</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.apy7d?.fees > 0 ? `${abbreviateNumber(pool.apy7d.fees)} XRP` : '-'}</div>
+                            </div>
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                              <div style={{ fontSize: '10px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>Volume (7d)</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{pool.apy7d?.volume > 0 ? `${abbreviateNumber(pool.apy7d.volume)} XRP` : '-'}</div>
+                            </div>
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                              <div style={{ fontSize: '10px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>Trading Fee</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{feePercent}%</div>
+                            </div>
+                            {/* Pool Composition */}
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px', gridColumn: 'span 3' }}>
+                              <div style={{ fontSize: '10px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '6px' }}>Pool Composition</div>
+                              <div style={{ display: 'flex', gap: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                                  <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
+                                    {pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset1Amount) : '-'} {asset1}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                                  <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
+                                    {pool.currentLiquidity ? abbreviateNumber(pool.currentLiquidity.asset2Amount) : '-'} {asset2}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Large Chart - Only shown when chart data is available */}
+                          {chartData && chartData.length > 0 ? (
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+                              <div style={{ fontSize: '10px', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '8px' }}>TVL (30 days)</div>
+                              <MiniSparkline data={chartData} width={256} height={80} isDark={isDark} />
+                            </div>
+                          ) : poolChartLoading[poolAccount] ? (
+                            <div style={{ padding: '12px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100px' }}>
+                              <Spinner size={20} />
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
