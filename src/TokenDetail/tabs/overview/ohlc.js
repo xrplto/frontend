@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
-import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, Loader2 } from 'lucide-react';
+import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, Loader2, Droplets } from 'lucide-react';
 import { createChart, CandlestickSeries, HistogramSeries, AreaSeries, createSeriesMarkers } from 'lightweight-charts';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -79,7 +79,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   // Refs
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
-  const seriesRefs = useRef({ candle: null, line: null, volume: null, markers: null });
+  const seriesRefs = useRef({ candle: null, line: null, volume: null, markers: null, xrpLine: null, tokenLine: null });
   const dataRef = useRef(null);
   const holderDataRef = useRef(null);
   const wsRef = useRef(null);
@@ -97,6 +97,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [holderData, setHolderData] = useState(null);
+  const [liquidityData, setLiquidityData] = useState(null);
+  const liquidityDataRef = useRef(null);
   const [isUserZoomed, setIsUserZoomed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -265,7 +267,44 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => { mounted = false; ctrl.abort(); };
   }, [token.md5, chartType]);
 
-  const hasData = chartType === 'holders' ? holderData?.length > 0 : data?.length > 0;
+  // Fetch liquidity data
+  useEffect(() => {
+    if (!token?.md5 || chartType !== 'liquidity') return;
+    let mounted = true;
+    const ctrl = new AbortController();
+    const periodMap = { '1d': '1d', '5d': '5d', '1m': '1m', '3m': '3m', '1y': '1y', '5y': '5y', 'all': 'all' };
+
+    setLoading(true);
+    axios.get(`${BASE_URL}/amm/liquidity-chart?md5=${token.md5}&period=${periodMap[timeRange] || '3m'}`, { signal: ctrl.signal })
+      .then(res => {
+        if (!mounted || !res.data?.data?.length) return;
+        const mapped = res.data.data.map(d => ({
+          time: Math.floor(new Date(d.date).getTime() / 1000),
+          xrpLiquidity: d.xrpLiquidity || 0,
+          tokenLiquidity: d.tokenLiquidity || 0,
+          tvl: d.tvl || 0,
+          volume: d.volume || 0,
+          fees: d.fees || 0,
+          apr: d.apr || 0,
+          poolCount: d.poolCount || 0
+        }));
+        // Dedupe: keep entry with highest xrpLiquidity per timestamp
+        const deduped = new Map();
+        mapped.forEach(d => {
+          const existing = deduped.get(d.time);
+          if (!existing || d.xrpLiquidity > existing.xrpLiquidity) deduped.set(d.time, d);
+        });
+        const processed = Array.from(deduped.values()).sort((a, b) => a.time - b.time);
+        liquidityDataRef.current = processed;
+        setLiquidityData(processed);
+      })
+      .catch(() => {})
+      .finally(() => mounted && setLoading(false));
+
+    return () => { mounted = false; ctrl.abort(); };
+  }, [token.md5, chartType, timeRange]);
+
+  const hasData = chartType === 'holders' ? holderData?.length > 0 : chartType === 'liquidity' ? liquidityData?.length > 0 : data?.length > 0;
 
   // Create chart
   useEffect(() => {
@@ -275,7 +314,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (chartRef.current) {
       try { chartRef.current.remove(); } catch {}
       chartRef.current = null;
-      seriesRefs.current = { candle: null, line: null, volume: null };
+      seriesRefs.current = { candle: null, line: null, volume: null, xrpLine: null, tokenLine: null };
     }
 
     lastKeyRef.current = chartType;
@@ -337,9 +376,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       localization: {
         priceFormatter: (price) => {
-          if (chartType === 'holders') {
+          if (chartType === 'holders' || chartType === 'liquidity') {
             if (price < 1000) {
-              return Math.round(price).toString();
+              return chartType === 'liquidity' ? price.toFixed(2) : Math.round(price).toString();
             } else if (price < 1000000) {
               return (price / 1000).toFixed(1) + 'K';
             } else {
@@ -380,27 +419,27 @@ const PriceChartAdvanced = memo(({ token }) => {
         shiftVisibleRangeOnNewBar: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
           const date = new Date(time * 1000);
-          // Convert to EST (America/New_York handles EST/EDT automatically)
           const estOptions = { timeZone: 'America/New_York' };
           const estDate = new Date(date.toLocaleString('en-US', estOptions));
+          const day = estDate.getDate();
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const month = months[estDate.getMonth()];
+          const year = estDate.getFullYear().toString().slice(-2);
+
+          // Daily data (liquidity/holders) - dates only
+          if (refs.current.chartType === 'liquidity' || refs.current.chartType === 'holders') {
+            if (tickMarkType >= 4) return `${month} '${year}`;
+            return `${month} ${day}`;
+          }
+
+          // Intraday data (candles/line) - include times
           const hours24 = estDate.getHours();
           const hours12 = hours24 % 12 || 12;
           const ampm = hours24 >= 12 ? 'PM' : 'AM';
           const minutes = estDate.getMinutes().toString().padStart(2, '0');
-          const day = estDate.getDate();
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const month = months[estDate.getMonth()];
-          // tickMarkType: 0=time, 1=time, 2=day, 3=month, 4=year
-          if (tickMarkType >= 4) {
-            return `${month} '${estDate.getFullYear().toString().slice(-2)}`;
-          }
-          if (tickMarkType === 3) {
-            return `${month} ${day}`;
-          }
-          if (tickMarkType === 2) {
-            return `${day} ${hours12}:${minutes}${ampm}`;
-          }
-          // For intraday, show time
+          if (tickMarkType >= 4) return `${month} '${year}`;
+          if (tickMarkType === 3) return `${month} ${day}`;
+          if (tickMarkType === 2) return `${day} ${hours12}:${minutes}${ampm}`;
           return `${hours12}:${minutes}${ampm}`;
         }
       },
@@ -459,7 +498,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           return;
         }
 
-        const arr = refs.current.chartType === 'holders' ? holderDataRef.current : dataRef.current;
+        const arr = refs.current.chartType === 'holders' ? holderDataRef.current : refs.current.chartType === 'liquidity' ? liquidityDataRef.current : dataRef.current;
         if (!arr?.length) { toolTip.style.display = 'none'; return; }
 
         // Binary search
@@ -492,7 +531,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         const row = (l, v, c) => `<div style="display:flex;justify-content:space-between;line-height:1.3;${c?`color:${c}`:''}"><span style="opacity:0.6">${l}</span><span>${v}</span></div>`;
         const sep = `<div style="height:1px;background:${isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)'};margin:3px 0"></div>`;
 
-        let html = `<div style="opacity:0.6;margin-bottom:3px;font-size:9px">${dateStr}${ct!=='holders'?' '+timeStr:''}</div>`;
+        let html = `<div style="opacity:0.6;margin-bottom:3px;font-size:9px">${dateStr}${ct!=='holders'&&ct!=='liquidity'?' '+timeStr:''}</div>`;
         if (ct === 'candles') {
           const chg = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
           const col = candle.close >= candle.open ? '#22c55e' : '#ef4444';
@@ -521,9 +560,18 @@ const PriceChartAdvanced = memo(({ token }) => {
             if (candle.creatorCheckCreate > 0) html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#a855f7');
             if (candle.creatorCheckCash > 0) html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#8b5cf6');
           }
-        } else {
+        } else if (ct === 'holders') {
           html += row('Holders', (candle.holders || candle.value).toLocaleString());
           if (candle.top10 !== undefined) html += sep + row('Top 10', candle.top10.toFixed(1) + '%') + row('Top 20', candle.top20.toFixed(1) + '%') + row('Top 50', candle.top50.toFixed(1) + '%');
+        } else {
+          // Liquidity
+          html += row('XRP Liq', formatMcap(candle.xrpLiquidity) + ' XRP');
+          html += row('Token Liq', formatMcap(candle.tokenLiquidity));
+          if (candle.tvl > 0) html += row('TVL', formatMcap(candle.tvl) + ' XRP');
+          html += sep;
+          if (candle.volume > 0) html += row('Volume', formatMcap(candle.volume) + ' XRP');
+          if (candle.fees > 0) html += row('Fees', formatMcap(candle.fees) + ' XRP');
+          if (candle.apr > 0) html += row('APR', candle.apr.toFixed(2) + '%', '#22c55e');
         }
 
         const w = chartContainerRef.current.clientWidth;
@@ -546,15 +594,31 @@ const PriceChartAdvanced = memo(({ token }) => {
         lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
         priceFormat: { type: 'price', minMove: 0.00000001, precision: 8 }
       });
-    } else {
+    } else if (chartType === 'holders') {
       seriesRefs.current.line = chart.addSeries(AreaSeries, {
         lineColor: '#a855f7', topColor: 'rgba(168,85,247,0.25)', bottomColor: 'rgba(168,85,247,0.02)',
         lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
         priceFormat: { type: 'price', minMove: 1, precision: 0 }
       });
+    } else {
+      // Liquidity chart - dual lines for XRP and Token
+      seriesRefs.current.xrpLine = chart.addSeries(AreaSeries, {
+        lineColor: '#06b6d4', topColor: 'rgba(6,182,212,0.15)', bottomColor: 'rgba(6,182,212,0.01)',
+        lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
+        priceFormat: { type: 'price', minMove: 0.01, precision: 2 },
+        title: 'XRP'
+      });
+      seriesRefs.current.tokenLine = chart.addSeries(AreaSeries, {
+        lineColor: '#f59e0b', topColor: 'rgba(245,158,11,0.15)', bottomColor: 'rgba(245,158,11,0.01)',
+        lineWidth: 2, crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
+        priceFormat: { type: 'price', minMove: 0.01, precision: 2 },
+        priceScaleId: 'token',
+        title: 'Token'
+      });
+      chart.priceScale('token').applyOptions({ scaleMargins: { top: 0.05, bottom: 0.25 }, visible: true });
     }
 
-    if (chartType !== 'holders') {
+    if (chartType !== 'holders' && chartType !== 'liquidity') {
       seriesRefs.current.volume = chart.addSeries(HistogramSeries, {
         color: 'rgba(34,197,94,0.6)', priceFormat: { type: 'volume' }, priceScaleId: 'volume',
         scaleMargins: { top: 0.65, bottom: 0 }, priceLineVisible: false, lastValueVisible: false
@@ -584,7 +648,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       toolTipRef.current?.remove();
       toolTipRef.current = null;
       if (chartRef.current) { try { chartRef.current.remove(); } catch {} chartRef.current = null; }
-      seriesRefs.current = { candle: null, line: null, volume: null, markers: null };
+      seriesRefs.current = { candle: null, line: null, volume: null, markers: null, xrpLine: null, tokenLine: null };
     };
   }, [chartType, isDark, isMobile, hasData, loadMoreData]);
 
@@ -609,7 +673,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   // Update data on chart
   useEffect(() => {
     if (!chartRef.current) return;
-    const chartData = chartType === 'holders' ? holderData : data;
+    const chartData = chartType === 'holders' ? holderData : chartType === 'liquidity' ? liquidityData : data;
     if (!chartData?.length) return;
 
     const key = `${chartType}-${timeRange}-${activeFiatCurrency}`;
@@ -617,11 +681,16 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     if (chartType === 'candles' && seriesRefs.current.candle) {
       seriesRefs.current.candle.setData(chartData);
-    } else if ((chartType === 'line' || chartType === 'holders') && seriesRefs.current.line) {
-      seriesRefs.current.line.setData(chartData.map(d => ({ time: d.time, value: d.close || d.value || d.holders })));
+    } else if (chartType === 'line' && seriesRefs.current.line) {
+      seriesRefs.current.line.setData(chartData.map(d => ({ time: d.time, value: d.close })));
+    } else if (chartType === 'holders' && seriesRefs.current.line) {
+      seriesRefs.current.line.setData(chartData.map(d => ({ time: d.time, value: d.holders })));
+    } else if (chartType === 'liquidity' && seriesRefs.current.xrpLine && seriesRefs.current.tokenLine) {
+      seriesRefs.current.xrpLine.setData(chartData.map(d => ({ time: d.time, value: d.xrpLiquidity })));
+      seriesRefs.current.tokenLine.setData(chartData.map(d => ({ time: d.time, value: d.tokenLiquidity })));
     }
 
-    if (chartType !== 'holders' && seriesRefs.current.volume && data) {
+    if (chartType !== 'holders' && chartType !== 'liquidity' && seriesRefs.current.volume && data) {
       seriesRefs.current.volume.setData(data.map(d => ({
         time: d.time, value: d.volume || 0,
         color: d.close >= d.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
@@ -630,7 +699,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Creator activity markers
     const priceSeries = seriesRefs.current.candle || seriesRefs.current.line;
-    if (chartType !== 'holders' && priceSeries && data) {
+    if (chartType !== 'holders' && chartType !== 'liquidity' && priceSeries && data) {
       const markers = data
         .filter(d => d.creatorSold > 0 || d.creatorBought > 0 || d.creatorWithdraw > 0 || d.creatorDeposit > 0 || d.creatorCheckCash > 0 || d.creatorCheckCreate > 0)
         .flatMap(d => {
@@ -671,7 +740,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       chartRef.current.timeScale().setVisibleLogicalRange({ from: Math.max(0, len - vis), to: len + 5 });
       lastKeyRef.current = key;
     }
-  }, [data, holderData, chartType, timeRange, activeFiatCurrency, isMobile]);
+  }, [data, holderData, liquidityData, chartType, timeRange, activeFiatCurrency, isMobile]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => {
@@ -696,7 +765,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
   }, [isFullscreen]);
 
-  const chartIcons = { candles: <CandlestickChart />, line: <TrendingUp />, holders: <Users /> };
+  const chartIcons = { candles: <CandlestickChart />, line: <TrendingUp />, holders: <Users />, liquidity: <Droplets /> };
   const btnGroupStyle = { display: 'flex', padding: '2px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', gap: '2px' };
 
   return (
@@ -704,9 +773,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: isMobile ? '6px' : '8px', gap: isMobile ? '4px' : '6px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12px', fontWeight: 400, color: isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a' }}>
-            {token.name} {chartType === 'holders' ? 'Holders' : `(${activeFiatCurrency})`}
+            {token.name} {chartType === 'holders' ? 'Holders' : chartType === 'liquidity' ? 'TVL' : `(${activeFiatCurrency})`}
           </span>
-          {athData.athMcap > 0 && chartType !== 'holders' && (() => {
+          {chartType === 'liquidity' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '3px', borderRadius: '1px', background: '#06b6d4' }} />XRP</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '3px', borderRadius: '1px', background: '#f59e0b' }} />Token</span>
+            </div>
+          )}
+          {athData.athMcap > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (() => {
             const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
             const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
             return (
@@ -732,8 +807,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         <div style={{ display: 'flex', gap: isMobile ? '3px' : '4px', flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={btnGroupStyle}>
             {Object.entries(chartIcons).map(([type, icon]) => (
-              <Btn key={type} onClick={() => setChartType(type)} isActive={chartType === type} isMobile={isMobile} isDark={isDark}>
-                {icon}{!isMobile && (type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1))}
+              <Btn key={type} onClick={() => { setChartType(type); if (type === 'liquidity' || type === 'holders') setTimeRange('all'); }} isActive={chartType === type} isMobile={isMobile} isDark={isDark}>
+                {icon}{!isMobile && ({ holders: 'Holders', liquidity: 'TVL', candles: 'Candles', line: 'Line' }[type])}
               </Btn>
             ))}
           </div>
@@ -752,7 +827,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Spinner size={20} /></div>}
         {isLoadingMore && <div style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '6px', background: isDark ? 'rgba(10,15,22,0.9)' : 'rgba(255,255,255,0.95)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}><Spinner size={11} /><span style={{ fontSize: '10px', opacity: 0.6 }}>Loading...</span></div>}
-        {!loading && !(chartType === 'holders' ? holderData?.length : data?.length) && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>No data</div>}
+        {!loading && !(chartType === 'holders' ? holderData?.length : chartType === 'liquidity' ? liquidityData?.length : data?.length) && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>No data</div>}
       </div>
 
       {isFullscreen && typeof document !== 'undefined' && createPortal(

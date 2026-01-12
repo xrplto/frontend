@@ -1862,6 +1862,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     const wsParams = new URLSearchParams({ limit: String(limit) });
     if (pairType) wsParams.set('pairType', pairType);
     if (historyType !== 'all') wsParams.set('type', historyType);
+    if (liquidityType) wsParams.set('liquidityType', liquidityType);
 
     const ws = new WebSocket(`wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`);
     wsRef.current = ws;
@@ -1917,8 +1918,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           const filteredTrades = applyClientFilters(msg.trades);
           setTrades(filteredTrades.slice(0, 50));
           setLoading(false);
+          // Only track IDs when we actually use the WebSocket data
+          previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
         }
-        previousTradesRef.current = new Set(msg.trades.map(t => t._id || t.id));
       } else if (msg.e === 'trades' && msg.trades?.length > 0) {
         const currentIds = previousTradesRef.current;
         const newTrades = msg.trades.filter(t => !currentIds.has(t._id || t.id));
