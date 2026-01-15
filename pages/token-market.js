@@ -6,7 +6,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { fNumber, fVolume } from 'src/utils/formatters';
-import { TrendingUp, TrendingDown, Activity, BarChart3, Coins, Users, DollarSign, Layers } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, BarChart3, Coins, Users, DollarSign, Layers, Calendar, Percent, ArrowLeftRight, Hash } from 'lucide-react';
 import Link from 'next/link';
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -380,7 +380,7 @@ export default function TokenMarketPage({ stats }) {
 
         <Grid style={{ marginBottom: 16 }}>
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>7d Volume</StatLabel>
+            <StatLabel darkMode={darkMode}><Calendar size={12} /> 7d Volume</StatLabel>
             <StatValue darkMode={darkMode}>{fVolume(stats.volume7d || 0)}</StatValue>
             {stats.volume7dPct !== undefined && (
               <StatChange positive={stats.volume7dPct >= 0}>
@@ -391,27 +391,27 @@ export default function TokenMarketPage({ stats }) {
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>30d Volume</StatLabel>
+            <StatLabel darkMode={darkMode}><Calendar size={12} /> 30d Volume</StatLabel>
             <StatValue darkMode={darkMode}>{fVolume(stats.volume30d || 0)}</StatValue>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>Avg Trade</StatLabel>
+            <StatLabel darkMode={darkMode}><ArrowLeftRight size={12} /> Avg Trade</StatLabel>
             <StatValue darkMode={darkMode}>{(stats.avgTradeSize || 0).toFixed(0)} XRP</StatValue>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>30d Fees</StatLabel>
+            <StatLabel darkMode={darkMode}><DollarSign size={12} /> 30d Fees</StatLabel>
             <StatValue darkMode={darkMode}>{fVolume(stats.fees30d || 0)}</StatValue>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>AMM Share</StatLabel>
+            <StatLabel darkMode={darkMode}><Percent size={12} /> AMM Share</StatLabel>
             <StatValue darkMode={darkMode}>{stats.volume24h > 0 ? ((stats.volumeAMM / stats.volume24h) * 100).toFixed(1) : 0}%</StatValue>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}>7d Trades</StatLabel>
+            <StatLabel darkMode={darkMode}><Hash size={12} /> 7d Trades</StatLabel>
             <StatValue darkMode={darkMode}>{fNumber(stats.trades7d || 0)}</StatValue>
           </StatCard>
         </Grid>
@@ -442,7 +442,7 @@ export default function TokenMarketPage({ stats }) {
                 )}
                 {isPlatformChart && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11 }}>
-                    {platformNames.map(platform => (
+                    {platformNames.filter(p => stats.platforms?.[p]?.volume > 0).map(platform => (
                       <span key={platform} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ width: 12, height: 3, borderRadius: 2, background: PLATFORM_COLORS[platform] || PLATFORM_COLORS.default }} />
                         <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{platform}</span>
@@ -485,11 +485,11 @@ export default function TokenMarketPage({ stats }) {
                   </linearGradient>
                 </defs>
                 {isPlatformChart ? (
-                  platformNames.map(platform => {
+                  platformNames.filter(p => stats.platforms?.[p]?.volume > 0).map(platform => {
                     const color = PLATFORM_COLORS[platform] || PLATFORM_COLORS.default;
                     return (
                       <g key={platform}>
-                        <path d={platformPaths[platform]?.linePath || ''} fill="none" stroke={color} strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
+                        <path d={platformPaths[platform]?.linePath || ''} fill="none" stroke={color} strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
                       </g>
                     );
                   })
@@ -497,13 +497,13 @@ export default function TokenMarketPage({ stats }) {
                   <>
                     <path d={ammAreaPath} fill="url(#ammAreaGradient)" />
                     <path d={dexAreaPath} fill="url(#dexAreaGradient)" />
-                    <path d={ammLinePath} fill="none" stroke="#8b5cf6" strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
-                    <path d={dexLinePath} fill="none" stroke="#10b981" strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
+                    <path d={ammLinePath} fill="none" stroke="#8b5cf6" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
+                    <path d={dexLinePath} fill="none" stroke="#10b981" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
                   </>
                 ) : (
                   <>
                     <path d={areaPath} fill="url(#tokenAreaGradient)" />
-                    <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
+                    <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
                   </>
                 )}
               </ChartSvg>
@@ -688,7 +688,7 @@ export default function TokenMarketPage({ stats }) {
                   </div>
                   <div>
                     <div style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Net Flow</div>
-                    <div style={{ fontWeight: 500, color: (stats.ammNetFlow || 0) >= 0 ? '#10b981' : '#ef4444' }}>{(stats.ammNetFlow || 0) >= 0 ? '+' : ''}{fVolume(stats.ammNetFlow || 0)}</div>
+                    <div style={{ fontWeight: 500, color: (stats.ammNetFlow || 0) >= 0 ? '#10b981' : '#ef4444' }}>{(stats.ammNetFlow || 0) >= 0 ? '+' : '-'}{fVolume(Math.abs(stats.ammNetFlow || 0))}</div>
                   </div>
                 </div>
               </div>
