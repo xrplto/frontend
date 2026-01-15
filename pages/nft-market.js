@@ -329,6 +329,9 @@ export default function NFTMarketPage({ stats }) {
   const [hoverData, setHoverData] = useState(null);
   const [metricDropdownOpen, setMetricDropdownOpen] = useState(false);
   const [platformSort, setPlatformSort] = useState('volume');
+  const [platformTimeRange, setPlatformTimeRange] = useState('all');
+  const [platformExpanded, setPlatformExpanded] = useState(false);
+  const [summaryTimeRange, setSummaryTimeRange] = useState('all');
   const dropdownRef = useRef(null);
 
   const handleMetricSelect = useCallback((key) => {
@@ -363,8 +366,8 @@ export default function NFTMarketPage({ stats }) {
       if (d.volumeByPlatform) Object.keys(d.volumeByPlatform).forEach(p => names.add(p));
     });
     return Array.from(names).sort((a, b) => {
-      const aTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[a] || 0), 0);
-      const bTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[b] || 0), 0);
+      const aTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[a]?.volume || d.volumeByPlatformFlat?.[a] || 0), 0);
+      const bTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[b]?.volume || d.volumeByPlatformFlat?.[b] || 0), 0);
       return bTotal - aTotal;
     });
   }, [chartData]);
@@ -383,13 +386,9 @@ export default function NFTMarketPage({ stats }) {
       if (day.volumeByPlatform) {
         Object.entries(day.volumeByPlatform).forEach(([p, v]) => {
           if (!data[p]) data[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
-          data[p].volume += v;
-        });
-      }
-      if (day.salesByPlatform) {
-        Object.entries(day.salesByPlatform).forEach(([p, s]) => {
-          if (!data[p]) data[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
-          data[p].sales += s;
+          // Handle both new {volume, sales} and old number format
+          data[p].volume += v?.volume || v || 0;
+          data[p].sales += v?.sales || 0;
         });
       }
       if (day.feesByPlatform) {
@@ -406,21 +405,62 @@ export default function NFTMarketPage({ stats }) {
       .slice(0, 8);
   }, [chartData]);
 
-  const allTimePlatformData = useMemo(() => {
-    const platformStats = stats?.platformStatsAll || {};
-    return Object.entries(platformStats).map(([name, d]) => ({
-      name,
-      volume: d.volume || 0,
-      sales: d.sales || 0,
-      avgPrice: d.avgPrice || 0,
-      royalties: d.royalties || 0,
-      brokerFees: d.brokerFees || 0
-    }));
-  }, [stats?.platformStatsAll]);
+  // Platform stats based on selected time range
+  const platformStats = useMemo(() => {
+    if (platformTimeRange === 'all') {
+      return Object.entries(stats?.platformStatsAll || {}).map(([name, d]) => ({
+        name,
+        volume: d.volume || 0,
+        sales: d.sales || 0,
+        avgPrice: d.avgPrice || 0,
+        royalties: d.royalties || 0,
+        brokerFees: d.brokerFees || 0
+      }));
+    }
+    const rangeDays = platformTimeRange === '24h' ? 1 : platformTimeRange === '7d' ? 7 : platformTimeRange === '30d' ? 30 : 90;
+    const data = volumeHistory.slice(-rangeDays);
+    const aggregated = {};
+    data.forEach(day => {
+      if (day.volumeByPlatform) {
+        Object.entries(day.volumeByPlatform).forEach(([p, v]) => {
+          if (!aggregated[p]) aggregated[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
+          aggregated[p].volume += v?.volume || v || 0;
+          aggregated[p].sales += v?.sales || 0;
+        });
+      }
+      if (day.feesByPlatform) {
+        Object.entries(day.feesByPlatform).forEach(([p, f]) => {
+          if (!aggregated[p]) aggregated[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
+          aggregated[p].royalties += f.royalties || 0;
+          aggregated[p].brokerFees += f.brokerFees || 0;
+        });
+      }
+    });
+    return Object.entries(aggregated)
+      .map(([name, d]) => ({ name, ...d, avgPrice: d.sales > 0 ? d.volume / d.sales : 0 }))
+      .filter(p => p.volume > 0 || p.sales > 0);
+  }, [volumeHistory, platformTimeRange, stats?.platformStatsAll]);
+
+  const summaryStats = useMemo(() => {
+    const rangeDays = summaryTimeRange === '24h' ? 1 : summaryTimeRange === '7d' ? 7 : summaryTimeRange === '30d' ? 30 : volumeHistory.length;
+    const data = volumeHistory.slice(-rangeDays);
+    return data.reduce((acc, d) => {
+      acc.volume += d.volume || 0;
+      acc.sales += d.sales || 0;
+      acc.royalties += d.royalties || 0;
+      acc.brokerFees += d.brokerFees || 0;
+      acc.mints += d.mints || 0;
+      acc.burns += d.burns || 0;
+      acc.transfers += d.transfers || 0;
+      acc.buyers += d.uniqueBuyers || 0;
+      acc.sellers += d.uniqueSellers || 0;
+      return acc;
+    }, { volume: 0, sales: 0, royalties: 0, brokerFees: 0, mints: 0, burns: 0, transfers: 0, buyers: 0, sellers: 0, collections: stats?.totalCollections || 0 });
+  }, [volumeHistory, summaryTimeRange, stats?.totalCollections]);
 
   const sortedPlatformData = useMemo(() => {
-    return [...allTimePlatformData].sort((a, b) => b[platformSort] - a[platformSort]);
-  }, [allTimePlatformData, platformSort]);
+    return [...platformStats].sort((a, b) => b[platformSort] - a[platformSort]);
+  }, [platformStats, platformSort]);
 
   const maxPeriodPlatformVol = periodPlatformData[0]?.volume || 1;
   const maxSortedValue = sortedPlatformData[0]?.[platformSort] || 1;
@@ -515,6 +555,10 @@ export default function NFTMarketPage({ stats }) {
           <StatCard darkMode={darkMode}>
             <StatLabel darkMode={darkMode}><ArrowRightLeft size={12} /> 24h Transfers</StatLabel>
             <StatValue darkMode={darkMode}>{fNumber(stats.total24hTransfers || 0)}</StatValue>
+            <StatChange positive={stats.transfersPct >= 0}>
+              {stats.transfersPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              {Math.abs(stats.transfersPct || 0).toFixed(1)}%
+            </StatChange>
           </StatCard>
         </Grid>
 
@@ -588,7 +632,7 @@ export default function NFTMarketPage({ stats }) {
                       const x = padding.left + (i / (chartData.length - 1 || 1)) * chartWidth;
                       let cumulative = 0;
                       platformNames.slice(0, platformNames.length - pIdx).forEach(p => {
-                        cumulative += d.volumeByPlatform?.[p] || 0;
+                        cumulative += d.volumeByPlatform?.[p]?.volume || d.volumeByPlatformFlat?.[p] || 0;
                       });
                       const y = padding.top + chartHeight - (cumulative / stackedMax) * chartHeight;
                       return { x, y };
@@ -626,7 +670,7 @@ export default function NFTMarketPage({ stats }) {
                           <span style={{ fontWeight: 600 }}>{fVolume(hoverData.volume || 0)}</span>
                         </div>
                         {platformNames.map(p => {
-                          const val = hoverData.volumeByPlatform?.[p] || 0;
+                          const val = hoverData.volumeByPlatform?.[p]?.volume || hoverData.volumeByPlatformFlat?.[p] || 0;
                           if (val === 0) return null;
                           return (
                             <div key={p} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, fontSize: 11 }}>
@@ -680,22 +724,27 @@ export default function NFTMarketPage({ stats }) {
           </ChartCard>
         </Section>
 
-        {/* All-Time Platforms - Full Width */}
+        {/* Platform Stats - Full Width */}
         <Section>
           <TableContainer darkMode={darkMode}>
             <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>All-Time Platform Stats</span>
-              <ButtonGroup>
-                {[
-                  { key: 'volume', label: 'Volume' },
-                  { key: 'sales', label: 'Sales' },
-                  { key: 'royalties', label: 'Royalties' }
-                ].map(s => (
-                  <ToggleBtn key={s.key} active={platformSort === s.key} darkMode={darkMode} onClick={() => setPlatformSort(s.key)}>
-                    {s.label}
-                  </ToggleBtn>
-                ))}
-              </ButtonGroup>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Platform Stats</span>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <ButtonGroup>
+                  {[{ key: '24h', label: '24H' }, { key: '7d', label: '7D' }, { key: '30d', label: '30D' }, { key: 'all', label: 'All' }].map(r => (
+                    <ToggleBtn key={r.key} active={platformTimeRange === r.key} darkMode={darkMode} onClick={() => setPlatformTimeRange(r.key)}>
+                      {r.label}
+                    </ToggleBtn>
+                  ))}
+                </ButtonGroup>
+                <ButtonGroup>
+                  {[{ key: 'volume', label: 'Volume' }, { key: 'sales', label: 'Sales' }, { key: 'royalties', label: 'Royalties' }].map(s => (
+                    <ToggleBtn key={s.key} active={platformSort === s.key} darkMode={darkMode} onClick={() => setPlatformSort(s.key)}>
+                      {s.label}
+                    </ToggleBtn>
+                  ))}
+                </ButtonGroup>
+              </div>
             </div>
             <div style={{ overflowX: 'auto' }}>
               <Table style={{ minWidth: 600 }}>
@@ -710,115 +759,134 @@ export default function NFTMarketPage({ stats }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedPlatformData.map((p) => (
-                    <tr key={p.name}>
-                      <Td darkMode={darkMode} style={{ minWidth: 140 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p.name] || '#6b7280', flexShrink: 0 }} />
-                          <span style={{ fontWeight: 500 }}>{p.name}</span>
-                        </div>
-                        <PlatformBar darkMode={darkMode} style={{ marginTop: 6 }}>
-                          <PlatformFill style={{ width: `${(p[platformSort] / maxSortedValue) * 100}%`, background: PLATFORM_COLORS[p.name] || '#6b7280' }} />
-                        </PlatformBar>
-                      </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'sales' ? 600 : 400 }}>{fNumber(p.sales)}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{p.avgPrice.toFixed(1)} XRP</Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'royalties' ? 600 : 400 }}>{fVolume(p.royalties)}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{fVolume(p.brokerFees)}</Td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    const displayPlatforms = platformExpanded ? sortedPlatformData : sortedPlatformData.slice(0, 10);
+                    if (displayPlatforms.length === 0) {
+                      return (
+                        <tr>
+                          <Td darkMode={darkMode} colSpan={6} style={{ textAlign: 'center', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: 24 }}>
+                            No platform data available for this period
+                          </Td>
+                        </tr>
+                      );
+                    }
+                    return displayPlatforms.map((p) => (
+                      <tr key={p.name}>
+                        <Td darkMode={darkMode} style={{ minWidth: 140 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p.name] || '#6b7280', flexShrink: 0 }} />
+                            <span style={{ fontWeight: 500 }}>{p.name}</span>
+                          </div>
+                          <PlatformBar darkMode={darkMode} style={{ marginTop: 6 }}>
+                            <PlatformFill style={{ width: `${(p[platformSort] / maxSortedValue) * 100}%`, background: PLATFORM_COLORS[p.name] || '#6b7280', transition: 'width 0.3s ease' }} />
+                          </PlatformBar>
+                        </Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'sales' ? 600 : 400 }}>{fNumber(p.sales)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{(p.avgPrice || 0).toFixed(1)} XRP</Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'royalties' ? 600 : 400 }}>{fVolume(p.royalties)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{fVolume(p.brokerFees)}</Td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </Table>
+            </div>
+            {/* Show more button */}
+            {sortedPlatformData.length > 10 && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, textAlign: 'center' }}>
+                <button
+                  onClick={() => setPlatformExpanded(!platformExpanded)}
+                  style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: 12, fontWeight: 500, cursor: 'pointer', padding: '6px 12px', borderRadius: 6 }}
+                >
+                  {platformExpanded ? 'Show less' : `Show ${sortedPlatformData.length - 10} more`}
+                </button>
+              </div>
+            )}
+            {/* Period summary */}
+            <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: 24, fontSize: 12 }}>
+              <div>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Volume: </span>
+                <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(platformStats.reduce((s, p) => s + p.volume, 0))}</span>
+              </div>
+              <div>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Sales: </span>
+                <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(platformStats.reduce((s, p) => s + p.sales, 0))}</span>
+              </div>
+              <div>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Platforms: </span>
+                <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{platformStats.length}</span>
+              </div>
             </div>
           </TableContainer>
         </Section>
 
-        {/* Two Column Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-          {/* Period Platforms */}
-          {timeRange !== 'all' && (
-            <Section style={{ marginBottom: 0 }}>
-              <TableContainer darkMode={darkMode}>
-                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>
-                    Platform Activity ({TIME_RANGES.find(r => r.key === timeRange)?.label})
-                  </span>
-                </div>
-                <Table>
-                  <thead>
-                    <tr>
-                      <Th darkMode={darkMode}>Platform</Th>
-                      <Th darkMode={darkMode} align="right">Volume</Th>
-                      <Th darkMode={darkMode} align="right">Sales</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {periodPlatformData.map((p) => (
-                      <tr key={p.name}>
-                        <Td darkMode={darkMode}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ width: 8, height: 8, borderRadius: 2, background: PLATFORM_COLORS[p.name] || '#6b7280', flexShrink: 0 }} />
-                            {p.name}
-                          </div>
-                        </Td>
-                        <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(p.volume)}</Td>
-                        <Td darkMode={darkMode} align="right">{fNumber(p.sales)}</Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </TableContainer>
-            </Section>
-          )}
-
-          {/* Market Summary - Combined */}
-          <Section style={{ marginBottom: 0 }}>
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Summary</span>
+        {/* Market Summary */}
+        <Section>
+          <TableContainer darkMode={darkMode}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Summary</span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {['24h', '7d', '30d', 'all'].map(range => (
+                  <button
+                    key={range}
+                    onClick={() => setSummaryTimeRange(range)}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: 10,
+                      fontWeight: 500,
+                      borderRadius: 4,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: summaryTimeRange === range ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                      color: summaryTimeRange === range ? '#fff' : (darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)')
+                    }}
+                  >
+                    {range === 'all' ? 'All' : range.toUpperCase()}
+                  </button>
+                ))}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
-                <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Volume</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalVolume || 0)}</div>
-                </div>
-                <div style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Sales</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(stats.totalSales || 0)}</div>
-                </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Volume</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(summaryStats.volume)}</div>
               </div>
-              <Table>
-                <tbody>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Collections</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.totalCollections || 0)}</Td>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Active (24h)</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.activeCollections24h || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Traders</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.totalTraders || 0)}</Td>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>7d / 30d</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.activeTraders7d || 0)} / {fNumber(stats.activeTraders30d || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Buyers (24h)</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.uniqueBuyers24h || 0)}</Td>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Sellers (24h)</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.uniqueSellers24h || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Royalties (24h)</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.total24hRoyalties || 0)}</Td>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Fees (24h)</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.total24hBrokerFees || 0)}</Td>
-                  </tr>
-                </tbody>
-              </Table>
-            </TableContainer>
-          </Section>
-        </div>
+              <div style={{ padding: '12px 16px' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Sales</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(summaryStats.sales)}</div>
+              </div>
+            </div>
+            <Table>
+              <tbody>
+                <tr>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Buyers</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.buyers)}</Td>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Sellers</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.sellers)}</Td>
+                </tr>
+                <tr>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Royalties</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(summaryStats.royalties)}</Td>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Broker Fees</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(summaryStats.brokerFees)}</Td>
+                </tr>
+                <tr>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Mints</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.mints)}</Td>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Burns</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.burns)}</Td>
+                </tr>
+                <tr>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Transfers</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.transfers)}</Td>
+                  <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Collections</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(summaryStats.collections)}</Td>
+                </tr>
+              </tbody>
+            </Table>
+          </TableContainer>
+        </Section>
       </Container>
 
       <ScrollToTop />
@@ -830,7 +898,60 @@ export default function NFTMarketPage({ stats }) {
 export async function getServerSideProps() {
   try {
     const response = await axios.get(`${BASE_URL}/nft/analytics/market`);
-    return { props: { stats: response.data } };
+    const data = response.data;
+
+    // Map new API structure
+    const summary = data.summary || {};
+    const percentChanges = data.percentChanges || {};
+    const aggregates = data.aggregates || {};
+
+    const stats = {
+      // Daily history for charts
+      volumeHistory: (data.daily || []).map(d => ({
+        ...d,
+        // Flatten volumeByPlatform for chart compatibility
+        volumeByPlatformFlat: Object.fromEntries(
+          Object.entries(d.volumeByPlatform || {}).map(([k, v]) => [k, v?.volume || v || 0])
+        )
+      })),
+
+      // 24h stats from summary
+      total24hVolume: summary.total24hVolume || aggregates['24h']?.volume || 0,
+      total24hSales: summary.total24hSales || aggregates['24h']?.sales || 0,
+      activeTraders24h: summary.activeTraders24h || 0,
+      total24hMints: summary.mints24h || aggregates['24h']?.mints || 0,
+      total24hBurns: summary.burns24h || aggregates['24h']?.burns || 0,
+      total24hTransfers: summary.transfers24h || aggregates['24h']?.transfers || 0,
+      total24hRoyalties: aggregates['24h']?.royalties || 0,
+      total24hBrokerFees: aggregates['24h']?.brokerFees || 0,
+      uniqueBuyers24h: aggregates['24h']?.uniqueBuyers || 0,
+      uniqueSellers24h: aggregates['24h']?.uniqueSellers || 0,
+
+      // Percent changes
+      volumePct: percentChanges.volume24hPct || 0,
+      salesPct: percentChanges.sales24hPct || 0,
+      activeTradersPct: percentChanges.traders24hPct || 0,
+      mintsPct: percentChanges.mints24hPct || 0,
+      burnsPct: percentChanges.burns24hPct || 0,
+      transfersPct: percentChanges.transfers24hPct || 0,
+
+      // Totals
+      totalVolume: summary.totalVolume || aggregates['all']?.volume || 0,
+      totalSales: summary.totalSales || aggregates['all']?.sales || 0,
+      totalCollections: data.summary?.totalCollections || 0,
+      activeCollections24h: data.summary?.activeCollections24h || 0,
+      totalTraders: data.uniqueTraderCount || 0,
+      activeTraders7d: aggregates['7d']?.uniqueBuyers || 0,
+      activeTraders30d: aggregates['30d']?.uniqueBuyers || 0,
+
+      // Platform stats
+      platformStatsAll: data.platformStatsAll || {},
+
+      // Meta
+      lastUpdated: data.lastUpdated
+    };
+
+    return { props: { stats } };
   } catch (error) {
     console.error('Failed to fetch NFT market stats:', error.message);
     return { props: { stats: null } };

@@ -79,7 +79,6 @@ const ChartCard = styled.div`
   border-radius: 12px;
   border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
   background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-  overflow: hidden;
 `;
 
 const ChartHeader = styled.div`
@@ -423,7 +422,7 @@ export default function TokenMarketPage({ stats }) {
     if (platformTimeRange === 'all') {
       // Use the all-time stats from API
       return Object.entries(stats?.platformStatsAll || {})
-        .map(([name, d]) => ({ name, volume: d.volume || 0, trades: d.trades || 0 }));
+        .map(([name, d]) => ({ name, volume: d.volume || 0, trades: d.trades || 0, fees: d.fees || 0 }));
     }
     const rangeDays = platformTimeRange === '24h' ? 1 : platformTimeRange === '7d' ? 7 : 30;
     const data = history.slice(-rangeDays);
@@ -431,14 +430,15 @@ export default function TokenMarketPage({ stats }) {
     data.forEach(day => {
       Object.entries(day.platformVolume || {}).forEach(([platform, pData]) => {
         if (!aggregated[platform]) {
-          aggregated[platform] = { volume: 0, trades: 0 };
+          aggregated[platform] = { volume: 0, trades: 0, fees: 0 };
         }
         aggregated[platform].volume += pData.volume || 0;
         aggregated[platform].trades += pData.trades || 0;
+        aggregated[platform].fees += pData.fees || 0;
       });
     });
     return Object.entries(aggregated)
-      .map(([name, d]) => ({ name, volume: d.volume, trades: d.trades }))
+      .map(([name, d]) => ({ name, volume: d.volume, trades: d.trades, fees: d.fees }))
       .filter(p => p.volume > 0 || p.trades > 0);
   }, [history, platformTimeRange, stats?.platformStatsAll]);
 
@@ -900,7 +900,7 @@ export default function TokenMarketPage({ stats }) {
                   ))}
                 </ButtonGroup>
                 <ButtonGroup>
-                  {[{ key: 'volume', label: 'Volume' }, { key: 'trades', label: 'Trades' }].map(s => (
+                  {[{ key: 'volume', label: 'Volume' }, { key: 'trades', label: 'Trades' }, { key: 'fees', label: 'Fees' }].map(s => (
                     <ToggleBtn key={s.key} active={platformSort === s.key} darkMode={darkMode} onClick={() => setPlatformSort(s.key)}>
                       {s.label}
                     </ToggleBtn>
@@ -915,6 +915,7 @@ export default function TokenMarketPage({ stats }) {
                     <Th darkMode={darkMode}>Platform</Th>
                     <Th darkMode={darkMode} align="right">Volume</Th>
                     <Th darkMode={darkMode} align="right">Trades</Th>
+                    <Th darkMode={darkMode} align="right">Fees</Th>
                     <Th darkMode={darkMode} align="right">Share</Th>
                   </tr>
                 </thead>
@@ -927,7 +928,7 @@ export default function TokenMarketPage({ stats }) {
                     if (sortedPlatforms.length === 0) {
                       return (
                         <tr>
-                          <Td darkMode={darkMode} colSpan={4} style={{ textAlign: 'center', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: 24 }}>
+                          <Td darkMode={darkMode} colSpan={5} style={{ textAlign: 'center', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: 24 }}>
                             No platform data available for this period
                           </Td>
                         </tr>
@@ -946,6 +947,7 @@ export default function TokenMarketPage({ stats }) {
                         </Td>
                         <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
                         <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'trades' ? 600 : 400 }}>{fNumber(p.trades)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'fees' ? 600 : 400 }}>{fVolume(p.fees)}</Td>
                         <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>{totalVol > 0 ? ((p.volume / totalVol) * 100).toFixed(1) : 0}%</Td>
                       </tr>
                     ));
@@ -986,6 +988,10 @@ export default function TokenMarketPage({ stats }) {
                 <div>
                   <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Trades: </span>
                   <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(platformStats.reduce((s, p) => s + p.trades, 0))}</span>
+                </div>
+                <div>
+                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Fees: </span>
+                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(platformStats.reduce((s, p) => s + p.fees, 0))}</span>
                 </div>
                 <div>
                   <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Platforms: </span>
@@ -1148,21 +1154,32 @@ export async function getServerSideProps() {
 
     // Sort and format history for charts
     const sortedDays = [...days].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const history = sortedDays.map(day => ({
-      date: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      volume: day.volume || 0,
-      trades: day.trades || 0,
-      marketcap: day.marketcap || 0,
-      tokens: day.tokenCount || 0,
-      volumeAMM: day.volumeAMM || 0,
-      volumeNonAMM: day.volumeNonAMM || 0,
-      tradesAMM: day.tradesAMM || 0,
-      tradesNonAMM: day.tradesNonAMM || 0,
-      ammDeposits: day.ammDepositVolume || 0,
-      ammWithdraws: day.ammWithdrawVolume || 0,
-      ammNetFlow: day.ammNetFlow || 0,
-      platformVolume: day.volumeByPlatform || {}
-    }));
+    const history = sortedDays.map(day => {
+      // Transform volumeByPlatform to include fees
+      const platformVolume = {};
+      Object.entries(day.volumeByPlatform || {}).forEach(([platform, data]) => {
+        platformVolume[platform] = {
+          volume: data.volume || 0,
+          trades: data.trades || 0,
+          fees: data.fees || 0
+        };
+      });
+      return {
+        date: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        volume: day.volume || 0,
+        trades: day.trades || 0,
+        marketcap: day.marketcap || 0,
+        tokens: day.tokenCount || 0,
+        volumeAMM: day.volumeAMM || 0,
+        volumeNonAMM: day.volumeNonAMM || 0,
+        tradesAMM: day.tradesAMM || 0,
+        tradesNonAMM: day.tradesNonAMM || 0,
+        ammDeposits: day.ammDepositVolume || 0,
+        ammWithdraws: day.ammWithdrawVolume || 0,
+        ammNetFlow: day.ammNetFlow || 0,
+        platformVolume
+      };
+    });
 
     // Get platform names from daily data (for chart) and all-time stats (for table)
     const dailyPlatformNames = [...new Set(days.flatMap(d => Object.keys(d.volumeByPlatform || {})))].filter(Boolean);
