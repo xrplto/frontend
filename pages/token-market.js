@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
@@ -6,8 +6,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { fNumber, fVolume } from 'src/utils/formatters';
-import { TrendingUp, TrendingDown, Activity, BarChart3, Coins, Users, DollarSign, Layers, Calendar, Percent, ArrowLeftRight, Hash } from 'lucide-react';
-import Link from 'next/link';
+import { TrendingUp, TrendingDown, Activity, BarChart3, Coins, Users, DollarSign, Layers, Percent, ArrowLeftRight, ChevronDown } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -84,6 +83,7 @@ const ChartCard = styled.div`
 `;
 
 const ChartHeader = styled.div`
+  position: relative;
   padding: 16px;
   display: flex;
   flex-wrap: wrap;
@@ -91,6 +91,73 @@ const ChartHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+  z-index: 10;
+`;
+
+const MetricSelect = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const MetricButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  cursor: pointer;
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : '#fff')};
+  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
+  transition: all 0.15s ease;
+  &:hover { border-color: #3b82f6; }
+`;
+
+const MetricDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  background: ${({ darkMode }) => (darkMode ? '#1a1a1a' : '#fff')};
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 50;
+`;
+
+const MetricGroup = styled.div`
+  &:not(:last-child) {
+    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+  }
+`;
+
+const MetricGroupLabel = styled.div`
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
+`;
+
+const MetricOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  text-align: left;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: ${({ active }) => active ? 'rgba(59,130,246,0.15)' : 'transparent'};
+  color: ${({ active, darkMode }) => active ? '#3b82f6' : (darkMode ? '#fff' : '#212B36')};
+  transition: all 0.1s ease;
+  &:hover { background: ${({ active }) => active ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)'}; }
 `;
 
 const ChartTitle = styled.h3`
@@ -173,13 +240,6 @@ const Td = styled.td`
   border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
 `;
 
-const TokenLink = styled(Link)`
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-  &:hover { text-decoration: underline; }
-`;
-
 const VolumeBar = styled.div`
   height: 6px;
   border-radius: 3px;
@@ -200,18 +260,58 @@ const TIME_RANGES = [
   { key: 'all', label: 'All', days: 9999 }
 ];
 
-const METRICS = [
-  { key: 'platformVolume', label: 'Platforms', format: fVolume, platform: true },
-  { key: 'volume', label: 'Volume', format: fVolume },
-  { key: 'volumeSplit', label: 'AMM vs DEX', format: fVolume, dual: true },
-  { key: 'trades', label: 'Trades', format: fNumber },
-  { key: 'marketcap', label: 'Marketcap', format: fVolume }
+const METRIC_GROUPS = [
+  {
+    label: 'Trading',
+    icon: DollarSign,
+    metrics: [
+      { key: 'volume', label: 'Volume', format: fVolume },
+      { key: 'trades', label: 'Trades', format: fNumber },
+      { key: 'marketcap', label: 'Marketcap', format: fVolume },
+    ]
+  },
+  {
+    label: 'Platforms',
+    icon: Layers,
+    metrics: [
+      { key: 'platformVolume', label: 'By Platform', format: fVolume, platform: true },
+    ]
+  },
+  {
+    label: 'AMM vs DEX',
+    icon: ArrowLeftRight,
+    metrics: [
+      { key: 'volumeSplit', label: 'Volume Split', format: fVolume, dual: true },
+      { key: 'tradesSplit', label: 'Trades Split', format: fNumber, dual: true },
+    ]
+  },
+  {
+    label: 'Pool Activity',
+    icon: Activity,
+    metrics: [
+      { key: 'ammDeposits', label: 'Deposits', format: fVolume },
+      { key: 'ammWithdraws', label: 'Withdrawals', format: fVolume },
+      { key: 'ammNetFlow', label: 'Net Flow', format: fVolume },
+    ]
+  }
 ];
 
+const ALL_METRICS = METRIC_GROUPS.flatMap(g => g.metrics);
+
 const PLATFORM_COLORS = {
-  FirstLedger: '#f59e0b',
   MagneticX: '#ec4899',
+  SologenicWallet: '#8b5cf6',
   XPMarket: '#06b6d4',
+  Bidds: '#3b82f6',
+  FirstLedger: '#f59e0b',
+  HBot: '#ef4444',
+  Anodos: '#10b981',
+  Horizon: '#f97316',
+  StaticBit: '#84cc16',
+  OpulenceX: '#a855f7',
+  SonarMuse: '#14b8a6',
+  CalypsoWallet: '#0ea5e9',
+  KatzWallet: '#eab308',
   default: '#6b7280'
 };
 
@@ -222,7 +322,29 @@ export default function TokenMarketPage({ stats }) {
   const [timeRange, setTimeRange] = useState('30d');
   const [metric, setMetric] = useState('platformVolume');
   const [hoverData, setHoverData] = useState(null);
-  const [topTokensRange, setTopTokensRange] = useState('7d');
+  const [platformSort, setPlatformSort] = useState('volume');
+  const [metricDropdownOpen, setMetricDropdownOpen] = useState(false);
+  const [ammTimeRange, setAmmTimeRange] = useState('24h');
+  const [platformTimeRange, setPlatformTimeRange] = useState('all');
+  const [platformExpanded, setPlatformExpanded] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const handleMetricSelect = useCallback((key) => {
+    setMetric(key);
+    setMetricDropdownOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setMetricDropdownOpen(false);
+      }
+    };
+    if (metricDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [metricDropdownOpen]);
 
   const history = stats?.history || [];
 
@@ -231,12 +353,16 @@ export default function TokenMarketPage({ stats }) {
     return history.slice(-range.days);
   }, [history, timeRange]);
 
-  const isDualChart = metric === 'volumeSplit';
+  const isDualChart = metric === 'volumeSplit' || metric === 'tradesSplit';
   const isPlatformChart = metric === 'platformVolume';
+  const isPoolMetric = ['ammDeposits', 'ammWithdraws', 'ammNetFlow'].includes(metric);
   const platformNames = stats?.platformNames || [];
 
   const maxValue = useMemo(() => {
     if (isDualChart) {
+      if (metric === 'tradesSplit') {
+        return Math.max(...chartData.map(d => Math.max(d.tradesAMM || 0, d.tradesNonAMM || 0)), 1);
+      }
       return Math.max(...chartData.map(d => Math.max(d.volumeAMM || 0, d.volumeNonAMM || 0)), 1);
     }
     if (isPlatformChart) {
@@ -244,11 +370,77 @@ export default function TokenMarketPage({ stats }) {
         platformNames.map(p => d.platformVolume?.[p]?.volume || 0)
       ), 1);
     }
+    if (metric === 'ammNetFlow') {
+      const vals = chartData.map(d => Math.abs(d.ammNetFlow || 0));
+      return Math.max(...vals, 1);
+    }
     return Math.max(...chartData.map(d => d[metric] || 0), 1);
   }, [chartData, metric, isDualChart, isPlatformChart, platformNames]);
 
-  const topWashTraders = stats?.topWashTraders || [];
-  const maxWashScore = topWashTraders[0]?.washScore || 1;
+  const stackedMax = useMemo(() => {
+    return Math.max(...chartData.map(d => {
+      let total = 0;
+      platformNames.forEach(p => { total += d.platformVolume?.[p]?.volume || 0; });
+      return total;
+    }), 1);
+  }, [chartData, platformNames]);
+
+  const periodTotal = useMemo(() => {
+    if (metric === 'volumeSplit') {
+      return chartData.reduce((sum, d) => sum + (d.volumeAMM || 0) + (d.volumeNonAMM || 0), 0);
+    }
+    if (metric === 'tradesSplit') {
+      return chartData.reduce((sum, d) => sum + (d.tradesAMM || 0) + (d.tradesNonAMM || 0), 0);
+    }
+    if (metric === 'platformVolume') {
+      return chartData.reduce((sum, d) => sum + (d.volume || 0), 0);
+    }
+    if (metric === 'ammNetFlow') {
+      return chartData.reduce((sum, d) => sum + (d.ammNetFlow || 0), 0);
+    }
+    return chartData.reduce((sum, d) => sum + (d[metric] || 0), 0);
+  }, [chartData, metric]);
+
+  const metricConfig = ALL_METRICS.find(m => m.key === metric);
+
+  // AMM vs DEX aggregates based on selected time range
+  const ammStats = useMemo(() => {
+    const rangeDays = ammTimeRange === '24h' ? 1 : ammTimeRange === '7d' ? 7 : ammTimeRange === '30d' ? 30 : 9999;
+    const data = history.slice(-rangeDays);
+    return {
+      volumeAMM: data.reduce((s, d) => s + (d.volumeAMM || 0), 0),
+      volumeNonAMM: data.reduce((s, d) => s + (d.volumeNonAMM || 0), 0),
+      tradesAMM: data.reduce((s, d) => s + (d.tradesAMM || 0), 0),
+      tradesNonAMM: data.reduce((s, d) => s + (d.tradesNonAMM || 0), 0),
+      ammDeposits: data.reduce((s, d) => s + (d.ammDeposits || 0), 0),
+      ammWithdraws: data.reduce((s, d) => s + (d.ammWithdraws || 0), 0),
+      ammNetFlow: data.reduce((s, d) => s + (d.ammNetFlow || 0), 0),
+    };
+  }, [history, ammTimeRange]);
+
+  // Platform stats aggregates based on selected time range
+  const platformStats = useMemo(() => {
+    if (platformTimeRange === 'all') {
+      // Use the all-time stats from API
+      return Object.entries(stats?.platformStatsAll || {})
+        .map(([name, d]) => ({ name, volume: d.volume || 0, trades: d.trades || 0 }));
+    }
+    const rangeDays = platformTimeRange === '24h' ? 1 : platformTimeRange === '7d' ? 7 : 30;
+    const data = history.slice(-rangeDays);
+    const aggregated = {};
+    data.forEach(day => {
+      Object.entries(day.platformVolume || {}).forEach(([platform, pData]) => {
+        if (!aggregated[platform]) {
+          aggregated[platform] = { volume: 0, trades: 0 };
+        }
+        aggregated[platform].volume += pData.volume || 0;
+        aggregated[platform].trades += pData.trades || 0;
+      });
+    });
+    return Object.entries(aggregated)
+      .map(([name, d]) => ({ name, volume: d.volume, trades: d.trades }))
+      .filter(p => p.volume > 0 || p.trades > 0);
+  }, [history, platformTimeRange, stats?.platformStatsAll]);
 
   if (!stats) {
     return (
@@ -279,13 +471,15 @@ export default function TokenMarketPage({ stats }) {
 
   const ammPoints = isDualChart ? chartData.map((d, i) => {
     const x = padding.left + (i / (chartData.length - 1 || 1)) * chartWidth;
-    const y = padding.top + chartHeight - ((d.volumeAMM || 0) / maxValue) * chartHeight;
+    const val = metric === 'tradesSplit' ? (d.tradesAMM || 0) : (d.volumeAMM || 0);
+    const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
     return { x, y, data: d };
   }) : [];
 
   const dexPoints = isDualChart ? chartData.map((d, i) => {
     const x = padding.left + (i / (chartData.length - 1 || 1)) * chartWidth;
-    const y = padding.top + chartHeight - ((d.volumeNonAMM || 0) / maxValue) * chartHeight;
+    const val = metric === 'tradesSplit' ? (d.tradesNonAMM || 0) : (d.volumeNonAMM || 0);
+    const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
     return { x, y, data: d };
   }) : [];
 
@@ -314,8 +508,6 @@ export default function TokenMarketPage({ stats }) {
     return paths;
   }, [isPlatformChart, platformNames, chartData, maxValue]);
 
-  const metricConfig = METRICS.find(m => m.key === metric);
-
   return (
     <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
       <div id="back-to-top-anchor" style={{ height: 24 }} />
@@ -338,81 +530,100 @@ export default function TokenMarketPage({ stats }) {
           <StatCard darkMode={darkMode}>
             <StatLabel darkMode={darkMode}><Activity size={12} /> 24h Volume</StatLabel>
             <StatValue darkMode={darkMode}>{fVolume(stats.volume24h || 0)}</StatValue>
-            <StatChange positive={stats.volumePct >= 0}>
-              {stats.volumePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {Math.abs(stats.volumePct || 0).toFixed(1)}%
-            </StatChange>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <StatChange positive={stats.volumePct >= 0}>
+                {stats.volumePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {Math.abs(stats.volumePct || 0).toFixed(1)}%
+              </StatChange>
+              <span style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                7d: {fVolume(stats.volume7d || 0)}
+              </span>
+            </div>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
             <StatLabel darkMode={darkMode}><BarChart3 size={12} /> 24h Trades</StatLabel>
             <StatValue darkMode={darkMode}>{fNumber(stats.trades24h || 0)}</StatValue>
-            <StatChange positive={stats.tradesPct >= 0}>
-              {stats.tradesPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {Math.abs(stats.tradesPct || 0).toFixed(1)}%
-            </StatChange>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <StatChange positive={stats.tradesPct >= 0}>
+                {stats.tradesPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {Math.abs(stats.tradesPct || 0).toFixed(1)}%
+              </StatChange>
+              <span style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                Avg: {fVolume(stats.avgTradeSize || 0)}
+              </span>
+            </div>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
             <StatLabel darkMode={darkMode}><Coins size={12} /> Total Marketcap</StatLabel>
             <StatValue darkMode={darkMode}>{fVolume(stats.totalMarketcap || 0)}</StatValue>
-            <StatChange positive={stats.marketcapPct >= 0}>
-              {stats.marketcapPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {Math.abs(stats.marketcapPct || 0).toFixed(1)}%
-            </StatChange>
-          </StatCard>
-
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Users size={12} /> Unique Traders</StatLabel>
-            <StatValue darkMode={darkMode}>{fNumber(stats.uniqueTraderCount || ((stats.uniqueTradersAMM || 0) + (stats.uniqueTradersNonAMM || 0)))}</StatValue>
-          </StatCard>
-
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><DollarSign size={12} /> 7d Fees</StatLabel>
-            <StatValue darkMode={darkMode}>{fVolume(stats.fees7d || 0)}</StatValue>
-          </StatCard>
-
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Layers size={12} /> Active Tokens</StatLabel>
-            <StatValue darkMode={darkMode}>{fNumber(stats.tokenCount || 0)}</StatValue>
-          </StatCard>
-        </Grid>
-
-        <Grid style={{ marginBottom: 16 }}>
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Calendar size={12} /> 7d Volume</StatLabel>
-            <StatValue darkMode={darkMode}>{fVolume(stats.volume7d || 0)}</StatValue>
-            {stats.volume7dPct !== undefined && (
-              <StatChange positive={stats.volume7dPct >= 0}>
-                {stats.volume7dPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                {Math.abs(stats.volume7dPct || 0).toFixed(1)}% vs prev
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <StatChange positive={stats.marketcapPct >= 0}>
+                {stats.marketcapPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {Math.abs(stats.marketcapPct || 0).toFixed(1)}%
               </StatChange>
-            )}
+              <span style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                {fNumber(stats.tokenCount || 0)} tokens
+              </span>
+            </div>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Calendar size={12} /> 30d Volume</StatLabel>
-            <StatValue darkMode={darkMode}>{fVolume(stats.volume30d || 0)}</StatValue>
+            <StatLabel darkMode={darkMode}><Layers size={12} /> Top Platform</StatLabel>
+            {(() => {
+              const platforms = Object.entries(stats.platformStatsAll || {});
+              const sorted = platforms.sort((a, b) => (b[1].volume || 0) - (a[1].volume || 0));
+              const top = sorted[0];
+              const totalVol = platforms.reduce((s, [, d]) => s + (d.volume || 0), 0);
+              if (!top) return <StatValue darkMode={darkMode}>-</StatValue>;
+              return (
+                <>
+                  <StatValue darkMode={darkMode} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[top[0]] || PLATFORM_COLORS.default }} />
+                    {top[0]}
+                  </StatValue>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      {fVolume(top[1].volume || 0)}
+                    </span>
+                    <span style={{ fontSize: 10, color: '#3b82f6', fontWeight: 500 }}>
+                      {totalVol > 0 ? ((top[1].volume / totalVol) * 100).toFixed(1) : 0}% share
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><ArrowLeftRight size={12} /> Avg Trade</StatLabel>
-            <StatValue darkMode={darkMode}>{(stats.avgTradeSize || 0).toFixed(0)} XRP</StatValue>
+            <StatLabel darkMode={darkMode}><Users size={12} /> Unique Traders (24h)</StatLabel>
+            <StatValue darkMode={darkMode}>{fNumber((stats.uniqueTradersAMM || 0) + (stats.uniqueTradersNonAMM || 0))}</StatValue>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#8b5cf6' }}>
+                <span style={{ width: 6, height: 6, borderRadius: 1, background: '#8b5cf6' }} />
+                AMM {fNumber(stats.uniqueTradersAMM || 0)}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#10b981' }}>
+                <span style={{ width: 6, height: 6, borderRadius: 1, background: '#10b981' }} />
+                DEX {fNumber(stats.uniqueTradersNonAMM || 0)}
+              </span>
+            </div>
           </StatCard>
 
           <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><DollarSign size={12} /> 30d Fees</StatLabel>
-            <StatValue darkMode={darkMode}>{fVolume(stats.fees30d || 0)}</StatValue>
-          </StatCard>
-
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Percent size={12} /> AMM Share</StatLabel>
-            <StatValue darkMode={darkMode}>{stats.volume24h > 0 ? ((stats.volumeAMM / stats.volume24h) * 100).toFixed(1) : 0}%</StatValue>
-          </StatCard>
-
-          <StatCard darkMode={darkMode}>
-            <StatLabel darkMode={darkMode}><Hash size={12} /> 7d Trades</StatLabel>
-            <StatValue darkMode={darkMode}>{fNumber(stats.trades7d || 0)}</StatValue>
+            <StatLabel darkMode={darkMode}><ArrowLeftRight size={12} /> AMM vs DEX (24h)</StatLabel>
+            <StatValue darkMode={darkMode}>{stats.volume24h > 0 ? ((stats.volumeAMM / stats.volume24h) * 100).toFixed(1) : 0}% AMM</StatValue>
+            <div style={{ marginTop: 4 }}>
+              <div style={{ height: 6, borderRadius: 3, background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ height: '100%', background: '#8b5cf6', width: `${stats.volume24h > 0 ? (stats.volumeAMM / stats.volume24h) * 100 : 0}%` }} />
+                <div style={{ height: '100%', background: '#10b981', flex: 1 }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                <span>{fVolume(stats.volumeAMM || 0)}</span>
+                <span>{fVolume(stats.volumeNonAMM || 0)}</span>
+              </div>
+            </div>
           </StatCard>
         </Grid>
 
@@ -420,36 +631,43 @@ export default function TokenMarketPage({ stats }) {
           <ChartCard darkMode={darkMode}>
             <ChartHeader darkMode={darkMode}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                <ChartTitle darkMode={darkMode}>Historical {metricConfig.label}</ChartTitle>
-                <ButtonGroup>
-                  {METRICS.map(m => (
-                    <ToggleBtn key={m.key} active={metric === m.key} darkMode={darkMode} onClick={() => setMetric(m.key)}>
-                      {m.label}
-                    </ToggleBtn>
-                  ))}
-                </ButtonGroup>
-                {isDualChart && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ width: 12, height: 3, borderRadius: 2, background: '#8b5cf6' }} />
-                      <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>AMM</span>
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ width: 12, height: 3, borderRadius: 2, background: '#10b981' }} />
-                      <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>DEX</span>
-                    </span>
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 2 }}>
+                    {TIME_RANGES.find(r => r.key === timeRange)?.label} Total
                   </div>
-                )}
-                {isPlatformChart && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11 }}>
-                    {platformNames.filter(p => stats.platforms?.[p]?.volume > 0).map(platform => (
-                      <span key={platform} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ width: 12, height: 3, borderRadius: 2, background: PLATFORM_COLORS[platform] || PLATFORM_COLORS.default }} />
-                        <span style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{platform}</span>
-                      </span>
-                    ))}
+                  <div style={{
+                    fontSize: 20,
+                    fontWeight: 600,
+                    color: metric === 'ammNetFlow'
+                      ? (periodTotal >= 0 ? '#10b981' : '#ef4444')
+                      : metric === 'ammDeposits' ? '#10b981'
+                      : metric === 'ammWithdraws' ? '#ef4444'
+                      : (darkMode ? '#fff' : '#212B36')
+                  }}>
+                    {metric === 'ammNetFlow' && periodTotal >= 0 ? '+' : ''}
+                    {metricConfig?.format(periodTotal) || fVolume(periodTotal)}
                   </div>
-                )}
+                </div>
+                <MetricSelect ref={dropdownRef}>
+                  <MetricButton darkMode={darkMode} onClick={() => setMetricDropdownOpen(!metricDropdownOpen)}>
+                    {metricConfig?.label || 'Volume'}
+                    <ChevronDown size={14} style={{ opacity: 0.5, transform: metricDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+                  </MetricButton>
+                  {metricDropdownOpen && (
+                    <MetricDropdown darkMode={darkMode}>
+                      {METRIC_GROUPS.map(group => (
+                        <MetricGroup key={group.label} darkMode={darkMode}>
+                          <MetricGroupLabel darkMode={darkMode}>{group.label}</MetricGroupLabel>
+                          {group.metrics.map(m => (
+                            <MetricOption key={m.key} active={metric === m.key} darkMode={darkMode} onClick={() => handleMetricSelect(m.key)}>
+                              {m.label}
+                            </MetricOption>
+                          ))}
+                        </MetricGroup>
+                      ))}
+                    </MetricDropdown>
+                  )}
+                </MetricSelect>
               </div>
               <ButtonGroup>
                 {TIME_RANGES.map(r => (
@@ -483,15 +701,35 @@ export default function TokenMarketPage({ stats }) {
                     <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
                     <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
                   </linearGradient>
+                  <linearGradient id="depositsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
+                  </linearGradient>
+                  <linearGradient id="withdrawsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity="0.02" />
+                  </linearGradient>
+                  {platformNames.map(p => (
+                    <linearGradient key={p} id={`grad-${p.replace(/[^a-zA-Z]/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={PLATFORM_COLORS[p] || '#6b7280'} stopOpacity="0.6" />
+                      <stop offset="100%" stopColor={PLATFORM_COLORS[p] || '#6b7280'} stopOpacity="0.1" />
+                    </linearGradient>
+                  ))}
                 </defs>
                 {isPlatformChart ? (
-                  platformNames.filter(p => stats.platforms?.[p]?.volume > 0).map(platform => {
-                    const color = PLATFORM_COLORS[platform] || PLATFORM_COLORS.default;
-                    return (
-                      <g key={platform}>
-                        <path d={platformPaths[platform]?.linePath || ''} fill="none" stroke={color} strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
-                      </g>
-                    );
+                  platformNames.slice().reverse().map((platform, pIdx) => {
+                    const stackedPoints = chartData.map((d, i) => {
+                      const x = padding.left + (i / (chartData.length - 1 || 1)) * chartWidth;
+                      let cumulative = 0;
+                      platformNames.slice(0, platformNames.length - pIdx).forEach(p => {
+                        cumulative += d.platformVolume?.[p]?.volume || 0;
+                      });
+                      const y = padding.top + chartHeight - (cumulative / stackedMax) * chartHeight;
+                      return { x, y };
+                    });
+                    const pathD = stackedPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                    const areaD = `${pathD} L ${stackedPoints[stackedPoints.length - 1]?.x || 0} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
+                    return <path key={platform} d={areaD} fill={`url(#grad-${platform.replace(/[^a-zA-Z]/g, '')})`} />;
                   })
                 ) : isDualChart ? (
                   <>
@@ -502,243 +740,391 @@ export default function TokenMarketPage({ stats }) {
                   </>
                 ) : (
                   <>
-                    <path d={areaPath} fill="url(#tokenAreaGradient)" />
-                    <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
+                    <path d={areaPath} fill={`url(#${metric === 'ammDeposits' ? 'depositsGradient' : metric === 'ammWithdraws' ? 'withdrawsGradient' : 'tokenAreaGradient'})`} />
+                    <path d={linePath} fill="none" stroke={metric === 'ammDeposits' ? '#10b981' : metric === 'ammWithdraws' ? '#ef4444' : '#3b82f6'} strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
                   </>
                 )}
               </ChartSvg>
               {hoverData && (
-                <Tooltip darkMode={darkMode} style={{ left: Math.min(hoverData.x, 250), top: Math.max(hoverData.y - 80, 10) }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{hoverData.date}</div>
-                  {isPlatformChart ? (
-                    <>
-                      {platformNames.map(platform => {
-                        const vol = hoverData.platformVolume?.[platform]?.volume || 0;
-                        if (vol === 0) return null;
-                        const color = PLATFORM_COLORS[platform] || PLATFORM_COLORS.default;
-                        return (
-                          <div key={platform} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
-                              <span style={{ opacity: 0.6 }}>{platform}:</span>
-                            </span>
-                            <span style={{ fontWeight: 500 }}>{fVolume(vol)}</span>
-                          </div>
-                        );
-                      })}
-                    </>
-                  ) : isDualChart ? (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#8b5cf6' }} />
-                          <span style={{ opacity: 0.6 }}>AMM:</span>
-                        </span>
-                        <span style={{ fontWeight: 500 }}>{fVolume(hoverData.volumeAMM || 0)}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
-                          <span style={{ opacity: 0.6 }}>DEX:</span>
-                        </span>
-                        <span style={{ fontWeight: 500 }}>{fVolume(hoverData.volumeNonAMM || 0)}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 4, paddingTop: 4, borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
-                        <span style={{ opacity: 0.6 }}>Total:</span>
-                        <span style={{ fontWeight: 500 }}>{fVolume((hoverData.volumeAMM || 0) + (hoverData.volumeNonAMM || 0))}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                        <span style={{ opacity: 0.6 }}>{metricConfig.label}:</span>
-                        <span style={{ fontWeight: 500 }}>{metricConfig.format(hoverData[metric] || 0)}</span>
-                      </div>
-                      {metric !== 'trades' && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                          <span style={{ opacity: 0.6 }}>Trades:</span>
-                          <span>{fNumber(hoverData.trades || 0)}</span>
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    left: hoverData.x,
+                    top: 0,
+                    bottom: 40,
+                    width: 1,
+                    background: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                    pointerEvents: 'none'
+                  }} />
+                  <Tooltip darkMode={darkMode} style={{ left: Math.min(Math.max(hoverData.x - 80, 10), 300), top: 10 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 11, opacity: 0.7 }}>{hoverData.date}</div>
+                    {isPlatformChart ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 6 }}>
+                          <span style={{ opacity: 0.6 }}>Total</span>
+                          <span style={{ fontWeight: 600 }}>{fVolume(hoverData.volume || 0)}</span>
                         </div>
-                      )}
-                    </>
-                  )}
-                </Tooltip>
+                        {platformNames.map(platform => {
+                          const vol = hoverData.platformVolume?.[platform]?.volume || 0;
+                          if (vol === 0) return null;
+                          const color = PLATFORM_COLORS[platform] || PLATFORM_COLORS.default;
+                          return (
+                            <div key={platform} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, fontSize: 11 }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+                                {platform}
+                              </span>
+                              <span>{fVolume(vol)}</span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    ) : isDualChart ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: 2, background: '#8b5cf6' }} />
+                            <span style={{ opacity: 0.6 }}>AMM:</span>
+                          </span>
+                          <span style={{ fontWeight: 500 }}>
+                            {metric === 'tradesSplit' ? fNumber(hoverData.tradesAMM || 0) : fVolume(hoverData.volumeAMM || 0)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: 2, background: '#10b981' }} />
+                            <span style={{ opacity: 0.6 }}>DEX:</span>
+                          </span>
+                          <span style={{ fontWeight: 500 }}>
+                            {metric === 'tradesSplit' ? fNumber(hoverData.tradesNonAMM || 0) : fVolume(hoverData.volumeNonAMM || 0)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 4, paddingTop: 4, borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                          <span style={{ opacity: 0.6 }}>Total:</span>
+                          <span style={{ fontWeight: 500 }}>
+                            {metric === 'tradesSplit'
+                              ? fNumber((hoverData.tradesAMM || 0) + (hoverData.tradesNonAMM || 0))
+                              : fVolume((hoverData.volumeAMM || 0) + (hoverData.volumeNonAMM || 0))}
+                          </span>
+                        </div>
+                      </>
+                    ) : isPoolMetric ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 4 }}>
+                          <span style={{ opacity: 0.6 }}>{metricConfig?.label}</span>
+                          <span style={{ fontWeight: 600, color: metric === 'ammNetFlow' ? ((hoverData.ammNetFlow || 0) >= 0 ? '#10b981' : '#ef4444') : '#3b82f6' }}>
+                            {metric === 'ammNetFlow' && (hoverData.ammNetFlow || 0) >= 0 ? '+' : ''}{fVolume(hoverData[metric] || 0)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                          <span style={{ opacity: 0.6 }}>Deposits</span>
+                          <span style={{ color: '#10b981' }}>{fVolume(hoverData.ammDeposits || 0)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                          <span style={{ opacity: 0.6 }}>Withdrawals</span>
+                          <span style={{ color: '#ef4444' }}>{fVolume(hoverData.ammWithdraws || 0)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 4 }}>
+                          <span style={{ opacity: 0.6 }}>{metricConfig?.label}</span>
+                          <span style={{ fontWeight: 600, color: '#3b82f6' }}>{metricConfig?.format(hoverData[metric] || 0)}</span>
+                        </div>
+                        {metric !== 'volume' && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                            <span style={{ opacity: 0.6 }}>Volume</span>
+                            <span>{fVolume(hoverData.volume || 0)}</span>
+                          </div>
+                        )}
+                        {metric !== 'trades' && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                            <span style={{ opacity: 0.6 }}>Trades</span>
+                            <span>{fNumber(hoverData.trades || 0)}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </Tooltip>
+                </>
               )}
               <div style={{ position: 'absolute', bottom: 8, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
                 <span>{chartData[0]?.date}</span>
                 <span>{chartData[chartData.length - 1]?.date}</span>
               </div>
             </ChartArea>
+            {isPlatformChart && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+                {platformNames.map(p => (
+                  <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p] || '#6b7280' }} />
+                    {p}
+                  </div>
+                ))}
+              </div>
+            )}
+            {isDualChart && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#8b5cf6' }} />
+                  AMM
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: '#10b981' }} />
+                  DEX
+                </div>
+              </div>
+            )}
+            {isPoolMetric && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 2, background: metric === 'ammDeposits' ? '#10b981' : metric === 'ammWithdraws' ? '#ef4444' : '#3b82f6' }} />
+                  {metricConfig?.label}
+                </div>
+              </div>
+            )}
           </ChartCard>
         </Section>
 
-        {/* Two Column Layout */}
-        <div className="tables-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 16 }}>
-          {/* Left Column - Trading Activity */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Top Tokens</span>
+        {/* Platform Stats - Full Width */}
+        <Section>
+          <TableContainer darkMode={darkMode}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Trading Platform Stats</span>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <ButtonGroup>
-                  <ToggleBtn active={topTokensRange === '7d'} darkMode={darkMode} onClick={() => setTopTokensRange('7d')}>7D</ToggleBtn>
-                  <ToggleBtn active={topTokensRange === '30d'} darkMode={darkMode} onClick={() => setTopTokensRange('30d')}>30D</ToggleBtn>
+                  {[{ key: '24h', label: '24H' }, { key: '7d', label: '7D' }, { key: '30d', label: '30D' }, { key: 'all', label: 'All' }].map(r => (
+                    <ToggleBtn key={r.key} active={platformTimeRange === r.key} darkMode={darkMode} onClick={() => setPlatformTimeRange(r.key)}>
+                      {r.label}
+                    </ToggleBtn>
+                  ))}
+                </ButtonGroup>
+                <ButtonGroup>
+                  {[{ key: 'volume', label: 'Volume' }, { key: 'trades', label: 'Trades' }].map(s => (
+                    <ToggleBtn key={s.key} active={platformSort === s.key} darkMode={darkMode} onClick={() => setPlatformSort(s.key)}>
+                      {s.label}
+                    </ToggleBtn>
+                  ))}
                 </ButtonGroup>
               </div>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th darkMode={darkMode}>#</Th>
-                    <Th darkMode={darkMode}>Token</Th>
-                    <Th darkMode={darkMode} align="right">Volume</Th>
-                    <Th darkMode={darkMode} align="right">Mcap</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(topTokensRange === '30d' ? stats.topTokens30d : stats.topTokens || []).slice(0, 8).map((token, idx) => (
-                    <tr key={token.tokenId || idx}>
-                      <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB', width: 32 }}>{idx + 1}</Td>
-                      <Td darkMode={darkMode}>
-                        <TokenLink href={`/token/${token.tokenId}`}>{token.name}</TokenLink>
-                      </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(token.volume)}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>{fVolume(token.marketcap)}</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </TableContainer>
-
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Wash Trading Detection (24h)</span>
-              </div>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th darkMode={darkMode}>#</Th>
-                    <Th darkMode={darkMode}>Address</Th>
-                    <Th darkMode={darkMode} align="right">Score</Th>
-                    <Th darkMode={darkMode} align="right">Tokens</Th>
-                    <Th darkMode={darkMode} align="right">Volume</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topWashTraders.slice(0, 5).map((trader, idx) => (
-                    <tr key={trader.address || idx}>
-                      <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB', width: 32 }}>{idx + 1}</Td>
-                      <Td darkMode={darkMode}>
-                        <TokenLink href={`/address/${trader.address}`}>
-                          {trader.address ? `${trader.address.slice(0,6)}...${trader.address.slice(-4)}` : '-'}
-                        </TokenLink>
-                      </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500, color: '#ef4444' }}>{fNumber(trader.washScore)}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>{trader.tokenCount || '-'}</Td>
-                      <Td darkMode={darkMode} align="right">{fVolume(trader.volume24h)}</Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </TableContainer>
-          </div>
-
-          {/* Right Column - AMM & Platform Stats */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>AMM Overview (24h)</span>
-              </div>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th darkMode={darkMode}>Metric</Th>
-                    <Th darkMode={darkMode} align="right">AMM</Th>
-                    <Th darkMode={darkMode} align="right">DEX</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Volume</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.volumeAMM || 0)}</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.volumeNonAMM || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Trades</Td>
-                    <Td darkMode={darkMode} align="right">{fNumber(stats.tradesAMM || 0)}</Td>
-                    <Td darkMode={darkMode} align="right">{fNumber(stats.tradesNonAMM || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Traders</Td>
-                    <Td darkMode={darkMode} align="right">{fNumber(stats.uniqueTradersAMM || 0)}</Td>
-                    <Td darkMode={darkMode} align="right">{fNumber(stats.uniqueTradersNonAMM || 0)}</Td>
-                  </tr>
-                </tbody>
-              </Table>
-              <div style={{ padding: '8px 16px 12px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 8 }}>Pool Activity (24h)</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, fontSize: 12 }}>
-                  <div>
-                    <div style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Deposits</div>
-                    <div style={{ fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.ammDepositVolume || 0)}</div>
-                    <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>{fNumber(stats.ammDeposit || 0)} txns</div>
-                  </div>
-                  <div>
-                    <div style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Withdrawals</div>
-                    <div style={{ fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.ammWithdrawVolume || 0)}</div>
-                    <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>{fNumber(stats.ammWithdraw || 0)} txns</div>
-                  </div>
-                  <div>
-                    <div style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Net Flow</div>
-                    <div style={{ fontWeight: 500, color: (stats.ammNetFlow || 0) >= 0 ? '#10b981' : '#ef4444' }}>{(stats.ammNetFlow || 0) >= 0 ? '+' : '-'}{fVolume(Math.abs(stats.ammNetFlow || 0))}</div>
-                  </div>
-                </div>
-              </div>
-            </TableContainer>
-
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Platform Volume (All Time)</span>
-              </div>
-              <Table>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <Table style={{ minWidth: 500 }}>
                 <thead>
                   <tr>
                     <Th darkMode={darkMode}>Platform</Th>
                     <Th darkMode={darkMode} align="right">Volume</Th>
                     <Th darkMode={darkMode} align="right">Trades</Th>
+                    <Th darkMode={darkMode} align="right">Share</Th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(stats.platforms || {}).filter(([_, d]) => d.volume > 0).map(([name, data]) => (
-                    <tr key={name}>
-                      <Td darkMode={darkMode}>{name}</Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(data.volume)}</Td>
-                      <Td darkMode={darkMode} align="right">{fNumber(data.trades)}</Td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    const sortedPlatforms = [...platformStats].sort((a, b) => b[platformSort] - a[platformSort]);
+                    const totalVol = sortedPlatforms.reduce((s, p) => s + p.volume, 0);
+                    const maxVal = sortedPlatforms[0]?.[platformSort] || 1;
+                    const displayPlatforms = platformExpanded ? sortedPlatforms : sortedPlatforms.slice(0, 10);
+                    if (sortedPlatforms.length === 0) {
+                      return (
+                        <tr>
+                          <Td darkMode={darkMode} colSpan={4} style={{ textAlign: 'center', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: 24 }}>
+                            No platform data available for this period
+                          </Td>
+                        </tr>
+                      );
+                    }
+                    return displayPlatforms.map(p => (
+                      <tr key={p.name}>
+                        <Td darkMode={darkMode} style={{ minWidth: 140 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.default, flexShrink: 0 }} />
+                            <span style={{ fontWeight: 500 }}>{p.name}</span>
+                          </div>
+                          <div style={{ height: 4, borderRadius: 2, background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', marginTop: 6 }}>
+                            <div style={{ height: '100%', borderRadius: 2, background: PLATFORM_COLORS[p.name] || PLATFORM_COLORS.default, width: `${(p[platformSort] / maxVal) * 100}%`, transition: 'width 0.3s ease' }} />
+                          </div>
+                        </Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'trades' ? 600 : 400 }}>{fNumber(p.trades)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>{totalVol > 0 ? ((p.volume / totalVol) * 100).toFixed(1) : 0}%</Td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </Table>
-            </TableContainer>
+            </div>
+            {/* Show more button */}
+            {platformStats.length > 10 && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, textAlign: 'center' }}>
+                <button
+                  onClick={() => setPlatformExpanded(!platformExpanded)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#3b82f6',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(59,130,246,0.1)'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  {platformExpanded ? 'Show less' : `Show ${platformStats.length - 10} more`}
+                </button>
+              </div>
+            )}
+            {/* Period summary */}
+            <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, fontSize: 12 }}>
+              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                <div>
+                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Volume: </span>
+                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(platformStats.reduce((s, p) => s + p.volume, 0))}</span>
+                </div>
+                <div>
+                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Trades: </span>
+                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(platformStats.reduce((s, p) => s + p.trades, 0))}</span>
+                </div>
+                <div>
+                  <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Platforms: </span>
+                  <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{platformStats.length}</span>
+                </div>
+              </div>
+            </div>
+          </TableContainer>
+        </Section>
 
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Summary (All Time)</span>
+        {/* Market Summary - Full Width */}
+        <Section>
+          <TableContainer darkMode={darkMode}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Summary</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 0 }}>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Volume</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalVolume || 0)}</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, padding: '12px 16px' }}>
-                <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Volume</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalVolume || 0)}</div>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Trades</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(stats.totalTrades || 0)}</div>
+              </div>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>7d Volume</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.volume7d || 0)}</div>
+              </div>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>30d Volume</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.volume30d || 0)}</div>
+              </div>
+              <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Fees</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalFees || 0)}</div>
+              </div>
+              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Avg Trade</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{(stats.avgTradeSize || 0).toFixed(0)} XRP</div>
+              </div>
+            </div>
+          </TableContainer>
+        </Section>
+
+        {/* AMM vs DEX - Token Specific */}
+        <Section>
+          <TableContainer darkMode={darkMode}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>AMM vs DEX</span>
+              <ButtonGroup>
+                {[{ key: '24h', label: '24H' }, { key: '7d', label: '7D' }, { key: '30d', label: '30D' }, { key: 'all', label: 'All' }].map(r => (
+                  <ToggleBtn key={r.key} active={ammTimeRange === r.key} darkMode={darkMode} onClick={() => setAmmTimeRange(r.key)}>
+                    {r.label}
+                  </ToggleBtn>
+                ))}
+              </ButtonGroup>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 0 }}>
+              <div style={{ borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <Table>
+                  <thead>
+                    <tr>
+                      <Th darkMode={darkMode}>Metric</Th>
+                      <Th darkMode={darkMode} align="right">AMM</Th>
+                      <Th darkMode={darkMode} align="right">DEX</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Volume</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(ammStats.volumeAMM)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(ammStats.volumeNonAMM)}</Td>
+                    </tr>
+                    <tr>
+                      <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Trades</Td>
+                      <Td darkMode={darkMode} align="right">{fNumber(ammStats.tradesAMM)}</Td>
+                      <Td darkMode={darkMode} align="right">{fNumber(ammStats.tradesNonAMM)}</Td>
+                    </tr>
+                    {ammTimeRange === '24h' && (
+                      <tr>
+                        <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Traders</Td>
+                        <Td darkMode={darkMode} align="right">{fNumber(stats.uniqueTradersAMM || 0)}</Td>
+                        <Td darkMode={darkMode} align="right">{fNumber(stats.uniqueTradersNonAMM || 0)}</Td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </div>
+              <div style={{ padding: '16px' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 16 }}>Pool Activity</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381', marginBottom: 4 }}>Deposits</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#10b981' }}>{fVolume(ammStats.ammDeposits)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381', marginBottom: 4 }}>Withdrawals</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#ef4444' }}>{fVolume(ammStats.ammWithdraws)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381', marginBottom: 4 }}>Net Flow</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: ammStats.ammNetFlow >= 0 ? '#10b981' : '#ef4444' }}>
+                      {ammStats.ammNetFlow >= 0 ? '+' : ''}{fVolume(ammStats.ammNetFlow)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Trades</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(stats.totalTrades || 0)}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Fees</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalFees || 0)}</div>
+                {/* Visual comparison bar */}
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 4, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                    <span>AMM vs DEX Volume Share</span>
+                    <span>{ammStats.volumeAMM + ammStats.volumeNonAMM > 0 ? ((ammStats.volumeAMM / (ammStats.volumeAMM + ammStats.volumeNonAMM)) * 100).toFixed(1) : 0}% AMM</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 4, background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden', display: 'flex' }}>
+                    <div style={{
+                      height: '100%',
+                      background: '#8b5cf6',
+                      width: `${ammStats.volumeAMM + ammStats.volumeNonAMM > 0 ? (ammStats.volumeAMM / (ammStats.volumeAMM + ammStats.volumeNonAMM)) * 100 : 0}%`,
+                      transition: 'width 0.3s ease'
+                    }} />
+                    <div style={{
+                      height: '100%',
+                      background: '#10b981',
+                      flex: 1
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: '#8b5cf6' }} /> AMM
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: '#10b981' }} /> DEX
+                    </span>
+                  </div>
                 </div>
               </div>
-            </TableContainer>
-          </div>
-        </div>
+            </div>
+          </TableContainer>
+        </Section>
       </Container>
 
       <ScrollToTop />
@@ -770,13 +1156,17 @@ export async function getServerSideProps() {
       tokens: day.tokenCount || 0,
       volumeAMM: day.volumeAMM || 0,
       volumeNonAMM: day.volumeNonAMM || 0,
+      tradesAMM: day.tradesAMM || 0,
+      tradesNonAMM: day.tradesNonAMM || 0,
+      ammDeposits: day.ammDepositVolume || 0,
+      ammWithdraws: day.ammWithdrawVolume || 0,
+      ammNetFlow: day.ammNetFlow || 0,
       platformVolume: day.volumeByPlatform || {}
     }));
 
-    // Get platform names from all-time stats or daily data
-    const platformNames = Object.keys(platformStatsAll).length > 0
-      ? Object.keys(platformStatsAll)
-      : [...new Set(days.flatMap(d => Object.keys(d.volumeByPlatform || {})))].filter(Boolean);
+    // Get platform names from daily data (for chart) and all-time stats (for table)
+    const dailyPlatformNames = [...new Set(days.flatMap(d => Object.keys(d.volumeByPlatform || {})))].filter(Boolean);
+    const platformNames = dailyPlatformNames.length > 0 ? dailyPlatformNames : Object.keys(platformStatsAll);
 
     // Get latest day for 24h specific data
     const lastDay = sortedDays[sortedDays.length - 1] || {};
@@ -831,16 +1221,9 @@ export async function getServerSideProps() {
       ammWithdrawVolume: agg24h.ammWithdraws || lastDay.ammWithdrawVolume || 0,
       ammNetFlow: lastDay.ammNetFlow || 0,
 
-      // Platform stats (all-time from API, fallback to 7d calc)
-      platforms: platformStatsAll,
+      // Platform stats (all-time from API)
+      platformStatsAll,
       platformNames,
-
-      // Top tokens by period
-      topTokens: data.topTokens7d || lastDay.topTokens || [],
-      topTokens30d: data.topTokens30d || [],
-
-      // Wash traders
-      topWashTraders: data.topWashTraders24h || [],
 
       // Chart history
       history,

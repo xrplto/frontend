@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
@@ -6,7 +6,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { fNumber, fVolume } from 'src/utils/formatters';
-import { TrendingUp, TrendingDown, Activity, Users, Flame, Image, ShoppingCart, ArrowRightLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Users, Flame, Image, ShoppingCart, ArrowRightLeft, ChevronDown, BarChart3, DollarSign, Wallet } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -32,9 +32,9 @@ const Subtitle = styled.p`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-  @media (min-width: 768px) { grid-template-columns: repeat(4, 1fr); }
+  gap: 10px;
+  margin-bottom: 20px;
+  @media (min-width: 640px) { grid-template-columns: repeat(3, 1fr); }
   @media (min-width: 1024px) { grid-template-columns: repeat(6, 1fr); }
 `;
 
@@ -79,10 +79,10 @@ const ChartCard = styled.div`
   border-radius: 12px;
   border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
   background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-  overflow: hidden;
 `;
 
 const ChartHeader = styled.div`
+  position: relative;
   padding: 16px;
   display: flex;
   flex-wrap: wrap;
@@ -90,6 +90,7 @@ const ChartHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+  z-index: 10;
 `;
 
 const ChartTitle = styled.h3`
@@ -114,6 +115,72 @@ const ToggleBtn = styled.button`
   background: ${({ active, darkMode }) => active ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
   color: ${({ active, darkMode }) => active ? '#fff' : (darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
   &:hover { background: ${({ active }) => active ? '#2563eb' : 'rgba(59,130,246,0.1)'}; }
+`;
+
+const MetricSelect = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const MetricButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  cursor: pointer;
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : '#fff')};
+  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
+  transition: all 0.15s ease;
+  &:hover { border-color: #3b82f6; }
+`;
+
+const MetricDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  background: ${({ darkMode }) => (darkMode ? '#1a1a1a' : '#fff')};
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 50;
+`;
+
+const MetricGroup = styled.div`
+  &:not(:last-child) {
+    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+  }
+`;
+
+const MetricGroupLabel = styled.div`
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
+`;
+
+const MetricOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  text-align: left;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: ${({ active }) => active ? 'rgba(59,130,246,0.15)' : 'transparent'};
+  color: ${({ active, darkMode }) => active ? '#3b82f6' : (darkMode ? '#fff' : '#212B36')};
+  transition: all 0.1s ease;
+  &:hover { background: ${({ active }) => active ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)'}; }
 `;
 
 const ChartArea = styled.div`
@@ -194,22 +261,64 @@ const TIME_RANGES = [
   { key: 'all', label: 'All', days: 9999 }
 ];
 
-const METRICS = [
-  { key: 'volume', label: 'Volume', format: fVolume },
-  { key: 'sales', label: 'Sales', format: fNumber },
-  { key: 'avgPrice', label: 'Avg Price', format: v => (v || 0).toFixed(2) + ' XRP' },
-  { key: 'uniqueBuyers', label: 'Buyers', format: fNumber },
-  { key: 'uniqueSellers', label: 'Sellers', format: fNumber },
-  { key: 'uniqueCollections', label: 'Collections', format: fNumber },
-  { key: 'mints', label: 'Mints', format: fNumber },
-  { key: 'burns', label: 'Burns', format: fNumber },
-  { key: 'transfers', label: 'Transfers', format: fNumber },
-  { key: 'buyOffers', label: 'Buy Offers', format: fNumber },
-  { key: 'sellOffers', label: 'Sell Offers', format: fNumber },
-  { key: 'cancelledOffers', label: 'Cancelled', format: fNumber },
-  { key: 'royalties', label: 'Royalties', format: fVolume },
-  { key: 'brokerFees', label: 'Fees', format: fVolume }
+const METRIC_GROUPS = [
+  {
+    label: 'Trading',
+    icon: DollarSign,
+    metrics: [
+      { key: 'volume', label: 'Volume', format: fVolume },
+      { key: 'sales', label: 'Sales', format: fNumber },
+      { key: 'avgPrice', label: 'Avg Price', format: v => (v || 0).toFixed(2) + ' XRP' },
+    ]
+  },
+  {
+    label: 'Users',
+    icon: Users,
+    metrics: [
+      { key: 'uniqueBuyers', label: 'Buyers', format: fNumber },
+      { key: 'uniqueSellers', label: 'Sellers', format: fNumber },
+      { key: 'uniqueCollections', label: 'Active Collections', format: fNumber },
+    ]
+  },
+  {
+    label: 'Activity',
+    icon: Activity,
+    metrics: [
+      { key: 'mints', label: 'Mints', format: fNumber },
+      { key: 'burns', label: 'Burns', format: fNumber },
+      { key: 'transfers', label: 'Transfers', format: fNumber },
+    ]
+  },
+  {
+    label: 'Offers',
+    icon: BarChart3,
+    metrics: [
+      { key: 'buyOffers', label: 'Buy Offers', format: fNumber },
+      { key: 'sellOffers', label: 'Sell Offers', format: fNumber },
+      { key: 'cancelledOffers', label: 'Cancelled', format: fNumber },
+    ]
+  },
+  {
+    label: 'Fees',
+    icon: Wallet,
+    metrics: [
+      { key: 'royalties', label: 'Royalties', format: fVolume },
+      { key: 'brokerFees', label: 'Broker Fees', format: fVolume },
+    ]
+  }
 ];
+
+const ALL_METRICS = METRIC_GROUPS.flatMap(g => g.metrics);
+
+const PLATFORM_COLORS = {
+  'xrp.cafe': '#3b82f6',
+  'BIDDS': '#10b981',
+  'Direct': '#f59e0b',
+  'XPMarket': '#8b5cf6',
+  'OpulenceX': '#ec4899',
+  'Other': '#6b7280',
+  'Art Dept Fun': '#06b6d4'
+};
 
 export default function NFTMarketPage({ stats }) {
   const { themeName } = useContext(AppContext);
@@ -218,6 +327,26 @@ export default function NFTMarketPage({ stats }) {
   const [timeRange, setTimeRange] = useState('90d');
   const [metric, setMetric] = useState('volume');
   const [hoverData, setHoverData] = useState(null);
+  const [metricDropdownOpen, setMetricDropdownOpen] = useState(false);
+  const [platformSort, setPlatformSort] = useState('volume');
+  const dropdownRef = useRef(null);
+
+  const handleMetricSelect = useCallback((key) => {
+    setMetric(key);
+    setMetricDropdownOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setMetricDropdownOpen(false);
+      }
+    };
+    if (metricDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [metricDropdownOpen]);
 
   const volumeHistory = stats?.volumeHistory || [];
 
@@ -228,19 +357,73 @@ export default function NFTMarketPage({ stats }) {
 
   const maxValue = useMemo(() => Math.max(...chartData.map(d => d[metric] || 0), 1), [chartData, metric]);
 
-  const platformTotals = useMemo(() => {
-    const totals = {};
-    volumeHistory.slice(-7).forEach(day => {
+  const platformNames = useMemo(() => {
+    const names = new Set();
+    chartData.forEach(d => {
+      if (d.volumeByPlatform) Object.keys(d.volumeByPlatform).forEach(p => names.add(p));
+    });
+    return Array.from(names).sort((a, b) => {
+      const aTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[a] || 0), 0);
+      const bTotal = chartData.reduce((sum, d) => sum + (d.volumeByPlatform?.[b] || 0), 0);
+      return bTotal - aTotal;
+    });
+  }, [chartData]);
+
+  const stackedMax = useMemo(() => {
+    return Math.max(...chartData.map(d => d.volume || 0), 1);
+  }, [chartData]);
+
+  const periodTotal = useMemo(() => {
+    return chartData.reduce((sum, d) => sum + (d[metric] || 0), 0);
+  }, [chartData, metric]);
+
+  const periodPlatformData = useMemo(() => {
+    const data = {};
+    chartData.forEach(day => {
       if (day.volumeByPlatform) {
         Object.entries(day.volumeByPlatform).forEach(([p, v]) => {
-          totals[p] = (totals[p] || 0) + v;
+          if (!data[p]) data[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
+          data[p].volume += v;
+        });
+      }
+      if (day.salesByPlatform) {
+        Object.entries(day.salesByPlatform).forEach(([p, s]) => {
+          if (!data[p]) data[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
+          data[p].sales += s;
+        });
+      }
+      if (day.feesByPlatform) {
+        Object.entries(day.feesByPlatform).forEach(([p, f]) => {
+          if (!data[p]) data[p] = { volume: 0, sales: 0, royalties: 0, brokerFees: 0 };
+          data[p].royalties += f.royalties || 0;
+          data[p].brokerFees += f.brokerFees || 0;
         });
       }
     });
-    return Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [volumeHistory]);
+    return Object.entries(data)
+      .map(([name, d]) => ({ name, ...d }))
+      .sort((a, b) => b.volume - a.volume)
+      .slice(0, 8);
+  }, [chartData]);
 
-  const maxPlatformVol = platformTotals[0]?.[1] || 1;
+  const allTimePlatformData = useMemo(() => {
+    const platformStats = stats?.platformStatsAll || {};
+    return Object.entries(platformStats).map(([name, d]) => ({
+      name,
+      volume: d.volume || 0,
+      sales: d.sales || 0,
+      avgPrice: d.avgPrice || 0,
+      royalties: d.royalties || 0,
+      brokerFees: d.brokerFees || 0
+    }));
+  }, [stats?.platformStatsAll]);
+
+  const sortedPlatformData = useMemo(() => {
+    return [...allTimePlatformData].sort((a, b) => b[platformSort] - a[platformSort]);
+  }, [allTimePlatformData, platformSort]);
+
+  const maxPeriodPlatformVol = periodPlatformData[0]?.volume || 1;
+  const maxSortedValue = sortedPlatformData[0]?.[platformSort] || 1;
 
   if (!stats) {
     return (
@@ -272,7 +455,7 @@ export default function NFTMarketPage({ stats }) {
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
   const areaPath = `${linePath} L ${points[points.length - 1]?.x || 0} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
-  const metricConfig = METRICS.find(m => m.key === metric);
+  const metricConfig = ALL_METRICS.find(m => m.key === metric);
 
   return (
     <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
@@ -338,15 +521,35 @@ export default function NFTMarketPage({ stats }) {
         <Section>
           <ChartCard darkMode={darkMode}>
             <ChartHeader darkMode={darkMode}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <ChartTitle darkMode={darkMode}>Historical {metricConfig.label}</ChartTitle>
-                <ButtonGroup>
-                  {METRICS.map(m => (
-                    <ToggleBtn key={m.key} active={metric === m.key} darkMode={darkMode} onClick={() => setMetric(m.key)}>
-                      {m.label}
-                    </ToggleBtn>
-                  ))}
-                </ButtonGroup>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 2 }}>
+                    {TIME_RANGES.find(r => r.key === timeRange)?.label} Total
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                    {metricConfig.format(periodTotal)}
+                  </div>
+                </div>
+                <MetricSelect ref={dropdownRef}>
+                  <MetricButton darkMode={darkMode} onClick={() => setMetricDropdownOpen(!metricDropdownOpen)}>
+                    {metricConfig.label}
+                    <ChevronDown size={14} style={{ opacity: 0.5, transform: metricDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+                  </MetricButton>
+                  {metricDropdownOpen && (
+                    <MetricDropdown darkMode={darkMode}>
+                      {METRIC_GROUPS.map(group => (
+                        <MetricGroup key={group.label} darkMode={darkMode}>
+                          <MetricGroupLabel darkMode={darkMode}>{group.label}</MetricGroupLabel>
+                          {group.metrics.map(m => (
+                            <MetricOption key={m.key} active={metric === m.key} darkMode={darkMode} onClick={() => handleMetricSelect(m.key)}>
+                              {m.label}
+                            </MetricOption>
+                          ))}
+                        </MetricGroup>
+                      ))}
+                    </MetricDropdown>
+                  )}
+                </MetricSelect>
               </div>
               <ButtonGroup>
                 {TIME_RANGES.map(r => (
@@ -372,142 +575,244 @@ export default function NFTMarketPage({ stats }) {
                     <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
                     <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.02" />
                   </linearGradient>
+                  {platformNames.map(p => (
+                    <linearGradient key={p} id={`grad-${p.replace(/[^a-zA-Z]/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={PLATFORM_COLORS[p] || '#6b7280'} stopOpacity="0.6" />
+                      <stop offset="100%" stopColor={PLATFORM_COLORS[p] || '#6b7280'} stopOpacity="0.1" />
+                    </linearGradient>
+                  ))}
                 </defs>
-                <path d={areaPath} fill="url(#areaGradient)" />
-                <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
+                {metric === 'volume' ? (
+                  platformNames.slice().reverse().map((platform, pIdx) => {
+                    const stackedPoints = chartData.map((d, i) => {
+                      const x = padding.left + (i / (chartData.length - 1 || 1)) * chartWidth;
+                      let cumulative = 0;
+                      platformNames.slice(0, platformNames.length - pIdx).forEach(p => {
+                        cumulative += d.volumeByPlatform?.[p] || 0;
+                      });
+                      const y = padding.top + chartHeight - (cumulative / stackedMax) * chartHeight;
+                      return { x, y };
+                    });
+                    const pathD = stackedPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                    const areaD = `${pathD} L ${stackedPoints[stackedPoints.length - 1]?.x || 0} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
+                    return (
+                      <path key={platform} d={areaD} fill={`url(#grad-${platform.replace(/[^a-zA-Z]/g, '')})`} />
+                    );
+                  })
+                ) : (
+                  <>
+                    <path d={areaPath} fill="url(#areaGradient)" />
+                    <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
+                  </>
+                )}
               </ChartSvg>
               {hoverData && (
-                <Tooltip darkMode={darkMode} style={{ left: Math.min(hoverData.x, 250), top: Math.max(hoverData.y - 80, 10) }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{hoverData.date}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                    <span style={{ opacity: 0.6 }}>{metricConfig.label}:</span>
-                    <span style={{ fontWeight: 500 }}>{metricConfig.format(hoverData[metric] || 0)}</span>
-                  </div>
-                  {metric !== 'sales' && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                      <span style={{ opacity: 0.6 }}>Sales:</span>
-                      <span>{fNumber(hoverData.sales || 0)}</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                    <span style={{ opacity: 0.6 }}>Avg Price:</span>
-                    <span>{(hoverData.avgPrice || 0).toFixed(2)} XRP</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                    <span style={{ opacity: 0.6 }}>Traders:</span>
-                    <span>{fNumber((hoverData.uniqueBuyers || 0) + (hoverData.uniqueSellers || 0))}</span>
-                  </div>
-                </Tooltip>
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    left: hoverData.x,
+                    top: 0,
+                    bottom: 40,
+                    width: 1,
+                    background: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                    pointerEvents: 'none'
+                  }} />
+                  <Tooltip darkMode={darkMode} style={{ left: Math.min(Math.max(hoverData.x - 80, 10), 300), top: 10 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 11, opacity: 0.7 }}>{hoverData.date}</div>
+                    {metric === 'volume' ? (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 6 }}>
+                          <span style={{ opacity: 0.6 }}>Total</span>
+                          <span style={{ fontWeight: 600 }}>{fVolume(hoverData.volume || 0)}</span>
+                        </div>
+                        {platformNames.map(p => {
+                          const val = hoverData.volumeByPlatform?.[p] || 0;
+                          if (val === 0) return null;
+                          return (
+                            <div key={p} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, fontSize: 11 }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: 2, background: PLATFORM_COLORS[p] || '#6b7280' }} />
+                                {p}
+                              </span>
+                              <span>{fVolume(val)}</span>
+                            </div>
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 4 }}>
+                          <span style={{ opacity: 0.6 }}>{metricConfig.label}</span>
+                          <span style={{ fontWeight: 600, color: '#3b82f6' }}>{metricConfig.format(hoverData[metric] || 0)}</span>
+                        </div>
+                        {metric !== 'volume' && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                            <span style={{ opacity: 0.6 }}>Volume</span>
+                            <span>{fVolume(hoverData.volume || 0)}</span>
+                          </div>
+                        )}
+                        {metric !== 'sales' && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+                            <span style={{ opacity: 0.6 }}>Sales</span>
+                            <span>{fNumber(hoverData.sales || 0)}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </Tooltip>
+                </>
               )}
               <div style={{ position: 'absolute', bottom: 8, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
                 <span>{chartData[0]?.date}</span>
                 <span>{chartData[chartData.length - 1]?.date}</span>
               </div>
             </ChartArea>
+            {metric === 'volume' && (
+              <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+                {platformNames.map(p => (
+                  <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p] || '#6b7280' }} />
+                    {p}
+                  </div>
+                ))}
+              </div>
+            )}
           </ChartCard>
         </Section>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-          <Section>
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Platform Volume (7d)</span>
-              </div>
-              <Table>
+        {/* All-Time Platforms - Full Width */}
+        <Section>
+          <TableContainer darkMode={darkMode}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>All-Time Platform Stats</span>
+              <ButtonGroup>
+                {[
+                  { key: 'volume', label: 'Volume' },
+                  { key: 'sales', label: 'Sales' },
+                  { key: 'royalties', label: 'Royalties' }
+                ].map(s => (
+                  <ToggleBtn key={s.key} active={platformSort === s.key} darkMode={darkMode} onClick={() => setPlatformSort(s.key)}>
+                    {s.label}
+                  </ToggleBtn>
+                ))}
+              </ButtonGroup>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <Table style={{ minWidth: 600 }}>
                 <thead>
                   <tr>
                     <Th darkMode={darkMode}>Platform</Th>
                     <Th darkMode={darkMode} align="right">Volume</Th>
+                    <Th darkMode={darkMode} align="right">Sales</Th>
+                    <Th darkMode={darkMode} align="right">Avg Price</Th>
+                    <Th darkMode={darkMode} align="right">Royalties</Th>
+                    <Th darkMode={darkMode} align="right">Broker Fees</Th>
                   </tr>
                 </thead>
                 <tbody>
-                  {platformTotals.map(([platform, vol]) => (
-                    <tr key={platform}>
-                      <Td darkMode={darkMode}>
-                        {platform}
-                        <PlatformBar darkMode={darkMode}>
-                          <PlatformFill style={{ width: `${(vol / maxPlatformVol) * 100}%` }} />
+                  {sortedPlatformData.map((p) => (
+                    <tr key={p.name}>
+                      <Td darkMode={darkMode} style={{ minWidth: 140 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: 2, background: PLATFORM_COLORS[p.name] || '#6b7280', flexShrink: 0 }} />
+                          <span style={{ fontWeight: 500 }}>{p.name}</span>
+                        </div>
+                        <PlatformBar darkMode={darkMode} style={{ marginTop: 6 }}>
+                          <PlatformFill style={{ width: `${(p[platformSort] / maxSortedValue) * 100}%`, background: PLATFORM_COLORS[p.name] || '#6b7280' }} />
                         </PlatformBar>
                       </Td>
-                      <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(vol)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'sales' ? 600 : 400 }}>{fNumber(p.sales)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{p.avgPrice.toFixed(1)} XRP</Td>
+                      <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'royalties' ? 600 : 400 }}>{fVolume(p.royalties)}</Td>
+                      <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{fVolume(p.brokerFees)}</Td>
                     </tr>
                   ))}
                 </tbody>
               </Table>
-            </TableContainer>
-          </Section>
+            </div>
+          </TableContainer>
+        </Section>
 
-          <Section>
+        {/* Two Column Layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+          {/* Period Platforms */}
+          {timeRange !== 'all' && (
+            <Section style={{ marginBottom: 0 }}>
+              <TableContainer darkMode={darkMode}>
+                <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>
+                    Platform Activity ({TIME_RANGES.find(r => r.key === timeRange)?.label})
+                  </span>
+                </div>
+                <Table>
+                  <thead>
+                    <tr>
+                      <Th darkMode={darkMode}>Platform</Th>
+                      <Th darkMode={darkMode} align="right">Volume</Th>
+                      <Th darkMode={darkMode} align="right">Sales</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {periodPlatformData.map((p) => (
+                      <tr key={p.name}>
+                        <Td darkMode={darkMode}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: 2, background: PLATFORM_COLORS[p.name] || '#6b7280', flexShrink: 0 }} />
+                            {p.name}
+                          </div>
+                        </Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(p.volume)}</Td>
+                        <Td darkMode={darkMode} align="right">{fNumber(p.sales)}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </TableContainer>
+            </Section>
+          )}
+
+          {/* Market Summary - Combined */}
+          <Section style={{ marginBottom: 0 }}>
             <TableContainer darkMode={darkMode}>
               <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Overview</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Market Summary</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Volume</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(stats.totalVolume || 0)}</div>
+                </div>
+                <div style={{ padding: '12px 16px' }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Total Sales</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fNumber(stats.totalSales || 0)}</div>
+                </div>
               </div>
               <Table>
                 <tbody>
                   <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Volume</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.totalVolume || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Sales</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.totalSales || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Collections</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Collections</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.totalCollections || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Active Collections (24h)</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Active (24h)</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.activeCollections24h || 0)}</Td>
                   </tr>
                   <tr>
                     <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Total Traders</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.totalTraders || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Traders (7d / 30d)</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>7d / 30d</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.activeTraders7d || 0)} / {fNumber(stats.activeTraders30d || 0)}</Td>
                   </tr>
-                </tbody>
-              </Table>
-            </TableContainer>
-          </Section>
-
-          <Section>
-            <TableContainer darkMode={darkMode}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>24h Breakdown</span>
-              </div>
-              <Table>
-                <tbody>
                   <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Avg Trade Size</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{(stats.avgTradeSize24h || 0).toFixed(2)} XRP</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Unique Buyers</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Buyers (24h)</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.uniqueBuyers24h || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Unique Sellers</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Sellers (24h)</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fNumber(stats.uniqueSellers24h || 0)}</Td>
                   </tr>
                   <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Royalties Paid</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Royalties (24h)</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.total24hRoyalties || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Broker Fees</Td>
+                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Fees (24h)</Td>
                     <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(stats.total24hBrokerFees || 0)}</Td>
-                  </tr>
-                  <tr>
-                    <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Traders Balance</Td>
-                    <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>
-                      {fVolume(stats.totalLiquidity24h || 0)}
-                      <span style={{ marginLeft: 6, fontSize: 10, color: stats.totalLiquidityPct >= 0 ? '#10b981' : '#ef4444' }}>
-                        {stats.totalLiquidityPct >= 0 ? '+' : ''}{(stats.totalLiquidityPct || 0).toFixed(1)}%
-                      </span>
-                    </Td>
                   </tr>
                 </tbody>
               </Table>
