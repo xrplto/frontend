@@ -79,6 +79,7 @@ const SOURCE_TAGS = {
   13888813: 'Zerpmon',
   20102305: 'Opulence',
   42697468: 'Bithomp',
+  89898989: 'Axelar Bridge',
   123321: 'BearBull',
   4152544945: 'ArtDept',
   100010010: 'StaticBit',
