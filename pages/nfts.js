@@ -4,7 +4,7 @@ import Footer from 'src/components/Footer';
 import AllCollections from 'src/NFTCollection/AllCollections';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-export default function Overview({ collections, total, globalMetrics, tags }) {
+export default function Overview({ collections, total, globalMetrics, tags, collectionCreation }) {
   return (
     <div className="min-h-screen overflow-hidden">
       <Header />
@@ -17,6 +17,7 @@ export default function Overview({ collections, total, globalMetrics, tags }) {
           initialCollections={collections}
           initialTotal={total}
           initialGlobalMetrics={globalMetrics}
+          collectionCreation={collectionCreation}
           tags={tags}
         />
       </div>
@@ -35,6 +36,7 @@ export async function getStaticProps() {
   let total = 0;
   let globalMetrics = null;
   let tags = [];
+  let collectionCreation = [];
 
   try {
     const response = await fetch(
@@ -46,6 +48,7 @@ export async function getStaticProps() {
     total = data.pagination?.total || data.count || 0;
     globalMetrics = data.globalMetrics || null;
     tags = data.tags || [];
+    collectionCreation = data.collectionCreation || [];
   } catch (error) {
     console.error('Failed to fetch collections:', error);
   }
@@ -64,7 +67,8 @@ export async function getStaticProps() {
       collections,
       total,
       globalMetrics,
-      tags
+      tags,
+      collectionCreation
     },
     revalidate: 300 // Regenerate every 5 minutes
   };

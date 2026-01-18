@@ -345,6 +345,226 @@ const VolumeChart = ({ data, isDark }) => {
   );
 };
 
+// Collection Creation Chart Component (similar to TokenChart in Summary.js)
+const CollectionCreationChart = ({ data, isDark }) => {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, data: null });
+
+  const handleMouseMove = (event) => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+
+    const chartData = data.slice(-30);
+    if (chartData.length === 0) return;
+
+    const width = rect.width;
+    const pointWidth = width / Math.max(chartData.length - 1, 1);
+
+    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const dataPoint = chartData[closestIndex];
+
+    setTooltip({ show: true, x: event.clientX, y: event.clientY, data: dataPoint });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ show: false, x: 0, y: 0, data: null });
+  };
+
+  useEffect(() => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+
+    const draw = () => {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const chartData = data.slice(-30);
+      // Support both collectionCreation (totalCollections) and daily (mints) formats
+      const chartValues = chartData.map((d) => d.totalCollections ?? d.mints ?? 0);
+      if (chartValues.length === 0) return;
+
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 4;
+
+      ctx.clearRect(0, 0, width, height);
+
+      if (chartValues.length === 1) {
+        chartValues.push(chartValues[0]);
+        chartData.push(chartData[0]);
+      }
+
+      if (chartValues.length < 2) return;
+
+      const minValue = Math.min(...chartValues);
+      const maxValue = Math.max(...chartValues);
+      const range = maxValue - minValue;
+
+      const points = chartValues.map((value, index) => {
+        const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
+        const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
+        return { x, y };
+      });
+
+      // Calculate median volume for threshold coloring
+      const volumes = chartData.map(d => d.volume || 0);
+      const sortedVol = [...volumes].sort((a, b) => a - b);
+      const medianVol = sortedVol[Math.floor(sortedVol.length / 2)] || 1000;
+
+      // Draw segments - green for high activity days, blue for normal
+      for (let i = 0; i < points.length - 1; i++) {
+        const dayVolume = volumes[i];
+        const isHighActivity = dayVolume > medianVol * 1.5;
+        const segmentColor = isHighActivity ? '#10b981' : '#3b82f6';
+
+        const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
+        gradient.addColorStop(0, segmentColor + '40');
+        gradient.addColorStop(1, segmentColor + '00');
+
+        ctx.beginPath();
+        ctx.moveTo(points[i].x, height);
+        ctx.lineTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i + 1].x, points[i + 1].y);
+        ctx.lineTo(points[i + 1].x, height);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i + 1].x, points[i + 1].y);
+        ctx.strokeStyle = segmentColor;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+      }
+    };
+
+    const rafId = requestAnimationFrame(draw);
+    window.addEventListener('resize', draw);
+
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => requestAnimationFrame(draw));
+      resizeObserver.observe(canvas);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', draw);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [data]);
+
+  const TooltipPortal = () => {
+    if (!tooltip.show || !tooltip.data) return null;
+
+    const d = tooltip.data;
+    // Support both collectionCreation and daily formats
+    const collections = d.collectionsInvolved || d.topCollections || [];
+    const mintCount = d.totalCollections ?? d.mints ?? 0;
+    const itemCount = d.totalItems ?? d.sales ?? 0;
+
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          left: tooltip.x + 15,
+          top: tooltip.y - 100,
+          background: isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(16px)',
+          color: isDark ? '#fff' : '#000',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          boxShadow: isDark ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
+          minWidth: '180px',
+          zIndex: 999999,
+          pointerEvents: 'none',
+          fontSize: '11px'
+        }}
+      >
+        <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '8px', paddingBottom: '6px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)' }}>
+          {format(new Date(d.date), 'MMM dd, yyyy')}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>New Collections</span>
+          <span style={{ fontWeight: 500 }}>{formatNumberWithDecimals(mintCount)}</span>
+        </div>
+        {d.volume !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+            <span style={{ opacity: 0.6 }}>Volume</span>
+            <span style={{ fontWeight: 500 }}>✕{formatNumberWithDecimals(d.volume || 0)}</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>{d.totalItems !== undefined ? 'Items' : 'Sales'}</span>
+          <span style={{ fontWeight: 500 }}>{itemCount}</span>
+        </div>
+        {d.uniqueCollections !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+            <span style={{ opacity: 0.6 }}>Collections</span>
+            <span style={{ fontWeight: 500 }}>{d.uniqueCollections}</span>
+          </div>
+        )}
+        {collections.length > 0 && (
+          <>
+            <div style={{ borderTop: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)', margin: '6px 0 4px', paddingTop: '6px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{d.collectionsInvolved ? 'New Collections' : 'Top Collections'}</span>
+            </div>
+            {collections.slice(0, 3).map((col, i) => (
+              <div key={`tooltip-col-${i}-${col.cid || col.slug}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '3px 0', fontSize: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '14px', height: '14px', minWidth: '14px', minHeight: '14px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)' }}>
+                    <img
+                      src={`https://s1.xrpl.to/collection/${col.logo || col.logoImage}`}
+                      alt={col.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                    />
+                  </div>
+                  <span style={{ opacity: 0.8, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{col.name}</span>
+                </div>
+                <span style={{ fontWeight: 500 }}>{col.volume ? `✕${formatNumberWithDecimals(col.volume)}` : `${col.items || 0} items`}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        style={{ width: '100%', height: '42px', marginTop: '-2px', position: 'relative' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+        />
+      </div>
+      <TooltipPortal />
+    </>
+  );
+};
+
 // Tags Bar Components
 const TagsContainer = styled.div`
   display: flex;
@@ -673,7 +893,7 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString();
 };
 
-function Collections({ initialCollections, initialTotal, initialGlobalMetrics, tags }) {
+function Collections({ initialCollections, initialTotal, initialGlobalMetrics, collectionCreation, tags }) {
   const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -953,18 +1173,24 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
 
               <ChartMetricBox isDark={isDark}>
                 {(() => {
-                  const volumeHistory = globalMetrics.volumeHistory || [];
-                  const chartData = volumeHistory.slice(-30);
-                  const today = chartData[chartData.length - 1]?.volume || 0;
-                  const yesterday = chartData[chartData.length - 2]?.volume || 0;
+                  // Use collectionCreation prop, fallback to daily data
+                  const creationData = collectionCreation?.length ? collectionCreation : (globalMetrics.daily || []);
+                  const chartData = creationData.slice(-30);
+                  const todayData = chartData[chartData.length - 1] || {};
+                  const yesterdayData = chartData[chartData.length - 2] || {};
+                  // collectionCreation uses totalCollections, daily uses mints
+                  const today = todayData.totalCollections ?? todayData.mints ?? 0;
+                  const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
                   const isUp = today >= yesterday;
+                  // collectionCreation uses collectionsInvolved, daily uses topCollections
+                  const latestCollection = (todayData.collectionsInvolved || todayData.topCollections || [])[0];
                   return (
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-                        <MetricTitle isDark={isDark}>30d Volume</MetricTitle>
+                        <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
-                            ✕{formatNumberWithDecimals(today)}
+                            {formatNumberWithDecimals(today)}
                           </span>
                           <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                             today
@@ -972,9 +1198,15 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                           <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
                             {isUp ? '↑' : '↓'}
                           </span>
+                          {latestCollection && (
+                            <a href={`/nft/collection/${latestCollection.slug}`} style={{ fontSize: '0.55rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
+                              <span style={{ maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestCollection.name}</span>
+                              <span style={{ color: '#10b981', fontWeight: 500 }}>✕{formatNumberWithDecimals(latestCollection.volume || latestCollection.items || 0)}</span>
+                            </a>
+                          )}
                         </div>
                       </div>
-                      <VolumeChart data={chartData} isDark={isDark} />
+                      <CollectionCreationChart data={chartData} isDark={isDark} />
                     </>
                   );
                 })()}
@@ -983,25 +1215,33 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
 
             <MobileChartBox isDark={isDark}>
               {(() => {
-                const volumeHistory = globalMetrics.volumeHistory || [];
-                const chartData = volumeHistory.slice(-30);
-                const today = chartData[chartData.length - 1]?.volume || 0;
-                const yesterday = chartData[chartData.length - 2]?.volume || 0;
+                const creationData = collectionCreation?.length ? collectionCreation : (globalMetrics.daily || []);
+                const chartData = creationData.slice(-30);
+                const todayData = chartData[chartData.length - 1] || {};
+                const yesterdayData = chartData[chartData.length - 2] || {};
+                const today = todayData.totalCollections ?? todayData.mints ?? 0;
+                const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
                 const isUp = today >= yesterday;
+                const latestCollection = (todayData.collectionsInvolved || todayData.topCollections || [])[0];
                 return (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <MetricTitle isDark={isDark}>30d Volume</MetricTitle>
+                      <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
-                          ✕{formatNumberWithDecimals(today)}
+                          {formatNumberWithDecimals(today)}
                         </span>
-                        <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
-                          {isUp ? '↑' : '↓'}
-                        </span>
+                        <span style={{ fontSize: '0.45rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
+                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
+                        {latestCollection && (
+                          <a href={`/nft/collection/${latestCollection.slug}`} style={{ fontSize: '0.45rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
+                            <span style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestCollection.name}</span>
+                            <span style={{ color: '#10b981', fontWeight: 500 }}>✕{formatNumberWithDecimals(latestCollection.volume || latestCollection.items || 0)}</span>
+                          </a>
+                        )}
                       </div>
                     </div>
-                    <VolumeChart data={chartData} isDark={isDark} />
+                    <CollectionCreationChart data={chartData} isDark={isDark} />
                   </>
                 );
               })()}
