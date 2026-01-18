@@ -196,6 +196,7 @@ const TABLE_HEAD = [
   { id: 'roi', label: 'ROI', align: 'right', width: '55px', sortable: true },
   { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
   { id: 'holdingsCount', label: 'NFTs', align: 'right', width: '55px', sortable: true },
+  { id: 'marketplace', label: 'SOURCE', align: 'center', width: '80px' },
   { id: 'lastTrade', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true },
 ];
 
@@ -349,6 +350,9 @@ export default function NFTTradersPage({ traders = [], pagination = {} }) {
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {fNumber(trader.holdingsCount || 0)}
+                        </StyledTd>
+                        <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 10 }}>
+                          {Object.keys(trader.marketplaceBreakdown || {}).join(', ') || '-'}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
                           {getLastActive(trader)}

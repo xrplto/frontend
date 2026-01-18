@@ -181,9 +181,32 @@ const TABLE_HEAD = [
   { id: 'avgROI', label: 'ROI', align: 'right', width: '55px', sortable: true },
   { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
   { id: 'dexAmm', label: 'DEX/AMM', align: 'center', width: '90px' },
+  { id: 'source', label: 'SOURCE', align: 'center', width: '70px' },
   { id: 'washTradingScore', label: 'WASH', align: 'right', width: '55px', sortable: true },
   { id: 'lastActive', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true },
 ];
+
+const SOURCE_TAGS = {
+  10011010: 'Magnetic',
+  74920348: 'First Ledger',
+  20221212: 'xpmarket',
+  69420589: 'Bidds',
+  110100111: 'Sologenic',
+  111: 'Horizon',
+  11782013: 'Anodos',
+  19089388: 'HBot',
+  100010010: 'StaticBit',
+  13888813: 'Zerpmon',
+  20102305: 'Opulencex',
+  589123: 'Katz',
+  101102979: 'XRP Cafe',
+  42697468: 'Bithomp',
+  89898989: 'Axelar',
+  54955974: 'XAH Teleport',
+  510162502: 'Sonar Muse',
+  280957156: 'Dhali',
+  30033003: 'Calypso',
+};
 
 const ROWS_PER_PAGE = 20;
 
@@ -346,6 +369,11 @@ export default function TokenTradersPage({ traders = [], pagination = {} }) {
                             </span>
                           )}
                         </StyledTd>
+                        <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 10 }}>
+                          {(trader.sourceTagStats?.length || 0) > 0
+                            ? trader.sourceTagStats.map(s => SOURCE_TAGS[s.sourceTag] || s.sourceTag).join(', ')
+                            : '-'}
+                        </StyledTd>
                         <StyledTd align="right" style={{ fontSize: 11, color: trader.washTradingScore > 0 ? '#f59e0b' : (darkMode ? 'rgba(255,255,255,0.3)' : '#d1d5db') }}>
                           {trader.washTradingScore > 0 ? fNumber(trader.washTradingScore) : '-'}
                         </StyledTd>
@@ -403,7 +431,7 @@ export async function getServerSideProps({ query }) {
 
   try {
     const response = await axios.get(
-      `${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}&compact=true`
+      `${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
     );
     const traders = response.data.data || [];
     const pagination = response.data.pagination || {};
