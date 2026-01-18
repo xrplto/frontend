@@ -1,4 +1,6 @@
-import React, { useState, useContext, useMemo, useEffect } from 'react';
+import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { format } from 'date-fns';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import CollectionList from './CollectionList';
@@ -24,31 +26,26 @@ const CollectionListType = {
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   width: 100%;
   max-width: 100%;
   background: transparent;
   overflow: visible;
 
   @media (max-width: 600px) {
-    margin: 4px 0;
-    padding: 0 4px;
-  }
-
-  @media (max-width: 480px) {
-    margin: 4px 0;
-    padding: 0 4px;
+    margin: 8px 0;
+    padding: 0;
   }
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr) 1.5fr;
+  gap: 10px;
   width: 100%;
 
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(4, 1fr);
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   @media (max-width: 900px) {
@@ -59,7 +56,7 @@ const Grid = styled.div`
     display: flex;
     overflow-x: auto;
     gap: 8px;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -69,45 +66,44 @@ const Grid = styled.div`
 `;
 
 const MetricBox = styled.div`
-  padding: 14px 16px;
-  height: 88px;
+  padding: 12px 14px;
+  height: 82px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  border-radius: 12px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border-radius: 10px;
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.018)'};
   border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
+    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.3)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.04)'};
   }
 
   @media (max-width: 600px) {
     padding: 10px 12px;
-    height: 72px;
+    height: 68px;
     flex: 0 0 auto;
-    min-width: 100px;
-    border-radius: 12px;
+    min-width: 95px;
+    border-radius: 10px;
   }
 `;
 
 const MetricTitle = styled.span`
-  font-size: 0.65rem;
-  font-weight: 500;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.55)'};
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  letter-spacing: 0.02em;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.58rem;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
   line-height: 1;
@@ -115,40 +111,239 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.7rem;
-  color: ${(props) => props.isPositive ? '#22a86b' : '#c75050'};
+  font-size: 0.68rem;
+  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
   display: inline-flex;
   align-items: center;
   gap: 2px;
   font-weight: 500;
   letter-spacing: -0.01em;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: ${(props) => props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
+    padding: 1px 3px;
   }
 `;
 
 const VolumePercentage = styled.span`
-  font-size: 0.6rem;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)'};
+  font-size: 0.58rem;
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)'};
   font-weight: 400;
-  letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.48rem;
-    line-height: 1;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.48rem;
-    line-height: 1;
+    font-size: 0.5rem;
   }
 `;
+
+const ChartMetricBox = styled(MetricBox)`
+  grid-column: span 1;
+  overflow: visible;
+
+  @media (max-width: 1400px) {
+    grid-column: span 3;
+  }
+
+  @media (max-width: 900px) {
+    grid-column: span 3;
+  }
+
+  @media (max-width: 600px) {
+    display: none;
+  }
+`;
+
+const MobileChartBox = styled(MetricBox)`
+  display: none;
+
+  @media (max-width: 600px) {
+    display: flex;
+    margin-top: 4px;
+  }
+`;
+
+// Volume Chart Component
+const VolumeChart = ({ data, isDark }) => {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, data: null });
+
+  const handleMouseMove = (event) => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+
+    const chartData = data.slice(-30);
+    if (chartData.length === 0) return;
+
+    const width = rect.width;
+    const pointWidth = width / Math.max(chartData.length - 1, 1);
+
+    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const dataPoint = chartData[closestIndex];
+
+    setTooltip({ show: true, x: event.clientX, y: event.clientY, data: dataPoint });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ show: false, x: 0, y: 0, data: null });
+  };
+
+  useEffect(() => {
+    if (!data || data.length === 0 || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+
+    const draw = () => {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const chartData = data.slice(-30);
+      const chartValues = chartData.map((d) => d.volume || 0);
+      if (chartValues.length === 0) return;
+
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 4;
+
+      ctx.clearRect(0, 0, width, height);
+
+      if (chartValues.length === 1) {
+        chartValues.push(chartValues[0]);
+        chartData.push(chartData[0]);
+      }
+
+      if (chartValues.length < 2) return;
+
+      const minValue = Math.min(...chartValues);
+      const maxValue = Math.max(...chartValues);
+      const range = maxValue - minValue;
+
+      const points = chartValues.map((value, index) => {
+        const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
+        const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
+        return { x, y };
+      });
+
+      // Draw gradient area and line
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+      gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, height);
+      points.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, height);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      points.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    };
+
+    const rafId = requestAnimationFrame(draw);
+    window.addEventListener('resize', draw);
+
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => requestAnimationFrame(draw));
+      resizeObserver.observe(canvas);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', draw);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [data]);
+
+  const TooltipPortal = () => {
+    if (!tooltip.show || !tooltip.data) return null;
+
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          left: tooltip.x + 15,
+          top: tooltip.y - 80,
+          background: isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(16px)',
+          color: isDark ? '#fff' : '#000',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          boxShadow: isDark ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
+          minWidth: '160px',
+          zIndex: 999999,
+          pointerEvents: 'none',
+          fontSize: '11px'
+        }}
+      >
+        <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '8px', paddingBottom: '6px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)' }}>
+          {format(new Date(tooltip.data.date), 'MMM dd, yyyy')}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Volume</span>
+          <span style={{ fontWeight: 500 }}>✕{formatNumberWithDecimals(tooltip.data.volume || 0)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Sales</span>
+          <span style={{ fontWeight: 500 }}>{tooltip.data.sales || 0}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+          <span style={{ opacity: 0.6 }}>Avg Price</span>
+          <span style={{ fontWeight: 500 }}>✕{(tooltip.data.avgPrice || 0).toFixed(2)}</span>
+        </div>
+        {tooltip.data.uniqueBuyers && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
+            <span style={{ opacity: 0.6 }}>Traders</span>
+            <span style={{ fontWeight: 500 }}>{tooltip.data.uniqueBuyers} / {tooltip.data.uniqueSellers}</span>
+          </div>
+        )}
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        style={{ width: '100%', height: '42px', marginTop: '-2px', position: 'relative' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+        />
+      </div>
+      <TooltipPortal />
+    </>
+  );
+};
 
 // Tags Bar Components
 const TagsContainer = styled.div`
@@ -633,33 +828,12 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Traders</MetricTitle>
-                <MetricValue isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
-                </MetricValue>
-                <PercentageChange isPositive={(globalMetrics.activeTradersPct || 0) >= 0}>
-                  {(globalMetrics.activeTradersPct || 0) >= 0 ? '↑' : '↓'}
-                  {Math.abs(globalMetrics.activeTradersPct || 0).toFixed(1)}%
-                </PercentageChange>
-              </MetricBox>
-
-              <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>Collections</MetricTitle>
                 <MetricValue isDark={isDark}>
                   {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
                 </MetricValue>
                 <VolumePercentage isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active
-                </VolumePercentage>
-              </MetricBox>
-
-              <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>24h Mints</MetricTitle>
-                <MetricValue isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.total24hMints || 0)}
-                </MetricValue>
-                <VolumePercentage isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.total24hBurns || 0)} burned
+                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active | {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
                 </VolumePercentage>
               </MetricBox>
 
@@ -669,10 +843,169 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, t
                   ✕{formatNumberWithDecimals((globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0))}
                 </MetricValue>
                 <VolumePercentage isDark={isDark}>
-                  ✕{formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker | ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} creator
+                  ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕{formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
                 </VolumePercentage>
               </MetricBox>
+
+              <MetricBox isDark={isDark} style={{ minWidth: isMobile ? '130px' : '160px' }}>
+                <MetricTitle isDark={isDark}>Market</MetricTitle>
+                {(() => {
+                  const sentiment = globalMetrics.sentimentScore || 50;
+                  const rsi = globalMetrics.marketRSI || 50;
+
+                  const getSentimentColor = (v) => v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
+                  const getRsiColor = (v) => v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
+
+                  const sentColor = getSentimentColor(sentiment);
+                  const rsiColor = getRsiColor(rsi);
+
+                  return (
+                    <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', alignItems: 'flex-end' }}>
+                      {/* Sentiment gauge */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                          <div style={{
+                            position: 'absolute',
+                            width: '36px',
+                            height: '18px',
+                            borderRadius: '18px 18px 0 0',
+                            background: 'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)',
+                            opacity: 0.2
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            left: '50%',
+                            width: '2px',
+                            height: '14px',
+                            background: sentColor,
+                            transformOrigin: 'bottom center',
+                            transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
+                            borderRadius: '1px'
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-2px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: sentColor
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: sentColor, lineHeight: 1 }}>
+                            {sentiment}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            Sentiment
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* RSI gauge */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ position: 'relative', width: '36px', height: '20px' }}>
+                          <div style={{
+                            position: 'absolute',
+                            width: '36px',
+                            height: '18px',
+                            borderRadius: '18px 18px 0 0',
+                            background: 'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)',
+                            opacity: 0.2
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            left: '50%',
+                            width: '2px',
+                            height: '14px',
+                            background: rsiColor,
+                            transformOrigin: 'bottom center',
+                            transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
+                            borderRadius: '1px'
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-2px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: rsiColor
+                          }} />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: rsiColor, lineHeight: 1 }}>
+                            {rsi}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            RSI
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </MetricBox>
+
+              <ChartMetricBox isDark={isDark}>
+                {(() => {
+                  const volumeHistory = globalMetrics.volumeHistory || [];
+                  const chartData = volumeHistory.slice(-30);
+                  const today = chartData[chartData.length - 1]?.volume || 0;
+                  const yesterday = chartData[chartData.length - 2]?.volume || 0;
+                  const isUp = today >= yesterday;
+                  return (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                        <MetricTitle isDark={isDark}>30d Volume</MetricTitle>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
+                            ✕{formatNumberWithDecimals(today)}
+                          </span>
+                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            today
+                          </span>
+                          <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                            {isUp ? '↑' : '↓'}
+                          </span>
+                        </div>
+                      </div>
+                      <VolumeChart data={chartData} isDark={isDark} />
+                    </>
+                  );
+                })()}
+              </ChartMetricBox>
             </Grid>
+
+            <MobileChartBox isDark={isDark}>
+              {(() => {
+                const volumeHistory = globalMetrics.volumeHistory || [];
+                const chartData = volumeHistory.slice(-30);
+                const today = chartData[chartData.length - 1]?.volume || 0;
+                const yesterday = chartData[chartData.length - 2]?.volume || 0;
+                const isUp = today >= yesterday;
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <MetricTitle isDark={isDark}>30d Volume</MetricTitle>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
+                          ✕{formatNumberWithDecimals(today)}
+                        </span>
+                        <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          {isUp ? '↑' : '↓'}
+                        </span>
+                      </div>
+                    </div>
+                    <VolumeChart data={chartData} isDark={isDark} />
+                  </>
+                );
+              })()}
+            </MobileChartBox>
           </div>
         )}
       </Container>
