@@ -182,7 +182,7 @@ const TABLE_HEAD = [
   { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
   { id: 'dexAmm', label: 'DEX/AMM', align: 'center', width: '90px' },
   { id: 'washTradingScore', label: 'WASH', align: 'right', width: '55px', sortable: true },
-  { id: 'lastActive', label: 'LAST ACTIVE', align: 'right', width: '90px' },
+  { id: 'lastActive', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true },
 ];
 
 const ROWS_PER_PAGE = 20;

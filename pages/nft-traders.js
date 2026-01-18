@@ -1,17 +1,17 @@
 import { useState, useContext } from 'react';
+import { useRouter } from 'next/router';
 import axios from 'axios';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-// Styled Components - matching CollectionList pattern
 const Container = styled.div`
   max-width: 1920px;
   margin: 0 auto;
@@ -30,7 +30,6 @@ const Subtitle = styled.p`
   margin-bottom: 24px;
   color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.5)' : '#637381')};
 `;
-
 
 const TableContainer = styled.div`
   overflow-x: auto;
@@ -97,8 +96,6 @@ const SortIndicator = styled.span`
   margin-left: 4px;
   font-size: 8px;
   color: #3b82f6;
-  transform: ${({ direction }) => (direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
-  transition: transform 0.15s ease;
 `;
 
 const TraderLink = styled(Link)`
@@ -129,9 +126,6 @@ const Badge = styled.span`
     type === 'both' ? '#a855f7' : '#eab308'};
 `;
 
-
-
-// Pagination Components
 const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
@@ -185,59 +179,68 @@ const EmptyState = styled.div`
   border: 1.5px dashed ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
 `;
 
+const PaginationInfo = styled.span`
+  font-size: 11px;
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+  margin: 0 8px;
+`;
+
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
   { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
-  { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '75px', sortable: true },
-  { id: 'combinedProfit', label: 'TOTAL P/L', align: 'right', width: '80px', sortable: true },
-  { id: 'profit', label: 'REALIZED', align: 'right', width: '75px', sortable: true },
-  { id: 'unrealizedProfit', label: 'UNREALIZED', align: 'right', width: '80px', sortable: true },
-  { id: 'roi', label: 'ROI %', align: 'right', width: '55px', sortable: true },
+  { id: 'totalVolume', label: 'VOL (XRP)', align: 'right', width: '85px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
-  { id: 'winRate', label: 'WIN %', align: 'right', width: '55px', sortable: true },
-  { id: 'lastActive', label: 'LAST TRADE', align: 'right', width: '80px' },
+  { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '80px', sortable: true },
+  { id: 'sellVolume', label: 'SOLD', align: 'right', width: '80px', sortable: true },
+  { id: 'combinedProfit', label: 'P/L (XRP)', align: 'right', width: '90px', sortable: true },
+  { id: 'roi', label: 'ROI', align: 'right', width: '55px', sortable: true },
+  { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
+  { id: 'holdingsCount', label: 'NFTs', align: 'right', width: '55px', sortable: true },
+  { id: 'lastTrade', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true },
 ];
 
-export default function TradersPage({ traders: initialTraders = [] }) {
+const ROWS_PER_PAGE = 20;
+
+export default function NFTTradersPage({ traders = [], pagination = {} }) {
+  const router = useRouter();
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
-  const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState('combinedProfit');
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const rowsPerPage = 20;
 
-  // Client-side sorting
-  const sortedTraders = [...initialTraders].sort((a, b) => {
-    const aVal = a[sortBy] ?? 0;
-    const bVal = b[sortBy] ?? 0;
-    return bVal - aVal;
-  });
+  const currentPage = pagination.page || 1;
+  const totalPages = pagination.totalPages || 1;
+  const totalTraders = pagination.total || 0;
+  const sortBy = router.query.sortBy || 'combinedProfit';
+
+  const navigateToPage = (page) => {
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, page },
+    }, undefined, { shallow: false });
+  };
 
   const handleSortChange = (key) => {
-    setPage(0);
-    setSortBy(key);
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, sortBy: key, page: 1 },
+    }, undefined, { shallow: false });
   };
 
   const getLastActive = (t) => t.lastTrade ? formatDistanceToNowStrict(new Date(t.lastTrade)) : '-';
 
-  const paginatedTraders = sortedTraders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-  const totalPages = Math.ceil(sortedTraders.length / rowsPerPage);
-
   const getPageNumbers = () => {
     const pages = [];
-    const current = page + 1;
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else if (current <= 3) {
+    } else if (currentPage <= 3) {
       pages.push(1, 2, 3, 4, 5, '...', totalPages);
-    } else if (current >= totalPages - 2) {
+    } else if (currentPage >= totalPages - 2) {
       pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
     } else {
-      pages.push(1, '...', current - 1, current, current + 1, '...', totalPages);
+      pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
     }
     return pages;
   };
-
 
   return (
     <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
@@ -249,10 +252,11 @@ export default function TradersPage({ traders: initialTraders = [] }) {
 
       <Container>
         <Title darkMode={darkMode}>NFT Traders Leaderboard</Title>
-        <Subtitle darkMode={darkMode}>Click column headers to sort</Subtitle>
+        <Subtitle darkMode={darkMode}>
+          {totalTraders > 0 ? `${fNumber(totalTraders)} traders on XRPL` : 'Top NFT traders by profit'}
+        </Subtitle>
 
-
-        {initialTraders.length === 0 ? (
+        {traders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
             <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 16px' }}>
               <div style={{ position: 'absolute', top: -4, left: 4, width: 20, height: 20, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }} />
@@ -301,16 +305,18 @@ export default function TradersPage({ traders: initialTraders = [] }) {
                   </tr>
                 </StyledTableHead>
                 <StyledTbody darkMode={darkMode}>
-                  {paginatedTraders.map((trader, idx) => {
+                  {traders.map((trader, idx) => {
                     const addr = trader._id || trader.address;
                     const cp = trader.combinedProfit || 0;
-                    const rp = trader.profit || 0;
-                    const up = trader.unrealizedProfit || 0;
                     const roi = trader.roi || 0;
+                    const bought = trader.buyVolume || 0;
+                    const sold = trader.sellVolume || 0;
+                    const rank = (currentPage - 1) * ROWS_PER_PAGE + idx + 1;
+
                     return (
                       <tr key={addr || idx}>
                         <StyledTd align="center" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}>
-                          {page * rowsPerPage + idx + 1}
+                          {rank}
                         </StyledTd>
                         <StyledTd darkMode={darkMode}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -323,23 +329,26 @@ export default function TradersPage({ traders: initialTraders = [] }) {
                         <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
                           {fVolume(trader.totalVolume || 0)}
                         </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                          {fNumber(trader.totalTrades || 0)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: '#10b981', fontSize: 12 }}>
+                          {fVolume(bought)}
+                        </StyledTd>
+                        <StyledTd align="right" style={{ color: '#ef4444', fontSize: 12 }}>
+                          {fVolume(sold)}
+                        </StyledTd>
                         <StyledTd align="right" style={{ color: cp >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: 12 }}>
                           {cp >= 0 ? '+' : ''}{fVolume(cp)}
-                        </StyledTd>
-                        <StyledTd align="right" style={{ color: rp >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
-                          {rp >= 0 ? '+' : ''}{fVolume(rp)}
-                        </StyledTd>
-                        <StyledTd align="right" style={{ color: up >= 0 ? '#10b981' : '#ef4444', fontSize: 11, opacity: 0.8 }}>
-                          {up >= 0 ? '+' : ''}{fVolume(up)}
                         </StyledTd>
                         <StyledTd align="right" style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
                           {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
-                          {fNumber(trader.totalTrades || 0)}
+                          {(trader.winRate || 0).toFixed(0)}%
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
-                          {(trader.winRate || 0).toFixed(0)}%
+                          {fNumber(trader.holdingsCount || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
                           {getLastActive(trader)}
@@ -353,21 +362,30 @@ export default function TradersPage({ traders: initialTraders = [] }) {
 
             {totalPages > 1 && (
               <PaginationContainer darkMode={darkMode}>
-                <NavButton darkMode={darkMode} onClick={() => setPage(0)} disabled={page === 0}>
+                <NavButton darkMode={darkMode} onClick={() => navigateToPage(1)} disabled={currentPage === 1}>
                   <ChevronsLeft size={12} />
+                </NavButton>
+                <NavButton darkMode={darkMode} onClick={() => navigateToPage(currentPage - 1)} disabled={currentPage === 1}>
+                  <ChevronLeft size={12} />
                 </NavButton>
                 {getPageNumbers().map((p, i) =>
                   p === '...' ? (
-                    <span key={`e${i}`} style={{ padding: '0 2px', fontSize: 11 }}>...</span>
+                    <span key={`e${i}`} style={{ padding: '0 2px', fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>...</span>
                   ) : (
-                    <PageButton key={p} selected={p === page + 1} darkMode={darkMode} onClick={() => setPage(p - 1)}>
+                    <PageButton key={p} selected={p === currentPage} darkMode={darkMode} onClick={() => navigateToPage(p)}>
                       {p}
                     </PageButton>
                   )
                 )}
-                <NavButton darkMode={darkMode} onClick={() => setPage(totalPages - 1)} disabled={page === totalPages - 1}>
+                <NavButton darkMode={darkMode} onClick={() => navigateToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                  <ChevronRight size={12} />
+                </NavButton>
+                <NavButton darkMode={darkMode} onClick={() => navigateToPage(totalPages)} disabled={currentPage === totalPages}>
                   <ChevronsRight size={12} />
                 </NavButton>
+                <PaginationInfo darkMode={darkMode}>
+                  Page {currentPage} of {fNumber(totalPages)}
+                </PaginationInfo>
               </PaginationContainer>
             )}
           </>
@@ -380,13 +398,20 @@ export default function TradersPage({ traders: initialTraders = [] }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ query }) {
+  const page = parseInt(query.page) || 1;
+  const sortBy = query.sortBy || 'combinedProfit';
+
   try {
-    const response = await axios.get(`${BASE_URL}/nft/analytics/traders?sortBy=combinedProfit&limit=100`);
+    const response = await axios.get(
+      `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
+    );
     const traders = response.data.traders || [];
-    return { props: { traders } };
+    const pagination = response.data.pagination || {};
+
+    return { props: { traders, pagination } };
   } catch (error) {
-    console.error('Failed to fetch traders:', error.message);
-    return { props: { traders: [] } };
+    console.error('Failed to fetch NFT traders:', error.message);
+    return { props: { traders: [], pagination: {} } };
   }
 }
