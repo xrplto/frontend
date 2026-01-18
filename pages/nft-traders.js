@@ -190,6 +190,7 @@ const TABLE_HEAD = [
   { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
   { id: 'totalVolume', label: 'VOL (XRP)', align: 'right', width: '85px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
+  { id: 'flips', label: 'FLIPS', align: 'right', width: '50px', sortable: true },
   { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '80px', sortable: true },
   { id: 'sellVolume', label: 'SOLD', align: 'right', width: '80px', sortable: true },
   { id: 'combinedProfit', label: 'P/L (XRP)', align: 'right', width: '90px', sortable: true },
@@ -333,6 +334,9 @@ export default function NFTTradersPage({ traders = [], pagination = {} }) {
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {fNumber(trader.totalTrades || 0)}
                         </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
+                          {trader.flips > 0 ? fNumber(trader.flips) : '-'}
+                        </StyledTd>
                         <StyledTd align="right" style={{ color: '#10b981', fontSize: 12 }}>
                           {fVolume(bought)}
                         </StyledTd>
@@ -352,7 +356,10 @@ export default function NFTTradersPage({ traders = [], pagination = {} }) {
                           {fNumber(trader.holdingsCount || 0)}
                         </StyledTd>
                         <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 10 }}>
-                          {Object.keys(trader.marketplaceBreakdown || {}).join(', ') || '-'}
+                          {(() => {
+                            const markets = Object.keys(trader.marketplaceBreakdown || {}).filter(m => m !== 'XRPL');
+                            return markets.length > 0 ? markets.join(', ') : '-';
+                          })()}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
                           {getLastActive(trader)}
