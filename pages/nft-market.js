@@ -8,6 +8,24 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import { fNumber, fVolume } from 'src/utils/formatters';
 import { TrendingUp, TrendingDown, Activity, Users, Flame, Image, ShoppingCart, ArrowRightLeft, ChevronDown, BarChart3, DollarSign, Wallet } from 'lucide-react';
 
+// XRP value display component
+const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true, color }) => {
+  const formatted = format(value);
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: size === 'small' ? 3 : 4, color }}>
+      <span>{formatted}</span>
+      {showSymbol && (
+        <span style={{
+          fontSize: size === 'small' ? 9 : size === 'large' ? 12 : 10,
+          fontWeight: 500,
+          opacity: 0.6,
+          letterSpacing: '0.02em'
+        }}>XRP</span>
+      )}
+    </span>
+  );
+};
+
 const BASE_URL = 'https://api.xrpl.to/api';
 
 const Container = styled.div`
@@ -509,7 +527,9 @@ export default function NFTMarketPage({ stats }) {
         <Grid>
           <StatCard darkMode={darkMode}>
             <StatLabel darkMode={darkMode}><Activity size={12} /> 24h Volume</StatLabel>
-            <StatValue darkMode={darkMode}>{fVolume(stats.total24hVolume || 0)}</StatValue>
+            <StatValue darkMode={darkMode}>
+              <XrpValue value={stats.total24hVolume || 0} size="large" />
+            </StatValue>
             <StatChange positive={stats.volumePct >= 0}>
               {stats.volumePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
               {Math.abs(stats.volumePct || 0).toFixed(1)}%
@@ -571,7 +591,11 @@ export default function NFTMarketPage({ stats }) {
                     {TIME_RANGES.find(r => r.key === timeRange)?.label} Total
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
-                    {metricConfig.format(periodTotal)}
+                    {['volume', 'royalties', 'brokerFees'].includes(metric)
+                      ? <XrpValue value={periodTotal} size="large" />
+                      : metric === 'avgPrice'
+                        ? <XrpValue value={periodTotal} size="large" format={v => (v || 0).toFixed(2)} />
+                        : metricConfig.format(periodTotal)}
                   </div>
                 </div>
                 <MetricSelect ref={dropdownRef}>
@@ -667,7 +691,7 @@ export default function NFTMarketPage({ stats }) {
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 6 }}>
                           <span style={{ opacity: 0.6 }}>Total</span>
-                          <span style={{ fontWeight: 600 }}>{fVolume(hoverData.volume || 0)}</span>
+                          <span style={{ fontWeight: 600 }}><XrpValue value={hoverData.volume || 0} size="small" /></span>
                         </div>
                         {platformNames.map(p => {
                           const val = hoverData.volumeByPlatform?.[p]?.volume || hoverData.volumeByPlatformFlat?.[p] || 0;
@@ -678,7 +702,7 @@ export default function NFTMarketPage({ stats }) {
                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: PLATFORM_COLORS[p] || '#6b7280' }} />
                                 {p}
                               </span>
-                              <span>{fVolume(val)}</span>
+                              <span><XrpValue value={val} size="small" showSymbol={false} /></span>
                             </div>
                           );
                         })}
@@ -687,12 +711,16 @@ export default function NFTMarketPage({ stats }) {
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 4 }}>
                           <span style={{ opacity: 0.6 }}>{metricConfig.label}</span>
-                          <span style={{ fontWeight: 600, color: '#3b82f6' }}>{metricConfig.format(hoverData[metric] || 0)}</span>
+                          <span style={{ fontWeight: 600, color: '#3b82f6' }}>
+                            {['royalties', 'brokerFees', 'avgPrice'].includes(metric)
+                              ? <XrpValue value={hoverData[metric] || 0} size="small" format={metric === 'avgPrice' ? v => (v || 0).toFixed(2) : fVolume} />
+                              : metricConfig.format(hoverData[metric] || 0)}
+                          </span>
                         </div>
                         {metric !== 'volume' && (
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
                             <span style={{ opacity: 0.6 }}>Volume</span>
-                            <span>{fVolume(hoverData.volume || 0)}</span>
+                            <span><XrpValue value={hoverData.volume || 0} size="small" /></span>
                           </div>
                         )}
                         {metric !== 'sales' && (
@@ -781,11 +809,11 @@ export default function NFTMarketPage({ stats }) {
                             <PlatformFill style={{ width: `${(p[platformSort] / maxSortedValue) * 100}%`, background: PLATFORM_COLORS[p.name] || '#6b7280', transition: 'width 0.3s ease' }} />
                           </PlatformBar>
                         </Td>
-                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}>{fVolume(p.volume)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'volume' ? 600 : 400 }}><XrpValue value={p.volume} size="small" /></Td>
                         <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'sales' ? 600 : 400 }}>{fNumber(p.sales)}</Td>
-                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{(p.avgPrice || 0).toFixed(1)} XRP</Td>
-                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'royalties' ? 600 : 400 }}>{fVolume(p.royalties)}</Td>
-                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}>{fVolume(p.brokerFees)}</Td>
+                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}><XrpValue value={p.avgPrice || 0} format={v => (v || 0).toFixed(1)} size="small" /></Td>
+                        <Td darkMode={darkMode} align="right" style={{ fontWeight: platformSort === 'royalties' ? 600 : 400 }}><XrpValue value={p.royalties} size="small" /></Td>
+                        <Td darkMode={darkMode} align="right" style={{ color: darkMode ? 'rgba(255,255,255,0.6)' : '#637381' }}><XrpValue value={p.brokerFees} size="small" /></Td>
                       </tr>
                     ));
                   })()}
@@ -807,7 +835,7 @@ export default function NFTMarketPage({ stats }) {
             <div style={{ padding: '12px 16px', borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', flexWrap: 'wrap', gap: 24, fontSize: 12 }}>
               <div>
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Volume: </span>
-                <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(platformStats.reduce((s, p) => s + p.volume, 0))}</span>
+                <span style={{ fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={platformStats.reduce((s, p) => s + p.volume, 0)} /></span>
               </div>
               <div>
                 <span style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Total Sales: </span>
@@ -850,7 +878,7 @@ export default function NFTMarketPage({ stats }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
               <div style={{ padding: '12px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Volume</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{fVolume(summaryStats.volume)}</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={summaryStats.volume} /></div>
               </div>
               <div style={{ padding: '12px 16px' }}>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>Sales</div>
@@ -867,9 +895,9 @@ export default function NFTMarketPage({ stats }) {
                 </tr>
                 <tr>
                   <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Royalties</Td>
-                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(summaryStats.royalties)}</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}><XrpValue value={summaryStats.royalties} size="small" /></Td>
                   <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Broker Fees</Td>
-                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}>{fVolume(summaryStats.brokerFees)}</Td>
+                  <Td darkMode={darkMode} align="right" style={{ fontWeight: 500 }}><XrpValue value={summaryStats.brokerFees} size="small" /></Td>
                 </tr>
                 <tr>
                   <Td darkMode={darkMode} style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : '#637381' }}>Mints</Td>
