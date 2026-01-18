@@ -170,9 +170,47 @@ const PaginationInfo = styled.span`
   margin: 0 8px;
 `;
 
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+const StatCard = styled.div`
+  padding: 16px;
+  border-radius: 10px;
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
+`;
+
+const StatLabel = styled.div`
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
+  margin-bottom: 6px;
+`;
+
+const StatValue = styled.div`
+  font-size: 18px;
+  font-weight: 600;
+  color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
+`;
+
+const StatSub = styled.div`
+  font-size: 11px;
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)')};
+  margin-top: 4px;
+`;
+
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '32px' },
   { id: 'trader', label: 'TRADER', align: 'left', width: '120px' },
+  { id: 'xrpBalance', label: 'BALANCE', align: 'right', width: '85px', sortable: true },
   { id: 'totalVolume', label: 'VOL (XRP)', align: 'right', width: '85px', sortable: true },
   { id: 'totalTrades', label: 'TRADES', align: 'right', width: '60px', sortable: true },
   { id: 'buyVolume', label: 'BOUGHT', align: 'right', width: '80px', sortable: true },
@@ -210,7 +248,7 @@ const SOURCE_TAGS = {
 
 const ROWS_PER_PAGE = 20;
 
-export default function TokenTradersPage({ traders = [], pagination = {} }) {
+export default function TokenTradersPage({ traders = [], pagination = {}, traderBalances = {} }) {
   const router = useRouter();
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
@@ -264,6 +302,31 @@ export default function TokenTradersPage({ traders = [], pagination = {} }) {
         <Subtitle darkMode={darkMode}>
           {totalTraders > 0 ? `${fNumber(totalTraders)} traders on XRPL DEX` : 'Top traders by profit on XRPL DEX'}
         </Subtitle>
+
+        {traderBalances.balanceAll > 0 && (
+          <StatsGrid>
+            <StatCard darkMode={darkMode}>
+              <StatLabel darkMode={darkMode}>24h Balance</StatLabel>
+              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance24h || 0)} XRP</StatValue>
+              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders24h || 0)} traders</StatSub>
+            </StatCard>
+            <StatCard darkMode={darkMode}>
+              <StatLabel darkMode={darkMode}>7d Balance</StatLabel>
+              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance7d || 0)} XRP</StatValue>
+              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders7d || 0)} traders</StatSub>
+            </StatCard>
+            <StatCard darkMode={darkMode}>
+              <StatLabel darkMode={darkMode}>30d Balance</StatLabel>
+              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance30d || 0)} XRP</StatValue>
+              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders30d || 0)} traders</StatSub>
+            </StatCard>
+            <StatCard darkMode={darkMode}>
+              <StatLabel darkMode={darkMode}>All Time Balance</StatLabel>
+              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balanceAll || 0)} XRP</StatValue>
+              <StatSub darkMode={darkMode}>{fNumber(traderBalances.tradersAll || 0)} traders</StatSub>
+            </StatCard>
+          </StatsGrid>
+        )}
 
         {traders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
@@ -338,6 +401,9 @@ export default function TokenTradersPage({ traders = [], pagination = {} }) {
                           <TraderLink href={`/address/${addr}`}>
                             {addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-'}
                           </TraderLink>
+                        </StyledTd>
+                        <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
+                          {fVolume(trader.xrpBalance || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
                           {fVolume(totalVol)}
@@ -430,15 +496,17 @@ export async function getServerSideProps({ query }) {
   const sortBy = query.sortBy || 'totalProfit';
 
   try {
-    const response = await axios.get(
-      `${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
-    );
-    const traders = response.data.data || [];
-    const pagination = response.data.pagination || {};
+    const [tradersRes, summaryRes] = await Promise.all([
+      axios.get(`${BASE_URL}/token/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`),
+      axios.get(`${BASE_URL}/token/analytics/traders/summary`)
+    ]);
+    const traders = tradersRes.data.data || [];
+    const pagination = tradersRes.data.pagination || {};
+    const traderBalances = summaryRes.data.traderBalances || {};
 
-    return { props: { traders, pagination } };
+    return { props: { traders, pagination, traderBalances } };
   } catch (error) {
     console.error('Failed to fetch token traders:', error.message);
-    return { props: { traders: [], pagination: {} } };
+    return { props: { traders: [], pagination: {}, traderBalances: {} } };
   }
 }

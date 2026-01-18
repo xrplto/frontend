@@ -6,7 +6,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { fNumber, fVolume } from 'src/utils/formatters';
-import { TrendingUp, TrendingDown, Activity, Users, Flame, Image, ShoppingCart, ArrowRightLeft, ChevronDown, BarChart3, DollarSign, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Users, Flame, Image, ShoppingCart, ArrowRightLeft, ChevronDown, BarChart3, DollarSign, Wallet, PiggyBank } from 'lucide-react';
 
 // XRP value display component
 const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true, color }) => {
@@ -849,6 +849,40 @@ export default function NFTMarketPage({ stats }) {
           </TableContainer>
         </Section>
 
+        {/* Trader Balances */}
+        {stats.traderBalances?.balanceAll > 0 && (
+          <Section>
+            <TableContainer darkMode={darkMode}>
+              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <PiggyBank size={14} style={{ color: '#3b82f6' }} />
+                <span style={{ fontSize: 12, fontWeight: 500, color: darkMode ? '#fff' : '#212B36' }}>Trader Balances</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
+                <div style={{ padding: '14px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>24h Active</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={stats.traderBalances.balance24h || 0} /></div>
+                  <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginTop: 2 }}>{fNumber(stats.traderBalances.traders24h || 0)} traders</div>
+                </div>
+                <div style={{ padding: '14px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>7d Active</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={stats.traderBalances.balance7d || 0} /></div>
+                  <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginTop: 2 }}>{fNumber(stats.traderBalances.traders7d || 0)} traders</div>
+                </div>
+                <div style={{ padding: '14px 16px', borderRight: `1px solid ${darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>30d Active</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={stats.traderBalances.balance30d || 0} /></div>
+                  <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginTop: 2 }}>{fNumber(stats.traderBalances.traders30d || 0)} traders</div>
+                </div>
+                <div style={{ padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', marginBottom: 4 }}>All Time</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}><XrpValue value={stats.traderBalances.balanceAll || 0} /></div>
+                  <div style={{ fontSize: 10, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginTop: 2 }}>{fNumber(stats.traderBalances.tradersAll || 0)} traders</div>
+                </div>
+              </div>
+            </TableContainer>
+          </Section>
+        )}
+
         {/* Market Summary */}
         <Section>
           <TableContainer darkMode={darkMode}>
@@ -974,6 +1008,9 @@ export async function getServerSideProps() {
 
       // Platform stats
       platformStatsAll: data.platformStatsAll || {},
+
+      // Trader balances
+      traderBalances: data.traderBalances || {},
 
       // Meta
       lastUpdated: data.lastUpdated
