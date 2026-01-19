@@ -2410,7 +2410,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 Market
               </button>
               <button
-                onClick={() => { setOrderType('limit'); setShowOrders(false); setShowOrderbook(true); }}
+                onClick={() => { setOrderType('limit'); setShowOrders(false); }}
                 className={cn(
                   "px-5 py-2 rounded-lg text-[14px] font-medium transition-colors",
                   orderType === 'limit'
@@ -2422,16 +2422,28 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 Limit
               </button>
             </div>
-            <button
-              onClick={handleShareUrl}
-              aria-label="Share swap URL"
-              className={cn(
-                "p-2.5 rounded-lg transition-colors",
-                darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
-              )}
-            >
-              <Share2 size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors",
+                  darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                )}
+              >
+                <Settings size={14} />
+                <span>{slippage}%</span>
+              </button>
+              <button
+                onClick={handleShareUrl}
+                aria-label="Share swap URL"
+                className={cn(
+                  "px-3 py-2 rounded-lg transition-colors",
+                  darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                )}
+              >
+                <Share2 size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Horizontal Two-Card Layout - Futuristic Style */}
@@ -2756,19 +2768,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </div>
             )}
 
-            {/* Market Order UI - Slippage & Quote Summary */}
+            {/* Market Order UI - Quote Summary */}
             {orderType === 'market' && (
               <>
-                <div className="flex items-center justify-between mb-4">
-                  <button onClick={() => setShowSettingsModal(true)} className={cn(
-                    "flex items-center gap-1.5 text-[11px]",
-                    darkMode ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
-                  )}>
-                    <Settings size={14} />
-                    <span>Slippage {slippage}%</span>
-                  </button>
-                </div>
-
                 {/* Swap Quote Summary */}
                 {amount1 && parseFloat(amount1) > 0 && (
                   <div className={cn(

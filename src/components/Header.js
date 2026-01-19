@@ -28,10 +28,7 @@ import {
   ArrowLeftRight,
   Palette,
   Check,
-  TrendingUp,
   Eye,
-  Newspaper,
-  Flame,
   Waves,
   X,
   PawPrint,
@@ -528,20 +525,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }, []);
 
-  // Menu items - Tokens dropdown (left: discovery, right: analytics)
-  const tokenMenuItemsLeft = [
-    { path: '/new', name: 'New Listings', desc: 'Recently added tokens', icon: <Newspaper size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/trending', name: 'Trending', desc: 'Most active tokens right now', icon: <Flame size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/gainers/24h', name: 'Top Gainers', desc: 'Best performing tokens', icon: <TrendingUp size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
-    { path: '/spotlight', name: 'Spotlight', desc: 'Featured tokens of the day', icon: <Search size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }
-  ];
-  const tokenMenuItemsRight = [
+  // Menu items - Tokens dropdown (analytics only, discovery moved to SearchToolbar)
+  const tokenMenuItems = [
     { path: '/token-traders', name: 'Top Traders', desc: 'Token traders leaderboard', icon: <Sparkles size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/token-market', name: 'Market Stats', desc: 'DEX trading analytics', icon: <BarChart3 size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/rsi-analysis', name: 'RSI Analysis', desc: 'Technical indicators', icon: <Activity size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> },
     { path: '/amm-pools', name: 'AMM Pools', desc: 'Liquidity pools & APY', icon: <Waves size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} /> }
   ];
-  const tokenMenuItems = [...tokenMenuItemsLeft, ...tokenMenuItemsRight];
 
   // NFT menu items (left: discovery, right: analytics)
   const nftMenuItemsLeft = [
@@ -685,50 +675,26 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   >
                     <div className="grid grid-cols-2 gap-1 p-3">
-                      <div className="flex flex-col gap-1">
-                        {tokenMenuItemsLeft.map((item) => (
-                          <div
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            className={cn(
-                              'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
-                              isActive(item.path)
-                                ? isDark ? 'bg-white/10' : 'bg-blue-50'
-                                : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
-                            )}
-                          >
-                            <div className={cn('mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                              {item.icon}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{item.name}</span>
-                              <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</span>
-                            </div>
+                      {tokenMenuItems.map((item) => (
+                        <div
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          className={cn(
+                            'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
+                            isActive(item.path)
+                              ? isDark ? 'bg-white/10' : 'bg-blue-50'
+                              : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                          )}
+                        >
+                          <div className={cn('mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                            {item.icon}
                           </div>
-                        ))}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {tokenMenuItemsRight.map((item) => (
-                          <div
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            className={cn(
-                              'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
-                              isActive(item.path)
-                                ? isDark ? 'bg-white/10' : 'bg-blue-50'
-                                : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
-                            )}
-                          >
-                            <div className={cn('mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                              {item.icon}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{item.name}</span>
-                              <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</span>
-                            </div>
+                          <div className="flex flex-col">
+                            <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{item.name}</span>
+                            <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>{item.desc}</span>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

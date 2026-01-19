@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
-import { Search, X, Code2, Copy, Check } from 'lucide-react';
+import { Search, X, Code2, Copy, Check, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
 
 // Styled Components
 const Container = styled.div`
@@ -1058,6 +1058,40 @@ const SearchToolbar = memo(function SearchToolbar({
             darkMode={darkMode}
           >
             All Tokens
+          </TagChip>
+
+          {/* Discovery items */}
+          <TagChip
+            onClick={() => (window.location.href = '/new')}
+            selected={currentView === 'new'}
+            darkMode={darkMode}
+          >
+            <Newspaper size={13} />
+            <span>New</span>
+          </TagChip>
+          <TagChip
+            onClick={() => (window.location.href = '/trending')}
+            selected={currentView === 'trending'}
+            darkMode={darkMode}
+          >
+            <Flame size={13} />
+            <span>Trending</span>
+          </TagChip>
+          <TagChip
+            onClick={() => (window.location.href = '/gainers/24h')}
+            selected={currentView === 'gainers'}
+            darkMode={darkMode}
+          >
+            <TrendingUp size={13} />
+            <span>Gainers</span>
+          </TagChip>
+          <TagChip
+            onClick={() => (window.location.href = '/spotlight')}
+            selected={currentView === 'spotlight'}
+            darkMode={darkMode}
+          >
+            <Sparkles size={13} />
+            <span>Spotlight</span>
           </TagChip>
 
           {/* Launchpads group */}
