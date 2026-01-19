@@ -1171,21 +1171,21 @@ const PriceChart = React.memo(({ slug }) => {
                   const thumb = sale.thumbnail?.medium || sale.thumbnail?.small;
                   const imgUrl = thumb ? `https://s1.xrpl.to/nft/${thumb}` : sale.image?.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${sale.image.slice(7)}` : '';
                   return (
-                    <a key={sale.NFTokenID || idx} href={`/nft/${sale.NFTokenID}`} className={cn("flex items-center gap-2 p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
-                      <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0" style={{ backgroundColor: isDark ? '#222' : '#eee' }}>
+                    <div key={sale.NFTokenID || idx} className={cn("flex items-center gap-2 p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
+                      <a href={`/nft/${sale.NFTokenID}`} target="_blank" rel="noopener noreferrer" className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0" style={{ backgroundColor: isDark ? '#222' : '#eee' }}>
                         {imgUrl && <Image src={imgUrl} alt="" fill sizes="40px" className="object-cover" unoptimized />}
-                      </div>
-                      <div className="flex-1 min-w-0">
+                      </a>
+                      <a href={`/nft/${sale.NFTokenID}`} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0">
                         <div className={cn("text-[10px] font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{sale.name || `#${sale.serial || '?'}`}</div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-semibold text-primary">{sale.costXRP} XRP</span>
                           <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{new Date(sale.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                      </div>
-                      <div className={cn("text-[8px] text-right flex-shrink-0", isDark ? "text-white/25" : "text-gray-300")}>
+                      </a>
+                      <a href={`/address/${sale.buyer}`} target="_blank" rel="noopener noreferrer" className={cn("text-[8px] text-right flex-shrink-0 hover:underline", isDark ? "text-white/25 hover:text-white/50" : "text-gray-300 hover:text-gray-500")}>
                         <div className="truncate max-w-[60px]">{sale.buyer?.slice(0,8) || '?'}...</div>
-                      </div>
-                    </a>
+                      </a>
+                    </div>
                   );
                 })}
               </div>
