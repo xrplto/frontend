@@ -344,8 +344,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
-  const [typedText, setTypedText] = useState('');
-  const searchWords = ['tokens', 'NFTs', 'collections'];
 
   // Helper to extract marketcap value (can be object with amount or number)
   const getMcap = (mcap) => (typeof mcap === 'object' ? mcap?.amount || 0 : mcap || 0);
@@ -366,71 +364,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       activeFiatCurrency === 'XRP' ? '✕' : currencySymbols[activeFiatCurrency]?.trim() || '$';
     return `${symbol}${formatMcapValue(value)}`;
   };
-  const baseText = 'Search for ';
 
   // Load recent searches from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches');
     if (stored) setRecentSearches(JSON.parse(stored));
-  }, []);
-
-  // Typewriter effect
-  useEffect(() => {
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let isBaseTyped = false;
-    let timeout;
-
-    const type = () => {
-      const currentWord = searchWords[wordIndex];
-      const fullText = baseText + currentWord + '...';
-
-      const typeSpeed = 100 + Math.random() * 50; // 100-150ms, slight variation
-      const deleteSpeed = 40 + Math.random() * 20; // 40-60ms
-
-      if (!isBaseTyped) {
-        // Type base text first
-        if (charIndex < baseText.length) {
-          setTypedText(baseText.slice(0, charIndex + 1));
-          charIndex++;
-          timeout = setTimeout(type, typeSpeed);
-        } else {
-          isBaseTyped = true;
-          charIndex = 0;
-          timeout = setTimeout(type, 150);
-        }
-      } else if (!isDeleting) {
-        // Type the word
-        const word = currentWord + '...';
-        if (charIndex < word.length) {
-          setTypedText(baseText + word.slice(0, charIndex + 1));
-          charIndex++;
-          timeout = setTimeout(type, typeSpeed);
-        } else {
-          // Pause then start deleting
-          timeout = setTimeout(() => {
-            isDeleting = true;
-            type();
-          }, 2500);
-        }
-      } else {
-        // Delete only the word (keep base text)
-        const word = currentWord + '...';
-        if (charIndex > 0) {
-          charIndex--;
-          setTypedText(baseText + word.slice(0, charIndex));
-          timeout = setTimeout(type, deleteSpeed);
-        } else {
-          isDeleting = false;
-          wordIndex = (wordIndex + 1) % searchWords.length;
-          timeout = setTimeout(type, 300);
-        }
-      }
-    };
-
-    type();
-    return () => clearTimeout(timeout);
   }, []);
 
   const tokensRef = useRef(null);
@@ -1095,7 +1033,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={typedText || 'Search...'}
+                  placeholder="Search tokens, NFTs, accounts, transactions..."
                   className={cn(
                     'flex-1 bg-transparent text-[14px] outline-none',
                     isDark
@@ -1107,29 +1045,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span
                   className={cn('flex-1 text-[14px]', isDark ? 'text-white/40' : 'text-gray-500')}
                 >
-                  {typedText || 'Search...'}
-                  <span className="animate-pulse">|</span>
+                  Search tokens, NFTs, accounts, transactions...
                 </span>
               )}
               {!searchOpen && (
-                <div className="flex items-center gap-1">
-                  <kbd
-                    className={cn(
-                      'px-1.5 py-0.5 rounded text-[10px]',
-                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
-                    )}
-                  >
-                    ⌘
-                  </kbd>
-                  <kbd
-                    className={cn(
-                      'px-1.5 py-0.5 rounded text-[10px]',
-                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
-                    )}
-                  >
-                    /
-                  </kbd>
-                </div>
+                <kbd
+                  className={cn(
+                    'px-2 py-0.5 rounded text-[11px] font-sans',
+                    isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
+                  )}
+                >
+                  /
+                </kbd>
               )}
             </div>
 

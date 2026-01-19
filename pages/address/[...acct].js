@@ -30,7 +30,8 @@ import {
   ChevronUp,
   ChevronDown,
   Filter,
-  GitBranch
+  GitBranch,
+  Code2
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
@@ -526,7 +527,43 @@ const OverView = ({ account }) => {
         label = isSeller ? 'Sold NFT' : 'Bought NFT';
       }
     } else if (type === 'TrustSet') {
-      label = 'Trustline';
+      const limit = txData.LimitAmount;
+      if (limit) {
+        const val = parseFloat(limit.value);
+        const currency = decodeCurrency(limit.currency);
+        if (val === 0) {
+          label = 'Remove Trustline';
+          amount = currency;
+        } else {
+          label = 'Set Trustline';
+          const fmtVal = val >= 1 ? val.toFixed(0) : val.toFixed(4);
+          amount = `${fmtVal} ${currency}`;
+        }
+      } else {
+        label = 'Trustline';
+      }
+    } else if (type === 'CheckCreate') {
+      label = 'Create Check';
+      const sendMax = txData.SendMax;
+      if (typeof sendMax === 'string') {
+        const xrpAmt = parseInt(sendMax) / 1000000;
+        amount = `${xrpAmt >= 1 ? xrpAmt.toFixed(2) : xrpAmt.toFixed(6)} XRP`;
+      } else if (sendMax?.value) {
+        const val = parseFloat(sendMax.value);
+        amount = `${val >= 1 ? val.toFixed(2) : val.toFixed(4)} ${decodeCurrency(sendMax.currency)}`;
+      }
+    } else if (type === 'CheckCash') {
+      label = 'Cash Check';
+      const cashAmount = txData.Amount || txData.DeliverMin;
+      if (typeof cashAmount === 'string') {
+        const xrpAmt = parseInt(cashAmount) / 1000000;
+        amount = `${xrpAmt >= 1 ? xrpAmt.toFixed(2) : xrpAmt.toFixed(6)} XRP`;
+      } else if (cashAmount?.value) {
+        const val = parseFloat(cashAmount.value);
+        amount = `${val >= 1 ? val.toFixed(2) : val.toFixed(4)} ${decodeCurrency(cashAmount.currency)}`;
+      }
+    } else if (type === 'CheckCancel') {
+      label = 'Cancel Check';
     } else if (type === 'NFTokenMint') {
       label = 'Mint NFT';
     } else if (type === 'NFTokenCreateOffer') {
@@ -2840,7 +2877,7 @@ const OverView = ({ account }) => {
                                   isDark ? 'text-white/35' : 'text-gray-400'
                                 )}
                               >
-                                No transactions found
+                                {txLoading ? 'Loading...' : 'No transactions found'}
                               </td>
                             </tr>
                           ) : (
