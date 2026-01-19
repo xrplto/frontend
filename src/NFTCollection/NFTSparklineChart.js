@@ -3,173 +3,64 @@ import axios from 'axios';
 
 const BASE_URL = 'https://api.xrpl.to';
 
-/**
- * NFT Collection Floor Price Sparkline Chart
- * Fetches and displays floor price trend from /api/nft/collections/:slug/sparkline
- *
- * @param {string} slug - Collection slug identifier
- * @param {string} period - Time period: '7d', '30d', or '1y' (default: '7d')
- * @param {number} width - Chart width in pixels (default: 120)
- * @param {number} height - Chart height in pixels (default: 32)
- */
-const NFTSparklineChart = memo(
-  ({ slug, period = '7d', width = 120, height = 32 }) => {
-    const [linePath, setLinePath] = useState('');
-    const [areaPath, setAreaPath] = useState('');
-    const [color, setColor] = useState('#22c55e');
-    const [percentChange, setPercentChange] = useState(null);
-    const containerRef = useRef(null);
-    const [visible, setVisible] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
+const NFTSparklineChart = memo(({ slug, period = '7d' }) => {
+  const [linePath, setLinePath] = useState('');
+  const [areaPath, setAreaPath] = useState('');
+  const [color, setColor] = useState('#22c55e');
+  const containerRef = useRef(null);
+  const [visible, setVisible] = useState(false);
 
-    // Lazy load with IntersectionObserver
-    useEffect(() => {
-      if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { rootMargin: '50px' });
+    obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
 
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setVisible(true);
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '50px', threshold: 0.01 }
-      );
+  useEffect(() => {
+    if (!visible || !slug) return;
+    let cancelled = false;
+    const url = `${BASE_URL}/api/nft/collections/${encodeURIComponent(slug)}/sparkline?period=${period}&lightweight=true&maxPoints=20`;
+    axios.get(url).then(res => {
+      if (cancelled) return;
+      const prices = res.data?.data?.prices?.map(Number) || [];
+      const chartColor = res.data?.chartColor || '#22c55e';
+      if (prices.length < 2) return;
+      const w = 120, h = 32;
+      const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
+      const pts = prices.map((p, i) => [i / (prices.length - 1) * w, h - ((p - min) / range) * (h - 4) - 2]);
+      const line = 'M' + pts.map(p => p.join(',')).join('L');
+      const area = line + `L${w},${h}L0,${h}Z`;
+      setLinePath(line);
+      setAreaPath(area);
+      setColor(chartColor);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [visible, slug, period]);
 
-      observer.observe(containerRef.current);
+  const hexToRgba = (hex, alpha) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+  const fillColor = hexToRgba(color, 0.15);
 
-      return () => observer.disconnect();
-    }, []);
-
-    // Fetch sparkline data when visible
-    useEffect(() => {
-      if (!visible || !slug) return;
-
-      let cancelled = false;
-      setLoading(true);
-      setError(false);
-
-      const url = `${BASE_URL}/api/nft/collections/${encodeURIComponent(slug)}/sparkline?period=${period}&lightweight=true&maxPoints=20`;
-
-      axios
-        .get(url)
-        .then((res) => {
-          if (cancelled) return;
-
-          const prices = res.data?.data?.prices?.map(Number) || [];
-          const chartColor = res.data?.chartColor || '#22c55e';
-          const change = res.data?.percentChange;
-
-          if (prices.length < 2) {
-            setLoading(false);
-            return;
-          }
-
-          // Calculate SVG paths
-          const min = Math.min(...prices);
-          const max = Math.max(...prices);
-          const range = max - min || 1;
-
-          const points = prices.map((price, i) => {
-            const x = (i / (prices.length - 1)) * width;
-            const y = height - ((price - min) / range) * (height - 4) - 2;
-            return [x, y];
-          });
-
-          const line = 'M' + points.map((p) => p.join(',')).join('L');
-          const area = line + `L${width},${height}L0,${height}Z`;
-
-          setLinePath(line);
-          setAreaPath(area);
-          setColor(chartColor);
-          setPercentChange(change);
-          setLoading(false);
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setError(true);
-            setLoading(false);
-          }
-        });
-
-      return () => {
-        cancelled = true;
-      };
-    }, [visible, slug, period, width, height]);
-
-    // Fill color with transparency based on chart color
-    const fillColor =
-      color === '#22c55e' || color === '#00AB55'
-        ? 'rgba(34, 197, 94, 0.15)'
-        : 'rgba(239, 68, 68, 0.15)';
-
-    // Placeholder while loading or not visible
-    if (!visible || loading) {
-      return (
-        <div
-          ref={containerRef}
-          style={{
-            width,
-            height,
-            background: 'rgba(128, 128, 128, 0.04)',
-            borderRadius: 4
-          }}
-        />
-      );
-    }
-
-    // Error or no data state
-    if (error || !linePath) {
-      return (
-        <div
-          ref={containerRef}
-          style={{
-            width,
-            height,
-            background: 'rgba(128, 128, 128, 0.04)',
-            borderRadius: 4,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <span style={{ fontSize: 10, color: 'rgba(128, 128, 128, 0.5)' }}>—</span>
-        </div>
-      );
-    }
-
-    return (
-      <div ref={containerRef} style={{ width, height, position: 'relative' }}>
-        <svg
-          width={width}
-          height={height}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          style={{ display: 'block' }}
-        >
+  return (
+    <div ref={containerRef} style={{ width: 120, height: 32 }}>
+      {linePath ? (
+        <svg width="120" height="32" viewBox="0 0 120 32" preserveAspectRatio="none" style={{ display: 'block' }}>
           <path d={areaPath} fill={fillColor} />
-          <path
-            d={linePath}
-            fill="none"
-            stroke={color}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    return (
-      prevProps.slug === nextProps.slug &&
-      prevProps.period === nextProps.period &&
-      prevProps.width === nextProps.width &&
-      prevProps.height === nextProps.height
-    );
-  }
-);
+      ) : (
+        <div style={{ width: 120, height: 32, background: 'rgba(128,128,128,0.04)', borderRadius: 4 }} />
+      )}
+    </div>
+  );
+}, (prev, next) => prev.slug === next.slug && prev.period === next.period);
 
 NFTSparklineChart.displayName = 'NFTSparklineChart';
 

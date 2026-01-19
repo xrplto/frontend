@@ -714,7 +714,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
 
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <NFTSparklineChart slug={slug} period="7d" width={140} height={36} />
+          <NFTSparklineChart slug={slug} period="7d" />
         </div>
       </StyledCell>
     </StyledRow>
