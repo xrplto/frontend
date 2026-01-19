@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
 const escapeXml = (unsafe) => {
   if (!unsafe) return '';

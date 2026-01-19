@@ -88,7 +88,7 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
   const startTime = performance.now();
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   let metrics = null;
 

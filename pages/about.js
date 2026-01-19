@@ -6,7 +6,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap } from 'lucide-react';
 // Constants
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -544,7 +544,7 @@ export default memo(AboutPage);
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/api/banxa/currencies
+  // https://api.xrpl.to/v1/banxa/currencies
   // const BASE_URL = process.env.API_URL;
   let data = null;
   try {

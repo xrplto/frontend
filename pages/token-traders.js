@@ -10,7 +10,7 @@ import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-r
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = styled.div`
   max-width: 1920px;

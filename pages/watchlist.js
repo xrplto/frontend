@@ -17,7 +17,7 @@ import { Coins, Image, Star, Compass, Plus, Search, X, TrendingUp } from 'lucide
 import Link from 'next/link';
 import { cn } from 'src/utils/cn';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 function Overview({ data }) {
   const [tokens, setTokens] = useState([]);
@@ -384,7 +384,7 @@ export default Overview;
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/api/tags
+  // https://api.xrpl.to/v1/tags
 
   let data = null;
   try {

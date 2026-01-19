@@ -32,7 +32,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function TopTraders({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);

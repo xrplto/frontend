@@ -1143,7 +1143,7 @@ const FTokenRow = memo(
     customColumns = [],
     rows = 50
   }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/v1';
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 

@@ -48,7 +48,7 @@ import {
   BarChart3
 } from 'lucide-react';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 // Validate XRPL 64-65 char hex (tx hash, NFTokenID, or NFTokenID with extra char)
 const isValidHexId = (str) => /^[A-Fa-f0-9]{64,65}$/.test(str?.trim());
@@ -204,7 +204,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     try {
       const callbackUrl = window.location.origin + '/callback';
       sessionStorage.setItem('auth_return_url', window.location.href);
-      const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/request', {
+      const response = await fetch('https://api.xrpl.to/v1/oauth/twitter/oauth1/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callbackUrl })
@@ -230,7 +230,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     if (!mobileEmail || !mobileEmail.includes('@')) return;
     setMobileEmailLoading(true);
     try {
-      const res = await fetch('https://api.xrpl.to/api/auth/email/send-code', {
+      const res = await fetch('https://api.xrpl.to/v1/auth/email/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: mobileEmail })

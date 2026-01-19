@@ -1,12 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
-import { Copy, Menu, X, CheckCircle, Code, Search, Loader2, ChevronRight, ChevronDown, Zap, Clock, BookOpen, Server, Users, AlertTriangle, FileText, Database, BarChart3, Rocket, Hash, Mail, MessageCircle, ExternalLink, Wrench, Key, CreditCard } from 'lucide-react';
+import { Copy, Menu, X, CheckCircle, Code, Search, Loader2, ChevronRight, ChevronDown, Zap, Clock, BookOpen, Server, Users, AlertTriangle, FileText, Database, BarChart3, Rocket, Hash, Mail, MessageCircle, ExternalLink, Wrench, Key, CreditCard, List } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
+import { API_REFERENCE, getTotalEndpointCount, ApiButton } from 'src/components/ApiEndpointsModal';
 
 const ApiDocsPage = () => {
   const { themeName } = useContext(AppContext);
@@ -28,8 +29,9 @@ const ApiDocsPage = () => {
       name: 'Get Started',
       items: [
         { id: 'overview', title: 'Overview', icon: BookOpen },
+        { id: 'reference', title: 'Reference (md5)', icon: Hash },
+        { id: 'endpoint-reference', title: 'All Endpoints', icon: List },
         { id: 'fees', title: 'Fees', icon: Zap },
-        { id: 'reference', title: 'Reference', icon: Hash },
         { id: 'errors', title: 'Error Codes', icon: AlertTriangle }
       ]
     },
@@ -78,6 +80,10 @@ const ApiDocsPage = () => {
       { id: 'start-building', label: 'Start Building' },
       { id: 'quick-start', label: 'Quick Start Example' }
     ],
+    'endpoint-reference': Object.entries(API_REFERENCE).map(([key, cat]) => ({
+      id: `ref-${key}`,
+      label: cat.label
+    })),
     fees: [
       { id: 'trading-fees', label: 'Trading Fees' },
       { id: 'token-launch-fees', label: 'Token Launch Fees' }
@@ -134,8 +140,7 @@ const ApiDocsPage = () => {
       { id: 'currency-hex', label: 'Currency Hex' },
       { id: 'patterns', label: 'Regex Patterns' },
       { id: 'caching', label: 'Caching' },
-      { id: 'rate-limits', label: 'Rate Limits' }
-    ],
+      ],
     tools: [
       { id: 'tools-endpoints', label: 'All Endpoints' }
     ],
@@ -153,16 +158,17 @@ const ApiDocsPage = () => {
 
   const llmSnippets = {
     tokens: `## Tokens API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
 GET /tokens - List all tokens with filtering and sorting
 Params: start (int, default:0), limit (int, max:100), sortBy (vol24hxrp|marketcap|p24h|trustlines|trendingScore), sort (alias), sortType (asc|desc), order (alias), filter (OMCF|AMM|search), filterNe (negative filter), tag, tags (comma-separated OR filter), watchlist (comma-separated md5), showNew, showSlug, showDate, skipMetrics
-Example: GET /api/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
+Example: GET /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
 Response: { result, took, count, tokens[], exch, H24, global }
 
-GET /token/{slug} - Get single token by slug, md5, or issuer_currency
-Params: slug (required), desc ("yes" for description)
-Example: GET /api/token/SOLO or /api/token/rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000
+GET /token/{id} - Get single token by md5 (recommended), slug (issuer-currency), or issuer_currency
+Params: id (required), desc ("yes" for description)
+Formats: md5 (0413ca7cfc258dfaf698c02fe304e607), slug (rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-SOLO), issuer_currency (issuer_hexCurrency)
+Example: GET /v1/token/0413ca7cfc258dfaf698c02fe304e607
 
 POST /search - Search tokens by name/symbol/issuer
 Body: { search: string, page: int, limit: int (max:100) }
@@ -174,13 +180,13 @@ GET /issuer/{issuer} - Get other tokens from same issuer (md5, page, limit)
 GET /traders/token-traders/{tokenId} - Get top traders with P&L stats (sortBy: volume|pnl|trades, minVolume)`,
 
     market: `## Market Data API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
-GET /graph-ohlc-v2/{md5} - OHLC candlestick data from ohlc_v1 database
+GET /ohlc/{md5} - OHLC candlestick data from ohlc_v1 database
 Params: range (1D|5D|1M|3M|1Y|5Y|ALL), interval (1m|5m|15m|30m|1h|4h|1d|1w - auto-selected if omitted), vs_currency (XRP|USD|EUR|JPY|CNH)
 Default intervals: 1D→5m, 5D→15m, 1M→1h, 3M→4h, 1Y→1d, 5Y/ALL→1w
 Cache: 1D→5s, 7D→1min, 1M→2min, 3M→5min, 1Y+→10min
-Example: GET /api/graph-ohlc-v2/0413ca7cfc258dfaf698c02fe304e607?range=1M&vs_currency=USD
+Example: GET /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1M&vs_currency=USD
 Response: { result, source, took, length, range, interval, interval_seconds, vs_currency, ohlc: [[time, o, h, l, c, vol]] }
 
 GET /sparkline/{md5} - Sparkline price data for mini charts
@@ -192,31 +198,40 @@ GET /holders/graph/{md5} - Holder distribution graph data
 
 GET /rsi - RSI technical indicators with filtering
 Params: start, limit (max:100), sortBy (rsi15m|rsi1h|rsi4h|rsi24h|rsi7d), sortType, timeframe, filter, tag, origin, minMarketCap, maxMarketCap, minVolume24h, maxVolume24h, minPriceChange24h, maxPriceChange24h, minRsi15m, maxRsi15m, minRsi1h, maxRsi1h, minRsi4h, maxRsi4h, minRsi24h, maxRsi24h, minRsi7d, maxRsi7d
-Example: GET /api/rsi?minRsi24h=70&sortBy=rsi24h&limit=20
+Example: GET /v1/rsi?minRsi24h=70&sortBy=rsi24h&limit=20
 
 POST /metrics - Get historical token metrics (body: { md5, range })
-GET /news - XRPL news with sentiment (5min cache, page, limit, source filter)
+GET /news - XRPL news with sentiment (Live, page, limit, source filter)
 GET /news/search?q={query} - Search news articles by title/summary/body
-GET /stats - Global platform metrics (30s cache)`,
+GET /stats - Global platform metrics (30s)`,
 
     trading: `## Trading API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
+Token identifiers: All endpoints accept md5 (recommended), slug, or issuer_currency format
 
 GET /history - Trade history for a token
-Params: md5 (required unless account), account, page, limit (max:5000, defaults vary by query), startTime, endTime (Unix ms), xrpOnly (bool), xrpAmount (min XRP filter - cached for 100|500)
-Notes: Limit defaults: 10 (no filter), 20 (md5/account), 50 (both), 100 (time range)
-Example: GET /api/history?md5=0413ca7cfc258dfaf698c02fe304e607&xrpAmount=100&limit=50
-Response: { result, took, hists[], recordsReturned, totalRecords, page, limit, timeRange }
+Params: md5 (required unless account), account, page, limit (max:5000), startTime, endTime (Unix ms), xrpOnly, xrpAmount
+Example: GET /v1/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
 
 GET /amm - AMM liquidity pools with metrics
-Params: page, limit (default:25, max:100), status (active|all), issuer, currency, sortBy (fees|apy|liquidity|volume|created)
-Response: { result, took, summary: { totalLiquidity, totalVolume24h, totalFees7d, avgFee }, pools[], page, limit, totalCount, totalPages }
+Params: token (md5/slug/issuer_currency to filter), page, limit, sortBy (fees|apy|liquidity|volume|created)
+Example: GET /v1/amm?token=0413ca7cfc258dfaf698c02fe304e607
+
+GET /amm/info - Live AMM pool info
+Params: asset, asset2 (md5/slug/issuer_currency or "XRP")
+Example: GET /v1/amm/info?asset=XRP&asset2=0413ca7cfc258dfaf698c02fe304e607
+
+GET /amm/liquidity-chart - Historical TVL chart
+Params: token (md5/slug/issuer_currency)
+
+POST /dex/quote - Swap quote via ripple_path_find
+Body: { source_token, destination_token (md5/slug/issuer_currency), source_amount, destination_account }
 
 GET /pairs/{md5} - Trading pairs for token
-GET /rates - Exchange rates (base, quote)`,
+GET /stats/rates - Exchange rates (token1, token2: md5/slug/issuer_currency)`,
 
     account: `## Account API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
 GET /account/balance/{account} - Detailed XRP balance with reserves
 Response: { result, took, account, balance, total, balanceDrops, spendableDrops, ownerCount, reserve }
@@ -236,7 +251,7 @@ POST /oauth/twitter/oauth1/request - Twitter OAuth request token (body: { callba
 POST /oauth/twitter/oauth1/access - Twitter OAuth access token (body: { oauth_token, oauth_verifier, oauth_token_secret })`,
 
     nft: `## NFT API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
 GET /nft/{NFTokenID} - Get NFT by 64-char ID
 GET /nft/{NFTokenID}/offers - Buy/sell offers
@@ -265,12 +280,13 @@ POST /nft/pin - Pin NFT metadata to IPFS (body: { metadata })
 GET /nft/pin/status/{hash} - Get IPFS pin status`,
 
     xrpl: `## XRPL Node API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
+Token identifiers: Orderbook accepts md5/slug/issuer_currency via base/quote params
 
-GET /orderbook - Live orderbook (5s cache, rippled: book_offers)
-Params: base_currency (required), base_issuer, quote_currency (required), quote_issuer, limit (default:20, max:400)
-Note: XRP auto-normalized to quote side. Returns simplified offers with price, amount, total, account, funded
-Example: GET /api/orderbook?base_currency=534F4C4F&base_issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&quote_currency=XRP
+GET /orderbook - Live orderbook (rippled: book_offers)
+Params (recommended): base, quote (md5/slug/issuer_currency or "XRP"), limit (default:20, max:400)
+Params (legacy): base_currency, base_issuer, quote_currency, quote_issuer
+Example: GET /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607
 Response: { success, pair, base, quote, bids[], asks[], ledger_index }
 
 GET /tx/{account} - Paginated transaction history (rippled: tx)
@@ -278,22 +294,20 @@ Params: limit (default:200, max:400), marker (JSON string), ledger_index_min/max
 
 GET /trustlines/{account} - Account trustlines with token info (rippled: account_lines)
 Params: page, limit (default:10, max:50), format (raw|default|full), sortByValue (bool)
-Formats: raw (trustline data only), default (parsed currency/issuer/balance/limit/flags), full (includes token info, value, percentOwned - auto-sorted by value)
-Response: { result, took, account, accountActive, accountData: { balance, total, reserve, ownerCount }, total, lines[], tokenCount?, totalValue? }
 
 GET /tx/{hash} - Transaction by hash (rippled: tx)
 POST /pathfinding/pathfind - Find payment paths (rippled: path_find)
 POST /pathfinding/ripplepathfind - Ripple path find (rippled: ripple_path_find)`,
 
     analytics: `## Analytics API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
-GET /analytics/token/{tokenId} - Token analytics (OMCF)
-GET /analytics/trader/{address}/{tokenId} - Trader metrics for token
-GET /traders/token-traders/{tokenId} - Top traders (page, limit, sortBy: pnl|trades|volume)
+GET /analytics/token/{md5} - Token analytics (OMCF)
+GET /analytics/trader/{address}/{md5} - Trader metrics for specific token
+GET /traders/token-traders/{md5} - Top traders (page, limit, sortBy: pnl|trades|volume)
 GET /analytics/trader-stats/{address} - Cumulative trader stats
 
-GET /analytics/cumulative-stats - All traders stats (10min cache)
+GET /analytics/cumulative-stats - All traders stats (Live)
 Params: page (default:1), limit (default:10), sortBy (default:volume24h), sortOrder (asc|desc), minVolume, address, includeAMM (default:true), minTrades, minProfit, minROI, minTokens, startDate, endDate, activePeriod
 
 GET /analytics/market-metrics - Daily market metrics (startDate required, endDate default:now)
@@ -302,7 +316,7 @@ GET /analytics/trader/{address}/trade-history - Trade count history
 GET /analytics/trader/{address}/roi-history - ROI history`,
 
     launch: `## Token Launch API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
 POST /launch-token - Initialize token launch
 Body: { currencyCode (1-20 chars, not "XRP"), tokenSupply (max ~10^16), ammXrpAmount (min 1), name, origin, user, userAddress (required if userCheckAmount>0), userCheckAmount (max 95%), antiSnipe (bool), domain, description, telegram, twitter, imageData (base64) }
@@ -325,7 +339,7 @@ Anti-Snipe Mode: Enables RequireAuth flag, 250 pre-created tickets, 5min auth wi
 Final State: issuer ~1 XRP locked (blackholed), holder ~1.4 XRP locked (base + LP token reserve, blackholed)`,
 
     tools: `## Tools API
-Base URL: https://api.xrpl.to/api
+Base URL: https://api.xrpl.to/v1
 
 GET /health - API health check (returns "success")
 GET /testnet/{address} - Get XRP balance on testnet
@@ -334,9 +348,9 @@ GET /integrations/xrpnft/filter-by-account/{account} - Get NFTs owned by account
 
     reference: `## Reference
 Token Identifiers:
-- slug: e.g., SOLO
-- md5: 32-char hex (MD5 of issuer_currencyHex)
-- issuer_currency: {issuer}_{currencyHex} (underscore separator)
+- md5: 32-char hex, e.g., 0413ca7cfc258dfaf698c02fe304e607
+- slug: issuer-currencyHex (dash separator), e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00...
+- issuer_currency: issuer_currencyHex (underscore separator), e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...
 
 MD5 Generation:
 MD5("rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000")
@@ -353,8 +367,8 @@ Patterns:
 - NFTokenID: ^[A-Fa-f0-9]{64}$
 - txHash: ^[A-Fa-f0-9]{64}$
 
-Caching: default 5s, platformStatus 30s, news 5min, cumulativeStats 10min, OHLC varies (5s-10min by range)
-Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
+Caching: Default Live (5s), platformStatus 30s, News Live (5min), Cumulative Stats Live (10min), OHLC varies by range
+Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30K/day), Pro (400/min, 120K/day), Enterprise (1K/min, 300K/day)`
   };
 
   const CopyButton = ({ text, id, label = "Copy for LLM" }) => (
@@ -402,6 +416,47 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
 
   const renderContent = () => {
     switch (currentSection) {
+      case 'endpoint-reference':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-normal text-primary mb-2">All Endpoints</h2>
+                <p className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-600")}>
+                  Complete reference of all {getTotalEndpointCount()} API endpoints organized by category.
+                </p>
+              </div>
+              <ApiButton />
+            </div>
+
+            {Object.entries(API_REFERENCE).map(([key, category]) => (
+              <div key={key} id={`ref-${key}`} className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+                <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+                  {category.label} ({category.endpoints.length})
+                </div>
+                <div className="space-y-2 text-[13px]">
+                  {category.endpoints.map((ep) => (
+                    <div key={ep.path} className="flex items-start gap-3">
+                      <span className={cn(
+                        "px-1.5 py-0.5 text-[10px] font-medium rounded shrink-0 mt-0.5",
+                        ep.method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                      )}>
+                        {ep.method}
+                      </span>
+                      <code className={cn("font-mono text-[12px] shrink-0", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>
+                        /v1{ep.path}
+                      </code>
+                      <span className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                        {ep.desc}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
       case 'overview':
         return (
           <div className="space-y-8">
@@ -433,9 +488,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { icon: Zap, title: 'Quick Start', desc: 'Make your first API call in minutes and start building.' },
-                  { icon: Clock, title: 'Rate Limits', desc: 'Free: 1,000 req/hr. Authenticated: 5,000 req/hr.' },
-                  { icon: Code, title: 'API Reference', desc: 'Complete documentation for all endpoints.' }
+                  { icon: Zap, title: 'Quick Start', desc: 'Make your first API call in minutes and start building.', action: null },
+                  { icon: Clock, title: 'Rate Limits', desc: 'Free: 10/min. Pro: 400/min. See API Keys for all tiers.', action: 'api-keys' },
+                  { icon: Code, title: 'API Reference', desc: `${getTotalEndpointCount()} endpoints with full documentation.`, action: 'endpoint-reference' }
                 ].map((card) => (
                   <div
                     key={card.title}
@@ -443,7 +498,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                       "rounded-xl border-[1.5px] p-5 cursor-pointer transition-colors",
                       isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)]"
                     )}
-                    onClick={() => card.title === 'API Reference' && setCurrentSection('tokens')}
+                    onClick={() => card.action && setCurrentSection(card.action)}
                   >
                     <card.icon size={20} className="text-primary mb-3" />
                     <h3 className="text-[14px] font-medium mb-1">{card.title}</h3>
@@ -460,9 +515,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 Get top tokens by 24h volume:
               </p>
               <div className={cn("p-3 rounded-lg font-mono text-[13px] overflow-x-auto", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
-                <span className="text-primary">curl</span> -X GET "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp"
+                <span className="text-primary">curl</span> -X GET "https://api.xrpl.to/v1/tokens?limit=10&sortBy=vol24hxrp"
               </div>
-              <button onClick={() => handleTryApi('/api/tokens?limit=5&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button onClick={() => handleTryApi('/v1/tokens?limit=5&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
                 <Code size={12} /> Try It
               </button>
             </div>
@@ -574,11 +629,19 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.tokens} id="llm-tokens-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifier:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                Use <code className="text-primary">md5</code> (32-char hex) to identify tokens.
+                <button onClick={() => setCurrentSection('reference')} className="text-primary hover:underline ml-1">Learn how to generate md5 →</button>
+              </span>
+            </div>
+
             {/* GET /tokens */}
             <div id="get-tokens" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/tokens</code>
+                <code className="text-[15px] font-mono">/v1/tokens</code>
               </div>
               <p className={cn("text-[13px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
                 List all tokens with filtering and sorting
@@ -617,29 +680,52 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /api/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
+                  <span className="text-emerald-500">GET</span> /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
                 </pre>
               </div>
-              <button onClick={() => handleTryApi('/api/tokens?limit=10&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button onClick={() => handleTryApi('/v1/tokens?limit=10&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
                 <Code size={12} /> Try It
               </button>
             </div>
 
-            {/* GET /token/{slug} */}
+            {/* GET /token/{id} */}
             <div id="get-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/token/{'{slug}'}</code>
+                <code className="text-[15px] font-mono">/v1/token/{'{id}'}</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
-                Get single token by slug, md5, or issuer_currency format
+                Get single token by <span className="text-primary font-medium">md5</span> (recommended), slug, or issuer_currency format.
+                <button onClick={() => setCurrentSection('reference')} className="text-primary hover:underline ml-1">See Reference →</button>
               </p>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-3", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+                <table className="w-full text-[12px]">
+                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                    <tr>
+                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Format</th>
+                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ['md5 (recommended)', '0413ca7cfc258dfaf698c02fe304e607'],
+                      ['slug', 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-SOLO'],
+                      ['issuer_currency', 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...']
+                    ].map(([format, example]) => (
+                      <tr key={format} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                        <td className="px-3 py-2"><code className={format.includes('recommended') ? "text-primary" : ""}>{format}</code></td>
+                        <td className={cn("px-3 py-2 font-mono text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>{example}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /api/token/SOLO
+                  <span className="text-emerald-500">GET</span> /v1/token/0413ca7cfc258dfaf698c02fe304e607
                 </pre>
               </div>
-              <button onClick={() => handleTryApi('/api/token/SOLO')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button onClick={() => handleTryApi('/v1/token/0413ca7cfc258dfaf698c02fe304e607')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
                 <Code size={12} /> Try It
               </button>
             </div>
@@ -648,7 +734,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             <div id="post-search" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
-                <code className="text-[15px] font-mono">/api/search</code>
+                <code className="text-[15px] font-mono">/v1/search</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Search tokens by name/symbol/issuer
@@ -667,10 +753,10 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/slugs', 'Get all token slugs'],
-                  ['GET', '/api/tags', 'Get all token tags with counts'],
-                  ['GET', '/api/issuer/{issuer}', 'Get tokens from same issuer (md5, page, limit)'],
-                  ['GET', '/api/traders/token-traders/{tokenId}', 'Top traders with P&L (sortBy: volume|pnl|trades, minVolume)']
+                  ['GET', '/v1/slugs', 'Get all token slugs'],
+                  ['GET', '/v1/tags', 'Get all token tags with counts'],
+                  ['GET', '/v1/issuer/{address}', 'Get tokens from same issuer'],
+                  ['GET', '/v1/traders/token-traders/{md5}', 'Top traders with P&L (sortBy: volume|pnl|trades)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -691,11 +777,18 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.market} id="llm-market-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifier:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                Use <code className="text-primary">md5</code> (32-char hex) to identify tokens in chart/holder endpoints.
+              </span>
+            </div>
+
             {/* OHLC */}
             <div id="ohlc" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/graph-ohlc-v2/{'{md5}'}</code>
+                <code className="text-[15px] font-mono">/v1/ohlc/{'{md5}'}</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get OHLC candlestick chart data
@@ -725,7 +818,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /api/graph-ohlc-v2/0413ca7cfc258dfaf698c02fe304e607?range=1D
+                  <span className="text-emerald-500">GET</span> /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1D
                 </pre>
               </div>
             </div>
@@ -737,15 +830,15 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/sparkline/{md5}', 'Sparkline data (period: 24h|7d, lightweight, maxPoints)'],
-                  ['GET', '/api/holders/list/{md5}', 'Top token holders (start, limit)'],
-                  ['GET', '/api/holders/info/{md5}', 'Holder distribution statistics'],
-                  ['GET', '/api/holders/graph/{md5}', 'Holder distribution graph'],
-                  ['GET', '/api/rsi', 'RSI indicators with filtering (all timeframes, market/volume/price filters)'],
-                  ['POST', '/api/metrics', 'Historical token metrics (body: { md5, range })'],
-                  ['GET', '/api/stats', 'Global platform metrics (30s cache)'],
-                  ['GET', '/api/news', 'XRPL news with sentiment (5min cache, source filter)'],
-                  ['GET', '/api/news/search?q={query}', 'Search news by title/summary/body']
+                  ['GET', '/v1/sparkline/{md5}', 'Sparkline data (period: 24h|7d, lightweight, maxPoints)'],
+                  ['GET', '/v1/holders/list/{md5}', 'Top token holders (start, limit)'],
+                  ['GET', '/v1/holders/info/{md5}', 'Holder distribution statistics'],
+                  ['GET', '/v1/holders/graph/{md5}', 'Holder distribution graph'],
+                  ['GET', '/v1/rsi', 'RSI indicators with filtering (all timeframes, market/volume/price filters)'],
+                  ['POST', '/v1/metrics', 'Historical token metrics (body: { md5, range })'],
+                  ['GET', '/v1/stats', 'Global platform metrics (30s)'],
+                  ['GET', '/v1/news', 'XRPL news with sentiment (Live)'],
+                  ['GET', '/v1/news/search?q={query}', 'Search news by title/summary/body']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -766,11 +859,18 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.trading} id="llm-trading-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifier:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                Use <code className="text-primary">md5</code> for tokens, <code className="text-primary">account</code> (r-address) for wallets.
+              </span>
+            </div>
+
             {/* GET /history */}
             <div id="history" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/history</code>
+                <code className="text-[15px] font-mono">/v1/history</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get trade history for a token
@@ -804,8 +904,68 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /api/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
+                  <span className="text-emerald-500">GET</span> /v1/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
                 </pre>
+              </div>
+            </div>
+
+            {/* AMM Endpoints */}
+            <div id="amm-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+                AMM Pools
+              </div>
+              <div className="space-y-2 text-[13px]">
+                {[
+                  ['GET', '/v1/amm', 'List AMM pools (token: md5 to filter, sortBy: fees|apy|liquidity|volume)'],
+                  ['GET', '/v1/amm/info', 'Pool info (asset, asset2: md5/slug/issuer_currency or XRP)'],
+                  ['GET', '/v1/amm/liquidity-chart', 'TVL history (token: md5/slug/issuer_currency)']
+                ].map(([method, path, desc]) => (
+                  <div key={path} className="flex items-start gap-3">
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">{method}</span>
+                    <code className="font-mono text-[12px] shrink-0">{path}</code>
+                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                  </div>
+                ))}
+              </div>
+              <div className={cn("relative group rounded-lg overflow-hidden mt-3", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+                <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
+                  <span className="text-emerald-500">GET</span> /v1/amm?token=0413ca7cfc258dfaf698c02fe304e607{'\n'}
+                  <span className="text-emerald-500">GET</span> /v1/amm/info?asset=XRP&asset2=0413ca7cfc258dfaf698c02fe304e607
+                </pre>
+              </div>
+            </div>
+
+            {/* DEX Quote */}
+            <div id="dex-quote" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
+                <code className="text-[15px] font-mono">/v1/dex/quote</code>
+              </div>
+              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+                Get swap quote via ripple_path_find. Supports md5/slug/issuer_currency for tokens.
+              </p>
+              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-3", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+                <table className="w-full text-[12px]">
+                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                    <tr>
+                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Body Param</th>
+                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ['source_token', 'md5/slug/issuer_currency (or omit for XRP)'],
+                      ['destination_token', 'md5/slug/issuer_currency (or omit for XRP)'],
+                      ['source_amount', 'Amount to swap'],
+                      ['destination_account', 'Recipient address']
+                    ].map(([param, desc]) => (
+                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
+                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -816,9 +976,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/amm', 'AMM pools with metrics (sortBy: fees|apy|liquidity|volume|created)'],
-                  ['GET', '/api/pairs/{md5}', 'Trading pairs for token'],
-                  ['GET', '/api/rates', 'Exchange rates (base, quote)']
+                  ['GET', '/v1/pairs/{md5}', 'Trading pairs for token'],
+                  ['GET', '/v1/stats/rates', 'Exchange rates (token1, token2: md5/slug/issuer_currency)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -839,20 +998,27 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.account} id="llm-account-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifier:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                Use <code className="text-primary">account</code> or <code className="text-primary">address</code> (r-address format, e.g., rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9).
+              </span>
+            </div>
+
             {/* Account endpoints list */}
             <div id="account-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/account/balance/{account}', 'Detailed XRP balance with reserves'],
-                  ['POST', '/api/account/balance', 'Batch balances (body: { accounts[] max 100 })'],
-                  ['GET', '/api/account/info/{account}', 'Pair balance info (curr1, issuer1, curr2, issuer2)'],
-                  ['GET', '/api/account/tx/{account}', 'Trade history by pair (curr1, issuer1, curr2, issuer2)'],
-                  ['GET', '/api/account/offers/{account}', 'Open DEX offers (pair, page, limit max:50)'],
-                  ['GET', '/api/traders/{address}', 'Trader profile with stats'],
-                  ['GET', '/api/watchlist?account={account}', 'User watchlist'],
-                  ['POST', '/api/watchlist', 'Add/remove token (body: { account, md5, action })'],
-                  ['POST', '/api/oauth/twitter/oauth1/request', 'Twitter OAuth request token (body: { callbackUrl })'],
-                  ['POST', '/api/oauth/twitter/oauth1/access', 'Twitter OAuth access token']
+                  ['GET', '/v1/account/balance/{account}', 'Detailed XRP balance with reserves'],
+                  ['POST', '/v1/account/balance', 'Batch balances (body: { accounts[] max 100 })'],
+                  ['GET', '/v1/account/info/{account}', 'Pair balance info (curr1, issuer1, curr2, issuer2)'],
+                  ['GET', '/v1/account/tx/{account}', 'Trade history by pair (curr1, issuer1, curr2, issuer2)'],
+                  ['GET', '/v1/account/offers/{account}', 'Open DEX offers (pair, page, limit max:50)'],
+                  ['GET', '/v1/traders/{address}', 'Trader profile with stats'],
+                  ['GET', '/v1/watchlist?account={account}', 'User watchlist'],
+                  ['POST', '/v1/watchlist', 'Add/remove token (body: { account, md5, action })'],
+                  ['POST', '/v1/oauth/twitter/oauth1/request', 'Twitter OAuth request token (body: { callbackUrl })'],
+                  ['POST', '/v1/oauth/twitter/oauth1/access', 'Twitter OAuth access token']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -867,7 +1033,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             <div id="account-tx" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/tx/{'{account}'}</code>
+                <code className="text-[15px] font-mono">/v1/tx/{'{account}'}</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Get paginated transaction history (rippled: tx)
@@ -909,6 +1075,13 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.nft} id="llm-nft-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifiers:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                <code className="text-primary">NFTokenID</code> (64-char hex) for NFTs, <code className="text-primary">slug</code> for collections.
+              </span>
+            </div>
+
             {/* NFT endpoints */}
             <div id="single-nft" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
@@ -916,9 +1089,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/nft/{NFTokenID}', 'Get NFT by 64-char ID'],
-                  ['GET', '/api/nft/{NFTokenID}/offers', 'Buy/sell offers for NFT'],
-                  ['GET', '/api/nft', 'List NFTs (cid, issuer, page, limit, sort)']
+                  ['GET', '/v1/nft/{NFTokenID}', 'Get NFT by 64-char ID'],
+                  ['GET', '/v1/nft/{NFTokenID}/offers', 'Buy/sell offers for NFT'],
+                  ['GET', '/v1/nft', 'List NFTs (cid, issuer, page, limit, sort)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -935,15 +1108,15 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/nft/collections', 'List collections (sortBy, order)'],
-                  ['GET', '/api/nft/collections/{slug}', 'Collection by slug'],
-                  ['GET', '/api/nft/collections/{slug}/nfts', 'NFTs in collection'],
-                  ['GET', '/api/nft/collections/{slug}/traders', 'Top traders'],
-                  ['GET', '/api/nft/collections/{slug}/orderbook', 'Collection orderbook'],
-                  ['GET', '/api/nft/collections/{slug}/history', 'Activity history'],
-                  ['GET', '/api/nft/collections/{slug}/floor/history', 'Floor price history'],
-                  ['GET', '/api/nft/collections/{slug}/metrics', 'Collection metrics'],
-                  ['GET', '/api/nft/collections/{slug}/ownership', 'Ownership distribution']
+                  ['GET', '/v1/nft/collections', 'List collections (sortBy, order)'],
+                  ['GET', '/v1/nft/collections/{slug}', 'Collection by slug'],
+                  ['GET', '/v1/nft/collections/{slug}/nfts', 'NFTs in collection'],
+                  ['GET', '/v1/nft/collections/{slug}/traders', 'Top traders'],
+                  ['GET', '/v1/nft/collections/{slug}/orderbook', 'Collection orderbook'],
+                  ['GET', '/v1/nft/collections/{slug}/history', 'Activity history'],
+                  ['GET', '/v1/nft/collections/{slug}/floor/history', 'Floor price history'],
+                  ['GET', '/v1/nft/collections/{slug}/metrics', 'Collection metrics'],
+                  ['GET', '/v1/nft/collections/{slug}/ownership', 'Ownership distribution']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -960,16 +1133,16 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/nft/activity', 'Recent NFT activity'],
-                  ['GET', '/api/nft/history', 'NFT transaction history'],
-                  ['GET', '/api/nft/traders/active', 'Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume)'],
-                  ['GET', '/api/nft/traders/{account}/volume', 'Trader volume stats'],
-                  ['GET', '/api/nft/accounts/{address}/nfts', 'NFTs owned by account (limit, skip)'],
-                  ['GET', '/api/nft/stats/global', 'Global NFT stats'],
-                  ['GET', '/api/nft/brokers/stats', 'Broker fees and volumes'],
-                  ['POST', '/api/nft/mint', 'Create NFT mint transaction payload'],
-                  ['POST', '/api/nft/pin', 'Pin NFT metadata to IPFS'],
-                  ['GET', '/api/nft/pin/status/{hash}', 'Get IPFS pin status']
+                  ['GET', '/v1/nft/activity', 'Recent NFT activity'],
+                  ['GET', '/v1/nft/history', 'NFT transaction history'],
+                  ['GET', '/v1/nft/traders/active', 'Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume)'],
+                  ['GET', '/v1/nft/traders/{account}/volume', 'Trader volume stats'],
+                  ['GET', '/v1/nft/accounts/{address}/nfts', 'NFTs owned by account (limit, skip)'],
+                  ['GET', '/v1/nft/stats/global', 'Global NFT stats'],
+                  ['GET', '/v1/nft/brokers/stats', 'Broker fees and volumes'],
+                  ['POST', '/v1/nft/mint', 'Create NFT mint transaction payload'],
+                  ['POST', '/v1/nft/pin', 'Pin NFT metadata to IPFS'],
+                  ['GET', '/v1/nft/pin/status/{hash}', 'Get IPFS pin status']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -990,14 +1163,21 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.xrpl} id="llm-xrpl-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifiers:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                <code className="text-primary">currency</code> (3-char or 40-char hex), <code className="text-primary">issuer</code> (r-address), <code className="text-primary">hash</code> (64-char tx hash).
+              </span>
+            </div>
+
             {/* Orderbook detail */}
             <div id="orderbook" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
-                <code className="text-[15px] font-mono">/api/orderbook</code>
+                <code className="text-[15px] font-mono">/v1/orderbook</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
-                Get live orderbook (rippled: book_offers)
+                Live orderbook (rippled: book_offers). Supports <span className="text-primary">md5/slug/issuer_currency</span> for tokens.
               </p>
               <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
                 <table className="w-full text-[12px]">
@@ -1009,14 +1189,16 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                   </thead>
                   <tbody>
                     {[
-                      ['base_currency', 'Base currency (XRP or hex) - required'],
-                      ['base_issuer', 'Base issuer (if not XRP)'],
-                      ['quote_currency', 'Quote currency - required'],
-                      ['quote_issuer', 'Quote issuer (if not XRP)'],
+                      ['base', 'md5/slug/issuer_currency or "XRP" (recommended)'],
+                      ['quote', 'md5/slug/issuer_currency or "XRP" (recommended)'],
+                      ['base_currency', 'Legacy: currency hex or 3-char code'],
+                      ['base_issuer', 'Legacy: issuer r-address'],
+                      ['quote_currency', 'Legacy: currency hex or 3-char code'],
+                      ['quote_issuer', 'Legacy: issuer r-address'],
                       ['limit', 'int (default: 20, max: 400)']
                     ].map(([param, desc]) => (
                       <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
+                        <td className="px-3 py-2"><code className={param === 'base' || param === 'quote' ? "text-primary" : ""}>{param}</code></td>
                         <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
                       </tr>
                     ))}
@@ -1025,7 +1207,10 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /api/orderbook?base_currency=XRP&quote_currency=534F4C4F&quote_issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
+                  <span className={isDark ? "text-white/40" : "text-gray-500"}># Using md5 (recommended)</span>{'\n'}
+                  <span className="text-emerald-500">GET</span> /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607{'\n'}
+                  <span className={isDark ? "text-white/40" : "text-gray-500"}># Legacy format still works</span>{'\n'}
+                  <span className="text-emerald-500">GET</span> /v1/orderbook?base_currency=XRP&quote_currency=534F4C4F...&quote_issuer=rsoLo...
                 </pre>
               </div>
             </div>
@@ -1037,9 +1222,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/tx/{hash}', 'Transaction by hash (rippled: tx)'],
-                  ['POST', '/api/pathfinding/pathfind', 'Find payment paths'],
-                  ['POST', '/api/pathfinding/ripplepathfind', 'Ripple path find']
+                  ['GET', '/v1/tx/{hash}', 'Transaction by hash (rippled: tx)'],
+                  ['POST', '/v1/pathfinding/pathfind', 'Find payment paths'],
+                  ['POST', '/v1/pathfinding/ripplepathfind', 'Ripple path find']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -1060,18 +1245,25 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               <CopyButton text={llmSnippets.analytics} id="llm-analytics-section" />
             </div>
 
+            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+              <span className="text-primary font-medium">Identifiers:</span>{' '}
+              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+                Use <code className="text-primary">md5</code> for tokens, <code className="text-primary">address</code> (r-address) for traders.
+              </span>
+            </div>
+
             <div id="analytics-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/analytics/token/{tokenId}', 'Token analytics (OMCF)'],
-                  ['GET', '/api/analytics/trader/{address}/{tokenId}', 'Trader metrics for token'],
-                  ['GET', '/api/traders/token-traders/{tokenId}', 'Top traders (sortBy: pnl|trades|volume)'],
-                  ['GET', '/api/analytics/trader-stats/{address}', 'Cumulative trader stats'],
-                  ['GET', '/api/analytics/cumulative-stats', 'All traders (10min cache, minTrades, minProfit, minROI, minTokens, activePeriod)'],
-                  ['GET', '/api/analytics/market-metrics', 'Daily market metrics (startDate required)'],
-                  ['GET', '/api/analytics/trader/{address}/volume-history', 'Volume chart data'],
-                  ['GET', '/api/analytics/trader/{address}/trade-history', 'Trade count history'],
-                  ['GET', '/api/analytics/trader/{address}/roi-history', 'ROI history']
+                  ['GET', '/v1/analytics/token/{md5}', 'Token analytics (OMCF)'],
+                  ['GET', '/v1/analytics/trader/{address}/{md5}', 'Trader metrics for specific token'],
+                  ['GET', '/v1/traders/token-traders/{md5}', 'Top traders (sortBy: pnl|trades|volume)'],
+                  ['GET', '/v1/analytics/trader-stats/{address}', 'Cumulative trader stats'],
+                  ['GET', '/v1/analytics/cumulative-stats', 'All traders (Live)'],
+                  ['GET', '/v1/analytics/market-metrics', 'Daily market metrics (startDate required)'],
+                  ['GET', '/v1/analytics/trader/{address}/volume-history', 'Volume chart data'],
+                  ['GET', '/v1/analytics/trader/{address}/trade-history', 'Trade count history'],
+                  ['GET', '/v1/analytics/trader/{address}/roi-history', 'ROI history']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -1096,7 +1288,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             <div id="launch-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
-                <code className="text-[15px] font-mono">/api/launch-token</code>
+                <code className="text-[15px] font-mono">/v1/launch-token</code>
               </div>
               <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
                 Initialize token launch with optional anti-snipe mode
@@ -1173,14 +1365,14 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/launch-token/status/{sessionId}', 'Poll status (every 3s recommended)'],
-                  ['DELETE', '/api/launch-token/{sessionId}', 'Cancel and refund (allowed before creating_amm)'],
-                  ['POST', '/api/launch-token/{sessionId}/cancel', 'Cancel alternative'],
-                  ['POST', '/api/launch-token/authorize', 'Request trustline auth (anti-snipe: issuer, currency, account)'],
-                  ['GET', '/api/launch-token/queue-status/{sessionId}', 'Auth queue status'],
-                  ['GET', '/api/launch-token/auth-info/{issuer}/{currency}', 'Token auth info'],
-                  ['GET', '/api/launch-token/check-auth/{issuer}/{currency}/{address}', 'Check authorization'],
-                  ['GET', '/api/launch-token/calculate-funding', 'Calculate XRP required (ticketCount, antiSnipeMode)']
+                  ['GET', '/v1/launch-token/status/{sessionId}', 'Poll status (every 3s recommended)'],
+                  ['DELETE', '/v1/launch-token/{sessionId}', 'Cancel and refund (allowed before creating_amm)'],
+                  ['POST', '/v1/launch-token/{sessionId}/cancel', 'Cancel alternative'],
+                  ['POST', '/v1/launch-token/authorize', 'Request trustline auth (anti-snipe: issuer, currency, account)'],
+                  ['GET', '/v1/launch-token/queue-status/{sessionId}', 'Auth queue status'],
+                  ['GET', '/v1/launch-token/auth-info/{issuer}/{currency}', 'Token auth info'],
+                  ['GET', '/v1/launch-token/check-auth/{issuer}/{currency}/{address}', 'Check authorization'],
+                  ['GET', '/v1/launch-token/calculate-funding', 'Calculate XRP required (ticketCount, antiSnipeMode)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : method === 'DELETE' ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
@@ -1204,10 +1396,10 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
             <div id="tools-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/api/health', 'API health check (returns "success")'],
-                  ['GET', '/api/testnet/{address}', 'Get XRP balance on testnet'],
-                  ['GET', '/api/integrations/xrpnft/tokens', 'Get tokens in XRPNFT format (filter param)'],
-                  ['GET', '/api/integrations/xrpnft/filter-by-account/{account}', 'Get NFTs owned by account (XRPNFT format)']
+                  ['GET', '/v1/health', 'API health check (returns "success")'],
+                  ['GET', '/v1/testnet/{address}', 'Get XRP balance on testnet'],
+                  ['GET', '/v1/integrations/xrpnft/tokens', 'Get tokens in XRPNFT format (filter param)'],
+                  ['GET', '/v1/integrations/xrpnft/filter-by-account/{account}', 'Get NFTs owned by account (XRPNFT format)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
@@ -1234,9 +1426,9 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 Token Identifiers
               </div>
               <div className="space-y-2 text-[13px]">
-                <div><code className="text-primary">slug</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- e.g., SOLO</span></div>
-                <div><code className="text-primary">md5</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- 32-char hex (MD5 of issuer_currencyHex)</span></div>
-                <div><code className="text-primary">issuer_currency</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- issuer_currencyHex format</span></div>
+                <div><code className="text-primary">md5</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- 32-char hex, e.g., 0413ca7cfc258dfaf698c02fe304e607</span></div>
+                <div><code className="text-primary">slug</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- issuer-currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00...</span></div>
+                <div><code className="text-primary">issuer_currency</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- issuer_currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...</span></div>
               </div>
             </div>
 
@@ -1285,24 +1477,14 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
                 Caching
               </div>
               <div className="space-y-2 text-[12px]">
-                <div><span className="text-primary font-medium">Default:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>5 seconds</span></div>
+                <div><span className="text-primary font-medium">Default:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (5 seconds)</span></div>
                 <div><span className="text-primary font-medium">platformStatus:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>30 seconds</span></div>
-                <div><span className="text-primary font-medium">news:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>5 minutes</span></div>
-                <div><span className="text-primary font-medium">cumulativeStats:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>10 minutes</span></div>
+                <div><span className="text-primary font-medium">news:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (5 minutes)</span></div>
+                <div><span className="text-primary font-medium">cumulativeStats:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (10 minutes)</span></div>
               </div>
             </div>
 
-            {/* Rate Limits */}
-            <div id="rate-limits" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
-                Rate Limits
-              </div>
-              <div className="space-y-2 text-[12px]">
-                <div><span className="text-primary font-medium">Default:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>100 requests/minute</span></div>
-                <div><span className="text-primary font-medium">Authenticated:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>300 requests/minute</span></div>
-              </div>
             </div>
-          </div>
         );
 
       case 'api-keys':
@@ -1335,8 +1517,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
               </p>
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /api/keys</span>
-                  <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/api/keys', {
+                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /v1/keys</span>
+                  <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1350,7 +1532,7 @@ const { apiKey, keyPrefix } = await response.json();
                   </button>
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
-                  {`const response = await fetch('https://api.xrpl.to/api/keys', {
+                  {`const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1505,7 +1687,7 @@ const { apiKey, keyPrefix } = await response.json();
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>XRP Payment Flow</span>
                   <button onClick={() => copyToClipboard(`// 1. Get payment details
-const res = await fetch('https://api.xrpl.to/api/keys/purchase', {
+const res = await fetch('https://api.xrpl.to/v1/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1527,7 +1709,7 @@ const payment = {
 const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
 // 3. Verify (auto-polls for 30s)
-await fetch('https://api.xrpl.to/api/keys/verify-payment', {
+await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ txHash: result.result.hash })
@@ -1537,7 +1719,7 @@ await fetch('https://api.xrpl.to/api/keys/verify-payment', {
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
                   {`// 1. Get payment details
-const res = await fetch('https://api.xrpl.to/api/keys/purchase', {
+const res = await fetch('https://api.xrpl.to/v1/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1559,7 +1741,7 @@ const payment = {
 const result = await client.submitAndWait(wallet.sign(payment).tx_blob);
 
 // 3. Verify (auto-polls for 30s)
-await fetch('https://api.xrpl.to/api/keys/verify-payment', {
+await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ txHash: result.result.hash })
@@ -1574,7 +1756,7 @@ await fetch('https://api.xrpl.to/api/keys/verify-payment', {
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Stripe Checkout</span>
                   <button onClick={() => copyToClipboard(`// 1. Create checkout session
-const res = await fetch('https://api.xrpl.to/api/keys/stripe/checkout', {
+const res = await fetch('https://api.xrpl.to/v1/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1590,7 +1772,7 @@ window.location.href = res.checkoutUrl;
 
 // 3. Check status (after redirect back)
 const status = await fetch(
-  \`https://api.xrpl.to/api/keys/stripe/status/\${sessionId}\`
+  \`https://api.xrpl.to/v1/keys/stripe/status/\${sessionId}\`
 ).then(r => r.json());
 // status: 'unpaid' | 'paid' | 'completed'`, 'stripe-code')} className="p-1.5 rounded hover:bg-white/10">
                     {copiedBlock === 'stripe-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
@@ -1598,7 +1780,7 @@ const status = await fetch(
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
                   {`// 1. Create checkout session
-const res = await fetch('https://api.xrpl.to/api/keys/stripe/checkout', {
+const res = await fetch('https://api.xrpl.to/v1/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -1614,7 +1796,7 @@ window.location.href = res.checkoutUrl;
 
 // 3. Check status (after redirect back)
 const status = await fetch(
-  \`https://api.xrpl.to/api/keys/stripe/status/\${sessionId}\`
+  \`https://api.xrpl.to/v1/keys/stripe/status/\${sessionId}\`
 ).then(r => r.json());
 // status: 'unpaid' | 'paid' | 'completed'`}
                 </pre>
@@ -1627,7 +1809,7 @@ const status = await fetch(
                 <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
                   <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /:wallet/credits & /:wallet/subscription</span>
                   <button onClick={() => copyToClipboard(`// Get credits with billing cycle
-GET /api/keys/:wallet/credits
+GET /v1/keys/:wallet/credits
 {
   "balance": 1000000,
   "billingCycle": {
@@ -1640,7 +1822,7 @@ GET /api/keys/:wallet/credits
 }
 
 // Get subscription details
-GET /api/keys/:wallet/subscription
+GET /v1/keys/:wallet/subscription
 {
   "subscription": {
     "tier": "developer",
@@ -1658,7 +1840,7 @@ GET /api/keys/:wallet/subscription
                 </div>
                 <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
                   {`// Get credits with billing cycle
-GET /api/keys/:wallet/credits
+GET /v1/keys/:wallet/credits
 {
   "balance": 1000000,
   "billingCycle": {
@@ -1671,7 +1853,7 @@ GET /api/keys/:wallet/credits
 }
 
 // Get subscription details
-GET /api/keys/:wallet/subscription
+GET /v1/keys/:wallet/subscription
 {
   "subscription": {
     "tier": "developer",
@@ -1957,62 +2139,60 @@ GET /api/keys/:wallet/subscription
 
         {/* Modal */}
         {isModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
+            <div className={cn("fixed inset-0", isDark ? "bg-black/70" : "bg-black/30")} />
             <div
-              className={cn(
-                "w-[90%] max-w-[800px] max-h-[80vh] overflow-hidden rounded-xl border-[1.5px]",
-                isDark ? "bg-gray-900 border-white/10" : "bg-white border-gray-200"
-              )}
               onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "relative rounded-xl border w-full max-w-[900px] max-h-[85vh] overflow-hidden flex flex-col",
+                isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+              )}
             >
-              <div className={cn(
-                "flex justify-between items-center px-4 py-3 border-b",
-                isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
-              )}>
-                <h3 className="text-[15px] font-medium">API Response</h3>
-                <div className="flex items-center gap-1">
-                  {copySuccess && (
-                    <span className="flex items-center gap-1 text-emerald-500 text-[12px] mr-2">
-                      <CheckCircle size={12} /> Copied
+              <div className={cn("px-4 py-3 border-b shrink-0", isDark ? "border-white/10" : "border-gray-100")}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code size={14} className={isDark ? "text-[#3f96fe]" : "text-cyan-600"} />
+                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      API Response
                     </span>
-                  )}
-                  <button
-                    onClick={handleCopyResponse}
-                    className={cn(
-                      "p-2 rounded-lg",
-                      isDark ? "hover:bg-white/10" : "hover:bg-gray-100"
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {copySuccess && (
+                      <span className="flex items-center gap-1 text-emerald-500 text-[11px] mr-2">
+                        <CheckCircle size={12} /> Copied
+                      </span>
                     )}
-                  >
-                    <Copy size={14} className="opacity-60" />
-                  </button>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className={cn(
-                      "p-2 rounded-lg",
-                      isDark ? "hover:bg-white/10" : "hover:bg-gray-100"
-                    )}
-                  >
-                    <X size={14} className="opacity-60" />
-                  </button>
+                    <button
+                      onClick={handleCopyResponse}
+                      className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                    >
+                      <Copy size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                    </button>
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                    >
+                      <X size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[calc(80vh-56px)]">
+              <div className="flex-1 overflow-y-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-16">
                     <Loader2 size={20} className="animate-spin text-primary" />
                   </div>
                 ) : apiResponse ? (
-                  <pre
-                    className={cn(
-                      "text-[12px] font-mono p-4 m-0",
-                      isDark ? "bg-black/40" : "bg-gray-50"
-                    )}
-                  >
-                    {JSON.stringify(apiResponse, null, 2)}
+                  <pre className={cn("text-[11px] font-mono p-4 m-0 leading-relaxed", isDark ? "text-white/80" : "text-gray-800")}>
+                    {JSON.stringify(apiResponse, null, 2).split('\n').map((line, i) => (
+                      <div key={i} dangerouslySetInnerHTML={{ __html: line
+                        .replace(/"([^"]+)":/g, `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`)
+                        .replace(/: "([^"]*)"/g, `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`)
+                        .replace(/: (\d+\.?\d*)/g, `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`)
+                        .replace(/: (true|false|null)/g, `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`)
+                      }} />
+                    ))}
                   </pre>
                 ) : null}
               </div>

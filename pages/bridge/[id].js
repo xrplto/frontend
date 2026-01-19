@@ -7,7 +7,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { trackExchange } from 'src/components/BridgeTracker';
 
-const BRIDGE_API_URL = 'https://api.xrpl.to/api/bridge';
+const BRIDGE_API_URL = 'https://api.xrpl.to/v1/bridge';
 
 const BridgeStatusPage = () => {
   const router = useRouter();

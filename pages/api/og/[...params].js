@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 const BRAND_BLUE = '#3f96fe';
 const BG_DARK = '#000000';
-const API_BASE = 'https://api.xrpl.to/api';
+const API_BASE = 'https://api.xrpl.to/v1';
 
 // Cache font at module level
 let fontCache = null;

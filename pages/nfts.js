@@ -30,7 +30,7 @@ export default function Overview({ collections, total, globalMetrics, tags, coll
 }
 
 export async function getStaticProps() {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   let collections = [];
   let total = 0;

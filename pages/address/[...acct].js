@@ -108,12 +108,12 @@ const OverView = ({ account }) => {
       try {
         // Fetch profile data, holdings, and NFT stats
         const [profileRes, holdingsRes, nftRes, balanceRes] = await Promise.all([
-          axios.get(`https://api.xrpl.to/api/traders/${account}`).catch(() => ({ data: null })),
-          axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0&format=full`)
-            .catch(() => axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0`))
+          axios.get(`https://api.xrpl.to/v1/traders/${account}`).catch(() => ({ data: null })),
+          axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=0&format=full`)
+            .catch(() => axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=0`))
             .catch(() => ({ data: null })),
-          axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}`).catch(() => ({ data: null })),
-          axios.get(`https://api.xrpl.to/api/account/balance/${account}`).catch(() => ({ data: null }))
+          axios.get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`).catch(() => ({ data: null })),
+          axios.get(`https://api.xrpl.to/v1/account/balance/${account}`).catch(() => ({ data: null }))
         ]);
 
         const profile = profileRes.data || {};
@@ -148,7 +148,7 @@ const OverView = ({ account }) => {
     const isInitialLoad = holdingsPage === 0 && !holdings;
     if (isInitialLoad) return;
 
-    axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=${holdingsPage}&format=full`)
+    axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=${holdingsPage}&format=full`)
       .then(res => setHoldings(res.data))
       .catch(err => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
@@ -157,7 +157,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftCollections.length > 0) return;
     setNftCollectionsLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/account/${account}/nfts`)
+    axios.get(`https://api.xrpl.to/v1/nft/account/${account}/nfts`)
       .then(res => {
         const cols = res.data?.collections || [];
         setNftCollections(cols.map(c => ({
@@ -177,7 +177,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftCollectionStats.length > 0) return;
     setNftCollectionStatsLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/collections`)
+    axios.get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/collections`)
       .then(res => setNftCollectionStats(res.data?.collections || []))
       .catch(() => setNftCollectionStats([]))
       .finally(() => setNftCollectionStatsLoading(false));
@@ -186,7 +186,7 @@ const OverView = ({ account }) => {
   // Fetch NFT trading history when NFTs tab is viewed
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftHistory.length > 0) return;
-    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/history?limit=90`)
+    axios.get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/history?limit=90`)
       .then(res => setNftHistory(res.data?.history || []))
       .catch(() => setNftHistory([]));
   }, [activeTab, account]);
@@ -195,7 +195,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (!selectedNftCollection || !account) return;
     setCollectionNftsLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/collections/${selectedNftCollection.slug}/nfts?limit=50&skip=0&owner=${account}`)
+    axios.get(`https://api.xrpl.to/v1/nft/collections/${selectedNftCollection.slug}/nfts?limit=50&skip=0&owner=${account}`)
       .then(res => {
         const nfts = res.data?.nfts || [];
         setCollectionNfts(nfts.map(nft => ({
@@ -215,8 +215,8 @@ const OverView = ({ account }) => {
     if (!account) return;
     setTxLoading(true);
     const url = marker
-      ? `https://api.xrpl.to/api/account/tx/${account}?limit=50&marker=${encodeURIComponent(JSON.stringify(marker))}`
-      : `https://api.xrpl.to/api/account/tx/${account}?limit=50`;
+      ? `https://api.xrpl.to/v1/account/tx/${account}?limit=50&marker=${encodeURIComponent(JSON.stringify(marker))}`
+      : `https://api.xrpl.to/v1/account/tx/${account}?limit=50`;
     axios.get(url)
       .then(res => {
         if (res.data?.result === 'success') {
@@ -241,7 +241,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'activity' || !account || nftTrades.length > 0) return;
     setNftTradesLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/analytics/trader/${account}/trades?limit=50`)
+    axios.get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/trades?limit=50`)
       .then(res => setNftTrades(res.data?.trades || []))
       .catch(() => setNftTrades([]))
       .finally(() => setNftTradesLoading(false));
@@ -249,7 +249,7 @@ const OverView = ({ account }) => {
 
   // Build token history URL with filters
   const buildTokenHistoryUrl = (cursor = null) => {
-    let url = `https://api.xrpl.to/api/history?account=${account}&limit=50`;
+    let url = `https://api.xrpl.to/v1/history?account=${account}&limit=50`;
     if (tokenHistoryType && tokenHistoryType !== 'all') url += `&type=${tokenHistoryType}`;
     if (tokenHistoryPairType) url += `&pairType=${tokenHistoryPairType}`;
     if (cursor) url += `&cursor=${cursor}`;
@@ -448,7 +448,7 @@ const OverView = ({ account }) => {
     if (accountAILoading || accountAI) return;
     setAccountAILoading(true);
     try {
-      const res = await axios.get(`https://api.xrpl.to/api/account-tx-explain/${account}?limit=200`);
+      const res = await axios.get(`https://api.xrpl.to/v1/account-tx-explain/${account}?limit=200`);
       setAccountAI(res.data);
     } catch (err) {
       setAccountAI({ error: 'Failed to analyze account activity' });

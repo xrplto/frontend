@@ -9,7 +9,7 @@ import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const DashboardPage = () => {
   const { themeName, accountProfile } = useContext(AppContext);

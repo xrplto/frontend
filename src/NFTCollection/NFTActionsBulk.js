@@ -13,7 +13,7 @@ const NFToken = {
 };
 
 export default function NFTActionsBulk({ nft }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 

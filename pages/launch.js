@@ -218,7 +218,7 @@ function CreatePage() {
       if (formData.ammXrpAmount < 1) return;
       setLoadingCost(true);
       try {
-        const res = await axios.get(`https://api.xrpl.to/api/launch-token/calculate-funding?ammXrpAmount=${formData.ammXrpAmount}&antiSnipe=${formData.antiSnipe}`);
+        const res = await axios.get(`https://api.xrpl.to/v1/launch-token/calculate-funding?ammXrpAmount=${formData.ammXrpAmount}&antiSnipe=${formData.antiSnipe}`);
         setCostBreakdown(res.data);
       } catch (e) {
         // Fallback to estimate
@@ -250,7 +250,7 @@ function CreatePage() {
 
         // Poll status to get current state
         (async () => {
-          const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${parsed.sessionId}`);
+          const response = await axios.get(`https://api.xrpl.to/v1/launch-token/status/${parsed.sessionId}`);
           const status = response.data;
 
           // Update to current step
@@ -409,7 +409,7 @@ function CreatePage() {
   // Polling function to check funding status
   const checkFundingStatus = async (sessionId) => {
     try {
-      const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
+      const response = await axios.get(`https://api.xrpl.to/v1/launch-token/status/${sessionId}`);
       return response.data;
     } catch (error) {
       return null;
@@ -419,7 +419,7 @@ function CreatePage() {
   // Polling function to check launch status
   const pollLaunchStatus = async (sessionId) => {
     try {
-      const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
+      const response = await axios.get(`https://api.xrpl.to/v1/launch-token/status/${sessionId}`);
       return response.data;
     } catch (error) {
       return null;
@@ -491,7 +491,7 @@ function CreatePage() {
       if (formData.antiSnipe) payload.antiSnipe = true;
 
       // Step 1: Initialize token launch
-      const response = await axios.post('https://api.xrpl.to/api/launch-token', payload);
+      const response = await axios.post('https://api.xrpl.to/v1/launch-token', payload);
 
       // Extract the actual data from response
       const data = response.data.data || response.data;
@@ -547,7 +547,7 @@ function CreatePage() {
 
     try {
       // Send continue request with user address
-      await axios.post('https://api.xrpl.to/api/launch-token/continue', {
+      await axios.post('https://api.xrpl.to/v1/launch-token/continue', {
         sessionId: sessionData.sessionId,
         userAddress: walletAddress
       });
@@ -563,7 +563,7 @@ function CreatePage() {
 
   const fetchDebugInfo = async () => {
     try {
-      const response = await axios.get('https://api.xrpl.to/api/launch-token/debug');
+      const response = await axios.get('https://api.xrpl.to/v1/launch-token/debug');
       return response.data;
     } catch (error) {
       return null;
@@ -1116,7 +1116,7 @@ function CreatePage() {
                   if (!sessionData?.sessionId) return;
                   try {
                     const walletAddress = userWallet || accountProfile?.account || accountProfile?.address;
-                    await axios.delete(`https://api.xrpl.to/api/launch-token/${sessionData.sessionId}`, {
+                    await axios.delete(`https://api.xrpl.to/v1/launch-token/${sessionData.sessionId}`, {
                       data: { refundAddress: walletAddress }
                     });
                     openSnackbar?.('Launch cancelled', 'success');

@@ -267,7 +267,7 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 

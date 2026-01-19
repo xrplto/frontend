@@ -220,7 +220,7 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const res = await axios.get(`https://api.xrpl.to/api/ledger/${index}?expand=true`);
+    const res = await axios.get(`https://api.xrpl.to/v1/ledger/${index}?expand=true`);
     const ledgerData = res.data;
     const transactions = ledgerData?.transactions || [];
     return {

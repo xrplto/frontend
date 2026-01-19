@@ -1,5 +1,5 @@
 import { memo, useState, useContext, useEffect } from 'react';
-import { Code2, Copy, Check, X, ChevronDown, ChevronRight, Zap } from 'lucide-react';
+import { Code2, Copy, Check, X, ChevronDown, ChevronRight, Zap, ExternalLink, Play, Loader2 } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import axios from 'axios';
@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
     window.__apiInterceptorInstalled = true;
     axios.interceptors.request.use((config) => {
       const url = config.url || '';
-      if (url.includes('api.xrpl.to/api/')) {
+      if (url.includes('api.xrpl.to/v1/')) {
         const baseUrl = url.split('?')[0];
         window.__apiCallsStore.add(baseUrl);
         window.__apiListeners.forEach(l => l());
@@ -35,63 +35,79 @@ export const registerApiCalls = (urls) => {
   if (typeof window === 'undefined') return;
   const arr = Array.isArray(urls) ? urls : [urls];
   arr.forEach(url => {
-    if (url.includes('api.xrpl.to/api/')) {
+    if (url.includes('api.xrpl.to/v1/')) {
       window.__apiCallsStore.add(url.split('?')[0]);
     }
   });
   window.__apiListeners.forEach(l => l());
 };
 
-// Comprehensive API Reference
-const API_REFERENCE = {
+// Comprehensive API Reference - Single source of truth
+export const API_REFERENCE = {
+  health: {
+    label: 'Health & Docs',
+    endpoints: [
+      { method: 'GET', path: '/health', desc: 'Service health check' },
+      { method: 'GET', path: '/docs', desc: 'API documentation JSON' },
+    ]
+  },
   tokens: {
     label: 'Tokens',
     endpoints: [
       { method: 'GET', path: '/tokens', desc: 'List tokens with metrics, filtering, sorting' },
       { method: 'GET', path: '/tokens/slugs', desc: 'Get all token slugs' },
-      { method: 'GET', path: '/token/:slug', desc: 'Token details by md5/slug/issuer_currency' },
+      { method: 'GET', path: '/token/:id', desc: 'Token details by md5, slug (issuer-currency), or issuer_currency' },
       { method: 'POST', path: '/search', desc: 'Search tokens, NFTs, collections, accounts' },
-      { method: 'GET', path: '/tags', desc: 'List all token tags/categories' },
+      { method: 'GET', path: '/tags', desc: 'List all token tags' },
     ]
   },
   charts: {
     label: 'Charts & Analytics',
     endpoints: [
-      { method: 'GET', path: '/ohlc/:id', desc: 'OHLC candlestick data' },
-      { method: 'GET', path: '/sparkline/:id', desc: 'Price sparkline for mini-charts' },
-      { method: 'GET', path: '/rsi', desc: 'RSI indicator data' },
-      { method: 'GET', path: '/stats', desc: 'Platform metrics (token count, volume)' },
-      { method: 'GET', path: '/holders/info/:id', desc: 'Top holder concentration %' },
-      { method: 'GET', path: '/holders/graph/:id', desc: 'Holder count history' },
-      { method: 'GET', path: '/holders/list/:id', desc: 'Paginated richlist' },
+      { method: 'GET', path: '/ohlc/:md5', desc: 'OHLC candlestick data (DexScreener compatible)' },
+      { method: 'GET', path: '/sparkline/:md5', desc: 'Price sparkline for mini-charts' },
+      { method: 'GET', path: '/rsi', desc: 'RSI indicator data for tokens' },
+      { method: 'GET', path: '/stats', desc: 'Platform metrics (token count, 24h volume)' },
+      { method: 'GET', path: '/holders/info/:md5', desc: 'Top holder concentration percentages' },
+      { method: 'GET', path: '/holders/graph/:md5', desc: 'Holder count history graph' },
+      { method: 'GET', path: '/holders/list/:md5', desc: 'Paginated richlist with acquisition source' },
     ]
   },
   trading: {
     label: 'Trading',
     endpoints: [
       { method: 'GET', path: '/history', desc: 'Trade history by token/account' },
-      { method: 'GET', path: '/orderbook', desc: 'Live DEX orderbook (bids/asks)' },
-      { method: 'GET', path: '/pairs', desc: 'Trading pairs for a token' },
-      { method: 'POST', path: '/dex/quote', desc: 'Swap quote via ripple_path_find' },
+      { method: 'GET', path: '/orderbook', desc: 'Live orderbook (base, quote: md5/slug/issuer_currency)' },
+      { method: 'GET', path: '/pairs/:md5', desc: 'Trading pairs for a token' },
+      { method: 'POST', path: '/dex/quote', desc: 'Swap quote (source_token, destination_token: md5/slug/issuer_currency)' },
+      { method: 'GET', path: '/stats/rates', desc: 'Exchange rates (token1, token2: md5/slug/issuer_currency)' },
     ]
   },
   amm: {
     label: 'AMM Pools',
     endpoints: [
-      { method: 'GET', path: '/amm', desc: 'List AMM pools with metrics' },
-      { method: 'GET', path: '/amm/info', desc: 'Live AMM pool info from XRPL' },
-      { method: 'GET', path: '/amm/liquidity-chart', desc: 'Historical TVL chart data' },
+      { method: 'GET', path: '/amm', desc: 'List AMM pools (token: md5 to filter)' },
+      { method: 'GET', path: '/amm/info', desc: 'Pool info (asset, asset2: md5/slug/issuer_currency)' },
+      { method: 'GET', path: '/amm/liquidity-chart', desc: 'TVL history (token: md5/slug/issuer_currency)' },
     ]
   },
   account: {
     label: 'Account',
     endpoints: [
-      { method: 'GET', path: '/account/balance/:account', desc: 'XRP balance with reserves' },
+      { method: 'GET', path: '/account/balance/:account', desc: 'XRP balance with reserves and rank' },
       { method: 'POST', path: '/account/balance', desc: 'Batch balance lookup (max 100)' },
       { method: 'GET', path: '/account/offers/:account', desc: 'Open DEX offers' },
-      { method: 'GET', path: '/account/tx/:account', desc: 'Full transaction history' },
+      { method: 'GET', path: '/account/tx/:account', desc: 'Full tx history via Clio' },
       { method: 'GET', path: '/account/trustlines/:account', desc: 'Live trustlines from XRPL' },
+      { method: 'GET', path: '/account/objects/:account', desc: 'Account objects (escrows, checks, etc.)' },
+      { method: 'GET', path: '/account/currencies/:account', desc: 'Sendable/receivable currencies' },
       { method: 'GET', path: '/account/nfts/:account', desc: 'NFTs owned by account' },
+      { method: 'GET', path: '/account/gateway/:account', desc: 'Gateway balances (issuer totals)' },
+      { method: 'GET', path: '/account/noripple/:account', desc: 'NoRipple check for trustlines' },
+      { method: 'GET', path: '/account/channels/:account', desc: 'Payment channels' },
+      { method: 'GET', path: '/account/info/live/:account', desc: 'Live account info from XRPL' },
+      { method: 'GET', path: '/account/deposit-authorized', desc: 'Check deposit authorization' },
+      { method: 'POST', path: '/account/path-find', desc: 'Find payment paths' },
       { method: 'GET', path: '/trustlines/:account', desc: 'Trustlines with token values' },
     ]
   },
@@ -100,27 +116,43 @@ const API_REFERENCE = {
     endpoints: [
       { method: 'GET', path: '/ledger', desc: 'Current validated ledger info' },
       { method: 'GET', path: '/ledger/:index', desc: 'Ledger by index with transactions' },
-      { method: 'GET', path: '/tx/:hash', desc: 'Transaction by hash' },
+      { method: 'GET', path: '/ledger/entry', desc: 'Fetch specific ledger object' },
+      { method: 'GET', path: '/tx/:hash', desc: 'Transaction by hash (with fallback nodes)' },
       { method: 'POST', path: '/submit', desc: 'Submit signed transaction' },
       { method: 'POST', path: '/submit/simulate', desc: 'Dry-run transaction simulation' },
+      { method: 'GET', path: '/submit/types', desc: 'List valid transaction types' },
       { method: 'GET', path: '/submit/fee', desc: 'Current network fees' },
+      { method: 'GET', path: '/submit/account/:address/sequence', desc: 'Account sequence number' },
     ]
   },
   ai: {
     label: 'AI Analysis',
     endpoints: [
-      { method: 'GET', path: '/tx-explain/:hash', desc: 'AI transaction explanation' },
-      { method: 'GET', path: '/ai/token/:md5', desc: 'AI token risk analysis' },
+      { method: 'GET', path: '/tx-explain/:hash', desc: 'AI-generated transaction explanation' },
+      { method: 'GET', path: '/tx-explain/stats', desc: 'AI provider stats and circuit breaker status' },
+      { method: 'GET', path: '/ai/token/:md5', desc: 'AI token risk analysis (safety score)' },
       { method: 'GET', path: '/account-tx-explain/:account', desc: 'AI wallet activity analysis' },
     ]
   },
   traders: {
     label: 'Traders',
     endpoints: [
-      { method: 'GET', path: '/traders/:address', desc: 'Full trader profile' },
-      { method: 'GET', path: '/traders/token-traders/:id', desc: 'Top traders for token' },
-      { method: 'GET', path: '/token/analytics/traders', desc: 'All traders with stats' },
-      { method: 'GET', path: '/token/analytics/market', desc: 'Daily market metrics' },
+      { method: 'GET', path: '/traders/:address', desc: 'Full trader profile with all tokens' },
+      { method: 'GET', path: '/traders/token-traders/:md5', desc: 'Top traders for a specific token' },
+    ]
+  },
+  tokenAnalytics: {
+    label: 'Token Analytics',
+    endpoints: [
+      { method: 'GET', path: '/token/analytics/traders', desc: 'All traders with cumulative stats' },
+      { method: 'GET', path: '/token/analytics/trader/:address', desc: 'Trader cumulative stats' },
+      { method: 'GET', path: '/token/analytics/trader/:address/tokens', desc: 'Trader token-specific metrics' },
+      { method: 'GET', path: '/token/analytics/trader/:address/history', desc: 'Trader volume history' },
+      { method: 'GET', path: '/token/analytics/trader/:address/trades', desc: 'Trader trade history' },
+      { method: 'GET', path: '/token/analytics/token/:md5', desc: 'Token analytics' },
+      { method: 'GET', path: '/token/analytics/token/:md5/traders', desc: 'Top traders for token' },
+      { method: 'GET', path: '/token/analytics/traders/summary', desc: 'Trader balance snapshots' },
+      { method: 'GET', path: '/token/analytics/market', desc: 'Daily market metrics with platform breakdown' },
     ]
   },
   nft: {
@@ -129,32 +161,69 @@ const API_REFERENCE = {
       { method: 'GET', path: '/nft', desc: 'List NFTs' },
       { method: 'GET', path: '/nft/:nftId', desc: 'NFT by NFTokenID' },
       { method: 'GET', path: '/nft/:nftId/offers', desc: 'Buy/sell offers for NFT' },
+      { method: 'GET', path: '/nft/history', desc: 'NFT history from database' },
+      { method: 'GET', path: '/nft/history/:nftId', desc: 'Live NFT history from Clio' },
+      { method: 'GET', path: '/nft/activity', desc: 'Recent NFT activity feed' },
+      { method: 'GET', path: '/nft/transactions/:hash', desc: 'NFT transaction by hash' },
+      { method: 'GET', path: '/nft/offers/buy/:nftId', desc: 'Live buy offers from XRPL' },
+      { method: 'GET', path: '/nft/offers/sell/:nftId', desc: 'Live sell offers from XRPL' },
       { method: 'GET', path: '/nft/collections', desc: 'List NFT collections' },
       { method: 'GET', path: '/nft/collections/:slug', desc: 'Collection details' },
-      { method: 'GET', path: '/nft/collections/:slug/nfts', desc: 'NFTs in collection' },
+      { method: 'GET', path: '/nft/collections/:slug/nfts', desc: 'NFTs in collection (with trait filters)' },
+      { method: 'GET', path: '/nft/collections/:slug/traits', desc: 'Collection trait breakdown' },
+      { method: 'GET', path: '/nft/collections/:slug/traders', desc: 'Top traders for collection' },
+      { method: 'GET', path: '/nft/collections/:slug/orderbook', desc: 'Collection orderbook' },
+      { method: 'GET', path: '/nft/collections/:slug/metrics', desc: 'Collection historical metrics' },
+      { method: 'GET', path: '/nft/collections/:slug/history', desc: 'Collection activity history' },
       { method: 'GET', path: '/nft/collections/:slug/floor/history', desc: 'Floor price history' },
-      { method: 'GET', path: '/nft/account/:address/nfts', desc: 'NFTs owned with portfolio value' },
-      { method: 'GET', path: '/nft/analytics/traders', desc: 'NFT trader leaderboard' },
-      { method: 'GET', path: '/nft/analytics/market', desc: 'NFT market analytics' },
+      { method: 'GET', path: '/nft/collections/:slug/ohlc', desc: 'Collection OHLC chart data' },
+      { method: 'GET', path: '/nft/collections/:slug/sparkline', desc: 'Collection floor sparkline' },
+      { method: 'GET', path: '/nft/collections/:slug/ownership', desc: 'Ownership distribution' },
+      { method: 'GET', path: '/nft/traders/:account/volume', desc: 'Trader volume stats' },
+      { method: 'GET', path: '/nft/account/:address/nfts', desc: 'NFTs/collections owned with portfolio value' },
+      { method: 'GET', path: '/nft/account/:address/offers', desc: "Account's NFT offers" },
+      { method: 'GET', path: '/nft/stats/global', desc: 'Global NFT market stats' },
+      { method: 'GET', path: '/nft/global-metrics', desc: 'Global NFT metrics' },
+      { method: 'GET', path: '/nft/brokers/stats', desc: 'Broker fee statistics' },
     ]
   },
-  news: {
-    label: 'News',
+  nftAnalytics: {
+    label: 'NFT Analytics',
     endpoints: [
-      { method: 'GET', path: '/news', desc: 'Latest news with sentiment' },
-      { method: 'GET', path: '/news/search', desc: 'Search news articles' },
-      { method: 'GET', path: '/news/sentiment-chart', desc: 'Sentiment chart data' },
+      { method: 'GET', path: '/nft/analytics/traders', desc: 'NFT trader leaderboard' },
+      { method: 'GET', path: '/nft/analytics/trader/:address', desc: 'NFT trader profile' },
+      { method: 'GET', path: '/nft/analytics/trader/:address/history', desc: 'NFT trader daily history' },
+      { method: 'GET', path: '/nft/analytics/trader/:address/collections', desc: 'NFT trader collection breakdown' },
+      { method: 'GET', path: '/nft/analytics/trader/:address/trades', desc: 'NFT trader trade history' },
+      { method: 'GET', path: '/nft/analytics/collection/:slug/traders', desc: 'Collection trader analytics' },
+      { method: 'GET', path: '/nft/analytics/market', desc: 'NFT market analytics with platform breakdown' },
     ]
   },
   bridge: {
     label: 'Bridge',
     endpoints: [
-      { method: 'GET', path: '/bridge/currencies', desc: 'Available currencies' },
+      { method: 'GET', path: '/bridge/currencies', desc: 'Available currencies for exchange' },
       { method: 'GET', path: '/bridge/estimate', desc: 'Exchange rate estimate' },
+      { method: 'GET', path: '/bridge/min-amount', desc: 'Minimum exchange amount' },
       { method: 'POST', path: '/bridge/create', desc: 'Create exchange transaction' },
       { method: 'GET', path: '/bridge/status', desc: 'Exchange status by ID' },
+      { method: 'GET', path: '/bridge/validate-address', desc: 'Validate crypto address' },
     ]
   },
+  news: {
+    label: 'News',
+    endpoints: [
+      { method: 'GET', path: '/news', desc: 'Latest XRP news with sentiment analysis' },
+      { method: 'GET', path: '/news/search', desc: 'Search news articles' },
+      { method: 'GET', path: '/news/unapproved-sources', desc: 'List unapproved news sources' },
+      { method: 'GET', path: '/news/sentiment-chart', desc: 'Sentiment chart data' },
+    ]
+  },
+};
+
+// Get total endpoint count
+export const getTotalEndpointCount = () => {
+  return Object.values(API_REFERENCE).reduce((sum, cat) => sum + cat.endpoints.length, 0);
 };
 
 const ApiEndpointsModal = memo(({ open, onClose }) => {
@@ -163,7 +232,11 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
   const [copiedPath, setCopiedPath] = useState(null);
   const [detectedEndpoints, setDetectedEndpoints] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState({});
-  const [view, setView] = useState('detected'); // 'detected' or 'all'
+  const [view, setView] = useState('detected');
+  const [search, setSearch] = useState('');
+  const [loadingPath, setLoadingPath] = useState(null);
+  const [copiedResponse, setCopiedResponse] = useState(null);
+  const [responsePreview, setResponsePreview] = useState(null);
 
   useEffect(() => {
     if (!open) return;
@@ -175,9 +248,24 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
   if (!open) return null;
 
   const handleCopy = (path) => {
-    navigator.clipboard.writeText(`https://api.xrpl.to/api${path}`);
+    navigator.clipboard.writeText(`https://api.xrpl.to/v1${path}`);
     setCopiedPath(path);
     setTimeout(() => setCopiedPath(null), 1500);
+  };
+
+  const tryAndCopy = async (ep) => {
+    if (ep.method !== 'GET' || ep.path.includes(':')) return;
+    setLoadingPath(ep.path);
+    try {
+      const res = await axios.get(`https://api.xrpl.to/v1${ep.path}`);
+      await navigator.clipboard.writeText(JSON.stringify(res.data, null, 2));
+      setCopiedResponse(ep.path);
+      setResponsePreview({ url: ep.path, data: res.data });
+      setTimeout(() => setCopiedResponse(null), 3000);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoadingPath(null);
   };
 
   const toggleCategory = (key) => {
@@ -186,17 +274,27 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
 
   const isDetected = (path) => {
     return detectedEndpoints.some(url => {
-      const urlPath = url.replace('https://api.xrpl.to/api', '').split('?')[0];
+      const urlPath = url.replace('https://api.xrpl.to/v1', '').split('?')[0];
       const pattern = path.replace(/:[^/]+/g, '[^/]+');
       return new RegExp(`^${pattern}$`).test(urlPath);
     });
   };
 
   const getDetectedLabel = (url) => {
-    const path = url.replace('https://api.xrpl.to/api/', '').split('?')[0];
+    const path = url.replace('https://api.xrpl.to/v1/', '').split('?')[0];
     const parts = path.split('/');
     return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
   };
+
+  // Filter endpoints by search
+  const filteredReference = search.trim() ? Object.entries(API_REFERENCE).reduce((acc, [key, cat]) => {
+    const filtered = cat.endpoints.filter(ep =>
+      ep.path.toLowerCase().includes(search.toLowerCase()) ||
+      ep.desc.toLowerCase().includes(search.toLowerCase())
+    );
+    if (filtered.length > 0) acc[key] = { ...cat, endpoints: filtered };
+    return acc;
+  }, {}) : API_REFERENCE;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -204,7 +302,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'relative rounded-xl border w-full max-w-[420px] max-h-[85vh] overflow-hidden flex flex-col',
+          'relative rounded-xl border w-full max-w-[480px] max-h-[85vh] overflow-hidden flex flex-col',
           isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'
         )}
       >
@@ -217,7 +315,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                 API Reference
               </span>
               <span className="px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wider rounded bg-amber-500/15 text-amber-500">
-                For Developers
+                {getTotalEndpointCount()} endpoints
               </span>
             </div>
             <button onClick={onClose} className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
@@ -251,6 +349,20 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
               All Endpoints
             </button>
           </div>
+
+          {/* Search (only in all view) */}
+          {view === 'all' && (
+            <input
+              type="text"
+              placeholder="Search endpoints..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={cn(
+                "w-full mt-2 px-3 py-1.5 rounded-lg text-[11px] border outline-none",
+                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
+              )}
+            />
+          )}
         </div>
 
         {/* Content */}
@@ -265,31 +377,72 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                 </div>
               ) : (
                 detectedEndpoints.map((url) => (
-                  <div key={url} className={cn("p-2.5 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-emerald-500/15 text-emerald-500">GET</span>
-                        <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-                          {getDetectedLabel(url)}
-                        </span>
+                  <div key={url} className={cn("rounded-lg group", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <div className="p-2.5">
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-emerald-500/15 text-emerald-500">GET</span>
+                          <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                            {getDetectedLabel(url)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={async () => {
+                              setLoadingPath(url);
+                              try {
+                                const res = await axios.get(url);
+                                const json = JSON.stringify(res.data, null, 2);
+                                await navigator.clipboard.writeText(json);
+                                setCopiedResponse(url);
+                                setResponsePreview({ url, data: res.data });
+                                setTimeout(() => setCopiedResponse(null), 3000);
+                              } catch (e) { console.error(e); }
+                              setLoadingPath(null);
+                            }}
+                            className={cn("p-1 opacity-0 group-hover:opacity-100 transition-opacity", copiedResponse === url ? "text-emerald-500 opacity-100" : (isDark ? "text-white/40" : "text-gray-400"))}
+                            title="Try & copy response"
+                          >
+                            {loadingPath === url ? <Loader2 size={12} className="animate-spin" /> : copiedResponse === url ? <Check size={12} /> : <Play size={12} />}
+                          </button>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(url); setCopiedPath(url); setTimeout(() => setCopiedPath(null), 1500); }}
+                            className={cn("p-1 opacity-0 group-hover:opacity-100 transition-opacity", copiedPath === url ? "text-emerald-500 opacity-100" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}
+                            title="Copy URL"
+                          >
+                            {copiedPath === url ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(url); setCopiedPath(url); setTimeout(() => setCopiedPath(null), 1500); }}
-                        className={cn("p-1", copiedPath === url ? "text-emerald-500" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}
-                      >
-                        {copiedPath === url ? <Check size={12} /> : <Copy size={12} />}
-                      </button>
+                      <code className={cn("text-[10px] break-all block", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>
+                        {url.replace('https://api.xrpl.to/v1', '')}
+                      </code>
                     </div>
-                    <code className={cn("text-[10px] break-all block", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>
-                      {url.replace('https://api.xrpl.to', '')}
-                    </code>
+                    {responsePreview?.url === url && (
+                      <div className={cn("border-t", isDark ? "border-white/10" : "border-gray-200")}>
+                        <div className={cn("flex items-center justify-between px-2.5 py-1.5", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
+                          <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium">
+                            <Check size={10} /> Copied to clipboard
+                          </span>
+                          <button
+                            onClick={() => setResponsePreview(null)}
+                            className={cn("p-0.5 rounded", isDark ? "hover:bg-white/10" : "hover:bg-black/5")}
+                          >
+                            <X size={10} className={isDark ? "text-white/40" : "text-gray-400"} />
+                          </button>
+                        </div>
+                        <pre className={cn("p-2.5 text-[9px] leading-relaxed max-h-[120px] overflow-auto", isDark ? "text-white/70" : "text-gray-600")}>
+                          {JSON.stringify(responsePreview.data, null, 2).slice(0, 500)}{JSON.stringify(responsePreview.data, null, 2).length > 500 && '...'}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
             </div>
           ) : (
             <div className="p-2">
-              {Object.entries(API_REFERENCE).map(([key, category]) => {
+              {Object.entries(filteredReference).map(([key, category]) => {
                 const isExpanded = expandedCategories[key];
                 const detectedCount = category.endpoints.filter(ep => isDetected(ep.path)).length;
 
@@ -311,7 +464,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                       </span>
                       {detectedCount > 0 && (
                         <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-emerald-500/15 text-emerald-500">
-                          {detectedCount} used
+                          {detectedCount} active
                         </span>
                       )}
                     </button>
@@ -321,39 +474,68 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                         {category.endpoints.map((ep) => {
                           const detected = isDetected(ep.path);
                           return (
-                            <div
-                              key={ep.path}
-                              className={cn(
-                                "flex items-start gap-2 px-2.5 py-2 rounded-lg group",
-                                detected ? (isDark ? "bg-emerald-500/10" : "bg-emerald-50") : (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
-                              )}
-                            >
-                              <span className={cn(
-                                "px-1.5 py-0.5 text-[9px] font-medium rounded shrink-0 mt-0.5",
-                                ep.method === 'GET' ? "bg-emerald-500/15 text-emerald-500" : "bg-amber-500/15 text-amber-500"
-                              )}>
-                                {ep.method}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <code className={cn(
-                                  "text-[10px] block",
-                                  detected ? "text-emerald-400" : (isDark ? "text-[#3f96fe]" : "text-cyan-600")
+                            <div key={ep.path} className={cn("rounded-lg overflow-hidden", detected ? (isDark ? "bg-emerald-500/10" : "bg-emerald-50") : (isDark ? "bg-white/[0.02]" : "bg-gray-50/50"))}>
+                              <div className="flex items-start gap-2 px-2.5 py-2 group">
+                                <span className={cn(
+                                  "px-1.5 py-0.5 text-[9px] font-medium rounded shrink-0 mt-0.5",
+                                  ep.method === 'GET' ? "bg-emerald-500/15 text-emerald-500" : "bg-amber-500/15 text-amber-500"
                                 )}>
-                                  {ep.path}
-                                </code>
-                                <div className={cn("text-[10px] mt-0.5", isDark ? "text-white/40" : "text-gray-500")}>
-                                  {ep.desc}
+                                  {ep.method}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <code className={cn(
+                                    "text-[10px] block",
+                                    detected ? "text-emerald-400" : (isDark ? "text-[#3f96fe]" : "text-cyan-600")
+                                  )}>
+                                    {ep.path}
+                                  </code>
+                                  <div className={cn("text-[10px] mt-0.5", isDark ? "text-white/40" : "text-gray-500")}>
+                                    {ep.desc}
+                                  </div>
                                 </div>
-                              </div>
-                              <button
-                                onClick={() => handleCopy(ep.path)}
-                                className={cn(
-                                  "p-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0",
-                                  copiedPath === ep.path ? "text-emerald-500 opacity-100" : (isDark ? "text-white/40" : "text-gray-400")
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                  {ep.method === 'GET' && !ep.path.includes(':') && (
+                                    <button
+                                      onClick={() => tryAndCopy(ep)}
+                                      className={cn(
+                                        "p-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                                        copiedResponse === ep.path ? "text-emerald-500 opacity-100" : (isDark ? "text-white/40" : "text-gray-400")
+                                      )}
+                                      title="Try & copy response"
+                                    >
+                                    {loadingPath === ep.path ? <Loader2 size={11} className="animate-spin" /> : copiedResponse === ep.path ? <Check size={11} /> : <Play size={11} />}
+                                  </button>
                                 )}
-                              >
-                                {copiedPath === ep.path ? <Check size={11} /> : <Copy size={11} />}
-                              </button>
+                                <button
+                                  onClick={() => handleCopy(ep.path)}
+                                  className={cn(
+                                    "p-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                                    copiedPath === ep.path ? "text-emerald-500 opacity-100" : (isDark ? "text-white/40" : "text-gray-400")
+                                  )}
+                                  title="Copy URL"
+                                >
+                                  {copiedPath === ep.path ? <Check size={11} /> : <Copy size={11} />}
+                                </button>
+                              </div>
+                              </div>
+                              {responsePreview?.url === ep.path && (
+                                <div className={cn("border-t", isDark ? "border-white/10" : "border-gray-200")}>
+                                  <div className={cn("flex items-center justify-between px-2.5 py-1.5", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
+                                    <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium">
+                                      <Check size={10} /> Copied to clipboard
+                                    </span>
+                                    <button
+                                      onClick={() => setResponsePreview(null)}
+                                      className={cn("p-0.5 rounded", isDark ? "hover:bg-white/10" : "hover:bg-black/5")}
+                                    >
+                                      <X size={10} className={isDark ? "text-white/40" : "text-gray-400"} />
+                                    </button>
+                                  </div>
+                                  <pre className={cn("p-2.5 text-[9px] leading-relaxed max-h-[120px] overflow-auto", isDark ? "text-white/70" : "text-gray-600")}>
+                                    {JSON.stringify(responsePreview.data, null, 2).slice(0, 500)}{JSON.stringify(responsePreview.data, null, 2).length > 500 && '...'}
+                                  </pre>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -362,6 +544,11 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                   </div>
                 );
               })}
+              {Object.keys(filteredReference).length === 0 && (
+                <div className={cn("text-center py-8", isDark ? "text-white/40" : "text-gray-400")}>
+                  <div className="text-[12px]">No endpoints match "{search}"</div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -370,18 +557,17 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
         <div className={cn("px-4 py-3 border-t shrink-0", isDark ? "border-white/10" : "border-gray-100")}>
           <div className="flex items-center gap-2">
             <code className={cn("flex-1 text-[10px] px-2 py-1.5 rounded", isDark ? "bg-white/5 text-white/60" : "bg-gray-100 text-gray-600")}>
-              https://api.xrpl.to/api/...
+              https://api.xrpl.to/v1/...
             </code>
             <a
-              href="https://xrpl.to/docs"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/docs"
               className={cn(
-                "px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-colors",
+                "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-colors",
                 isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50"
               )}
             >
               Full Docs
+              <ExternalLink size={10} />
             </a>
           </div>
         </div>

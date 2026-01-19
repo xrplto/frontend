@@ -11,7 +11,7 @@ import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = styled.div`
   max-width: 1920px;
@@ -268,8 +268,8 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   // Register server-side API calls
   useEffect(() => {
     registerApiCalls([
-      'https://api.xrpl.to/api/nft/analytics/traders',
-      'https://api.xrpl.to/api/nft/analytics/market'
+      'https://api.xrpl.to/v1/nft/analytics/traders',
+      'https://api.xrpl.to/v1/nft/analytics/market'
     ]);
   }, []);
 

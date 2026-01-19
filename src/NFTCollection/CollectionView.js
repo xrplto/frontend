@@ -459,7 +459,7 @@ const VirtualGrid = React.memo(({ nfts, loading, hasMore, onLoadMore, gridCols, 
 
 // NFT Grid Component
 const NFTGrid = React.memo(({ collection, isDark }) => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const router = useRouter();
   const dropdownRef = useRef(null);
 
@@ -936,7 +936,7 @@ const WhaleIcon = ({ size = 18, isDark }) => (
 
 // Price Chart Component using lightweight-charts
 const PriceChart = React.memo(({ slug }) => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const chartContainerRef = useRef(null);
@@ -1220,7 +1220,7 @@ const PriceChart = React.memo(({ slug }) => {
 
 // Holders Tab Component
 const HoldersTab = React.memo(({ slug }) => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -1636,7 +1636,7 @@ const SORT_OPTIONS_TRADERS = [
 ];
 
 const TradersTab = React.memo(({ slug }) => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -1842,12 +1842,12 @@ export default function CollectionView({ collection }) {
   const infoDropdownRef = useRef(null);
   const feesDropdownRef = useRef(null);
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   // Register server-side API calls
   useEffect(() => {
     if (collection?.slug) {
-      registerApiCalls([`https://api.xrpl.to/api/nft/collections/${collection.slug}`]);
+      registerApiCalls([`https://api.xrpl.to/v1/nft/collections/${collection.slug}`]);
     }
   }, [collection?.slug]);
 

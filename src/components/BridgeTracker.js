@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/router';
 
-const BRIDGE_API_URL = 'https://api.xrpl.to/api/bridge';
+const BRIDGE_API_URL = 'https://api.xrpl.to/v1/bridge';
 const POLL_INTERVAL = 30000; // 30 seconds - lighter than individual page polling
 const STORAGE_KEY = 'bridge_pending';
 

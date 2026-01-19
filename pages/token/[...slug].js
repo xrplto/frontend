@@ -97,7 +97,7 @@ export default Detail;
 export async function getStaticPaths() {
   // Pre-render only top 100 most popular tokens at build time
   // All other tokens will use fallback: 'blocking' (SSR-like on first request, then cached)
-  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
   try {
     const res = await axios.get(`${BASE_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
@@ -120,7 +120,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
   let data = null;
   let tab = null;
@@ -133,7 +133,7 @@ export async function getStaticProps({ params }) {
     // Use performance API if available (Node.js 16+ has it globally)
     const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
-    // https://api.xrpl.to/api/token/bitstamp-usd
+    // https://api.xrpl.to/v1/token/bitstamp-usd
     const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`);
 
     data = res.data;

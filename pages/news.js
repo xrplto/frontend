@@ -215,9 +215,9 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
   // Register server-side API calls
   useEffect(() => {
     registerApiCalls([
-      'https://api.xrpl.to/api/news',
-      'https://api.xrpl.to/api/news/search',
-      'https://api.xrpl.to/api/news/sentiment-chart'
+      'https://api.xrpl.to/v1/news',
+      'https://api.xrpl.to/v1/news/search',
+      'https://api.xrpl.to/v1/news/sentiment-chart'
     ]);
   }, []);
 
@@ -275,8 +275,8 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
         const params = new URLSearchParams({ page: currentPage, limit: itemsPerPage });
         if (selectedSource) params.append('source', selectedSource);
         const endpoint = searchQuery
-          ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params}`
-          : `https://api.xrpl.to/api/news?${params}`;
+          ? `https://api.xrpl.to/v1/news/search?q=${encodeURIComponent(searchQuery)}&${params}`
+          : `https://api.xrpl.to/v1/news?${params}`;
 
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error('Failed to fetch news');
@@ -312,7 +312,7 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
   useEffect(() => {
     const fetchChart = async () => {
       try {
-        const res = await fetch(`https://api.xrpl.to/api/news/sentiment-chart?days=${chartPeriod === 'all' ? 9999 : chartPeriod}`);
+        const res = await fetch(`https://api.xrpl.to/v1/news/sentiment-chart?days=${chartPeriod === 'all' ? 9999 : chartPeriod}`);
         if (res.ok) setChartData(await res.json());
       } catch {}
     };
@@ -337,15 +337,15 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
               </div>
               <div className="flex items-center gap-2">
                 <form onSubmit={handleSearch} className={cn("flex h-9 items-center gap-2 rounded-xl border-[1.5px] px-3 transition-all", isDark ? "border-white/10 bg-transparent focus-within:border-white/[0.15]" : "border-black/[0.06] focus-within:border-black/10")}>
-                <svg className={cn("h-4 w-4 shrink-0", isDark ? "text-gray-500" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor"><SearchIcon /></svg>
-                <input type="text" placeholder="Search..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className={cn("w-full min-w-[180px] bg-transparent text-[13px] focus:outline-none sm:w-[240px]", isDark ? "text-white placeholder:text-gray-500" : "text-gray-900 placeholder:text-gray-400")} />
-                {searchInput && (
-                  <button type="button" onClick={handleClearSearch} className={cn("shrink-0 rounded p-0.5", isDark ? "hover:bg-white/[0.08]" : "hover:bg-black/[0.06]")}>
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><CloseIcon /></svg>
-                  </button>
-                )}
-              </form>
-              <ApiButton />
+                  <svg className={cn("h-4 w-4 shrink-0", isDark ? "text-gray-500" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor"><SearchIcon /></svg>
+                  <input type="text" placeholder="Search..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className={cn("w-full min-w-[180px] bg-transparent text-[13px] focus:outline-none sm:w-[240px]", isDark ? "text-white placeholder:text-gray-500" : "text-gray-900 placeholder:text-gray-400")} />
+                  {searchInput && (
+                    <button type="button" onClick={handleClearSearch} className={cn("shrink-0 rounded p-0.5", isDark ? "hover:bg-white/[0.08]" : "hover:bg-black/[0.06]")}>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><CloseIcon /></svg>
+                    </button>
+                  )}
+                </form>
+                <ApiButton />
               </div>
             </div>
 
@@ -418,25 +418,43 @@ export async function getServerSideProps({ query }) {
   if (source) params.append('source', source);
 
   const endpoint = q
-    ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(q)}&${params}`
-    : `https://api.xrpl.to/api/news?${params}`;
+    ? `https://api.xrpl.to/v1/news/search?q=${encodeURIComponent(q)}&${params}`
+    : `https://api.xrpl.to/v1/news?${params}`;
 
   try {
+    console.log('Fetching:', endpoint);
     const [newsRes, chartRes] = await Promise.all([
       fetch(endpoint),
-      fetch('https://api.xrpl.to/api/news/sentiment-chart?days=30')
+      fetch('https://api.xrpl.to/v1/news/sentiment-chart?days=30')
     ]);
 
-    const newsData = await newsRes.json();
+    console.log('News response status:', newsRes.status, 'url:', newsRes.url);
+
+    if (!newsRes.ok) {
+      console.error('News API error:', newsRes.status, newsRes.statusText);
+      throw new Error(`News API returned ${newsRes.status}`);
+    }
+
+    const newsText = await newsRes.text();
+    console.log('News response length:', newsText.length, 'preview:', newsText.slice(0, 200));
+
+    const newsData = JSON.parse(newsText);
     const chartData = chartRes.ok ? await chartRes.json() : null;
+
+    console.log('Parsed news - keys:', Object.keys(newsData), 'dataLength:', newsData.data?.length);
 
     const parse = (p) => ({ bullish: parseFloat(p?.Bullish || 0), bearish: parseFloat(p?.Bearish || 0), neutral: parseFloat(p?.Neutral || 0) });
 
+    // Handle both { data: [...] } and direct array response
+    const newsArray = Array.isArray(newsData) ? newsData : (newsData.data || []);
+    const total = Array.isArray(newsData) ? newsData.length : (newsData.pagination?.total || 0);
+    const sources = Array.isArray(newsData) ? {} : (newsData.sources?.reduce((acc, s) => ({ ...acc, [s.name]: { count: s.count, sentiment: s.sentiment } }), {}) || {});
+
     return {
       props: {
-        initialNews: newsData.data || [],
-        initialTotal: newsData.pagination?.total || 0,
-        initialSources: newsData.sources?.reduce((acc, s) => ({ ...acc, [s.name]: { count: s.count, sentiment: s.sentiment } }), {}) || {},
+        initialNews: newsArray,
+        initialTotal: total,
+        initialSources: sources,
         initialSentiment: newsData.sentiment ? {
           last24h: parse(newsData.sentiment['24h']),
           last7d: parse(newsData.sentiment['7d']),
@@ -458,7 +476,8 @@ export async function getServerSideProps({ query }) {
         }
       }
     };
-  } catch {
+  } catch (err) {
+    console.error('News SSR fetch error:', err.message);
     return {
       props: {
         initialNews: [],

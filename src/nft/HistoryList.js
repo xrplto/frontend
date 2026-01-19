@@ -55,7 +55,7 @@ export default function HistoryList({ nft }) {
   useEffect(() => {
     if (!nft?.NFTokenID) return;
     setLoading(true);
-    axios.get(`https://api.xrpl.to/api/nft/history?NFTokenID=${nft.NFTokenID}&limit=200`)
+    axios.get(`https://api.xrpl.to/v1/nft/history?NFTokenID=${nft.NFTokenID}&limit=200`)
       .then(res => {
         if (res.data?.result === 'success') setHistory(res.data.histories || []);
       })

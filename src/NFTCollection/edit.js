@@ -23,7 +23,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const TEXT_VALID = 2;
   const TEXT_INVALID = 3;
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
   const { accountProfile, themeName } = useContext(AppContext);
@@ -197,7 +197,7 @@ const FILE_NEW = 1;
 const FILE_REMOVED = 2;
 
 export default function EditCollection({ collection }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const logoImageUrl = collection.logoImage
     ? `https://s1.xrpl.to/nft-collection/${collection.logoImage}`

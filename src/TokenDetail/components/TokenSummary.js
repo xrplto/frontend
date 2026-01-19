@@ -70,7 +70,7 @@ const OriginIcon = ({ origin, isDark }) => {
 };
 
 const TokenSummary = memo(({ token }) => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -199,8 +199,8 @@ const TokenSummary = memo(({ token }) => {
 
       // REST-based autofill
       const [seqRes, feeRes] = await Promise.all([
-        axios.get(`https://api.xrpl.to/api/submit/account/${accountProfile.account}/sequence`),
-        axios.get('https://api.xrpl.to/api/submit/fee')
+        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+        axios.get('https://api.xrpl.to/v1/submit/fee')
       ]);
       const prepared = {
         ...tx,
@@ -210,7 +210,7 @@ const TokenSummary = memo(({ token }) => {
       };
 
       const signed = deviceWallet.sign(prepared);
-      const result = await axios.post('https://api.xrpl.to/api/submit', { tx_blob: signed.tx_blob });
+      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
         setIsRemove(!isRemove);
@@ -548,17 +548,17 @@ const TokenSummary = memo(({ token }) => {
                 {showApi && (
                   <div className="px-3 pb-3 space-y-0.5">
                     {[
-                      { label: 'Token', url: `https://api.xrpl.to/api/token/${md5}` },
-                      { label: 'Holders', url: `https://api.xrpl.to/api/holders/list/${md5}` },
-                      { label: 'Order Book', url: `https://api.xrpl.to/api/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
-                      { label: 'History', url: `https://api.xrpl.to/api/history?token=${md5}` },
-                      { label: 'OHLC', url: `https://api.xrpl.to/api/ohlc/${md5}` },
-                      { label: 'Traders', url: `https://api.xrpl.to/api/traders/token-traders/${md5}` },
-                      { label: 'AMM', url: `https://api.xrpl.to/api/amm?issuer=${issuer}&currency=${currency}` },
-                      { label: 'AI Summary', url: `https://api.xrpl.to/api/ai/token/${md5}` },
-                      { label: 'Quote', url: `https://api.xrpl.to/api/dex/quote`, method: 'POST' },
-                      { label: 'Rates', url: `https://api.xrpl.to/api/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` },
-                      ...(creator ? [{ label: 'Creator', url: `https://api.xrpl.to/api/creators/${creator}` }] : [])
+                      { label: 'Token', url: `https://api.xrpl.to/v1/token/${md5}` },
+                      { label: 'Holders', url: `https://api.xrpl.to/v1/holders/list/${md5}` },
+                      { label: 'Order Book', url: `https://api.xrpl.to/v1/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
+                      { label: 'History', url: `https://api.xrpl.to/v1/history?token=${md5}` },
+                      { label: 'OHLC', url: `https://api.xrpl.to/v1/ohlc/${md5}` },
+                      { label: 'Traders', url: `https://api.xrpl.to/v1/traders/token-traders/${md5}` },
+                      { label: 'AMM', url: `https://api.xrpl.to/v1/amm?issuer=${issuer}&currency=${currency}` },
+                      { label: 'AI Summary', url: `https://api.xrpl.to/v1/ai/token/${md5}` },
+                      { label: 'Quote', url: `https://api.xrpl.to/v1/dex/quote`, method: 'POST' },
+                      { label: 'Rates', url: `https://api.xrpl.to/v1/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` },
+                      ...(creator ? [{ label: 'Creator', url: `https://api.xrpl.to/v1/creators/${creator}` }] : [])
                     ].map((ep) => (
                       <button key={ep.label} onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedField(ep.label); setTimeout(() => setCopiedField(null), 1200); }}
                         className={cn("group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>

@@ -19,7 +19,7 @@ export default function ChartEmbedTest() {
   });
 
   const buildUrl = () => {
-    const base = `https://api.xrpl.to/api/embed/${params.md5}`;
+    const base = `https://api.xrpl.to/v1/embed/${params.md5}`;
     const query = new URLSearchParams();
     if (params.theme) query.set('theme', params.theme);
     if (params.interval) query.set('interval', params.interval);

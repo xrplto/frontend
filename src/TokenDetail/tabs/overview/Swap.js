@@ -59,8 +59,8 @@ const loadXRPLDependencies = async () => {
 // REST-based autofill and submit helpers
 const autofillTransaction = async (tx, address) => {
   const [seqRes, feeRes] = await Promise.all([
-    axios.get(`https://api.xrpl.to/api/submit/account/${address}/sequence`),
-    axios.get('https://api.xrpl.to/api/submit/fee')
+    axios.get(`https://api.xrpl.to/v1/submit/account/${address}/sequence`),
+    axios.get('https://api.xrpl.to/v1/submit/fee')
   ]);
   return {
     ...tx,
@@ -71,7 +71,7 @@ const autofillTransaction = async (tx, address) => {
 };
 
 const submitTransaction = async (tx_blob) => {
-  const res = await axios.post('https://api.xrpl.to/api/submit', { tx_blob });
+  const res = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob });
   return res.data;
 };
 
@@ -657,7 +657,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const curr1 = revert ? token2 : token1;
   const curr2 = revert ? token1 : token2;
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const QR_BLUR = '/static/blurqr.webp';
 
   const dispatch = useDispatch();

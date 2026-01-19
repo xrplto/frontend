@@ -16,7 +16,7 @@ import { configureMemos } from 'src/utils/parseUtils';
 export default function BurnNFT({ nft, onHandleBurn }) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar } = useContext(AppContext);

@@ -544,7 +544,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       if (isLpToken) {
         setLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/api/token/${md5}`);
+          const response = await axios.get(`https://api.xrpl.to/v1/token/${md5}`);
           setTokenInfo(response.data);
         } catch (err) {
           console.error('Failed to fetch token info for LP token', err);
@@ -564,9 +564,9 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
     try {
       let response;
       if (isXRP) {
-        response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
+        response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       } else {
-        response = await axios.get(`https://api.xrpl.to/api/token/${md5}`);
+        response = await axios.get(`https://api.xrpl.to/v1/token/${md5}`);
       }
       setTokenInfo(response.data);
     } catch (err) {
@@ -659,7 +659,7 @@ const XrpDisplay = ({ variant = 'body2', showText = true }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
+      const response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -719,7 +719,7 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://api.xrpl.to/api/token/xrpl-xrp');
+      const response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       setXrpTokenInfo(response.data);
     } catch (err) {
       console.error('Failed to fetch XRP info', err);
@@ -2041,7 +2041,7 @@ const TransactionDetails = ({ txData }) => {
     if (aiLoading || aiExplanation) return;
     setAiLoading(true);
     try {
-      const response = await axios.get(`https://api.xrpl.to/api/tx-explain/${hash}`);
+      const response = await axios.get(`https://api.xrpl.to/v1/tx-explain/${hash}`);
       if (response.data) {
         setAiExplanation(response.data);
       }
@@ -2286,7 +2286,7 @@ const TransactionDetails = ({ txData }) => {
         setNftInfoLoading(true);
         try {
           const response = await axios.get(
-            `https://api.xrpl.to/api/nft/${acceptedOfferDetails.nftokenID}`
+            `https://api.xrpl.to/v1/nft/${acceptedOfferDetails.nftokenID}`
           );
           if (response.data?.NFTokenID) {
             setAcceptedNftInfo(response.data);
@@ -2310,7 +2310,7 @@ const TransactionDetails = ({ txData }) => {
       const fetchNftInfo = async () => {
         setOfferNftInfoLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/api/nft/${NFTokenID}`);
+          const response = await axios.get(`https://api.xrpl.to/v1/nft/${NFTokenID}`);
           if (response.data?.NFTokenID) {
             setOfferNftInfo(response.data);
           }
@@ -2329,7 +2329,7 @@ const TransactionDetails = ({ txData }) => {
       const fetchNftInfo = async () => {
         setMintedNftInfoLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/api/nft/${meta.nftoken_id}`);
+          const response = await axios.get(`https://api.xrpl.to/v1/nft/${meta.nftoken_id}`);
           if (response.data?.NFTokenID) {
             setMintedNftInfo(response.data);
           }
@@ -2349,7 +2349,7 @@ const TransactionDetails = ({ txData }) => {
         if (!cancelledNftInfo[offer.NFTokenID] && !cancelledNftInfoLoading[offer.NFTokenID]) {
           setCancelledNftInfoLoading((prev) => ({ ...prev, [offer.NFTokenID]: true }));
           axios
-            .get(`https://api.xrpl.to/api/nft/${offer.NFTokenID}`)
+            .get(`https://api.xrpl.to/v1/nft/${offer.NFTokenID}`)
             .then((response) => {
               if (response.data?.NFTokenID) {
                 setCancelledNftInfo((prev) => ({
@@ -4070,7 +4070,7 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const response = await axios.get(`https://api.xrpl.to/api/tx/${hash}`).catch(() => null);
+  const response = await axios.get(`https://api.xrpl.to/v1/tx/${hash}`).catch(() => null);
 
   if (!response || !response.data) {
     return {

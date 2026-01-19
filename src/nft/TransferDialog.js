@@ -17,7 +17,7 @@ import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactio
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 

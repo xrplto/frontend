@@ -26,7 +26,7 @@ const XrpValue = ({ value, format = fVolume, size = 'normal', showSymbol = true,
   );
 };
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = styled.div`
   max-width: 1920px;

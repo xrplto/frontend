@@ -16,7 +16,7 @@ const formatPrice = (price) => {
 };
 import { BookOpen } from 'lucide-react';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = styled.div`
   border-radius: 12px;

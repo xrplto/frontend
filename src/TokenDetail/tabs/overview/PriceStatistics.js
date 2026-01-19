@@ -324,7 +324,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
+    fetch(`https://api.xrpl.to/v1/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
       .then(res => res.json())
       .then(data => {
         if (data?.score !== undefined) {
@@ -348,7 +348,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     setNoTokenActivity(false);
 
     try {
-      let url = `https://api.xrpl.to/api/creators/${creator}?limit=12`;
+      let url = `https://api.xrpl.to/v1/creators/${creator}?limit=12`;
       if (filter === 'swaps') url += '&side=sell,buy';
       else if (filter === 'transfers') url += '&side=transfer_out,receive';
       else if (filter === 'checks') url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
@@ -357,7 +357,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       // Parallel fetch for 'all' filter (creators + tx fallback)
       const fetches = [fetch(url, { signal }).then(r => r.json())];
       if (filter === 'all') {
-        fetches.push(fetch(`https://api.xrpl.to/api/tx/${creator}?limit=12`, { signal }).then(r => r.json()));
+        fetches.push(fetch(`https://api.xrpl.to/v1/tx/${creator}?limit=12`, { signal }).then(r => r.json()));
       }
 
       const [data, txData] = await Promise.all(fetches);

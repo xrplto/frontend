@@ -36,7 +36,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
       const params = new URLSearchParams({ page: page.toString(), limit: '20' });
       if (filterType) params.append('type', filterType);
 
-      const res = await axios.get(`https://api.xrpl.to/api/nft/collections/${collectionSlug}/history?${params}`);
+      const res = await axios.get(`https://api.xrpl.to/v1/nft/collections/${collectionSlug}/history?${params}`);
 
       setTransactions(res.data.history || []);
       setTotal(res.data.pagination?.total || 0);

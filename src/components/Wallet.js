@@ -565,7 +565,7 @@ const WalletContent = ({
     if (!accountLogin) return;
     setLoadingHistory(true);
     try {
-      const response = await fetch(`https://api.xrpl.to/api/account/${accountLogin}/transactions?limit=20`);
+      const response = await fetch(`https://api.xrpl.to/v1/account/${accountLogin}/transactions?limit=20`);
       if (response.ok) {
         const data = await response.json();
         setTransactions(data.transactions || []);
@@ -2050,7 +2050,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const fetchCurrencies = useCallback(async () => {
     if (currencies.length > 0) return;
     try {
-      const res = await fetch('https://api.xrpl.to/api/bridge/currencies');
+      const res = await fetch('https://api.xrpl.to/v1/bridge/currencies');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -2090,7 +2090,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     const toNet = isToXrp ? 'xrp' : selectedCurrency.network;
     try {
       const minRes = await fetch(
-        `https://api.xrpl.to/api/bridge/min-amount?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromNetwork=${fromNet}&toNetwork=${toNet}`
+        `https://api.xrpl.to/v1/bridge/min-amount?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromNetwork=${fromNet}&toNetwork=${toNet}`
       );
       if (minRes.ok) {
         const minData = await minRes.json();
@@ -2103,7 +2103,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
       setBridgeError('');
       const estRes = await fetch(
-        `https://api.xrpl.to/api/bridge/estimate?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromAmount=${bridgeAmount}&fromNetwork=${fromNet}&toNetwork=${toNet}`
+        `https://api.xrpl.to/v1/bridge/estimate?fromCurrency=${fromCurr}&toCurrency=${toCurr}&fromAmount=${bridgeAmount}&fromNetwork=${fromNet}&toNetwork=${toNet}`
       );
       if (estRes.ok) {
         const estData = await estRes.json();
@@ -2154,7 +2154,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     const isToXrp = swapDirection === 'toXrp';
     try {
-      const res = await fetch('https://api.xrpl.to/api/bridge/create', {
+      const res = await fetch('https://api.xrpl.to/v1/bridge/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2202,7 +2202,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (isDevelopment) {
         // Use backend testnet endpoint
-        const response = await fetch(`https://api.xrpl.to/api/testnet/${address}`);
+        const response = await fetch(`https://api.xrpl.to/v1/testnet/${address}`);
         if (response.ok) {
           const data = await response.json();
           if (data.balanceXRP) {
@@ -2212,7 +2212,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return false;
       } else {
         // Production
-        const response = await fetch(`https://api.xrpl.to/api/account/balance/${address}?simple=true`);
+        const response = await fetch(`https://api.xrpl.to/v1/account/balance/${address}?simple=true`);
         if (!response.ok) return false;
 
         const data = await response.json();

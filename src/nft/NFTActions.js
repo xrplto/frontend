@@ -122,7 +122,7 @@ function PriceWarningIcon({ discrepancy, floorPrice }) {
 export default function NFTActions({ nft }) {
   const anchorRef = useRef(null);
   const shareDropdownRef = useRef(null);
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
@@ -276,7 +276,7 @@ export default function NFTActions({ nft }) {
     // Fetch offers to get broker info
     async function getOfferDetails() {
       try {
-        const response = await axios.get(`https://api.xrpl.to/api/nft/${NFTokenID}/offers`);
+        const response = await axios.get(`https://api.xrpl.to/v1/nft/${NFTokenID}/offers`);
         const sellOffers = response.data?.sellOffers || [];
 
         // Find the owner's valid offer

@@ -28,7 +28,7 @@ const TokenCard = styled('a')(({ isDark }) => ({
   }
 }));
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 // Formatters
 const formatPrice = (price, currency, rate) => {

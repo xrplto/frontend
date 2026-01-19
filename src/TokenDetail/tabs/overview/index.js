@@ -39,7 +39,7 @@ const Overview = memo(
   ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
     const isTablet = typeof window !== 'undefined' && window.innerWidth < 960;
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/v1';
     const { accountProfile, setLoading, openSnackbar, themeName } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
 

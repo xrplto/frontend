@@ -45,7 +45,7 @@ export default function Overview({ nft }) {
   // Also add collection to tabs - fetch logoImage from collection API
   useEffect(() => {
     if (collectionSlug && collectionName) {
-      axios.get(`https://api.xrpl.to/api/nft/collections/${collectionSlug}`)
+      axios.get(`https://api.xrpl.to/v1/nft/collections/${collectionSlug}`)
         .then(res => {
           addTokenToTabs({
             slug: collectionSlug,
@@ -87,7 +87,7 @@ export default function Overview({ nft }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   let data = null;
   try {

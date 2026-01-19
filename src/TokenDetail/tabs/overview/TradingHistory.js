@@ -1051,7 +1051,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
         limit: offersLimit.toString()
       });
       const res = await axios.get(
-        `https://api.xrpl.to/api/account/offers/${account}?${params}`
+        `https://api.xrpl.to/v1/account/offers/${account}?${params}`
       );
       if (res.data?.result === 'success') {
         setOpenOffers(res.data.offers || []);
@@ -1492,7 +1492,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
-      const response = await fetch(`https://api.xrpl.to/api/tx-explain/${trade.hash}`, { signal: controller.signal });
+      const response = await fetch(`https://api.xrpl.to/v1/tx-explain/${trade.hash}`, { signal: controller.signal });
       clearTimeout(timeout);
       if (!response.ok) throw new Error('API error');
       const data = await response.json();
@@ -1508,8 +1508,8 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
     if (!trade?.hash) return;
     setLoading(true);
     Promise.all([
-      fetch(`https://api.xrpl.to/api/tx/${trade.hash}`).then(r => r.json()).catch(() => null),
-      account ? fetch(`https://api.xrpl.to/api/account/info/${account}`).then(r => r.json()).catch(() => null) : Promise.resolve(null)
+      fetch(`https://api.xrpl.to/v1/tx/${trade.hash}`).then(r => r.json()).catch(() => null),
+      account ? fetch(`https://api.xrpl.to/v1/account/info/${account}`).then(r => r.json()).catch(() => null) : Promise.resolve(null)
     ]).then(([tx, profile]) => {
       // Extract nested tx object from API response
       const txObj = tx?.tx_json || tx?.tx || tx;
@@ -1756,7 +1756,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       setAmmLoading(true);
       try {
         const res = await fetch(
-          `https://api.xrpl.to/api/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
+          `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
         );
         const data = await res.json();
         // Sort to ensure main XRP pool appears first
@@ -1778,18 +1778,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           if (poolAccount) {
             try {
               // Try 1m first, fall back to 1w if no data
-              let chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
+              let chartRes = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
               let chartData = await chartRes.json();
 
               // If no data for 1m, try 1w
               if (chartData.result === 'success' && (!chartData.data || chartData.data.length < 2)) {
-                chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
+                chartRes = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
                 chartData = await chartRes.json();
               }
 
               // If still no data, try all time
               if (chartData.result === 'success' && (!chartData.data || chartData.data.length < 2)) {
-                chartRes = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
+                chartRes = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
                 chartData = await chartRes.json();
               }
 
@@ -1862,7 +1862,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         }
       }
 
-      const response = await fetch(`https://api.xrpl.to/api/history?${params}`);
+      const response = await fetch(`https://api.xrpl.to/v1/history?${params}`);
       const data = await response.json();
 
       if (data.result === 'success') {
@@ -2184,16 +2184,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     setPoolChartLoading(prev => ({ ...prev, [poolAccount]: true }));
     try {
       // Try 1m first, fall back to 1w, then all
-      let res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
+      let res = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`);
       let data = await res.json();
 
       if (data.result === 'success' && (!data.data || data.data.length < 2)) {
-        res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
+        res = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`);
         data = await res.json();
       }
 
       if (data.result === 'success' && (!data.data || data.data.length < 2)) {
-        res = await fetch(`https://api.xrpl.to/api/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
+        res = await fetch(`https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`);
         data = await res.json();
       }
 

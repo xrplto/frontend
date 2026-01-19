@@ -6,7 +6,7 @@ import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
 import { getHashIcon } from 'src/utils/formatters';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 const TokenTabs = memo(({ currentMd5 }) => {
   const { themeName } = useContext(AppContext);

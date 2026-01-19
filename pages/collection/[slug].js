@@ -48,7 +48,7 @@ export default function Overview({ collection }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   // Set cache headers for better performance
   ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');

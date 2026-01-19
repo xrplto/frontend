@@ -56,10 +56,10 @@ function Overview({ data }) {
 
 export default Overview;
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'https://api.xrpl.to/v1';
 
 export async function getServerSideProps(ctx) {
-  // https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
+  // https://api.xrpl.to/v1/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
   let data = null;
   const tag = ctx.params.tag; // Move tag definition outside try block
 
@@ -102,7 +102,7 @@ export async function getServerSideProps(ctx) {
 }
 
 // export async function getServerSideProps(ctx) {
-//     // https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
+//     // https://api.xrpl.to/v1/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
 //     let data = null;
 //     try {
 //         var t1 = performance.now();

@@ -65,7 +65,7 @@ LinearProgressWithLabel.propTypes = {
 };
 
 export default function SpinNFT({ collection, setView }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { width, height } = useWindowSize();
   // Sound effects removed for build simplicity
   const play = () => {};
@@ -158,7 +158,7 @@ export default function SpinNFT({ collection, setView }) {
         // return;
       }
 
-      // https://api.xrpl.to/api/spin/count?account=rhhh
+      // https://api.xrpl.to/v1/spin/count?account=rhhh
       axios
         .get(`${BASE_URL}/spin/count?account=${account}&cid=${uuid}`, {
           headers: { 'x-access-token': accountToken }

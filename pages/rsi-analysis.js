@@ -395,7 +395,7 @@ function RSIAnalysisPage({ data }) {
     maxRsi24h: ''
   });
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const timeframes = [
     { value: '15m', label: '15M' },
@@ -1103,7 +1103,7 @@ function RSIAnalysisPage({ data }) {
 export default RSIAnalysisPage;
 
 export async function getStaticProps() {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   try {
     const res = await axios.get(`${BASE_URL}/rsi`, {

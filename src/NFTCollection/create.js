@@ -21,7 +21,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const TEXT_VALID = 2;
   const TEXT_INVALID = 3;
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
   const { accountProfile } = useContext(AppContext);
@@ -184,7 +184,7 @@ const CATEGORIES = [
 ];
 
 export default function CreateCollection({ showHeader = true, onCreate }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const fileRef1 = useRef();
   const fileRef2 = useRef();

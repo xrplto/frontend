@@ -192,7 +192,7 @@ function TokenListComponent({
   }, []);
   const router = useRouter();
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const [filterName, setFilterName] = useState('');
   const [search, setSearch] = useState('');

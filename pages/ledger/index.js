@@ -154,7 +154,7 @@ const TransactionBar = ({ ledgerIndex, txnCount, isDark, watchAddresses = [], wa
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpl.to/api/ledger/${ledgerIndex}?expand=true`, {
+    fetch(`https://api.xrpl.to/v1/ledger/${ledgerIndex}?expand=true`, {
       signal: controller.signal
     })
       .then(res => res.json())
@@ -541,7 +541,7 @@ export default function LedgerStreamPage() {
 
     const controller = new AbortController();
 
-    fetch(`https://api.xrpl.to/api/ledger/${latestLedger.ledger_index}?expand=true`, {
+    fetch(`https://api.xrpl.to/v1/ledger/${latestLedger.ledger_index}?expand=true`, {
       signal: controller.signal
     })
       .then(res => res.json())
@@ -694,7 +694,7 @@ export default function LedgerStreamPage() {
 
     // Fetch success rate and fee stats (accumulate over window)
     if (latest.txn_count > 0) {
-      fetch(`https://api.xrpl.to/api/ledger/${latest.ledger_index}?expand=true`)
+      fetch(`https://api.xrpl.to/v1/ledger/${latest.ledger_index}?expand=true`)
         .then(res => res.json())
         .then(data => {
           const txs = data?.transactions || [];

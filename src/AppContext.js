@@ -25,7 +25,7 @@ const getWalletStorage = () => {
 
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const walletStorage = useMemo(() => getWalletStorage(), []);
 
   // Define constants first before using them

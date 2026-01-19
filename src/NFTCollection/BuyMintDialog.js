@@ -25,7 +25,7 @@ export default function BuyMintDialog({
   setMints,
   setXrpBalance
 }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 

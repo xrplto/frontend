@@ -49,7 +49,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const TEXT_VALID = 2;
   const TEXT_INVALID = 3;
 
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
   const { accountProfile } = useContext(AppContext);
@@ -285,7 +285,7 @@ const CustomSelect = styled('select')`
 `;
 
 export default function ImportCollection() {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
 
   const fileRef1 = useRef();
   const fileRef2 = useRef();
@@ -339,7 +339,7 @@ export default function ImportCollection() {
 
     setLoadingTaxons(true);
 
-    // https://api.xrpl.to/api/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
+    // https://api.xrpl.to/v1/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
     axios
       .get(`${BASE_URL}/taxon/issuer/${issuer}`, {
         headers: {
@@ -413,7 +413,7 @@ export default function ImportCollection() {
       formdata.append('account', accountAdmin);
       formdata.append('data', JSON.stringify(data));
 
-      // https://api.xrpl.to/api/nfts/import
+      // https://api.xrpl.to/v1/nfts/import
       res = await axios.post(`${BASE_URL}/nfts/import`, formdata, {
         headers: {
           'Content-Type': 'multipart/form-data',

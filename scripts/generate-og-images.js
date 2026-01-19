@@ -27,7 +27,7 @@ const TEXT_WHITE = '#ffffff';
 const TEXT_MUTED = 'rgba(255, 255, 255, 0.6)';
 
 // API base
-const API_BASE = 'https://api.xrpl.to/api';
+const API_BASE = 'https://api.xrpl.to/v1';
 
 // Output directories
 const OUTPUT_DIR = path.join(__dirname, '../public/og');

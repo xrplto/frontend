@@ -370,7 +370,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   // Register server-side API calls
   useEffect(() => {
     if (nft?.NFTokenID) {
-      registerApiCalls([`https://api.xrpl.to/api/nft/${nft.NFTokenID}`]);
+      registerApiCalls([`https://api.xrpl.to/v1/nft/${nft.NFTokenID}`]);
     }
   }, [nft?.NFTokenID]);
 
@@ -378,7 +378,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   React.useEffect(() => {
     if (!accountLogin || !nft?.NFTokenID) return;
     import('axios').then(({ default: axios }) => {
-      axios.get(`https://api.xrpl.to/api/watchlist/nft?account=${accountLogin}`)
+      axios.get(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
         .then((res) => {
           if (res.data?.result === 'success' && res.data.watchlist) {
             const allItems = Object.values(res.data.watchlist).flatMap(col => col.items || []);
@@ -398,7 +398,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     try {
       const { default: axios } = await import('axios');
       const action = isSaved ? 'remove' : 'add';
-      const res = await axios.post('https://api.xrpl.to/api/watchlist/nft', {
+      const res = await axios.post('https://api.xrpl.to/v1/watchlist/nft', {
         account: accountLogin,
         nftokenId: nft?.NFTokenID,
         action

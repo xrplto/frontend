@@ -23,7 +23,7 @@ const WatchButton = styled.button`
 `;
 
 export default function Watch({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { accountProfile, openSnackbar, setLoading, themeName, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 

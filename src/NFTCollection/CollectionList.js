@@ -873,7 +873,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 
 // Main CollectionList Component
 export default function CollectionList({ type, category, tag, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
 

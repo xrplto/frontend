@@ -122,7 +122,7 @@ const RichList = ({ token }) => {
 
       setLoading(true);
       try {
-        let url = `https://api.xrpl.to/api/holders/list/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
+        let url = `https://api.xrpl.to/v1/holders/list/${token.md5}?start=${(page - 1) * rowsPerPage}&limit=${rowsPerPage}`;
         if (searchTerm.length >= 3) {
           url += `&search=${encodeURIComponent(searchTerm)}`;
         }
