@@ -809,12 +809,12 @@ const TokenSummary = memo(({ token }) => {
             )}
           >
             <Code2 size={13} />
-            Details
+            API
           </button>
         </div>
         <div className="flex items-center gap-1">
-          <Share token={token} />
           <Watch token={token} />
+          <Share token={token} />
           {accountProfile?.admin && (
             <button
               onClick={() => setEditToken(token)}

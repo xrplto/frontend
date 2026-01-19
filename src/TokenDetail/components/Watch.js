@@ -86,7 +86,7 @@ export default function Watch({ token }) {
   return (
     <WatchButton isDark={isDark} isActive={isActive} onClick={onChangeWatchList}>
       <Bookmark size={12} style={{ marginRight: 4 }} fill={isActive ? '#F6B87E' : 'none'} />
-      {isActive ? 'Saved' : 'Save'}
+      {isActive ? 'Watching' : 'Watch'}
     </WatchButton>
   );
 }

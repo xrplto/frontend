@@ -512,6 +512,14 @@ const TABLE_HEAD_DESKTOP = [
     tooltip: 'Floor price in XRP'
   },
   {
+    id: 'sparkline',
+    label: 'TRENDLINE',
+    align: 'center',
+    width: '140px',
+    order: false,
+    tooltip: '7-day floor price trend'
+  },
+  {
     id: 'floor1dPercent',
     label: '24H %',
     align: 'right',
@@ -598,15 +606,6 @@ const TABLE_HEAD_DESKTOP = [
     width: 'auto',
     order: true,
     tooltip: 'Origin marketplace'
-  },
-  {
-    id: 'sparkline',
-    label: 'TRENDLINE',
-    align: 'center',
-    width: '220px',
-    order: false,
-    style: { paddingLeft: '16px' },
-    tooltip: '7-day floor price trend'
   }
 ];
 
@@ -883,6 +882,22 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell
+        align="center"
+        darkMode={darkMode}
+        style={{
+          minWidth: '140px',
+          width: '140px',
+          overflow: 'visible',
+          position: 'relative',
+          zIndex: 101
+        }}
+      >
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <NFTSparklineChart slug={slug} period="7d" />
+        </div>
+      </StyledCell>
+
+      <StyledCell
         align="right"
         darkMode={darkMode}
         color={getFloorChangeColor(floorChangePercent)}
@@ -943,24 +958,6 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         >
           {origin || 'XRPL'}
         </span>
-      </StyledCell>
-
-      <StyledCell
-        align="center"
-        darkMode={darkMode}
-        style={{
-          minWidth: '220px',
-          width: '220px',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          overflow: 'visible',
-          position: 'relative',
-          zIndex: 101
-        }}
-      >
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <NFTSparklineChart slug={slug} period="7d" />
-        </div>
       </StyledCell>
     </StyledRow>
   );
