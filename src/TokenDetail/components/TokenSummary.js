@@ -646,23 +646,35 @@ const TokenSummary = memo(({ token }) => {
       {/* Row 3: Price Changes */}
       <div className="grid grid-cols-4 gap-1.5 mt-1.5">
         {priceChanges.map((item) => (
-          <div key={item.label} className="flex items-center justify-center gap-1 py-1">
-            <span
+          <div
+            key={item.label}
+            className={cn(
+              'text-center py-1.5 px-1 rounded-lg',
+              isDark ? 'bg-white/[0.025]' : 'bg-black/[0.02]'
+            )}
+          >
+            <div
               className={cn(
-                'text-[9px] uppercase tracking-wide',
+                'text-[9px] uppercase tracking-wide mb-1',
                 isDark ? 'text-white/35' : 'text-gray-400'
               )}
             >
               {item.label}
-            </span>
-            <span
+            </div>
+            <div
               className={cn(
-                'text-[12px] font-medium px-1.5 py-0.5 rounded',
-                item.value >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'
+                'text-[12px] font-medium',
+                item.value == null
+                  ? isDark
+                    ? 'text-white/50'
+                    : 'text-gray-500'
+                  : item.value >= 0
+                    ? 'text-green-500'
+                    : 'text-red-500'
               )}
             >
               {formatPct(item.value)}
-            </span>
+            </div>
           </div>
         ))}
       </div>
@@ -797,7 +809,7 @@ const TokenSummary = memo(({ token }) => {
             )}
           >
             <Code2 size={13} />
-            API
+            Details
           </button>
         </div>
         <div className="flex items-center gap-1">

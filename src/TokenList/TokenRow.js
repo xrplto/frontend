@@ -240,7 +240,6 @@ const UserName = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.3;
-  text-transform: uppercase;
 `;
 
 const PriceText = ({ flashColor, isDark, isMobile, children }) => (

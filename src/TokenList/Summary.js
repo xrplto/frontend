@@ -267,8 +267,16 @@ const MobileChartBox = styled(MetricBox)`
 `;
 
 function Rate(num, exch) {
-  if (num === 0 || exch === 0) return 0;
-  return fNumber(num / exch);
+  if (num === 0 || exch === 0) return '0';
+  const price = num / exch;
+
+  if (price < 0.01) {
+    return price.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  if (price < 100) {
+    return price.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  return price.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 const formatNumberWithDecimals = (num) => {

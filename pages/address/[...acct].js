@@ -29,7 +29,8 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
-  Filter
+  Filter,
+  GitBranch
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
@@ -134,6 +135,10 @@ const OverView = ({ account }) => {
   const [nftTradesPage, setNftTradesPage] = useState(0);
   const ITEMS_PER_PAGE = 10;
 
+  // Ancestry state
+  const [ancestry, setAncestry] = useState(null);
+  const [ancestryLoading, setAncestryLoading] = useState(false);
+
   // Set XRP price from holdings data
   useEffect(() => {
     if (holdings?.xrp?.usd) {
@@ -162,6 +167,7 @@ const OverView = ({ account }) => {
     setNftTrades([]);
     setNftCollectionStats([]);
     setNftHistory([]);
+    setAncestry(null);
 
     const fetchData = async () => {
       try {
@@ -283,6 +289,20 @@ const OverView = ({ account }) => {
       .catch((err) => console.error('Failed to fetch collection NFTs:', err))
       .finally(() => setCollectionNftsLoading(false));
   }, [selectedNftCollection, account]);
+
+  // Fetch ancestry data when ancestry tab is selected
+  useEffect(() => {
+    if (activeTab !== 'ancestry' || !account || ancestry) return;
+    setAncestryLoading(true);
+    axios
+      .get(`https://api.xrpl.to/api/account/ancestry/${account}`)
+      .then((res) => setAncestry(res.data))
+      .catch((err) => {
+        console.error('Failed to fetch ancestry:', err);
+        setAncestry(null);
+      })
+      .finally(() => setAncestryLoading(false));
+  }, [activeTab, account]);
 
   // Fetch onchain history when onchain view is selected
   const fetchTxHistory = (marker = null) => {
@@ -1361,7 +1381,8 @@ const OverView = ({ account }) => {
               {[
                 { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: nftStats?.holdingsCount || 0 },
-                { id: 'activity', label: 'HISTORY', icon: Clock }
+                { id: 'activity', label: 'HISTORY', icon: Clock },
+                { id: 'ancestry', label: 'ANCESTRY', icon: GitBranch, count: ancestry?.stats?.ancestorDepth || '' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -3777,6 +3798,158 @@ const OverView = ({ account }) => {
                     );
                   })()}
               </>
+            )}
+
+            {/* Ancestry Tab */}
+            {activeTab === 'ancestry' && (
+              <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                {ancestryLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading ancestry...</div>
+                  </div>
+                ) : !ancestry ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-2">
+                    <GitBranch size={24} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                    <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>No ancestry data available</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Stats Header */}
+                    <div className={cn('px-4 py-3 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-gray-100')}>
+                      <div className="flex items-center gap-2">
+                        <GitBranch size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                        <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Account Ancestry</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {ancestry.stats?.ancestorDepth > 0 && (
+                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            <span className="font-medium">{ancestry.stats.ancestorDepth}</span> generations
+                          </span>
+                        )}
+                        {ancestry.stats?.childrenCount > 0 && (
+                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            <span className="font-medium">{ancestry.stats.childrenCount}</span> children
+                          </span>
+                        )}
+                        {ancestry.stats?.tokensCreated > 0 && (
+                          <span className={cn('text-[11px]', isDark ? 'text-emerald-400/70' : 'text-emerald-600')}>
+                            <span className="font-medium">{ancestry.stats.tokensCreated}</span> tokens created
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Ancestors Section */}
+                    {ancestry.ancestors?.length > 0 && (
+                      <div className={cn('px-4 py-3', isDark ? 'border-b border-white/10' : 'border-b border-gray-100')}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <ArrowUpRight size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            Ancestors (who activated this account)
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {ancestry.ancestors.map((ancestor, idx) => (
+                            <div key={ancestor.address || idx} className={cn('flex items-center justify-between py-2 px-3 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                              <div className="flex items-center gap-3">
+                                <span className={cn('text-[10px] w-6 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>{idx + 1}</span>
+                                <div>
+                                  <Link href={`/address/${ancestor.address}`} className={cn('text-[13px] font-mono hover:underline', isDark ? 'text-[#4285f4]' : 'text-blue-600')}>
+                                    {ancestor.name || `${ancestor.address?.slice(0, 8)}...${ancestor.address?.slice(-6)}`}
+                                  </Link>
+                                  {ancestor.name && (
+                                    <p className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                      {ancestor.address?.slice(0, 8)}...{ancestor.address?.slice(-6)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                {ancestor.tokensCreated > 0 && (
+                                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600')}>
+                                    {ancestor.tokensCreated} tokens
+                                  </span>
+                                )}
+                                {ancestor.inception && (
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                    {new Date(ancestor.inception).toLocaleDateString()}
+                                  </span>
+                                )}
+                                {ancestor.tx && (
+                                  <Link href={`/tx/${ancestor.tx}`} target="_blank" className={cn('text-[10px] font-mono hover:underline', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>
+                                    {ancestor.tx.slice(0, 4)}...{ancestor.tx.slice(-4)}
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Children Section */}
+                    {ancestry.children?.length > 0 && (
+                      <div className="px-4 py-3">
+                        <div className="flex items-center gap-2 mb-3">
+                          <ArrowDownLeft size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+                          <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            Children (accounts activated by this account)
+                          </span>
+                          {ancestry.stats?.childrenCount > ancestry.children.length && (
+                            <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-400')}>
+                              (showing {ancestry.children.length} of {ancestry.stats.childrenCount})
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          {ancestry.children.map((child, idx) => (
+                            <div key={child.address || idx} className={cn('flex items-center justify-between py-2 px-3 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                              <div className="flex items-center gap-3">
+                                <span className={cn('text-[10px] w-6 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>{idx + 1}</span>
+                                <div>
+                                  <Link href={`/address/${child.address}`} className={cn('text-[13px] font-mono hover:underline', isDark ? 'text-[#4285f4]' : 'text-blue-600')}>
+                                    {child.name || `${child.address?.slice(0, 8)}...${child.address?.slice(-6)}`}
+                                  </Link>
+                                  {child.name && (
+                                    <p className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                      {child.address?.slice(0, 8)}...{child.address?.slice(-6)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                {child.tokensCreated > 0 && (
+                                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600')}>
+                                    {child.tokensCreated} tokens
+                                  </span>
+                                )}
+                                {child.inception && (
+                                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                    {new Date(child.inception).toLocaleDateString()}
+                                  </span>
+                                )}
+                                {child.tx && (
+                                  <Link href={`/tx/${child.tx}`} target="_blank" className={cn('text-[10px] font-mono hover:underline', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>
+                                    {child.tx.slice(0, 4)}...{child.tx.slice(-4)}
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Empty state */}
+                    {(!ancestry.ancestors || ancestry.ancestors.length === 0) && (!ancestry.children || ancestry.children.length === 0) && (
+                      <div className="flex flex-col items-center justify-center py-12 gap-2">
+                        <GitBranch size={24} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                        <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>No ancestry relationships found</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
