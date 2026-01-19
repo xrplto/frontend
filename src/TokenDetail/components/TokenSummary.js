@@ -347,7 +347,7 @@ const TokenSummary = memo(({ token }) => {
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-transparent" : "border-black/[0.06] bg-transparent")}>
+    <div className={cn("rounded-xl border-[1.5px] p-3", isDark ? "border-white/10 bg-transparent" : "border-black/[0.06] bg-transparent")}>
       {/* Row 1: Token Info + Price */}
       <div className="flex items-center justify-between gap-4">
         {/* Left: Token Image + Info */}
@@ -390,14 +390,14 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Row 2: Stats Grid */}
-      <div className={cn("grid grid-cols-4 gap-2 mt-4 pt-4 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+      <div className={cn("grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
         {[
           { label: 'MCAP', value: formatValue(convertedMarketCap), color: isDark ? 'text-white/90' : 'text-gray-800' },
           { label: 'VOL 24H', value: formatValue(convertedVolume), color: isDark ? 'text-white/90' : 'text-gray-800' },
           { label: 'TVL', value: formatValue(convertedTvl), color: isDark ? 'text-white/90' : 'text-gray-800' },
           { label: 'HOLDERS', value: formatValue(holders || 0), color: isDark ? 'text-white/90' : 'text-gray-800', noSymbol: true }
         ].map((stat) => (
-          <div key={stat.label} className={cn("text-center py-2 px-1 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
+          <div key={stat.label} className={cn("text-center py-1.5 px-1 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
             <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{stat.label}</div>
             <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
           </div>
@@ -405,9 +405,9 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Row 3: Price Changes */}
-      <div className="grid grid-cols-4 gap-2 mt-2">
+      <div className="grid grid-cols-4 gap-1.5 mt-1.5">
         {priceChanges.map((item) => (
-          <div key={item.label} className="flex items-center justify-center gap-1 py-1.5">
+          <div key={item.label} className="flex items-center justify-center gap-1 py-1">
             <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</span>
             <span className={cn("text-[12px] font-medium px-1.5 py-0.5 rounded", item.value >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10")}>{formatPct(item.value)}</span>
           </div>
@@ -416,7 +416,7 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Row 4: 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-2.5 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+        <div className={cn("flex items-center gap-2.5 mt-2 pt-2 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
           <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/35" : "text-gray-400")}>24H</span>
           <span className="text-[10px] text-green-500/80 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
@@ -441,7 +441,7 @@ const TokenSummary = memo(({ token }) => {
       )}
 
       {/* Row 5: Actions */}
-      <div className={cn("flex items-center justify-between gap-2 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+      <div className={cn("flex items-center justify-between gap-2 mt-2 pt-2 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
         <div className="flex items-center gap-1.5 relative">
           {trustStatus && trustStatus !== 'loading' && (
             <div className={cn("absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap z-50", isDark ? "bg-white/10 text-white" : "bg-gray-800 text-white")}>

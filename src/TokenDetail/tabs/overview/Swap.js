@@ -490,10 +490,10 @@ const Tooltip = ({ title, children }) => {
 
 const CurrencyContent = styled.div`
   box-sizing: border-box;
-  margin: 4px 0;
+  margin: 3px 0;
   display: flex;
   flex-direction: row;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 10px;
   align-items: center;
   background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)'};
@@ -506,8 +506,8 @@ const CurrencyContent = styled.div`
     background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
   }
   @media (max-width: 600px) {
-    padding: 14px 16px;
-    margin: 5px 0;
+    padding: 12px 14px;
+    margin: 4px 0;
     border-radius: 10px;
   }
 `;
@@ -529,14 +529,14 @@ const OverviewWrapper = styled.div`
   position: relative;
   border-radius: 12px;
   display: flex;
-  padding: 14px;
+  padding: 10px;
   width: 100%;
   min-width: 0;
   background: transparent;
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
   @media (max-width: 600px) {
     border-radius: 12px;
-    padding: 14px;
+    padding: 10px;
   }
 `;
 
@@ -618,16 +618,16 @@ const TokenImage = styled(Image)`
 `;
 
 const SummaryBox = styled.div`
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'};
   border-radius: 8px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-  margin-top: 8px;
-  margin-bottom: 4px;
+  margin-top: 6px;
+  margin-bottom: 2px;
   @media (max-width: 600px) {
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-radius: 10px;
-    margin-top: 10px;
+    margin-top: 8px;
   }
 `;
 

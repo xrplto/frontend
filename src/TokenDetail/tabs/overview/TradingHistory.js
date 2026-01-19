@@ -2468,6 +2468,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               {/* Trader Address */}
               <a
                 href={`/address/${addressToShow}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                   display: 'inline-flex',

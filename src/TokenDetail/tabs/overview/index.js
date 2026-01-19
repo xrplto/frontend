@@ -132,7 +132,7 @@ const Overview = memo(
           <PriceChart token={token} />
           <PriceStatistics token={token} isDark={isDark} linkedCollections={token.linkedCollections} />
           <TradingHistory tokenId={token.md5} amm={token.AMM} token={token} pairs={pairs} onTransactionClick={onTransactionClick} isDark={isDark} isMobile={true} />
-          <TrendingTokens />
+          <TrendingTokens token={token} />
           <Description token={token} showEditor={showEditor} setShowEditor={setShowEditor} description={description} onApplyDescription={onApplyDescription} isDark={isDark} mdEditor={showEditor ? <textarea value={description} onChange={(e) => setDescription(e.target.value)} className={cn("w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary", isDark ? "border-white/20 bg-white/5 text-white placeholder-white/40" : "border-gray-300 bg-white text-gray-900 placeholder-gray-400")} placeholder="Enter description..." /> : null} />
         </div>
       );
@@ -142,7 +142,7 @@ const Overview = memo(
       <div className="flex flex-col">
         {/* Main content row */}
         <div className="flex flex-col md:flex-row items-stretch gap-2 mb-2">
-          {/* Left column: Chart + Trading History + Trending */}
+          {/* Left column: Chart + Trading History */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
             <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
@@ -160,7 +160,6 @@ const Overview = memo(
                 isMobile={isTablet}
               />
             </section>
-            <TrendingTokens horizontal />
           </div>
 
           {/* Right sidebar: TokenSummary, Swap, Stats, Description */}
@@ -200,6 +199,9 @@ const Overview = memo(
             />
           </aside>
         </div>
+
+        {/* Full-width trending section */}
+        <TrendingTokens token={token} />
       </div>
     );
   }

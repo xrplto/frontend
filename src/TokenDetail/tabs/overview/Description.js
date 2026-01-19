@@ -17,7 +17,7 @@ const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px 8px;
+  padding: 10px 12px 6px;
 `;
 
 const Title = styled.div`
@@ -51,7 +51,7 @@ const IconButton = styled.button`
 `;
 
 const Content = styled.div`
-  padding: 8px 14px 14px;
+  padding: 6px 12px 10px;
   position: relative;
 `;
 

@@ -146,7 +146,7 @@ const StyledTable = styled(Table)`
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 8px 14px;
+  padding: 5px 12px;
   border-bottom: none;
   vertical-align: middle;
   &:first-of-type {
@@ -166,8 +166,8 @@ const TableRowStyled = styled(TableRow)`
 `;
 
 const SectionHeader = styled.div`
-  padding: 10px 14px 6px;
-  margin-top: 4px;
+  padding: 8px 12px 4px;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -477,7 +477,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         background: 'transparent',
         border: `1.5px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"}`,
         width: '100%',
-        marginBottom: '8px',
+        marginBottom: '4px',
         overflow: 'hidden'
       }}
     >
@@ -525,7 +525,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       {/* Header */}
       <Box
         style={{
-          padding: '14px 14px 10px',
+          padding: '10px 12px 8px',
           background: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'
         }}
       >
