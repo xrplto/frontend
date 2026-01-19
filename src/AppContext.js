@@ -124,8 +124,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         // If device accounts exist, restore them all
         if (event.data.allDeviceAccounts && event.data.allDeviceAccounts.length >= 1) {
           const allProfiles = [...profiles];
-          event.data.allDeviceAccounts.forEach(deviceProfile => {
-            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
+          event.data.allDeviceAccounts.forEach((deviceProfile) => {
+            if (!allProfiles.find((p) => p.account === deviceProfile.account)) {
               allProfiles.push(deviceProfile);
             }
           });
@@ -153,10 +153,16 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       if (storedProfile) {
         try {
           const profile = JSON.parse(storedProfile);
-          if (profile && profile.account && (!accountProfile || accountProfile.account !== profile.account)) {
+          if (
+            profile &&
+            profile.account &&
+            (!accountProfile || accountProfile.account !== profile.account)
+          ) {
             setAccountProfile(profile);
           }
-        } catch (e) { /* ignore parse errors */ }
+        } catch (e) {
+          /* ignore parse errors */
+        }
       }
     };
 
@@ -183,14 +189,22 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         }
 
         // For OAuth wallets, decrypt seed immediately if not already present
-        if (accountProfile && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') && !accountProfile.seed) {
+        if (
+          accountProfile &&
+          (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') &&
+          !accountProfile.seed
+        ) {
           try {
             const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
             const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
             if (storedPassword) {
               // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
-              const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, accountProfile.account || accountProfile.address);
+              const wallet = await walletStorage.findWalletBySocialId(
+                walletId,
+                storedPassword,
+                accountProfile.account || accountProfile.address
+              );
               if (wallet?.seed) {
                 const updatedProfile = { ...accountProfile, seed: wallet.seed };
                 setAccountProfile(updatedProfile);
@@ -240,14 +254,22 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     };
 
     // For OAuth wallets, ensure seed is included
-    if ((profileWithTimestamp.wallet_type === 'oauth' || profileWithTimestamp.wallet_type === 'social') && !profileWithTimestamp.seed) {
+    if (
+      (profileWithTimestamp.wallet_type === 'oauth' ||
+        profileWithTimestamp.wallet_type === 'social') &&
+      !profileWithTimestamp.seed
+    ) {
       try {
         const walletId = `${profileWithTimestamp.provider}_${profileWithTimestamp.provider_id}`;
         const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
         if (storedPassword) {
           // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
-          const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, profileWithTimestamp.account || profileWithTimestamp.address);
+          const wallet = await walletStorage.findWalletBySocialId(
+            walletId,
+            storedPassword,
+            profileWithTimestamp.account || profileWithTimestamp.address
+          );
           if (wallet?.seed) {
             profileWithTimestamp.seed = wallet.seed;
           }
@@ -299,7 +321,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const removeProfile = async (account) => {
-    const newProfiles = profiles.filter(obj => obj.account !== account);
+    const newProfiles = profiles.filter((obj) => obj.account !== account);
     localStorage.setItem('profiles', JSON.stringify(newProfiles));
     setProfiles(newProfiles);
     // Clean up encrypted wallet data and backup flag
@@ -310,8 +332,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       console.warn('Failed to clean up wallet data:', err);
     }
   };
-
-
 
   const handleOpen = () => {
     setOpen(true);
@@ -338,69 +358,38 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       }
 
       const account = accountProfile.account;
-      const isDevelopment = true;
 
-      if (isDevelopment) {
-        try {
-          const res = await axios.get(`${BASE_URL}/testnet/${account}`);
-          if (res.status === 200 && res.data) {
-            setAccountBalance({
-              curr1: {
-                value: res.data.available?.xrp || res.data.balanceXRP
-              },
-              curr2: {
-                value: res.data.reserve?.totalReserveXRP || '0'
-              }
+      try {
+        const res = await axios.get(`${BASE_URL}/account/balance/${account}`);
+        if (res.status === 200 && res.data) {
+          setAccountBalance({
+            curr1: { value: res.data.balance ?? '0' },
+            curr2: { value: res.data.reserve ?? '0' }
+          });
+          if (accountProfile && accountProfile.xrp !== res.data.total) {
+            setAccountProfile({
+              ...accountProfile,
+              xrp: res.data.total
             });
-            // Update profile with total balance (only if changed to prevent loops)
-            if (accountProfile && accountProfile.xrp !== res.data.balanceXRP) {
-              setAccountProfile({
-                ...accountProfile,
-                xrp: res.data.balanceXRP
-              });
-            }
-          }
-        } catch (err) {
-          // Handle unactivated accounts (404) or server errors (500) gracefully
-          // Both cases typically mean the account doesn't exist or isn't funded
-          if (err.response?.status === 404 || err.response?.status === 500) {
-            // Account not activated yet - set balance to 0
-            setAccountBalance({
-              curr1: { value: '0' },
-              curr2: { value: '0' }
-            });
-            if (accountProfile && accountProfile.xrp !== '0') {
-              setAccountProfile({
-                ...accountProfile,
-                xrp: '0'
-              });
-            }
-          } else {
-            console.error('Testnet balance fetch error:', err);
           }
         }
-      } else {
-        // Production: use existing endpoint
-        axios
-          .get(
-            `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
-          )
-          .then((res) => {
-            let ret = res.status === 200 ? res.data : undefined;
-            if (ret) {
-              setAccountBalance(ret.pair);
-            }
-          })
-          .catch((err) => {
-          })
-          .then(function () {
-            // always executed
+      } catch (err) {
+        if (err.response?.status === 404 || err.response?.status === 500) {
+          setAccountBalance({
+            curr1: { value: '0' },
+            curr2: { value: '0' }
           });
+          if (accountProfile && accountProfile.xrp !== '0') {
+            setAccountProfile({
+              ...accountProfile,
+              xrp: '0'
+            });
+          }
+        }
       }
     }
     getAccountInfo();
   }, [accountProfile, sync]);
-
 
   // Fetch watchlist
   useEffect(() => {

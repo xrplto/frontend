@@ -7,7 +7,8 @@ const STORAGE_KEY = 'token_tabs_history';
 const TABS_UPDATED_EVENT = 'token_tabs_updated';
 
 // Helper to normalize name (defined here for initial load)
-const normalizeNameLocal = (n) => typeof n === 'object' && n !== null ? n.collection_name || n.name || '' : n || '';
+const normalizeNameLocal = (n) =>
+  typeof n === 'object' && n !== null ? n.collection_name || n.name || '' : n || '';
 
 export function useTokenTabs() {
   const [tabs, setTabs] = useState(() => {
@@ -16,7 +17,7 @@ export function useTokenTabs() {
       const stored = localStorage.getItem(STORAGE_KEY);
       let parsed = stored ? JSON.parse(stored) : [];
       // Normalize any object names from corrupted localStorage data
-      return parsed.map(t => ({
+      return parsed.map((t) => ({
         ...t,
         name: normalizeNameLocal(t.name),
         user: normalizeNameLocal(t.user),
@@ -35,12 +36,14 @@ export function useTokenTabs() {
         if (stored) {
           const parsed = JSON.parse(stored);
           // Normalize any object names
-          setTabs(parsed.map(t => ({
-            ...t,
-            name: normalizeNameLocal(t.name),
-            user: normalizeNameLocal(t.user),
-            collectionName: normalizeNameLocal(t.collectionName)
-          })));
+          setTabs(
+            parsed.map((t) => ({
+              ...t,
+              name: normalizeNameLocal(t.name),
+              user: normalizeNameLocal(t.user),
+              collectionName: normalizeNameLocal(t.collectionName)
+            }))
+          );
         }
       } catch {}
     };
@@ -57,7 +60,8 @@ export function useTokenTabs() {
     if (!token?.slug || !token?.md5) return;
 
     // Helper to normalize name
-    const normalize = (n) => typeof n === 'object' && n !== null ? n.collection_name || n.name || '' : n || '';
+    const normalize = (n) =>
+      typeof n === 'object' && n !== null ? n.collection_name || n.name || '' : n || '';
 
     setTabs((prev) => {
       const filtered = prev.filter((t) => t.md5 !== token.md5);
@@ -107,7 +111,7 @@ export function addTokenToTabs(item) {
     let tabs = stored ? JSON.parse(stored) : [];
 
     // Normalize existing tabs in case they have object names from previous sessions
-    tabs = tabs.map(t => ({
+    tabs = tabs.map((t) => ({
       ...t,
       name: normalizeName(t.name),
       user: normalizeName(t.user),

@@ -25,14 +25,27 @@ export default function Overview({ collection }) {
 
   // Normalize name: API may return object {collection_name, collection_description} or string
   const rawName = collection.name;
-  const collectionName = typeof rawName === 'object' && rawName !== null
-    ? rawName.collection_name || 'NFT Collection'
-    : rawName || 'NFT Collection';
+  const collectionName =
+    typeof rawName === 'object' && rawName !== null
+      ? rawName.collection_name || 'NFT Collection'
+      : rawName || 'NFT Collection';
 
   return (
     <OverviewWrapper>
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         {collectionName} NFT Collection
       </h1>
 
@@ -60,13 +73,16 @@ export async function getServerSideProps(ctx) {
     const t1 = performance.now();
 
     // Fetch collection with NFTs in single request
-    const res = await axios.get(`${BASE_URL}/nft/collections/${slug}?includeNFTs=true&nftLimit=20`, {
-      timeout: 5000,
-      headers: {
-        'Accept-Encoding': 'gzip, deflate',
-        Accept: 'application/json'
+    const res = await axios.get(
+      `${BASE_URL}/nft/collections/${slug}?includeNFTs=true&nftLimit=20`,
+      {
+        timeout: 5000,
+        headers: {
+          'Accept-Encoding': 'gzip, deflate',
+          Accept: 'application/json'
+        }
       }
-    });
+    );
 
     data = {
       collection: res.data,
@@ -87,16 +103,25 @@ export async function getServerSideProps(ctx) {
   }
 
   if (data && data.collection) {
-    const { name: rawName, featuredImage, logoImage, bannerImage, slug, uuid, description: rawDesc } =
-      data.collection;
+    const {
+      name: rawName,
+      featuredImage,
+      logoImage,
+      bannerImage,
+      slug,
+      uuid,
+      description: rawDesc
+    } = data.collection;
 
     // Normalize name/description: API may return object or string
-    const name = typeof rawName === 'object' && rawName !== null
-      ? rawName.collection_name || ''
-      : rawName || '';
-    const description = typeof rawDesc === 'object' && rawDesc !== null
-      ? rawDesc.collection_description || ''
-      : rawDesc || '';
+    const name =
+      typeof rawName === 'object' && rawName !== null
+        ? rawName.collection_name || ''
+        : rawName || '';
+    const description =
+      typeof rawDesc === 'object' && rawDesc !== null
+        ? rawDesc.collection_description || ''
+        : rawDesc || '';
 
     // Enhanced OGP metadata
     const ogp = {

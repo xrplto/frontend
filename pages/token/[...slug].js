@@ -28,18 +28,15 @@ function Detail({ data }) {
   const [wsEnabled, setWsEnabled] = useState(true);
 
   // Handle token updates from WebSocket (supports delta mode)
-  const handleTokenUpdate = useCallback(
-    (tokenData, isDelta) => {
-      if (isDelta) {
-        // Delta update: merge only changed fields
-        setToken((prev) => ({ ...prev, ...tokenData }));
-      } else {
-        // Full update: replace token data
-        setToken((prev) => ({ ...prev, ...tokenData }));
-      }
-    },
-    []
-  );
+  const handleTokenUpdate = useCallback((tokenData, isDelta) => {
+    if (isDelta) {
+      // Delta update: merge only changed fields
+      setToken((prev) => ({ ...prev, ...tokenData }));
+    } else {
+      // Full update: replace token data
+      setToken((prev) => ({ ...prev, ...tokenData }));
+    }
+  }, []);
 
   // Handle metrics/exchange rate updates
   const handleMetricsUpdate = useCallback(
@@ -59,7 +56,8 @@ function Detail({ data }) {
     enabled: wsEnabled
   });
 
-  const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
+  const isPanelOpen =
+    creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
 
   return (
     <main className="overflow-hidden min-h-screen">
@@ -86,7 +84,6 @@ function Detail({ data }) {
       <ScrollToTop />
 
       <Footer />
-
     </main>
   );
 }
@@ -161,7 +158,6 @@ export async function getStaticProps({ params }) {
 
     const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const dt = (t2 - t1).toFixed(2);
-
   } catch (e) {
     // Error during getStaticProps
   }

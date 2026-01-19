@@ -3,7 +3,7 @@ import { Wallet } from 'xrpl';
 // CryptoJS will be loaded dynamically when needed for OAuth
 let CryptoJS;
 if (typeof window !== 'undefined') {
-  import('crypto-js').then(module => {
+  import('crypto-js').then((module) => {
     CryptoJS = module.default;
     window.CryptoJS = CryptoJS;
   });
@@ -73,11 +73,14 @@ const securityUtils = {
     const variety = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
 
     if (variety < 2) {
-      return { valid: false, error: 'Password needs more variety (mix letters, numbers, or symbols)' };
+      return {
+        valid: false,
+        error: 'Password needs more variety (mix letters, numbers, or symbols)'
+      };
     }
     // Check for common weak passwords
     const weak = ['password', '12345678', 'qwerty12', 'letmein1', 'welcome1'];
-    if (weak.some(w => password.toLowerCase().includes(w))) {
+    if (weak.some((w) => password.toLowerCase().includes(w))) {
       return { valid: false, error: 'Password is too common' };
     }
     return { valid: true };
@@ -148,7 +151,12 @@ export class UnifiedWalletStorage {
       const currentEntropy = localStorage.getItem('__wk_entropy__');
       const backupEntropy = await this.getEntropyFromIndexedDB();
 
-      console.log('[ensureEntropyRestored] Current:', currentEntropy ? 'EXISTS' : 'NULL', 'Backup:', backupEntropy ? 'EXISTS' : 'NULL');
+      console.log(
+        '[ensureEntropyRestored] Current:',
+        currentEntropy ? 'EXISTS' : 'NULL',
+        'Backup:',
+        backupEntropy ? 'EXISTS' : 'NULL'
+      );
 
       if (backupEntropy && currentEntropy !== backupEntropy) {
         // IndexedDB has DIFFERENT entropy - restore it
@@ -176,7 +184,9 @@ export class UnifiedWalletStorage {
         data: entropy,
         timestamp: Date.now()
       });
-    } catch (e) { /* silent */ }
+    } catch (e) {
+      /* silent */
+    }
   }
 
   // Restore entropy from IndexedDB backup
@@ -186,8 +196,10 @@ export class UnifiedWalletStorage {
       const db = await this.initDB();
       console.log('[getEntropyFromIndexedDB] DB initialized, querying...');
       return new Promise((resolve) => {
-        const req = db.transaction([this.walletsStore], 'readonly')
-          .objectStore(this.walletsStore).get('__entropy_backup__');
+        const req = db
+          .transaction([this.walletsStore], 'readonly')
+          .objectStore(this.walletsStore)
+          .get('__entropy_backup__');
         req.onsuccess = () => {
           console.log('[getEntropyFromIndexedDB] Success:', req.result?.data ? 'EXISTS' : 'NULL');
           resolve(req.result?.data || null);
@@ -226,9 +238,9 @@ export class UnifiedWalletStorage {
 
   // Check if Web Crypto API is available (secure context required)
   isSecureContext() {
-    return typeof window !== 'undefined' &&
-           window.isSecureContext &&
-           window.crypto?.subtle !== undefined;
+    return (
+      typeof window !== 'undefined' && window.isSecureContext && window.crypto?.subtle !== undefined
+    );
   }
 
   // Encrypt data for localStorage (using Web Crypto API)
@@ -287,7 +299,7 @@ export class UnifiedWalletStorage {
     }
 
     const encoder = new TextEncoder();
-    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    const combined = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
 
     const salt = combined.slice(0, 16);
     const iv = combined.slice(16, 28);
@@ -314,11 +326,7 @@ export class UnifiedWalletStorage {
       ['encrypt', 'decrypt']
     );
 
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv },
-      key,
-      encrypted
-    );
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, encrypted);
 
     const decoded = new TextDecoder().decode(decrypted);
     try {
@@ -593,11 +601,7 @@ export class UnifiedWalletStorage {
     const plaintext = encoder.encode(JSON.stringify(data));
 
     // AES-GCM includes authentication tag for integrity
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      plaintext
-    );
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
 
     // GCM mode automatically includes a 16-byte authentication tag
     // No need for separate HMAC as GCM provides authenticated encryption
@@ -616,7 +620,9 @@ export class UnifiedWalletStorage {
   async decryptData(encryptedString, pin) {
     // Decode base64 string
     const combinedBuffer = new Uint8Array(
-      atob(encryptedString).split('').map(char => char.charCodeAt(0))
+      atob(encryptedString)
+        .split('')
+        .map((char) => char.charCodeAt(0))
     );
 
     // Check for version byte
@@ -640,11 +646,7 @@ export class UnifiedWalletStorage {
 
     // AES-GCM will automatically verify the authentication tag
     // and throw if data has been tampered with
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encrypted
-    );
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
 
     const decoder = new TextDecoder();
     return JSON.parse(decoder.decode(decrypted));
@@ -672,10 +674,7 @@ export class UnifiedWalletStorage {
 
     // Generate lookup hash (one-way, can't reverse to get address)
     const encoder = new TextEncoder();
-    const addressHash = await crypto.subtle.digest(
-      'SHA-256',
-      encoder.encode(walletData.address)
-    );
+    const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(walletData.address));
     const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
     return new Promise((resolve, reject) => {
@@ -683,8 +682,9 @@ export class UnifiedWalletStorage {
       const store = transaction.objectStore(this.walletsStore);
 
       // Store encrypted data with minimal public metadata
-      const maskedAddr = walletData.address ?
-        `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}` : null;
+      const maskedAddr = walletData.address
+        ? `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`
+        : null;
 
       const record = {
         id: walletId,
@@ -713,10 +713,7 @@ export class UnifiedWalletStorage {
 
     // Generate lookup hash from address
     const encoder = new TextEncoder();
-    const addressHash = await crypto.subtle.digest(
-      'SHA-256',
-      encoder.encode(address)
-    );
+    const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
     const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
     return new Promise((resolve, reject) => {
@@ -818,14 +815,16 @@ export class UnifiedWalletStorage {
         request.onsuccess = () => {
           const records = request.result || [];
           // Filter out special records (passwords, entropy backup)
-          const walletRecords = records.filter(r =>
-            r.id && typeof r.id === 'string' &&
-            !r.id.startsWith('__pwd__') &&
-            !r.id.startsWith('__entropy')
+          const walletRecords = records.filter(
+            (r) =>
+              r.id &&
+              typeof r.id === 'string' &&
+              !r.id.startsWith('__pwd__') &&
+              !r.id.startsWith('__entropy')
           );
 
           // Return public metadata only
-          const metadata = walletRecords.map(r => ({
+          const metadata = walletRecords.map((r) => ({
             id: r.id,
             maskedAddress: r.maskedAddress || 'Unknown',
             timestamp: r.timestamp
@@ -897,12 +896,13 @@ export class UnifiedWalletStorage {
         request.onsuccess = () => {
           const records = request.result || [];
           // Check for password records
-          const hasPasswords = records.some(r =>
-            r.id && typeof r.id === 'string' && r.id.startsWith('__pwd__')
+          const hasPasswords = records.some(
+            (r) => r.id && typeof r.id === 'string' && r.id.startsWith('__pwd__')
           );
           // Check for device credentials in localStorage
-          const hasDeviceCreds = typeof window !== 'undefined' &&
-            Object.keys(localStorage).some(k => k.startsWith('device_pwd_'));
+          const hasDeviceCreds =
+            typeof window !== 'undefined' &&
+            Object.keys(localStorage).some((k) => k.startsWith('device_pwd_'));
 
           resolve(hasPasswords || hasDeviceCreds);
         };
@@ -932,19 +932,24 @@ export class UnifiedWalletStorage {
 
   isSequentialDigits(pin) {
     // Check for sequential patterns like 123456, 654321
-    const ascending = pin.split('').every((digit, i) =>
-      i === 0 || parseInt(digit) === parseInt(pin[i-1]) + 1
-    );
-    const descending = pin.split('').every((digit, i) =>
-      i === 0 || parseInt(digit) === parseInt(pin[i-1]) - 1
-    );
+    const ascending = pin
+      .split('')
+      .every((digit, i) => i === 0 || parseInt(digit) === parseInt(pin[i - 1]) + 1);
+    const descending = pin
+      .split('')
+      .every((digit, i) => i === 0 || parseInt(digit) === parseInt(pin[i - 1]) - 1);
     return ascending || descending;
   }
 
   isRepeatingDigits(pin) {
     // Check for repeating patterns like 111111, 121212
-    const allSame = pin.split('').every(digit => digit === pin[0]);
-    const alternating = pin.length === 6 && pin[0] === pin[2] && pin[2] === pin[4] && pin[1] === pin[3] && pin[3] === pin[5];
+    const allSame = pin.split('').every((digit) => digit === pin[0]);
+    const alternating =
+      pin.length === 6 &&
+      pin[0] === pin[2] &&
+      pin[2] === pin[4] &&
+      pin[1] === pin[3] &&
+      pin[3] === pin[5];
     return allSame || alternating;
   }
 
@@ -1105,8 +1110,8 @@ export class UnifiedWalletStorage {
       const allWallets = await this.getAllWallets(password);
 
       // Filter by provider and provider_id
-      const providerWallets = allWallets.filter(w =>
-        w.provider === provider && w.provider_id === providerId
+      const providerWallets = allWallets.filter(
+        (w) => w.provider === provider && w.provider_id === providerId
       );
 
       devLog('Found', providerWallets.length, 'wallets for', provider);
@@ -1128,8 +1133,8 @@ export class UnifiedWalletStorage {
       const allWallets = await this.getAllWallets(password);
 
       // Filter by deviceKeyId
-      const deviceWallets = allWallets.filter(w =>
-        w.deviceKeyId === deviceKeyId || w.passkeyId === deviceKeyId
+      const deviceWallets = allWallets.filter(
+        (w) => w.deviceKeyId === deviceKeyId || w.passkeyId === deviceKeyId
       );
 
       console.log('[WalletStorage] Found', deviceWallets.length, 'wallets for device');
@@ -1178,18 +1183,22 @@ export class UnifiedWalletStorage {
       console.log('[handleSocialLogin] Stored password:', storedPassword ? 'EXISTS' : 'NULL');
 
       if (storedPassword) {
-
         // First check localStorage for profiles
-        const storedProfiles = typeof window !== 'undefined' ? localStorage.getItem('profiles') : null;
+        const storedProfiles =
+          typeof window !== 'undefined' ? localStorage.getItem('profiles') : null;
 
         if (storedProfiles) {
           const profiles = JSON.parse(storedProfiles);
-          const providerProfiles = profiles.filter(p =>
-            p.provider === profile.provider && p.provider_id === profile.id
+          const providerProfiles = profiles.filter(
+            (p) => p.provider === profile.provider && p.provider_id === profile.id
           );
 
           if (providerProfiles.length > 0) {
-            devLog('[STORAGE] ✅ Found', providerProfiles.length, 'profiles in localStorage (no decryption needed)');
+            devLog(
+              '[STORAGE] ✅ Found',
+              providerProfiles.length,
+              'profiles in localStorage (no decryption needed)'
+            );
 
             return {
               success: true,
@@ -1204,7 +1213,11 @@ export class UnifiedWalletStorage {
         devLog('⚠️ Password exists but localStorage is empty - decrypting wallets from IndexedDB');
 
         try {
-          const allWallets = await this.getAllWalletsForProvider(profile.provider, profile.id, storedPassword);
+          const allWallets = await this.getAllWalletsForProvider(
+            profile.provider,
+            profile.id,
+            storedPassword
+          );
 
           if (allWallets && allWallets.length > 0) {
             devLog('[STORAGE] ✅ Decrypted', allWallets.length, 'wallets from IndexedDB');
@@ -1216,7 +1229,7 @@ export class UnifiedWalletStorage {
 
               // Add these wallets to profiles (include accountIndex!)
               allWallets.forEach((w, index) => {
-                if (!currentProfiles.find(p => p.account === w.address)) {
+                if (!currentProfiles.find((p) => p.account === w.address)) {
                   currentProfiles.push({
                     account: w.address,
                     address: w.address,
@@ -1373,8 +1386,8 @@ export class UnifiedWalletStorage {
       devLog('Total wallets decrypted:', allWallets.length);
 
       // Find the first wallet matching this provider and provider_id
-      const wallet = allWallets.find(w =>
-        w.provider === provider && w.provider_id === providerId
+      const wallet = allWallets.find(
+        (w) => w.provider === provider && w.provider_id === providerId
       );
 
       if (wallet) {
@@ -1452,7 +1465,6 @@ export class UnifiedWalletStorage {
     }
   }
 
-
   // REMOVED: deriveOAuthKey - No longer using deterministic generation
 
   /**
@@ -1483,10 +1495,7 @@ export class UnifiedWalletStorage {
 
       // Generate lookup hash
       const encoder = new TextEncoder();
-      const addressHash = await crypto.subtle.digest(
-        'SHA-256',
-        encoder.encode(address)
-      );
+      const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
       const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
       return new Promise((resolve, reject) => {
@@ -1498,7 +1507,7 @@ export class UnifiedWalletStorage {
 
         request.onsuccess = () => {
           const records = request.result || [];
-          const walletRecord = records.find(r => r.lookupHash === lookupHash);
+          const walletRecord = records.find((r) => r.lookupHash === lookupHash);
 
           if (walletRecord && walletRecord.data) {
             // Return ONLY the encrypted blob - no metadata
@@ -1541,7 +1550,7 @@ export class UnifiedWalletStorage {
         version: '3.0',
         provider: provider,
         walletCount: wallets.length,
-        wallets: wallets.map(w => ({
+        wallets: wallets.map((w) => ({
           address: w.address,
           publicKey: w.publicKey,
           seed: w.seed,

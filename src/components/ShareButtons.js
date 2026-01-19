@@ -72,10 +72,18 @@ const getIconColor = (platform) => {
   }
 };
 
-const getBgColor = (isDark = true) => isDark ? 'rgba(255,255,255,0.04)' : 'rgba(59,130,246,0.05)';
+const getBgColor = (isDark = true) => (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(59,130,246,0.05)');
 
 // Share button component
-export const ShareButton = ({ platform, url, title, size = 40, round = true, isDark = true, ...props }) => {
+export const ShareButton = ({
+  platform,
+  url,
+  title,
+  size = 40,
+  round = true,
+  isDark = true,
+  ...props
+}) => {
   const shareUrls = getShareUrls(url, title);
   const shareUrl = shareUrls[platform];
 
@@ -96,7 +104,7 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, isD
         aria-label={`Share on ${platform}`}
         tabIndex={0}
         className={cn(
-          "flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110"
+          'flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110'
         )}
         style={{
           width: size,
@@ -128,7 +136,14 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, isD
 export const TwitterShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Twitter" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on Twitter"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -137,7 +152,14 @@ export const TwitterShareButton = ({ children, url, title, ...props }) => {
 export const FacebookShareButton = ({ children, url, ...props }) => {
   const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Facebook" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on Facebook"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -146,7 +168,14 @@ export const FacebookShareButton = ({ children, url, ...props }) => {
 export const TelegramShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Telegram" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on Telegram"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -155,7 +184,14 @@ export const TelegramShareButton = ({ children, url, title, ...props }) => {
 export const WhatsAppShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on WhatsApp" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on WhatsApp"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -166,7 +202,14 @@ export const WhatsappShareButton = WhatsAppShareButton;
 export const LinkedInShareButton = ({ children, url, ...props }) => {
   const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on LinkedIn" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on LinkedIn"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -177,7 +220,14 @@ export const LinkedinShareButton = LinkedInShareButton;
 export const RedditShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Reddit" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')}
+      role="button"
+      tabIndex={0}
+      aria-label="Share on Reddit"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -186,7 +236,14 @@ export const RedditShareButton = ({ children, url, title, ...props }) => {
 export const EmailShareButton = ({ children, subject, body, ...props }) => {
   const shareUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   return (
-    <div onClick={() => window.location.href = shareUrl} role="button" tabIndex={0} aria-label="Share via Email" className="cursor-pointer" {...props}>
+    <div
+      onClick={() => (window.location.href = shareUrl)}
+      role="button"
+      tabIndex={0}
+      aria-label="Share via Email"
+      className="cursor-pointer"
+      {...props}
+    >
       {children}
     </div>
   );
@@ -265,11 +322,27 @@ export function TokenShareModal({ token }) {
   const socialPlatforms = [
     { Component: TwitterShareButton, Icon: TwitterIcon, props: { title: `${user} ${name}`, url } },
     { Component: FacebookShareButton, Icon: FacebookIcon, props: { url } },
-    { Component: LinkedinShareButton, Icon: LinkedinIcon, props: { url, title: `${user} ${name}` } },
-    { Component: WhatsappShareButton, Icon: WhatsappIcon, props: { url, title: `${user} ${name}` } },
-    { Component: TelegramShareButton, Icon: TelegramIcon, props: { url, title: `${user} ${name}` } },
+    {
+      Component: LinkedinShareButton,
+      Icon: LinkedinIcon,
+      props: { url, title: `${user} ${name}` }
+    },
+    {
+      Component: WhatsappShareButton,
+      Icon: WhatsappIcon,
+      props: { url, title: `${user} ${name}` }
+    },
+    {
+      Component: TelegramShareButton,
+      Icon: TelegramIcon,
+      props: { url, title: `${user} ${name}` }
+    },
     { Component: RedditShareButton, Icon: RedditIcon, props: { url, title: `${user} ${name}` } },
-    { Component: EmailShareButton, Icon: EmailIcon, props: { subject: `${user} ${name}`, body: `Check out: ${url}` } }
+    {
+      Component: EmailShareButton,
+      Icon: EmailIcon,
+      props: { subject: `${user} ${name}`, body: `Check out: ${url}` }
+    }
   ];
 
   return (
@@ -292,13 +365,17 @@ export function TokenShareModal({ token }) {
           onClick={() => setOpen(false)}
         >
           <div
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
-              isDark ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
             }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <span
+                className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}
+              >
                 Share {user}
               </span>
               <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
@@ -312,14 +389,20 @@ export function TokenShareModal({ token }) {
                 alt={name}
                 className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-gray-600/40' : 'border-gray-200'}`}
               />
-              <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <span
+                className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
+              >
                 {user} {name}
               </span>
 
-              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
-              }`}>
-                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Current Price</p>
+              <div
+                className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
+                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
+                }`}
+              >
+                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                  Current Price
+                </p>
                 <p className="text-[18px] font-medium text-primary">
                   {currencySymbols[activeFiatCurrency]}
                   {fNumber(exch / (metrics[activeFiatCurrency] || 1))}
@@ -328,14 +411,26 @@ export function TokenShareModal({ token }) {
 
               <div className="w-full">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}>
+                  <span
+                    className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}
+                  >
                     Share on
                   </span>
-                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div
+                    className="flex-1 h-[14px]"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
+                      backgroundSize: '8px 5px'
+                    }}
+                  />
                 </div>
                 <div className="flex flex-wrap gap-2.5 justify-center">
                   {socialPlatforms.map(({ Component, Icon, props }, i) => (
-                    <div key={i} className="rounded-lg overflow-hidden hover:opacity-80 transition-opacity">
+                    <div
+                      key={i}
+                      className="rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
+                    >
                       <Component {...props}>
                         <Icon size={36} round isDark={isDark} />
                       </Component>
@@ -346,15 +441,28 @@ export function TokenShareModal({ token }) {
 
               <div className="w-full">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}>
+                  <span
+                    className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}
+                  >
                     Copy Link
                   </span>
-                  <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
+                  <div
+                    className="flex-1 h-[14px]"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
+                      backgroundSize: '8px 5px'
+                    }}
+                  />
                 </div>
-                <div className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
-                }`}>
-                  <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                <div
+                  className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
+                    isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
+                  }`}
+                >
+                  <span
+                    className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}
+                  >
                     {url}
                   </span>
                   <button

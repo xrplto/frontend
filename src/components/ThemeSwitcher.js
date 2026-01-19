@@ -43,10 +43,8 @@ export default function ThemeSwitcher() {
       <button
         onClick={handleClick}
         className={cn(
-          "rounded-md p-1 min-w-8 w-8 h-8 border-none flex items-center justify-center",
-          isDark
-            ? "bg-primary/[0.08] hover:bg-primary/20"
-            : "bg-primary/[0.08] hover:bg-primary/20"
+          'rounded-md p-1 min-w-8 w-8 h-8 border-none flex items-center justify-center',
+          isDark ? 'bg-primary/[0.08] hover:bg-primary/20' : 'bg-primary/[0.08] hover:bg-primary/20'
         )}
       >
         <Palette size={16} />
@@ -54,30 +52,29 @@ export default function ThemeSwitcher() {
 
       {anchorEl && (
         <>
+          <div className="fixed inset-0 z-40" onClick={handleClose} />
           <div
-            className="fixed inset-0 z-40"
-            onClick={handleClose}
-          />
-          <div className={cn(
-            "absolute mt-1 min-w-[160px] rounded-2xl border z-50 right-0",
-            isDark
-              ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]"
-              : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-          )}>
+            className={cn(
+              'absolute mt-1 min-w-[160px] rounded-2xl border z-50 right-0',
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            )}
+          >
             <div className="p-1">
               {themes.map((theme) => (
                 <button
                   key={theme.id}
                   onClick={() => handleThemeChange(theme.id)}
                   className={cn(
-                    "w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center gap-2 border-none cursor-pointer my-0.5 text-left",
+                    'w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center gap-2 border-none cursor-pointer my-0.5 text-left',
                     themeName === theme.id
                       ? isDark
-                        ? "bg-primary/[0.08] hover:bg-primary/20"
-                        : "bg-primary/[0.08] hover:bg-primary/20"
+                        ? 'bg-primary/[0.08] hover:bg-primary/20'
+                        : 'bg-primary/[0.08] hover:bg-primary/20'
                       : isDark
-                      ? "bg-transparent hover:bg-white/[0.06]"
-                      : "bg-transparent hover:bg-gray-100"
+                        ? 'bg-transparent hover:bg-white/[0.06]'
+                        : 'bg-transparent hover:bg-gray-100'
                   )}
                 >
                   <div

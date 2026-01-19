@@ -26,7 +26,8 @@ export default function Overview({ nft }) {
   // Handle collection being an object {name, family} or a string
   const rawCollection = nft?.nft?.collection;
   const collectionName = typeof rawCollection === 'string' ? rawCollection : rawCollection?.name;
-  const nftThumbnail = nft?.nft?.files?.[0]?.thumbnail?.small || nft?.nft?.files?.[0]?.thumbnail?.medium;
+  const nftThumbnail =
+    nft?.nft?.files?.[0]?.thumbnail?.small || nft?.nft?.files?.[0]?.thumbnail?.medium;
 
   // Add current NFT to tabs on mount
   useEffect(() => {
@@ -45,8 +46,9 @@ export default function Overview({ nft }) {
   // Also add collection to tabs - fetch logoImage from collection API
   useEffect(() => {
     if (collectionSlug && collectionName) {
-      axios.get(`https://api.xrpl.to/v1/nft/collections/${collectionSlug}`)
-        .then(res => {
+      axios
+        .get(`https://api.xrpl.to/v1/nft/collections/${collectionSlug}`)
+        .then((res) => {
           addTokenToTabs({
             slug: collectionSlug,
             name: collectionName,
@@ -61,7 +63,19 @@ export default function Overview({ nft }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         {nftName} NFT on XRPL
       </h1>
 
@@ -71,7 +85,12 @@ export default function Overview({ nft }) {
         <Suspense
           fallback={
             <div className="flex min-h-[400px] items-center justify-center">
-              <div className={cn("h-10 w-10 animate-spin rounded-full border-4 border-t-transparent", isDark ? "border-primary" : "border-primary")} />
+              <div
+                className={cn(
+                  'h-10 w-10 animate-spin rounded-full border-4 border-t-transparent',
+                  isDark ? 'border-primary' : 'border-primary'
+                )}
+              />
             </div>
           }
         >
@@ -129,18 +148,19 @@ export async function getServerSideProps(ctx) {
       description: ogp.desc,
       image: ogp.imgUrl,
       url: ogp.canonical,
-      ...(nft.offers && nft.offers.length > 0 && {
-        offers: {
-          '@type': 'Offer',
-          price: nft.offers[0].amount,
-          priceCurrency: 'XRP',
-          availability: 'https://schema.org/InStock',
-          seller: {
-            '@type': 'Organization',
-            name: 'XRPL.to NFT Marketplace'
+      ...(nft.offers &&
+        nft.offers.length > 0 && {
+          offers: {
+            '@type': 'Offer',
+            price: nft.offers[0].amount,
+            priceCurrency: 'XRP',
+            availability: 'https://schema.org/InStock',
+            seller: {
+              '@type': 'Organization',
+              name: 'XRPL.to NFT Marketplace'
+            }
           }
-        }
-      })
+        })
     };
     ogp.jsonLd = nftSchema;
 

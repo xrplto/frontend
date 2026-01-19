@@ -21,7 +21,13 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
 
     messages.forEach((msg) => {
       if (msg.exch) {
-        metrics = { exch: msg.exch, total: msg.total, H24: msg.H24, global: msg.global, tokenCreation: msg.tokenCreation };
+        metrics = {
+          exch: msg.exch,
+          total: msg.total,
+          H24: msg.H24,
+          global: msg.global,
+          tokenCreation: msg.tokenCreation
+        };
       }
       if (msg.tags) tags = msg.tags;
       msg.tokens?.forEach((t) => tokens.set(t.md5, t));
@@ -43,7 +49,10 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
         if (data.type === 'pong') return;
         queueRef.current.push(data);
         clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => requestIdleCallback(processQueue, { timeout: 100 }), 32);
+        timerRef.current = setTimeout(
+          () => requestIdleCallback(processQueue, { timeout: 100 }),
+          32
+        );
       } catch {}
     },
     shouldReconnect: () => true,
@@ -58,7 +67,13 @@ export function useTokenSync({ onTokensUpdate, onMetricsUpdate, onTagsUpdate, en
     return () => clearInterval(id);
   }, [readyState, sendJsonMessage]);
 
-  useEffect(() => () => { clearTimeout(timerRef.current); queueRef.current = []; }, []);
+  useEffect(
+    () => () => {
+      clearTimeout(timerRef.current);
+      queueRef.current = [];
+    },
+    []
+  );
 
   return {
     subscribe: (tokens) => sendJsonMessage({ type: 'subscribe', tokens }),

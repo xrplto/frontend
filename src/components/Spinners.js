@@ -32,11 +32,7 @@ export const PulseLoader = ({ color = '#4285f4', size = 10, ...props }) => (
 
 // PuffLoader Component
 export const PuffLoader = ({ color = '#4285f4', size = 60, ...props }) => (
-  <div
-    className="relative"
-    style={{ width: size, height: size }}
-    {...props}
-  >
+  <div className="relative" style={{ width: size, height: size }} {...props}>
     <div
       className="absolute top-0 left-0 w-full h-full rounded-full border-[3px]"
       style={{
@@ -108,7 +104,8 @@ export const FadeLoader = ({ color = '#4285f4', ...props }) => (
     ))}
     <style jsx>{`
       @keyframes fade {
-        0%, 100% {
+        0%,
+        100% {
           opacity: 0.25;
         }
         50% {
@@ -134,7 +131,9 @@ export const BarLoader = ({ color = '#4285f4', ...props }) => (
     ))}
     <style jsx>{`
       @keyframes barStretch {
-        0%, 40%, 100% {
+        0%,
+        40%,
+        100% {
           transform: scaleY(0.4);
         }
         20% {

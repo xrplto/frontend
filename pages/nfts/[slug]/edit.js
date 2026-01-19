@@ -86,7 +86,6 @@ export async function getServerSideProps(ctx) {
     const res = await axios.get(`${BASE_URL}/nfts/${slug}`);
 
     data = res.data;
-
   } catch (e) {
     // Error during getServerSideProps
   }

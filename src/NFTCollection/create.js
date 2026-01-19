@@ -1,7 +1,16 @@
 import React from 'react';
 import axios from 'axios';
 import { useState, useEffect, useRef, useContext } from 'react';
-import { Image as ImageIcon, Send, X, Plus, XCircle, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  Send,
+  X,
+  Plus,
+  XCircle,
+  CheckCircle,
+  AlertCircle,
+  Loader
+} from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -85,10 +94,12 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
     <div className="mx-2 my-1">
       <div className="relative">
         {startText && (
-          <span className={cn(
-            "absolute left-3 top-1/2 -translate-y-1/2 text-[13px]",
-            isDark ? "text-white/60" : "text-gray-600"
-          )}>
+          <span
+            className={cn(
+              'absolute left-3 top-1/2 -translate-y-1/2 text-[13px]',
+              isDark ? 'text-white/60' : 'text-gray-600'
+            )}
+          >
             {startText}
           </span>
         )}
@@ -97,11 +108,11 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           value={value}
           autoComplete="new-password"
           className={cn(
-            "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors",
-            startText && "pl-[200px]",
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors',
+            startText && 'pl-[200px]',
             isDark
-              ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
-              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary"
+              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
           )}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -155,12 +166,12 @@ const LoadingButton = ({
       onClick={onClick}
       disabled={isDisabled}
       className={cn(
-        "flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+        'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
         isDisabled
-          ? "cursor-not-allowed opacity-40"
+          ? 'cursor-not-allowed opacity-40'
           : isDark
-            ? "border-primary bg-primary/10 text-primary hover:bg-primary/20"
-            : "border-primary bg-primary text-white hover:bg-primary/90",
+            ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+            : 'border-primary bg-primary text-white hover:bg-primary/90',
         className
       )}
     >
@@ -245,11 +256,9 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
             const ret = res.data;
             setTaxon(ret.taxon + 1);
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       })
-      .catch((err) => {
-      })
+      .catch((err) => {})
       .then(function () {
         // Always executed
       });
@@ -347,8 +356,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
         const reader = new FileReader();
         reader.readAsDataURL(pickedFile);
         reader.onloadend = function (e) {
-          if (idx === 1)
-            setFileUrl1(reader.result);
+          if (idx === 1) setFileUrl1(reader.result);
           else if (idx === 2) setFileUrl2(reader.result);
           else if (idx === 3) setFileUrl3(reader.result);
           else if (idx === 4) setFileUrl4(reader.result);
@@ -469,10 +477,12 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
             This image will also be used for navigation. 350 x 350 recommended.(Max: 10MB)
           </p>
 
-          <div className={cn(
-            "border-[3px] border-dashed rounded-full p-1 w-fit cursor-pointer",
-            isDark ? "border-white/20" : "border-gray-300"
-          )}>
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-full p-1 w-fit cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
+          >
             <input
               ref={fileRef1}
               style={{ display: 'none' }}
@@ -493,22 +503,15 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               >
                 <button
                   onClick={(e) => handleResetFile1(e)}
-                  className={cn(
-                    "absolute right-2 top-2",
-                    fileUrl1 ? "block" : "hidden"
-                  )}
+                  className={cn('absolute right-2 top-2', fileUrl1 ? 'block' : 'hidden')}
                 >
                   <X size={20} className="text-white" />
                 </button>
               </div>
               {fileUrl1 ? (
-                <img
-                  src={fileUrl1}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+                <img src={fileUrl1} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={64} className={isDark ? "text-white/20" : "text-gray-300"} />
+                <ImageIcon size={64} className={isDark ? 'text-white/20' : 'text-gray-300'} />
               )}
             </div>
           </div>
@@ -517,14 +520,16 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
         <div className="pt-4 pb-2">
           <p className="text-[15px] font-normal mb-2">Featured image</p>
           <p className="text-[13px] mb-4">
-            This image will be used for featuring your collection on the homepage, category pages, or
-            other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
+            This image will be used for featuring your collection on the homepage, category pages,
+            or other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
           </p>
 
-          <div className={cn(
-            "border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer",
-            isDark ? "border-white/20" : "border-gray-300"
-          )}>
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
+          >
             <input
               ref={fileRef2}
               style={{ display: 'none' }}
@@ -545,22 +550,15 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               >
                 <button
                   onClick={(e) => handleResetFile2(e)}
-                  className={cn(
-                    "absolute right-2 top-2",
-                    fileUrl2 ? "block" : "hidden"
-                  )}
+                  className={cn('absolute right-2 top-2', fileUrl2 ? 'block' : 'hidden')}
                 >
                   <X size={20} className="text-white" />
                 </button>
               </div>
               {fileUrl2 ? (
-                <img
-                  src={fileUrl2}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+                <img src={fileUrl2} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? "text-white/20" : "text-gray-300"} />
+                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
               )}
             </div>
           </div>
@@ -574,10 +572,12 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
             recommended.(Max: 10MB)
           </p>
 
-          <div className={cn(
-            "border-[3px] border-dashed rounded-xl p-1 cursor-pointer",
-            isDark ? "border-white/20" : "border-gray-300"
-          )}>
+          <div
+            className={cn(
+              'border-[3px] border-dashed rounded-xl p-1 cursor-pointer',
+              isDark ? 'border-white/20' : 'border-gray-300'
+            )}
+          >
             <input
               ref={fileRef3}
               style={{ display: 'none' }}
@@ -598,22 +598,15 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               >
                 <button
                   onClick={(e) => handleResetFile3(e)}
-                  className={cn(
-                    "absolute right-2 top-2",
-                    fileUrl3 ? "block" : "hidden"
-                  )}
+                  className={cn('absolute right-2 top-2', fileUrl3 ? 'block' : 'hidden')}
                 >
                   <X size={20} className="text-white" />
                 </button>
               </div>
               {fileUrl3 ? (
-                <img
-                  src={fileUrl3}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+                <img src={fileUrl3} alt="" className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={100} className={isDark ? "text-white/20" : "text-gray-300"} />
+                <ImageIcon size={100} className={isDark ? 'text-white/20' : 'text-gray-300'} />
               )}
             </div>
           </div>
@@ -649,10 +642,10 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           value={category}
           onChange={(e) => handleChangeCategory(e.target.value)}
           className={cn(
-            "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
             isDark
-              ? "border-white/15 bg-transparent text-white"
-              : "border-gray-300 bg-white text-gray-900"
+              ? 'border-white/15 bg-transparent text-white'
+              : 'border-gray-300 bg-white text-gray-900'
           )}
         >
           {CATEGORIES.map((cat) => (
@@ -695,20 +688,20 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
 
         <div className="space-y-2 pl-0">
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Normal:</span> You can mint NFTs one by one for this
-            collection.
+            <span className="text-red-500 font-medium">Normal:</span> You can mint NFTs one by one
+            for this collection.
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Bulk:</span> You can upload bulk NFTs and sell NFTs with
-            Mints.
+            <span className="text-red-500 font-medium">Bulk:</span> You can upload bulk NFTs and
+            sell NFTs with Mints.
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Random:</span> You can upload bulk NFTs and sell NFTs
-            randomly with Mints.
+            <span className="text-red-500 font-medium">Random:</span> You can upload bulk NFTs and
+            sell NFTs randomly with Mints.
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Sequence:</span> You can upload bulk NFTs and sell NFTs
-            sequently with Mints.
+            <span className="text-red-500 font-medium">Sequence:</span> You can upload bulk NFTs and
+            sell NFTs sequently with Mints.
           </p>
         </div>
 
@@ -718,12 +711,12 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               key={t}
               onClick={() => handleChangeType(t)}
               className={cn(
-                "rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors",
+                'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 type === t
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? 'border-primary bg-primary/10 text-primary'
                   : isDark
-                    ? "border-white/15 text-white hover:border-primary"
-                    : "border-gray-300 text-gray-900 hover:border-primary"
+                    ? 'border-white/15 text-white hover:border-primary'
+                    : 'border-gray-300 text-gray-900 hover:border-primary'
               )}
             >
               {t}
@@ -772,14 +765,11 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                       </div>
 
                       <button onClick={() => handleRemoveCost(cost.md5)}>
-                        <XCircle size={20} className={isDark ? "text-white/60" : "text-gray-600"} />
+                        <XCircle size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />
                       </button>
                     </div>
                   </div>
-                  <div className={cn(
-                    "h-[1px]",
-                    isDark ? "bg-white/10" : "bg-gray-200"
-                  )} />
+                  <div className={cn('h-[1px]', isDark ? 'bg-white/10' : 'bg-gray-200')} />
                 </div>
               ))}
 
@@ -787,10 +777,10 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                 <button
                   onClick={() => setOpenAddCost(true)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal",
+                    'flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
                     isDark
-                      ? "border-white/15 text-white hover:border-primary"
-                      : "border-gray-300 text-gray-900 hover:border-primary"
+                      ? 'border-white/15 text-white hover:border-primary'
+                      : 'border-gray-300 text-gray-900 hover:border-primary'
                   )}
                 >
                   <Plus size={16} />
@@ -817,10 +807,10 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                   setBulkUrl(e.target.value);
                 }}
                 className={cn(
-                  "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+                  'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
                   isDark
-                    ? "border-white/15 bg-transparent text-white placeholder:text-white/40"
-                    : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400"
+                    ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
                 )}
               />
             </div>
@@ -840,10 +830,12 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                   </a>
                   &nbsp; will be used. 600 x 400 recommended. (Max: 10MB)
                 </p>
-                <div className={cn(
-                  "border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer",
-                  isDark ? "border-white/20" : "border-gray-300"
-                )}>
+                <div
+                  className={cn(
+                    'border-[3px] border-dashed rounded-xl p-1 w-fit cursor-pointer',
+                    isDark ? 'border-white/20' : 'border-gray-300'
+                  )}
+                >
                   <input
                     ref={fileRef4}
                     style={{ display: 'none' }}
@@ -855,7 +847,9 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                   <div
                     className="relative flex items-center justify-center w-[320px] h-[240px] rounded-lg overflow-hidden cursor-pointer"
                     style={{
-                      border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'
+                      border: isDark
+                        ? '1px solid rgba(255,255,255,0.1)'
+                        : '1px solid rgba(0,0,0,0.1)'
                     }}
                   >
                     <div
@@ -864,22 +858,18 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     >
                       <button
                         onClick={(e) => handleResetFile4(e)}
-                        className={cn(
-                          "absolute right-2 top-2",
-                          fileUrl4 ? "block" : "hidden"
-                        )}
+                        className={cn('absolute right-2 top-2', fileUrl4 ? 'block' : 'hidden')}
                       >
                         <X size={20} className="text-white" />
                       </button>
                     </div>
                     {fileUrl4 ? (
-                      <img
-                        src={fileUrl4}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={fileUrl4} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon size={100} className={isDark ? "text-white/20" : "text-gray-300"} />
+                      <ImageIcon
+                        size={100}
+                        className={isDark ? 'text-white/20' : 'text-gray-300'}
+                      />
                     )}
                   </div>
                 </div>
@@ -892,8 +882,13 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
       <div className="mb-6 space-y-4">
         <p className="text-[15px] font-normal">Description</p>
         <p className="text-[13px]">
-          <a href="https://www.markdownguide.org/cheat-sheet/" className="text-primary hover:underline">Markdown</a> syntax is
-          supported. 0 of 1000 characters used.
+          <a
+            href="https://www.markdownguide.org/cheat-sheet/"
+            className="text-primary hover:underline"
+          >
+            Markdown
+          </a>{' '}
+          syntax is supported. 0 of 1000 characters used.
         </p>
         <textarea
           placeholder=""
@@ -903,10 +898,10 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
             setDescription(e.target.value);
           }}
           className={cn(
-            "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none",
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none',
             isDark
-              ? "border-white/15 bg-transparent text-white placeholder:text-white/40"
-              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400"
+              ? 'border-white/15 bg-transparent text-white placeholder:text-white/40'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
           )}
         />
       </div>
@@ -924,10 +919,10 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
           placeholder=""
           value={taxon}
           className={cn(
-            "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
             isDark
-              ? "border-white/15 bg-white/5 text-white/40"
-              : "border-gray-300 bg-gray-100 text-gray-500"
+              ? 'border-white/15 bg-white/5 text-white/40'
+              : 'border-gray-300 bg-gray-100 text-gray-500'
           )}
         />
       </div>
@@ -950,24 +945,24 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
 
         <div className="space-y-2 pl-0">
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Standard:</span> Simply compare the rarest trait of each
-            NFT(%).
+            <span className="text-red-500 font-medium">Standard:</span> Simply compare the rarest
+            trait of each NFT(%).
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Average:</span> Average the rarity of traits that exist
-            on the NFT(%).
+            <span className="text-red-500 font-medium">Average:</span> Average the rarity of traits
+            that exist on the NFT(%).
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Statistical:</span> Multiply all of its trait rarities
-            together(%).
+            <span className="text-red-500 font-medium">Statistical:</span> Multiply all of its trait
+            rarities together(%).
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Score:</span> Sum of the Rarity Score of all of its trait
-            values(not %, just a value).
+            <span className="text-red-500 font-medium">Score:</span> Sum of the Rarity Score of all
+            of its trait values(not %, just a value).
           </p>
           <p className="text-[13px]">
-            <span className="text-red-500 font-medium">Self:</span> Rarity and Rank are included in each NFT
-            metadata.
+            <span className="text-red-500 font-medium">Self:</span> Rarity and Rank are included in
+            each NFT metadata.
           </p>
         </div>
 
@@ -1002,12 +997,12 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
               key={p}
               onClick={() => handleChangePrivate(p)}
               className={cn(
-                "rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors",
+                'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 privateCollection === p
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? 'border-primary bg-primary/10 text-primary'
                   : isDark
-                    ? "border-white/15 text-white hover:border-primary"
-                    : "border-gray-300 text-gray-900 hover:border-primary"
+                    ? 'border-white/15 text-white hover:border-primary'
+                    : 'border-gray-300 text-gray-900 hover:border-primary'
               )}
             >
               {p}

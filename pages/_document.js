@@ -17,7 +17,6 @@ export default class MyDocument extends Document {
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://api.xrpl.to" />
 
-
           {/* Google Sign-In Client Library */}
           <script src="https://accounts.google.com/gsi/client" async defer></script>
         </Head>

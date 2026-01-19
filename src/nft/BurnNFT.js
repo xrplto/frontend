@@ -68,7 +68,12 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   return (
     <>
       {loading && (
-        <div className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}>
+        <div
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
+        >
           <PulseLoader color="#FF4842" size={10} />
         </div>
       )}
@@ -77,11 +82,11 @@ export default function BurnNFT({ nft, onHandleBurn }) {
 
       <button
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] px-4 py-[10px] text-[13px] font-normal transition-colors",
-          "disabled:cursor-not-allowed disabled:opacity-50",
+          'flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] px-4 py-[10px] text-[13px] font-normal transition-colors',
+          'disabled:cursor-not-allowed disabled:opacity-50',
           isDark
-            ? "border-orange-500/50 text-orange-500 hover:bg-orange-500/5"
-            : "border-orange-600 text-orange-600 hover:bg-orange-50"
+            ? 'border-orange-500/50 text-orange-500 hover:bg-orange-500/5'
+            : 'border-orange-600 text-orange-600 hover:bg-orange-50'
         )}
         onClick={handleBurnNFT}
         disabled={!accountLogin || !isBurnable || !nft}

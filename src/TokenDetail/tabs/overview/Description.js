@@ -9,7 +9,7 @@ const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 const Card = styled.div`
   border-radius: 12px;
   background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
   width: 100%;
 `;
 
@@ -23,7 +23,7 @@ const CardHeader = styled.div`
 const Title = styled.div`
   font-size: 11px;
   font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)')};
   text-transform: uppercase;
   letter-spacing: 0.6px;
 `;
@@ -34,19 +34,20 @@ const Actions = styled.div`
 `;
 
 const IconButton = styled.button`
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
   border-radius: 8px;
   padding: 5px;
   background: transparent;
   cursor: pointer;
-  color: ${props => props.isError ? '#ef4444' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  color: ${(props) =>
+    props.isError ? '#ef4444' : props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   display: flex;
   align-items: center;
   transition: all 0.15s;
   &:hover {
-    border-color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
-    background: ${props => props.isError ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)'};
-    color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
+    border-color: ${(props) => (props.isError ? '#ef4444' : '#3b82f6')};
+    background: ${(props) => (props.isError ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)')};
+    color: ${(props) => (props.isError ? '#ef4444' : '#3b82f6')};
   }
 `;
 
@@ -56,13 +57,27 @@ const Content = styled.div`
 `;
 
 const Typography = styled.div`
-  font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'subtitle1' ? '12px' : props.variant === 'subtitle2' ? '12px' : '13px'};
+  font-size: ${(props) =>
+    props.variant === 'h6'
+      ? '13px'
+      : props.variant === 'subtitle1'
+        ? '12px'
+        : props.variant === 'subtitle2'
+          ? '12px'
+          : '13px'};
   font-weight: 400;
-  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)') : (props.isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)')};
-  margin-bottom: ${props => props.paragraph ? '10px' : props.gutterBottom ? '10px' : 0};
-  margin-top: ${props => props.gutterBottom ? '4px' : 0};
+  color: ${(props) =>
+    props.color === 'text.secondary'
+      ? props.isDark
+        ? 'rgba(255,255,255,0.45)'
+        : 'rgba(0,0,0,0.45)'
+      : props.isDark
+        ? 'rgba(255,255,255,0.75)'
+        : 'rgba(0,0,0,0.75)'};
+  margin-bottom: ${(props) => (props.paragraph ? '10px' : props.gutterBottom ? '10px' : 0)};
+  margin-top: ${(props) => (props.gutterBottom ? '4px' : 0)};
   line-height: 1.7;
-  font-style: ${props => props.fontStyle || 'normal'};
+  font-style: ${(props) => props.fontStyle || 'normal'};
   letter-spacing: 0.015em;
 `;
 
@@ -76,20 +91,22 @@ const Tooltip = ({ title, children }) => {
     >
       {children}
       {show && (
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '4px 8px',
-          background: 'rgba(0,0,0,0.9)',
-          color: '#fff',
-          borderRadius: '4px',
-          fontSize: '12px',
-          whiteSpace: 'nowrap',
-          zIndex: 1000,
-          marginBottom: '4px'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '4px 8px',
+            background: 'rgba(0,0,0,0.9)',
+            color: '#fff',
+            borderRadius: '4px',
+            fontSize: '12px',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            marginBottom: '4px'
+          }}
+        >
           {title}
         </div>
       )}
@@ -104,15 +121,21 @@ const MarkdownParagraph = ({ children, isDark }) => (
 );
 
 const MarkdownH1 = ({ children, isDark }) => (
-  <Typography variant="h6" gutterBottom isDark={isDark}>{children}</Typography>
+  <Typography variant="h6" gutterBottom isDark={isDark}>
+    {children}
+  </Typography>
 );
 
 const MarkdownH2 = ({ children, isDark }) => (
-  <Typography variant="subtitle1" gutterBottom isDark={isDark}>{children}</Typography>
+  <Typography variant="subtitle1" gutterBottom isDark={isDark}>
+    {children}
+  </Typography>
 );
 
 const MarkdownH3 = ({ children, isDark }) => (
-  <Typography variant="subtitle2" gutterBottom isDark={isDark}>{children}</Typography>
+  <Typography variant="subtitle2" gutterBottom isDark={isDark}>
+    {children}
+  </Typography>
 );
 
 const MarkdownUL = ({ children }) => (
@@ -177,9 +200,7 @@ export default function Description({
       </CardHeader>
 
       {showEditor && mdEditor ? (
-        <div style={{ padding: '8px 10px' }}>
-          {mdEditor}
-        </div>
+        <div style={{ padding: '8px 10px' }}>{mdEditor}</div>
       ) : description ? (
         <Content isDark={effectiveIsDark}>
           <ReactMarkdown components={markdownComponents}>{description}</ReactMarkdown>

@@ -2,7 +2,14 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Wallet as XRPLWallet, encodeSeed, Client, xrpToDrops, dropsToXrp, isValidAddress } from 'xrpl';
+import {
+  Wallet as XRPLWallet,
+  encodeSeed,
+  Client,
+  xrpToDrops,
+  dropsToXrp,
+  isValidAddress
+} from 'xrpl';
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
@@ -62,16 +69,16 @@ const validateSeed = (seed) => {
   const trimmed = seed.trim();
   if (!trimmed) return { valid: false, error: '' };
   if (!trimmed.startsWith('s')) return { valid: false, error: 'Seed must start with "s"' };
-  if (trimmed.length < 20 || trimmed.length > 35) return { valid: false, error: 'Invalid seed length' };
-  const invalidChar = [...trimmed].find(c => !BASE58_ALPHABET.includes(c));
+  if (trimmed.length < 20 || trimmed.length > 35)
+    return { valid: false, error: 'Invalid seed length' };
+  const invalidChar = [...trimmed].find((c) => !BASE58_ALPHABET.includes(c));
   if (invalidChar) return { valid: false, error: `Invalid character "${invalidChar}"` };
   return { valid: true, error: '' };
 };
-const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+const getAlgorithmFromSeed = (seed) => (seed.startsWith('sEd') ? 'ed25519' : 'secp256k1');
 
 // Note: Removed signature entropy functions - no longer deriving wallets from WebAuthn signatures
 // WebAuthn is now used only for authentication, not key derivation (2025 security standard)
-
 
 // const pair = {
 //   '534F4C4F00000000000000000000000000000000': 'SOLO',
@@ -144,20 +151,18 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
     return (
       <div
         className={cn(
-          "fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200 backdrop-blur-md",
-          isVisible ? "opacity-100" : "opacity-0",
-          isDark ? "bg-black/70" : "bg-white/60"
+          'fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200 backdrop-blur-md',
+          isVisible ? 'opacity-100' : 'opacity-0',
+          isDark ? 'bg-black/70' : 'bg-white/60'
         )}
         onClick={onClose}
       >
         <div
           className={cn(
-            "relative w-full max-w-[360px] max-h-[80vh] overflow-hidden transition-all duration-200 ease-out",
-            isVisible
-              ? "translate-y-0 opacity-100 scale-100"
-              : "-translate-y-4 opacity-0 scale-95"
+            'relative w-full max-w-[360px] max-h-[80vh] overflow-hidden transition-all duration-200 ease-out',
+            isVisible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-4 opacity-0 scale-95'
           )}
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           {children}
         </div>
@@ -169,8 +174,8 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[9999] flex items-start justify-end transition-opacity duration-200",
-        isVisible ? "opacity-100" : "opacity-0"
+        'fixed inset-0 z-[9999] flex items-start justify-end transition-opacity duration-200',
+        isVisible ? 'opacity-100' : 'opacity-0'
       )}
       onClick={onClose}
     >
@@ -178,12 +183,12 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
       <div className="absolute inset-0" />
       <div
         className={cn(
-          "relative mt-[62px] mr-3 w-[340px] max-w-[340px] transition-all duration-200 ease-out",
+          'relative mt-[62px] mr-3 w-[340px] max-w-[340px] transition-all duration-200 ease-out',
           isVisible
-            ? "translate-y-0 opacity-100 scale-100"
-            : "-translate-y-2 opacity-0 scale-[0.98]"
+            ? 'translate-y-0 opacity-100 scale-100'
+            : '-translate-y-2 opacity-0 scale-[0.98]'
         )}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         style={sx?.['& .MuiDialog-paper'] || {}}
       >
         {children}
@@ -198,12 +203,14 @@ const DialogContent = ({ children, sx }) => (
 
 // StyledPopoverPaper component - Clean styling with mobile support
 const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
-  <div className={cn(
-    "overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border",
-    isDark
-      ? "bg-black border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
-      : "bg-white border-gray-200/80 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
-  )}>
+  <div
+    className={cn(
+      'overflow-hidden max-h-[80vh] overflow-y-auto rounded-2xl border',
+      isDark
+        ? 'bg-black border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]'
+        : 'bg-white border-gray-200/80 shadow-[0_8px_24px_rgba(0,0,0,0.08)]'
+    )}
+  >
     {children}
   </div>
 );
@@ -212,11 +219,23 @@ const StyledPopoverPaper = ({ children, isDark, isMobile }) => (
 const Box = ({ children, component, sx, onClick, className, ...props }) => {
   const Component = component || 'div';
   const style = sx ? convertSxToStyle(sx) : {};
-  return <Component style={style} onClick={onClick} className={className} {...props}>{children}</Component>;
+  return (
+    <Component style={style} onClick={onClick} className={className} {...props}>
+      {children}
+    </Component>
+  );
 };
 
 // Stack component
-const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justifyContent, sx, ...props }) => {
+const Stack = ({
+  children,
+  direction = 'column',
+  spacing = 0,
+  alignItems,
+  justifyContent,
+  sx,
+  ...props
+}) => {
   const style = {
     display: 'flex',
     flexDirection: direction === 'row' ? 'row' : 'column',
@@ -225,17 +244,35 @@ const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justif
     justifyContent,
     ...convertSxToStyle(sx || {})
   };
-  return <div style={style} {...props}>{children}</div>;
+  return (
+    <div style={style} {...props}>
+      {children}
+    </div>
+  );
 };
 
 // Typography component
 const Typography = ({ children, variant, sx, onClick, ...props }) => {
   const style = convertSxToStyle(sx || {});
-  return <span style={style} onClick={onClick} {...props}>{children}</span>;
+  return (
+    <span style={style} onClick={onClick} {...props}>
+      {children}
+    </span>
+  );
 };
 
 // Button component
-const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick, sx, startIcon, ...props }) => {
+const Button = ({
+  children,
+  variant = 'text',
+  size,
+  fullWidth,
+  disabled,
+  onClick,
+  sx,
+  startIcon,
+  ...props
+}) => {
   const baseStyle = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -262,7 +299,30 @@ const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick
 };
 
 // TextField component
-const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress, type = 'text', fullWidth, disabled, autoFocus, autoComplete, multiline, rows, size, helperText, error, InputProps, inputProps, sx, FormHelperTextProps, isDark = true, ...props }) => {
+const TextField = ({
+  label,
+  placeholder,
+  value,
+  onChange,
+  onKeyDown,
+  onKeyPress,
+  type = 'text',
+  fullWidth,
+  disabled,
+  autoFocus,
+  autoComplete,
+  multiline,
+  rows,
+  size,
+  helperText,
+  error,
+  InputProps,
+  inputProps,
+  sx,
+  FormHelperTextProps,
+  isDark = true,
+  ...props
+}) => {
   const [focused, setFocused] = useState(false);
   const inputStyle = {
     width: fullWidth ? '100%' : 'auto',
@@ -278,7 +338,11 @@ const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress,
   };
   return (
     <div style={{ width: fullWidth ? '100%' : 'auto' }}>
-      {label && <label style={{ display: 'block', marginBottom: 4, fontSize: 12, opacity: 0.7 }}>{label}</label>}
+      {label && (
+        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, opacity: 0.7 }}>
+          {label}
+        </label>
+      )}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         {multiline ? (
           <textarea
@@ -313,7 +377,11 @@ const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress,
           <div style={{ position: 'absolute', right: 8 }}>{InputProps.endAdornment}</div>
         )}
       </div>
-      {helperText && <div style={{ marginTop: 4, fontSize: 11, opacity: 0.7 }} {...FormHelperTextProps}>{helperText}</div>}
+      {helperText && (
+        <div style={{ marginTop: 4, fontSize: 11, opacity: 0.7 }} {...FormHelperTextProps}>
+          {helperText}
+        </div>
+      )}
     </div>
   );
 };
@@ -328,19 +396,28 @@ const Alert = ({ children, severity = 'info', icon, onClose, sx }) => {
   };
   const c = colors[severity];
   return (
-    <div style={{
-      padding: '12px 16px',
-      borderRadius: 8,
-      background: c.bg,
-      borderLeft: `3px solid ${c.border}`,
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: 8,
-      ...convertSxToStyle(sx || {})
-    }}>
+    <div
+      style={{
+        padding: '12px 16px',
+        borderRadius: 8,
+        background: c.bg,
+        borderLeft: `3px solid ${c.border}`,
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 8,
+        ...convertSxToStyle(sx || {})
+      }}
+    >
       {icon !== false && <span style={{ display: 'flex', color: c.border }}>{icon || c.icon}</span>}
       <div style={{ flex: 1 }}>{children}</div>
-      {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.7 }}><XIcon size={14} /></button>}
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.7 }}
+        >
+          <XIcon size={14} />
+        </button>
+      )}
     </div>
   );
 };
@@ -387,7 +464,11 @@ const Checkbox = ({ checked, onChange, size }) => (
     type="checkbox"
     checked={checked}
     onChange={onChange}
-    style={{ width: size === 'small' ? 14 : 18, height: size === 'small' ? 14 : 18, cursor: 'pointer' }}
+    style={{
+      width: size === 'small' ? 14 : 18,
+      height: size === 'small' ? 14 : 18,
+      cursor: 'pointer'
+    }}
   />
 );
 
@@ -403,23 +484,61 @@ const convertSxToStyle = (sx) => {
     if (key.startsWith('&') || key.startsWith('.')) return; // Skip pseudo-selectors
     if (typeof value === 'number') {
       // Convert spacing values (multiply by 8)
-      if (['p', 'px', 'py', 'pt', 'pb', 'pl', 'pr', 'm', 'mx', 'my', 'mt', 'mb', 'ml', 'mr', 'gap'].includes(key)) {
+      if (
+        [
+          'p',
+          'px',
+          'py',
+          'pt',
+          'pb',
+          'pl',
+          'pr',
+          'm',
+          'mx',
+          'my',
+          'mt',
+          'mb',
+          'ml',
+          'mr',
+          'gap'
+        ].includes(key)
+      ) {
         const pixels = value * 8;
-        if (key === 'p') { style.padding = pixels; }
-        else if (key === 'px') { style.paddingLeft = pixels; style.paddingRight = pixels; }
-        else if (key === 'py') { style.paddingTop = pixels; style.paddingBottom = pixels; }
-        else if (key === 'pt') { style.paddingTop = pixels; }
-        else if (key === 'pb') { style.paddingBottom = pixels; }
-        else if (key === 'pl') { style.paddingLeft = pixels; }
-        else if (key === 'pr') { style.paddingRight = pixels; }
-        else if (key === 'm') { style.margin = pixels; }
-        else if (key === 'mx') { style.marginLeft = pixels; style.marginRight = pixels; }
-        else if (key === 'my') { style.marginTop = pixels; style.marginBottom = pixels; }
-        else if (key === 'mt') { style.marginTop = pixels; }
-        else if (key === 'mb') { style.marginBottom = pixels; }
-        else if (key === 'ml') { style.marginLeft = pixels; }
-        else if (key === 'mr') { style.marginRight = pixels; }
-        else if (key === 'gap') { style.gap = pixels; }
+        if (key === 'p') {
+          style.padding = pixels;
+        } else if (key === 'px') {
+          style.paddingLeft = pixels;
+          style.paddingRight = pixels;
+        } else if (key === 'py') {
+          style.paddingTop = pixels;
+          style.paddingBottom = pixels;
+        } else if (key === 'pt') {
+          style.paddingTop = pixels;
+        } else if (key === 'pb') {
+          style.paddingBottom = pixels;
+        } else if (key === 'pl') {
+          style.paddingLeft = pixels;
+        } else if (key === 'pr') {
+          style.paddingRight = pixels;
+        } else if (key === 'm') {
+          style.margin = pixels;
+        } else if (key === 'mx') {
+          style.marginLeft = pixels;
+          style.marginRight = pixels;
+        } else if (key === 'my') {
+          style.marginTop = pixels;
+          style.marginBottom = pixels;
+        } else if (key === 'mt') {
+          style.marginTop = pixels;
+        } else if (key === 'mb') {
+          style.marginBottom = pixels;
+        } else if (key === 'ml') {
+          style.marginLeft = pixels;
+        } else if (key === 'mr') {
+          style.marginRight = pixels;
+        } else if (key === 'gap') {
+          style.gap = pixels;
+        }
       } else {
         style[key] = value;
       }
@@ -511,7 +630,8 @@ const WalletContent = ({
   destAddress,
   setDestAddress
 }) => {
-  const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
+  const needsBackup =
+    typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -556,7 +676,9 @@ const WalletContent = ({
             setIsUnlocked(true);
           }
         }
-      } catch (err) { /* ignore */ }
+      } catch (err) {
+        /* ignore */
+      }
     };
     checkUnlock();
   }, [accountProfile, accountLogin, walletStorage]);
@@ -565,13 +687,18 @@ const WalletContent = ({
     if (!accountLogin) return;
     setLoadingHistory(true);
     try {
-      const response = await fetch(`https://api.xrpl.to/v1/account/${accountLogin}/transactions?limit=20`);
+      const response = await fetch(
+        `https://api.xrpl.to/v1/account/${accountLogin}/transactions?limit=20`
+      );
       if (response.ok) {
         const data = await response.json();
         setTransactions(data.transactions || []);
       }
-    } catch (err) { /* ignore */ }
-    finally { setLoadingHistory(false); }
+    } catch (err) {
+      /* ignore */
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   const availableBalance = parseFloat(accountBalance?.curr1?.value || '0');
@@ -589,7 +716,10 @@ const WalletContent = ({
 
   const handleSend = async () => {
     const error = validateSend();
-    if (error) { setSendError(error); return; }
+    if (error) {
+      setSendError(error);
+      return;
+    }
 
     setIsSending(true);
     setSendError('');
@@ -627,15 +757,21 @@ const WalletContent = ({
         if (result.result.meta.TransactionResult === 'tesSUCCESS') {
           setTxResult({ success: true, hash: result.result.hash, amount, recipient });
           openSnackbar('Transaction successful', 'success');
-          setRecipient(''); setAmount(''); setDestinationTag('');
+          setRecipient('');
+          setAmount('');
+          setDestinationTag('');
           if (!isUnlocked) setSendPassword('');
         } else {
           throw new Error(result.result.meta.TransactionResult);
         }
-      } finally { await client.disconnect(); }
+      } finally {
+        await client.disconnect();
+      }
     } catch (err) {
       setSendError(err.message || 'Transaction failed');
-    } finally { setIsSending(false); }
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const formatDate = (timestamp) => {
@@ -649,12 +785,12 @@ const WalletContent = ({
     return date.toLocaleDateString();
   };
 
-  const truncAddr = (addr, len = 6) => addr ? `${addr.slice(0, len)}...${addr.slice(-4)}` : '';
+  const truncAddr = (addr, len = 6) => (addr ? `${addr.slice(0, len)}...${addr.slice(-4)}` : '');
 
   // Show backup section instead of wallet when downloading
   if (showBackupPassword) {
     return (
-      <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
+      <div className={cn('p-5', isDark ? 'text-white' : 'text-gray-900')}>
         <div className="space-y-4">
           {/* Header */}
           <div className="text-center pb-2">
@@ -662,21 +798,30 @@ const WalletContent = ({
               <Download size={22} className="text-amber-500" />
             </div>
             <h3 className="text-base font-medium">Download Backup</h3>
-            <p className={cn("text-xs mt-1", isDark ? "text-white/50" : "text-gray-500")}>
+            <p className={cn('text-xs mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
               All {profiles.length} wallets • Encrypted
             </p>
           </div>
 
           {/* Warning */}
-          <div className={cn(
-            "rounded-xl p-3.5 border",
-            isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200"
-          )}>
+          <div
+            className={cn(
+              'rounded-xl p-3.5 border',
+              isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'
+            )}
+          >
             <div className="flex gap-2.5">
               <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Keep this file safe</p>
-                <p className={cn("text-[11px] mt-0.5 leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                  Keep this file safe
+                </p>
+                <p
+                  className={cn(
+                    'text-[11px] mt-0.5 leading-relaxed',
+                    isDark ? 'text-white/60' : 'text-gray-600'
+                  )}
+                >
                   Contains all wallet seeds. Never share it with anyone.
                 </p>
               </div>
@@ -687,21 +832,29 @@ const WalletContent = ({
           <button
             onClick={() => setBackupAgreed(!backupAgreed)}
             className={cn(
-              "w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all",
+              'w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all',
               backupAgreed
-                ? "border-primary bg-primary/5"
-                : isDark ? "border-gray-600/40 hover:border-gray-500/50" : "border-gray-300 hover:border-gray-400"
+                ? 'border-primary bg-primary/5'
+                : isDark
+                  ? 'border-gray-600/40 hover:border-gray-500/50'
+                  : 'border-gray-300 hover:border-gray-400'
             )}
           >
-            <div className={cn(
-              "w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
-              backupAgreed
-                ? "bg-primary"
-                : isDark ? "border-2 border-gray-600/50" : "border-2 border-gray-300"
-            )}>
+            <div
+              className={cn(
+                'w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all',
+                backupAgreed
+                  ? 'bg-primary'
+                  : isDark
+                    ? 'border-2 border-gray-600/50'
+                    : 'border-2 border-gray-300'
+              )}
+            >
               {backupAgreed && <Check size={12} className="text-white" />}
             </div>
-            <span className={cn("text-xs leading-relaxed", isDark ? "text-white/80" : "text-gray-700")}>
+            <span
+              className={cn('text-xs leading-relaxed', isDark ? 'text-white/80' : 'text-gray-700')}
+            >
               I understand and will keep this file safe
             </span>
           </button>
@@ -720,18 +873,18 @@ const WalletContent = ({
                 }
               }}
               className={cn(
-                "w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all",
+                'w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all',
                 isDark
-                  ? "bg-white/[0.04] border-gray-600/40 text-white placeholder:text-white/30 focus:border-gray-500 disabled:opacity-40"
-                  : "bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400 disabled:opacity-40"
+                  ? 'bg-white/[0.04] border-gray-600/40 text-white placeholder:text-white/30 focus:border-gray-500 disabled:opacity-40'
+                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-400 disabled:opacity-40'
               )}
             />
             <button
               type="button"
               onClick={() => setShowBackupPasswordVisible(!showBackupPasswordVisible)}
               className={cn(
-                "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
-                isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
+                'absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors',
+                isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600'
               )}
             >
               {showBackupPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -748,10 +901,10 @@ const WalletContent = ({
                 setBackupAgreed(false);
               }}
               className={cn(
-                "flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all",
+                'flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all',
                 isDark
-                  ? "border-gray-600/40 text-white/70 hover:bg-gray-700/30"
-                  : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                  ? 'border-gray-600/40 text-white/70 hover:bg-gray-700/30'
+                  : 'border-gray-300 text-gray-600 hover:bg-gray-100'
               )}
             >
               Cancel
@@ -760,12 +913,12 @@ const WalletContent = ({
               onClick={processBackupDownload}
               disabled={!backupPassword || !backupAgreed}
               className={cn(
-                "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+                'flex-1 py-2.5 rounded-xl text-sm font-medium transition-all',
                 backupPassword && backupAgreed
-                  ? "bg-primary text-white hover:bg-primary/90"
+                  ? 'bg-primary text-white hover:bg-primary/90'
                   : isDark
-                    ? "bg-white/5 text-white/30 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               )}
             >
               Download
@@ -783,23 +936,38 @@ const WalletContent = ({
   // Bridge form view for logged-in users
   if (showBridgeInDropdown) {
     return (
-      <div className={isDark ? "text-white" : "text-gray-900"}>
+      <div className={isDark ? 'text-white' : 'text-gray-900'}>
         {/* Header */}
-        <div className={cn(
-          "px-4 py-2.5 flex items-center justify-between",
-          isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
-        )}>
+        <div
+          className={cn(
+            'px-4 py-2.5 flex items-center justify-between',
+            isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100'
+          )}
+        >
           <button
-            onClick={() => { setShowBridgeInDropdown(false); setBridgeData(null); }}
-            className={cn("flex items-center gap-1.5 text-[12px] font-medium", isDark ? "text-white/60 hover:text-white" : "text-gray-500 hover:text-gray-700")}
+            onClick={() => {
+              setShowBridgeInDropdown(false);
+              setBridgeData(null);
+            }}
+            className={cn(
+              'flex items-center gap-1.5 text-[12px] font-medium',
+              isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+            )}
           >
             <ChevronDown size={14} className="rotate-90" />
             Back
           </button>
-          <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>Bridge</span>
+          <span className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+            Bridge
+          </span>
           <button
             onClick={onClose}
-            className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}
+            className={cn(
+              'p-1.5 rounded-lg transition-colors',
+              isDark
+                ? 'hover:bg-white/5 text-white/40 hover:text-white/60'
+                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+            )}
           >
             <XIcon size={14} />
           </button>
@@ -813,31 +981,53 @@ const WalletContent = ({
                 <div className="w-6 h-6 rounded-full bg-emerald-500/15 flex items-center justify-center">
                   <Check size={14} className="text-emerald-500" />
                 </div>
-                <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                <span
+                  className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   Exchange Created
                 </span>
               </div>
 
-              <div className={cn("rounded-xl border p-3", isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+              <div
+                className={cn(
+                  'rounded-xl border p-3',
+                  isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                )}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   {bridgeData.swapDirection === 'fromXrp' ? (
                     <>
-                      <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                      <span
+                        className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-600')}
+                      >
                         Send {bridgeAmount} XRP
                       </span>
-                      <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
-                      {selectedCurrency?.image && <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />}
+                      <ArrowLeftRight
+                        size={12}
+                        className={isDark ? 'text-white/30' : 'text-gray-400'}
+                      />
+                      {selectedCurrency?.image && (
+                        <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />
+                      )}
                       <span className="text-[11px] text-emerald-500 font-medium">
-                        ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} {selectedCurrency?.ticker?.toUpperCase()}
+                        ~{bridgeData.expectedAmountTo || estimatedXrp || '?'}{' '}
+                        {selectedCurrency?.ticker?.toUpperCase()}
                       </span>
                     </>
                   ) : (
                     <>
-                      {selectedCurrency?.image && <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />}
-                      <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                      {selectedCurrency?.image && (
+                        <img src={selectedCurrency.image} alt="" className="w-4 h-4 rounded-full" />
+                      )}
+                      <span
+                        className={cn('text-[11px]', isDark ? 'text-white/60' : 'text-gray-600')}
+                      >
                         Send {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
                       </span>
-                      <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
+                      <ArrowLeftRight
+                        size={12}
+                        className={isDark ? 'text-white/30' : 'text-gray-400'}
+                      />
                       <span className="text-[11px] text-emerald-500 font-medium">
                         ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} XRP
                       </span>
@@ -845,12 +1035,27 @@ const WalletContent = ({
                   )}
                 </div>
 
-                <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                <p
+                  className={cn(
+                    'text-[9px] uppercase tracking-wide mb-1',
+                    isDark ? 'text-white/30' : 'text-gray-400'
+                  )}
+                >
                   Deposit Address
                 </p>
-                <div className={cn("rounded-lg border p-2", isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white")}>
+                <div
+                  className={cn(
+                    'rounded-lg border p-2',
+                    isDark ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-white'
+                  )}
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <code className={cn("text-[10px] font-mono break-all flex-1", isDark ? "text-white/90" : "text-gray-900")}>
+                    <code
+                      className={cn(
+                        'text-[10px] font-mono break-all flex-1',
+                        isDark ? 'text-white/90' : 'text-gray-900'
+                      )}
+                    >
                       {bridgeData.payinAddress}
                     </code>
                     <button
@@ -860,10 +1065,12 @@ const WalletContent = ({
                         setTimeout(() => setBridgeAddressCopied(false), 2000);
                       }}
                       className={cn(
-                        "flex-shrink-0 p-1.5 rounded-lg transition-colors",
+                        'flex-shrink-0 p-1.5 rounded-lg transition-colors',
                         bridgeAddressCopied
-                          ? "bg-emerald-500/15 text-emerald-500"
-                          : isDark ? "bg-white/10 text-white/60 hover:bg-white/15" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          ? 'bg-emerald-500/15 text-emerald-500'
+                          : isDark
+                            ? 'bg-white/10 text-white/60 hover:bg-white/15'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       )}
                     >
                       {bridgeAddressCopied ? <Check size={12} /> : <Copy size={12} />}
@@ -880,8 +1087,14 @@ const WalletContent = ({
                 Track Exchange
               </button>
               <button
-                onClick={() => { setShowBridgeInDropdown(false); setBridgeData(null); }}
-                className={cn("w-full py-2 rounded-lg text-[11px] transition-all", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}
+                onClick={() => {
+                  setShowBridgeInDropdown(false);
+                  setBridgeData(null);
+                }}
+                className={cn(
+                  'w-full py-2 rounded-lg text-[11px] transition-all',
+                  isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
+                )}
               >
                 Done
               </button>
@@ -890,23 +1103,40 @@ const WalletContent = ({
             // Bridge form
             <>
               {/* Direction Toggle */}
-              <div className="flex gap-1 p-1 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6' }}>
+              <div
+                className="flex gap-1 p-1 rounded-lg"
+                style={{ background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6' }}
+              >
                 <button
-                  onClick={() => { setSwapDirection('toXrp'); setBridgeAmount(''); setDestAddress(''); }}
-                  className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                  onClick={() => {
+                    setSwapDirection('toXrp');
+                    setBridgeAmount('');
+                    setDestAddress('');
+                  }}
+                  className={cn(
+                    'flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all',
                     swapDirection === 'toXrp'
-                      ? "bg-primary text-white"
-                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                      ? 'bg-primary text-white'
+                      : isDark
+                        ? 'text-white/50 hover:text-white/70'
+                        : 'text-gray-500 hover:text-gray-700'
                   )}
                 >
                   Buy XRP
                 </button>
                 <button
-                  onClick={() => { setSwapDirection('fromXrp'); setBridgeAmount(''); setDestAddress(''); }}
-                  className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                  onClick={() => {
+                    setSwapDirection('fromXrp');
+                    setBridgeAmount('');
+                    setDestAddress('');
+                  }}
+                  className={cn(
+                    'flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all',
                     swapDirection === 'fromXrp'
-                      ? "bg-primary text-white"
-                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                      ? 'bg-primary text-white'
+                      : isDark
+                        ? 'text-white/50 hover:text-white/70'
+                        : 'text-gray-500 hover:text-gray-700'
                   )}
                 >
                   Sell XRP
@@ -918,56 +1148,119 @@ const WalletContent = ({
                 <button
                   onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
                   className={cn(
-                    "w-full flex items-center justify-between p-3 rounded-lg border transition-colors",
-                    isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-white/15" : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                    'w-full flex items-center justify-between p-3 rounded-lg border transition-colors',
+                    isDark
+                      ? 'border-white/[0.08] bg-white/[0.02] hover:border-white/15'
+                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                   )}
                 >
                   {selectedCurrency ? (
                     <div className="flex items-center gap-2">
-                      {selectedCurrency.image && <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />}
-                      <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      {selectedCurrency.image && (
+                        <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                      )}
+                      <span
+                        className={cn(
+                          'text-[13px] font-medium',
+                          isDark ? 'text-white' : 'text-gray-900'
+                        )}
+                      >
                         {selectedCurrency.ticker.toUpperCase()}
                       </span>
                     </div>
                   ) : (
-                    <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+                    <span className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
                       {currencies.length ? 'Select currency' : 'Loading...'}
                     </span>
                   )}
-                  <ChevronDown size={16} className={cn(isDark ? "text-white/40" : "text-gray-400", showCurrencyDropdown && "rotate-180")} />
+                  <ChevronDown
+                    size={16}
+                    className={cn(
+                      isDark ? 'text-white/40' : 'text-gray-400',
+                      showCurrencyDropdown && 'rotate-180'
+                    )}
+                  />
                 </button>
 
                 {showCurrencyDropdown && (
-                  <div className={cn("absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden", isDark ? "border-white/10 bg-[#1a1a1a]" : "border-gray-200 bg-white")}>
-                    <div className="p-2 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                  <div
+                    className={cn(
+                      'absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden',
+                      isDark ? 'border-white/10 bg-[#1a1a1a]' : 'border-gray-200 bg-white'
+                    )}
+                  >
+                    <div
+                      className="p-2 border-b"
+                      style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}
+                    >
                       <input
                         type="text"
                         value={currencySearch}
                         onChange={(e) => setCurrencySearch(e.target.value)}
                         placeholder="Search..."
                         autoFocus
-                        className={cn("w-full px-2 py-1.5 rounded text-[12px] outline-none", isDark ? "bg-white/5 text-white placeholder:text-white/30" : "bg-gray-50 text-gray-900 placeholder:text-gray-400")}
+                        className={cn(
+                          'w-full px-2 py-1.5 rounded text-[12px] outline-none',
+                          isDark
+                            ? 'bg-white/5 text-white placeholder:text-white/30'
+                            : 'bg-gray-50 text-gray-900 placeholder:text-gray-400'
+                        )}
                       />
                     </div>
                     <div className="overflow-y-auto max-h-[200px]">
                       {(() => {
-                        const filtered = currencies.filter(c => !currencySearch || c.ticker.toLowerCase().includes(currencySearch.toLowerCase()) || c.name.toLowerCase().includes(currencySearch.toLowerCase()));
+                        const filtered = currencies.filter(
+                          (c) =>
+                            !currencySearch ||
+                            c.ticker.toLowerCase().includes(currencySearch.toLowerCase()) ||
+                            c.name.toLowerCase().includes(currencySearch.toLowerCase())
+                        );
                         const shown = filtered.slice(0, currencySearch ? 100 : 30);
                         return shown.length === 0 ? (
-                          <div className={cn("px-3 py-4 text-center text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                          <div
+                            className={cn(
+                              'px-3 py-4 text-center text-[11px]',
+                              isDark ? 'text-white/30' : 'text-gray-400'
+                            )}
+                          >
                             No results
                           </div>
-                        ) : shown.map((c) => (
-                          <button
-                            key={`${c.ticker}-${c.network}`}
-                            onClick={() => { setSelectedCurrency(c); setShowCurrencyDropdown(false); setCurrencySearch(''); }}
-                            className={cn("w-full flex items-center gap-2 px-3 py-2 text-left transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}
-                          >
-                            {c.image && <img src={c.image} alt="" className="w-5 h-5 rounded-full" />}
-                            <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>{c.ticker.toUpperCase()}</span>
-                            <span className={cn("text-[10px] flex-1", isDark ? "text-white/30" : "text-gray-400")}>{c.name}</span>
-                          </button>
-                        ));
+                        ) : (
+                          shown.map((c) => (
+                            <button
+                              key={`${c.ticker}-${c.network}`}
+                              onClick={() => {
+                                setSelectedCurrency(c);
+                                setShowCurrencyDropdown(false);
+                                setCurrencySearch('');
+                              }}
+                              className={cn(
+                                'w-full flex items-center gap-2 px-3 py-2 text-left transition-colors',
+                                isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                              )}
+                            >
+                              {c.image && (
+                                <img src={c.image} alt="" className="w-5 h-5 rounded-full" />
+                              )}
+                              <span
+                                className={cn(
+                                  'text-[12px] font-medium',
+                                  isDark ? 'text-white' : 'text-gray-900'
+                                )}
+                              >
+                                {c.ticker.toUpperCase()}
+                              </span>
+                              <span
+                                className={cn(
+                                  'text-[10px] flex-1',
+                                  isDark ? 'text-white/30' : 'text-gray-400'
+                                )}
+                              >
+                                {c.name}
+                              </span>
+                            </button>
+                          ))
+                        );
                       })()}
                     </div>
                   </div>
@@ -976,8 +1269,18 @@ const WalletContent = ({
 
               {/* Destination Address (for selling XRP) */}
               {swapDirection === 'fromXrp' && (
-                <div className={cn("rounded-lg border p-3", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50")}>
-                  <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
+                <div
+                  className={cn(
+                    'rounded-lg border p-3',
+                    isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-100 bg-gray-50'
+                  )}
+                >
+                  <label
+                    className={cn(
+                      'text-[10px] uppercase tracking-wide',
+                      isDark ? 'text-white/30' : 'text-gray-400'
+                    )}
+                  >
                     {selectedCurrency?.ticker?.toUpperCase() || 'Destination'} Address
                   </label>
                   <input
@@ -985,33 +1288,68 @@ const WalletContent = ({
                     value={destAddress}
                     onChange={(e) => setDestAddress(e.target.value)}
                     placeholder={`Your ${selectedCurrency?.ticker?.toUpperCase() || ''} address`}
-                    className={cn("w-full mt-1 bg-transparent text-[13px] outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                    className={cn(
+                      'w-full mt-1 bg-transparent text-[13px] outline-none',
+                      isDark
+                        ? 'text-white placeholder:text-white/20'
+                        : 'text-gray-900 placeholder:text-gray-300'
+                    )}
                   />
                 </div>
               )}
 
               {/* Amount */}
-              <div className={cn("rounded-lg border p-3", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50")}>
-                <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Amount</label>
+              <div
+                className={cn(
+                  'rounded-lg border p-3',
+                  isDark ? 'border-white/[0.06] bg-white/[0.02]' : 'border-gray-100 bg-gray-50'
+                )}
+              >
+                <label
+                  className={cn(
+                    'text-[10px] uppercase tracking-wide',
+                    isDark ? 'text-white/30' : 'text-gray-400'
+                  )}
+                >
+                  Amount
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <input
                     type="number"
                     value={bridgeAmount}
                     onChange={(e) => setBridgeAmount(e.target.value)}
-                    placeholder={minAmount ? `Min: ${minAmount}` : "0.00"}
+                    placeholder={minAmount ? `Min: ${minAmount}` : '0.00'}
                     step="0.0001"
                     min="0"
-                    className={cn("flex-1 bg-transparent text-[18px] font-medium outline-none", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                    className={cn(
+                      'flex-1 bg-transparent text-[18px] font-medium outline-none',
+                      isDark
+                        ? 'text-white placeholder:text-white/20'
+                        : 'text-gray-900 placeholder:text-gray-300'
+                    )}
                   />
-                  <span className={cn("text-[13px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>
-                    {swapDirection === 'toXrp' ? (selectedCurrency?.ticker?.toUpperCase() || '---') : 'XRP'}
+                  <span
+                    className={cn(
+                      'text-[13px] font-medium',
+                      isDark ? 'text-white/50' : 'text-gray-500'
+                    )}
+                  >
+                    {swapDirection === 'toXrp'
+                      ? selectedCurrency?.ticker?.toUpperCase() || '---'
+                      : 'XRP'}
                   </span>
                 </div>
                 {estimatedXrp && (
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
-                    <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You'll receive</span>
+                  <div
+                    className="flex items-center justify-between mt-2 pt-2 border-t"
+                    style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}
+                  >
+                    <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                      You'll receive
+                    </span>
                     <span className="text-[13px] font-medium text-emerald-500">
-                      ~{estimatedXrp} {swapDirection === 'toXrp' ? 'XRP' : selectedCurrency?.ticker?.toUpperCase()}
+                      ~{estimatedXrp}{' '}
+                      {swapDirection === 'toXrp' ? 'XRP' : selectedCurrency?.ticker?.toUpperCase()}
                     </span>
                   </div>
                 )}
@@ -1025,15 +1363,32 @@ const WalletContent = ({
 
               <button
                 onClick={() => handleCreateBridge(accountLogin)}
-                disabled={bridgeLoading || !bridgeAmount || !selectedCurrency || !estimatedXrp || (swapDirection === 'fromXrp' && !destAddress)}
+                disabled={
+                  bridgeLoading ||
+                  !bridgeAmount ||
+                  !selectedCurrency ||
+                  !estimatedXrp ||
+                  (swapDirection === 'fromXrp' && !destAddress)
+                }
                 className={cn(
-                  "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
-                  bridgeAmount && selectedCurrency && estimatedXrp && (swapDirection === 'toXrp' || destAddress)
-                    ? "bg-primary text-white hover:bg-primary/90"
-                    : isDark ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  'w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2',
+                  bridgeAmount &&
+                    selectedCurrency &&
+                    estimatedXrp &&
+                    (swapDirection === 'toXrp' || destAddress)
+                    ? 'bg-primary text-white hover:bg-primary/90'
+                    : isDark
+                      ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 )}
               >
-                {bridgeLoading ? <Loader2 size={14} className="animate-spin" /> : <><ArrowLeftRight size={14} /> Create Exchange</>}
+                {bridgeLoading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <>
+                    <ArrowLeftRight size={14} /> Create Exchange
+                  </>
+                )}
               </button>
             </>
           )}
@@ -1043,114 +1398,228 @@ const WalletContent = ({
   }
 
   return (
-    <div className={isDark ? "text-white" : "text-gray-900"}>
+    <div className={isDark ? 'text-white' : 'text-gray-900'}>
       {/* Header */}
-      <div className={cn(
-        "px-4 py-2.5 flex items-center justify-between",
-        isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
-      )}>
+      <div
+        className={cn(
+          'px-4 py-2.5 flex items-center justify-between',
+          isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100'
+        )}
+      >
         <button
           onClick={handleCopyAddress}
           className={cn(
-            "flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg transition-all",
-            addressCopied ? "bg-emerald-500/10" : isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+            'flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg transition-all',
+            addressCopied ? 'bg-emerald-500/10' : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
           )}
         >
           <div className="relative">
-            <div className={cn("w-2 h-2 rounded-full", accountsActivation[accountLogin] === false ? "bg-amber-400/60" : "bg-emerald-400")} />
-            {!addressCopied && accountsActivation[accountLogin] !== false && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />}
+            <div
+              className={cn(
+                'w-2 h-2 rounded-full',
+                accountsActivation[accountLogin] === false ? 'bg-amber-400/60' : 'bg-emerald-400'
+              )}
+            />
+            {!addressCopied && accountsActivation[accountLogin] !== false && (
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
+            )}
           </div>
-          <span className={cn("font-mono text-xs", addressCopied ? "text-emerald-500" : isDark ? "text-white/60" : "text-gray-500")}>
+          <span
+            className={cn(
+              'font-mono text-xs',
+              addressCopied ? 'text-emerald-500' : isDark ? 'text-white/60' : 'text-gray-500'
+            )}
+          >
             {truncateAccount(accountLogin, 6)}
           </span>
-          {addressCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />}
+          {addressCopied ? (
+            <Check size={12} className="text-emerald-500" />
+          ) : (
+            <Copy size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+          )}
         </button>
         <button
           onClick={onClose}
-          className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}
+          className={cn(
+            'p-1.5 rounded-lg transition-colors',
+            isDark
+              ? 'hover:bg-white/5 text-white/40 hover:text-white/60'
+              : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+          )}
         >
           <XIcon size={14} />
         </button>
       </div>
 
       {/* Balance - clickable to view full wallet */}
-      <Link href="/wallet" className={cn(
-        "block px-4 pt-4 pb-3 -mx-0 rounded-lg transition-colors",
-        isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
-      )}>
+      <Link
+        href="/wallet"
+        className={cn(
+          'block px-4 pt-4 pb-3 -mx-0 rounded-lg transition-colors',
+          isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+        )}
+      >
         <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="font-mono text-2xl font-semibold tracking-tight">
-            {accountTotalXrp || accountBalance?.curr1?.value || '0'}
+            {accountBalance?.curr1?.value || '0'}
           </span>
-          <span className={cn("text-sm", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
-          <ChevronRight size={14} className={cn("ml-auto", isDark ? "text-white/20" : "text-gray-300")} />
+          <span className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>XRP</span>
+          <ChevronRight
+            size={14}
+            className={cn('ml-auto', isDark ? 'text-white/20' : 'text-gray-300')}
+          />
         </div>
-        <div className={cn("text-[11px]", isDark ? "text-white/35" : "text-gray-400")}>
-          {accountBalance?.curr1?.value || '0'} available · {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved
+        <div className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-gray-400')}>
+          {accountTotalXrp ||
+            Number(accountBalance?.curr1?.value || 0) + Number(accountBalance?.curr2?.value || 0) ||
+            '0'}{' '}
+          total · {accountBalance?.curr2?.value || '0'} reserved
         </div>
       </Link>
 
       {/* Actions */}
       <div className="px-4 pb-3">
         <div className="grid grid-cols-3 gap-2">
-          <a href="/wallet?tab=send" className={cn(
-            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
-            "bg-blue-500 hover:bg-blue-600 text-white"
-          )}>
+          <a
+            href="/wallet?tab=send"
+            className={cn(
+              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
+              'bg-blue-500 hover:bg-blue-600 text-white'
+            )}
+          >
             <ArrowUpRight size={16} />
             Send
           </a>
-          <a href="/wallet?tab=receive" className={cn(
-            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
-            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          )}>
-            <ArrowDownLeft size={16} className={isDark ? "text-emerald-400" : "text-emerald-500"} />
+          <a
+            href="/wallet?tab=receive"
+            className={cn(
+              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
+              isDark
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/70'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            )}
+          >
+            <ArrowDownLeft size={16} className={isDark ? 'text-emerald-400' : 'text-emerald-500'} />
             Receive
           </a>
-          <button onClick={() => { initBridgeForm(); setShowBridgeInDropdown(true); }} className={cn(
-            "flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all",
-            isDark ? "bg-white/[0.04] hover:bg-white/[0.07] text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          )}>
+          <button
+            onClick={() => {
+              initBridgeForm();
+              setShowBridgeInDropdown(true);
+            }}
+            className={cn(
+              'flex flex-col items-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium transition-all',
+              isDark
+                ? 'bg-white/[0.04] hover:bg-white/[0.07] text-white/70'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            )}
+          >
             <ArrowLeftRight size={16} className="text-emerald-400" />
             Bridge
           </button>
         </div>
       </div>
 
-
       {/* Accounts */}
-      <div className={cn("mx-4 mb-3 rounded-xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-        <button onClick={() => setShowAllAccounts(!showAllAccounts)} className={cn(
-          "w-full px-3 py-2 flex items-center justify-between",
-          isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50"
-        )}>
-          <span className={cn("text-[11px] font-medium", isDark ? "text-white/60" : "text-gray-600")}>
-            Accounts <span className={cn("ml-1 px-1.5 py-0.5 rounded text-[9px]", isDark ? "bg-white/[0.06] text-white/40" : "bg-gray-200 text-gray-500")}>{profiles.length}</span>
+      <div
+        className={cn(
+          'mx-4 mb-3 rounded-xl overflow-hidden',
+          isDark
+            ? 'bg-white/[0.02] border border-white/[0.06]'
+            : 'bg-gray-50 border border-gray-100'
+        )}
+      >
+        <button
+          onClick={() => setShowAllAccounts(!showAllAccounts)}
+          className={cn(
+            'w-full px-3 py-2 flex items-center justify-between',
+            isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-100/50'
+          )}
+        >
+          <span
+            className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}
+          >
+            Accounts{' '}
+            <span
+              className={cn(
+                'ml-1 px-1.5 py-0.5 rounded text-[9px]',
+                isDark ? 'bg-white/[0.06] text-white/40' : 'bg-gray-200 text-gray-500'
+              )}
+            >
+              {profiles.length}
+            </span>
           </span>
-          <ChevronDown size={14} className={cn("transition-transform", showAllAccounts && "rotate-180", isDark ? "text-white/30" : "text-gray-400")} />
+          <ChevronDown
+            size={14}
+            className={cn(
+              'transition-transform',
+              showAllAccounts && 'rotate-180',
+              isDark ? 'text-white/30' : 'text-gray-400'
+            )}
+          />
         </button>
 
         {showAllAccounts && (
-          <div className={cn("border-t max-h-[180px] overflow-y-auto", isDark ? "border-white/[0.04]" : "border-gray-100")}>
+          <div
+            className={cn(
+              'border-t max-h-[180px] overflow-y-auto',
+              isDark ? 'border-white/[0.04]' : 'border-gray-100'
+            )}
+          >
             {(() => {
-              const currentAccount = profiles.find(p => p.account === accountLogin);
-              const others = profiles.filter(p => p.account !== accountLogin);
+              const currentAccount = profiles.find((p) => p.account === accountLogin);
+              const others = profiles.filter((p) => p.account !== accountLogin);
               const sorted = [...(currentAccount ? [currentAccount] : []), ...others];
               const startIndex = walletPage * walletsPerPage;
               return sorted.slice(startIndex, startIndex + walletsPerPage).map((profile) => {
                 const isCurrent = profile.account === accountLogin;
                 const isInactive = accountsActivation[profile.account] === false;
                 return (
-                  <button key={profile.account} onClick={() => !isCurrent && onAccountSwitch(profile.account)}
-                    className={cn("w-full px-3 py-2 flex items-center gap-2 text-left transition-all",
-                      isCurrent ? (isDark ? "bg-primary/10" : "bg-primary/5") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-100/50")
-                    )}>
-                    <div className={cn("w-1.5 h-1.5 rounded-full", isInactive ? "bg-amber-400/60" : "bg-emerald-400")} />
-                    <span className={cn("font-mono text-[11px] flex-1", isCurrent ? (isDark ? "text-white" : "text-gray-900") : (isDark ? "text-white/50" : "text-gray-500"))}>
+                  <button
+                    key={profile.account}
+                    onClick={() => !isCurrent && onAccountSwitch(profile.account)}
+                    className={cn(
+                      'w-full px-3 py-2 flex items-center gap-2 text-left transition-all',
+                      isCurrent
+                        ? isDark
+                          ? 'bg-primary/10'
+                          : 'bg-primary/5'
+                        : isDark
+                          ? 'hover:bg-white/[0.02]'
+                          : 'hover:bg-gray-100/50'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'w-1.5 h-1.5 rounded-full',
+                        isInactive ? 'bg-amber-400/60' : 'bg-emerald-400'
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        'font-mono text-[11px] flex-1',
+                        isCurrent
+                          ? isDark
+                            ? 'text-white'
+                            : 'text-gray-900'
+                          : isDark
+                            ? 'text-white/50'
+                            : 'text-gray-500'
+                      )}
+                    >
                       {truncateAccount(profile.account, 8)}
                     </span>
-                    {isCurrent && <span className="text-[9px] font-medium text-emerald-500">Active</span>}
-                    {isInactive && <span className="text-[9px] font-medium text-amber-400" title="Fund with 1 XRP to activate">Inactive</span>}
+                    {isCurrent && (
+                      <span className="text-[9px] font-medium text-emerald-500">Active</span>
+                    )}
+                    {isInactive && (
+                      <span
+                        className="text-[9px] font-medium text-amber-400"
+                        title="Fund with 1 XRP to activate"
+                      >
+                        Inactive
+                      </span>
+                    )}
                   </button>
                 );
               });
@@ -1161,10 +1630,32 @@ const WalletContent = ({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className={cn("mx-4 mb-3 rounded-xl overflow-hidden", isDark ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-          <div className={cn("px-3 py-2 flex items-center justify-between border-b", isDark ? "border-white/[0.04]" : "border-gray-100")}>
-            <span className={cn("text-[11px] font-medium", isDark ? "text-white/60" : "text-gray-600")}>Manage Accounts</span>
-            <button onClick={() => setShowSettings(false)} className={cn("p-0.5 rounded", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+        <div
+          className={cn(
+            'mx-4 mb-3 rounded-xl overflow-hidden',
+            isDark
+              ? 'bg-white/[0.02] border border-white/[0.06]'
+              : 'bg-gray-50 border border-gray-100'
+          )}
+        >
+          <div
+            className={cn(
+              'px-3 py-2 flex items-center justify-between border-b',
+              isDark ? 'border-white/[0.04]' : 'border-gray-100'
+            )}
+          >
+            <span
+              className={cn('text-[11px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}
+            >
+              Manage Accounts
+            </span>
+            <button
+              onClick={() => setShowSettings(false)}
+              className={cn(
+                'p-0.5 rounded',
+                isDark ? 'text-white/30 hover:text-white/50' : 'text-gray-400 hover:text-gray-600'
+              )}
+            >
               <XIcon size={12} />
             </button>
           </div>
@@ -1173,29 +1664,84 @@ const WalletContent = ({
               const isCurrent = profile.account === accountLogin;
               const isInactiveAccount = accountsActivation[profile.account] === false;
               return (
-                <div key={profile.account} className={cn("px-3 py-2 flex items-center gap-2", isDark ? "border-b border-white/[0.04] last:border-0" : "border-b border-gray-100 last:border-0")}>
-                  <span className={cn("font-mono text-[10px] flex-1", isDark ? "text-white/50" : "text-gray-500")}>
+                <div
+                  key={profile.account}
+                  className={cn(
+                    'px-3 py-2 flex items-center gap-2',
+                    isDark
+                      ? 'border-b border-white/[0.04] last:border-0'
+                      : 'border-b border-gray-100 last:border-0'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-mono text-[10px] flex-1',
+                      isDark ? 'text-white/50' : 'text-gray-500'
+                    )}
+                  >
                     {truncateAccount(profile.account, 6)}
                   </span>
-                  {isInactiveAccount && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400" title="Fund with 1 XRP to activate">Inactive</span>}
-                  {isCurrent && !isInactiveAccount && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Active</span>}
+                  {isInactiveAccount && (
+                    <span
+                      className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400"
+                      title="Fund with 1 XRP to activate"
+                    >
+                      Inactive
+                    </span>
+                  )}
+                  {isCurrent && !isInactiveAccount && (
+                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">
+                      Active
+                    </span>
+                  )}
                   <button
-                    onClick={() => { onBackupSeed(profile, true); setShowSettings(false); }}
-                    className={cn("p-1.5 rounded transition-colors", isDark ? "text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10" : "text-amber-500 hover:text-amber-600 hover:bg-amber-50")}
+                    onClick={() => {
+                      onBackupSeed(profile, true);
+                      setShowSettings(false);
+                    }}
+                    className={cn(
+                      'p-1.5 rounded transition-colors',
+                      isDark
+                        ? 'text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10'
+                        : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
+                    )}
                     title="Backup seed"
                   >
                     <Shield size={12} />
                   </button>
                   {deleteConfirm === profile.account ? (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => { onRemoveProfile(profile.account); setDeleteConfirm(null); }} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-500 text-white">Yes</button>
-                      <button onClick={() => setDeleteConfirm(null)} className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", isDark ? "bg-white/10 text-white/60" : "bg-gray-200 text-gray-600")}>No</button>
+                      <button
+                        onClick={() => {
+                          onRemoveProfile(profile.account);
+                          setDeleteConfirm(null);
+                        }}
+                        className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-500 text-white"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className={cn(
+                          'px-1.5 py-0.5 rounded text-[9px] font-medium',
+                          isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
+                        )}
+                      >
+                        No
+                      </button>
                     </div>
                   ) : (
                     <button
                       onClick={() => !isCurrent && setDeleteConfirm(profile.account)}
                       disabled={isCurrent}
-                      className={cn("p-1.5 rounded transition-colors", isCurrent ? "opacity-30 cursor-not-allowed" : isDark ? "text-white/30 hover:text-red-400 hover:bg-red-500/10" : "text-gray-400 hover:text-red-500 hover:bg-red-50")}
+                      className={cn(
+                        'p-1.5 rounded transition-colors',
+                        isCurrent
+                          ? 'opacity-30 cursor-not-allowed'
+                          : isDark
+                            ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10'
+                            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                      )}
                       title="Delete account"
                     >
                       <Trash2 size={12} />
@@ -1206,9 +1752,15 @@ const WalletContent = ({
             })}
           </div>
           <button
-            onClick={() => { handleDownloadBackup(); setShowSettings(false); }}
-            className={cn("w-full px-3 py-2.5 flex items-center justify-center gap-2 text-[11px] font-medium border-t transition-colors",
-              isDark ? "border-white/[0.04] text-amber-500 hover:bg-amber-500/10" : "border-gray-100 text-amber-600 hover:bg-amber-50"
+            onClick={() => {
+              handleDownloadBackup();
+              setShowSettings(false);
+            }}
+            className={cn(
+              'w-full px-3 py-2.5 flex items-center justify-center gap-2 text-[11px] font-medium border-t transition-colors',
+              isDark
+                ? 'border-white/[0.04] text-amber-500 hover:bg-amber-500/10'
+                : 'border-gray-100 text-amber-600 hover:bg-amber-50'
             )}
           >
             <Download size={14} /> Download Encrypted Backup
@@ -1217,29 +1769,45 @@ const WalletContent = ({
       )}
 
       {/* Footer */}
-      <div className={cn("px-4 py-2.5 grid grid-cols-3 gap-2 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+      <div
+        className={cn(
+          'px-4 py-2.5 grid grid-cols-3 gap-2 border-t',
+          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+        )}
+      >
         <button
           onClick={onCreateNewAccount}
           disabled={!onCreateNewAccount || profiles.length >= 25}
-          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
-            !onCreateNewAccount || profiles.length >= 25 ? "opacity-30 cursor-not-allowed" : "",
-            isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+          className={cn(
+            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            !onCreateNewAccount || profiles.length >= 25 ? 'opacity-30 cursor-not-allowed' : '',
+            isDark
+              ? 'text-white/50 hover:text-white hover:bg-white/5'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
           )}
         >
           <Plus size={14} /> Add
         </button>
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
-            showSettings ? "text-primary bg-primary/10" : isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+          className={cn(
+            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            showSettings
+              ? 'text-primary bg-primary/10'
+              : isDark
+                ? 'text-white/50 hover:text-white hover:bg-white/5'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
           )}
         >
           <Settings size={14} /> Settings
         </button>
         <button
           onClick={onLogout}
-          className={cn("flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors",
-            isDark ? "text-white/50 hover:text-red-400 hover:bg-red-500/10" : "text-gray-500 hover:text-red-500 hover:bg-red-50"
+          className={cn(
+            'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+            isDark
+              ? 'text-white/50 hover:text-red-400 hover:bg-red-500/10'
+              : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
           )}
         >
           <XIcon size={14} /> Logout
@@ -1250,11 +1818,7 @@ const WalletContent = ({
 };
 
 // ConnectWallet button component for wallet connection
-export const ConnectWallet = ({
-  text = 'Connect',
-  fullWidth = true,
-  ...otherProps
-}) => {
+export const ConnectWallet = ({ text = 'Connect', fullWidth = true, ...otherProps }) => {
   const { setOpenWalletModal, themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -1292,11 +1856,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       warning: { main: '#ff9800', dark: '#f57c00' },
       error: { main: '#f44336' },
       primary: { main: '#4285f4' },
-      text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+      text: {
+        primary: isDark ? '#fff' : '#000',
+        secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
+      },
       background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#070b12' : '#fff' },
-      action: { hover: isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.05)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
+      action: {
+        hover: isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.05)',
+        disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)'
+      }
     },
-    spacing: (...args) => args.map(v => v * 8).join('px ') + 'px'
+    spacing: (...args) => args.map((v) => v * 8).join('px ') + 'px'
   };
   // Translation removed - using hardcoded English text
 
@@ -1307,7 +1877,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const uniqueProfiles = [];
       const seen = new Set();
 
-      profilesArray.forEach(profile => {
+      profilesArray.forEach((profile) => {
         if (!seen.has(profile.account)) {
           seen.add(profile.account);
           uniqueProfiles.push(profile);
@@ -1433,31 +2003,48 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     if (typeof window === 'undefined') return;
     // Only persist if we're in an important flow that shouldn't be lost
     if (showNewWalletScreen && newWalletData) {
-      sessionStorage.setItem('wallet_modal_state', JSON.stringify({
-        showNewWalletScreen: true,
-        newWalletData: {
-          address: newWalletData.address,
-          publicKey: newWalletData.publicKey,
-          seed: newWalletData.seed, // Needed for backup display
-          createdAt: newWalletData.createdAt
-        },
-        backupConfirmed,
-        showBridgeForm,
-        bridgeData,
-        bridgeAmount,
-        selectedCurrency,
-        estimatedXrp
-      }));
+      sessionStorage.setItem(
+        'wallet_modal_state',
+        JSON.stringify({
+          showNewWalletScreen: true,
+          newWalletData: {
+            address: newWalletData.address,
+            publicKey: newWalletData.publicKey,
+            seed: newWalletData.seed, // Needed for backup display
+            createdAt: newWalletData.createdAt
+          },
+          backupConfirmed,
+          showBridgeForm,
+          bridgeData,
+          bridgeAmount,
+          selectedCurrency,
+          estimatedXrp
+        })
+      );
     } else if (showNewAccountFlow) {
-      sessionStorage.setItem('wallet_modal_state', JSON.stringify({
-        showNewAccountFlow: true,
-        newAccountMode
-      }));
+      sessionStorage.setItem(
+        'wallet_modal_state',
+        JSON.stringify({
+          showNewAccountFlow: true,
+          newAccountMode
+        })
+      );
     } else {
       // Clear when no active flow
       sessionStorage.removeItem('wallet_modal_state');
     }
-  }, [showNewWalletScreen, newWalletData, backupConfirmed, showBridgeForm, bridgeData, bridgeAmount, selectedCurrency, estimatedXrp, showNewAccountFlow, newAccountMode]);
+  }, [
+    showNewWalletScreen,
+    newWalletData,
+    backupConfirmed,
+    showBridgeForm,
+    bridgeData,
+    bridgeAmount,
+    selectedCurrency,
+    estimatedXrp,
+    showNewAccountFlow,
+    newAccountMode
+  ]);
 
   // Clear persisted state when wallet setup is complete
   const clearPersistedState = useCallback(() => {
@@ -1486,8 +2073,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             const allReq = store.getAll();
             allReq.onsuccess = () => {
               // Count actual wallets: have encrypted data blob and maskedAddress (exclude password/lookup entries)
-              const wallets = allReq.result.filter(r =>
-                r.data && r.maskedAddress && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__lookup__')
+              const wallets = allReq.result.filter(
+                (r) =>
+                  r.data &&
+                  r.maskedAddress &&
+                  !r.id?.startsWith?.('__pwd__') &&
+                  !r.id?.startsWith?.('__lookup__')
               );
               setStoredWalletCount(wallets.length);
             };
@@ -1523,7 +2114,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         } catch (e) {
           // If that fails, try getting all wallets
           const wallets = await walletStorage.getAllWallets(seedPassword);
-          wallet = wallets.find(w => w.address === profile.address);
+          wallet = wallets.find((w) => w.address === profile.address);
         }
       } else {
         // Other wallets use address lookup
@@ -1561,7 +2152,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setOAuthPasswordError('Validating seeds...');
     try {
       // Get all non-empty seeds
-      const seedsToImport = importSeeds.filter(s => s.trim()).map(s => s.trim());
+      const seedsToImport = importSeeds.filter((s) => s.trim()).map((s) => s.trim());
 
       if (seedsToImport.length === 0) {
         throw new Error('Please enter at least one seed');
@@ -1584,7 +2175,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
 
           // Check for duplicates
-          if (validatedWallets.some(w => w.address === wallet.address)) {
+          if (validatedWallets.some((w) => w.address === wallet.address)) {
             throw new Error(`Seed ${i + 1} creates duplicate wallet`);
           }
 
@@ -1603,7 +2194,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Create wallets array
       const wallets = [];
-      const totalWallets = Math.min(25, validatedWallets.length + Math.max(1, 25 - validatedWallets.length));
+      const totalWallets = Math.min(
+        25,
+        validatedWallets.length + Math.max(1, 25 - validatedWallets.length)
+      );
 
       // Import all seed wallets first
       for (let i = 0; i < validatedWallets.length && i < 25; i++) {
@@ -1630,7 +2224,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Generate additional random wallets if needed to reach 25
       const randomWalletsNeeded = Math.max(0, 25 - validatedWallets.length);
       if (randomWalletsNeeded > 0) {
-        setOAuthPasswordError(`Creating ${randomWalletsNeeded} additional wallet${randomWalletsNeeded > 1 ? 's' : ''}...`);
+        setOAuthPasswordError(
+          `Creating ${randomWalletsNeeded} additional wallet${randomWalletsNeeded > 1 ? 's' : ''}...`
+        );
 
         for (let i = 0; i < randomWalletsNeeded; i++) {
           const wallet = generateRandomWallet();
@@ -1668,8 +2264,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Add all wallets to profiles
       const allProfiles = [...profiles];
-      wallets.forEach(w => {
-        if (!allProfiles.find(p => p.account === w.address)) {
+      wallets.forEach((w) => {
+        if (!allProfiles.find((p) => p.account === w.address)) {
           allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
         }
       });
@@ -1689,9 +2285,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (importedCount === 25) {
         openSnackbar(`Imported all 25 wallets from seeds!`, 'success');
       } else if (newCount === 0) {
-        openSnackbar(`Imported ${importedCount} wallet${importedCount > 1 ? 's' : ''} from seed${importedCount > 1 ? 's' : ''}!`, 'success');
+        openSnackbar(
+          `Imported ${importedCount} wallet${importedCount > 1 ? 's' : ''} from seed${importedCount > 1 ? 's' : ''}!`,
+          'success'
+        );
       } else {
-        openSnackbar(`Created 25 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`, 'success');
+        openSnackbar(
+          `Created 25 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`,
+          'success'
+        );
       }
     } catch (error) {
       setOAuthPasswordError(error.message || 'Invalid seed phrase');
@@ -1738,7 +2340,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         if (decrypted.wallets && Array.isArray(decrypted.wallets)) {
           // Multi-wallet backup (v3.0)
           wallets = decrypted.wallets;
-          setOAuthPasswordError(`Found ${wallets.length} wallet${wallets.length > 1 ? 's' : ''} in backup...`);
+          setOAuthPasswordError(
+            `Found ${wallets.length} wallet${wallets.length > 1 ? 's' : ''} in backup...`
+          );
         } else if (decrypted.seed) {
           // Single wallet or old format
           wallets = [decrypted];
@@ -1789,8 +2393,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Add all wallets to profiles
       const allProfiles = [...profiles];
-      storedWallets.forEach(w => {
-        if (!allProfiles.find(p => p.account === w.address)) {
+      storedWallets.forEach((w) => {
+        if (!allProfiles.find((p) => p.account === w.address)) {
           allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
         }
       });
@@ -1808,7 +2412,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setImportFile(null);
       setImportMethod('new');
 
-      openSnackbar(`Imported ${storedWallets.length} wallet${storedWallets.length > 1 ? 's' : ''} successfully!`, 'success');
+      openSnackbar(
+        `Imported ${storedWallets.length} wallet${storedWallets.length > 1 ? 's' : ''} successfully!`,
+        'success'
+      );
     } catch (error) {
       devError('Import error:', error);
       setOAuthPasswordError(error.message || 'Failed to import wallet');
@@ -1855,7 +2462,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showNewWalletScreen, newWalletData, showNewAccountFlow, openWalletModal, open, setOpenWalletModal]);
+  }, [
+    showNewWalletScreen,
+    newWalletData,
+    showNewAccountFlow,
+    openWalletModal,
+    open,
+    setOpenWalletModal
+  ]);
 
   // Check for existing wallets when modal opens (for returning users)
   useEffect(() => {
@@ -1901,7 +2515,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Get device fingerprint ID for device wallets (survives storage clearing)
-      const hasDeviceWallets = wallets.some(w => w.wallet_type === 'device');
+      const hasDeviceWallets = wallets.some((w) => w.wallet_type === 'device');
       let deviceKeyId = null;
       if (hasDeviceWallets) {
         const { deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
@@ -1921,7 +2535,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         wallet_type: w.wallet_type || 'oauth',
         provider: w.provider,
         provider_id: w.provider_id,
-        deviceKeyId: w.wallet_type === 'device' ? (w.deviceKeyId || deviceKeyId) : w.deviceKeyId,
+        deviceKeyId: w.wallet_type === 'device' ? w.deviceKeyId || deviceKeyId : w.deviceKeyId,
         accountIndex: w.accountIndex ?? index,
         createdAt: w.createdAt || Date.now(),
         tokenCreatedAt: Date.now()
@@ -2055,12 +2669,25 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const data = await res.json();
 
       // Handle both array and object with currencies property
-      const currencyList = Array.isArray(data) ? data : (data.currencies || data.data || []);
+      const currencyList = Array.isArray(data) ? data : data.currencies || data.data || [];
       if (!currencyList.length) throw new Error('Empty response');
 
-      const popular = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'sol', 'ada', 'doge', 'matic', 'ltc', 'trx', 'avax'];
+      const popular = [
+        'btc',
+        'eth',
+        'usdt',
+        'usdc',
+        'bnb',
+        'sol',
+        'ada',
+        'doge',
+        'matic',
+        'ltc',
+        'trx',
+        'avax'
+      ];
       const sorted = currencyList
-        .filter(c => c.ticker !== 'xrp')
+        .filter((c) => c.ticker !== 'xrp')
         .sort((a, b) => {
           const aIdx = popular.indexOf(a.ticker);
           const bIdx = popular.indexOf(b.ticker);
@@ -2096,7 +2723,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const minData = await minRes.json();
         setMinAmount(minData.minAmount);
         if (parseFloat(bridgeAmount) < minData.minAmount) {
-          setBridgeError(`Min: ${minData.minAmount} ${isToXrp ? selectedCurrency.ticker.toUpperCase() : 'XRP'}`);
+          setBridgeError(
+            `Min: ${minData.minAmount} ${isToXrp ? selectedCurrency.ticker.toUpperCase() : 'XRP'}`
+          );
           setEstimatedXrp(null);
           return;
         }
@@ -2180,15 +2809,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setBridgeData({ ...data, swapDirection });
 
       // Store for tracking
-      localStorage.setItem(`bridge_tx_${data.id}`, JSON.stringify({
-        id: data.id,
-        fromCurrency: isToXrp ? selectedCurrency.ticker : 'xrp',
-        toCurrency: isToXrp ? 'xrp' : selectedCurrency.ticker,
-        fromAmount: bridgeAmount,
-        expectedAmount: estimatedXrp,
-        address: address,
-        createdAt: Date.now()
-      }));
+      localStorage.setItem(
+        `bridge_tx_${data.id}`,
+        JSON.stringify({
+          id: data.id,
+          fromCurrency: isToXrp ? selectedCurrency.ticker : 'xrp',
+          toCurrency: isToXrp ? 'xrp' : selectedCurrency.ticker,
+          fromAmount: bridgeAmount,
+          expectedAmount: estimatedXrp,
+          address: address,
+          createdAt: Date.now()
+        })
+      );
     } catch (err) {
       setBridgeError(err.message || 'Failed to create exchange');
     } finally {
@@ -2198,30 +2830,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = useCallback(async (address) => {
     try {
-      const isDevelopment = true;
+      const response = await fetch(`https://api.xrpl.to/v1/account/balance/${address}`);
+      if (!response.ok) return false;
 
-      if (isDevelopment) {
-        // Use backend testnet endpoint
-        const response = await fetch(`https://api.xrpl.to/v1/testnet/${address}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.balanceXRP) {
-            return parseFloat(data.balanceXRP) >= 1;
-          }
-        }
-        return false;
-      } else {
-        // Production
-        const response = await fetch(`https://api.xrpl.to/v1/account/balance/${address}?simple=true`);
-        if (!response.ok) return false;
-
-        const data = await response.json();
-        if (data.status === false || data.err) return false;
-        if (data.balance !== undefined) {
-          return data.balance >= 1;
-        }
-        return false;
+      const data = await response.json();
+      if (data.status === false || data.err) return false;
+      if (data.balance !== undefined) {
+        return data.balance >= 1;
       }
+      return false;
     } catch (err) {
       return false;
     }
@@ -2240,7 +2857,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       for (const profile of visible) {
         if (accountsActivation[profile.account] !== undefined) continue;
         const isActive = await checkAccountActivity(profile.account);
-        setAccountsActivation(prev => ({ ...prev, [profile.account]: isActive }));
+        setAccountsActivation((prev) => ({ ...prev, [profile.account]: isActive }));
       }
     };
 
@@ -2295,7 +2912,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       } else if (profile.wallet_type === 'device') {
         // Export all wallets for device
         const allWallets = await walletStorage.getAllWallets(backupPassword);
-        const deviceWallets = allWallets.filter(w => w.deviceKeyId === profile.deviceKeyId);
+        const deviceWallets = allWallets.filter((w) => w.deviceKeyId === profile.deviceKeyId);
 
         if (deviceWallets.length === 0) {
           throw new Error('No wallets found');
@@ -2306,14 +2923,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           version: '3.0',
           walletCount: deviceWallets.length,
           data: {
-            encrypted: await walletStorage.encryptData({
-              wallets: deviceWallets.map(w => ({
-                address: w.address,
-                publicKey: w.publicKey,
-                seed: w.seed,
-                createdAt: w.createdAt || Date.now()
-              }))
-            }, backupPassword)
+            encrypted: await walletStorage.encryptData(
+              {
+                wallets: deviceWallets.map((w) => ({
+                  address: w.address,
+                  publicKey: w.publicKey,
+                  seed: w.seed,
+                  createdAt: w.createdAt || Date.now()
+                }))
+              },
+              backupPassword
+            )
           },
           exportedAt: new Date().toISOString()
         };
@@ -2335,7 +2955,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       openSnackbar(`Backup downloaded (${backupData.walletCount} wallets)`, 'success');
 
       // Mark as backed up
-      profiles.forEach(p => {
+      profiles.forEach((p) => {
         if (p.account) {
           localStorage.removeItem(`wallet_needs_backup_${p.account}`);
         }
@@ -2347,7 +2967,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setShowBackupPasswordVisible(false);
       setBackupAgreed(false);
     } catch (error) {
-      openSnackbar('Backup failed: ' + (error.message === 'Invalid PIN' ? 'Incorrect password' : error.message), 'error');
+      openSnackbar(
+        'Backup failed: ' +
+          (error.message === 'Invalid PIN' ? 'Incorrect password' : error.message),
+        'error'
+      );
       setBackupPassword('');
     }
   };
@@ -2365,15 +2989,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           const allReq = store.getAll();
           allReq.onsuccess = () => {
             // Count actual wallets: have encrypted data blob and maskedAddress (exclude entropy backups, password entries)
-            const wallets = allReq.result.filter(r =>
-              r.data && r.maskedAddress && !r.id?.startsWith?.('__pwd__') && !r.id?.startsWith?.('__entropy_backup__')
+            const wallets = allReq.result.filter(
+              (r) =>
+                r.data &&
+                r.maskedAddress &&
+                !r.id?.startsWith?.('__pwd__') &&
+                !r.id?.startsWith?.('__entropy_backup__')
             );
             setStoredWalletCount(wallets.length);
             if (wallets.length > 0) {
-              const oldest = Math.min(...wallets.map(w => w.timestamp || Date.now()));
+              const oldest = Math.min(...wallets.map((w) => w.timestamp || Date.now()));
               setStoredWalletDate(oldest);
               // Get masked addresses from IndexedDB (or fallback to localStorage)
-              const masked = wallets.map(w => w.maskedAddress).filter(Boolean);
+              const masked = wallets.map((w) => w.maskedAddress).filter(Boolean);
               if (masked.length > 0) {
                 setStoredWalletAddresses(masked);
               } else {
@@ -2381,10 +3009,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 const storedProfiles = localStorage.getItem('profiles');
                 if (storedProfiles) {
                   const parsed = JSON.parse(storedProfiles);
-                  setStoredWalletAddresses(parsed.map(p => {
-                    const addr = p.account || p.address;
-                    return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
-                  }).filter(Boolean));
+                  setStoredWalletAddresses(
+                    parsed
+                      .map((p) => {
+                        const addr = p.account || p.address;
+                        return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
+                      })
+                      .filter(Boolean)
+                  );
                 }
               }
             }
@@ -2396,10 +3028,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             const parsed = JSON.parse(storedProfiles);
             if (parsed.length > 0) {
               setStoredWalletCount(parsed.length);
-              setStoredWalletAddresses(parsed.map(p => {
-                const addr = p.account || p.address;
-                return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
-              }).filter(Boolean));
+              setStoredWalletAddresses(
+                parsed
+                  .map((p) => {
+                    const addr = p.account || p.address;
+                    return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
+                  })
+                  .filter(Boolean)
+              );
             }
           }
         }
@@ -2423,7 +3059,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const handleClearAllWallets = async () => {
     try {
       // Close any existing connections first
-      const dbs = await indexedDB.databases?.() || [];
+      const dbs = (await indexedDB.databases?.()) || [];
       for (const db of dbs) {
         if (db.name === 'XRPLWalletDB') {
           indexedDB.deleteDatabase('XRPLWalletDB');
@@ -2434,7 +3070,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const deleteRequest = indexedDB.deleteDatabase('XRPLWalletDB');
       deleteRequest.onsuccess = () => console.log('IndexedDB deleted');
       deleteRequest.onerror = () => console.log('IndexedDB delete error');
-      deleteRequest.onblocked = () => console.log('IndexedDB delete blocked - will clear on reload');
+      deleteRequest.onblocked = () =>
+        console.log('IndexedDB delete blocked - will clear on reload');
 
       // Clear all wallet-related localStorage keys
       localStorage.removeItem('profiles');
@@ -2446,15 +3083,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (
-          key.startsWith('wallet_') ||
-          key.startsWith('jwt') ||
-          key.endsWith('_enc')
-        )) {
+        if (key && (key.startsWith('wallet_') || key.startsWith('jwt') || key.endsWith('_enc'))) {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach(key => localStorage.removeItem(key));
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
 
       // Clear session storage OAuth data
       sessionStorage.removeItem('oauth_temp_token');
@@ -2540,7 +3173,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const algorithm = getAlgorithmFromSeed(newAccountSeed.trim());
         wallet = XRPLWallet.fromSeed(newAccountSeed.trim(), { algorithm });
         // Check if already exists
-        if (profiles.find(p => p.account === wallet.address)) {
+        if (profiles.find((p) => p.account === wallet.address)) {
           openSnackbar('This wallet is already added', 'warning');
           return;
         }
@@ -2592,7 +3225,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         doLogIn(walletData, allProfiles);
       });
 
-      openSnackbar(newAccountMode === 'import' ? 'Wallet imported' : `Account #${allProfiles.length} created`, 'success');
+      openSnackbar(
+        newAccountMode === 'import' ? 'Wallet imported' : `Account #${allProfiles.length} created`,
+        'success'
+      );
     } catch (error) {
       devError('Create account error:', error);
       openSnackbar('Incorrect password', 'error');
@@ -2611,7 +3247,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       ? `https://s1.xrpl.to/address/${accountLogo}`
       : getHashIcon(accountLogin);
   }
-
 
   // Default button mode with popover
   // When no style prop is passed (global usage in _app.js), only render the Dialog
@@ -2645,9 +3280,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
           className={cn(
             'group relative flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
-            accountProfile
-              ? 'h-9 min-w-[130px] px-4'
-              : 'h-9 px-5',
+            accountProfile ? 'h-9 min-w-[130px] px-4' : 'h-9 px-5',
             isDark
               ? accountProfile
                 ? showNewWalletScreen && newWalletData
@@ -2660,7 +3293,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   : 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
                 : 'bg-primary/5 text-primary hover:bg-primary/10 ring-1 ring-primary/20'
           )}
-          title={showNewWalletScreen && newWalletData ? 'Complete wallet setup' : (accountProfile ? 'Account Details' : 'Connect Wallet')}
+          title={
+            showNewWalletScreen && newWalletData
+              ? 'Complete wallet setup'
+              : accountProfile
+                ? 'Account Details'
+                : 'Connect Wallet'
+          }
         >
           {/* Pending setup indicator */}
           {showNewWalletScreen && newWalletData && (
@@ -2672,26 +3311,36 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           {accountProfile ? (
             <>
               <div className="relative">
-                <div className={cn(
-                  'h-2 w-2 rounded-full',
-                  showNewWalletScreen && newWalletData
-                    ? 'bg-amber-400'
-                    : accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
-                )} />
-                {!(showNewWalletScreen && newWalletData) && accountsActivation[accountLogin] !== false && (
-                  <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
-                )}
+                <div
+                  className={cn(
+                    'h-2 w-2 rounded-full',
+                    showNewWalletScreen && newWalletData
+                      ? 'bg-amber-400'
+                      : accountsActivation[accountLogin] === false
+                        ? 'bg-red-500'
+                        : 'bg-emerald-400'
+                  )}
+                />
+                {!(showNewWalletScreen && newWalletData) &&
+                  accountsActivation[accountLogin] !== false && (
+                    <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
+                  )}
               </div>
               <span className="font-mono text-[13px] tracking-tight">
                 {showNewWalletScreen && newWalletData ? 'Setup' : truncateAccount(accountLogin, 6)}
               </span>
-              <ChevronDown size={12} className={cn(
-                "transition-transform duration-200",
-                open ? "rotate-180" : "",
-                showNewWalletScreen && newWalletData
-                  ? "text-amber-500"
-                  : isDark ? "text-white/40" : "text-gray-400"
-              )} />
+              <ChevronDown
+                size={12}
+                className={cn(
+                  'transition-transform duration-200',
+                  open ? 'rotate-180' : '',
+                  showNewWalletScreen && newWalletData
+                    ? 'text-amber-500'
+                    : isDark
+                      ? 'text-white/40'
+                      : 'text-gray-400'
+                )}
+              />
             </>
           ) : (
             <>
@@ -2702,62 +3351,65 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       )}
 
       <Dialog
-          open={!isAuthPage && (open || openWalletModal)}
-          onClose={() => {
-            // Block close if wallet setup is incomplete (backup screen, bridge form, etc.)
-            if (showNewWalletScreen && newWalletData) return;
-            // Block/warn if user is in the middle of password entry
-            if (!accountProfile) {
-              const hasProgress = (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
-                                 (hasExistingWallet && unlockPassword);
-              if (hasProgress) {
-                if (!window.confirm('You have unsaved progress. Close anyway?')) return;
-                setCreatePassword('');
-                setCreatePasswordConfirm('');
-                setCreateSeed('');
-                setCreateMode('new');
-                setUnlockPassword('');
-              }
+        open={!isAuthPage && (open || openWalletModal)}
+        onClose={() => {
+          // Block close if wallet setup is incomplete (backup screen, bridge form, etc.)
+          if (showNewWalletScreen && newWalletData) return;
+          // Block/warn if user is in the middle of password entry
+          if (!accountProfile) {
+            const hasProgress =
+              (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
+              (hasExistingWallet && unlockPassword);
+            if (hasProgress) {
+              if (!window.confirm('You have unsaved progress. Close anyway?')) return;
+              setCreatePassword('');
+              setCreatePasswordConfirm('');
+              setCreateSeed('');
+              setCreateMode('new');
+              setUnlockPassword('');
             }
-            // Just close the modal
-            setOpen(false);
-            setOpenWalletModal(false);
-          }}
-          disableScrollLock={true}
-          maxWidth="sm"
-          fullWidth
-          disableEnforceFocus
-          disableAutoFocus
-          disableRestoreFocus
-          hideBackdrop
-          TransitionProps={{ timeout: 0 }}
-          sx={{
-            '& .MuiDialog-paper': {
-              borderRadius: '12px',
-              width: '320px',
-              maxWidth: '320px',
-              background: 'transparent',
-              boxShadow: 'none',
-              position: 'fixed',
-              top: '60px',
-              right: '12px',
-              left: 'auto',
-              transform: 'none !important',
-              margin: 0,
-            },
-            zIndex: 9999
-          }}
-        >
-          <DialogContent sx={{ p: 0 }}>
-            <StyledPopoverPaper isDark={isDark} isMobile={isMobileView}>
+          }
+          // Just close the modal
+          setOpen(false);
+          setOpenWalletModal(false);
+        }}
+        disableScrollLock={true}
+        maxWidth="sm"
+        fullWidth
+        disableEnforceFocus
+        disableAutoFocus
+        disableRestoreFocus
+        hideBackdrop
+        TransitionProps={{ timeout: 0 }}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            width: '320px',
+            maxWidth: '320px',
+            background: 'transparent',
+            boxShadow: 'none',
+            position: 'fixed',
+            top: '60px',
+            right: '12px',
+            left: 'auto',
+            transform: 'none !important',
+            margin: 0
+          },
+          zIndex: 9999
+        }}
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <StyledPopoverPaper isDark={isDark} isMobile={isMobileView}>
             {/* Show backup screen even when logged in */}
             {showNewWalletScreen && newWalletData ? (
-              <div className={isDark ? "text-white" : "text-gray-900"}>
+              <div className={isDark ? 'text-white' : 'text-gray-900'}>
                 {/* Header */}
-                <div className={cn(
-                  "px-5 py-4 flex items-center justify-between",
-                  isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"
-                )}>
+                <div
+                  className={cn(
+                    'px-5 py-4 flex items-center justify-between',
+                    isDark ? 'border-b border-white/[0.04]' : 'border-b border-gray-100'
+                  )}
+                >
                   <h2 className="text-[15px] font-medium tracking-tight">Wallet Created</h2>
                   <button
                     onClick={() => {
@@ -2765,8 +3417,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       return;
                     }}
                     className={cn(
-                      "p-1.5 rounded-lg transition-all duration-150 relative opacity-30 cursor-not-allowed",
-                      isDark ? "text-white/30" : "text-gray-400"
+                      'p-1.5 rounded-lg transition-all duration-150 relative opacity-30 cursor-not-allowed',
+                      isDark ? 'text-white/30' : 'text-gray-400'
                     )}
                     title="Complete setup to close"
                   >
@@ -2779,37 +3431,55 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <div className="px-5 py-4 space-y-4">
                   {/* Success Header */}
                   <div className="text-center pb-2">
-                    <div className={cn(
-                      "mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full",
-                      "bg-emerald-500/15"
-                    )}>
+                    <div
+                      className={cn(
+                        'mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full',
+                        'bg-emerald-500/15'
+                      )}
+                    >
                       <Check size={20} className="text-emerald-500" />
                     </div>
-                    <h3 className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <h3
+                      className={cn(
+                        'text-[14px] font-medium',
+                        isDark ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
                       Wallet Created
                     </h3>
-                    <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/40" : "text-gray-400")}>
+                    <p
+                      className={cn(
+                        'text-[11px] mt-0.5',
+                        isDark ? 'text-white/40' : 'text-gray-400'
+                      )}
+                    >
                       Fund with 1+ XRP to activate
                     </p>
                   </div>
 
                   {/* Backup Warning */}
-                  <div className={cn(
-                    "rounded-lg border p-3",
-                    "border-amber-500/20 bg-amber-500/5"
-                  )}>
+                  <div
+                    className={cn('rounded-lg border p-3', 'border-amber-500/20 bg-amber-500/5')}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <AlertTriangle size={12} className="text-amber-500" />
-                        <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                        <span
+                          className={cn(
+                            'text-[11px] font-medium',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
                           Backup Secret Key
                         </span>
                       </div>
                       <button
                         onClick={() => setShowNewSeed(!showNewSeed)}
                         className={cn(
-                          "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-colors",
-                          isDark ? "text-amber-400 hover:bg-amber-500/10" : "text-amber-600 hover:bg-amber-50"
+                          'flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-colors',
+                          isDark
+                            ? 'text-amber-400 hover:bg-amber-500/10'
+                            : 'text-amber-600 hover:bg-amber-50'
                         )}
                       >
                         {showNewSeed ? <EyeOff size={11} /> : <Eye size={11} />}
@@ -2818,15 +3488,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     </div>
 
                     {showNewSeed ? (
-                      <div className={cn(
-                        "rounded border p-2 mb-2",
-                        isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
-                      )}>
+                      <div
+                        className={cn(
+                          'rounded border p-2 mb-2',
+                          isDark ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-white'
+                        )}
+                      >
                         <div className="flex items-center justify-between gap-2">
-                          <code className={cn(
-                            "text-[10px] font-mono break-all flex-1",
-                            isDark ? "text-white/90" : "text-gray-900"
-                          )}>
+                          <code
+                            className={cn(
+                              'text-[10px] font-mono break-all flex-1',
+                              isDark ? 'text-white/90' : 'text-gray-900'
+                            )}
+                          >
                             {newWalletData.seed}
                           </code>
                           <button
@@ -2836,12 +3510,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setTimeout(() => setNewSeedCopied(false), 2000);
                             }}
                             className={cn(
-                              "flex-shrink-0 p-1 rounded transition-colors",
+                              'flex-shrink-0 p-1 rounded transition-colors',
                               newSeedCopied
-                                ? "bg-emerald-500/15 text-emerald-500"
+                                ? 'bg-emerald-500/15 text-emerald-500'
                                 : isDark
-                                ? "bg-white/10 text-white/60 hover:bg-white/15"
-                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  ? 'bg-white/10 text-white/60 hover:bg-white/15'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             )}
                           >
                             {newSeedCopied ? <Check size={12} /> : <Copy size={12} />}
@@ -2849,11 +3523,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </div>
                       </div>
                     ) : (
-                      <div className={cn(
-                        "rounded border p-2 mb-2 text-center",
-                        isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
-                      )}>
-                        <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                      <div
+                        className={cn(
+                          'rounded border p-2 mb-2 text-center',
+                          isDark ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-white'
+                        )}
+                      >
+                        <span
+                          className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                        >
                           Click "Reveal" to view
                         </span>
                       </div>
@@ -2866,17 +3544,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         onChange={(e) => setBackupConfirmed(e.target.checked)}
                         className="mt-0.5 h-3.5 w-3.5 rounded accent-amber-500"
                       />
-                      <span className={cn("text-[10px] leading-relaxed", isDark ? "text-white/50" : "text-gray-500")}>
+                      <span
+                        className={cn(
+                          'text-[10px] leading-relaxed',
+                          isDark ? 'text-white/50' : 'text-gray-500'
+                        )}
+                      >
                         I've saved my secret key securely
                       </span>
                     </label>
                   </div>
 
                   {/* Wallet Address with QR */}
-                  <div className={cn(
-                    "rounded-lg border p-3",
-                    isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50"
-                  )}>
+                  <div
+                    className={cn(
+                      'rounded-lg border p-3',
+                      isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                    )}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-white p-1.5">
                         <img
@@ -2887,14 +3572,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                        <p
+                          className={cn(
+                            'text-[9px] uppercase tracking-wide mb-1',
+                            isDark ? 'text-white/30' : 'text-gray-400'
+                          )}
+                        >
                           Your Address
                         </p>
                         <div className="flex items-center gap-1.5">
-                          <code className={cn(
-                            "text-[11px] font-mono truncate",
-                            isDark ? "text-white/70" : "text-gray-700"
-                          )}>
+                          <code
+                            className={cn(
+                              'text-[11px] font-mono truncate',
+                              isDark ? 'text-white/70' : 'text-gray-700'
+                            )}
+                          >
                             {newWalletData.address.slice(0, 10)}...{newWalletData.address.slice(-6)}
                           </code>
                           <button
@@ -2904,12 +3596,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               setTimeout(() => setNewAddressCopied(false), 2000);
                             }}
                             className={cn(
-                              "p-1 rounded transition-colors",
+                              'p-1 rounded transition-colors',
                               newAddressCopied
-                                ? "bg-emerald-500/15 text-emerald-500"
+                                ? 'bg-emerald-500/15 text-emerald-500'
                                 : isDark
-                                ? "text-white/40 hover:text-white/60"
-                                : "text-gray-400 hover:text-gray-600"
+                                  ? 'text-white/40 hover:text-white/60'
+                                  : 'text-gray-400 hover:text-gray-600'
                             )}
                           >
                             {newAddressCopied ? <Check size={11} /> : <Copy size={11} />}
@@ -2930,45 +3622,75 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <div className="w-6 h-6 rounded-full bg-emerald-500/15 flex items-center justify-center">
                               <Check size={14} className="text-emerald-500" />
                             </div>
-                            <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                            <span
+                              className={cn(
+                                'text-[12px] font-medium',
+                                isDark ? 'text-white' : 'text-gray-900'
+                              )}
+                            >
                               Exchange Created
                             </span>
                           </div>
 
                           {/* Deposit info card */}
-                          <div className={cn(
-                            "rounded-xl border p-3",
-                            isDark ? "border-white/[0.08] bg-white/[0.02]" : "border-gray-200 bg-gray-50"
-                          )}>
+                          <div
+                            className={cn(
+                              'rounded-xl border p-3',
+                              isDark
+                                ? 'border-white/[0.08] bg-white/[0.02]'
+                                : 'border-gray-200 bg-gray-50'
+                            )}
+                          >
                             <div className="flex items-center gap-2 mb-2">
                               {selectedCurrency?.image ? (
-                                <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                                <img
+                                  src={selectedCurrency.image}
+                                  alt=""
+                                  className="w-5 h-5 rounded-full"
+                                />
                               ) : (
                                 <div className="w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center text-[9px] font-bold text-white">
                                   {selectedCurrency?.ticker?.[0]?.toUpperCase() || '?'}
                                 </div>
                               )}
-                              <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                              <span
+                                className={cn(
+                                  'text-[11px]',
+                                  isDark ? 'text-white/60' : 'text-gray-600'
+                                )}
+                              >
                                 Send {bridgeAmount} {selectedCurrency?.ticker?.toUpperCase()}
                               </span>
-                              <ArrowLeftRight size={12} className={isDark ? "text-white/30" : "text-gray-400"} />
-                              <span className={cn("text-[11px] text-emerald-500 font-medium")}>
+                              <ArrowLeftRight
+                                size={12}
+                                className={isDark ? 'text-white/30' : 'text-gray-400'}
+                              />
+                              <span className={cn('text-[11px] text-emerald-500 font-medium')}>
                                 ~{bridgeData.expectedAmountTo || estimatedXrp || '?'} XRP
                               </span>
                             </div>
 
-                            <p className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/30" : "text-gray-400")}>
+                            <p
+                              className={cn(
+                                'text-[9px] uppercase tracking-wide mb-1',
+                                isDark ? 'text-white/30' : 'text-gray-400'
+                              )}
+                            >
                               Deposit Address
                             </p>
-                            <div className={cn(
-                              "rounded-lg border p-2",
-                              isDark ? "border-white/10 bg-black/30" : "border-gray-200 bg-white"
-                            )}>
+                            <div
+                              className={cn(
+                                'rounded-lg border p-2',
+                                isDark ? 'border-white/10 bg-black/30' : 'border-gray-200 bg-white'
+                              )}
+                            >
                               <div className="flex items-center justify-between gap-2">
-                                <code className={cn(
-                                  "text-[10px] font-mono break-all flex-1",
-                                  isDark ? "text-white/90" : "text-gray-900"
-                                )}>
+                                <code
+                                  className={cn(
+                                    'text-[10px] font-mono break-all flex-1',
+                                    isDark ? 'text-white/90' : 'text-gray-900'
+                                  )}
+                                >
                                   {bridgeData.payinAddress}
                                 </code>
                                 <button
@@ -2978,12 +3700,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     setTimeout(() => setBridgeAddressCopied(false), 2000);
                                   }}
                                   className={cn(
-                                    "flex-shrink-0 p-1.5 rounded-lg transition-colors",
+                                    'flex-shrink-0 p-1.5 rounded-lg transition-colors',
                                     bridgeAddressCopied
-                                      ? "bg-emerald-500/15 text-emerald-500"
+                                      ? 'bg-emerald-500/15 text-emerald-500'
                                       : isDark
-                                      ? "bg-white/10 text-white/60 hover:bg-white/15"
-                                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                        ? 'bg-white/10 text-white/60 hover:bg-white/15'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                   )}
                                 >
                                   {bridgeAddressCopied ? <Check size={12} /> : <Copy size={12} />}
@@ -3005,8 +3727,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <button
                             onClick={handleCompleteSetup}
                             className={cn(
-                              "w-full py-2 rounded-lg text-[11px] transition-all",
-                              isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                              'w-full py-2 rounded-lg text-[11px] transition-all',
+                              isDark
+                                ? 'text-white/50 hover:text-white/70'
+                                : 'text-gray-500 hover:text-gray-700'
                             )}
                           >
                             Done
@@ -3020,36 +3744,72 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <button
                               onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
                               className={cn(
-                                "w-full flex items-center justify-between p-3 rounded-lg border transition-colors",
-                                isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-white/15" : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                                'w-full flex items-center justify-between p-3 rounded-lg border transition-colors',
+                                isDark
+                                  ? 'border-white/[0.08] bg-white/[0.02] hover:border-white/15'
+                                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                               )}
                             >
                               {selectedCurrency ? (
                                 <div className="flex items-center gap-2">
                                   {selectedCurrency.image && (
-                                    <img src={selectedCurrency.image} alt="" className="w-5 h-5 rounded-full" />
+                                    <img
+                                      src={selectedCurrency.image}
+                                      alt=""
+                                      className="w-5 h-5 rounded-full"
+                                    />
                                   )}
-                                  <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                                  <span
+                                    className={cn(
+                                      'text-[13px] font-medium',
+                                      isDark ? 'text-white' : 'text-gray-900'
+                                    )}
+                                  >
                                     {selectedCurrency.ticker.toUpperCase()}
                                   </span>
-                                  <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>
+                                  <span
+                                    className={cn(
+                                      'text-[11px]',
+                                      isDark ? 'text-white/40' : 'text-gray-400'
+                                    )}
+                                  >
                                     {selectedCurrency.name}
                                   </span>
                                 </div>
                               ) : (
-                                <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+                                <span
+                                  className={cn(
+                                    'text-[13px]',
+                                    isDark ? 'text-white/40' : 'text-gray-400'
+                                  )}
+                                >
                                   {currencies.length ? 'Select currency' : 'Loading...'}
                                 </span>
                               )}
-                              <ChevronDown size={16} className={cn(isDark ? "text-white/40" : "text-gray-400", showCurrencyDropdown && "rotate-180")} />
+                              <ChevronDown
+                                size={16}
+                                className={cn(
+                                  isDark ? 'text-white/40' : 'text-gray-400',
+                                  showCurrencyDropdown && 'rotate-180'
+                                )}
+                              />
                             </button>
 
                             {showCurrencyDropdown && (
-                              <div className={cn(
-                                "absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden",
-                                isDark ? "border-white/10 bg-[#1a1a1a]" : "border-gray-200 bg-white"
-                              )}>
-                                <div className="p-2 border-b" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                              <div
+                                className={cn(
+                                  'absolute z-50 mt-1 w-full rounded-lg border shadow-lg max-h-[200px] overflow-hidden',
+                                  isDark
+                                    ? 'border-white/10 bg-[#1a1a1a]'
+                                    : 'border-gray-200 bg-white'
+                                )}
+                              >
+                                <div
+                                  className="p-2 border-b"
+                                  style={{
+                                    borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb'
+                                  }}
+                                >
                                   <input
                                     type="text"
                                     value={currencySearch}
@@ -3057,48 +3817,93 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     placeholder="Search..."
                                     autoFocus
                                     className={cn(
-                                      "w-full px-2 py-1.5 rounded text-[12px] outline-none",
-                                      isDark ? "bg-white/5 text-white placeholder:text-white/30" : "bg-gray-50 text-gray-900 placeholder:text-gray-400"
+                                      'w-full px-2 py-1.5 rounded text-[12px] outline-none',
+                                      isDark
+                                        ? 'bg-white/5 text-white placeholder:text-white/30'
+                                        : 'bg-gray-50 text-gray-900 placeholder:text-gray-400'
                                     )}
                                   />
                                 </div>
                                 <div className="overflow-y-auto max-h-[200px]">
                                   {(() => {
-                                    const filtered = currencies.filter(c =>
-                                      !currencySearch ||
-                                      c.ticker.toLowerCase().includes(currencySearch.toLowerCase()) ||
-                                      c.name.toLowerCase().includes(currencySearch.toLowerCase())
+                                    const filtered = currencies.filter(
+                                      (c) =>
+                                        !currencySearch ||
+                                        c.ticker
+                                          .toLowerCase()
+                                          .includes(currencySearch.toLowerCase()) ||
+                                        c.name.toLowerCase().includes(currencySearch.toLowerCase())
                                     );
                                     const shown = filtered.slice(0, currencySearch ? 100 : 30);
                                     return shown.length === 0 ? (
-                                      <div className={cn("px-3 py-4 text-center text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
-                                        No results for "{currencySearch}"
-                                      </div>
-                                    ) : shown.map((c) => (
-                                      <button
-                                        key={`${c.ticker}-${c.network}`}
-                                        onClick={() => { setSelectedCurrency(c); setShowCurrencyDropdown(false); setCurrencySearch(''); setEstimatedXrp(null); }}
+                                      <div
                                         className={cn(
-                                          "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
-                                          selectedCurrency?.ticker === c.ticker && selectedCurrency?.network === c.network
-                                            ? isDark ? "bg-white/10" : "bg-blue-50"
-                                            : isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                                          'px-3 py-4 text-center text-[11px]',
+                                          isDark ? 'text-white/30' : 'text-gray-400'
                                         )}
                                       >
-                                        {c.image && <img src={c.image} alt="" className="w-5 h-5 rounded-full" />}
-                                        <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-                                          {c.ticker.toUpperCase()}
-                                        </span>
-                                        <span className={cn("text-[10px] flex-1", isDark ? "text-white/30" : "text-gray-400")}>
-                                          {c.name}
-                                        </span>
-                                        {c.network !== c.ticker && (
-                                          <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>
-                                            {c.network}
+                                        No results for "{currencySearch}"
+                                      </div>
+                                    ) : (
+                                      shown.map((c) => (
+                                        <button
+                                          key={`${c.ticker}-${c.network}`}
+                                          onClick={() => {
+                                            setSelectedCurrency(c);
+                                            setShowCurrencyDropdown(false);
+                                            setCurrencySearch('');
+                                            setEstimatedXrp(null);
+                                          }}
+                                          className={cn(
+                                            'w-full flex items-center gap-2 px-3 py-2 text-left transition-colors',
+                                            selectedCurrency?.ticker === c.ticker &&
+                                              selectedCurrency?.network === c.network
+                                              ? isDark
+                                                ? 'bg-white/10'
+                                                : 'bg-blue-50'
+                                              : isDark
+                                                ? 'hover:bg-white/5'
+                                                : 'hover:bg-gray-50'
+                                          )}
+                                        >
+                                          {c.image && (
+                                            <img
+                                              src={c.image}
+                                              alt=""
+                                              className="w-5 h-5 rounded-full"
+                                            />
+                                          )}
+                                          <span
+                                            className={cn(
+                                              'text-[12px] font-medium',
+                                              isDark ? 'text-white' : 'text-gray-900'
+                                            )}
+                                          >
+                                            {c.ticker.toUpperCase()}
                                           </span>
-                                        )}
-                                      </button>
-                                    ));
+                                          <span
+                                            className={cn(
+                                              'text-[10px] flex-1',
+                                              isDark ? 'text-white/30' : 'text-gray-400'
+                                            )}
+                                          >
+                                            {c.name}
+                                          </span>
+                                          {c.network !== c.ticker && (
+                                            <span
+                                              className={cn(
+                                                'text-[9px] px-1.5 py-0.5 rounded',
+                                                isDark
+                                                  ? 'bg-white/10 text-white/50'
+                                                  : 'bg-gray-100 text-gray-500'
+                                              )}
+                                            >
+                                              {c.network}
+                                            </span>
+                                          )}
+                                        </button>
+                                      ))
+                                    );
                                   })()}
                                 </div>
                               </div>
@@ -3106,11 +3911,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </div>
 
                           {/* Amount Input */}
-                          <div className={cn(
-                            "rounded-lg border p-3",
-                            isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-100 bg-gray-50"
-                          )}>
-                            <label className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>
+                          <div
+                            className={cn(
+                              'rounded-lg border p-3',
+                              isDark
+                                ? 'border-white/[0.06] bg-white/[0.02]'
+                                : 'border-gray-100 bg-gray-50'
+                            )}
+                          >
+                            <label
+                              className={cn(
+                                'text-[10px] uppercase tracking-wide',
+                                isDark ? 'text-white/30' : 'text-gray-400'
+                              )}
+                            >
                               Amount
                             </label>
                             <div className="flex items-center gap-2 mt-1">
@@ -3118,44 +3932,74 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 type="number"
                                 value={bridgeAmount}
                                 onChange={(e) => setBridgeAmount(e.target.value)}
-                                placeholder={minAmount ? `Min: ${minAmount}` : "0.00"}
+                                placeholder={minAmount ? `Min: ${minAmount}` : '0.00'}
                                 step="0.0001"
                                 min="0"
                                 className={cn(
-                                  "flex-1 bg-transparent text-[18px] font-medium outline-none",
-                                  isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300"
+                                  'flex-1 bg-transparent text-[18px] font-medium outline-none',
+                                  isDark
+                                    ? 'text-white placeholder:text-white/20'
+                                    : 'text-gray-900 placeholder:text-gray-300'
                                 )}
                               />
-                              <span className={cn("text-[13px] font-medium", isDark ? "text-white/50" : "text-gray-500")}>
+                              <span
+                                className={cn(
+                                  'text-[13px] font-medium',
+                                  isDark ? 'text-white/50' : 'text-gray-500'
+                                )}
+                              >
                                 {selectedCurrency?.ticker?.toUpperCase() || '---'}
                               </span>
                             </div>
                             {/* Estimate display */}
                             {estimatedXrp && (
-                              <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
-                                <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You'll receive</span>
-                                <span className={cn("text-[13px] font-medium text-emerald-500")}>~{estimatedXrp} XRP</span>
+                              <div
+                                className="flex items-center justify-between mt-2 pt-2 border-t"
+                                style={{
+                                  borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb'
+                                }}
+                              >
+                                <span
+                                  className={cn(
+                                    'text-[10px]',
+                                    isDark ? 'text-white/40' : 'text-gray-400'
+                                  )}
+                                >
+                                  You'll receive
+                                </span>
+                                <span className={cn('text-[13px] font-medium text-emerald-500')}>
+                                  ~{estimatedXrp} XRP
+                                </span>
                               </div>
                             )}
                           </div>
                           {bridgeError && (
-                            <div className={cn("p-2 rounded-lg text-[11px]", "bg-red-500/10 text-red-400 border border-red-500/20")}>
+                            <div
+                              className={cn(
+                                'p-2 rounded-lg text-[11px]',
+                                'bg-red-500/10 text-red-400 border border-red-500/20'
+                              )}
+                            >
                               {bridgeError}
                             </div>
                           )}
                           <button
                             onClick={handleCreateBridge}
-                            disabled={bridgeLoading || !bridgeAmount || !selectedCurrency || !estimatedXrp}
+                            disabled={
+                              bridgeLoading || !bridgeAmount || !selectedCurrency || !estimatedXrp
+                            }
                             className={cn(
-                              "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
+                              'w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2',
                               bridgeAmount && selectedCurrency && estimatedXrp
-                                ? "bg-primary text-white hover:bg-primary/90"
+                                ? 'bg-primary text-white hover:bg-primary/90'
                                 : isDark
-                                ? "bg-white/5 text-white/30 cursor-not-allowed"
-                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             )}
                           >
-                            {bridgeLoading ? <Loader2 size={14} className="animate-spin" /> : (
+                            {bridgeLoading ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
                               <>
                                 <ArrowLeftRight size={14} />
                                 {estimatedXrp ? `Swap to ~${estimatedXrp} XRP` : 'Enter amount'}
@@ -3165,8 +4009,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <button
                             onClick={() => setShowBridgeForm(false)}
                             className={cn(
-                              "w-full py-2 rounded-lg text-[11px] transition-all",
-                              isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                              'w-full py-2 rounded-lg text-[11px] transition-all',
+                              isDark
+                                ? 'text-white/50 hover:text-white/70'
+                                : 'text-gray-500 hover:text-gray-700'
                             )}
                           >
                             Back
@@ -3180,12 +4026,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         onClick={handleShowBridge}
                         disabled={!backupConfirmed}
                         className={cn(
-                          "w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2",
+                          'w-full py-2.5 rounded-lg text-[12px] font-medium transition-all flex items-center justify-center gap-2',
                           backupConfirmed
-                            ? "bg-primary text-white hover:bg-primary/90"
+                            ? 'bg-primary text-white hover:bg-primary/90'
                             : isDark
-                            ? "bg-white/5 text-white/30 cursor-not-allowed"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         )}
                       >
                         <ArrowLeftRight size={14} />
@@ -3195,10 +4041,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         onClick={handleCompleteSetup}
                         disabled={!backupConfirmed}
                         className={cn(
-                          "w-full py-2 rounded-lg text-[11px] transition-all",
+                          'w-full py-2 rounded-lg text-[11px] transition-all',
                           backupConfirmed
-                            ? isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
-                            : isDark ? "text-white/20 cursor-not-allowed" : "text-gray-300 cursor-not-allowed"
+                            ? isDark
+                              ? 'text-white/50 hover:text-white/70'
+                              : 'text-gray-500 hover:text-gray-700'
+                            : isDark
+                              ? 'text-white/20 cursor-not-allowed'
+                              : 'text-gray-300 cursor-not-allowed'
                         )}
                       >
                         Skip, I'll fund later
@@ -3209,7 +4059,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </div>
             ) : accountProfile ? (
               <>
-
                 {!showSeedDialog && !showNewAccountFlow ? (
                   <WalletContent
                     theme={theme}
@@ -3219,7 +4068,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     accountTotalXrp={accountTotalXrp}
                     accountsActivation={accountsActivation}
                     profiles={profiles}
-                    onClose={() => { setOpen(false); setOpenWalletModal(false); }}
+                    onClose={() => {
+                      setOpen(false);
+                      setOpenWalletModal(false);
+                    }}
                     onAccountSwitch={(account) => {
                       if (account !== accountProfile?.account) {
                         setOpen(false);
@@ -3288,16 +4140,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setDestAddress={setDestAddress}
                   />
                 ) : showNewAccountFlow ? (
-                  <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
+                  <div className={cn('p-5', isDark ? 'text-white' : 'text-gray-900')}>
                     <div className="space-y-4">
                       {/* Header */}
                       <div className="flex items-center justify-between">
                         <h3 className="text-base font-medium">Add Account</h3>
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); clearPersistedState(); }}
+                          onClick={() => {
+                            setShowNewAccountFlow(false);
+                            setNewAccountPassword('');
+                            setNewAccountSeed('');
+                            setNewAccountMode('new');
+                            clearPersistedState();
+                          }}
                           className={cn(
-                            "p-1.5 rounded-lg transition-colors",
-                            isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                            'p-1.5 rounded-lg transition-colors',
+                            isDark
+                              ? 'hover:bg-white/5 text-white/40 hover:text-white/60'
+                              : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
                           )}
                         >
                           <XIcon size={16} />
@@ -3309,12 +4169,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={() => setNewAccountMode('new')}
                           className={cn(
-                            "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+                            'flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors',
                             newAccountMode === 'new'
-                              ? "border-primary bg-primary text-white"
+                              ? 'border-primary bg-primary text-white'
                               : isDark
-                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40"
-                              : "border-blue-200 text-gray-900 hover:bg-blue-50"
+                                ? 'border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40'
+                                : 'border-blue-200 text-gray-900 hover:bg-blue-50'
                           )}
                         >
                           New
@@ -3322,12 +4182,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <button
                           onClick={() => setNewAccountMode('import')}
                           className={cn(
-                            "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+                            'flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors',
                             newAccountMode === 'import'
-                              ? "border-primary bg-primary text-white"
+                              ? 'border-primary bg-primary text-white'
                               : isDark
-                              ? "border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40"
-                              : "border-blue-200 text-gray-900 hover:bg-blue-50"
+                                ? 'border-[#3f96fe]/20 text-white hover:border-[#3f96fe]/40'
+                                : 'border-blue-200 text-gray-900 hover:bg-blue-50'
                           )}
                         >
                           Import Seed
@@ -3337,7 +4197,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Seed Input (import mode only) */}
                       {newAccountMode === 'import' && (
                         <div className="space-y-2">
-                          <label className={cn("text-xs font-medium", isDark ? "text-white/60" : "text-gray-500")}>
+                          <label
+                            className={cn(
+                              'text-xs font-medium',
+                              isDark ? 'text-white/60' : 'text-gray-500'
+                            )}
+                          >
                             Seed
                           </label>
                           {(() => {
@@ -3351,17 +4216,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   value={newAccountSeed}
                                   onChange={(e) => setNewAccountSeed(e.target.value)}
                                   className={cn(
-                                    "w-full px-4 py-3 rounded-xl text-sm font-mono outline-none transition-all",
+                                    'w-full px-4 py-3 rounded-xl text-sm font-mono outline-none transition-all',
                                     hasInput && !validation.valid
-                                      ? "border-red-500/50 focus:border-red-500"
+                                      ? 'border-red-500/50 focus:border-red-500'
                                       : hasInput && validation.valid
-                                      ? "border-green-500/50 focus:border-green-500"
-                                      : isDark
-                                      ? "border-[#3f96fe]/20 focus:border-[#3f96fe]/50"
-                                      : "border-blue-200 focus:border-[#3f96fe]",
+                                        ? 'border-green-500/50 focus:border-green-500'
+                                        : isDark
+                                          ? 'border-[#3f96fe]/20 focus:border-[#3f96fe]/50'
+                                          : 'border-blue-200 focus:border-[#3f96fe]',
                                     isDark
-                                      ? "bg-white/[0.03] border text-white placeholder:text-white/30"
-                                      : "bg-white border text-gray-900 placeholder:text-gray-400"
+                                      ? 'bg-white/[0.03] border text-white placeholder:text-white/30'
+                                      : 'bg-white border text-gray-900 placeholder:text-gray-400'
                                   )}
                                 />
                                 {hasInput && validation.error && (
@@ -3375,7 +4240,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {/* Password Input */}
                       <div className="space-y-2">
-                        <label className={cn("text-xs font-medium", isDark ? "text-white/60" : "text-gray-500")}>
+                        <label
+                          className={cn(
+                            'text-xs font-medium',
+                            isDark ? 'text-white/60' : 'text-gray-500'
+                          )}
+                        >
                           Password
                         </label>
                         <div className="relative">
@@ -3384,22 +4254,29 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             placeholder="Enter your password"
                             value={newAccountPassword}
                             onChange={(e) => setNewAccountPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && (newAccountMode === 'new' || validateSeed(newAccountSeed).valid) && handleCreateNewAccount()}
+                            onKeyDown={(e) =>
+                              e.key === 'Enter' &&
+                              newAccountPassword &&
+                              (newAccountMode === 'new' || validateSeed(newAccountSeed).valid) &&
+                              handleCreateNewAccount()
+                            }
                             autoFocus={newAccountMode === 'new'}
                             autoComplete="off"
                             className={cn(
-                              "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
+                              'w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all',
                               isDark
-                                ? "bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50"
-                                : "bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
+                                ? 'bg-white/[0.04] border border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]/50'
+                                : 'bg-white border border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]'
                             )}
                           />
                           <button
                             type="button"
                             onClick={() => setShowNewAccountPassword(!showNewAccountPassword)}
                             className={cn(
-                              "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
-                              isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
+                              'absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors',
+                              isDark
+                                ? 'text-white/40 hover:text-white/60'
+                                : 'text-gray-400 hover:text-gray-600'
                             )}
                           >
                             {showNewAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -3410,26 +4287,36 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Actions */}
                       <div className="flex gap-3 pt-1">
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); clearPersistedState(); }}
+                          onClick={() => {
+                            setShowNewAccountFlow(false);
+                            setNewAccountPassword('');
+                            setNewAccountSeed('');
+                            setNewAccountMode('new');
+                            clearPersistedState();
+                          }}
                           className={cn(
-                            "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+                            'flex-1 py-2.5 rounded-xl text-sm font-medium transition-all',
                             isDark
-                              ? "text-white/60 hover:bg-white/5 ring-1 ring-white/10"
-                              : "text-gray-600 hover:bg-gray-50 ring-1 ring-gray-200"
+                              ? 'text-white/60 hover:bg-white/5 ring-1 ring-white/10'
+                              : 'text-gray-600 hover:bg-gray-50 ring-1 ring-gray-200'
                           )}
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleCreateNewAccount}
-                          disabled={!newAccountPassword || (newAccountMode === 'import' && !validateSeed(newAccountSeed).valid)}
+                          disabled={
+                            !newAccountPassword ||
+                            (newAccountMode === 'import' && !validateSeed(newAccountSeed).valid)
+                          }
                           className={cn(
-                            "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
-                            newAccountPassword && (newAccountMode === 'new' || validateSeed(newAccountSeed).valid)
-                              ? "bg-primary text-white hover:bg-primary/90"
+                            'flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2',
+                            newAccountPassword &&
+                              (newAccountMode === 'new' || validateSeed(newAccountSeed).valid)
+                              ? 'bg-primary text-white hover:bg-primary/90'
                               : isDark
-                                ? "bg-white/5 text-white/30 cursor-not-allowed"
-                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           )}
                         >
                           <Plus size={14} />
@@ -3441,7 +4328,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 ) : (
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                      <span
+                        className={cn(
+                          'text-[14px] font-medium',
+                          isDark ? 'text-white' : 'text-gray-900'
+                        )}
+                      >
                         Backup
                       </span>
                       <button
@@ -3455,208 +4347,299 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setSeedPassword('');
                           setBackupTargetProfile(null);
                         }}
-                        className={cn("p-1 rounded-md transition-colors", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                        className={cn(
+                          'p-1 rounded-md transition-colors',
+                          isDark
+                            ? 'text-white/40 hover:text-white'
+                            : 'text-gray-400 hover:text-gray-600'
+                        )}
                       >
                         <XIcon size={14} />
                       </button>
                     </div>
 
-                      {seedAuthStatus === 'select-mode' && (
-                        <div className="space-y-2">
-                          <button
-                            onClick={() => {
-                              setBackupMode('seed');
-                              setSeedAuthStatus('password-required');
-                            }}
+                    {seedAuthStatus === 'select-mode' && (
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => {
+                            setBackupMode('seed');
+                            setSeedAuthStatus('password-required');
+                          }}
+                          className={cn(
+                            'w-full flex items-center justify-between p-3 rounded-lg border-[1.5px] transition-colors',
+                            isDark
+                              ? 'border-[#3f96fe]/20 hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5'
+                              : 'border-blue-200 hover:border-blue-400 hover:bg-blue-50'
+                          )}
+                        >
+                          <span
+                            className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}
+                          >
+                            View Seed
+                          </span>
+                          <span
                             className={cn(
-                              "w-full flex items-center justify-between p-3 rounded-lg border-[1.5px] transition-colors",
-                              isDark
-                                ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/40 hover:bg-[#3f96fe]/5"
-                                : "border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+                              'text-[11px]',
+                              isDark ? 'text-white/40' : 'text-gray-400'
                             )}
                           >
-                            <span className={cn("text-[13px]", isDark ? "text-white" : "text-gray-900")}>View Seed</span>
-                            <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Wallet {profiles.findIndex(p => p.account === (backupTargetProfile?.account || accountProfile?.account)) + 1}</span>
-                          </button>
+                            Wallet{' '}
+                            {profiles.findIndex(
+                              (p) =>
+                                p.account ===
+                                (backupTargetProfile?.account || accountProfile?.account)
+                            ) + 1}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowSeedDialog(false);
+                            setBackupTargetProfile(null);
+                            handleDownloadBackup();
+                          }}
+                          className="w-full text-left p-3 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[13px] text-white">Download Backup</span>
+                            <span className="text-[11px] text-white/60">
+                              {profiles.length} wallet{profiles.length > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-white/50 mt-1">
+                            Full encrypted backup file
+                          </p>
+                        </button>
+                      </div>
+                    )}
+
+                    {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
+                      <div className="space-y-3">
+                        <div
+                          className={cn(
+                            'p-3 rounded-lg',
+                            isDark
+                              ? 'bg-amber-500/10 border border-amber-500/20'
+                              : 'bg-amber-50 border border-amber-200'
+                          )}
+                        >
+                          <p className="text-[12px] font-medium text-amber-600 mb-0.5">
+                            Keep your seed safe
+                          </p>
+                          <p
+                            className={cn(
+                              'text-[11px] leading-relaxed',
+                              isDark ? 'text-white/60' : 'text-gray-600'
+                            )}
+                          >
+                            Stored locally. Cannot be recovered. Never share it.
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
+                          className={cn(
+                            'w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors',
+                            seedWarningAgreed
+                              ? 'border-primary bg-primary/5'
+                              : isDark
+                                ? 'border-[#3f96fe]/20 hover:border-[#3f96fe]/40'
+                                : 'border-blue-200 hover:border-blue-400'
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'w-4 h-4 rounded flex-shrink-0 flex items-center justify-center mt-0.5 border-2 transition-colors',
+                              seedWarningAgreed
+                                ? 'border-primary bg-primary'
+                                : isDark
+                                  ? 'border-white/30'
+                                  : 'border-gray-300'
+                            )}
+                          >
+                            {seedWarningAgreed && <Check size={12} color="white" />}
+                          </div>
+                          <span
+                            className={cn(
+                              'text-[11px] leading-relaxed',
+                              isDark ? 'text-white' : 'text-gray-900'
+                            )}
+                          >
+                            I understand and will keep my seed safe
+                          </span>
+                        </button>
+
+                        <div>
+                          <p
+                            className={cn(
+                              'text-[11px] mb-1.5',
+                              isDark ? 'text-white/50' : 'text-gray-500'
+                            )}
+                          >
+                            Enter password to view seed
+                          </p>
+                          <div className="relative">
+                            <input
+                              type={showSeedPassword ? 'text' : 'password'}
+                              placeholder="Password"
+                              value={seedPassword}
+                              onChange={(e) => setSeedPassword(e.target.value)}
+                              onKeyDown={(e) =>
+                                e.key === 'Enter' && seedWarningAgreed && handleSeedPasswordSubmit()
+                              }
+                              autoFocus
+                              autoComplete="off"
+                              className={cn(
+                                'w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors',
+                                isDark
+                                  ? 'bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]'
+                                  : 'bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]'
+                              )}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSeedPassword(!showSeedPassword)}
+                              className={cn(
+                                'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded',
+                                isDark
+                                  ? 'text-white/50 hover:text-white'
+                                  : 'text-gray-400 hover:text-gray-600'
+                              )}
+                            >
+                              {showSeedPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
                           <button
                             onClick={() => {
                               setShowSeedDialog(false);
+                              setSeedAuthStatus('idle');
+                              setSeedPassword('');
+                              setShowSeedPassword(false);
+                              setSeedWarningAgreed(false);
                               setBackupTargetProfile(null);
-                              handleDownloadBackup();
                             }}
-                            className="w-full text-left p-3 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors',
+                              isDark
+                                ? 'border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5'
+                                : 'border-blue-200 text-gray-700 hover:bg-blue-50'
+                            )}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[13px] text-white">Download Backup</span>
-                              <span className="text-[11px] text-white/60">{profiles.length} wallet{profiles.length > 1 ? 's' : ''}</span>
-                            </div>
-                            <p className="text-[11px] text-white/50 mt-1">Full encrypted backup file</p>
+                            Cancel
                           </button>
-                        </div>
-                      )}
-
-                      {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
-                        <div className="space-y-3">
-                          <div className={cn("p-3 rounded-lg", isDark ? "bg-amber-500/10 border border-amber-500/20" : "bg-amber-50 border border-amber-200")}>
-                            <p className="text-[12px] font-medium text-amber-600 mb-0.5">Keep your seed safe</p>
-                            <p className={cn("text-[11px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
-                              Stored locally. Cannot be recovered. Never share it.
-                            </p>
-                          </div>
-
                           <button
-                            onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
+                            onClick={handleSeedPasswordSubmit}
+                            disabled={!seedPassword || !seedWarningAgreed}
                             className={cn(
-                              "w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors",
-                              seedWarningAgreed
-                                ? "border-primary bg-primary/5"
-                                : isDark ? "border-[#3f96fe]/20 hover:border-[#3f96fe]/40" : "border-blue-200 hover:border-blue-400"
+                              'px-3 py-1.5 rounded-lg text-[13px] font-normal text-white transition-colors',
+                              seedPassword && seedWarningAgreed
+                                ? 'bg-primary hover:bg-primary/90'
+                                : 'bg-primary/50 cursor-not-allowed'
                             )}
                           >
-                            <div className={cn(
-                              "w-4 h-4 rounded flex-shrink-0 flex items-center justify-center mt-0.5 border-2 transition-colors",
-                              seedWarningAgreed ? "border-primary bg-primary" : isDark ? "border-white/30" : "border-gray-300"
-                            )}>
-                              {seedWarningAgreed && <Check size={12} color="white" />}
-                            </div>
-                            <span className={cn("text-[11px] leading-relaxed", isDark ? "text-white" : "text-gray-900")}>
-                              I understand and will keep my seed safe
-                            </span>
+                            View Seed
                           </button>
-
-                          <div>
-                            <p className={cn("text-[11px] mb-1.5", isDark ? "text-white/50" : "text-gray-500")}>
-                              Enter password to view seed
-                            </p>
-                            <div className="relative">
-                              <input
-                                type={showSeedPassword ? 'text' : 'password'}
-                                placeholder="Password"
-                                value={seedPassword}
-                                onChange={(e) => setSeedPassword(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && seedWarningAgreed && handleSeedPasswordSubmit()}
-                                autoFocus
-                                autoComplete="off"
-                                className={cn(
-                                  "w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors",
-                                  isDark
-                                    ? "bg-white/[0.04] border-[#3f96fe]/20 text-white placeholder:text-white/30 focus:border-[#3f96fe]"
-                                    : "bg-white border-blue-200 text-gray-900 placeholder:text-gray-400 focus:border-[#3f96fe]"
-                                )}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowSeedPassword(!showSeedPassword)}
-                                className={cn("absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded", isDark ? "text-white/50 hover:text-white" : "text-gray-400 hover:text-gray-600")}
-                              >
-                                {showSeedPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                setShowSeedDialog(false);
-                                setSeedAuthStatus('idle');
-                                setSeedPassword('');
-                                setShowSeedPassword(false);
-                                setSeedWarningAgreed(false);
-                                setBackupTargetProfile(null);
-                              }}
-                              className={cn(
-                                "px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
-                                isDark ? "border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
-                              )}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={handleSeedPasswordSubmit}
-                              disabled={!seedPassword || !seedWarningAgreed}
-                              className={cn(
-                                "px-3 py-1.5 rounded-lg text-[13px] font-normal text-white transition-colors",
-                                seedPassword && seedWarningAgreed
-                                  ? "bg-primary hover:bg-primary/90"
-                                  : "bg-primary/50 cursor-not-allowed"
-                              )}
-                            >
-                              View Seed
-                            </button>
-                          </div>
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {seedAuthStatus === 'success' && (
-                        <div className="space-y-3">
-                          <div className={cn("p-2.5 rounded-lg", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-200")}>
-                            <p className={cn("text-[10px]", isDark ? "text-red-400" : "text-red-600")}>
-                              Never share. Non-custodial — if lost, funds are unrecoverable.
-                            </p>
-                          </div>
+                    {seedAuthStatus === 'success' && (
+                      <div className="space-y-3">
+                        <div
+                          className={cn(
+                            'p-2.5 rounded-lg',
+                            isDark
+                              ? 'bg-red-500/10 border border-red-500/20'
+                              : 'bg-red-50 border border-red-200'
+                          )}
+                        >
+                          <p
+                            className={cn('text-[10px]', isDark ? 'text-red-400' : 'text-red-600')}
+                          >
+                            Never share. Non-custodial — if lost, funds are unrecoverable.
+                          </p>
+                        </div>
 
-                          <div
-                            onClick={seedBlurred ? () => setSeedBlurred(false) : undefined}
-                            title={seedBlurred ? 'Click to reveal' : ''}
+                        <div
+                          onClick={seedBlurred ? () => setSeedBlurred(false) : undefined}
+                          title={seedBlurred ? 'Click to reveal' : ''}
+                          className={cn(
+                            'p-3 rounded-lg font-mono text-[11px] break-all leading-relaxed',
+                            isDark
+                              ? 'bg-white/[0.04] border border-[#3f96fe]/20'
+                              : 'bg-gray-50 border border-blue-200',
+                            seedBlurred && 'blur-[5px] cursor-pointer select-none'
+                          )}
+                        >
+                          {displaySeed}
+                        </div>
+
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(displaySeed).then(() => {
+                                openSnackbar('Seed copied', 'success');
+                              });
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[11px] transition-colors"
+                          >
+                            Copy Seed
+                          </button>
+                          <button
+                            onClick={() => setSeedBlurred(!seedBlurred)}
                             className={cn(
-                              "p-3 rounded-lg font-mono text-[11px] break-all leading-relaxed",
-                              isDark ? "bg-white/[0.04] border border-[#3f96fe]/20" : "bg-gray-50 border border-blue-200",
-                              seedBlurred && "blur-[5px] cursor-pointer select-none"
+                              'px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors',
+                              isDark
+                                ? 'border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5'
+                                : 'border-blue-200 text-gray-700 hover:bg-blue-50'
                             )}
                           >
-                            {displaySeed}
-                          </div>
-
-                          <div className="flex gap-2 justify-center">
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(displaySeed).then(() => {
-                                  openSnackbar('Seed copied', 'success');
-                                });
-                              }}
-                              className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[11px] transition-colors"
-                            >
-                              Copy Seed
-                            </button>
-                            <button
-                              onClick={() => setSeedBlurred(!seedBlurred)}
-                              className={cn(
-                                "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors",
-                                isDark ? "border-[#3f96fe]/20 text-white hover:bg-[#3f96fe]/5" : "border-blue-200 text-gray-700 hover:bg-blue-50"
-                              )}
-                            >
-                              {seedBlurred ? 'Show' : 'Hide'}
-                            </button>
-                          </div>
+                            {seedBlurred ? 'Show' : 'Hide'}
+                          </button>
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {seedAuthStatus === 'error' && (
-                        <div className={cn("p-3 rounded-lg text-[12px]", isDark ? "bg-red-500/10 border border-red-500/20 text-red-400" : "bg-red-50 border border-red-200 text-red-600")}>
-                          Authentication failed. Please try again.
-                        </div>
-                      )}
+                    {seedAuthStatus === 'error' && (
+                      <div
+                        className={cn(
+                          'p-3 rounded-lg text-[12px]',
+                          isDark
+                            ? 'bg-red-500/10 border border-red-500/20 text-red-400'
+                            : 'bg-red-50 border border-red-200 text-red-600'
+                        )}
+                      >
+                        Authentication failed. Please try again.
+                      </div>
+                    )}
                   </div>
                 )}
               </>
             ) : (
               // WalletConnect Modal Content
-              <div className={isDark ? "text-white" : "text-gray-900"}>
+              <div className={isDark ? 'text-white' : 'text-gray-900'}>
                 {/* Header */}
-                <div className={cn(
-                  "px-5 py-4 flex items-center justify-between",
-                  isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"
-                )}>
-                  <h2 className="text-[15px] font-medium tracking-tight">
-                    Connect Wallet
-                  </h2>
+                <div
+                  className={cn(
+                    'px-5 py-4 flex items-center justify-between',
+                    isDark ? 'border-b border-white/[0.04]' : 'border-b border-gray-100'
+                  )}
+                >
+                  <h2 className="text-[15px] font-medium tracking-tight">Connect Wallet</h2>
                   {(() => {
-                    const hasProgress = (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
-                                       (hasExistingWallet && unlockPassword);
+                    const hasProgress =
+                      (!hasExistingWallet && (createPassword || createPasswordConfirm)) ||
+                      (hasExistingWallet && unlockPassword);
                     return (
                       <button
                         onClick={() => {
-                          if (hasProgress && !window.confirm('You have unsaved progress. Close anyway?')) return;
+                          if (
+                            hasProgress &&
+                            !window.confirm('You have unsaved progress. Close anyway?')
+                          )
+                            return;
                           setOpenWalletModal(false);
                           setCreatePassword('');
                           setCreatePasswordConfirm('');
@@ -3665,10 +4648,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setUnlockPassword('');
                         }}
                         className={cn(
-                          "p-1.5 rounded-lg transition-all duration-150 relative",
-                          isDark ? "hover:bg-white/[0.06] text-white/30 hover:text-white/50" : "hover:bg-gray-100 text-gray-400 hover:text-gray-500"
+                          'p-1.5 rounded-lg transition-all duration-150 relative',
+                          isDark
+                            ? 'hover:bg-white/[0.06] text-white/30 hover:text-white/50'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-gray-500'
                         )}
-                        title={hasProgress ? "You have unsaved progress" : "Close"}
+                        title={hasProgress ? 'You have unsaved progress' : 'Close'}
                       >
                         <XIcon size={16} />
                         {hasProgress && (
@@ -3682,316 +4667,503 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 {/* Content */}
                 <div className="px-5 py-4">
                   {/* Password Unlock for Returning Users */}
-                      {hasExistingWallet && (
-                        <div className="mb-4">
-                          <p className={cn("text-[11px] mb-2", isDark ? "text-white/40" : "text-gray-400")}>
-                            {walletMetadata.length} wallet{walletMetadata.length !== 1 ? 's' : ''} found
-                          </p>
-
-                          <div className="relative mb-2">
-                            <input
-                              type={showUnlockPassword ? 'text' : 'password'}
-                              value={unlockPassword}
-                              onChange={(e) => setUnlockPassword(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handlePasswordUnlock()}
-                              placeholder="Password"
-                              autoFocus
-                              className={cn(
-                                "w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors",
-                                isDark
-                                  ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
-                                  : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
-                              )}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowUnlockPassword(!showUnlockPassword)}
-                              className={cn(
-                                "absolute right-3 top-1/2 -translate-y-1/2",
-                                isDark ? "text-white/25 hover:text-white/40" : "text-gray-400 hover:text-gray-500"
-                              )}
-                            >
-                              {showUnlockPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                            </button>
-                          </div>
-
-                          {unlockError && (
-                            <p className="text-[11px] text-red-400 mb-2">{unlockError}</p>
-                          )}
-
-                          <button
-                            onClick={handlePasswordUnlock}
-                            disabled={isUnlocking}
-                            className={cn(
-                              "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
-                              "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                            )}
-                          >
-                            {isUnlocking ? <Loader2 size={14} className="animate-spin" /> : 'Unlock'}
-                          </button>
-
-                          <button
-                            onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); setClearWarningAgreed(false); }}
-                            className={cn(
-                              "w-full mt-3 text-[11px] transition-colors",
-                              isDark ? "text-white/30 hover:text-red-400" : "text-gray-400 hover:text-red-500"
-                            )}
-                          >
-                            Forgot password? Reset wallet
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Create Wallet - Only show if no existing wallet */}
-                      {!hasExistingWallet && (
-                        <div className="space-y-3">
-                          {/* Mode toggle: Create New / Import Existing */}
-                          <div className={cn("flex rounded-lg p-0.5", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
-                            <button
-                              onClick={() => { setCreateMode('new'); setCreateError(''); }}
-                              className={cn(
-                                "flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all",
-                                createMode === 'new'
-                                  ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
-                                  : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
-                              )}
-                            >
-                              Create New
-                            </button>
-                            <button
-                              onClick={() => { setCreateMode('import'); setCreateError(''); }}
-                              className={cn(
-                                "flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all",
-                                createMode === 'import'
-                                  ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
-                                  : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
-                              )}
-                            >
-                              Import Existing
-                            </button>
-                          </div>
-
-                          {/* Seed input for import mode */}
-                          {createMode === 'import' && (
-                            <div className="space-y-1">
-                              {(() => {
-                                const validation = validateSeed(createSeed);
-                                const hasInput = createSeed.trim().length > 0;
-                                return (
-                                  <>
-                                    <input
-                                      type="password"
-                                      value={createSeed}
-                                      onChange={(e) => { setCreateSeed(e.target.value); setCreateError(''); }}
-                                      placeholder="Enter your secret seed (s...)"
-                                      autoFocus
-                                      className={cn(
-                                        "w-full px-3 py-2.5 rounded-lg text-[13px] font-mono outline-none transition-colors",
-                                        isDark
-                                          ? "bg-white/[0.04] border text-white placeholder:text-white/25 focus:border-white/20"
-                                          : "bg-gray-50 border text-gray-900 placeholder:text-gray-400 focus:border-gray-300",
-                                        hasInput && !validation.valid
-                                          ? "border-red-500/50"
-                                          : hasInput && validation.valid
-                                            ? "border-emerald-500/50"
-                                            : isDark ? "border-white/[0.08]" : "border-gray-200"
-                                      )}
-                                    />
-                                    {hasInput && validation.error && (
-                                      <p className="text-[10px] text-red-400">{validation.error}</p>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          )}
-
-                          <p className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
-                            {createMode === 'import' ? 'Set a password to encrypt your imported wallet' : 'Create a password to secure your wallet'}
-                          </p>
-
-                          <div className="relative">
-                            <input
-                              type={showCreatePassword ? 'text' : 'password'}
-                              value={createPassword}
-                              onChange={(e) => { setCreatePassword(e.target.value); setCreateError(''); }}
-                              onKeyDown={(e) => e.key === 'Enter' && createPasswordConfirm && (createMode === 'new' || validateSeed(createSeed).valid) && handlePasswordCreate()}
-                              placeholder="Password"
-                              autoFocus={createMode === 'new'}
-                              className={cn(
-                                "w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors",
-                                isDark
-                                  ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
-                                  : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
-                              )}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowCreatePassword(!showCreatePassword)}
-                              className={cn(
-                                "absolute right-3 top-1/2 -translate-y-1/2",
-                                isDark ? "text-white/25 hover:text-white/40" : "text-gray-400 hover:text-gray-500"
-                              )}
-                            >
-                              {showCreatePassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                            </button>
-                          </div>
-
-                          <input
-                            type={showCreatePassword ? 'text' : 'password'}
-                            value={createPasswordConfirm}
-                            onChange={(e) => { setCreatePasswordConfirm(e.target.value); setCreateError(''); }}
-                            onKeyDown={(e) => e.key === 'Enter' && (createMode === 'new' || validateSeed(createSeed).valid) && handlePasswordCreate()}
-                            placeholder="Confirm Password"
-                            className={cn(
-                              "w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors",
-                              isDark
-                                ? "bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20"
-                                : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300"
-                            )}
-                          />
-
-                          {createError && (
-                            <p className="text-[11px] text-red-400">{createError}</p>
-                          )}
-
-                          <button
-                            onClick={handlePasswordCreate}
-                            disabled={isCreating || !createPassword || !createPasswordConfirm || (createMode === 'import' && !validateSeed(createSeed).valid)}
-                            className={cn(
-                              "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all",
-                              "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                            )}
-                          >
-                            {isCreating ? <Loader2 size={14} className="animate-spin" /> : (createMode === 'import' ? 'Import Wallet' : 'Create Wallet')}
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Footer */}
-                      <div className={cn(
-                        "mt-5 pt-4 text-center border-t",
-                        isDark ? "border-white/[0.04]" : "border-gray-100"
-                      )}>
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Lock size={10} className={isDark ? "text-white/20" : "text-gray-400"} />
-                          <span className={cn("text-[10px]", isDark ? "text-white/20" : "text-gray-400")}>
-                            Encrypted and stored locally
-                          </span>
-                        </div>
-                        {showClearConfirm && (
-                            <div className={cn("mt-2 p-3 rounded-xl border-[1.5px] relative overflow-hidden", isDark ? "bg-black/40 border-red-500/20" : "bg-white border-red-200")}>
-                              {/* Dot pattern background */}
-                              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(239,68,68,0.2) 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
-
-                              <div className="relative z-10">
-                                {/* Header */}
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Trash2 size={14} className="text-red-500" />
-                                  <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
-                                    Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}
-                                  </span>
-                                </div>
-
-                                {/* Wallet addresses */}
-                                {storedWalletAddresses.length > 0 && (
-                                  <div className={cn("mb-2 px-2 py-1.5 rounded-lg", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
-                                    {storedWalletAddresses.slice(0, 3).map((addr, idx) => (
-                                      <div key={idx} className="flex items-center gap-1.5 py-0.5">
-                                        <div className="w-1 h-1 rounded-full bg-red-400/60" />
-                                        <span className={cn("text-[10px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>{addr}</span>
-                                      </div>
-                                    ))}
-                                    {storedWalletAddresses.length > 3 && (
-                                      <span className={cn("text-[9px] ml-2.5", isDark ? "text-white/30" : "text-gray-400")}>+{storedWalletAddresses.length - 3} more</span>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Confirmation toggle */}
-                                <button
-                                  onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
-                                  className={cn(
-                                    "w-full flex items-center gap-2 p-2 rounded-lg text-left mb-2 transition-all border",
-                                    clearWarningAgreed ? "border-red-500/50 bg-red-500/10" : isDark ? "border-white/10" : "border-gray-200"
-                                  )}
-                                >
-                                  <div className={cn(
-                                    "w-4 h-4 rounded flex items-center justify-center flex-shrink-0",
-                                    clearWarningAgreed ? "bg-red-500" : isDark ? "border border-white/20" : "border border-gray-300"
-                                  )}>
-                                    {clearWarningAgreed && <Check size={10} className="text-white" />}
-                                  </div>
-                                  <span className={cn("text-[10px]", isDark ? "text-white/60" : "text-gray-500")}>I understand this is permanent</span>
-                                </button>
-
-                                {/* Slide to delete */}
-                                <div
-                                  className={cn(
-                                    "relative h-10 rounded-lg overflow-hidden select-none transition-all",
-                                    clearWarningAgreed ? "cursor-pointer" : "cursor-not-allowed opacity-40",
-                                    clearSliderValue >= 95 ? "bg-red-500" : isDark ? "bg-white/[0.03]" : "bg-gray-100"
-                                  )}
-                                  onMouseDown={(e) => {
-                                    if (!clearWarningAgreed) return;
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    const handleMove = (moveEvent) => {
-                                      const x = Math.max(0, Math.min(moveEvent.clientX - rect.left, rect.width));
-                                      setClearSliderValue(Math.round((x / rect.width) * 100));
-                                      if (x / rect.width >= 0.95) handleClearAllWallets();
-                                    };
-                                    const handleUp = () => {
-                                      document.removeEventListener('mousemove', handleMove);
-                                      document.removeEventListener('mouseup', handleUp);
-                                      if (clearSliderValue < 95) setClearSliderValue(0);
-                                    };
-                                    handleMove(e);
-                                    document.addEventListener('mousemove', handleMove);
-                                    document.addEventListener('mouseup', handleUp);
-                                  }}
-                                  onTouchStart={(e) => {
-                                    if (!clearWarningAgreed) return;
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    const handleMove = (moveEvent) => {
-                                      const touch = moveEvent.touches[0];
-                                      const x = Math.max(0, Math.min(touch.clientX - rect.left, rect.width));
-                                      setClearSliderValue(Math.round((x / rect.width) * 100));
-                                      if (x / rect.width >= 0.95) handleClearAllWallets();
-                                    };
-                                    const handleEnd = () => {
-                                      document.removeEventListener('touchmove', handleMove);
-                                      document.removeEventListener('touchend', handleEnd);
-                                      if (clearSliderValue < 95) setClearSliderValue(0);
-                                    };
-                                    handleMove(e);
-                                    document.addEventListener('touchmove', handleMove);
-                                    document.addEventListener('touchend', handleEnd);
-                                  }}
-                                >
-                                  <div className={cn("absolute inset-y-0 left-0", clearSliderValue >= 95 ? "bg-red-600" : "bg-red-500")} style={{ width: `${clearSliderValue}%` }} />
-                                  <div
-                                    className={cn("absolute top-1 bottom-1 w-8 rounded-md flex items-center justify-center", clearSliderValue >= 95 ? "bg-white" : clearSliderValue > 0 ? "bg-red-500" : isDark ? "bg-white/10" : "bg-white")}
-                                    style={{ left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.32}px + 4px)`, transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none' }}
-                                  >
-                                    {clearSliderValue >= 95 ? <Loader2 size={14} className="text-red-500 animate-spin" /> : <ChevronRight size={14} className={clearSliderValue > 0 ? "text-white" : isDark ? "text-white/40" : "text-gray-400"} />}
-                                  </div>
-                                  <span className={cn("absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wide", clearSliderValue > 15 ? "opacity-0" : "opacity-100", isDark ? "text-white/30" : "text-gray-400")} style={{ paddingLeft: 32 }}>
-                                    SLIDE TO DELETE
-                                  </span>
-                                </div>
-
-                                <button onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); setClearWarningAgreed(false); }} className={cn("w-full mt-2 py-1 text-[10px]", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>Cancel</button>
-                              </div>
-                            </div>
+                  {hasExistingWallet && (
+                    <div className="mb-4">
+                      <p
+                        className={cn(
+                          'text-[11px] mb-2',
+                          isDark ? 'text-white/40' : 'text-gray-400'
                         )}
+                      >
+                        {walletMetadata.length} wallet{walletMetadata.length !== 1 ? 's' : ''} found
+                      </p>
 
+                      <div className="relative mb-2">
+                        <input
+                          type={showUnlockPassword ? 'text' : 'password'}
+                          value={unlockPassword}
+                          onChange={(e) => setUnlockPassword(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handlePasswordUnlock()}
+                          placeholder="Password"
+                          autoFocus
+                          className={cn(
+                            'w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors',
+                            isDark
+                              ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
+                              : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                          )}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowUnlockPassword(!showUnlockPassword)}
+                          className={cn(
+                            'absolute right-3 top-1/2 -translate-y-1/2',
+                            isDark
+                              ? 'text-white/25 hover:text-white/40'
+                              : 'text-gray-400 hover:text-gray-500'
+                          )}
+                        >
+                          {showUnlockPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+
+                      {unlockError && (
+                        <p className="text-[11px] text-red-400 mb-2">{unlockError}</p>
+                      )}
+
+                      <button
+                        onClick={handlePasswordUnlock}
+                        disabled={isUnlocking}
+                        className={cn(
+                          'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all',
+                          'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
+                        )}
+                      >
+                        {isUnlocking ? <Loader2 size={14} className="animate-spin" /> : 'Unlock'}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          checkStoredWalletCount();
+                          setShowClearConfirm(true);
+                          setClearWarningAgreed(false);
+                        }}
+                        className={cn(
+                          'w-full mt-3 text-[11px] transition-colors',
+                          isDark
+                            ? 'text-white/30 hover:text-red-400'
+                            : 'text-gray-400 hover:text-red-500'
+                        )}
+                      >
+                        Forgot password? Reset wallet
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Create Wallet - Only show if no existing wallet */}
+                  {!hasExistingWallet && (
+                    <div className="space-y-3">
+                      {/* Mode toggle: Create New / Import Existing */}
+                      <div
+                        className={cn(
+                          'flex rounded-lg p-0.5',
+                          isDark ? 'bg-white/[0.04]' : 'bg-gray-100'
+                        )}
+                      >
+                        <button
+                          onClick={() => {
+                            setCreateMode('new');
+                            setCreateError('');
+                          }}
+                          className={cn(
+                            'flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all',
+                            createMode === 'new'
+                              ? isDark
+                                ? 'bg-white/10 text-white'
+                                : 'bg-white text-gray-900 shadow-sm'
+                              : isDark
+                                ? 'text-white/50 hover:text-white/70'
+                                : 'text-gray-500 hover:text-gray-700'
+                          )}
+                        >
+                          Create New
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCreateMode('import');
+                            setCreateError('');
+                          }}
+                          className={cn(
+                            'flex-1 py-1.5 text-[12px] font-medium rounded-md transition-all',
+                            createMode === 'import'
+                              ? isDark
+                                ? 'bg-white/10 text-white'
+                                : 'bg-white text-gray-900 shadow-sm'
+                              : isDark
+                                ? 'text-white/50 hover:text-white/70'
+                                : 'text-gray-500 hover:text-gray-700'
+                          )}
+                        >
+                          Import Existing
+                        </button>
+                      </div>
+
+                      {/* Seed input for import mode */}
+                      {createMode === 'import' && (
+                        <div className="space-y-1">
+                          {(() => {
+                            const validation = validateSeed(createSeed);
+                            const hasInput = createSeed.trim().length > 0;
+                            return (
+                              <>
+                                <input
+                                  type="password"
+                                  value={createSeed}
+                                  onChange={(e) => {
+                                    setCreateSeed(e.target.value);
+                                    setCreateError('');
+                                  }}
+                                  placeholder="Enter your secret seed (s...)"
+                                  autoFocus
+                                  className={cn(
+                                    'w-full px-3 py-2.5 rounded-lg text-[13px] font-mono outline-none transition-colors',
+                                    isDark
+                                      ? 'bg-white/[0.04] border text-white placeholder:text-white/25 focus:border-white/20'
+                                      : 'bg-gray-50 border text-gray-900 placeholder:text-gray-400 focus:border-gray-300',
+                                    hasInput && !validation.valid
+                                      ? 'border-red-500/50'
+                                      : hasInput && validation.valid
+                                        ? 'border-emerald-500/50'
+                                        : isDark
+                                          ? 'border-white/[0.08]'
+                                          : 'border-gray-200'
+                                  )}
+                                />
+                                {hasInput && validation.error && (
+                                  <p className="text-[10px] text-red-400">{validation.error}</p>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      <p className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                        {createMode === 'import'
+                          ? 'Set a password to encrypt your imported wallet'
+                          : 'Create a password to secure your wallet'}
+                      </p>
+
+                      <div className="relative">
+                        <input
+                          type={showCreatePassword ? 'text' : 'password'}
+                          value={createPassword}
+                          onChange={(e) => {
+                            setCreatePassword(e.target.value);
+                            setCreateError('');
+                          }}
+                          onKeyDown={(e) =>
+                            e.key === 'Enter' &&
+                            createPasswordConfirm &&
+                            (createMode === 'new' || validateSeed(createSeed).valid) &&
+                            handlePasswordCreate()
+                          }
+                          placeholder="Password"
+                          autoFocus={createMode === 'new'}
+                          className={cn(
+                            'w-full px-3 py-2.5 pr-10 rounded-lg text-[13px] outline-none transition-colors',
+                            isDark
+                              ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
+                              : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                          )}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCreatePassword(!showCreatePassword)}
+                          className={cn(
+                            'absolute right-3 top-1/2 -translate-y-1/2',
+                            isDark
+                              ? 'text-white/25 hover:text-white/40'
+                              : 'text-gray-400 hover:text-gray-500'
+                          )}
+                        >
+                          {showCreatePassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+
+                      <input
+                        type={showCreatePassword ? 'text' : 'password'}
+                        value={createPasswordConfirm}
+                        onChange={(e) => {
+                          setCreatePasswordConfirm(e.target.value);
+                          setCreateError('');
+                        }}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' &&
+                          (createMode === 'new' || validateSeed(createSeed).valid) &&
+                          handlePasswordCreate()
+                        }
+                        placeholder="Confirm Password"
+                        className={cn(
+                          'w-full px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors',
+                          isDark
+                            ? 'bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/25 focus:border-white/20'
+                            : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300'
+                        )}
+                      />
+
+                      {createError && <p className="text-[11px] text-red-400">{createError}</p>}
+
+                      <button
+                        onClick={handlePasswordCreate}
+                        disabled={
+                          isCreating ||
+                          !createPassword ||
+                          !createPasswordConfirm ||
+                          (createMode === 'import' && !validateSeed(createSeed).valid)
+                        }
+                        className={cn(
+                          'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-medium transition-all',
+                          'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
+                        )}
+                      >
+                        {isCreating ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : createMode === 'import' ? (
+                          'Import Wallet'
+                        ) : (
+                          'Create Wallet'
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div
+                    className={cn(
+                      'mt-5 pt-4 text-center border-t',
+                      isDark ? 'border-white/[0.04]' : 'border-gray-100'
+                    )}
+                  >
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Lock size={10} className={isDark ? 'text-white/20' : 'text-gray-400'} />
+                      <span
+                        className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-400')}
+                      >
+                        Encrypted and stored locally
+                      </span>
+                    </div>
+                    {showClearConfirm && (
+                      <div
+                        className={cn(
+                          'mt-2 p-3 rounded-xl border-[1.5px] relative overflow-hidden',
+                          isDark ? 'bg-black/40 border-red-500/20' : 'bg-white border-red-200'
+                        )}
+                      >
+                        {/* Dot pattern background */}
+                        <div
+                          className="absolute inset-0 opacity-20"
+                          style={{
+                            backgroundImage: isDark
+                              ? 'radial-gradient(circle, rgba(239,68,68,0.3) 1px, transparent 1px)'
+                              : 'radial-gradient(circle, rgba(239,68,68,0.2) 1px, transparent 1px)',
+                            backgroundSize: '10px 10px'
+                          }}
+                        />
+
+                        <div className="relative z-10">
+                          {/* Header */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <Trash2 size={14} className="text-red-500" />
+                            <span
+                              className={cn(
+                                'text-[12px] font-medium',
+                                isDark ? 'text-white' : 'text-gray-900'
+                              )}
+                            >
+                              Delete {profiles.length || storedWalletCount || 'all'} wallet
+                              {(profiles.length || storedWalletCount) !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+
+                          {/* Wallet addresses */}
+                          {storedWalletAddresses.length > 0 && (
+                            <div
+                              className={cn(
+                                'mb-2 px-2 py-1.5 rounded-lg',
+                                isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+                              )}
+                            >
+                              {storedWalletAddresses.slice(0, 3).map((addr, idx) => (
+                                <div key={idx} className="flex items-center gap-1.5 py-0.5">
+                                  <div className="w-1 h-1 rounded-full bg-red-400/60" />
+                                  <span
+                                    className={cn(
+                                      'text-[10px] font-mono',
+                                      isDark ? 'text-white/50' : 'text-gray-500'
+                                    )}
+                                  >
+                                    {addr}
+                                  </span>
+                                </div>
+                              ))}
+                              {storedWalletAddresses.length > 3 && (
+                                <span
+                                  className={cn(
+                                    'text-[9px] ml-2.5',
+                                    isDark ? 'text-white/30' : 'text-gray-400'
+                                  )}
+                                >
+                                  +{storedWalletAddresses.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Confirmation toggle */}
+                          <button
+                            onClick={() => setClearWarningAgreed(!clearWarningAgreed)}
+                            className={cn(
+                              'w-full flex items-center gap-2 p-2 rounded-lg text-left mb-2 transition-all border',
+                              clearWarningAgreed
+                                ? 'border-red-500/50 bg-red-500/10'
+                                : isDark
+                                  ? 'border-white/10'
+                                  : 'border-gray-200'
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                'w-4 h-4 rounded flex items-center justify-center flex-shrink-0',
+                                clearWarningAgreed
+                                  ? 'bg-red-500'
+                                  : isDark
+                                    ? 'border border-white/20'
+                                    : 'border border-gray-300'
+                              )}
+                            >
+                              {clearWarningAgreed && <Check size={10} className="text-white" />}
+                            </div>
+                            <span
+                              className={cn(
+                                'text-[10px]',
+                                isDark ? 'text-white/60' : 'text-gray-500'
+                              )}
+                            >
+                              I understand this is permanent
+                            </span>
+                          </button>
+
+                          {/* Slide to delete */}
+                          <div
+                            className={cn(
+                              'relative h-10 rounded-lg overflow-hidden select-none transition-all',
+                              clearWarningAgreed
+                                ? 'cursor-pointer'
+                                : 'cursor-not-allowed opacity-40',
+                              clearSliderValue >= 95
+                                ? 'bg-red-500'
+                                : isDark
+                                  ? 'bg-white/[0.03]'
+                                  : 'bg-gray-100'
+                            )}
+                            onMouseDown={(e) => {
+                              if (!clearWarningAgreed) return;
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const handleMove = (moveEvent) => {
+                                const x = Math.max(
+                                  0,
+                                  Math.min(moveEvent.clientX - rect.left, rect.width)
+                                );
+                                setClearSliderValue(Math.round((x / rect.width) * 100));
+                                if (x / rect.width >= 0.95) handleClearAllWallets();
+                              };
+                              const handleUp = () => {
+                                document.removeEventListener('mousemove', handleMove);
+                                document.removeEventListener('mouseup', handleUp);
+                                if (clearSliderValue < 95) setClearSliderValue(0);
+                              };
+                              handleMove(e);
+                              document.addEventListener('mousemove', handleMove);
+                              document.addEventListener('mouseup', handleUp);
+                            }}
+                            onTouchStart={(e) => {
+                              if (!clearWarningAgreed) return;
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const handleMove = (moveEvent) => {
+                                const touch = moveEvent.touches[0];
+                                const x = Math.max(
+                                  0,
+                                  Math.min(touch.clientX - rect.left, rect.width)
+                                );
+                                setClearSliderValue(Math.round((x / rect.width) * 100));
+                                if (x / rect.width >= 0.95) handleClearAllWallets();
+                              };
+                              const handleEnd = () => {
+                                document.removeEventListener('touchmove', handleMove);
+                                document.removeEventListener('touchend', handleEnd);
+                                if (clearSliderValue < 95) setClearSliderValue(0);
+                              };
+                              handleMove(e);
+                              document.addEventListener('touchmove', handleMove);
+                              document.addEventListener('touchend', handleEnd);
+                            }}
+                          >
+                            <div
+                              className={cn(
+                                'absolute inset-y-0 left-0',
+                                clearSliderValue >= 95 ? 'bg-red-600' : 'bg-red-500'
+                              )}
+                              style={{ width: `${clearSliderValue}%` }}
+                            />
+                            <div
+                              className={cn(
+                                'absolute top-1 bottom-1 w-8 rounded-md flex items-center justify-center',
+                                clearSliderValue >= 95
+                                  ? 'bg-white'
+                                  : clearSliderValue > 0
+                                    ? 'bg-red-500'
+                                    : isDark
+                                      ? 'bg-white/10'
+                                      : 'bg-white'
+                              )}
+                              style={{
+                                left: `calc(${clearSliderValue}% - ${clearSliderValue * 0.32}px + 4px)`,
+                                transition: clearSliderValue === 0 ? 'left 0.2s ease-out' : 'none'
+                              }}
+                            >
+                              {clearSliderValue >= 95 ? (
+                                <Loader2 size={14} className="text-red-500 animate-spin" />
+                              ) : (
+                                <ChevronRight
+                                  size={14}
+                                  className={
+                                    clearSliderValue > 0
+                                      ? 'text-white'
+                                      : isDark
+                                        ? 'text-white/40'
+                                        : 'text-gray-400'
+                                  }
+                                />
+                              )}
+                            </div>
+                            <span
+                              className={cn(
+                                'absolute inset-0 flex items-center justify-center text-[10px] font-medium pointer-events-none tracking-wide',
+                                clearSliderValue > 15 ? 'opacity-0' : 'opacity-100',
+                                isDark ? 'text-white/30' : 'text-gray-400'
+                              )}
+                              style={{ paddingLeft: 32 }}
+                            >
+                              SLIDE TO DELETE
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              setShowClearConfirm(false);
+                              setClearSliderValue(0);
+                              setClearWarningAgreed(false);
+                            }}
+                            className={cn(
+                              'w-full mt-2 py-1 text-[10px]',
+                              isDark
+                                ? 'text-white/30 hover:text-white/50'
+                                : 'text-gray-400 hover:text-gray-600'
+                            )}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
-            </StyledPopoverPaper>
-          </DialogContent>
-        </Dialog>
+          </StyledPopoverPaper>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

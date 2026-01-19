@@ -3,7 +3,24 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { sign } from 'ripple-keypairs';
-import { Key, Plus, Copy, Trash2, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, RefreshCw, CreditCard, Lock, Coins, Zap, X, Calendar } from 'lucide-react';
+import {
+  Key,
+  Plus,
+  Copy,
+  Trash2,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  CreditCard,
+  Lock,
+  Coins,
+  Zap,
+  X,
+  Calendar
+} from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
@@ -38,10 +55,45 @@ const DashboardPage = () => {
   const router = useRouter();
 
   const tiers = [
-    { id: 'free', name: 'Free', monthly: 0, yearly: 0, credits: '1M', rps: 10, color: 'text-gray-500' },
-    { id: 'developer', name: 'Developer', monthly: 49, yearly: 490, savings: 98, credits: '10M', rps: 50, color: 'text-blue-500' },
-    { id: 'business', name: 'Business', monthly: 499, yearly: 4990, savings: 998, credits: '100M', rps: 200, color: 'text-purple-500' },
-    { id: 'professional', name: 'Professional', monthly: 999, yearly: 9990, savings: 1998, credits: '200M', rps: 500, color: 'text-amber-500' }
+    {
+      id: 'free',
+      name: 'Free',
+      monthly: 0,
+      yearly: 0,
+      credits: '1M',
+      rps: 10,
+      color: 'text-gray-500'
+    },
+    {
+      id: 'developer',
+      name: 'Developer',
+      monthly: 49,
+      yearly: 490,
+      savings: 98,
+      credits: '10M',
+      rps: 50,
+      color: 'text-blue-500'
+    },
+    {
+      id: 'business',
+      name: 'Business',
+      monthly: 499,
+      yearly: 4990,
+      savings: 998,
+      credits: '100M',
+      rps: 200,
+      color: 'text-purple-500'
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      monthly: 999,
+      yearly: 9990,
+      savings: 1998,
+      credits: '200M',
+      rps: 500,
+      color: 'text-amber-500'
+    }
   ];
 
   const packages = [
@@ -59,21 +111,30 @@ const DashboardPage = () => {
     const loadDebugInfo = async () => {
       if (!accountProfile) return;
 
-      let walletKeyId = accountProfile.walletKeyId ||
+      let walletKeyId =
+        accountProfile.walletKeyId ||
         (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+        (accountProfile.provider && accountProfile.provider_id
+          ? `${accountProfile.provider}_${accountProfile.provider_id}`
+          : null);
 
       let seed = accountProfile.seed || null;
 
       // If no seed in profile, try to fetch from storage
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+      if (
+        !seed &&
+        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
+      ) {
         try {
           const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
           if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            const walletData = await walletStorage.getWallet(
+              accountProfile.account,
+              storedPassword
+            );
             seed = walletData?.seed || 'encrypted';
           }
         } catch (e) {
@@ -84,14 +145,18 @@ const DashboardPage = () => {
       // Handle device wallets
       if (!seed && accountProfile.wallet_type === 'device') {
         try {
-          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const { EncryptedWalletStorage, deviceFingerprint } =
+            await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const deviceKeyId = await deviceFingerprint.getDeviceId();
           walletKeyId = deviceKeyId;
           if (deviceKeyId) {
             const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
             if (storedPassword) {
-              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              const walletData = await walletStorage.getWallet(
+                accountProfile.account,
+                storedPassword
+              );
               seed = walletData?.seed || 'encrypted';
             }
           }
@@ -247,8 +312,9 @@ const DashboardPage = () => {
     }
 
     if (sessionId) {
-      axios.get(`${BASE_URL}/keys/stripe/status/${sessionId}`)
-        .then(res => {
+      axios
+        .get(`${BASE_URL}/keys/stripe/status/${sessionId}`)
+        .then((res) => {
           if (res.data.status === 'complete' || res.data.status === 'paid') {
             setStripeSuccess({
               credits: res.data.credits,
@@ -258,7 +324,7 @@ const DashboardPage = () => {
             fetchApiKeys();
           }
         })
-        .catch(err => console.error('Stripe status check failed:', err))
+        .catch((err) => console.error('Stripe status check failed:', err))
         .finally(() => {
           router.replace('/dashboard', undefined, { shallow: true });
         });
@@ -322,9 +388,10 @@ const DashboardPage = () => {
           ...res.data.payment,
           type,
           id,
-          name: type === 'credits'
-            ? packages.find(p => p.id === id)?.name
-            : tiers.find(t => t.id === id)?.name,
+          name:
+            type === 'credits'
+              ? packages.find((p) => p.id === id)?.name
+              : tiers.find((t) => t.id === id)?.name,
           price: res.data.price,
           expiresIn: res.data.expiresIn
         });
@@ -470,18 +537,16 @@ const DashboardPage = () => {
         return;
       }
 
-      const res = await axios.post(
-        `${BASE_URL}/keys`,
-        { name: newKeyName.trim() },
-        { headers }
-      );
+      const res = await axios.post(`${BASE_URL}/keys`, { name: newKeyName.trim() }, { headers });
 
       setNewKey(res.data.apiKey);
       setNewKeyName('');
       setShowCreateForm(false);
       fetchApiKeys();
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Failed to create API key');
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'Failed to create API key'
+      );
     } finally {
       setCreating(false);
     }
@@ -505,10 +570,7 @@ const DashboardPage = () => {
         return;
       }
 
-      await axios.delete(
-        `${BASE_URL}/keys/${walletAddress}/${keyId}`,
-        { headers }
-      );
+      await axios.delete(`${BASE_URL}/keys/${walletAddress}/${keyId}`, { headers });
       fetchApiKeys();
     } catch (err) {
       setError('Failed to delete API key');
@@ -538,11 +600,23 @@ const DashboardPage = () => {
           <title>Dashboard - XRPL.to</title>
         </Head>
         <Header />
-        <div className={cn("min-h-screen flex items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
-          <div className={cn("text-center p-8 rounded-xl border-[1.5px]", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+        <div
+          className={cn(
+            'min-h-screen flex items-center justify-center',
+            isDark ? 'bg-black' : 'bg-gray-50'
+          )}
+        >
+          <div
+            className={cn(
+              'text-center p-8 rounded-xl border-[1.5px]',
+              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+            )}
+          >
             <Key size={48} className="mx-auto mb-4 opacity-20" />
-            <h2 className={cn("text-xl font-medium mb-2", isDark ? "text-white" : "text-gray-900")}>Sign in Required</h2>
-            <p className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-600")}>
+            <h2 className={cn('text-xl font-medium mb-2', isDark ? 'text-white' : 'text-gray-900')}>
+              Sign in Required
+            </h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
               Connect your wallet to manage API keys
             </p>
           </div>
@@ -561,21 +635,23 @@ const DashboardPage = () => {
 
       <Header />
 
-      <div className={cn("flex-1 py-4 sm:py-6", isDark ? "bg-black" : "bg-gray-50")}>
+      <div className={cn('flex-1 py-4 sm:py-6', isDark ? 'bg-black' : 'bg-gray-50')}>
         <div className="mx-auto max-w-[1920px] px-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className={cn("text-2xl font-normal", isDark ? "text-white" : "text-gray-900")}>API Keys</h1>
-              <p className={cn("text-[14px] mt-1", isDark ? "text-white/60" : "text-gray-600")}>
+              <h1 className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                API Keys
+              </h1>
+              <p className={cn('text-[14px] mt-1', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Manage your API keys for programmatic access
               </p>
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium",
-                "bg-primary text-white hover:bg-primary/90 transition-colors"
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium',
+                'bg-primary text-white hover:bg-primary/90 transition-colors'
               )}
             >
               <Plus size={16} />
@@ -585,14 +661,34 @@ const DashboardPage = () => {
 
           {/* Debug Panel */}
           {debugInfo && (
-            <div className={cn("mb-6 p-4 rounded-xl border-[1.5px] font-mono text-[11px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
+            <div
+              className={cn(
+                'mb-6 p-4 rounded-xl border-[1.5px] font-mono text-[11px]',
+                isDark ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-yellow-200 bg-yellow-50'
+              )}
+            >
               <div className="font-medium mb-2 text-yellow-600">Debug Info:</div>
               <div className="space-y-1">
-                <div>wallet_type: <span className="text-primary">{debugInfo.wallet_type || 'undefined'}</span></div>
-                <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-                <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-500" : "text-red-500"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-                <div>accountIndex: <span className="opacity-70">{debugInfo.accountIndex ?? 'undefined'}</span></div>
-                <div>seed: <span className="text-green-500 break-all">{debugInfo.seed}</span></div>
+                <div>
+                  wallet_type:{' '}
+                  <span className="text-primary">{debugInfo.wallet_type || 'undefined'}</span>
+                </div>
+                <div>
+                  account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
+                </div>
+                <div>
+                  walletKeyId:{' '}
+                  <span className={debugInfo.walletKeyId ? 'text-green-500' : 'text-red-500'}>
+                    {debugInfo.walletKeyId || 'undefined'}
+                  </span>
+                </div>
+                <div>
+                  accountIndex:{' '}
+                  <span className="opacity-70">{debugInfo.accountIndex ?? 'undefined'}</span>
+                </div>
+                <div>
+                  seed: <span className="text-green-500 break-all">{debugInfo.seed}</span>
+                </div>
               </div>
             </div>
           )}
@@ -607,60 +703,117 @@ const DashboardPage = () => {
 
           {/* New Key Alert */}
           {newKey && (
-            <div className={cn("mb-6 p-4 rounded-xl border-[1.5px]", isDark ? "border-emerald-500/30 bg-emerald-500/10" : "border-emerald-200 bg-emerald-50")}>
+            <div
+              className={cn(
+                'mb-6 p-4 rounded-xl border-[1.5px]',
+                isDark
+                  ? 'border-emerald-500/30 bg-emerald-500/10'
+                  : 'border-emerald-200 bg-emerald-50'
+              )}
+            >
               <div className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className={cn("text-[14px] font-medium mb-1", isDark ? "text-white" : "text-gray-900")}>
+                  <h3
+                    className={cn(
+                      'text-[14px] font-medium mb-1',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     API Key Created
                   </h3>
-                  <p className={cn("text-[12px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+                  <p className={cn('text-[12px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                     Copy this key now. You won't be able to see it again.
                   </p>
-                  <div className={cn("flex items-center gap-2 p-3 rounded-lg font-mono text-[13px]", isDark ? "bg-black/50" : "bg-white")}>
+                  <div
+                    className={cn(
+                      'flex items-center gap-2 p-3 rounded-lg font-mono text-[13px]',
+                      isDark ? 'bg-black/50' : 'bg-white'
+                    )}
+                  >
                     <code className="flex-1 break-all">{newKey}</code>
                     <button
                       onClick={() => copyToClipboard(newKey, 'new')}
                       className="p-1.5 rounded hover:bg-white/10"
                     >
-                      {copiedId === 'new' ? <CheckCircle size={16} className="text-emerald-500" /> : <Copy size={16} className="opacity-60" />}
+                      {copiedId === 'new' ? (
+                        <CheckCircle size={16} className="text-emerald-500" />
+                      ) : (
+                        <Copy size={16} className="opacity-60" />
+                      )}
                     </button>
                   </div>
                 </div>
-                <button onClick={() => setNewKey(null)} className="opacity-40 hover:opacity-100">×</button>
+                <button onClick={() => setNewKey(null)} className="opacity-40 hover:opacity-100">
+                  ×
+                </button>
               </div>
             </div>
           )}
 
           {/* Stripe Success Alert */}
           {stripeSuccess && (
-            <div className={cn("mb-6 p-4 rounded-xl border-[1.5px]", isDark ? "border-emerald-500/30 bg-emerald-500/10" : "border-emerald-200 bg-emerald-50")}>
+            <div
+              className={cn(
+                'mb-6 p-4 rounded-xl border-[1.5px]',
+                isDark
+                  ? 'border-emerald-500/30 bg-emerald-500/10'
+                  : 'border-emerald-200 bg-emerald-50'
+              )}
+            >
               <div className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className={cn("text-[14px] font-medium mb-1", isDark ? "text-white" : "text-gray-900")}>
+                  <h3
+                    className={cn(
+                      'text-[14px] font-medium mb-1',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     Payment Successful!
                   </h3>
-                  <p className={cn("text-[12px]", isDark ? "text-white/60" : "text-gray-600")}>
-                    {stripeSuccess.message || (stripeSuccess.credits ? `${stripeSuccess.credits.toLocaleString()} credits added.` : `Upgraded to ${stripeSuccess.tier} tier.`)}
+                  <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                    {stripeSuccess.message ||
+                      (stripeSuccess.credits
+                        ? `${stripeSuccess.credits.toLocaleString()} credits added.`
+                        : `Upgraded to ${stripeSuccess.tier} tier.`)}
                   </p>
                 </div>
-                <button onClick={() => setStripeSuccess(null)} className="opacity-40 hover:opacity-100">×</button>
+                <button
+                  onClick={() => setStripeSuccess(null)}
+                  className="opacity-40 hover:opacity-100"
+                >
+                  ×
+                </button>
               </div>
             </div>
           )}
 
           {/* Credits & Billing */}
           {credits && (
-            <div className={cn("mb-6 p-5 rounded-xl border-[1.5px]", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+            <div
+              className={cn(
+                'mb-6 p-5 rounded-xl border-[1.5px]',
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+              )}
+            >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-lg", isDark ? "bg-primary/10" : "bg-primary/5")}>
+                  <div className={cn('p-2 rounded-lg', isDark ? 'bg-primary/10' : 'bg-primary/5')}>
                     <Coins size={20} className="text-primary" />
                   </div>
                   <div>
-                    <div className={cn("text-[12px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Credit Balance</div>
-                    <div className={cn("text-xl font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <div
+                      className={cn(
+                        'text-[12px] uppercase tracking-wide',
+                        isDark ? 'text-white/40' : 'text-gray-500'
+                      )}
+                    >
+                      Credit Balance
+                    </div>
+                    <div
+                      className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                    >
                       {(credits.balance || 0).toLocaleString()}
                     </div>
                   </div>
@@ -668,15 +821,26 @@ const DashboardPage = () => {
 
                 {(credits.billingCycle || subscription?.subscription?.billingCycle) && (
                   <div className="flex items-center gap-3">
-                    <div className={cn("p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-100")}>
-                      <Calendar size={20} className={isDark ? "text-white/60" : "text-gray-500"} />
+                    <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                      <Calendar size={20} className={isDark ? 'text-white/60' : 'text-gray-500'} />
                     </div>
                     <div>
-                      <div className={cn("text-[12px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>
-                        {(credits.billingCycle?.billing || subscription?.subscription?.billing) === 'yearly' ? 'Yearly' : 'Monthly'} Cycle
+                      <div
+                        className={cn(
+                          'text-[12px] uppercase tracking-wide',
+                          isDark ? 'text-white/40' : 'text-gray-500'
+                        )}
+                      >
+                        {(credits.billingCycle?.billing || subscription?.subscription?.billing) ===
+                        'yearly'
+                          ? 'Yearly'
+                          : 'Monthly'}{' '}
+                        Cycle
                       </div>
-                      <div className={cn("text-[14px]", isDark ? "text-white" : "text-gray-900")}>
-                        {credits.billingCycle?.daysRemaining || subscription?.subscription?.billingCycle?.daysRemaining} days remaining
+                      <div className={cn('text-[14px]', isDark ? 'text-white' : 'text-gray-900')}>
+                        {credits.billingCycle?.daysRemaining ||
+                          subscription?.subscription?.billingCycle?.daysRemaining}{' '}
+                        days remaining
                       </div>
                     </div>
                   </div>
@@ -684,7 +848,10 @@ const DashboardPage = () => {
 
                 <button
                   onClick={fetchCredits}
-                  className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                  className={cn(
+                    'p-2 rounded-lg',
+                    isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                  )}
                 >
                   <RefreshCw size={14} className="opacity-40" />
                 </button>
@@ -693,12 +860,19 @@ const DashboardPage = () => {
               {credits.billingCycle && (
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>Cycle progress</span>
-                    <span className={cn("text-[12px]", isDark ? "text-white/60" : "text-gray-600")}>
+                    <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                      Cycle progress
+                    </span>
+                    <span className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
                       {Math.round(credits.billingCycle.cycleProgress || 0)}%
                     </span>
                   </div>
-                  <div className={cn("h-1.5 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
+                  <div
+                    className={cn(
+                      'h-1.5 rounded-full overflow-hidden',
+                      isDark ? 'bg-white/10' : 'bg-gray-200'
+                    )}
+                  >
                     <div
                       className="h-full bg-primary rounded-full transition-all"
                       style={{ width: `${credits.billingCycle.cycleProgress || 0}%` }}
@@ -712,25 +886,44 @@ const DashboardPage = () => {
           {/* Create Form Modal */}
           {showCreateForm && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className={cn("w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]", isDark ? "bg-black border-white/10" : "bg-white border-gray-200")}>
-                <h3 className={cn("text-lg font-medium mb-4", isDark ? "text-white" : "text-gray-900")}>Create API Key</h3>
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
+                <h3
+                  className={cn(
+                    'text-lg font-medium mb-4',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  Create API Key
+                </h3>
                 <input
                   type="text"
                   placeholder="Key name (e.g., Production Bot)"
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   className={cn(
-                    "w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4",
-                    isDark ? "bg-white/[0.02] border-white/10 placeholder:text-white/30" : "bg-gray-50 border-gray-200"
+                    'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4',
+                    isDark
+                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30'
+                      : 'bg-gray-50 border-gray-200'
                   )}
                   autoFocus
                 />
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { setShowCreateForm(false); setNewKeyName(''); }}
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setNewKeyName('');
+                    }}
                     className={cn(
-                      "flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]",
-                      isDark ? "border-white/10 hover:bg-white/5" : "border-gray-200 hover:bg-gray-50"
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
+                      isDark
+                        ? 'border-white/10 hover:bg-white/5'
+                        : 'border-gray-200 hover:bg-gray-50'
                     )}
                   >
                     Cancel
@@ -739,8 +932,8 @@ const DashboardPage = () => {
                     onClick={createApiKey}
                     disabled={!newKeyName.trim() || creating}
                     className={cn(
-                      "flex-1 py-2.5 rounded-lg text-[13px] font-medium",
-                      "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium',
+                      'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
                     )}
                   >
                     {creating ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create'}
@@ -753,53 +946,120 @@ const DashboardPage = () => {
           {/* XRP Payment Modal */}
           {xrpPayment && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className={cn("w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]", isDark ? "bg-black border-white/10" : "bg-white border-gray-200")}>
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  <h3
+                    className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                  >
                     Pay with XRP - {xrpPayment.name}
                   </h3>
-                  <button onClick={() => { setXrpPayment(null); setTxHash(''); }} className="opacity-40 hover:opacity-100">
+                  <button
+                    onClick={() => {
+                      setXrpPayment(null);
+                      setTxHash('');
+                    }}
+                    className="opacity-40 hover:opacity-100"
+                  >
                     <X size={20} />
                   </button>
                 </div>
 
-                <div className={cn("p-4 rounded-lg mb-4 space-y-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                <div
+                  className={cn(
+                    'p-4 rounded-lg mb-4 space-y-3',
+                    isDark ? 'bg-white/5' : 'bg-gray-50'
+                  )}
+                >
                   <div>
-                    <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>Send exactly</div>
-                    <div className={cn("text-2xl font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <div
+                      className={cn(
+                        'text-[11px] uppercase tracking-wide mb-1',
+                        isDark ? 'text-white/40' : 'text-gray-500'
+                      )}
+                    >
+                      Send exactly
+                    </div>
+                    <div
+                      className={cn(
+                        'text-2xl font-medium',
+                        isDark ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
                       {xrpPayment.amount} XRP
                       {xrpPayment.price && (
-                        <span className={cn("text-[13px] ml-2", isDark ? "text-white/40" : "text-gray-500")}>
+                        <span
+                          className={cn(
+                            'text-[13px] ml-2',
+                            isDark ? 'text-white/40' : 'text-gray-500'
+                          )}
+                        >
                           (${xrpPayment.price.usd})
                         </span>
                       )}
                     </div>
                   </div>
                   <div>
-                    <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>To address</div>
+                    <div
+                      className={cn(
+                        'text-[11px] uppercase tracking-wide mb-1',
+                        isDark ? 'text-white/40' : 'text-gray-500'
+                      )}
+                    >
+                      To address
+                    </div>
                     <div className="flex items-center gap-2">
-                      <code className={cn("text-[13px] font-mono break-all", isDark ? "text-white/80" : "text-gray-700")}>
+                      <code
+                        className={cn(
+                          'text-[13px] font-mono break-all',
+                          isDark ? 'text-white/80' : 'text-gray-700'
+                        )}
+                      >
                         {xrpPayment.destination}
                       </code>
                       <button
                         onClick={() => copyToClipboard(xrpPayment.destination, 'dest')}
                         className="p-1 rounded hover:bg-white/10"
                       >
-                        {copiedId === 'dest' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-60" />}
+                        {copiedId === 'dest' ? (
+                          <CheckCircle size={14} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={14} className="opacity-60" />
+                        )}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <div className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-500")}>Destination Tag (required)</div>
+                    <div
+                      className={cn(
+                        'text-[11px] uppercase tracking-wide mb-1',
+                        isDark ? 'text-white/40' : 'text-gray-500'
+                      )}
+                    >
+                      Destination Tag (required)
+                    </div>
                     <div className="flex items-center gap-2">
-                      <code className={cn("text-[18px] font-mono font-medium", isDark ? "text-primary" : "text-primary")}>
+                      <code
+                        className={cn(
+                          'text-[18px] font-mono font-medium',
+                          isDark ? 'text-primary' : 'text-primary'
+                        )}
+                      >
                         {xrpPayment.destinationTag}
                       </code>
                       <button
                         onClick={() => copyToClipboard(String(xrpPayment.destinationTag), 'tag')}
                         className="p-1 rounded hover:bg-white/10"
                       >
-                        {copiedId === 'tag' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-60" />}
+                        {copiedId === 'tag' ? (
+                          <CheckCircle size={14} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={14} className="opacity-60" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -810,26 +1070,42 @@ const DashboardPage = () => {
                   onClick={submitXrpPayment}
                   disabled={paymentStatus}
                   className={cn(
-                    "w-full py-3 rounded-lg text-[14px] font-medium flex items-center justify-center gap-2 mb-4",
-                    "bg-primary text-white hover:bg-primary/90 disabled:opacity-70"
+                    'w-full py-3 rounded-lg text-[14px] font-medium flex items-center justify-center gap-2 mb-4',
+                    'bg-primary text-white hover:bg-primary/90 disabled:opacity-70'
                   )}
                 >
                   {paymentStatus === 'signing' ? (
-                    <><Loader2 size={16} className="animate-spin" /> Signing...</>
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Signing...
+                    </>
                   ) : paymentStatus === 'submitting' ? (
-                    <><Loader2 size={16} className="animate-spin" /> Submitting...</>
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Submitting...
+                    </>
                   ) : paymentStatus === 'verifying' ? (
-                    <><Loader2 size={16} className="animate-spin" /> Verifying...</>
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Verifying...
+                    </>
                   ) : (
                     <>Pay {xrpPayment.amount} XRP Now</>
                   )}
                 </button>
 
-                <div className={cn("text-center text-[12px] mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+                <div
+                  className={cn(
+                    'text-center text-[12px] mb-3',
+                    isDark ? 'text-white/40' : 'text-gray-500'
+                  )}
+                >
                   — or pay manually —
                 </div>
 
-                <div className={cn("p-3 rounded-lg mb-3 text-[12px]", isDark ? "bg-white/5 text-white/60" : "bg-gray-50 text-gray-600")}>
+                <div
+                  className={cn(
+                    'p-3 rounded-lg mb-3 text-[12px]',
+                    isDark ? 'bg-white/5 text-white/60' : 'bg-gray-50 text-gray-600'
+                  )}
+                >
                   Send from external wallet. Expires in {xrpPayment.expiresIn || '30 minutes'}.
                 </div>
 
@@ -840,16 +1116,20 @@ const DashboardPage = () => {
                     value={txHash}
                     onChange={(e) => setTxHash(e.target.value)}
                     className={cn(
-                      "w-full px-4 py-3 rounded-lg border-[1.5px] text-[13px] font-mono",
-                      isDark ? "bg-white/[0.02] border-white/10 placeholder:text-white/30" : "bg-gray-50 border-gray-200"
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[13px] font-mono',
+                      isDark
+                        ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30'
+                        : 'bg-gray-50 border-gray-200'
                     )}
                   />
                   <button
                     onClick={verifyXrpPayment}
                     disabled={!txHash.trim() || verifyingTx}
                     className={cn(
-                      "w-full py-2.5 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 border-[1.5px]",
-                      isDark ? "border-white/10 hover:bg-white/5 disabled:opacity-50" : "border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                      'w-full py-2.5 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 border-[1.5px]',
+                      isDark
+                        ? 'border-white/10 hover:bg-white/5 disabled:opacity-50'
+                        : 'border-gray-200 hover:bg-gray-50 disabled:opacity-50'
                     )}
                   >
                     {verifyingTx ? (
@@ -868,34 +1148,79 @@ const DashboardPage = () => {
 
           {/* Usage Stats */}
           {usage?.usage?.[0] && (
-            <div className={cn("mb-6 p-5 rounded-xl border-[1.5px]", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+            <div
+              className={cn(
+                'mb-6 p-5 rounded-xl border-[1.5px]',
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
+              )}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>Today's Usage</h3>
-                <span className={cn("text-[12px] px-2 py-1 rounded-full", tiers.find(t => t.id === (usage.usage[0].tier || 'free'))?.color, isDark ? "bg-white/5" : "bg-gray-100")}>
+                <h3
+                  className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                >
+                  Today's Usage
+                </h3>
+                <span
+                  className={cn(
+                    'text-[12px] px-2 py-1 rounded-full',
+                    tiers.find((t) => t.id === (usage.usage[0].tier || 'free'))?.color,
+                    isDark ? 'bg-white/5' : 'bg-gray-100'
+                  )}
+                >
                   {(usage.usage[0].tier || 'free').toUpperCase()}
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <div className={cn("h-2 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
+                  <div
+                    className={cn(
+                      'h-2 rounded-full overflow-hidden',
+                      isDark ? 'bg-white/10' : 'bg-gray-200'
+                    )}
+                  >
                     <div
                       className="h-full bg-primary rounded-full transition-all"
-                      style={{ width: `${Math.min((usage.usage[0].today?.used / usage.usage[0].today?.limit) * 100, 100)}%` }}
+                      style={{
+                        width: `${Math.min((usage.usage[0].today?.used / usage.usage[0].today?.limit) * 100, 100)}%`
+                      }}
                     />
                   </div>
                 </div>
-                <span className={cn("text-[13px] font-mono", isDark ? "text-white/60" : "text-gray-600")}>
-                  {usage.usage[0].today?.used?.toLocaleString()} / {usage.usage[0].today?.limit?.toLocaleString()}
+                <span
+                  className={cn(
+                    'text-[13px] font-mono',
+                    isDark ? 'text-white/60' : 'text-gray-600'
+                  )}
+                >
+                  {usage.usage[0].today?.used?.toLocaleString()} /{' '}
+                  {usage.usage[0].today?.limit?.toLocaleString()}
                 </span>
               </div>
             </div>
           )}
 
           {/* API Keys List */}
-          <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
-            <div className={cn("px-5 py-3 border-b", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+          <div
+            className={cn(
+              'rounded-xl border-[1.5px] overflow-hidden',
+              isDark ? 'border-white/10' : 'border-gray-200'
+            )}
+          >
+            <div
+              className={cn(
+                'px-5 py-3 border-b',
+                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+              )}
+            >
               <div className="flex items-center justify-between">
-                <span className={cn("text-[13px] font-medium", isDark ? "text-white/60" : "text-gray-600")}>Your API Keys</span>
+                <span
+                  className={cn(
+                    'text-[13px] font-medium',
+                    isDark ? 'text-white/60' : 'text-gray-600'
+                  )}
+                >
+                  Your API Keys
+                </span>
                 <button onClick={fetchApiKeys} className="p-1.5 rounded hover:bg-white/10">
                   <RefreshCw size={14} className="opacity-40" />
                 </button>
@@ -909,45 +1234,91 @@ const DashboardPage = () => {
             ) : apiKeys.length === 0 ? (
               <div className="p-12 text-center">
                 <Key size={32} className="mx-auto mb-3 opacity-20" />
-                <p className={cn("text-[14px]", isDark ? "text-white/40" : "text-gray-500")}>No API keys yet</p>
-                <p className={cn("text-[12px] mt-1", isDark ? "text-white/30" : "text-gray-400")}>Create one to get started</p>
+                <p className={cn('text-[14px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                  No API keys yet
+                </p>
+                <p className={cn('text-[12px] mt-1', isDark ? 'text-white/30' : 'text-gray-400')}>
+                  Create one to get started
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-white/10">
                 {apiKeys.map((key) => (
-                  <div key={key.id || key._id} className={cn("px-5 py-4 flex items-center gap-4", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                    <div className={cn("p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-100")}>
+                  <div
+                    key={key.id || key._id}
+                    className={cn(
+                      'px-5 py-4 flex items-center gap-4',
+                      isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+                    )}
+                  >
+                    <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                       <Key size={18} className="opacity-60" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{key.name}</span>
-                        <span className={cn("text-[11px] px-2 py-0.5 rounded-full", isDark ? "bg-white/10 text-white/40" : "bg-gray-100 text-gray-500")}>
+                        <span
+                          className={cn(
+                            'text-[14px] font-medium',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
+                          {key.name}
+                        </span>
+                        <span
+                          className={cn(
+                            'text-[11px] px-2 py-0.5 rounded-full',
+                            isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-500'
+                          )}
+                        >
                           {key.tier || 'free'}
                         </span>
                       </div>
-                      <div className={cn("text-[12px] mt-0.5 font-mono", isDark ? "text-white/40" : "text-gray-500")}>
+                      <div
+                        className={cn(
+                          'text-[12px] mt-0.5 font-mono',
+                          isDark ? 'text-white/40' : 'text-gray-500'
+                        )}
+                      >
                         {key.keyPrefix}••••••••
                       </div>
                     </div>
-                    <div className={cn("text-[12px] text-right", isDark ? "text-white/40" : "text-gray-500")}>
+                    <div
+                      className={cn(
+                        'text-[12px] text-right',
+                        isDark ? 'text-white/40' : 'text-gray-500'
+                      )}
+                    >
                       <div>Created {formatDate(key.createdAt)}</div>
                       {key.lastUsed && <div>Used {formatDate(key.lastUsed)}</div>}
                     </div>
                     <button
                       onClick={() => copyToClipboard(key.keyPrefix, key.id)}
-                      className={cn("p-2 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                      className={cn(
+                        'p-2 rounded-lg',
+                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                      )}
                       title="Copy prefix"
                     >
-                      {copiedId === key.id ? <CheckCircle size={16} className="text-emerald-500" /> : <Copy size={16} className="opacity-40" />}
+                      {copiedId === key.id ? (
+                        <CheckCircle size={16} className="text-emerald-500" />
+                      ) : (
+                        <Copy size={16} className="opacity-40" />
+                      )}
                     </button>
                     <button
                       onClick={() => deleteApiKey(key.id)}
                       disabled={deletingId === key.id}
-                      className={cn("p-2 rounded-lg text-red-500", isDark ? "hover:bg-red-500/10" : "hover:bg-red-50")}
+                      className={cn(
+                        'p-2 rounded-lg text-red-500',
+                        isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'
+                      )}
                       title="Delete key"
                     >
-                      {deletingId === key.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      {deletingId === key.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                     </button>
                   </div>
                 ))}
@@ -957,7 +1328,7 @@ const DashboardPage = () => {
 
           {/* Credit Packages */}
           <div className="mt-8">
-            <h2 className={cn("text-lg font-medium mb-4", isDark ? "text-white" : "text-gray-900")}>
+            <h2 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
               <Zap size={18} className="inline mr-2 text-primary" />
               Buy Credits
             </h2>
@@ -966,15 +1337,24 @@ const DashboardPage = () => {
                 <div
                   key={pkg.id}
                   className={cn(
-                    "p-5 rounded-xl border-[1.5px] transition-colors",
-                    isDark ? "border-white/10 bg-white/[0.02] hover:border-white/20" : "border-gray-200 bg-white hover:border-gray-300"
+                    'p-5 rounded-xl border-[1.5px] transition-colors',
+                    isDark
+                      ? 'border-white/10 bg-white/[0.02] hover:border-white/20'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
                   )}
                 >
-                  <div className={cn("text-[13px] font-medium mb-1", pkg.color)}>{pkg.name}</div>
-                  <div className={cn("text-2xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+                  <div className={cn('text-[13px] font-medium mb-1', pkg.color)}>{pkg.name}</div>
+                  <div
+                    className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                  >
                     ${pkg.price}
                   </div>
-                  <div className={cn("text-[12px] mt-1 mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+                  <div
+                    className={cn(
+                      'text-[12px] mt-1 mb-4',
+                      isDark ? 'text-white/60' : 'text-gray-600'
+                    )}
+                  >
                     {pkg.credits} credits
                   </div>
                   <div className="flex gap-2">
@@ -982,8 +1362,10 @@ const DashboardPage = () => {
                       onClick={() => buyWithXRP('credits', pkg.id)}
                       disabled={purchasing === `xrp_${pkg.id}`}
                       className={cn(
-                        "flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]",
-                        isDark ? "border-white/10 hover:bg-white/5" : "border-gray-200 hover:bg-gray-50"
+                        'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]',
+                        isDark
+                          ? 'border-white/10 hover:bg-white/5'
+                          : 'border-gray-200 hover:bg-gray-50'
                       )}
                     >
                       {purchasing === `xrp_${pkg.id}` ? (
@@ -996,8 +1378,8 @@ const DashboardPage = () => {
                       onClick={() => buyWithStripe('credits', pkg.id)}
                       disabled={purchasing === pkg.id}
                       className={cn(
-                        "flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1",
-                        "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                        'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1',
+                        'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
                       )}
                     >
                       {purchasing === pkg.id ? (
@@ -1018,15 +1400,24 @@ const DashboardPage = () => {
           {/* Subscription Tiers */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Subscription Plans</h2>
-              <div className={cn("flex items-center gap-1 p-1 rounded-lg", isDark ? "bg-white/5" : "bg-gray-100")}>
+              <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Subscription Plans
+              </h2>
+              <div
+                className={cn(
+                  'flex items-center gap-1 p-1 rounded-lg',
+                  isDark ? 'bg-white/5' : 'bg-gray-100'
+                )}
+              >
                 <button
                   onClick={() => setBillingPeriod('monthly')}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors",
+                    'px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors',
                     billingPeriod === 'monthly'
-                      ? "bg-primary text-white"
-                      : isDark ? "text-white/60 hover:text-white" : "text-gray-600 hover:text-gray-900"
+                      ? 'bg-primary text-white'
+                      : isDark
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-gray-600 hover:text-gray-900'
                   )}
                 >
                   Monthly
@@ -1034,17 +1425,23 @@ const DashboardPage = () => {
                 <button
                   onClick={() => setBillingPeriod('yearly')}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors flex items-center gap-1.5",
+                    'px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors flex items-center gap-1.5',
                     billingPeriod === 'yearly'
-                      ? "bg-primary text-white"
-                      : isDark ? "text-white/60 hover:text-white" : "text-gray-600 hover:text-gray-900"
+                      ? 'bg-primary text-white'
+                      : isDark
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-gray-600 hover:text-gray-900'
                   )}
                 >
                   Yearly
-                  <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[10px]",
-                    billingPeriod === 'yearly' ? "bg-white/20" : "bg-emerald-500/20 text-emerald-500"
-                  )}>
+                  <span
+                    className={cn(
+                      'px-1.5 py-0.5 rounded text-[10px]',
+                      billingPeriod === 'yearly'
+                        ? 'bg-white/20'
+                        : 'bg-emerald-500/20 text-emerald-500'
+                    )}
+                  >
                     2mo free
                   </span>
                 </button>
@@ -1059,17 +1456,31 @@ const DashboardPage = () => {
                   <div
                     key={tier.id}
                     className={cn(
-                      "p-5 rounded-xl border-[1.5px] transition-colors",
+                      'p-5 rounded-xl border-[1.5px] transition-colors',
                       isCurrentPlan
-                        ? "border-primary bg-primary/5"
-                        : isDark ? "border-white/10 bg-white/[0.02] hover:border-white/20" : "border-gray-200 bg-white hover:border-gray-300"
+                        ? 'border-primary bg-primary/5'
+                        : isDark
+                          ? 'border-white/10 bg-white/[0.02] hover:border-white/20'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
                     )}
                   >
-                    <div className={cn("text-[13px] font-medium mb-1", tier.color)}>{tier.name}</div>
-                    <div className={cn("text-2xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+                    <div className={cn('text-[13px] font-medium mb-1', tier.color)}>
+                      {tier.name}
+                    </div>
+                    <div
+                      className={cn(
+                        'text-2xl font-normal',
+                        isDark ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
                       {price === 0 ? 'Free' : `$${price.toLocaleString()}`}
                       {price > 0 && (
-                        <span className={cn("text-[12px] ml-1", isDark ? "text-white/40" : "text-gray-500")}>
+                        <span
+                          className={cn(
+                            'text-[12px] ml-1',
+                            isDark ? 'text-white/40' : 'text-gray-500'
+                          )}
+                        >
                           /{billingPeriod === 'yearly' ? 'yr' : 'mo'}
                         </span>
                       )}
@@ -1079,48 +1490,59 @@ const DashboardPage = () => {
                         Save ${tier.savings}/year
                       </div>
                     )}
-                    <div className={cn("text-[12px] space-y-1 mt-2 mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+                    <div
+                      className={cn(
+                        'text-[12px] space-y-1 mt-2 mb-4',
+                        isDark ? 'text-white/60' : 'text-gray-600'
+                      )}
+                    >
                       <div>{tier.credits} credits/mo</div>
                       <div>{tier.rps} req/sec</div>
                     </div>
                     {isCurrentPlan ? (
-                      <div className="py-2 text-center text-[12px] text-primary font-medium">Current Plan</div>
-                    ) : tier.id !== 'free' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => buyWithXRP('tier', tier.id)}
-                          disabled={purchasing === `xrp_${tier.id}`}
-                          className={cn(
-                            "flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]",
-                            isDark ? "border-white/10 hover:bg-white/5" : "border-gray-200 hover:bg-gray-50"
-                          )}
-                        >
-                          {purchasing === `xrp_${tier.id}` ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <>XRP</>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => buyWithStripe('tier', tier.id)}
-                          disabled={purchasing === tier.id}
-                          className={cn(
-                          "flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1",
-                          "bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                        )}
-                      >
-                        {purchasing === tier.id ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <>
-                            <CreditCard size={12} />
-                            Card
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                      <div className="py-2 text-center text-[12px] text-primary font-medium">
+                        Current Plan
+                      </div>
+                    ) : (
+                      tier.id !== 'free' && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => buyWithXRP('tier', tier.id)}
+                            disabled={purchasing === `xrp_${tier.id}`}
+                            className={cn(
+                              'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]',
+                              isDark
+                                ? 'border-white/10 hover:bg-white/5'
+                                : 'border-gray-200 hover:bg-gray-50'
+                            )}
+                          >
+                            {purchasing === `xrp_${tier.id}` ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>XRP</>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => buyWithStripe('tier', tier.id)}
+                            disabled={purchasing === tier.id}
+                            className={cn(
+                              'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1',
+                              'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
+                            )}
+                          >
+                            {purchasing === tier.id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <CreditCard size={12} />
+                                Card
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
                 );
               })}
             </div>

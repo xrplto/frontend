@@ -8,17 +8,17 @@ import styled from '@emotion/styled';
 // Simple styled replacements for MUI components
 const Stack = styled('div')`
   display: flex;
-  flex-direction: ${props => props.direction === 'row' ? 'row' : 'column'};
-  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  justify-content: ${props => props.justifyContent || 'flex-start'};
-  margin-bottom: ${props => props.mb ? `${props.mb * 8}px` : '0'};
-  margin-top: ${props => props.mt ? `${props.mt * 8}px` : '0'};
+  flex-direction: ${(props) => (props.direction === 'row' ? 'row' : 'column')};
+  gap: ${(props) => (props.spacing ? `${props.spacing * 8}px` : '0')};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  justify-content: ${(props) => props.justifyContent || 'flex-start'};
+  margin-bottom: ${(props) => (props.mb ? `${props.mb * 8}px` : '0')};
+  margin-top: ${(props) => (props.mt ? `${props.mt * 8}px` : '0')};
 `;
 
 const Typography = styled('span')`
   display: block;
-  font-size: ${props => {
+  font-size: ${(props) => {
     const v = props.variant;
     if (v === 'p3' || v === 'p4') return '13px';
     if (v === 'd4') return '14px';
@@ -26,11 +26,20 @@ const Typography = styled('span')`
     if (v === 'h4') return '20px';
     return '14px';
   }};
-  color: ${props => props.color === 'error' ? '#f44336' : 'inherit'};
+  color: ${(props) => (props.color === 'error' ? '#f44336' : 'inherit')};
 `;
 
 // Lucide Icons
-import { Image as ImageIcon, Send as SendIcon, X as CloseIcon, XCircle as CancelIcon, PlusCircle as AddCircleIcon, XOctagon as HighlightOffOutlinedIcon, User as PermIdentityIcon, ArrowDownUp as ImportExportIcon } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  Send as SendIcon,
+  X as CloseIcon,
+  XCircle as CancelIcon,
+  PlusCircle as AddCircleIcon,
+  XOctagon as HighlightOffOutlinedIcon,
+  User as PermIdentityIcon,
+  ArrowDownUp as ImportExportIcon
+} from 'lucide-react';
 
 // Loader
 import { ClipLoader } from '../components/Spinners';
@@ -353,11 +362,9 @@ export default function ImportCollection() {
             const ret = res.data;
             setTaxons(ret.taxons);
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       })
-      .catch((err) => {
-      })
+      .catch((err) => {})
       .then(function () {
         // Always executed
         setLoadingTaxons(false);

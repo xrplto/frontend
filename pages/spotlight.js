@@ -45,11 +45,28 @@ function SpotlightPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Spotlight XRPL Tokens
       </h1>
 
-      <div id="back-to-top-anchor" className={notificationPanelOpen ? "mx-auto w-full px-4 mt-4" : "mx-auto max-w-[1920px] px-4 mt-4"}>
+      <div
+        id="back-to-top-anchor"
+        className={
+          notificationPanelOpen ? 'mx-auto w-full px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
+        }
+      >
         <div className="w-full px-0 py-0">
           <Summary />
         </div>
@@ -97,7 +114,7 @@ export async function getStaticProps() {
       'Discover curated spotlight XRPL tokens with the highest assessment scores. Find top-rated, verified tokens with strong fundamentals on the XRP Ledger ecosystem.';
 
     // Additional structured metadata for better SEO
-      'spotlight XRPL tokens, top-rated XRP tokens, curated cryptocurrency, verified tokens, assessment score, crypto fundamentals, DEX tokens, XRP ecosystem spotlight';
+    ('spotlight XRPL tokens, top-rated XRP tokens, curated cryptocurrency, verified tokens, assessment score, crypto fundamentals, DEX tokens, XRP ecosystem spotlight');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';
@@ -117,11 +134,13 @@ export async function getStaticProps() {
           '@type': 'FinancialProduct',
           name: token.name,
           url: `https://xrpl.to/token/${token.slug}`,
-          offers: token.exch ? {
-            '@type': 'Offer',
-            price: token.exch,
-            priceCurrency: 'XRP'
-          } : undefined
+          offers: token.exch
+            ? {
+                '@type': 'Offer',
+                price: token.exch,
+                priceCurrency: 'XRP'
+              }
+            : undefined
         }
       }))
     };

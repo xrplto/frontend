@@ -45,11 +45,28 @@ function NewTokensPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         New XRPL Tokens
       </h1>
 
-      <div id="back-to-top-anchor" className={notificationPanelOpen ? "mx-auto w-full px-4 mt-4" : "mx-auto max-w-[1920px] px-4 mt-4"}>
+      <div
+        id="back-to-top-anchor"
+        className={
+          notificationPanelOpen ? 'mx-auto w-full px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
+        }
+      >
         <div className="w-full px-0 py-0">
           <Summary />
         </div>
@@ -98,7 +115,7 @@ export async function getStaticProps() {
       'Discover the newest XRPL tokens and latest launches on the XRP Ledger. Stay updated with fresh token listings and emerging projects in the XRP ecosystem.';
 
     // Additional structured metadata for better SEO
-      'new XRPL tokens, latest XRP launches, token launches, new cryptocurrency, fresh tokens, DEX tokens, XRP ecosystem new';
+    ('new XRPL tokens, latest XRP launches, token launches, new cryptocurrency, fresh tokens, DEX tokens, XRP ecosystem new');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';

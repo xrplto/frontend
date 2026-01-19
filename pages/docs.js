@@ -1,7 +1,35 @@
 import React, { useState, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
-import { Copy, Menu, X, CheckCircle, Code, Search, Loader2, ChevronRight, ChevronDown, Zap, Clock, BookOpen, Server, Users, AlertTriangle, FileText, Database, BarChart3, Rocket, Hash, Mail, MessageCircle, ExternalLink, Wrench, Key, CreditCard, List } from 'lucide-react';
+import {
+  Copy,
+  Menu,
+  X,
+  CheckCircle,
+  Code,
+  Search,
+  Loader2,
+  ChevronRight,
+  ChevronDown,
+  Zap,
+  Clock,
+  BookOpen,
+  Server,
+  Users,
+  AlertTriangle,
+  FileText,
+  Database,
+  BarChart3,
+  Rocket,
+  Hash,
+  Mail,
+  MessageCircle,
+  ExternalLink,
+  Wrench,
+  Key,
+  CreditCard,
+  List
+} from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
@@ -22,7 +50,13 @@ const ApiDocsPage = () => {
 
   const [copiedBlock, setCopiedBlock] = useState(null);
 
-  const [expandedGroups, setExpandedGroups] = useState({ 'Get Started': true, 'Token APIs': true, 'Account & NFT': true, 'Advanced': true, 'Authentication': true });
+  const [expandedGroups, setExpandedGroups] = useState({
+    'Get Started': true,
+    'Token APIs': true,
+    'Account & NFT': true,
+    Advanced: true,
+    Authentication: true
+  });
 
   const sidebarGroups = [
     {
@@ -68,10 +102,10 @@ const ApiDocsPage = () => {
     }
   ];
 
-  const sections = sidebarGroups.flatMap(g => g.items);
+  const sections = sidebarGroups.flatMap((g) => g.items);
 
   const toggleGroup = (name) => {
-    setExpandedGroups(prev => ({ ...prev, [name]: !prev[name] }));
+    setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   const pageAnchors = {
@@ -127,9 +161,7 @@ const ApiDocsPage = () => {
       { id: 'orderbook', label: 'Orderbook' },
       { id: 'other-xrpl', label: 'Other Endpoints' }
     ],
-    analytics: [
-      { id: 'analytics-endpoints', label: 'All Endpoints' }
-    ],
+    analytics: [{ id: 'analytics-endpoints', label: 'All Endpoints' }],
     launch: [
       { id: 'launch-token', label: 'Launch Token' },
       { id: 'other-launch', label: 'Other Endpoints' }
@@ -139,14 +171,10 @@ const ApiDocsPage = () => {
       { id: 'md5-gen', label: 'MD5 Generation' },
       { id: 'currency-hex', label: 'Currency Hex' },
       { id: 'patterns', label: 'Regex Patterns' },
-      { id: 'caching', label: 'Caching' },
-      ],
-    tools: [
-      { id: 'tools-endpoints', label: 'All Endpoints' }
+      { id: 'caching', label: 'Caching' }
     ],
-    errors: [
-      { id: 'error-codes', label: 'HTTP Status Codes' }
-    ]
+    tools: [{ id: 'tools-endpoints', label: 'All Endpoints' }],
+    errors: [{ id: 'error-codes', label: 'HTTP Status Codes' }]
   };
 
   const copyToClipboard = (text, blockId) => {
@@ -371,17 +399,27 @@ Caching: Default Live (5s), platformStatus 30s, News Live (5min), Cumulative Sta
 Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30K/day), Pro (400/min, 120K/day), Enterprise (1K/min, 300K/day)`
   };
 
-  const CopyButton = ({ text, id, label = "Copy for LLM" }) => (
+  const CopyButton = ({ text, id, label = 'Copy for LLM' }) => (
     <button
       onClick={() => copyToClipboard(text, id)}
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-medium",
+        'flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-medium',
         copiedBlock === id
-          ? "bg-emerald-500/10 text-emerald-500"
-          : isDark ? "bg-white/5 hover:bg-white/10 text-white/60" : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+          ? 'bg-emerald-500/10 text-emerald-500'
+          : isDark
+            ? 'bg-white/5 hover:bg-white/10 text-white/60'
+            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
       )}
     >
-      {copiedBlock === id ? <><CheckCircle size={12} /> Copied!</> : <><Copy size={12} /> {label}</>}
+      {copiedBlock === id ? (
+        <>
+          <CheckCircle size={12} /> Copied!
+        </>
+      ) : (
+        <>
+          <Copy size={12} /> {label}
+        </>
+      )}
     </button>
   );
 
@@ -422,31 +460,55 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-normal text-primary mb-2">All Endpoints</h2>
-                <p className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-600")}>
-                  Complete reference of all {getTotalEndpointCount()} API endpoints organized by category.
+                <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  Complete reference of all {getTotalEndpointCount()} API endpoints organized by
+                  category.
                 </p>
               </div>
               <ApiButton />
             </div>
 
             {Object.entries(API_REFERENCE).map(([key, category]) => (
-              <div key={key} id={`ref-${key}`} className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-                <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+              <div
+                key={key}
+                id={`ref-${key}`}
+                className={cn(
+                  'rounded-xl border-[1.5px] p-5',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'text-[11px] font-medium uppercase tracking-wide mb-4',
+                    isDark ? 'text-white/40' : 'text-gray-500'
+                  )}
+                >
                   {category.label} ({category.endpoints.length})
                 </div>
                 <div className="space-y-2 text-[13px]">
                   {category.endpoints.map((ep) => (
                     <div key={ep.path} className="flex items-start gap-3">
-                      <span className={cn(
-                        "px-1.5 py-0.5 text-[10px] font-medium rounded shrink-0 mt-0.5",
-                        ep.method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
-                      )}>
+                      <span
+                        className={cn(
+                          'px-1.5 py-0.5 text-[10px] font-medium rounded shrink-0 mt-0.5',
+                          ep.method === 'GET'
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : 'bg-amber-500/10 text-amber-500'
+                        )}
+                      >
                         {ep.method}
                       </span>
-                      <code className={cn("font-mono text-[12px] shrink-0", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>
+                      <code
+                        className={cn(
+                          'font-mono text-[12px] shrink-0',
+                          isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
+                        )}
+                      >
                         /v1{ep.path}
                       </code>
-                      <span className={cn("text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
+                      <span
+                        className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}
+                      >
                         {ep.desc}
                       </span>
                     </div>
@@ -464,18 +526,37 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             <div>
               <p className="text-primary text-[13px] font-medium mb-2">Get Started</p>
               <h1 className="text-3xl font-normal mb-3">Welcome to XRPL.to API</h1>
-              <p className={cn("text-[15px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
-                The comprehensive XRP Ledger API for builders who demand excellence. Fast, reliable infrastructure that scales with your ambitions.
+              <p
+                className={cn(
+                  'text-[15px] leading-relaxed',
+                  isDark ? 'text-white/60' : 'text-gray-600'
+                )}
+              >
+                The comprehensive XRP Ledger API for builders who demand excellence. Fast, reliable
+                infrastructure that scales with your ambitions.
               </p>
             </div>
 
             {/* Base URL */}
-            <div id="base-url" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-primary/30 bg-primary/5" : "border-primary/20 bg-primary/5")}>
+            <div
+              id="base-url"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
+              )}
+            >
               <div className="flex items-center gap-2 mb-3">
                 <Server size={16} className="text-primary" />
                 <h3 className="text-[15px] font-medium">Base URL</h3>
               </div>
-              <div className={cn("p-3 rounded-lg font-mono text-[13px]", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'p-3 rounded-lg font-mono text-[13px]',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 https://api.xrpl.to
               </div>
             </div>
@@ -483,41 +564,82 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             {/* Feature Cards */}
             <div id="start-building">
               <h2 className="text-xl font-normal mb-4">Start Building</h2>
-              <p className={cn("text-[14px] mb-5", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[14px] mb-5', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Everything you need to build world-class applications on XRP Ledger.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { icon: Zap, title: 'Quick Start', desc: 'Make your first API call in minutes and start building.', action: null },
-                  { icon: Clock, title: 'Rate Limits', desc: 'Free: 10/min. Pro: 400/min. See API Keys for all tiers.', action: 'api-keys' },
-                  { icon: Code, title: 'API Reference', desc: `${getTotalEndpointCount()} endpoints with full documentation.`, action: 'endpoint-reference' }
+                  {
+                    icon: Zap,
+                    title: 'Quick Start',
+                    desc: 'Make your first API call in minutes and start building.',
+                    action: null
+                  },
+                  {
+                    icon: Clock,
+                    title: 'Rate Limits',
+                    desc: 'Free: 10/min. Pro: 400/min. See API Keys for all tiers.',
+                    action: 'api-keys'
+                  },
+                  {
+                    icon: Code,
+                    title: 'API Reference',
+                    desc: `${getTotalEndpointCount()} endpoints with full documentation.`,
+                    action: 'endpoint-reference'
+                  }
                 ].map((card) => (
                   <div
                     key={card.title}
                     className={cn(
-                      "rounded-xl border-[1.5px] p-5 cursor-pointer transition-colors",
-                      isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)]"
+                      'rounded-xl border-[1.5px] p-5 cursor-pointer transition-colors',
+                      isDark
+                        ? 'border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]'
+                        : 'border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.02)]'
                     )}
                     onClick={() => card.action && setCurrentSection(card.action)}
                   >
                     <card.icon size={20} className="text-primary mb-3" />
                     <h3 className="text-[14px] font-medium mb-1">{card.title}</h3>
-                    <p className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>{card.desc}</p>
+                    <p className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      {card.desc}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Quick Start Example */}
-            <div id="quick-start" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="quick-start"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <h3 className="text-[15px] font-medium mb-3">Quick Start Example</h3>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Get top tokens by 24h volume:
               </p>
-              <div className={cn("p-3 rounded-lg font-mono text-[13px] overflow-x-auto", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
-                <span className="text-primary">curl</span> -X GET "https://api.xrpl.to/v1/tokens?limit=10&sortBy=vol24hxrp"
+              <div
+                className={cn(
+                  'p-3 rounded-lg font-mono text-[13px] overflow-x-auto',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
+                <span className="text-primary">curl</span> -X GET
+                "https://api.xrpl.to/v1/tokens?limit=10&sortBy=vol24hxrp"
               </div>
-              <button onClick={() => handleTryApi('/v1/tokens?limit=5&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button
+                onClick={() => handleTryApi('/v1/tokens?limit=5&sortBy=vol24hxrp')}
+                className={cn(
+                  'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
+                  isDark
+                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                )}
+              >
                 <Code size={12} /> Try It
               </button>
             </div>
@@ -529,84 +651,174 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Fees</h2>
-              <p className={cn("text-[14px]", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Transparent fee structure for trading and token launches on XRPL.to
               </p>
             </div>
 
             {/* Trading Fees */}
-            <div id="trading-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="trading-fees"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-4',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Trading Fees
               </div>
-              <div className={cn("rounded-xl border-[1.5px] p-4 mb-4", isDark ? "border-primary/30 bg-primary/5" : "border-primary/20 bg-primary/5")}>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] p-4 mb-4',
+                  isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
+                )}
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-[15px] font-medium">Platform Trading Fee</span>
                   <span className="text-2xl font-medium text-primary">1.5%</span>
                 </div>
               </div>
-              <div className={cn("space-y-3 text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
+              <div
+                className={cn('space-y-3 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}
+              >
                 <p>
-                  A <span className="text-primary font-medium">1.5% fee</span> is applied to all trades executed through the XRPL.to swap interface. This fee helps maintain and improve the platform.
+                  A <span className="text-primary font-medium">1.5% fee</span> is applied to all
+                  trades executed through the XRPL.to swap interface. This fee helps maintain and
+                  improve the platform.
                 </p>
-                <div className={cn("rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                <div className={cn('rounded-lg p-3', isDark ? 'bg-white/5' : 'bg-gray-50')}>
                   <div className="font-medium mb-2">Example</div>
                   <div>Swapping 1,000 XRP worth of tokens:</div>
-                  <div className="mt-1">Fee: <span className="text-primary">15 XRP</span> (1.5% of 1,000)</div>
+                  <div className="mt-1">
+                    Fee: <span className="text-primary">15 XRP</span> (1.5% of 1,000)
+                  </div>
                 </div>
-                <p className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>
+                <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
                   Note: This fee is separate from any AMM pool fees or network transaction costs.
                 </p>
               </div>
             </div>
 
             {/* Token Launch Fees */}
-            <div id="token-launch-fees" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="token-launch-fees"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-4',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Token Launch Fees
               </div>
-              <p className={cn("text-[13px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Launch your token on the XRP Ledger with our streamlined token creation service.
               </p>
 
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Fee Type</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Amount</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Fee Type
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Amount
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                    <tr
+                      className={
+                        isDark
+                          ? 'border-t border-[rgba(59,130,246,0.1)]'
+                          : 'border-t border-[rgba(59,130,246,0.15)]'
+                      }
+                    >
                       <td className="px-4 py-3 font-medium">Platform Fee</td>
                       <td className="px-4 py-3 text-primary">5 - 30 XRP</td>
-                      <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>Scales with developer allocation %</td>
+                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Scales with developer allocation %
+                      </td>
                     </tr>
-                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                    <tr
+                      className={
+                        isDark
+                          ? 'border-t border-[rgba(59,130,246,0.1)]'
+                          : 'border-t border-[rgba(59,130,246,0.15)]'
+                      }
+                    >
                       <td className="px-4 py-3 font-medium">Base Reserve</td>
                       <td className="px-4 py-3 text-primary">1 XRP</td>
-                      <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>XRPL account reserve requirement</td>
+                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        XRPL account reserve requirement
+                      </td>
                     </tr>
-                    <tr className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
+                    <tr
+                      className={
+                        isDark
+                          ? 'border-t border-[rgba(59,130,246,0.1)]'
+                          : 'border-t border-[rgba(59,130,246,0.15)]'
+                      }
+                    >
                       <td className="px-4 py-3 font-medium">AMM Pool</td>
                       <td className="px-4 py-3 text-primary">Min 1 XRP</td>
-                      <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>Initial liquidity for AMM pool</td>
+                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Initial liquidity for AMM pool
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <div className={cn("rounded-lg p-4", isDark ? "bg-white/5" : "bg-gray-50")}>
+              <div className={cn('rounded-lg p-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
                 <div className="font-medium mb-2 text-[13px]">Typical Total Cost</div>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-medium text-primary">10 - 50 XRP</span>
-                  <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>depending on configuration</span>
+                  <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                    depending on configuration
+                  </span>
                 </div>
               </div>
 
-              <div className={cn("mt-4 space-y-2 text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
+              <div
+                className={cn(
+                  'mt-4 space-y-2 text-[13px]',
+                  isDark ? 'text-white/60' : 'text-gray-600'
+                )}
+              >
                 <div className="font-medium">What's included:</div>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>Token creation and configuration</li>
@@ -629,29 +841,68 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.tokens} id="llm-tokens-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
                 Use <code className="text-primary">md5</code> (32-char hex) to identify tokens.
-                <button onClick={() => setCurrentSection('reference')} className="text-primary hover:underline ml-1">Learn how to generate md5 →</button>
+                <button
+                  onClick={() => setCurrentSection('reference')}
+                  className="text-primary hover:underline ml-1"
+                >
+                  Learn how to generate md5 →
+                </button>
               </span>
             </div>
 
             {/* GET /tokens */}
-            <div id="get-tokens" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="get-tokens"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/tokens</code>
               </div>
-              <p className={cn("text-[13px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
                 List all tokens with filtering and sorting
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -670,40 +921,100 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['showDate', 'bool - Include date fields'],
                       ['skipMetrics', 'bool - Skip global metrics for faster response']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/tokens?limit=20&sortBy=vol24hxrp&sortType=desc
                 </pre>
               </div>
-              <button onClick={() => handleTryApi('/v1/tokens?limit=10&sortBy=vol24hxrp')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button
+                onClick={() => handleTryApi('/v1/tokens?limit=10&sortBy=vol24hxrp')}
+                className={cn(
+                  'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
+                  isDark
+                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                )}
+              >
                 <Code size={12} /> Try It
               </button>
             </div>
 
             {/* GET /token/{id} */}
-            <div id="get-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="get-token"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/token/{'{id}'}</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
-                Get single token by <span className="text-primary font-medium">md5</span> (recommended), slug, or issuer_currency format.
-                <button onClick={() => setCurrentSection('reference')} className="text-primary hover:underline ml-1">See Reference →</button>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Get single token by <span className="text-primary font-medium">md5</span>{' '}
+                (recommended), slug, or issuer_currency format.
+                <button
+                  onClick={() => setCurrentSection('reference')}
+                  className="text-primary hover:underline ml-1"
+                >
+                  See Reference →
+                </button>
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-3", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-3',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Format</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Example</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Format
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Example
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -712,34 +1023,83 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['slug', 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-SOLO'],
                       ['issuer_currency', 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...']
                     ].map(([format, example]) => (
-                      <tr key={format} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className={format.includes('recommended') ? "text-primary" : ""}>{format}</code></td>
-                        <td className={cn("px-3 py-2 font-mono text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>{example}</td>
+                      <tr
+                        key={format}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className={format.includes('recommended') ? 'text-primary' : ''}>
+                            {format}
+                          </code>
+                        </td>
+                        <td
+                          className={cn(
+                            'px-3 py-2 font-mono text-[11px]',
+                            isDark ? 'text-white/60' : 'text-gray-600'
+                          )}
+                        >
+                          {example}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /v1/token/0413ca7cfc258dfaf698c02fe304e607
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/token/0413ca7cfc258dfaf698c02fe304e607
                 </pre>
               </div>
-              <button onClick={() => handleTryApi('/v1/token/0413ca7cfc258dfaf698c02fe304e607')} className={cn("mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary", isDark ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-primary/30 bg-primary/5 hover:bg-primary/10")}>
+              <button
+                onClick={() => handleTryApi('/v1/token/0413ca7cfc258dfaf698c02fe304e607')}
+                className={cn(
+                  'mt-3 flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-medium text-primary',
+                  isDark
+                    ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                    : 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                )}
+              >
                 <Code size={12} /> Try It
               </button>
             </div>
 
             {/* POST /search */}
-            <div id="post-search" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="post-search"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">
+                  POST
+                </span>
                 <code className="text-[15px] font-mono">/v1/search</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Search tokens by name/symbol/issuer
               </p>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
                   {`Body: { "search": "solo", "page": 0, "limit": 20 }`}
                 </pre>
@@ -747,8 +1107,19 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             </div>
 
             {/* Other endpoints */}
-            <div id="other-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="other-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Other Endpoints
               </div>
               <div className="space-y-2 text-[13px]">
@@ -756,12 +1127,25 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   ['GET', '/v1/slugs', 'Get all token slugs'],
                   ['GET', '/v1/tags', 'Get all token tags with counts'],
                   ['GET', '/v1/issuer/{address}', 'Get tokens from same issuer'],
-                  ['GET', '/v1/traders/token-traders/{md5}', 'Top traders with P&L (sortBy: volume|pnl|trades)']
+                  [
+                    'GET',
+                    '/v1/traders/token-traders/{md5}',
+                    'Top traders with P&L (sortBy: volume|pnl|trades)'
+                  ]
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -777,28 +1161,63 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.market} id="llm-market-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                Use <code className="text-primary">md5</code> (32-char hex) to identify tokens in chart/holder endpoints.
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                Use <code className="text-primary">md5</code> (32-char hex) to identify tokens in
+                chart/holder endpoints.
               </span>
             </div>
 
             {/* OHLC */}
-            <div id="ohlc" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="ohlc"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/ohlc/{'{md5}'}</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Get OHLC candlestick chart data
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -808,42 +1227,89 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['interval', '1m | 5m | 15m | 30m | 1h | 4h | 1d | 1w'],
                       ['vs_currency', 'XRP | USD | EUR | JPY | CNH (default: XRP)']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1D
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/ohlc/0413ca7cfc258dfaf698c02fe304e607?range=1D
                 </pre>
               </div>
             </div>
 
             {/* Other market endpoints */}
-            <div id="other-market" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="other-market"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Other Endpoints
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/sparkline/{md5}', 'Sparkline data (period: 24h|7d, lightweight, maxPoints)'],
+                  [
+                    'GET',
+                    '/v1/sparkline/{md5}',
+                    'Sparkline data (period: 24h|7d, lightweight, maxPoints)'
+                  ],
                   ['GET', '/v1/holders/list/{md5}', 'Top token holders (start, limit)'],
                   ['GET', '/v1/holders/info/{md5}', 'Holder distribution statistics'],
                   ['GET', '/v1/holders/graph/{md5}', 'Holder distribution graph'],
-                  ['GET', '/v1/rsi', 'RSI indicators with filtering (all timeframes, market/volume/price filters)'],
+                  [
+                    'GET',
+                    '/v1/rsi',
+                    'RSI indicators with filtering (all timeframes, market/volume/price filters)'
+                  ],
                   ['POST', '/v1/metrics', 'Historical token metrics (body: { md5, range })'],
                   ['GET', '/v1/stats', 'Global platform metrics (30s)'],
                   ['GET', '/v1/news', 'XRPL news with sentiment (Live)'],
                   ['GET', '/v1/news/search?q={query}', 'Search news by title/summary/body']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -859,28 +1325,63 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.trading} id="llm-trading-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                Use <code className="text-primary">md5</code> for tokens, <code className="text-primary">account</code> (r-address) for wallets.
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                Use <code className="text-primary">md5</code> for tokens,{' '}
+                <code className="text-primary">account</code> (r-address) for wallets.
               </span>
             </div>
 
             {/* GET /history */}
-            <div id="history" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="history"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/history</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Get trade history for a token
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -894,62 +1395,142 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['xrpOnly', 'bool - Only XRP trades'],
                       ['xrpAmount', 'Minimum XRP amount filter']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[12px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /v1/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/history?md5=0413ca7cfc258dfaf698c02fe304e607&limit=50
                 </pre>
               </div>
             </div>
 
             {/* AMM Endpoints */}
-            <div id="amm-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="amm-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 AMM Pools
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/amm', 'List AMM pools (token: md5 to filter, sortBy: fees|apy|liquidity|volume)'],
-                  ['GET', '/v1/amm/info', 'Pool info (asset, asset2: md5/slug/issuer_currency or XRP)'],
-                  ['GET', '/v1/amm/liquidity-chart', 'TVL history (token: md5/slug/issuer_currency)']
+                  [
+                    'GET',
+                    '/v1/amm',
+                    'List AMM pools (token: md5 to filter, sortBy: fees|apy|liquidity|volume)'
+                  ],
+                  [
+                    'GET',
+                    '/v1/amm/info',
+                    'Pool info (asset, asset2: md5/slug/issuer_currency or XRP)'
+                  ],
+                  [
+                    'GET',
+                    '/v1/amm/liquidity-chart',
+                    'TVL history (token: md5/slug/issuer_currency)'
+                  ]
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-start gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px] shrink-0">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden mt-3", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden mt-3',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
-                  <span className="text-emerald-500">GET</span> /v1/amm?token=0413ca7cfc258dfaf698c02fe304e607{'\n'}
-                  <span className="text-emerald-500">GET</span> /v1/amm/info?asset=XRP&asset2=0413ca7cfc258dfaf698c02fe304e607
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/amm?token=0413ca7cfc258dfaf698c02fe304e607{'\n'}
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/amm/info?asset=XRP&asset2=0413ca7cfc258dfaf698c02fe304e607
                 </pre>
               </div>
             </div>
 
             {/* DEX Quote */}
-            <div id="dex-quote" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="dex-quote"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">
+                  POST
+                </span>
                 <code className="text-[15px] font-mono">/v1/dex/quote</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Get swap quote via ripple_path_find. Supports md5/slug/issuer_currency for tokens.
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-3", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-3',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Body Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Body Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -959,9 +1540,20 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['source_amount', 'Amount to swap'],
                       ['destination_account', 'Recipient address']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -970,19 +1562,36 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             </div>
 
             {/* Other trading endpoints */}
-            <div id="other-trading" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="other-trading"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Other Endpoints
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/pairs/{md5}', 'Trading pairs for token'],
-                  ['GET', '/v1/stats/rates', 'Exchange rates (token1, token2: md5/slug/issuer_currency)']
+                  [
+                    'GET',
+                    '/v1/stats/rates',
+                    'Exchange rates (token1, token2: md5/slug/issuer_currency)'
+                  ]
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -998,52 +1607,119 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.account} id="llm-account-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifier:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                Use <code className="text-primary">account</code> or <code className="text-primary">address</code> (r-address format, e.g., rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9).
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                Use <code className="text-primary">account</code> or{' '}
+                <code className="text-primary">address</code> (r-address format, e.g.,
+                rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9).
               </span>
             </div>
 
             {/* Account endpoints list */}
-            <div id="account-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="account-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/account/balance/{account}', 'Detailed XRP balance with reserves'],
                   ['POST', '/v1/account/balance', 'Batch balances (body: { accounts[] max 100 })'],
-                  ['GET', '/v1/account/info/{account}', 'Pair balance info (curr1, issuer1, curr2, issuer2)'],
-                  ['GET', '/v1/account/tx/{account}', 'Trade history by pair (curr1, issuer1, curr2, issuer2)'],
-                  ['GET', '/v1/account/offers/{account}', 'Open DEX offers (pair, page, limit max:50)'],
+                  [
+                    'GET',
+                    '/v1/account/info/{account}',
+                    'Pair balance info (curr1, issuer1, curr2, issuer2)'
+                  ],
+                  [
+                    'GET',
+                    '/v1/account/tx/{account}',
+                    'Trade history by pair (curr1, issuer1, curr2, issuer2)'
+                  ],
+                  [
+                    'GET',
+                    '/v1/account/offers/{account}',
+                    'Open DEX offers (pair, page, limit max:50)'
+                  ],
                   ['GET', '/v1/traders/{address}', 'Trader profile with stats'],
                   ['GET', '/v1/watchlist?account={account}', 'User watchlist'],
                   ['POST', '/v1/watchlist', 'Add/remove token (body: { account, md5, action })'],
-                  ['POST', '/v1/oauth/twitter/oauth1/request', 'Twitter OAuth request token (body: { callbackUrl })'],
+                  [
+                    'POST',
+                    '/v1/oauth/twitter/oauth1/request',
+                    'Twitter OAuth request token (body: { callbackUrl })'
+                  ],
                   ['POST', '/v1/oauth/twitter/oauth1/access', 'Twitter OAuth access token']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* tx detail */}
-            <div id="account-tx" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="account-tx"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/tx/{'{account}'}</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Get paginated transaction history (rippled: tx)
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px]", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px]',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1055,9 +1731,20 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['tx_type', 'Filter by transaction type'],
                       ['forward', 'bool - Chronological order']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1075,16 +1762,35 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.nft} id="llm-nft-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                <code className="text-primary">NFTokenID</code> (64-char hex) for NFTs, <code className="text-primary">slug</code> for collections.
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                <code className="text-primary">NFTokenID</code> (64-char hex) for NFTs,{' '}
+                <code className="text-primary">slug</code> for collections.
               </span>
             </div>
 
             {/* NFT endpoints */}
-            <div id="single-nft" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="single-nft"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Single NFT
               </div>
               <div className="space-y-2 text-[13px]">
@@ -1094,16 +1800,29 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   ['GET', '/v1/nft', 'List NFTs (cid, issuer, page, limit, sort)']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div id="collections" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="collections"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Collections
               </div>
               <div className="space-y-2 text-[13px]">
@@ -1119,23 +1838,40 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   ['GET', '/v1/nft/collections/{slug}/ownership', 'Ownership distribution']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div id="activity" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="activity"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Activity & Traders
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/nft/activity', 'Recent NFT activity'],
                   ['GET', '/v1/nft/history', 'NFT transaction history'],
-                  ['GET', '/v1/nft/traders/active', 'Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume)'],
+                  [
+                    'GET',
+                    '/v1/nft/traders/active',
+                    'Active traders (sortBy: balance|buyVolume|sellVolume|totalVolume)'
+                  ],
                   ['GET', '/v1/nft/traders/{account}/volume', 'Trader volume stats'],
                   ['GET', '/v1/nft/accounts/{address}/nfts', 'NFTs owned by account (limit, skip)'],
                   ['GET', '/v1/nft/stats/global', 'Global NFT stats'],
@@ -1145,9 +1881,18 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   ['GET', '/v1/nft/pin/status/{hash}', 'Get IPFS pin status']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1163,28 +1908,65 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.xrpl} id="llm-xrpl-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                <code className="text-primary">currency</code> (3-char or 40-char hex), <code className="text-primary">issuer</code> (r-address), <code className="text-primary">hash</code> (64-char tx hash).
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                <code className="text-primary">currency</code> (3-char or 40-char hex),{' '}
+                <code className="text-primary">issuer</code> (r-address),{' '}
+                <code className="text-primary">hash</code> (64-char tx hash).
               </span>
             </div>
 
             {/* Orderbook detail */}
-            <div id="orderbook" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="orderbook"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">GET</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-emerald-500/10 text-emerald-500 uppercase tracking-wide">
+                  GET
+                </span>
                 <code className="text-[15px] font-mono">/v1/orderbook</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
-                Live orderbook (rippled: book_offers). Supports <span className="text-primary">md5/slug/issuer_currency</span> for tokens.
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                Live orderbook (rippled: book_offers). Supports{' '}
+                <span className="text-primary">md5/slug/issuer_currency</span> for tokens.
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1197,27 +1979,68 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['quote_issuer', 'Legacy: issuer r-address'],
                       ['limit', 'int (default: 20, max: 400)']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className={param === 'base' || param === 'quote' ? "text-primary" : ""}>{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code
+                            className={param === 'base' || param === 'quote' ? 'text-primary' : ''}
+                          >
+                            {param}
+                          </code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("relative group rounded-lg overflow-hidden", isDark ? "bg-[rgba(59,130,246,0.02)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'relative group rounded-lg overflow-hidden',
+                  isDark
+                    ? 'bg-[rgba(59,130,246,0.02)]'
+                    : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <pre className="p-3 font-mono text-[11px] overflow-x-auto m-0">
-                  <span className={isDark ? "text-white/40" : "text-gray-500"}># Using md5 (recommended)</span>{'\n'}
-                  <span className="text-emerald-500">GET</span> /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607{'\n'}
-                  <span className={isDark ? "text-white/40" : "text-gray-500"}># Legacy format still works</span>{'\n'}
-                  <span className="text-emerald-500">GET</span> /v1/orderbook?base_currency=XRP&quote_currency=534F4C4F...&quote_issuer=rsoLo...
+                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>
+                    # Using md5 (recommended)
+                  </span>
+                  {'\n'}
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/orderbook?base=XRP&quote=0413ca7cfc258dfaf698c02fe304e607{'\n'}
+                  <span className={isDark ? 'text-white/40' : 'text-gray-500'}>
+                    # Legacy format still works
+                  </span>
+                  {'\n'}
+                  <span className="text-emerald-500">GET</span>{' '}
+                  /v1/orderbook?base_currency=XRP&quote_currency=534F4C4F...&quote_issuer=rsoLo...
                 </pre>
               </div>
             </div>
 
             {/* Other XRPL endpoints */}
-            <div id="other-xrpl" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="other-xrpl"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Other Endpoints
               </div>
               <div className="space-y-2 text-[13px]">
@@ -1227,9 +2050,18 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                   ['POST', '/v1/pathfinding/ripplepathfind', 'Ripple path find']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1245,30 +2077,58 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.analytics} id="llm-analytics-section" />
             </div>
 
-            <div className={cn("rounded-lg p-3 text-[12px]", isDark ? "bg-primary/5 border border-primary/20" : "bg-primary/5 border border-primary/20")}>
+            <div
+              className={cn(
+                'rounded-lg p-3 text-[12px]',
+                isDark
+                  ? 'bg-primary/5 border border-primary/20'
+                  : 'bg-primary/5 border border-primary/20'
+              )}
+            >
               <span className="text-primary font-medium">Identifiers:</span>{' '}
-              <span className={isDark ? "text-white/70" : "text-gray-600"}>
-                Use <code className="text-primary">md5</code> for tokens, <code className="text-primary">address</code> (r-address) for traders.
+              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>
+                Use <code className="text-primary">md5</code> for tokens,{' '}
+                <code className="text-primary">address</code> (r-address) for traders.
               </span>
             </div>
 
-            <div id="analytics-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="analytics-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/analytics/token/{md5}', 'Token analytics (OMCF)'],
-                  ['GET', '/v1/analytics/trader/{address}/{md5}', 'Trader metrics for specific token'],
-                  ['GET', '/v1/traders/token-traders/{md5}', 'Top traders (sortBy: pnl|trades|volume)'],
+                  [
+                    'GET',
+                    '/v1/analytics/trader/{address}/{md5}',
+                    'Trader metrics for specific token'
+                  ],
+                  [
+                    'GET',
+                    '/v1/traders/token-traders/{md5}',
+                    'Top traders (sortBy: pnl|trades|volume)'
+                  ],
                   ['GET', '/v1/analytics/trader-stats/{address}', 'Cumulative trader stats'],
                   ['GET', '/v1/analytics/cumulative-stats', 'All traders (Live)'],
-                  ['GET', '/v1/analytics/market-metrics', 'Daily market metrics (startDate required)'],
+                  [
+                    'GET',
+                    '/v1/analytics/market-metrics',
+                    'Daily market metrics (startDate required)'
+                  ],
                   ['GET', '/v1/analytics/trader/{address}/volume-history', 'Volume chart data'],
                   ['GET', '/v1/analytics/trader/{address}/trade-history', 'Trade count history'],
                   ['GET', '/v1/analytics/trader/{address}/roi-history', 'ROI history']
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1285,20 +2145,47 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             </div>
 
             {/* POST /launch-token */}
-            <div id="launch-token" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="launch-token"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="flex items-center gap-3 mb-3">
-                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">POST</span>
+                <span className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-500 uppercase tracking-wide">
+                  POST
+                </span>
                 <code className="text-[15px] font-mono">/v1/launch-token</code>
               </div>
-              <p className={cn("text-[13px] mb-3", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[13px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Initialize token launch with optional anti-snipe mode
               </p>
-              <div className={cn("rounded-lg overflow-hidden border-[1.5px] mb-4", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <div
+                className={cn(
+                  'rounded-lg overflow-hidden border-[1.5px] mb-4',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[12px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Body Param</th>
-                      <th className={cn("text-left px-3 py-2 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Body Param
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-3 py-2 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Description
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1318,66 +2205,157 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                       ['twitter', 'Twitter handle'],
                       ['imageData', 'Base64 token image']
                     ].map(([param, desc]) => (
-                      <tr key={param} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className="px-3 py-2"><code className="text-primary">{param}</code></td>
-                        <td className={cn("px-3 py-2", isDark ? "text-white/60" : "text-gray-600")}>{desc}</td>
+                      <tr
+                        key={param}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td className="px-3 py-2">
+                          <code className="text-primary">{param}</code>
+                        </td>
+                        <td className={cn('px-3 py-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {desc}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className={cn("mt-4 p-3 rounded-lg text-[12px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+              <div
+                className={cn(
+                  'mt-4 p-3 rounded-lg text-[12px]',
+                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                )}
+              >
                 <div className="font-medium mb-2">Costs</div>
-                <div className={cn("space-y-1", isDark ? "text-white/60" : "text-gray-600")}>
-                  <div>Platform fee: <span className="text-primary">5-30 XRP</span> (0-30% dev → 5-20 XRP, 30-95% dev → 20-30 XRP)</div>
-                  <div>Base reserve: <span className="text-primary">1 XRP</span>, Owner reserve: <span className="text-primary">0.2 XRP</span>/object</div>
-                  <div>Breakdown: issuer(1) + fee(5-30) + holder(1) + AMM liquidity + tx fees(~1.8)</div>
-                  <div className="mt-2">Typical total: <span className="text-primary font-medium">10-50 XRP</span></div>
+                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  <div>
+                    Platform fee: <span className="text-primary">5-30 XRP</span> (0-30% dev → 5-20
+                    XRP, 30-95% dev → 20-30 XRP)
+                  </div>
+                  <div>
+                    Base reserve: <span className="text-primary">1 XRP</span>, Owner reserve:{' '}
+                    <span className="text-primary">0.2 XRP</span>/object
+                  </div>
+                  <div>
+                    Breakdown: issuer(1) + fee(5-30) + holder(1) + AMM liquidity + tx fees(~1.8)
+                  </div>
+                  <div className="mt-2">
+                    Typical total: <span className="text-primary font-medium">10-50 XRP</span>
+                  </div>
                 </div>
               </div>
-              <div className={cn("mt-3 p-3 rounded-lg text-[12px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+              <div
+                className={cn(
+                  'mt-3 p-3 rounded-lg text-[12px]',
+                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                )}
+              >
                 <div className="font-medium mb-2">Status Flow</div>
-                <div className={cn("font-mono text-[10px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
-                  initializing → awaiting_funding → partial_funding → funded → configuring_issuer → registering_token → creating_trustline → sending_tokens → creating_checks → creating_amm → scheduling_blackhole → success/completed
+                <div
+                  className={cn(
+                    'font-mono text-[10px] leading-relaxed',
+                    isDark ? 'text-white/60' : 'text-gray-600'
+                  )}
+                >
+                  initializing → awaiting_funding → partial_funding → funded → configuring_issuer →
+                  registering_token → creating_trustline → sending_tokens → creating_checks →
+                  creating_amm → scheduling_blackhole → success/completed
                 </div>
               </div>
-              <div className={cn("mt-3 p-3 rounded-lg text-[12px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+              <div
+                className={cn(
+                  'mt-3 p-3 rounded-lg text-[12px]',
+                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                )}
+              >
                 <div className="font-medium mb-2">Anti-Snipe Mode</div>
-                <div className={cn("space-y-1", isDark ? "text-white/60" : "text-gray-600")}>
+                <div className={cn('space-y-1', isDark ? 'text-white/60' : 'text-gray-600')}>
                   <div>Enables RequireAuth flag preventing unauthorized trustlines</div>
                   <div>250 pre-created tickets (XRPL max) for fast parallel authorization</div>
                   <div>5-minute auth window after AMM created</div>
                   <div>After window: RequireAuth removed → issuer blackholed</div>
                 </div>
               </div>
-              <div className={cn("mt-3 p-3 rounded-lg text-[12px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+              <div
+                className={cn(
+                  'mt-3 p-3 rounded-lg text-[12px]',
+                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                )}
+              >
                 <div className="font-medium mb-2">Final State</div>
-                <div className={isDark ? "text-white/60" : "text-gray-600"}>
-                  Issuer: ~1 XRP locked (blackholed) | Holder: ~1.4 XRP locked (base + LP token reserve, blackholed)
+                <div className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                  Issuer: ~1 XRP locked (blackholed) | Holder: ~1.4 XRP locked (base + LP token
+                  reserve, blackholed)
                 </div>
               </div>
             </div>
 
             {/* Other launch endpoints */}
-            <div id="other-launch" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="other-launch"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Other Endpoints
               </div>
               <div className="space-y-2 text-[13px]">
                 {[
-                  ['GET', '/v1/launch-token/status/{sessionId}', 'Poll status (every 3s recommended)'],
-                  ['DELETE', '/v1/launch-token/{sessionId}', 'Cancel and refund (allowed before creating_amm)'],
+                  [
+                    'GET',
+                    '/v1/launch-token/status/{sessionId}',
+                    'Poll status (every 3s recommended)'
+                  ],
+                  [
+                    'DELETE',
+                    '/v1/launch-token/{sessionId}',
+                    'Cancel and refund (allowed before creating_amm)'
+                  ],
                   ['POST', '/v1/launch-token/{sessionId}/cancel', 'Cancel alternative'],
-                  ['POST', '/v1/launch-token/authorize', 'Request trustline auth (anti-snipe: issuer, currency, account)'],
+                  [
+                    'POST',
+                    '/v1/launch-token/authorize',
+                    'Request trustline auth (anti-snipe: issuer, currency, account)'
+                  ],
                   ['GET', '/v1/launch-token/queue-status/{sessionId}', 'Auth queue status'],
                   ['GET', '/v1/launch-token/auth-info/{issuer}/{currency}', 'Token auth info'],
-                  ['GET', '/v1/launch-token/check-auth/{issuer}/{currency}/{address}', 'Check authorization'],
-                  ['GET', '/v1/launch-token/calculate-funding', 'Calculate XRP required (ticketCount, antiSnipeMode)']
+                  [
+                    'GET',
+                    '/v1/launch-token/check-auth/{issuer}/{currency}/{address}',
+                    'Check authorization'
+                  ],
+                  [
+                    'GET',
+                    '/v1/launch-token/calculate-funding',
+                    'Calculate XRP required (ticketCount, antiSnipeMode)'
+                  ]
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", method === 'GET' ? "bg-emerald-500/10 text-emerald-500" : method === 'DELETE' ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500")}>{method}</span>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : method === 'DELETE'
+                            ? 'bg-red-500/10 text-red-500'
+                            : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1393,18 +2371,34 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
               <CopyButton text={llmSnippets.tools} id="llm-tools-section" />
             </div>
 
-            <div id="tools-endpoints" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+            <div
+              id="tools-endpoints"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <div className="space-y-2 text-[13px]">
                 {[
                   ['GET', '/v1/health', 'API health check (returns "success")'],
                   ['GET', '/v1/testnet/{address}', 'Get XRP balance on testnet'],
-                  ['GET', '/v1/integrations/xrpnft/tokens', 'Get tokens in XRPNFT format (filter param)'],
-                  ['GET', '/v1/integrations/xrpnft/filter-by-account/{account}', 'Get NFTs owned by account (XRPNFT format)']
+                  [
+                    'GET',
+                    '/v1/integrations/xrpnft/tokens',
+                    'Get tokens in XRPNFT format (filter param)'
+                  ],
+                  [
+                    'GET',
+                    '/v1/integrations/xrpnft/filter-by-account/{account}',
+                    'Get NFTs owned by account (XRPNFT format)'
+                  ]
                 ].map(([method, path, desc]) => (
                   <div key={path} className="flex items-center gap-3">
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">{method}</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-500">
+                      {method}
+                    </span>
                     <code className="font-mono text-[12px]">{path}</code>
-                    <span className={isDark ? "text-white/40" : "text-gray-500"}>- {desc}</span>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {desc}</span>
                   </div>
                 ))}
               </div>
@@ -1421,70 +2415,194 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             </div>
 
             {/* Token Identifiers */}
-            <div id="token-ids" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="token-ids"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Token Identifiers
               </div>
               <div className="space-y-2 text-[13px]">
-                <div><code className="text-primary">md5</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- 32-char hex, e.g., 0413ca7cfc258dfaf698c02fe304e607</span></div>
-                <div><code className="text-primary">slug</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- issuer-currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00...</span></div>
-                <div><code className="text-primary">issuer_currency</code> <span className={isDark ? "text-white/60" : "text-gray-600"}>- issuer_currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...</span></div>
+                <div>
+                  <code className="text-primary">md5</code>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    - 32-char hex, e.g., 0413ca7cfc258dfaf698c02fe304e607
+                  </span>
+                </div>
+                <div>
+                  <code className="text-primary">slug</code>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    - issuer-currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz-534F4C4F00...
+                  </span>
+                </div>
+                <div>
+                  <code className="text-primary">issuer_currency</code>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    - issuer_currencyHex, e.g., rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00...
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* MD5 Generation */}
-            <div id="md5-gen" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="md5-gen"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 MD5 Generation
               </div>
-              <div className={cn("rounded-lg p-3 font-mono text-[12px]", isDark ? "bg-black/40" : "bg-gray-50")}>
-                <div className={isDark ? "text-white/60" : "text-gray-600"}>// Input</div>
-                <div>rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000</div>
-                <div className={cn("mt-2", isDark ? "text-white/60" : "text-gray-600")}>// Output</div>
+              <div
+                className={cn(
+                  'rounded-lg p-3 font-mono text-[12px]',
+                  isDark ? 'bg-black/40' : 'bg-gray-50'
+                )}
+              >
+                <div className={isDark ? 'text-white/60' : 'text-gray-600'}>// Input</div>
+                <div>
+                  rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz_534F4C4F00000000000000000000000000000000
+                </div>
+                <div className={cn('mt-2', isDark ? 'text-white/60' : 'text-gray-600')}>
+                  // Output
+                </div>
                 <div className="text-primary">0413ca7cfc258dfaf698c02fe304e607</div>
               </div>
             </div>
 
             {/* Currency Hex */}
-            <div id="currency-hex" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="currency-hex"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Currency Hex (codes {'>'}3 chars)
               </div>
-              <div className={cn("rounded-lg p-3 font-mono text-[12px]", isDark ? "bg-black/40" : "bg-gray-50")}>
-                <div>SOLO = <span className="text-primary">534F4C4F00000000000000000000000000000000</span></div>
-                <div className={cn("mt-2 text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+              <div
+                className={cn(
+                  'rounded-lg p-3 font-mono text-[12px]',
+                  isDark ? 'bg-black/40' : 'bg-gray-50'
+                )}
+              >
+                <div>
+                  SOLO ={' '}
+                  <span className="text-primary">534F4C4F00000000000000000000000000000000</span>
+                </div>
+                <div className={cn('mt-2 text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
                   Buffer.from('SOLO').toString('hex').toUpperCase().padEnd(40, '0')
                 </div>
               </div>
             </div>
 
             {/* Patterns */}
-            <div id="patterns" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="patterns"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Regex Patterns
               </div>
               <div className="space-y-2 text-[12px] font-mono">
-                <div><span className="text-primary">Account:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>^r[1-9A-HJ-NP-Za-km-z]{'{24,34}'}$</span></div>
-                <div><span className="text-primary">NFTokenID:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>^[A-Fa-f0-9]{'{64}'}$</span></div>
-                <div><span className="text-primary">txHash:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>^[A-Fa-f0-9]{'{64}'}$</span></div>
-                <div><span className="text-primary">md5:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>^[a-f0-9]{'{32}'}$</span></div>
+                <div>
+                  <span className="text-primary">Account:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    ^r[1-9A-HJ-NP-Za-km-z]{'{24,34}'}$
+                  </span>
+                </div>
+                <div>
+                  <span className="text-primary">NFTokenID:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    ^[A-Fa-f0-9]{'{64}'}$
+                  </span>
+                </div>
+                <div>
+                  <span className="text-primary">txHash:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    ^[A-Fa-f0-9]{'{64}'}$
+                  </span>
+                </div>
+                <div>
+                  <span className="text-primary">md5:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    ^[a-f0-9]{'{32}'}$
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Caching */}
-            <div id="caching" className={cn("rounded-xl border-[1.5px] p-5", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+            <div
+              id="caching"
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 Caching
               </div>
               <div className="space-y-2 text-[12px]">
-                <div><span className="text-primary font-medium">Default:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (5 seconds)</span></div>
-                <div><span className="text-primary font-medium">platformStatus:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>30 seconds</span></div>
-                <div><span className="text-primary font-medium">news:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (5 minutes)</span></div>
-                <div><span className="text-primary font-medium">cumulativeStats:</span> <span className={isDark ? "text-white/60" : "text-gray-600"}>Live (10 minutes)</span></div>
+                <div>
+                  <span className="text-primary font-medium">Default:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    Live (5 seconds)
+                  </span>
+                </div>
+                <div>
+                  <span className="text-primary font-medium">platformStatus:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>30 seconds</span>
+                </div>
+                <div>
+                  <span className="text-primary font-medium">news:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    Live (5 minutes)
+                  </span>
+                </div>
+                <div>
+                  <span className="text-primary font-medium">cumulativeStats:</span>{' '}
+                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
+                    Live (10 minutes)
+                  </span>
+                </div>
               </div>
             </div>
-
-            </div>
+          </div>
         );
 
       case 'api-keys':
@@ -1492,16 +2610,16 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">API Keys</h2>
-              <p className={cn("text-[14px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Authenticate your requests with API keys for higher rate limits and usage tracking.
               </p>
               <a
                 href="/dashboard"
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors",
+                  'inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors',
                   isDark
-                    ? "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
-                    : "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                    ? 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/20'
+                    : 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10'
                 )}
               >
                 <Key size={14} />
@@ -1511,14 +2629,40 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             </div>
 
             <div id="create-key" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Create API Key</h3>
-              <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Create API Key
+              </h3>
+              <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Create a free API key to get started. Requires JWT authentication.
               </p>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>POST /v1/keys</span>
-                  <button onClick={() => copyToClipboard(`const response = await fetch('https://api.xrpl.to/v1/keys', {
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark
+                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-4 py-2 border-b',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    POST /v1/keys
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        `const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${jwt}\`,
@@ -1527,11 +2671,25 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
   body: JSON.stringify({ name: 'My App' })
 });
 const { apiKey, keyPrefix } = await response.json();
-// Save apiKey - shown only once!`, 'create-key-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'create-key-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+// Save apiKey - shown only once!`,
+                        'create-key-code'
+                      )
+                    }
+                    className="p-1.5 rounded hover:bg-white/10"
+                  >
+                    {copiedBlock === 'create-key-code' ? (
+                      <CheckCircle size={14} className="text-emerald-500" />
+                    ) : (
+                      <Copy size={14} className="opacity-40" />
+                    )}
                   </button>
                 </div>
-                <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
+                <pre
+                  className={cn(
+                    'p-4 text-[12px] font-mono overflow-x-auto',
+                    isDark ? 'text-white/80' : 'text-gray-800'
+                  )}
+                >
                   {`const response = await fetch('https://api.xrpl.to/v1/keys', {
   method: 'POST',
   headers: {
@@ -1547,32 +2705,125 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="use-key" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Using API Keys</h3>
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Using API Keys
+              </h3>
               <div className="grid gap-4">
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                  <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>Header (Recommended)</div>
-                  <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>X-API-Key: xrpl_abc123...</code>
+                <div
+                  className={cn(
+                    'rounded-xl border-[1.5px] p-4',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide mb-3',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    Header (Recommended)
+                  </div>
+                  <code
+                    className={cn(
+                      'text-[13px] font-mono',
+                      isDark ? 'text-white/80' : 'text-gray-800'
+                    )}
+                  >
+                    X-API-Key: xrpl_abc123...
+                  </code>
                 </div>
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                  <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>Query Parameter</div>
-                  <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>?apiKey=xrpl_abc123...</code>
+                <div
+                  className={cn(
+                    'rounded-xl border-[1.5px] p-4',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide mb-3',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    Query Parameter
+                  </div>
+                  <code
+                    className={cn(
+                      'text-[13px] font-mono',
+                      isDark ? 'text-white/80' : 'text-gray-800'
+                    )}
+                  >
+                    ?apiKey=xrpl_abc123...
+                  </code>
                 </div>
-                <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                  <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>WebSocket</div>
-                  <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-800")}>wss://api.xrpl.to/ws/sync?apiKey=xrpl_abc123...</code>
+                <div
+                  className={cn(
+                    'rounded-xl border-[1.5px] p-4',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide mb-3',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    WebSocket
+                  </div>
+                  <code
+                    className={cn(
+                      'text-[13px] font-mono',
+                      isDark ? 'text-white/80' : 'text-gray-800'
+                    )}
+                  >
+                    wss://api.xrpl.to/ws/sync?apiKey=xrpl_abc123...
+                  </code>
                 </div>
               </div>
             </div>
 
             <div id="rate-limits-keys" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Rate Limits</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Rate Limits
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Tier</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Requests/min</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Requests/day</th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Tier
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Requests/min
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Requests/day
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1583,10 +2834,28 @@ const { apiKey, keyPrefix } = await response.json();
                       { tier: 'Pro', rpm: '400', rpd: '120,000' },
                       { tier: 'Enterprise', rpm: '1,000', rpd: '300,000' }
                     ].map((row) => (
-                      <tr key={row.tier} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.tier}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpm}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rpd}</td>
+                      <tr
+                        key={row.tier}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td
+                          className={cn(
+                            'px-4 py-3 font-medium',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
+                          {row.tier}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.rpm}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.rpd}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1601,16 +2870,16 @@ const { apiKey, keyPrefix } = await response.json();
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-normal text-primary mb-2">Subscriptions & Credits</h2>
-              <p className={cn("text-[14px] mb-4", isDark ? "text-white/60" : "text-gray-600")}>
+              <p className={cn('text-[14px] mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
                 Pay with XRP or credit card. Yearly billing saves 2 months (16.7% off).
               </p>
               <a
                 href="/dashboard"
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors",
+                  'inline-flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-colors',
                   isDark
-                    ? "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
-                    : "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                    ? 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/20'
+                    : 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10'
                 )}
               >
                 <CreditCard size={14} />
@@ -1620,31 +2889,113 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="pricing" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Subscription Tiers</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Subscription Tiers
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Tier</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Monthly</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Yearly</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Credits/mo</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Req/sec</th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Tier
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Monthly
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Yearly
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Credits/mo
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Req/sec
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
                       { tier: 'Free', monthly: '$0', yearly: '$0', credits: '1M', rps: '10' },
-                      { tier: 'Developer', monthly: '$49', yearly: '$490', credits: '10M', rps: '50' },
-                      { tier: 'Business', monthly: '$499', yearly: '$4,990', credits: '100M', rps: '200' },
-                      { tier: 'Professional', monthly: '$999', yearly: '$9,990', credits: '200M', rps: '500' }
+                      {
+                        tier: 'Developer',
+                        monthly: '$49',
+                        yearly: '$490',
+                        credits: '10M',
+                        rps: '50'
+                      },
+                      {
+                        tier: 'Business',
+                        monthly: '$499',
+                        yearly: '$4,990',
+                        credits: '100M',
+                        rps: '200'
+                      },
+                      {
+                        tier: 'Professional',
+                        monthly: '$999',
+                        yearly: '$9,990',
+                        credits: '200M',
+                        rps: '500'
+                      }
                     ].map((row) => (
-                      <tr key={row.tier} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.tier}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.monthly}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.yearly}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.credits}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.rps}</td>
+                      <tr
+                        key={row.tier}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td
+                          className={cn(
+                            'px-4 py-3 font-medium',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
+                          {row.tier}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.monthly}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.yearly}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.credits}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.rps}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1653,14 +3004,42 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="credits" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Credit Packs (One-time, Never Expire)</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Credit Packs (One-time, Never Expire)
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
                 <table className="w-full text-[13px]">
-                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Pack</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Price</th>
-                      <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Credits</th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Pack
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Price
+                      </th>
+                      <th
+                        className={cn(
+                          'text-left px-4 py-3 font-medium',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        Credits
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1670,10 +3049,28 @@ const { apiKey, keyPrefix } = await response.json();
                       { pack: 'bulk', price: '$75', credits: '25M' },
                       { pack: 'mega', price: '$250', credits: '100M' }
                     ].map((row) => (
-                      <tr key={row.pack} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                        <td className={cn("px-4 py-3 font-medium", isDark ? "text-white" : "text-gray-900")}>{row.pack}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.price}</td>
-                        <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{row.credits}</td>
+                      <tr
+                        key={row.pack}
+                        className={
+                          isDark
+                            ? 'border-t border-[rgba(59,130,246,0.1)]'
+                            : 'border-t border-[rgba(59,130,246,0.15)]'
+                        }
+                      >
+                        <td
+                          className={cn(
+                            'px-4 py-3 font-medium',
+                            isDark ? 'text-white' : 'text-gray-900'
+                          )}
+                        >
+                          {row.pack}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.price}
+                        </td>
+                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                          {row.credits}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1682,11 +3079,37 @@ const { apiKey, keyPrefix } = await response.json();
             </div>
 
             <div id="xrp-payment" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pay with XRP</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>XRP Payment Flow</span>
-                  <button onClick={() => copyToClipboard(`// 1. Get payment details
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Pay with XRP
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark
+                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-4 py-2 border-b',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    XRP Payment Flow
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        `// 1. Get payment details
 const res = await fetch('https://api.xrpl.to/v1/keys/purchase', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -1713,11 +3136,25 @@ await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ txHash: result.result.hash })
-});`, 'xrp-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'xrp-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+});`,
+                        'xrp-code'
+                      )
+                    }
+                    className="p-1.5 rounded hover:bg-white/10"
+                  >
+                    {copiedBlock === 'xrp-code' ? (
+                      <CheckCircle size={14} className="text-emerald-500" />
+                    ) : (
+                      <Copy size={14} className="opacity-40" />
+                    )}
                   </button>
                 </div>
-                <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
+                <pre
+                  className={cn(
+                    'p-4 text-[12px] font-mono overflow-x-auto',
+                    isDark ? 'text-white/80' : 'text-gray-800'
+                  )}
+                >
                   {`// 1. Get payment details
 const res = await fetch('https://api.xrpl.to/v1/keys/purchase', {
   method: 'POST',
@@ -1751,11 +3188,37 @@ await fetch('https://api.xrpl.to/v1/keys/verify-payment', {
             </div>
 
             <div id="stripe-payment" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Pay with Card (Stripe)</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>Stripe Checkout</span>
-                  <button onClick={() => copyToClipboard(`// 1. Create checkout session
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Pay with Card (Stripe)
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark
+                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-4 py-2 border-b',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    Stripe Checkout
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        `// 1. Create checkout session
 const res = await fetch('https://api.xrpl.to/v1/keys/stripe/checkout', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -1774,11 +3237,25 @@ window.location.href = res.checkoutUrl;
 const status = await fetch(
   \`https://api.xrpl.to/v1/keys/stripe/status/\${sessionId}\`
 ).then(r => r.json());
-// status: 'unpaid' | 'paid' | 'completed'`, 'stripe-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'stripe-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+// status: 'unpaid' | 'paid' | 'completed'`,
+                        'stripe-code'
+                      )
+                    }
+                    className="p-1.5 rounded hover:bg-white/10"
+                  >
+                    {copiedBlock === 'stripe-code' ? (
+                      <CheckCircle size={14} className="text-emerald-500" />
+                    ) : (
+                      <Copy size={14} className="opacity-40" />
+                    )}
                   </button>
                 </div>
-                <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
+                <pre
+                  className={cn(
+                    'p-4 text-[12px] font-mono overflow-x-auto',
+                    isDark ? 'text-white/80' : 'text-gray-800'
+                  )}
+                >
                   {`// 1. Create checkout session
 const res = await fetch('https://api.xrpl.to/v1/keys/stripe/checkout', {
   method: 'POST',
@@ -1804,11 +3281,37 @@ const status = await fetch(
             </div>
 
             <div id="billing-cycle" className="space-y-4">
-              <h3 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>Billing Cycle</h3>
-              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]")}>
-                <div className={cn("flex items-center justify-between px-4 py-2 border-b", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]")}>
-                  <span className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-500")}>GET /:wallet/credits & /:wallet/subscription</span>
-                  <button onClick={() => copyToClipboard(`// Get credits with billing cycle
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                Billing Cycle
+              </h3>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark
+                    ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]'
+                    : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-between px-4 py-2 border-b',
+                    isDark
+                      ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.05)]'
+                      : 'border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.04)]'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wide',
+                      isDark ? 'text-white/40' : 'text-gray-500'
+                    )}
+                  >
+                    GET /:wallet/credits & /:wallet/subscription
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        `// Get credits with billing cycle
 GET /v1/keys/:wallet/credits
 {
   "balance": 1000000,
@@ -1834,11 +3337,25 @@ GET /v1/keys/:wallet/subscription
       "renewalDate": "2026-12-07"
     }
   }
-}`, 'billing-code')} className="p-1.5 rounded hover:bg-white/10">
-                    {copiedBlock === 'billing-code' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-40" />}
+}`,
+                        'billing-code'
+                      )
+                    }
+                    className="p-1.5 rounded hover:bg-white/10"
+                  >
+                    {copiedBlock === 'billing-code' ? (
+                      <CheckCircle size={14} className="text-emerald-500" />
+                    ) : (
+                      <Copy size={14} className="opacity-40" />
+                    )}
                   </button>
                 </div>
-                <pre className={cn("p-4 text-[12px] font-mono overflow-x-auto", isDark ? "text-white/80" : "text-gray-800")}>
+                <pre
+                  className={cn(
+                    'p-4 text-[12px] font-mono overflow-x-auto',
+                    isDark ? 'text-white/80' : 'text-gray-800'
+                  )}
+                >
                   {`// Get credits with billing cycle
 GET /v1/keys/:wallet/credits
 {
@@ -1876,15 +3393,32 @@ GET /v1/keys/:wallet/subscription
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-normal text-primary">Error Codes</h2>
-            <div id="error-codes" className={cn(
-              "rounded-xl border-[1.5px] overflow-hidden",
-              isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
-            )}>
+            <div
+              id="error-codes"
+              className={cn(
+                'rounded-xl border-[1.5px] overflow-hidden',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
               <table className="w-full text-[13px]">
-                <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                   <tr>
-                    <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Code</th>
-                    <th className={cn("text-left px-4 py-3 font-medium", isDark ? "text-white/60" : "text-gray-600")}>Description</th>
+                    <th
+                      className={cn(
+                        'text-left px-4 py-3 font-medium',
+                        isDark ? 'text-white/60' : 'text-gray-600'
+                      )}
+                    >
+                      Code
+                    </th>
+                    <th
+                      className={cn(
+                        'text-left px-4 py-3 font-medium',
+                        isDark ? 'text-white/60' : 'text-gray-600'
+                      )}
+                    >
+                      Description
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1895,9 +3429,20 @@ GET /v1/keys/:wallet/subscription
                     { code: '429', desc: 'Too Many Requests', color: 'text-amber-500' },
                     { code: '500', desc: 'Internal Server Error', color: 'text-red-500' }
                   ].map((err) => (
-                    <tr key={err.code} className={isDark ? "border-t border-[rgba(59,130,246,0.1)]" : "border-t border-[rgba(59,130,246,0.15)]"}>
-                      <td className="px-4 py-3"><code className={cn("font-mono", err.color)}>{err.code}</code></td>
-                      <td className={cn("px-4 py-3", isDark ? "text-white/60" : "text-gray-600")}>{err.desc}</td>
+                    <tr
+                      key={err.code}
+                      className={
+                        isDark
+                          ? 'border-t border-[rgba(59,130,246,0.1)]'
+                          : 'border-t border-[rgba(59,130,246,0.15)]'
+                      }
+                    >
+                      <td className="px-4 py-3">
+                        <code className={cn('font-mono', err.color)}>{err.code}</code>
+                      </td>
+                      <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        {err.desc}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1923,14 +3468,16 @@ GET /v1/keys/:wallet/subscription
 
       <Header />
 
-      <div className={cn("min-h-screen", isDark ? "bg-black" : "bg-white")}>
+      <div className={cn('min-h-screen', isDark ? 'bg-black' : 'bg-white')}>
         <div className="flex">
           {/* Mobile menu button */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
-              "md:hidden fixed top-20 right-4 z-50 p-2 rounded-lg",
-              isDark ? "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.1)]" : "bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]"
+              'md:hidden fixed top-20 right-4 z-50 p-2 rounded-lg',
+              isDark
+                ? 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.1)]'
+                : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
             )}
           >
             {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
@@ -1939,10 +3486,12 @@ GET /v1/keys/:wallet/subscription
           {/* Sidebar */}
           <div
             className={cn(
-              "w-[240px] border-r overflow-y-auto transition-all duration-300 pt-16",
-              "fixed md:sticky top-0 h-screen z-40",
-              isDark ? "bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]",
-              isSidebarOpen ? "block" : "hidden md:block"
+              'w-[240px] border-r overflow-y-auto transition-all duration-300 pt-16',
+              'fixed md:sticky top-0 h-screen z-40',
+              isDark
+                ? 'bg-[rgba(59,130,246,0.01)] border-[rgba(59,130,246,0.08)]'
+                : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]',
+              isSidebarOpen ? 'block' : 'hidden md:block'
             )}
           >
             <div className="p-4">
@@ -1955,8 +3504,10 @@ GET /v1/keys/:wallet/subscription
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={cn(
-                    "w-full pl-9 pr-3 py-2 rounded-lg border-[1.5px] text-[13px]",
-                    isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)] placeholder:text-white/30" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]"
+                    'w-full pl-9 pr-3 py-2 rounded-lg border-[1.5px] text-[13px]',
+                    isDark
+                      ? 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)] placeholder:text-white/30'
+                      : 'bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]'
                   )}
                 />
               </div>
@@ -1965,12 +3516,17 @@ GET /v1/keys/:wallet/subscription
               <div className="space-y-1 mb-6">
                 <a
                   href="#"
-                  onClick={(e) => { e.preventDefault(); setCurrentSection('overview'); }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentSection('overview');
+                  }}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]",
+                    'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
                     currentSection === 'overview'
-                      ? "text-primary bg-primary/10"
-                      : isDark ? "text-white/70 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? 'text-primary bg-primary/10'
+                      : isDark
+                        ? 'text-white/70 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
                   <FileText size={14} className="opacity-60" />
@@ -1978,10 +3534,15 @@ GET /v1/keys/:wallet/subscription
                 </a>
                 <a
                   href="#"
-                  onClick={(e) => { e.preventDefault(); setCurrentSection('tokens'); }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentSection('tokens');
+                  }}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]",
-                    isDark ? "text-white/70 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                    isDark
+                      ? 'text-white/70 hover:text-white hover:bg-white/5'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
                   <Code size={14} className="opacity-60" />
@@ -2002,12 +3563,20 @@ GET /v1/keys/:wallet/subscription
                       <button
                         onClick={() => toggleGroup(group.name)}
                         className={cn(
-                          "w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wide mb-2 px-1",
-                          isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700"
+                          'w-full flex items-center justify-between text-[11px] font-medium uppercase tracking-wide mb-2 px-1',
+                          isDark
+                            ? 'text-white/40 hover:text-white/60'
+                            : 'text-gray-500 hover:text-gray-700'
                         )}
                       >
                         {group.name}
-                        <ChevronDown size={12} className={cn("transition-transform", !expandedGroups[group.name] && "-rotate-90")} />
+                        <ChevronDown
+                          size={12}
+                          className={cn(
+                            'transition-transform',
+                            !expandedGroups[group.name] && '-rotate-90'
+                          )}
+                        />
                       </button>
                       {expandedGroups[group.name] && (
                         <div className="space-y-0.5">
@@ -2022,15 +3591,18 @@ GET /v1/keys/:wallet/subscription
                                   setIsSidebarOpen(false);
                                 }}
                                 className={cn(
-                                  "w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center gap-2.5 transition-colors",
+                                  'w-full text-left px-3 py-2 rounded-lg text-[13px] flex items-center gap-2.5 transition-colors',
                                   isActive
-                                    ? "text-primary bg-primary/10"
+                                    ? 'text-primary bg-primary/10'
                                     : isDark
-                                      ? "text-white/60 hover:text-white hover:bg-white/5"
-                                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                      ? 'text-white/60 hover:text-white hover:bg-white/5'
+                                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                 )}
                               >
-                                <Icon size={14} className={isActive ? "text-primary" : "opacity-40"} />
+                                <Icon
+                                  size={14}
+                                  className={isActive ? 'text-primary' : 'opacity-40'}
+                                />
                                 {section.title}
                               </button>
                             );
@@ -2043,8 +3615,18 @@ GET /v1/keys/:wallet/subscription
               </nav>
 
               {/* Support Section */}
-              <div className={cn("mt-6 pt-6 border-t", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
-                <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3 px-1", isDark ? "text-white/40" : "text-gray-500")}>
+              <div
+                className={cn(
+                  'mt-6 pt-6 border-t',
+                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+                )}
+              >
+                <div
+                  className={cn(
+                    'text-[11px] font-medium uppercase tracking-wide mb-3 px-1',
+                    isDark ? 'text-white/40' : 'text-gray-500'
+                  )}
+                >
                   Support
                 </div>
                 <div className="space-y-1">
@@ -2053,8 +3635,10 @@ GET /v1/keys/:wallet/subscription
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]",
-                      isDark ? "text-white/60 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      isDark
+                        ? 'text-white/60 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 opacity-60" fill="currentColor">
@@ -2066,8 +3650,10 @@ GET /v1/keys/:wallet/subscription
                   <a
                     href="mailto:hello@xrpl.to"
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]",
-                      isDark ? "text-white/60 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      isDark
+                        ? 'text-white/60 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <Mail size={14} className="opacity-60" />
@@ -2078,8 +3664,10 @@ GET /v1/keys/:wallet/subscription
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]",
-                      isDark ? "text-white/60 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
+                      isDark
+                        ? 'text-white/60 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     )}
                   >
                     <MessageCircle size={14} className="opacity-60" />
@@ -2099,11 +3687,21 @@ GET /v1/keys/:wallet/subscription
                 <button
                   onClick={() => copyToClipboard(window.location.href, 'page-url')}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px]",
-                    isDark ? "text-white/50 hover:text-white/70 hover:bg-white/5" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px]',
+                    isDark
+                      ? 'text-white/50 hover:text-white/70 hover:bg-white/5'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                   )}
                 >
-                  {copiedBlock === 'page-url' ? <><CheckCircle size={12} /> Copied</> : <><Copy size={12} /> Copy page</>}
+                  {copiedBlock === 'page-url' ? (
+                    <>
+                      <CheckCircle size={12} /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={12} /> Copy page
+                    </>
+                  )}
                 </button>
               </div>
               {renderContent()}
@@ -2111,12 +3709,19 @@ GET /v1/keys/:wallet/subscription
           </div>
 
           {/* On this page - Right sidebar (desktop only) */}
-          <div className={cn(
-            "hidden xl:block w-[200px] pt-20 pr-4",
-            isDark ? "border-white/[0.05]" : "border-gray-100"
-          )}>
+          <div
+            className={cn(
+              'hidden xl:block w-[200px] pt-20 pr-4',
+              isDark ? 'border-white/[0.05]' : 'border-gray-100'
+            )}
+          >
             <div className="sticky top-20">
-              <div className={cn("text-[11px] font-medium uppercase tracking-wide mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+              <div
+                className={cn(
+                  'text-[11px] font-medium uppercase tracking-wide mb-3',
+                  isDark ? 'text-white/40' : 'text-gray-500'
+                )}
+              >
                 On this page
               </div>
               <nav className="space-y-1">
@@ -2125,8 +3730,10 @@ GET /v1/keys/:wallet/subscription
                     key={anchor.id}
                     href={`#${anchor.id}`}
                     className={cn(
-                      "block text-left text-[12px] py-1 transition-colors",
-                      isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600"
+                      'block text-left text-[12px] py-1 transition-colors',
+                      isDark
+                        ? 'text-white/40 hover:text-white/70'
+                        : 'text-gray-400 hover:text-gray-600'
                     )}
                   >
                     {anchor.label}
@@ -2139,20 +3746,33 @@ GET /v1/keys/:wallet/subscription
 
         {/* Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
-            <div className={cn("fixed inset-0", isDark ? "bg-black/70" : "bg-black/30")} />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <div className={cn('fixed inset-0', isDark ? 'bg-black/70' : 'bg-black/30')} />
             <div
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "relative rounded-xl border w-full max-w-[900px] max-h-[85vh] overflow-hidden flex flex-col",
-                isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+                'relative rounded-xl border w-full max-w-[900px] max-h-[85vh] overflow-hidden flex flex-col',
+                isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'
               )}
             >
-              <div className={cn("px-4 py-3 border-b shrink-0", isDark ? "border-white/10" : "border-gray-100")}>
+              <div
+                className={cn(
+                  'px-4 py-3 border-b shrink-0',
+                  isDark ? 'border-white/10' : 'border-gray-100'
+                )}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Code size={14} className={isDark ? "text-[#3f96fe]" : "text-cyan-600"} />
-                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <Code size={14} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
+                    <span
+                      className={cn(
+                        'text-[13px] font-medium',
+                        isDark ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
                       API Response
                     </span>
                   </div>
@@ -2164,15 +3784,21 @@ GET /v1/keys/:wallet/subscription
                     )}
                     <button
                       onClick={handleCopyResponse}
-                      className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                      className={cn(
+                        'p-1.5 rounded-lg',
+                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                      )}
                     >
-                      <Copy size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                      <Copy size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                     </button>
                     <button
                       onClick={() => setIsModalOpen(false)}
-                      className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                      className={cn(
+                        'p-1.5 rounded-lg',
+                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                      )}
                     >
-                      <X size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                      <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                     </button>
                   </div>
                 </div>
@@ -2184,15 +3810,38 @@ GET /v1/keys/:wallet/subscription
                     <Loader2 size={20} className="animate-spin text-primary" />
                   </div>
                 ) : apiResponse ? (
-                  <pre className={cn("text-[11px] font-mono p-4 m-0 leading-relaxed", isDark ? "text-white/80" : "text-gray-800")}>
-                    {JSON.stringify(apiResponse, null, 2).split('\n').map((line, i) => (
-                      <div key={i} dangerouslySetInnerHTML={{ __html: line
-                        .replace(/"([^"]+)":/g, `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`)
-                        .replace(/: "([^"]*)"/g, `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`)
-                        .replace(/: (\d+\.?\d*)/g, `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`)
-                        .replace(/: (true|false|null)/g, `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`)
-                      }} />
-                    ))}
+                  <pre
+                    className={cn(
+                      'text-[11px] font-mono p-4 m-0 leading-relaxed',
+                      isDark ? 'text-white/80' : 'text-gray-800'
+                    )}
+                  >
+                    {JSON.stringify(apiResponse, null, 2)
+                      .split('\n')
+                      .map((line, i) => (
+                        <div
+                          key={i}
+                          dangerouslySetInnerHTML={{
+                            __html: line
+                              .replace(
+                                /"([^"]+)":/g,
+                                `<span class="${isDark ? 'text-[#7dd3fc]' : 'text-cyan-600'}">"$1"</span>:`
+                              )
+                              .replace(
+                                /: "([^"]*)"/g,
+                                `: <span class="${isDark ? 'text-[#fde047]' : 'text-amber-600'}">"$1"</span>`
+                              )
+                              .replace(
+                                /: (\d+\.?\d*)/g,
+                                `: <span class="${isDark ? 'text-[#a78bfa]' : 'text-purple-600'}">$1</span>`
+                              )
+                              .replace(
+                                /: (true|false|null)/g,
+                                `: <span class="${isDark ? 'text-[#f472b6]' : 'text-pink-600'}">$1</span>`
+                              )
+                          }}
+                        />
+                      ))}
                   </pre>
                 ) : null}
               </div>

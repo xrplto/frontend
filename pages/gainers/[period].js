@@ -45,7 +45,19 @@ function GainersPage({ data, period }) {
   return (
     <OverviewWrapper>
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Top Gaining XRPL Tokens
       </h1>
 
@@ -133,11 +145,13 @@ export async function getStaticProps({ params }) {
           '@type': 'FinancialProduct',
           name: token.name,
           url: `https://xrpl.to/token/${token.slug}`,
-          offers: token.exch ? {
-            '@type': 'Offer',
-            price: token.exch,
-            priceCurrency: 'XRP'
-          } : undefined
+          offers: token.exch
+            ? {
+                '@type': 'Offer',
+                price: token.exch,
+                priceCurrency: 'XRP'
+              }
+            : undefined
         }
       }))
     };

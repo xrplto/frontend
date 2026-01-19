@@ -20,7 +20,7 @@ const BASE_URL = 'https://api.xrpl.to/v1';
 
 const Container = styled.div`
   border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb'};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb')};
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -32,8 +32,9 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
+  border-bottom: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
 `;
 
 const Title = styled.div`
@@ -42,7 +43,7 @@ const Title = styled.div`
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36')};
 `;
 
 const Content = styled.div`
@@ -59,7 +60,9 @@ const Side = styled.div`
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const ColumnHeader = styled.div`
@@ -72,9 +75,10 @@ const ColumnHeader = styled.div`
   position: sticky;
   top: 0;
   z-index: 2;
-  background: ${props => props.isDark ? '#010815' : '#fafafa'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  background: ${(props) => (props.isDark ? '#010815' : '#fafafa')};
+  border-bottom: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
 `;
 
 const Row = styled.div`
@@ -88,9 +92,8 @@ const Row = styled.div`
   font-family: var(--font-mono);
   transition: background 0.1s;
   &:hover {
-    background: ${props => props.type === 'ask'
-      ? 'rgba(239, 68, 68, 0.12)'
-      : 'rgba(34, 197, 94, 0.12)'};
+    background: ${(props) =>
+      props.type === 'ask' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)'};
   }
 `;
 
@@ -98,29 +101,28 @@ const DepthBar = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
-  ${props => props.type === 'bid' ? 'left: 0;' : 'right: 0;'}
-  background: ${props => props.type === 'ask'
-    ? 'rgba(239, 68, 68, 0.15)'
-    : 'rgba(34, 197, 94, 0.15)'};
-  width: ${props => props.width}%;
+  ${(props) => (props.type === 'bid' ? 'left: 0;' : 'right: 0;')}
+  background: ${(props) =>
+    props.type === 'ask' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)'};
+  width: ${(props) => props.width}%;
   pointer-events: none;
   transition: width 0.2s ease-out;
 `;
 
 const Price = styled.span`
-  color: ${props => props.type === 'ask' ? '#ef4444' : '#22c55e'};
+  color: ${(props) => (props.type === 'ask' ? '#ef4444' : '#22c55e')};
   position: relative;
   z-index: 1;
 `;
 
 const Amount = styled.span`
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
   position: relative;
   z-index: 1;
 `;
 
 const Maker = styled.span`
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   font-size: 9px;
   position: relative;
   z-index: 1;
@@ -135,14 +137,14 @@ const SpreadBar = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'};
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)')};
+  border-top: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  border-bottom: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   font-size: 11px;
   font-family: var(--font-mono);
   flex-shrink: 0;
 `;
-
 
 const OrderBook = ({ token, onPriceClick }) => {
   const { themeName } = useContext(AppContext);
@@ -165,20 +167,31 @@ const OrderBook = ({ token, onPriceClick }) => {
     const rlusdKey = 'rlusd-token';
 
     if (fetchInFlight.has(rlusdKey)) {
-      fetchInFlight.get(rlusdKey)
-        .then(token => mounted && token && setRlusdToken(token))
+      fetchInFlight
+        .get(rlusdKey)
+        .then((token) => mounted && token && setRlusdToken(token))
         .catch(() => {});
-      return () => { mounted = false; };
+      return () => {
+        mounted = false;
+      };
     }
 
-    const promise = axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`)
-      .then(res => res.data?.token);
+    const promise = axios
+      .get(
+        `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`
+      )
+      .then((res) => res.data?.token);
     fetchInFlight.set(rlusdKey, promise);
 
     promise
-      .then(token => { mounted && token && setRlusdToken(token); fetchInFlight.delete(rlusdKey); })
+      .then((token) => {
+        mounted && token && setRlusdToken(token);
+        fetchInFlight.delete(rlusdKey);
+      })
       .catch(() => fetchInFlight.delete(rlusdKey));
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [isXRPToken]);
 
   const effectiveToken = isXRPToken ? rlusdToken : token;
@@ -191,28 +204,35 @@ const OrderBook = ({ token, onPriceClick }) => {
   // Process WebSocket orderbook data
   const processWsOrderbook = (rawBids, rawAsks) => {
     const parsedBids = (rawBids || [])
-      .map(o => ({
+      .map((o) => ({
         price: parseFloat(o.price),
         amount: parseFloat(o.amount),
         total: parseFloat(o.total),
         account: o.account,
         funded: o.funded
       }))
-      .filter(o => !isNaN(o.price) && o.price > 0);
+      .filter((o) => !isNaN(o.price) && o.price > 0);
 
     const parsedAsks = (rawAsks || [])
-      .map(o => ({
+      .map((o) => ({
         price: parseFloat(o.price),
         amount: parseFloat(o.amount),
         total: parseFloat(o.total),
         account: o.account,
         funded: o.funded
       }))
-      .filter(o => !isNaN(o.price) && o.price > 0);
+      .filter((o) => !isNaN(o.price) && o.price > 0);
 
-    let bidSum = 0, askSum = 0;
-    parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
-    parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+    let bidSum = 0,
+      askSum = 0;
+    parsedBids.forEach((b) => {
+      bidSum += b.amount;
+      b.sumAmount = bidSum;
+    });
+    parsedAsks.forEach((a) => {
+      askSum += a.amount;
+      a.sumAmount = askSum;
+    });
 
     setBids(parsedBids.slice(0, 30));
     setAsks(parsedAsks.slice(0, 30));
@@ -294,7 +314,7 @@ const OrderBook = ({ token, onPriceClick }) => {
       }
 
       // Create fetch promise
-      const fetchPromise = axios.get(url).then(r => r.data);
+      const fetchPromise = axios.get(url).then((r) => r.data);
       if (!isUpdate) {
         fetchInFlight.set(pairKey, fetchPromise);
       }
@@ -318,33 +338,40 @@ const OrderBook = ({ token, onPriceClick }) => {
 
     function processOrderbookData(data) {
       const parsedBids = (data.bids || [])
-        .map(o => ({
+        .map((o) => ({
           price: parseFloat(o.price),
           amount: parseFloat(o.amount),
           total: parseFloat(o.total),
           account: o.account,
           funded: o.funded
         }))
-        .filter(o => !isNaN(o.price) && o.price > 0);
+        .filter((o) => !isNaN(o.price) && o.price > 0);
 
       const parsedAsks = (data.asks || [])
-        .map(o => ({
+        .map((o) => ({
           price: parseFloat(o.price),
           amount: parseFloat(o.amount),
           total: parseFloat(o.total),
           account: o.account,
           funded: o.funded
         }))
-        .filter(o => !isNaN(o.price) && o.price > 0);
+        .filter((o) => !isNaN(o.price) && o.price > 0);
 
       // Smart polling: compute simple hash to detect actual changes
       const newHash = `${parsedBids.length}-${parsedAsks.length}-${parsedBids[0]?.price || 0}-${parsedAsks[0]?.price || 0}`;
       if (newHash === lastDataHashRef.current) return;
       lastDataHashRef.current = newHash;
 
-      let bidSum = 0, askSum = 0;
-      parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
-      parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+      let bidSum = 0,
+        askSum = 0;
+      parsedBids.forEach((b) => {
+        bidSum += b.amount;
+        b.sumAmount = bidSum;
+      });
+      parsedAsks.forEach((a) => {
+        askSum += a.amount;
+        a.sumAmount = askSum;
+      });
 
       if (mountedRef.current) {
         setBids(parsedBids.slice(0, 30));
@@ -415,8 +442,8 @@ const OrderBook = ({ token, onPriceClick }) => {
     return { bestBid: bb, bestAsk: ba, spreadPct: spread };
   }, [asks, bids]);
 
-  const bidMax = Math.max(...bids.map(b => b.amount || 0), 1);
-  const askMax = Math.max(...asks.map(a => a.amount || 0), 1);
+  const bidMax = Math.max(...bids.map((b) => b.amount || 0), 1);
+  const askMax = Math.max(...asks.map((a) => a.amount || 0), 1);
 
   // Auto-scroll asks to bottom (so lowest ask is visible near spread)
   useEffect(() => {
@@ -439,19 +466,26 @@ const OrderBook = ({ token, onPriceClick }) => {
           {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
         </Title>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            background: wsConnected ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
-            color: wsConnected ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'),
-            fontSize: '9px'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              background: wsConnected ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
+              color: wsConnected ? '#22c55e' : isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+              fontSize: '9px'
+            }}
+          >
             {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
           </div>
-          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+          <span
+            style={{
+              fontSize: '10px',
+              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+            }}
+          >
             {bids.length}B · {asks.length}A
           </span>
         </div>
@@ -468,18 +502,17 @@ const OrderBook = ({ token, onPriceClick }) => {
           {[...asks].reverse().map((ask, idx) => {
             const acc = ask.account || ask.Account;
             return (
-              <Row
-                key={idx}
-                type="ask"
-                onClick={() => onPriceClick?.(ask.price)}
-              >
+              <Row key={idx} type="ask" onClick={() => onPriceClick?.(ask.price)}>
                 <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
                 <Price type="ask">{formatPrice(ask.price)}</Price>
                 <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
                 <Maker
                   isDark={isDark}
                   title={acc || ''}
-                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/address/${acc}`, '_blank'); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    acc && window.open(`/address/${acc}`, '_blank');
+                  }}
                 >
                   {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                 </Maker>
@@ -490,16 +523,22 @@ const OrderBook = ({ token, onPriceClick }) => {
 
         {/* Spread indicator in middle */}
         <SpreadBar isDark={isDark}>
-          <span style={{ color: '#22c55e' }}>▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}</span>
-          <span style={{
-            padding: '2px 8px',
-            borderRadius: '8px',
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-            fontWeight: 500
-          }}>
+          <span style={{ color: '#22c55e' }}>
+            ▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '8px',
+              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              fontWeight: 500
+            }}
+          >
             {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
           </span>
-          <span style={{ color: '#ef4444' }}>✕{bestAsk != null ? formatPrice(bestAsk) : '—'} ▼</span>
+          <span style={{ color: '#ef4444' }}>
+            ✕{bestAsk != null ? formatPrice(bestAsk) : '—'} ▼
+          </span>
         </SpreadBar>
 
         {/* Bids (Buy Orders) - highest bid at top near spread */}
@@ -512,18 +551,17 @@ const OrderBook = ({ token, onPriceClick }) => {
           {bids.map((bid, idx) => {
             const acc = bid.account || bid.Account;
             return (
-              <Row
-                key={idx}
-                type="bid"
-                onClick={() => onPriceClick?.(bid.price)}
-              >
+              <Row key={idx} type="bid" onClick={() => onPriceClick?.(bid.price)}>
                 <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
                 <Price type="bid">{formatPrice(bid.price)}</Price>
                 <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
                 <Maker
                   isDark={isDark}
                   title={acc || ''}
-                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/address/${acc}`, '_blank'); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    acc && window.open(`/address/${acc}`, '_blank');
+                  }}
                 >
                   {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                 </Maker>

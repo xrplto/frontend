@@ -53,9 +53,8 @@ export default function NFTActionsBulk({ nft }) {
   } = nft;
 
   // Normalize name: API may return object {collection_name, collection_description} or string
-  const name = typeof rawName === 'object' && rawName !== null
-    ? rawName.collection_name || ''
-    : rawName || '';
+  const name =
+    typeof rawName === 'object' && rawName !== null ? rawName.collection_name || '' : rawName || '';
 
   useEffect(() => {
     function getMints() {
@@ -120,7 +119,12 @@ export default function NFTActionsBulk({ nft }) {
     <>
       {/* Backdrop with loading spinner */}
       {loading && (
-        <div className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}>
+        <div
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
+        >
           <div className="flex flex-col items-center gap-2">
             <PuffLoader color="white" />
             <BarLoader color="#51E5FF" width={80} />

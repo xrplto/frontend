@@ -62,23 +62,63 @@ async function fetchTokenImage(md5) {
 
 // Page configurations
 const PAGES = [
-  { slug: 'index', title: 'XRPL.to', subtitle: 'XRP Ledger Token Prices & Analytics', icon: 'chart' },
-  { slug: 'trending', title: 'Trending Tokens', subtitle: 'Most popular tokens on XRPL', icon: 'trending' },
+  {
+    slug: 'index',
+    title: 'XRPL.to',
+    subtitle: 'XRP Ledger Token Prices & Analytics',
+    icon: 'chart'
+  },
+  {
+    slug: 'trending',
+    title: 'Trending Tokens',
+    subtitle: 'Most popular tokens on XRPL',
+    icon: 'trending'
+  },
   { slug: 'spotlight', title: 'Spotlight', subtitle: 'Featured XRPL tokens', icon: 'star' },
-  { slug: 'gainers', title: 'Top Gainers', subtitle: 'Biggest price movers on XRPL', icon: 'rocket' },
+  {
+    slug: 'gainers',
+    title: 'Top Gainers',
+    subtitle: 'Biggest price movers on XRPL',
+    icon: 'rocket'
+  },
   { slug: 'most-viewed', title: 'Most Viewed', subtitle: 'Popular tokens by views', icon: 'eye' },
   { slug: 'new', title: 'New Tokens', subtitle: 'Recently listed on XRPL', icon: 'sparkle' },
-  { slug: 'amm-pools', title: 'AMM Pools', subtitle: 'Liquidity pools & APY analytics', icon: 'pool' },
+  {
+    slug: 'amm-pools',
+    title: 'AMM Pools',
+    subtitle: 'Liquidity pools & APY analytics',
+    icon: 'pool'
+  },
   { slug: 'swap', title: 'Swap', subtitle: 'Trade tokens on XRPL DEX', icon: 'swap' },
-  { slug: 'collections', title: 'NFT Collections', subtitle: 'Browse XRPL NFT collections', icon: 'grid' },
+  {
+    slug: 'collections',
+    title: 'NFT Collections',
+    subtitle: 'Browse XRPL NFT collections',
+    icon: 'grid'
+  },
   { slug: 'nft-traders', title: 'NFT Traders', subtitle: 'Top NFT traders on XRPL', icon: 'users' },
-  { slug: 'watchlist', title: 'Watchlist', subtitle: 'Track your favorite tokens', icon: 'bookmark' },
+  {
+    slug: 'watchlist',
+    title: 'Watchlist',
+    subtitle: 'Track your favorite tokens',
+    icon: 'bookmark'
+  },
   { slug: 'news', title: 'News', subtitle: 'Latest XRPL ecosystem updates', icon: 'news' },
   { slug: 'about', title: 'About', subtitle: 'Learn about XRPL.to', icon: 'info' },
-  { slug: 'rsi-analysis', title: 'RSI Analysis', subtitle: 'Technical analysis for XRPL tokens', icon: 'chart' },
+  {
+    slug: 'rsi-analysis',
+    title: 'RSI Analysis',
+    subtitle: 'Technical analysis for XRPL tokens',
+    icon: 'chart'
+  },
   { slug: 'launch', title: 'Token Launch', subtitle: 'Launch your token on XRPL', icon: 'rocket' },
   { slug: 'advertise', title: 'Advertise', subtitle: 'Promote on XRPL.to', icon: 'megaphone' },
-  { slug: '404', title: 'Page Not Found', subtitle: 'The page you are looking for does not exist', icon: 'alert' },
+  {
+    slug: '404',
+    title: 'Page Not Found',
+    subtitle: 'The page you are looking for does not exist',
+    icon: 'alert'
+  }
 ];
 
 // Icon SVG paths (simplified Lucide-style icons) - no inline stroke, set at SVG level
@@ -86,18 +126,22 @@ const ICONS = {
   chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
   trending: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
   star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>',
+  rocket:
+    '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>',
   eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
-  sparkle: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>',
+  sparkle:
+    '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>',
   pool: '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>',
   swap: '<path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/>',
   grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
-  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  users:
+    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
   news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><rect x="10" y="6" width="8" height="4"/>',
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   megaphone: '<path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
-  alert: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  alert:
+    '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
 };
 
 // Load fonts
@@ -113,7 +157,7 @@ async function loadFonts() {
 
   return [
     { name: 'Inter', data: interRegular, weight: 400, style: 'normal' },
-    { name: 'Inter', data: interBold, weight: 700, style: 'normal' },
+    { name: 'Inter', data: interBold, weight: 700, style: 'normal' }
   ];
 }
 
@@ -129,7 +173,7 @@ function createStaticOGImage(page, logoDataUrl) {
         backgroundColor: BG_DARK,
         padding: 60,
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'hidden'
       },
       children: [
         // Subtle gradient glow top-right corner
@@ -143,9 +187,10 @@ function createStaticOGImage(page, logoDataUrl) {
               width: 600,
               height: 600,
               borderRadius: 9999,
-              background: 'radial-gradient(circle, rgba(63,150,254,0.12) 0%, rgba(63,150,254,0) 70%)',
-            },
-          },
+              background:
+                'radial-gradient(circle, rgba(63,150,254,0.12) 0%, rgba(63,150,254,0) 70%)'
+            }
+          }
         },
         // Left content
         {
@@ -156,7 +201,7 @@ function createStaticOGImage(page, logoDataUrl) {
               flexDirection: 'column',
               justifyContent: 'center',
               flex: 1,
-              paddingRight: 40,
+              paddingRight: 40
             },
             children: [
               // Logo
@@ -166,9 +211,9 @@ function createStaticOGImage(page, logoDataUrl) {
                   src: logoDataUrl,
                   style: {
                     height: 32,
-                    marginBottom: 48,
-                  },
-                },
+                    marginBottom: 48
+                  }
+                }
               },
               // Main title
               {
@@ -179,10 +224,10 @@ function createStaticOGImage(page, logoDataUrl) {
                     fontWeight: 700,
                     color: TEXT_WHITE,
                     lineHeight: 1.1,
-                    marginBottom: 16,
+                    marginBottom: 16
                   },
-                  children: page.title,
-                },
+                  children: page.title
+                }
               },
               // Subtitle
               {
@@ -191,13 +236,13 @@ function createStaticOGImage(page, logoDataUrl) {
                   style: {
                     fontSize: 28,
                     color: TEXT_MUTED,
-                    maxWidth: 600,
+                    maxWidth: 600
                   },
-                  children: page.subtitle,
-                },
-              },
-            ],
-          },
+                  children: page.subtitle
+                }
+              }
+            ]
+          }
         },
         // Right side - Icon with glow
         {
@@ -209,7 +254,7 @@ function createStaticOGImage(page, logoDataUrl) {
               justifyContent: 'center',
               width: 320,
               height: 320,
-              position: 'relative',
+              position: 'relative'
             },
             children: [
               // Soft glow behind icon
@@ -221,9 +266,10 @@ function createStaticOGImage(page, logoDataUrl) {
                     width: 280,
                     height: 280,
                     borderRadius: 9999,
-                    background: 'radial-gradient(circle, rgba(63,150,254,0.25) 0%, rgba(63,150,254,0) 60%)',
-                  },
-                },
+                    background:
+                      'radial-gradient(circle, rgba(63,150,254,0.25) 0%, rgba(63,150,254,0) 60%)'
+                  }
+                }
               },
               // Icon
               {
@@ -231,14 +277,14 @@ function createStaticOGImage(page, logoDataUrl) {
                 props: {
                   src: `data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="${BRAND_BLUE}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICONS[page.icon] || ICONS.chart}</svg>`).toString('base64')}`,
                   width: 120,
-                  height: 120,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
+                  height: 120
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
   };
 }
 
@@ -253,7 +299,7 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
         display: 'flex',
         backgroundColor: BG_DARK,
         padding: 60,
-        position: 'relative',
+        position: 'relative'
       },
       children: [
         // Left content
@@ -265,7 +311,7 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
               flexDirection: 'column',
               justifyContent: 'center',
               flex: 1,
-              paddingRight: 40,
+              paddingRight: 40
             },
             children: [
               // XRPL.to logo
@@ -275,9 +321,9 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
                   src: logoDataUrl,
                   style: {
                     height: 32,
-                    marginBottom: 48,
-                  },
-                },
+                    marginBottom: 48
+                  }
+                }
               },
               // Token ticker (large)
               {
@@ -288,44 +334,52 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
                     fontWeight: 700,
                     color: TEXT_WHITE,
                     lineHeight: 1.1,
-                    marginBottom: 8,
+                    marginBottom: 8
                   },
-                  children: page.title,
-                },
+                  children: page.title
+                }
               },
               // Issuer name (bold, prominent)
-              ...(page.user ? [{
-                type: 'div',
-                props: {
-                  style: {
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: TEXT_WHITE,
-                    marginBottom: 16,
-                  },
-                  children: page.user,
-                },
-              }] : []),
+              ...(page.user
+                ? [
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: 32,
+                          fontWeight: 700,
+                          color: TEXT_WHITE,
+                          marginBottom: 16
+                        },
+                        children: page.user
+                      }
+                    }
+                  ]
+                : []),
               // Description
-              ...(page.description ? [{
-                type: 'div',
-                props: {
-                  style: {
-                    fontSize: 20,
-                    color: TEXT_MUTED,
-                    maxWidth: 450,
-                    lineHeight: 1.5,
-                  },
-                  children: page.description,
-                },
-              }] : []),
+              ...(page.description
+                ? [
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          fontSize: 20,
+                          color: TEXT_MUTED,
+                          maxWidth: 450,
+                          lineHeight: 1.5
+                        },
+                        children: page.description
+                      }
+                    }
+                  ]
+                : []),
               // TRADE button
               {
                 type: 'div',
                 props: {
                   style: {
                     display: 'flex',
-                    marginTop: 32,
+                    marginTop: 32
                   },
                   children: [
                     {
@@ -340,24 +394,24 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
                           paddingTop: 14,
                           paddingBottom: 14,
                           borderRadius: 50,
-                          gap: 8,
+                          gap: 8
                         },
                         children: [
                           {
                             type: 'div',
                             props: {
                               style: { fontSize: 18, fontWeight: 700, color: TEXT_WHITE },
-                              children: 'TRADE',
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
+                              children: 'TRADE'
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         },
         // Right side - Token logo
         {
@@ -370,56 +424,58 @@ function createTokenOGImage(page, logoDataUrl, tokenImage) {
               width: 360,
               height: 360,
               borderRadius: 24,
-              overflow: 'hidden',
+              overflow: 'hidden'
             },
-            children: tokenImage ? [
-              {
-                type: 'img',
-                props: {
-                  src: tokenImage,
-                  width: 360,
-                  height: 360,
-                  style: {
-                    width: 360,
-                    height: 360,
-                    objectFit: 'cover',
-                    borderRadius: 24,
-                  },
-                },
-              },
-            ] : [
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    width: 360,
-                    height: 360,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(63, 150, 254, 0.15)',
-                    borderRadius: 24,
-                  },
-                  children: [
-                    {
-                      type: 'div',
-                      props: {
-                        style: {
-                          fontSize: 120,
-                          fontWeight: 700,
-                          color: BRAND_BLUE,
-                        },
-                        children: page.title.charAt(0),
+            children: tokenImage
+              ? [
+                  {
+                    type: 'img',
+                    props: {
+                      src: tokenImage,
+                      width: 360,
+                      height: 360,
+                      style: {
+                        width: 360,
+                        height: 360,
+                        objectFit: 'cover',
+                        borderRadius: 24
+                      }
+                    }
+                  }
+                ]
+              : [
+                  {
+                    type: 'div',
+                    props: {
+                      style: {
+                        width: 360,
+                        height: 360,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(63, 150, 254, 0.15)',
+                        borderRadius: 24
                       },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
+                      children: [
+                        {
+                          type: 'div',
+                          props: {
+                            style: {
+                              fontSize: 120,
+                              fontWeight: 700,
+                              color: BRAND_BLUE
+                            },
+                            children: page.title.charAt(0)
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+          }
+        }
+      ]
+    }
   };
 }
 
@@ -445,11 +501,11 @@ async function generateImage(page, fonts, logoDataUrl) {
   const svg = await satori(element, {
     width: WIDTH,
     height: HEIGHT,
-    fonts,
+    fonts
   });
 
   const resvg = new Resvg(svg, {
-    fitTo: { mode: 'width', value: WIDTH },
+    fitTo: { mode: 'width', value: WIDTH }
   });
 
   const png = resvg.render().asPng();
@@ -485,7 +541,7 @@ async function fetchAllTokens() {
       if (batch.length < limit || TEST_MODE) break;
       offset += limit;
 
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
     } catch (e) {
       console.error(`Error fetching tokens at offset ${offset}:`, e.message);
       break;
@@ -512,8 +568,10 @@ async function generateTokenImage(token, fonts, logoDataUrl) {
   const page = {
     title: token.name || token.currency || 'Token',
     user: token.user || '',
-    description: token.description ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '') : '',
-    md5: token.md5,
+    description: token.description
+      ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '')
+      : '',
+    md5: token.md5
   };
 
   return generateImage(page, fonts, logoDataUrl);
@@ -630,11 +688,13 @@ async function main() {
 
       // Progress update every 100 tokens
       if ((i + BATCH_SIZE) % 100 === 0 || i + BATCH_SIZE >= tokens.length) {
-        console.log(`\n  Progress: ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length} (${success} new, ${skipped} skipped, ${failed} failed)\n`);
+        console.log(
+          `\n  Progress: ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length} (${success} new, ${skipped} skipped, ${failed} failed)\n`
+        );
       }
 
       // Small delay between batches
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
     }
 
     console.log('\n================================');
@@ -649,7 +709,9 @@ async function main() {
   console.log('Done!');
   console.log('\nUsage in pages:');
   console.log('  Static: <meta property="og:image" content="https://xrpl.to/og/{slug}.webp" />');
-  console.log('  Tokens: <meta property="og:image" content="https://xrpl.to/og/token/{slug}.webp" />');
+  console.log(
+    '  Tokens: <meta property="og:image" content="https://xrpl.to/og/token/{slug}.webp" />'
+  );
 }
 
 main().catch(console.error);

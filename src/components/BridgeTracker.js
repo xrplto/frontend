@@ -11,7 +11,9 @@ const getPending = () => {
   if (typeof window === 'undefined') return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch { return {}; }
+  } catch {
+    return {};
+  }
 };
 
 // Save pending exchanges to localStorage
@@ -53,7 +55,6 @@ const sendNotification = async (title, body, onClick) => {
 export default function BridgeTracker() {
   const router = useRouter();
   const statusRef = useRef({});
-
 
   const pollExchanges = useCallback(async () => {
     const pending = getPending();

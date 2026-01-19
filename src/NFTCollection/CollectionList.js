@@ -31,7 +31,8 @@ const TableContainer = styled.div`
   scrollbar-width: none;
   box-sizing: border-box;
   background: transparent;
-  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   backdrop-filter: blur(12px);
 
@@ -58,18 +59,21 @@ const StyledTableBody = styled.tbody`
     padding: 0;
 
     &:hover {
-      background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+      background: ${(props) =>
+        props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
     }
   }
 `;
 
 const StyledRow = styled.tr`
-  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-bottom: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    background: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 `;
 
@@ -100,14 +104,16 @@ const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 12px;
-  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-bottom: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    background: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 `;
 
@@ -186,7 +192,8 @@ const StyledToolbar = styled.div`
   padding: 12px 16px;
   gap: 8px;
   flex-wrap: wrap;
-  border-top: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-top: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
 
   @media (max-width: 900px) {
@@ -197,7 +204,6 @@ const StyledToolbar = styled.div`
     padding: 10px 12px;
   }
 `;
-
 
 const RowsSelector = styled.div`
   display: flex;
@@ -216,7 +222,6 @@ const RowsSelector = styled.div`
   }
 `;
 
-
 const Text = styled.span`
   font-size: 11px;
   font-variant-numeric: tabular-nums;
@@ -228,7 +233,8 @@ const NavButton = styled.button`
   width: 26px;
   height: 26px;
   border-radius: 12px;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   cursor: pointer;
   display: inline-flex;
@@ -239,8 +245,10 @@ const NavButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    border-color: ${({ darkMode }) =>
+      darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${({ darkMode }) =>
+      darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 
   &:disabled {
@@ -253,10 +261,15 @@ const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
   border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.selected ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${(props) =>
+      props.selected
+        ? '#4285f4'
+        : props.darkMode
+          ? 'rgba(255, 255, 255, 0.1)'
+          : 'rgba(0, 0, 0, 0.06)'};
   background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
-  color: ${(props) =>
-    props.selected ? 'white' : (props.darkMode ? '#ffffff' : '#212B36')};
+  color: ${(props) => (props.selected ? 'white' : props.darkMode ? '#ffffff' : '#212B36')};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -269,8 +282,18 @@ const PageButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    border-color: ${(props) => (props.selected ? '#1976D2' : props.darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${(props) => (props.selected ? '#1976D2' : props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    border-color: ${(props) =>
+      props.selected
+        ? '#1976D2'
+        : props.darkMode
+          ? 'rgba(255, 255, 255, 0.15)'
+          : 'rgba(0, 0, 0, 0.1)'};
+    background: ${(props) =>
+      props.selected
+        ? '#1976D2'
+        : props.darkMode
+          ? 'rgba(255, 255, 255, 0.02)'
+          : 'rgba(0, 0, 0, 0.01)'};
   }
 
   &:disabled {
@@ -311,7 +334,8 @@ const SelectMenu = styled.div`
   right: 0;
   margin-top: 4px;
   background: transparent;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   z-index: 1000;
   min-width: 50px;
@@ -355,7 +379,8 @@ const StyledTableCell = styled.th`
   text-transform: uppercase;
   color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.55)')};
   padding: 14px 8px;
-  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-bottom: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -375,7 +400,11 @@ const StyledTableCell = styled.th`
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') : 'inherit'};
+      props.sortable
+        ? props.darkMode
+          ? 'rgba(255, 255, 255, 0.8)'
+          : 'rgba(0, 0, 0, 0.8)'
+        : 'inherit'};
   }
 `;
 
@@ -384,10 +413,16 @@ const SortIndicator = styled.span`
   margin-left: 6px;
   font-size: 8px;
   color: ${(props) =>
-    props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'};
+    props.active
+      ? '#4285f4'
+      : props.darkMode
+        ? 'rgba(255, 255, 255, 0.25)'
+        : 'rgba(0, 0, 0, 0.25)'};
   transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
   opacity: ${(props) => (props.active ? 1 : 0.5)};
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 `;
 
 const MobileContainer = styled.div`
@@ -398,7 +433,8 @@ const MobileContainer = styled.div`
   padding: 0;
   margin: 0;
   background: transparent;
-  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   backdrop-filter: blur(12px);
 `;
@@ -409,12 +445,13 @@ const StyledMobileHeader = styled.div`
   padding: 12px 16px;
   background: transparent;
   backdrop-filter: blur(12px);
-  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)')};
   position: sticky;
   top: 0;
   z-index: 10;
@@ -429,101 +466,241 @@ const StyledHeaderCell = styled.div`
   transition: color 0.15s ease;
 
   &:hover {
-    color: ${(props) => props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
+    color: ${(props) =>
+      props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
   }
 `;
 
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
-  { id: 'floor', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price in XRP' },
-  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '20%', order: true, tooltip: '24h floor price change' },
-  { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '20%', order: true, tooltip: 'All-time trading volume' }
+  {
+    id: 'floor',
+    label: 'FLOOR',
+    align: 'right',
+    width: '20%',
+    order: true,
+    tooltip: 'Floor price in XRP'
+  },
+  {
+    id: 'floor1dPercent',
+    label: '24H %',
+    align: 'right',
+    width: '20%',
+    order: true,
+    tooltip: '24h floor price change'
+  },
+  {
+    id: 'totalVolume',
+    label: 'VOLUME',
+    align: 'right',
+    width: '20%',
+    order: true,
+    tooltip: 'All-time trading volume'
+  }
 ];
 
 const TABLE_HEAD_DESKTOP = [
   { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
   { id: 'name', label: 'COLLECTION', align: 'left', width: '220px', order: false },
-  { id: 'floor', label: 'FLOOR', align: 'right', width: 'auto', order: true, tooltip: 'Floor price in XRP' },
-  { id: 'floor1dPercent', label: '24H %', align: 'right', width: 'auto', order: true, tooltip: '24h floor price change' },
-  { id: 'totalVol24h', label: 'VOL 24H', align: 'right', width: 'auto', order: true, tooltip: '24h trading volume' },
-  { id: 'totalVolume', label: 'VOL ALL', align: 'right', width: 'auto', order: true, tooltip: 'All-time trading volume' },
-  { id: 'created', label: 'CREATED', align: 'right', width: 'auto', order: true, tooltip: 'Collection creation date' },
-  { id: 'sales24h', label: 'SALES 24H', align: 'right', width: 'auto', order: true, tooltip: '24h sales count' },
-  { id: 'totalSales', label: 'SALES ALL', align: 'right', width: 'auto', order: true, tooltip: 'Total sales count' },
-  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: 'auto', order: true, tooltip: 'Floor price × supply' },
-  { id: 'listedCount', label: 'LISTED', align: 'right', width: 'auto', order: true, tooltip: 'NFTs listed for sale' },
-  { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
-  { id: 'items', label: 'SUPPLY', align: 'right', width: 'auto', order: true, tooltip: 'Total NFTs in collection' },
-  { id: 'origin', label: 'SOURCE', align: 'right', width: 'auto', order: true, tooltip: 'Origin marketplace' },
-  { id: 'sparkline', label: 'TRENDLINE', align: 'center', width: '220px', order: false, style: { paddingLeft: '16px' }, tooltip: '7-day floor price trend' }
+  {
+    id: 'floor',
+    label: 'FLOOR',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Floor price in XRP'
+  },
+  {
+    id: 'floor1dPercent',
+    label: '24H %',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: '24h floor price change'
+  },
+  {
+    id: 'totalVol24h',
+    label: 'VOL 24H',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: '24h trading volume'
+  },
+  {
+    id: 'totalVolume',
+    label: 'VOL ALL',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'All-time trading volume'
+  },
+  {
+    id: 'created',
+    label: 'CREATED',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Collection creation date'
+  },
+  {
+    id: 'sales24h',
+    label: 'SALES 24H',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: '24h sales count'
+  },
+  {
+    id: 'totalSales',
+    label: 'SALES ALL',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Total sales count'
+  },
+  {
+    id: 'marketcap.amount',
+    label: 'MARKET CAP',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Floor price × supply'
+  },
+  {
+    id: 'listedCount',
+    label: 'LISTED',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'NFTs listed for sale'
+  },
+  {
+    id: 'owners',
+    label: 'OWNERS',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Unique holders'
+  },
+  {
+    id: 'items',
+    label: 'SUPPLY',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Total NFTs in collection'
+  },
+  {
+    id: 'origin',
+    label: 'SOURCE',
+    align: 'right',
+    width: 'auto',
+    order: true,
+    tooltip: 'Origin marketplace'
+  },
+  {
+    id: 'sparkline',
+    label: 'TRENDLINE',
+    align: 'center',
+    width: '220px',
+    order: false,
+    style: { paddingLeft: '16px' },
+    tooltip: '7-day floor price trend'
+  }
 ];
 
 // ListHead Component
-const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, darkMode, isMobile }) => {
-  const createSortHandler = useCallback(
-    (id) => (event) => {
-      onRequestSort(event, id);
-    },
-    [onRequestSort]
-  );
+const ListHead = memo(
+  ({ order, orderBy, onRequestSort, scrollTopLength = 0, darkMode, isMobile }) => {
+    const createSortHandler = useCallback(
+      (id) => (event) => {
+        onRequestSort(event, id);
+      },
+      [onRequestSort]
+    );
 
-  const TABLE_HEAD = isMobile ? TABLE_HEAD_MOBILE : TABLE_HEAD_DESKTOP;
+    const TABLE_HEAD = isMobile ? TABLE_HEAD_MOBILE : TABLE_HEAD_DESKTOP;
 
-  // Render label with badge style for time periods
-  const renderLabel = (headCell) => {
-    const badgeStyle = { opacity: 0.5, fontSize: '10px' };
+    // Render label with badge style for time periods
+    const renderLabel = (headCell) => {
+      const badgeStyle = { opacity: 0.5, fontSize: '10px' };
 
-    switch (headCell.id) {
-      case 'totalVol24h':
-        return <>Volume <span style={badgeStyle}>24h</span></>;
-      case 'totalVolume':
-        return <>Volume <span style={badgeStyle}>All</span></>;
-      case 'sales24h':
-        return <>Sales <span style={badgeStyle}>24h</span></>;
-      case 'totalSales':
-        return <>Sales <span style={badgeStyle}>All</span></>;
-      case 'sparkline':
-        return <>Trendline <span style={badgeStyle}>7d</span></>;
-      case 'floor1dPercent':
-        return <>Change <span style={badgeStyle}>24h</span></>;
-      default:
-        return headCell.label;
-    }
-  };
+      switch (headCell.id) {
+        case 'totalVol24h':
+          return (
+            <>
+              Volume <span style={badgeStyle}>24h</span>
+            </>
+          );
+        case 'totalVolume':
+          return (
+            <>
+              Volume <span style={badgeStyle}>All</span>
+            </>
+          );
+        case 'sales24h':
+          return (
+            <>
+              Sales <span style={badgeStyle}>24h</span>
+            </>
+          );
+        case 'totalSales':
+          return (
+            <>
+              Sales <span style={badgeStyle}>All</span>
+            </>
+          );
+        case 'sparkline':
+          return (
+            <>
+              Trendline <span style={badgeStyle}>7d</span>
+            </>
+          );
+        case 'floor1dPercent':
+          return (
+            <>
+              Change <span style={badgeStyle}>24h</span>
+            </>
+          );
+        default:
+          return headCell.label;
+      }
+    };
 
-  return (
-    <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
-      <tr>
-        {TABLE_HEAD.map((headCell) => (
-          <StyledTableCell
-            key={headCell.id}
-            align={headCell.align}
-            width={headCell.width}
-            darkMode={darkMode}
-            sortable={headCell.order}
-            isCollectionColumn={headCell.id === 'name'}
-            onClick={headCell.order ? createSortHandler(headCell.id) : undefined}
-            style={headCell.style || {}}
-          >
-            {headCell.order ? (
-              <span>
-                {renderLabel(headCell)}
-                {orderBy === headCell.id && (
-                  <SortIndicator active={true} direction={order} darkMode={darkMode}>
-                    ▼
-                  </SortIndicator>
-                )}
-              </span>
-            ) : (
-              renderLabel(headCell)
-            )}
-          </StyledTableCell>
-        ))}
-      </tr>
-    </StyledTableHead>
-  );
-});
+    return (
+      <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
+        <tr>
+          {TABLE_HEAD.map((headCell) => (
+            <StyledTableCell
+              key={headCell.id}
+              align={headCell.align}
+              width={headCell.width}
+              darkMode={darkMode}
+              sortable={headCell.order}
+              isCollectionColumn={headCell.id === 'name'}
+              onClick={headCell.order ? createSortHandler(headCell.id) : undefined}
+              style={headCell.style || {}}
+            >
+              {headCell.order ? (
+                <span>
+                  {renderLabel(headCell)}
+                  {orderBy === headCell.id && (
+                    <SortIndicator active={true} direction={order} darkMode={darkMode}>
+                      ▼
+                    </SortIndicator>
+                  )}
+                </span>
+              ) : (
+                renderLabel(headCell)
+              )}
+            </StyledTableCell>
+          ))}
+        </tr>
+      </StyledTableHead>
+    );
+  }
+);
 
 // Optimized image component
 const OptimizedImage = memo(
@@ -562,7 +739,8 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
   // Handle name being an object {collection_name, collection_description} or string
-  const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
+  const collectionName =
+    typeof name === 'string' ? name : name?.collection_name || 'Unnamed Collection';
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor || 0;
@@ -587,8 +765,12 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
           <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
         </CollectionImage>
         <CollectionDetails>
-          <CollectionName isMobile={true} darkMode={darkMode}>{collectionName}</CollectionName>
-          <CollectionSubtext isMobile={true} darkMode={darkMode}>{slug}</CollectionSubtext>
+          <CollectionName isMobile={true} darkMode={darkMode}>
+            {collectionName}
+          </CollectionName>
+          <CollectionSubtext isMobile={true} darkMode={darkMode}>
+            {slug}
+          </CollectionSubtext>
         </CollectionDetails>
       </MobileCollectionInfo>
 
@@ -596,7 +778,13 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
         ✕ {fNumber(floorPrice)}
       </MobileCell>
 
-      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)} darkMode={darkMode} fontWeight={400}>
+      <MobileCell
+        flex={0.9}
+        align="right"
+        color={getFloorChangeColor(floorChangePercent)}
+        darkMode={darkMode}
+        fontWeight={400}
+      >
         {formatFloorChange(floorChangePercent)}
       </MobileCell>
 
@@ -628,7 +816,8 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   } = collection;
 
   // Handle name being an object {collection_name, collection_description} or string
-  const collectionName = typeof name === 'string' ? name : (name?.collection_name || 'Unnamed Collection');
+  const collectionName =
+    typeof name === 'string' ? name : name?.collection_name || 'Unnamed Collection';
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor || 0;
@@ -655,8 +844,20 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
 
   return (
     <StyledRow onClick={handleRowClick} darkMode={darkMode}>
-      <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-        <span style={{ fontWeight: '400', fontSize: '13px', color: darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)' }}>{idx + 1}</span>
+      <StyledCell
+        align="center"
+        darkMode={darkMode}
+        style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}
+      >
+        <span
+          style={{
+            fontWeight: '400',
+            fontSize: '13px',
+            color: darkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
+          }}
+        >
+          {idx + 1}
+        </span>
       </StyledCell>
 
       <StyledCell
@@ -670,7 +871,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
             <OptimizedImage src={logoImageUrl} alt={collectionName} size={36} />
           </CollectionImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <CollectionName title={collectionName} darkMode={darkMode}>{collectionName}</CollectionName>
+            <CollectionName title={collectionName} darkMode={darkMode}>
+              {collectionName}
+            </CollectionName>
           </div>
         </div>
       </StyledCell>
@@ -679,7 +882,12 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         ✕ {fNumber(floorPrice)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={400}>
+      <StyledCell
+        align="right"
+        darkMode={darkMode}
+        color={getFloorChangeColor(floorChangePercent)}
+        fontWeight={400}
+      >
         {formatFloorChange(floorChangePercent)}
       </StyledCell>
 
@@ -692,7 +900,14 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        <span style={{ fontSize: '13px', color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)' }}>{strDateTime}</span>
+        <span
+          style={{
+            fontSize: '13px',
+            color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
+          }}
+        >
+          {strDateTime}
+        </span>
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
@@ -720,10 +935,29 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
-        <span style={{ fontFamily: 'var(--font-sans)', color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>{origin || 'XRPL'}</span>
+        <span
+          style={{
+            fontFamily: 'var(--font-sans)',
+            color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+          }}
+        >
+          {origin || 'XRPL'}
+        </span>
       </StyledCell>
 
-      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
+      <StyledCell
+        align="center"
+        darkMode={darkMode}
+        style={{
+          minWidth: '220px',
+          width: '220px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+          overflow: 'visible',
+          position: 'relative',
+          zIndex: 101
+        }}
+      >
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           <NFTSparklineChart slug={slug} period="7d" />
         </div>
@@ -742,10 +976,23 @@ const CollectionRow = memo(
     }, [slug]);
 
     if (isMobile) {
-      return <MobileCollectionRow collection={collection} darkMode={darkMode} handleRowClick={handleRowClick} />;
+      return (
+        <MobileCollectionRow
+          collection={collection}
+          darkMode={darkMode}
+          handleRowClick={handleRowClick}
+        />
+      );
     }
 
-    return <DesktopCollectionRow collection={collection} idx={idx} darkMode={darkMode} handleRowClick={handleRowClick} />;
+    return (
+      <DesktopCollectionRow
+        collection={collection}
+        idx={idx}
+        darkMode={darkMode}
+        handleRowClick={handleRowClick}
+      />
+    );
   },
   (prevProps, nextProps) => {
     const prev = prevProps.collection;
@@ -762,7 +1009,6 @@ const CollectionRow = memo(
     );
   }
 );
-
 
 // ListToolbar Component
 const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, total, darkMode }) {
@@ -830,9 +1076,15 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           </SelectButton>
           {selectOpen && (
             <SelectMenu darkMode={darkMode}>
-              <SelectOption onClick={() => handleChangeRows(100)} darkMode={darkMode}>100</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(50)} darkMode={darkMode}>50</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(20)} darkMode={darkMode}>20</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(100)} darkMode={darkMode}>
+                100
+              </SelectOption>
+              <SelectOption onClick={() => handleChangeRows(50)} darkMode={darkMode}>
+                50
+              </SelectOption>
+              <SelectOption onClick={() => handleChangeRows(20)} darkMode={darkMode}>
+                20
+              </SelectOption>
             </SelectMenu>
           )}
         </Select>
@@ -844,14 +1096,21 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           onClick={onPrevHandler}
           disabled={!hasPrev}
           className={cn(
-            "p-1.5 rounded-xl border-[1.5px] transition-all",
-            !hasPrev ? "opacity-30 cursor-not-allowed" : "",
-            darkMode ? "text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]"
+            'p-1.5 rounded-xl border-[1.5px] transition-all',
+            !hasPrev ? 'opacity-30 cursor-not-allowed' : '',
+            darkMode
+              ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
+              : 'text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
           )}
         >
           <ChevronLeft size={14} />
         </button>
-        <span className={cn("text-[11px] px-2 tabular-nums", darkMode ? "text-white/40" : "text-gray-500")}>
+        <span
+          className={cn(
+            'text-[11px] px-2 tabular-nums',
+            darkMode ? 'text-white/40' : 'text-gray-500'
+          )}
+        >
           {currentPage} / {totalPages}
         </span>
         <button
@@ -859,9 +1118,11 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           onClick={onNextHandler}
           disabled={!hasNext}
           className={cn(
-            "p-1.5 rounded-xl border-[1.5px] transition-all",
-            !hasNext ? "opacity-30 cursor-not-allowed" : "",
-            darkMode ? "text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]"
+            'p-1.5 rounded-xl border-[1.5px] transition-all',
+            !hasNext ? 'opacity-30 cursor-not-allowed' : '',
+            darkMode
+              ? 'text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
+              : 'text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
           )}
         >
           <ChevronRight size={14} />
@@ -872,7 +1133,14 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 });
 
 // Main CollectionList Component
-export default function CollectionList({ type, category, tag, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
+export default function CollectionList({
+  type,
+  category,
+  tag,
+  onGlobalMetrics,
+  initialCollections = [],
+  initialTotal = 0
+}) {
   const BASE_URL = 'https://api.xrpl.to/v1';
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
@@ -908,7 +1176,14 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
 
   useEffect(() => {
     // Only fetch if not initial load (page change, sort change, etc)
-    if (page === 0 && order === 'desc' && orderBy === 'totalVol24h' && rows === 50 && !tag && initialCollections.length > 0) {
+    if (
+      page === 0 &&
+      order === 'desc' &&
+      orderBy === 'totalVol24h' &&
+      rows === 50 &&
+      !tag &&
+      initialCollections.length > 0
+    ) {
       // Reset to initial data when returning to page 1 with default settings
       setCollections(initialCollections);
       setTotal(initialTotal);
@@ -970,9 +1245,7 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
   if (error) {
     return (
       <Container>
-        <div style={{ padding: '40px', textAlign: 'center', color: '#f44336' }}>
-          {error}
-        </div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#f44336' }}>{error}</div>
       </Container>
     );
   }
@@ -1006,7 +1279,10 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
             </StyledHeaderCell>
           </StyledMobileHeader>
           {collections.map((collection, idx) => {
-            const keyName = typeof collection.name === 'object' ? collection.name?.collection_name : collection.name;
+            const keyName =
+              typeof collection.name === 'object'
+                ? collection.name?.collection_name
+                : collection.name;
             return (
               <CollectionRow
                 key={collection.slug || keyName || idx}
@@ -1031,7 +1307,10 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
             />
             <StyledTableBody darkMode={darkMode}>
               {collections.map((collection, idx) => {
-                const keyName = typeof collection.name === 'object' ? collection.name?.collection_name : collection.name;
+                const keyName =
+                  typeof collection.name === 'object'
+                    ? collection.name?.collection_name
+                    : collection.name;
                 return (
                   <CollectionRow
                     key={collection.slug || keyName || idx}
@@ -1046,7 +1325,14 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
           </StyledTable>
         </TableContainer>
       )}
-      <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} darkMode={darkMode} />
+      <ListToolbar
+        rows={rows}
+        setRows={setRows}
+        page={page}
+        setPage={setPage}
+        total={total}
+        darkMode={darkMode}
+      />
     </Container>
   );
 }

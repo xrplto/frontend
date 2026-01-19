@@ -55,7 +55,12 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
         )}
       >
         {/* Header */}
-        <div className={cn("flex items-center justify-between border-b p-4", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+        <div
+          className={cn(
+            'flex items-center justify-between border-b p-4',
+            isDark ? 'border-white/[0.08]' : 'border-gray-200'
+          )}
+        >
           <div className="flex items-center gap-2">
             <CheckCircle size={18} />
             <h2 className="text-[15px] font-normal">Checkout</h2>
@@ -83,12 +88,7 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
             return (
               <div key={offer.nft_offer_index}>
                 {idx > 0 && (
-                  <div
-                    className={cn(
-                      'my-2 h-px',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
-                    )}
-                  />
+                  <div className={cn('my-2 h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
                 )}
                 <button
                   onClick={(event) => handleListItemClick(event, idx)}
@@ -113,23 +113,16 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
                       <div className="flex items-center gap-2">
                         <ArrowRight size={14} />
                         <p
-                          className={cn(
-                            'text-[11px]',
-                            isDark ? 'text-white/50' : 'text-gray-500'
-                          )}
+                          className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}
                         >
                           {offer.destination}
                         </p>
                       </div>
                     )}
                     {offer.expiration && (
-                      <p
-                        className={cn(
-                          'text-[11px]',
-                          isDark ? 'text-white/50' : 'text-gray-500'
-                        )}
-                      >
-                        {expired ? 'Expired' : 'Expires'} on {formatDateTime(offer.expiration * 1000)}
+                      <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                        {expired ? 'Expired' : 'Expires'} on{' '}
+                        {formatDateTime(offer.expiration * 1000)}
                       </p>
                     )}
                   </div>

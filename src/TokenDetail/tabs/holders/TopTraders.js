@@ -80,7 +80,12 @@ export default function TopTraders({ token }) {
         let response;
         if (isXRPToken) {
           // XRP page: use cumulative-stats endpoint - valid: volume24h, winRate, buyVolume, sellVolume
-          const sortMap = { profit: 'buyVolume', volume: 'volume24h', roi: 'sellVolume', winRate: 'winRate' };
+          const sortMap = {
+            profit: 'buyVolume',
+            volume: 'volume24h',
+            roi: 'sellVolume',
+            winRate: 'winRate'
+          };
           const sortBy = sortMap[sortType] || 'volume24h';
           response = await axios.get(
             `${BASE_URL}/analytics/cumulative-stats?limit=${fetchLimit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
@@ -94,7 +99,9 @@ export default function TopTraders({ token }) {
           // Token-specific traders - sortBy: volume, trades, pnl, roi, bought, sold, wash
           const sortBy = sortType || 'volume';
           const interval = timePeriod || '7d';
-          const searchParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : '';
+          const searchParam = debouncedSearch
+            ? `&search=${encodeURIComponent(debouncedSearch)}`
+            : '';
           response = await axios.get(
             `${BASE_URL}/traders/token-traders/${tokenMd5}?interval=${interval}&limit=${fetchLimit}&offset=${offset}&sortBy=${sortBy}${searchParam}`
           );
@@ -112,7 +119,16 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, isMobile, mobileChecked, debouncedSearch, offset]);
+  }, [
+    tokenMd5,
+    isXRPToken,
+    sortType,
+    timePeriod,
+    isMobile,
+    mobileChecked,
+    debouncedSearch,
+    offset
+  ]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
@@ -179,27 +195,80 @@ export default function TopTraders({ token }) {
   return (
     <div className="space-y-3">
       {processedTraders.length === 0 ? (
-        <div className={cn(
-          'text-center py-12 px-8 rounded-xl border-[1.5px] border-dashed',
-          isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
-        )}>
+        <div
+          className={cn(
+            'text-center py-12 px-8 rounded-xl border-[1.5px] border-dashed',
+            isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
+          )}
+        >
           <div className="relative w-14 h-14 mx-auto mb-4">
-            <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-            <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-            <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-            <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-            <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+            <div
+              className={cn(
+                'absolute -top-0.5 left-0.5 w-4 h-4 rounded-full',
+                isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+              )}
+            />
+            <div
+              className={cn(
+                'absolute -top-0.5 right-0.5 w-4 h-4 rounded-full',
+                isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+              )}
+            />
+            <div
+              className={cn(
+                'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
+                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+              )}
+            />
+            <div
+              className={cn(
+                'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
+                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+              )}
+            />
+            <div
+              className={cn(
+                'absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full',
+                isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+              )}
+            >
               <div className="absolute top-3 left-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
               <div className="absolute top-3 right-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-              <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
-              <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+              <div
+                className={cn(
+                  'absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full',
+                  isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
+                )}
+              >
+                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+              </div>
+              <div
+                className={cn(
+                  'absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r',
+                  isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
+                )}
+              />
             </div>
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-              {[...Array(10)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  className={cn('h-[2px] w-full', isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40')}
+                />
+              ))}
             </div>
           </div>
-          <p className={cn("text-xs font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>NO TRADERS</p>
-          <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>Trading data will appear here when available</p>
+          <p
+            className={cn(
+              'text-xs font-medium tracking-widest mb-1',
+              isDark ? 'text-white/80' : 'text-gray-600'
+            )}
+          >
+            NO TRADERS
+          </p>
+          <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+            Trading data will appear here when available
+          </p>
         </div>
       ) : (
         <>
@@ -236,7 +305,9 @@ export default function TopTraders({ token }) {
                     className={cn(
                       'px-2 py-1 text-[11px] font-medium rounded-md transition-all',
                       sortType === option.key
-                        ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800'
+                        ? isDark
+                          ? 'bg-white/10 text-white'
+                          : 'bg-gray-100 text-gray-800'
                         : isDark
                           ? 'text-white/50 hover:text-white/80 hover:bg-white/5'
                           : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
@@ -250,7 +321,13 @@ export default function TopTraders({ token }) {
               {/* Search */}
               {!isXRPToken && (
                 <div className="relative">
-                  <Search size={14} className={cn('absolute left-2.5 top-1/2 -translate-y-1/2', isDark ? 'text-white/40' : 'text-gray-400')} />
+                  <Search
+                    size={14}
+                    className={cn(
+                      'absolute left-2.5 top-1/2 -translate-y-1/2',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  />
                   <input
                     type="text"
                     placeholder="Search address..."
@@ -266,7 +343,12 @@ export default function TopTraders({ token }) {
                   {searchAddress && (
                     <button
                       onClick={() => setSearchAddress('')}
-                      className={cn('absolute right-2 top-1/2 -translate-y-1/2', isDark ? 'text-white/40 hover:text-white' : 'text-gray-400 hover:text-gray-600')}
+                      className={cn(
+                        'absolute right-2 top-1/2 -translate-y-1/2',
+                        isDark
+                          ? 'text-white/40 hover:text-white'
+                          : 'text-gray-400 hover:text-gray-600'
+                      )}
                     >
                       <X size={12} />
                     </button>
@@ -281,22 +363,89 @@ export default function TopTraders({ token }) {
             <table className="w-full">
               <thead>
                 <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
-                  <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
-                  <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
+                  <th
+                    className={cn(
+                      'py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
+                    #
+                  </th>
+                  <th
+                    className={cn(
+                      'py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
+                    Trader
+                  </th>
                   {!isMobile && (
                     <>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70')}>Bought (XRP)</th>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70')}>Sold (XRP)</th>
+                      <th
+                        className={cn(
+                          'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                          isDark ? 'text-white/40' : 'text-gray-400'
+                        )}
+                      >
+                        Volume
+                      </th>
+                      <th
+                        className={cn(
+                          'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                          isDark ? 'text-white/40' : 'text-gray-400'
+                        )}
+                      >
+                        Trades
+                      </th>
+                      <th
+                        className={cn(
+                          'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-green-500/70'
+                        )}
+                      >
+                        Bought (XRP)
+                      </th>
+                      <th
+                        className={cn(
+                          'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-red-500/70'
+                        )}
+                      >
+                        Sold (XRP)
+                      </th>
                     </>
                   )}
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>PNL</th>
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+                  <th
+                    className={cn(
+                      'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
+                    PNL
+                  </th>
+                  <th
+                    className={cn(
+                      'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
+                    ROI
+                  </th>
                   {!isMobile && (
                     <>
-                      <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70')}>Wash</th>
-                      <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Active</th>
+                      <th
+                        className={cn(
+                          'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider text-amber-500/70'
+                        )}
+                      >
+                        Wash
+                      </th>
+                      <th
+                        className={cn(
+                          'py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                          isDark ? 'text-white/40' : 'text-gray-400'
+                        )}
+                      >
+                        Last Active
+                      </th>
                     </>
                   )}
                 </tr>
@@ -312,53 +461,124 @@ export default function TopTraders({ token }) {
                   const volume = trader.volume ?? 0;
                   const trades = trader.trades ?? 0;
                   return (
-                    <tr key={trader.address + '-' + index} className={cn('border-b', isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50')}>
+                    <tr
+                      key={trader.address + '-' + index}
+                      className={cn(
+                        'border-b',
+                        isDark
+                          ? 'border-white/5 hover:bg-white/[0.02]'
+                          : 'border-gray-100 hover:bg-gray-50'
+                      )}
+                    >
                       <td className="py-2.5 pr-2">
-                        <span className={cn(
-                          'text-[11px] font-medium',
-                          isTopTrader ? rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : 'text-amber-600' : isDark ? 'text-white/30' : 'text-gray-400'
-                        )}>{rank}</span>
+                        <span
+                          className={cn(
+                            'text-[11px] font-medium',
+                            isTopTrader
+                              ? rank === 1
+                                ? 'text-yellow-500'
+                                : rank === 2
+                                  ? 'text-gray-400'
+                                  : 'text-amber-600'
+                              : isDark
+                                ? 'text-white/30'
+                                : 'text-gray-400'
+                          )}
+                        >
+                          {rank}
+                        </span>
                       </td>
                       <td className="py-2.5 px-2">
-                        <Link href={`/address/${trader.address}`} target="_blank" className={cn('text-[12px] font-mono hover:text-primary transition-colors', isDark ? 'text-white/80' : 'text-gray-700')}>
+                        <Link
+                          href={`/address/${trader.address}`}
+                          target="_blank"
+                          className={cn(
+                            'text-[12px] font-mono hover:text-primary transition-colors',
+                            isDark ? 'text-white/80' : 'text-gray-700'
+                          )}
+                        >
                           {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>
                       {!isMobile && (
                         <>
-                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                          <td
+                            className={cn(
+                              'py-2.5 px-2 text-right text-[12px] tabular-nums',
+                              isDark ? 'text-white/70' : 'text-gray-600'
+                            )}
+                          >
                             {formatCompactNumber(volume)}
                           </td>
-                          <td className={cn('py-2.5 px-2 text-right text-[12px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                          <td
+                            className={cn(
+                              'py-2.5 px-2 text-right text-[12px] tabular-nums',
+                              isDark ? 'text-white/70' : 'text-gray-600'
+                            )}
+                          >
                             {fNumber(trades)}
                           </td>
                           <td className="py-2.5 px-2 text-right">
-                            <span className="text-[12px] tabular-nums text-green-500">{formatCompactNumber(bought)}</span>
+                            <span className="text-[12px] tabular-nums text-green-500">
+                              {formatCompactNumber(bought)}
+                            </span>
                           </td>
                           <td className="py-2.5 px-2 text-right">
-                            <span className="text-[12px] tabular-nums text-red-500">{formatCompactNumber(sold)}</span>
+                            <span className="text-[12px] tabular-nums text-red-500">
+                              {formatCompactNumber(sold)}
+                            </span>
                           </td>
                         </>
                       )}
                       <td className="py-2.5 px-2 text-right">
-                        <span className={cn('text-[12px] font-medium tabular-nums', pnl >= 0 ? 'text-green-500' : 'text-red-500')}>
-                          {pnl >= 0 ? '+' : ''}{formatCompactNumber(pnl)}
+                        <span
+                          className={cn(
+                            'text-[12px] font-medium tabular-nums',
+                            pnl >= 0 ? 'text-green-500' : 'text-red-500'
+                          )}
+                        >
+                          {pnl >= 0 ? '+' : ''}
+                          {formatCompactNumber(pnl)}
                         </span>
                       </td>
                       <td className="py-2.5 px-2 text-right">
-                        <span className={cn('text-[12px] tabular-nums', roi >= 0 ? 'text-green-500' : 'text-red-500')}>
-                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                        <span
+                          className={cn(
+                            'text-[12px] tabular-nums',
+                            roi >= 0 ? 'text-green-500' : 'text-red-500'
+                          )}
+                        >
+                          {roi >= 0 ? '+' : ''}
+                          {roi.toFixed(1)}%
                         </span>
                       </td>
                       {!isMobile && (
                         <>
                           <td className="py-2.5 px-2 text-right">
-                            <span className={cn('text-[12px] tabular-nums', trader.washTradingScore > 0 ? 'text-amber-500' : isDark ? 'text-white/30' : 'text-gray-300')}>
-                              {trader.washTradingScore > 0 ? formatCompactNumber(trader.washTradingScore) : '-'}
+                            <span
+                              className={cn(
+                                'text-[12px] tabular-nums',
+                                trader.washTradingScore > 0
+                                  ? 'text-amber-500'
+                                  : isDark
+                                    ? 'text-white/30'
+                                    : 'text-gray-300'
+                              )}
+                            >
+                              {trader.washTradingScore > 0
+                                ? formatCompactNumber(trader.washTradingScore)
+                                : '-'}
                             </span>
                           </td>
-                          <td className={cn('py-2.5 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
-                            {trader.lastTradeDate ? formatDistanceToNowStrict(new Date(trader.lastTradeDate)) : '-'}
+                          <td
+                            className={cn(
+                              'py-2.5 pl-2 text-right text-[11px] tabular-nums',
+                              isDark ? 'text-white/50' : 'text-gray-500'
+                            )}
+                          >
+                            {trader.lastTradeDate
+                              ? formatDistanceToNowStrict(new Date(trader.lastTradeDate))
+                              : '-'}
                           </td>
                         </>
                       )}
@@ -376,14 +596,19 @@ export default function TopTraders({ token }) {
               onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={!hasPrev}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
-                !hasPrev ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-                isDark ? "text-white/50" : "text-gray-500"
+                'p-1.5 rounded-md transition-colors',
+                !hasPrev ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+                isDark ? 'text-white/50' : 'text-gray-500'
               )}
             >
               <ChevronLeft size={14} />
             </button>
-            <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+            <span
+              className={cn(
+                'text-[11px] px-2 tabular-nums',
+                isDark ? 'text-white/40' : 'text-gray-500'
+              )}
+            >
               Page {currentPage}
             </span>
             <button
@@ -391,9 +616,9 @@ export default function TopTraders({ token }) {
               onClick={() => setOffset(offset + limit)}
               disabled={!hasNext}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
-                !hasNext ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-                isDark ? "text-white/50" : "text-gray-500"
+                'p-1.5 rounded-md transition-colors',
+                !hasNext ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+                isDark ? 'text-white/50' : 'text-gray-500'
               )}
             >
               <ChevronRight size={14} />

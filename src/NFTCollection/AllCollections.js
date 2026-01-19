@@ -68,12 +68,13 @@ const MetricBox = styled.div`
   align-items: flex-start;
   border-radius: 12px;
   background: transparent;
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 
   @media (max-width: 600px) {
@@ -88,7 +89,7 @@ const MetricBox = styled.div`
 const MetricTitle = styled.span`
   font-size: 0.68rem;
   font-weight: 400;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   letter-spacing: 0.02em;
 
   @media (max-width: 600px) {
@@ -99,7 +100,7 @@ const MetricTitle = styled.span`
 const MetricValue = styled.span`
   font-size: 1.25rem;
   font-weight: 600;
-  color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -111,7 +112,7 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.68rem;
-  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
+  color: ${(props) => (props.isPositive ? '#10b981' : '#ef4444')};
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -119,7 +120,8 @@ const PercentageChange = styled.span`
   letter-spacing: -0.01em;
   padding: 1px 4px;
   border-radius: 4px;
-  background: ${(props) => props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
+  background: ${(props) =>
+    props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
 
   @media (max-width: 600px) {
     font-size: 0.58rem;
@@ -129,7 +131,7 @@ const PercentageChange = styled.span`
 
 const VolumePercentage = styled.span`
   font-size: 0.58rem;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)')};
   font-weight: 400;
 
   @media (max-width: 600px) {
@@ -182,7 +184,10 @@ const VolumeChart = ({ data, isDark }) => {
     const width = rect.width;
     const pointWidth = width / Math.max(chartData.length - 1, 1);
 
-    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const closestIndex = Math.max(
+      0,
+      Math.min(Math.round(mouseX / pointWidth), chartData.length - 1)
+    );
     const dataPoint = chartData[closestIndex];
 
     setTooltip({ show: true, x: event.clientX, y: event.clientY, data: dataPoint });
@@ -230,7 +235,12 @@ const VolumeChart = ({ data, isDark }) => {
 
       const points = chartValues.map((value, index) => {
         const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
-        const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
+        const y =
+          range === 0
+            ? height / 2
+            : padding +
+              (height - padding * 2) -
+              ((value - minValue) / range) * (height - padding * 2);
         return { x, y };
       });
 
@@ -295,12 +305,24 @@ const VolumeChart = ({ data, isDark }) => {
           fontSize: '11px'
         }}
       >
-        <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '8px', paddingBottom: '6px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)' }}>
+        <div
+          style={{
+            fontSize: '12px',
+            fontWeight: 500,
+            marginBottom: '8px',
+            paddingBottom: '6px',
+            borderBottom: isDark
+              ? '1px solid rgba(255, 255, 255, 0.08)'
+              : '1px solid rgba(0, 0, 0, 0.06)'
+          }}
+        >
           {format(new Date(tooltip.data.date), 'MMM dd, yyyy')}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
           <span style={{ opacity: 0.6 }}>Volume</span>
-          <span style={{ fontWeight: 500 }}>✕{formatNumberWithDecimals(tooltip.data.volume || 0)}</span>
+          <span style={{ fontWeight: 500 }}>
+            ✕{formatNumberWithDecimals(tooltip.data.volume || 0)}
+          </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
           <span style={{ opacity: 0.6 }}>Sales</span>
@@ -313,7 +335,9 @@ const VolumeChart = ({ data, isDark }) => {
         {tooltip.data.uniqueBuyers && (
           <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
             <span style={{ opacity: 0.6 }}>Traders</span>
-            <span style={{ fontWeight: 500 }}>{tooltip.data.uniqueBuyers} / {tooltip.data.uniqueSellers}</span>
+            <span style={{ fontWeight: 500 }}>
+              {tooltip.data.uniqueBuyers} / {tooltip.data.uniqueSellers}
+            </span>
           </div>
         )}
       </div>,
@@ -358,7 +382,10 @@ const CollectionCreationChart = ({ data, isDark }) => {
     const width = rect.width;
     const pointWidth = width / Math.max(chartData.length - 1, 1);
 
-    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const closestIndex = Math.max(
+      0,
+      Math.min(Math.round(mouseX / pointWidth), chartData.length - 1)
+    );
     const dataPoint = chartData[closestIndex];
 
     setTooltip({ show: true, x: event.clientX, y: event.clientY, data: dataPoint });
@@ -407,12 +434,17 @@ const CollectionCreationChart = ({ data, isDark }) => {
 
       const points = chartValues.map((value, index) => {
         const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
-        const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
+        const y =
+          range === 0
+            ? height / 2
+            : padding +
+              (height - padding * 2) -
+              ((value - minValue) / range) * (height - padding * 2);
         return { x, y };
       });
 
       // Calculate median volume for threshold coloring
-      const volumes = chartData.map(d => d.volume || 0);
+      const volumes = chartData.map((d) => d.volume || 0);
       const sortedVol = [...volumes].sort((a, b) => a - b);
       const medianVol = sortedVol[Math.floor(sortedVol.length / 2)] || 1000;
 
@@ -490,7 +522,17 @@ const CollectionCreationChart = ({ data, isDark }) => {
           fontSize: '11px'
         }}
       >
-        <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '8px', paddingBottom: '6px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)' }}>
+        <div
+          style={{
+            fontSize: '12px',
+            fontWeight: 500,
+            marginBottom: '8px',
+            paddingBottom: '6px',
+            borderBottom: isDark
+              ? '1px solid rgba(255, 255, 255, 0.08)'
+              : '1px solid rgba(0, 0, 0, 0.06)'
+          }}
+        >
           {format(new Date(d.date), 'MMM dd, yyyy')}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '3px 0' }}>
@@ -515,23 +557,76 @@ const CollectionCreationChart = ({ data, isDark }) => {
         )}
         {collections.length > 0 && (
           <>
-            <div style={{ borderTop: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)', margin: '6px 0 4px', paddingTop: '6px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{d.collectionsInvolved ? 'New Collections' : 'Top Collections'}</span>
+            <div
+              style={{
+                borderTop: isDark
+                  ? '1px solid rgba(255, 255, 255, 0.08)'
+                  : '1px solid rgba(0, 0, 0, 0.06)',
+                margin: '6px 0 4px',
+                paddingTop: '6px'
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  opacity: 0.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.03em'
+                }}
+              >
+                {d.collectionsInvolved ? 'New Collections' : 'Top Collections'}
+              </span>
             </div>
             {collections.slice(0, 3).map((col, i) => (
-              <div key={`tooltip-col-${i}-${col.cid || col.slug}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '3px 0', fontSize: '10px' }}>
+              <div
+                key={`tooltip-col-${i}-${col.cid || col.slug}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  margin: '3px 0',
+                  fontSize: '10px'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <div style={{ width: '14px', height: '14px', minWidth: '14px', minHeight: '14px', borderRadius: '3px', overflow: 'hidden', background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)' }}>
+                  <div
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      minWidth: '14px',
+                      minHeight: '14px',
+                      borderRadius: '3px',
+                      overflow: 'hidden',
+                      background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
+                    }}
+                  >
                     <img
                       src={`https://s1.xrpl.to/collection/${col.logo || col.logoImage}`}
                       alt={col.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                      onError={(e) => {
+                        e.target.parentElement.style.display = 'none';
+                      }}
                     />
                   </div>
-                  <span style={{ opacity: 0.8, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{col.name}</span>
+                  <span
+                    style={{
+                      opacity: 0.8,
+                      maxWidth: '80px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {col.name}
+                  </span>
                 </div>
-                <span style={{ fontWeight: 500 }}>{col.volume ? `✕${formatNumberWithDecimals(col.volume)}` : `${col.items || 0} items`}</span>
+                <span style={{ fontWeight: 500 }}>
+                  {col.volume
+                    ? `✕${formatNumberWithDecimals(col.volume)}`
+                    : `${col.items || 0} items`}
+                </span>
               </div>
             ))}
           </>
@@ -565,7 +660,8 @@ const TagsContainer = styled.div`
   flex-direction: column;
   gap: 8px;
   border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   padding: 10px 14px;
   position: relative;
@@ -618,14 +714,28 @@ const TagChip = styled.button`
   align-items: center;
   gap: 4px;
   padding: 0 10px;
-  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1px solid
+    ${(props) =>
+      props.selected
+        ? 'rgba(59, 130, 246, 0.3)'
+        : props.isDark
+          ? 'rgba(255, 255, 255, 0.06)'
+          : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 6px;
-  background: ${(props) => props.selected
-    ? 'rgba(59, 130, 246, 0.1)'
-    : (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
-  color: ${(props) => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
+  background: ${(props) =>
+    props.selected
+      ? 'rgba(59, 130, 246, 0.1)'
+      : props.isDark
+        ? 'rgba(255, 255, 255, 0.03)'
+        : 'rgba(0, 0, 0, 0.02)'};
+  color: ${(props) =>
+    props.selected
+      ? '#3b82f6'
+      : props.isDark
+        ? 'rgba(255, 255, 255, 0.7)'
+        : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
-  font-weight: ${(props) => props.selected ? 500 : 400};
+  font-weight: ${(props) => (props.selected ? 500 : 400)};
   cursor: pointer;
   white-space: nowrap;
   height: 26px;
@@ -633,7 +743,9 @@ const TagChip = styled.button`
   position: relative;
   overflow: hidden;
   z-index: 1;
-  transition: color 0.3s ease, border-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
 
   &::before {
     content: '';
@@ -673,7 +785,7 @@ const AllTagsButton = styled.button`
   padding: 0 12px;
   border: none;
   border-radius: 16px;
-  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
+  background: ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)')};
   color: #3b82f6;
   font-size: 0.7rem;
   font-weight: 500;
@@ -703,7 +815,7 @@ const Drawer = styled.div`
   right: 0;
   bottom: 0;
   z-index: 1300;
-  display: ${props => props.open ? 'block' : 'none'};
+  display: ${(props) => (props.open ? 'block' : 'none')};
 `;
 
 const DrawerBackdrop = styled.div`
@@ -722,13 +834,17 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)'};
+  background: ${(props) => (props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)')};
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)'};
-  box-shadow: ${props => props.isDark ? '0 -25px 50px -12px rgba(59,130,246,0.1)' : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
+  border-top: 1px solid
+    ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)')};
+  box-shadow: ${(props) =>
+    props.isDark
+      ? '0 -25px 50px -12px rgba(59,130,246,0.1)'
+      : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -746,24 +862,26 @@ const DrawerTitle = styled.h2`
   font-weight: 500;
   font-size: 15px;
   margin: 0;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
 `;
 
 const DrawerClose = styled.button`
   width: 32px;
   height: 32px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
-  transition: border-color 0.15s, color 0.15s;
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)')};
     color: #4285f4;
   }
 `;
@@ -779,16 +897,16 @@ const SearchInputWrapper = styled.div`
   height: 40px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'};
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#fff'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)')};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : '#fff')};
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)')};
   }
 
   &:focus-within {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
   }
 `;
 
@@ -796,7 +914,7 @@ const SearchIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   flex-shrink: 0;
 `;
 
@@ -806,7 +924,7 @@ const SearchInput = styled.input`
   border: none;
   outline: none;
   font-size: 14px;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
   font-family: inherit;
 
   &:focus {
@@ -814,7 +932,7 @@ const SearchInput = styled.input`
   }
 
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)'};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)')};
   }
 `;
 
@@ -826,9 +944,16 @@ const TagsGrid = styled.div`
   flex: 1;
   overflow-y: auto;
   align-content: flex-start;
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.2); border-radius: 3px; }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.2);
+    border-radius: 3px;
+  }
 `;
 
 const TagButton = styled.button`
@@ -836,10 +961,11 @@ const TagButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 4px 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 8px;
   background: transparent;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.75rem;
   font-weight: 400;
   cursor: pointer;
@@ -847,7 +973,9 @@ const TagButton = styled.button`
   white-space: nowrap;
   height: 28px;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 
   &:hover {
     background: rgba(59, 130, 246, 0.08);
@@ -866,13 +994,18 @@ const EmptyState = styled.div`
   width: 100%;
   text-align: center;
   padding: 32px 0;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   font-size: 14px;
 `;
 
 const normalizeTag = (tag) => {
   if (!tag) return '';
-  return tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+  return tag
+    .split(' ')
+    .join('-')
+    .replace(/&/g, 'and')
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9-]/g, '');
 };
 
 const formatNumberWithDecimals = (num) => {
@@ -882,7 +1015,13 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString();
 };
 
-function Collections({ initialCollections, initialTotal, initialGlobalMetrics, collectionCreation, tags }) {
+function Collections({
+  initialCollections,
+  initialTotal,
+  initialGlobalMetrics,
+  collectionCreation,
+  tags
+}) {
   const router = useRouter();
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -908,7 +1047,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
 
   const copyTags = () => {
     if (!tags) return;
-    const text = tags.map(t => `${getTagName(t)}: ${t.count || 0}`).join('\n');
+    const text = tags.map((t) => `${getTagName(t)}: ${t.count || 0}`).join('\n');
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -919,7 +1058,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
     setSelectedTag(newTag);
     setTagsDrawerOpen(false);
     // Update URL without full page reload
-    router.push(newTag ? `/nfts?tag=${encodeURIComponent(newTag)}` : '/nfts', undefined, { shallow: true });
+    router.push(newTag ? `/nfts?tag=${encodeURIComponent(newTag)}` : '/nfts', undefined, {
+      shallow: true
+    });
   };
 
   const filteredTags = useMemo(() => {
@@ -947,13 +1088,24 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
           <DrawerPaper isDark={isDark}>
             <DrawerHeader>
               <div className="flex items-center gap-4 flex-1">
-                <span style={{ fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', whiteSpace: 'nowrap' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   Categories {tags?.length ? `(${tags.length})` : ''}
                 </span>
                 <div
                   className="flex-1 h-[14px]"
                   style={{
-                    backgroundImage: isDark ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
+                    backgroundImage: isDark
+                      ? 'radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)'
+                      : 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
                     backgroundSize: '8px 5px'
                   }}
                 />
@@ -969,7 +1121,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
             </DrawerHeader>
             <SearchBox isDark={isDark}>
               <SearchInputWrapper>
-                <SearchIconWrapper isDark={isDark}><Search size={18} /></SearchIconWrapper>
+                <SearchIconWrapper isDark={isDark}>
+                  <Search size={18} />
+                </SearchIconWrapper>
                 <SearchInput
                   type="search"
                   placeholder="Search categories..."
@@ -989,9 +1143,18 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
                       key={tagName}
                       isDark={isDark}
                       onClick={() => handleTagClick(tagName)}
-                      style={selectedTag === tagName ? { borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', color: isDark ? '#fff' : '#000', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' } : {}}
+                      style={
+                        selectedTag === tagName
+                          ? {
+                              borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                              color: isDark ? '#fff' : '#000',
+                              background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'
+                            }
+                          : {}
+                      }
                     >
-                      {tagName}{count ? ` (${count})` : ''}
+                      {tagName}
+                      {count ? ` (${count})` : ''}
                     </TagButton>
                   );
                 })
@@ -1038,17 +1201,22 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
                   {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
                 </MetricValue>
                 <VolumePercentage isDark={isDark}>
-                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active | {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
+                  {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)} active |{' '}
+                  {formatNumberWithDecimals(globalMetrics.total24hMints || 0)} mints
                 </VolumePercentage>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
                 <MetricTitle isDark={isDark}>24h Fees</MetricTitle>
                 <MetricValue isDark={isDark}>
-                  ✕{formatNumberWithDecimals((globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0))}
+                  ✕
+                  {formatNumberWithDecimals(
+                    (globalMetrics.total24hBrokerFees || 0) + (globalMetrics.total24hRoyalties || 0)
+                  )}
                 </MetricValue>
                 <VolumePercentage isDark={isDark}>
-                  ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕{formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
+                  ✕{formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} royalties | ✕
+                  {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} broker
                 </VolumePercentage>
               </MetricBox>
 
@@ -1058,95 +1226,155 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
                   const sentiment = globalMetrics.sentimentScore || 50;
                   const rsi = globalMetrics.marketRSI || 50;
 
-                  const getSentimentColor = (v) => v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
-                  const getRsiColor = (v) => v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
+                  const getSentimentColor = (v) =>
+                    v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
+                  const getRsiColor = (v) =>
+                    v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
 
                   const sentColor = getSentimentColor(sentiment);
                   const rsiColor = getRsiColor(rsi);
 
                   return (
-                    <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', alignItems: 'flex-end' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: isMobile ? '16px' : '24px',
+                        alignItems: 'flex-end'
+                      }}
+                    >
                       {/* Sentiment gauge */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
                         <div style={{ position: 'relative', width: '36px', height: '20px' }}>
-                          <div style={{
-                            position: 'absolute',
-                            width: '36px',
-                            height: '18px',
-                            borderRadius: '18px 18px 0 0',
-                            background: 'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)',
-                            opacity: 0.2
-                          }} />
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '50%',
-                            width: '2px',
-                            height: '14px',
-                            background: sentColor,
-                            transformOrigin: 'bottom center',
-                            transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
-                            borderRadius: '1px'
-                          }} />
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '-2px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: sentColor
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              width: '36px',
+                              height: '18px',
+                              borderRadius: '18px 18px 0 0',
+                              background:
+                                'conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)',
+                              opacity: 0.2
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '50%',
+                              width: '2px',
+                              height: '14px',
+                              background: sentColor,
+                              transformOrigin: 'bottom center',
+                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
+                              borderRadius: '1px'
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: sentColor
+                            }}
+                          />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 600, color: sentColor, lineHeight: 1 }}>
+                          <span
+                            style={{
+                              fontSize: '1rem',
+                              fontWeight: 600,
+                              color: sentColor,
+                              lineHeight: 1
+                            }}
+                          >
                             {sentiment}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             Sentiment
                           </span>
                         </div>
                       </div>
 
                       {/* RSI gauge */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
                         <div style={{ position: 'relative', width: '36px', height: '20px' }}>
-                          <div style={{
-                            position: 'absolute',
-                            width: '36px',
-                            height: '18px',
-                            borderRadius: '18px 18px 0 0',
-                            background: 'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)',
-                            opacity: 0.2
-                          }} />
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '50%',
-                            width: '2px',
-                            height: '14px',
-                            background: rsiColor,
-                            transformOrigin: 'bottom center',
-                            transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
-                            borderRadius: '1px'
-                          }} />
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '-2px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: rsiColor
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              width: '36px',
+                              height: '18px',
+                              borderRadius: '18px 18px 0 0',
+                              background:
+                                'conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)',
+                              opacity: 0.2
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '50%',
+                              width: '2px',
+                              height: '14px',
+                              background: rsiColor,
+                              transformOrigin: 'bottom center',
+                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
+                              borderRadius: '1px'
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: rsiColor
+                            }}
+                          />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 600, color: rsiColor, lineHeight: 1 }}>
+                          <span
+                            style={{
+                              fontSize: '1rem',
+                              fontWeight: 600,
+                              color: rsiColor,
+                              lineHeight: 1
+                            }}
+                          >
                             {rsi}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             RSI
                           </span>
                         </div>
@@ -1159,7 +1387,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
               <ChartMetricBox isDark={isDark}>
                 {(() => {
                   // Use collectionCreation prop, fallback to daily data
-                  const creationData = collectionCreation?.length ? collectionCreation : (globalMetrics.daily || []);
+                  const creationData = collectionCreation?.length
+                    ? collectionCreation
+                    : globalMetrics.daily || [];
                   const chartData = creationData.slice(-30);
                   const todayData = chartData[chartData.length - 1] || {};
                   const yesterdayData = chartData[chartData.length - 2] || {};
@@ -1168,25 +1398,73 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
                   const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
                   const isUp = today >= yesterday;
                   // collectionCreation uses collectionsInvolved, daily uses topCollections
-                  const latestCollection = (todayData.collectionsInvolved || todayData.topCollections || [])[0];
+                  const latestCollection = (todayData.collectionsInvolved ||
+                    todayData.topCollections ||
+                    [])[0];
                   return (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '2px'
+                        }}
+                      >
                         <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
+                          <span
+                            style={{
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              color: isDark ? '#fff' : '#212B36'
+                            }}
+                          >
                             {formatNumberWithDecimals(today)}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             today
                           </span>
-                          <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          <span
+                            style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}
+                          >
                             {isUp ? '↑' : '↓'}
                           </span>
                           {latestCollection && (
-                            <a href={`/nft/collection/${latestCollection.slug}`} style={{ fontSize: '0.55rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
-                              <span style={{ maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestCollection.name}</span>
-                              <span style={{ color: '#10b981', fontWeight: 500 }}>✕{formatNumberWithDecimals(latestCollection.volume || latestCollection.items || 0)}</span>
+                            <a
+                              href={`/nft/collection/${latestCollection.slug}`}
+                              style={{
+                                fontSize: '0.55rem',
+                                color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                                textDecoration: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                                paddingLeft: '6px'
+                              }}
+                            >
+                              <span
+                                style={{
+                                  maxWidth: '55px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {latestCollection.name}
+                              </span>
+                              <span style={{ color: '#10b981', fontWeight: 500 }}>
+                                ✕
+                                {formatNumberWithDecimals(
+                                  latestCollection.volume || latestCollection.items || 0
+                                )}
+                              </span>
                             </a>
                           )}
                         </div>
@@ -1200,28 +1478,79 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
 
             <MobileChartBox isDark={isDark}>
               {(() => {
-                const creationData = collectionCreation?.length ? collectionCreation : (globalMetrics.daily || []);
+                const creationData = collectionCreation?.length
+                  ? collectionCreation
+                  : globalMetrics.daily || [];
                 const chartData = creationData.slice(-30);
                 const todayData = chartData[chartData.length - 1] || {};
                 const yesterdayData = chartData[chartData.length - 2] || {};
                 const today = todayData.totalCollections ?? todayData.mints ?? 0;
                 const yesterday = yesterdayData.totalCollections ?? yesterdayData.mints ?? 0;
                 const isUp = today >= yesterday;
-                const latestCollection = (todayData.collectionsInvolved || todayData.topCollections || [])[0];
+                const latestCollection = (todayData.collectionsInvolved ||
+                  todayData.topCollections ||
+                  [])[0];
                 return (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
                       <MetricTitle isDark={isDark}>New Collections</MetricTitle>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: isDark ? '#fff' : '#212B36' }}>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: isDark ? '#fff' : '#212B36'
+                          }}
+                        >
                           {formatNumberWithDecimals(today)}
                         </span>
-                        <span style={{ fontSize: '0.45rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
-                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
+                        <span
+                          style={{
+                            fontSize: '0.45rem',
+                            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                          }}
+                        >
+                          today
+                        </span>
+                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          {isUp ? '↑' : '↓'}
+                        </span>
                         {latestCollection && (
-                          <a href={`/nft/collection/${latestCollection.slug}`} style={{ fontSize: '0.45rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
-                            <span style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestCollection.name}</span>
-                            <span style={{ color: '#10b981', fontWeight: 500 }}>✕{formatNumberWithDecimals(latestCollection.volume || latestCollection.items || 0)}</span>
+                          <a
+                            href={`/nft/collection/${latestCollection.slug}`}
+                            style={{
+                              fontSize: '0.45rem',
+                              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                              textDecoration: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                              paddingLeft: '4px'
+                            }}
+                          >
+                            <span
+                              style={{
+                                maxWidth: '40px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {latestCollection.name}
+                            </span>
+                            <span style={{ color: '#10b981', fontWeight: 500 }}>
+                              ✕
+                              {formatNumberWithDecimals(
+                                latestCollection.volume || latestCollection.items || 0
+                              )}
+                            </span>
                           </a>
                         )}
                       </div>
@@ -1250,26 +1579,25 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
                   All NFTs
                 </TagChip>
                 {selectedTag && (
-                  <TagChip
-                    isDark={isDark}
-                    selected
-                    onClick={() => setSelectedTag(null)}
-                  >
+                  <TagChip isDark={isDark} selected onClick={() => setSelectedTag(null)}>
                     <span>{selectedTag}</span> <X size={12} />
                   </TagChip>
                 )}
-                {tags.slice(0, selectedTag ? visibleTagCount - 2 : visibleTagCount - 1).filter(t => getTagName(t) !== selectedTag).map((t) => {
-                  const tagName = getTagName(t);
-                  return (
-                    <TagChip
-                      key={tagName}
-                      isDark={isDark}
-                      onClick={() => handleTagClick(tagName)}
-                    >
-                      <span>{tagName}</span>
-                    </TagChip>
-                  );
-                })}
+                {tags
+                  .slice(0, selectedTag ? visibleTagCount - 2 : visibleTagCount - 1)
+                  .filter((t) => getTagName(t) !== selectedTag)
+                  .map((t) => {
+                    const tagName = getTagName(t);
+                    return (
+                      <TagChip
+                        key={tagName}
+                        isDark={isDark}
+                        onClick={() => handleTagClick(tagName)}
+                      >
+                        <span>{tagName}</span>
+                      </TagChip>
+                    );
+                  })}
               </TagsScrollArea>
               <AllButtonWrapper>
                 <div style={{ display: 'flex', gap: '6px' }}>

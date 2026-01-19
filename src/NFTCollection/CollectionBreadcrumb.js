@@ -9,9 +9,8 @@ export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
 
   // Normalize name: API may return object {collection_name, collection_description} or string
   const rawName = collection?.collection?.name;
-  const collectionName = typeof rawName === 'object' && rawName !== null
-    ? rawName.collection_name || ''
-    : rawName || '';
+  const collectionName =
+    typeof rawName === 'object' && rawName !== null ? rawName.collection_name || '' : rawName || '';
 
   return (
     <div

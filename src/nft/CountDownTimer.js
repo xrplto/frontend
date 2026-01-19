@@ -5,16 +5,10 @@ import { cn } from 'src/utils/cn';
 const DateTimeDisplay = ({ value, type, isDanger, isDark }) => {
   return (
     <div className="flex flex-col items-center px-3">
-      <div className={cn(
-        "text-[15px] font-normal",
-        isDark ? "text-white" : "text-gray-900"
-      )}>
+      <div className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
         {value}
       </div>
-      <div className={cn(
-        "text-[11px] font-normal",
-        isDark ? "text-white/60" : "text-gray-600"
-      )}>
+      <div className={cn('text-[11px] font-normal', isDark ? 'text-white/60' : 'text-gray-600')}>
         {type}
       </div>
     </div>
@@ -50,10 +44,7 @@ export default function CountdownTimer({ targetDate }) {
 
   if (days + hours + minutes + seconds <= 0) {
     return (
-      <div className={cn(
-        "text-[15px] font-normal",
-        isDark ? "text-white" : "text-gray-900"
-      )}>
+      <div className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
         Time expired
       </div>
     );
@@ -62,11 +53,11 @@ export default function CountdownTimer({ targetDate }) {
   return (
     <div className="flex items-center justify-center p-2">
       <DateTimeDisplay value={days} type="Days" isDanger={days <= 3} isDark={isDark} />
-      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <span className={cn('text-[15px]', isDark ? 'text-white/60' : 'text-gray-600')}>:</span>
       <DateTimeDisplay value={hours} type="Hours" isDanger={false} isDark={isDark} />
-      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <span className={cn('text-[15px]', isDark ? 'text-white/60' : 'text-gray-600')}>:</span>
       <DateTimeDisplay value={minutes} type="Mins" isDanger={false} isDark={isDark} />
-      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <span className={cn('text-[15px]', isDark ? 'text-white/60' : 'text-gray-600')}>:</span>
       <DateTimeDisplay value={seconds} type="Seconds" isDanger={false} isDark={isDark} />
     </div>
   );

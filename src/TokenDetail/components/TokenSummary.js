@@ -4,7 +4,19 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2, X, Link2, Unlink2, Code2 } from 'lucide-react';
+import {
+  TrendingUp,
+  Sparkles,
+  ExternalLink,
+  Star,
+  Copy,
+  Check,
+  Loader2,
+  X,
+  Link2,
+  Unlink2,
+  Code2
+} from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -56,23 +68,40 @@ const formatPrice = (price) => {
 
 // Origin Icon
 const OriginIcon = ({ origin, isDark }) => {
-  const s = "w-3.5 h-3.5";
+  const s = 'w-3.5 h-3.5';
   switch (origin) {
-    case 'FirstLedger': return <ExternalLink className={cn(s, "text-[#013CFE]")} />;
-    case 'XPMarket': return <Sparkles className={cn(s, "text-[#6D1FEE]")} />;
-    case 'LedgerMeme': return <span className="text-xs">😂</span>;
-    case 'Horizon': return <Star className={cn(s, "text-[#f97316]")} />;
-    case 'aigent.run': return <img src="/static/aigentrun.gif" alt="Aigent.Run" className="w-3.5 h-3.5 object-contain" />;
-    case 'Magnetic X': return <img src="/static/magneticx-logo.webp" alt="Magnetic X" className="w-3.5 h-3.5 object-contain" />;
-    case 'xrp.fun': return <TrendingUp className={cn(s, "text-[#B72136]")} />;
-    default: return <Sparkles className={cn(s, isDark ? "text-white/40" : "text-gray-400")} />;
+    case 'FirstLedger':
+      return <ExternalLink className={cn(s, 'text-[#013CFE]')} />;
+    case 'XPMarket':
+      return <Sparkles className={cn(s, 'text-[#6D1FEE]')} />;
+    case 'LedgerMeme':
+      return <span className="text-xs">😂</span>;
+    case 'Horizon':
+      return <Star className={cn(s, 'text-[#f97316]')} />;
+    case 'aigent.run':
+      return (
+        <img src="/static/aigentrun.gif" alt="Aigent.Run" className="w-3.5 h-3.5 object-contain" />
+      );
+    case 'Magnetic X':
+      return (
+        <img
+          src="/static/magneticx-logo.webp"
+          alt="Magnetic X"
+          className="w-3.5 h-3.5 object-contain"
+        />
+      );
+    case 'xrp.fun':
+      return <TrendingUp className={cn(s, 'text-[#B72136]')} />;
+    default:
+      return <Sparkles className={cn(s, isDark ? 'text-white/40' : 'text-gray-400')} />;
   }
 };
 
 const TokenSummary = memo(({ token }) => {
   const BASE_URL = 'https://api.xrpl.to/v1';
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } = useContext(AppContext);
+  const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } =
+    useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -111,45 +140,94 @@ const TokenSummary = memo(({ token }) => {
   // Debug info loader
   useEffect(() => {
     const loadDebugInfo = async () => {
-      if (!accountProfile) { setDebugInfo(null); return; }
-      let walletKeyId = accountProfile.walletKeyId ||
+      if (!accountProfile) {
+        setDebugInfo(null);
+        return;
+      }
+      let walletKeyId =
+        accountProfile.walletKeyId ||
         (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+        (accountProfile.provider && accountProfile.provider_id
+          ? `${accountProfile.provider}_${accountProfile.provider_id}`
+          : null);
       let seed = accountProfile.seed || null;
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+      if (
+        !seed &&
+        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
+      ) {
         try {
           const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
           if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            const walletData = await walletStorage.getWallet(
+              accountProfile.account,
+              storedPassword
+            );
             seed = walletData?.seed || 'encrypted';
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
       // Handle device wallets
       if (!seed && accountProfile.wallet_type === 'device') {
         try {
-          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const { EncryptedWalletStorage, deviceFingerprint } =
+            await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const deviceKeyId = await deviceFingerprint.getDeviceId();
           walletKeyId = deviceKeyId;
           if (deviceKeyId) {
             const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
             if (storedPassword) {
-              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              const walletData = await walletStorage.getWallet(
+                accountProfile.account,
+                storedPassword
+              );
               seed = walletData?.seed || 'encrypted';
             }
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
-      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
+      setDebugInfo({
+        wallet_type: accountProfile.wallet_type,
+        account: accountProfile.account,
+        walletKeyId,
+        seed: seed || 'N/A'
+      });
     };
     loadDebugInfo();
   }, [accountProfile]);
 
-  const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator, trustlines, AMM } = token;
+  const {
+    id,
+    name,
+    exch,
+    pro7d,
+    pro24h,
+    pro5m,
+    pro1h,
+    maxMin24h,
+    usd,
+    vol24hxrp,
+    marketcap,
+    expiration,
+    user,
+    md5,
+    currency,
+    issuer,
+    verified,
+    holders,
+    tvl,
+    origin,
+    creator,
+    trustlines,
+    AMM
+  } = token;
 
   // Trustline handler
   const handleSetTrust = async () => {
@@ -181,7 +259,7 @@ const TokenSummary = memo(({ token }) => {
 
       const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex}-`;
       const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${accountProfile.deviceKeyId}`, {
-        keySize: 256/32,
+        keySize: 256 / 32,
         iterations: 100000
       }).toString();
       const deviceWallet = new Wallet(seedHash.substring(0, 64));
@@ -231,7 +309,8 @@ const TokenSummary = memo(({ token }) => {
   // Price change animation
   useEffect(() => {
     if (prevPrice !== null && exch !== null && exch !== prevPrice) {
-      const curr = parseFloat(exch), prev = parseFloat(prevPrice);
+      const curr = parseFloat(exch),
+        prev = parseFloat(prevPrice);
       if (!isNaN(curr) && !isNaN(prev)) {
         setPriceColor(curr > prev ? '#22c55e' : '#ef4444');
         const t = setTimeout(() => setPriceColor(null), 1500);
@@ -241,12 +320,15 @@ const TokenSummary = memo(({ token }) => {
     setPrevPrice(exch);
   }, [exch, prevPrice]);
 
-  const priceChanges = useMemo(() => [
-    { value: pro5m, label: '5m' },
-    { value: pro1h, label: '1h' },
-    { value: pro24h, label: '24h' },
-    { value: pro7d, label: '7d' }
-  ], [pro5m, pro1h, pro24h, pro7d]);
+  const priceChanges = useMemo(
+    () => [
+      { value: pro5m, label: '5m' },
+      { value: pro1h, label: '1h' },
+      { value: pro24h, label: '24h' },
+      { value: pro7d, label: '7d' }
+    ],
+    [pro5m, pro1h, pro24h, pro7d]
+  );
 
   const range24h = useMemo(() => {
     if (pro24h !== null && pro24h !== undefined) {
@@ -255,7 +337,8 @@ const TokenSummary = memo(({ token }) => {
       const min = currentPrice * (1 - variation);
       const max = currentPrice * (1 + variation);
       const delta = max - min;
-      let percent = delta > 0 ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100)) : 50;
+      let percent =
+        delta > 0 ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100)) : 50;
       return { min, max, percent };
     }
     if (!maxMin24h || !Array.isArray(maxMin24h) || maxMin24h.length < 2) return null;
@@ -263,7 +346,10 @@ const TokenSummary = memo(({ token }) => {
     const max = Math.max(maxMin24h[0], maxMin24h[1]);
     const delta = max - min;
     const currentPrice = exch || usd;
-    let percent = delta > 0 && currentPrice ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100)) : 50;
+    let percent =
+      delta > 0 && currentPrice
+        ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100))
+        : 50;
     return { min, max, percent };
   }, [maxMin24h, exch, usd, pro24h]);
 
@@ -274,18 +360,33 @@ const TokenSummary = memo(({ token }) => {
     return fNumber(v);
   };
 
-  const formatPct = useCallback((v) => v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, []);
+  const formatPct = useCallback(
+    (v) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`),
+    []
+  );
 
-  const convertedMarketCap = marketcap && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
-    ? new Decimal(marketcap).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber() : marketcap || 0;
-  const convertedVolume = vol24hxrp && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
-    ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber() : vol24hxrp || 0;
-  const convertedTvl = tvl && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
-    ? new Decimal(tvl).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber() : tvl || 0;
+  const convertedMarketCap =
+    marketcap &&
+    (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+      ? new Decimal(marketcap).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
+      : marketcap || 0;
+  const convertedVolume =
+    vol24hxrp &&
+    (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+      ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
+      : vol24hxrp || 0;
+  const convertedTvl =
+    tvl && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+      ? new Decimal(tvl).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
+      : tvl || 0;
 
   const tokenImageUrl = `https://s1.xrpl.to/token/${md5}`;
   const fallbackImageUrl = issuer ? getHashIcon(issuer) : '/static/account_logo.webp';
-  const handleGoogleLensSearch = () => window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(tokenImageUrl)}`, '_blank');
+  const handleGoogleLensSearch = () =>
+    window.open(
+      `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(tokenImageUrl)}`,
+      '_blank'
+    );
   const isExpired = checkExpiration(expiration);
 
   const copyIssuer = () => {
@@ -300,10 +401,15 @@ const TokenSummary = memo(({ token }) => {
 
     const controller = new AbortController();
 
-    axios.get(`${BASE_URL}/account/lines/${accountProfile?.account}`, { signal: controller.signal })
+    axios
+      .get(`${BASE_URL}/account/lines/${accountProfile?.account}`, { signal: controller.signal })
       .then((res) => {
         if (res.status === 200 && res.data?.lines && mountedRef.current) {
-          const tl = res.data.lines.find((t) => (t.LowLimit.issuer === issuer || t.HighLimit.issuer === issuer) && t.LowLimit.currency === currency);
+          const tl = res.data.lines.find(
+            (t) =>
+              (t.LowLimit.issuer === issuer || t.HighLimit.issuer === issuer) &&
+              t.LowLimit.currency === currency
+          );
           setIsRemove(!!tl);
         }
       })
@@ -318,7 +424,10 @@ const TokenSummary = memo(({ token }) => {
 
   const getPriceDisplay = () => {
     const symbol = currencySymbols[activeFiatCurrency];
-    const exchRate = Number(metrics[activeFiatCurrency]) || (activeFiatCurrency === 'CNH' ? Number(metrics.CNY) : null) || 1;
+    const exchRate =
+      Number(metrics[activeFiatCurrency]) ||
+      (activeFiatCurrency === 'CNH' ? Number(metrics.CNY) : null) ||
+      1;
     const price = Number(activeFiatCurrency === 'XRP' ? exch : exch / exchRate);
     if (!price || !isFinite(price) || price === 0) return { symbol, price: '0', isCompact: false };
 
@@ -329,9 +438,17 @@ const TokenSummary = memo(({ token }) => {
         const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
         return { symbol, zeros, significant: significant.slice(0, 4), isCompact: true };
       }
-      return { symbol, price: price.toFixed(6).replace(/0+$/, '').replace(/\.$/, ''), isCompact: false };
+      return {
+        symbol,
+        price: price.toFixed(6).replace(/0+$/, '').replace(/\.$/, ''),
+        isCompact: false
+      };
     } else if (price < 1) {
-      return { symbol, price: price.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''), isCompact: false };
+      return {
+        symbol,
+        price: price.toFixed(4).replace(/0+$/, '').replace(/\.$/, ''),
+        isCompact: false
+      };
     } else if (price < 100) {
       return { symbol, price: price.toFixed(2), isCompact: false };
     } else if (price >= 1e6) {
@@ -347,29 +464,92 @@ const TokenSummary = memo(({ token }) => {
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] p-3", isDark ? "border-white/10 bg-transparent" : "border-black/[0.06] bg-transparent")}>
+    <div
+      className={cn(
+        'rounded-xl border-[1.5px] p-3',
+        isDark ? 'border-white/10 bg-transparent' : 'border-black/[0.06] bg-transparent'
+      )}
+    >
       {/* Row 1: Token Info + Price */}
       <div className="flex items-center justify-between gap-4">
         {/* Left: Token Image + Info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="relative group cursor-pointer flex-shrink-0" onClick={handleGoogleLensSearch}>
-            <Image src={tokenImageUrl} alt={name} width={44} height={44} priority unoptimized
-              className={cn("w-11 h-11 rounded-xl object-cover border", isDark ? "border-white/10" : "border-black/[0.08]")}
-              onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
+          <div
+            className="relative group cursor-pointer flex-shrink-0"
+            onClick={handleGoogleLensSearch}
+          >
+            <Image
+              src={tokenImageUrl}
+              alt={name}
+              width={44}
+              height={44}
+              priority
+              unoptimized
+              className={cn(
+                'w-11 h-11 rounded-xl object-cover border',
+                isDark ? 'border-white/10' : 'border-black/[0.08]'
+              )}
+              onError={(e) => {
+                e.currentTarget.src = fallbackImageUrl;
+              }}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={cn("text-[17px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-              {verified >= 1 && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600")}>Verified</span>}
-              {id && <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-white/[0.06] text-white/50" : "bg-black/[0.04] text-gray-500")}>#{id}</span>}
-              <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-normal", isDark ? "bg-white/[0.04] text-white/50" : "bg-black/[0.03] text-gray-500")}>
-                <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />{origin || 'XRPL'}
+              <span
+                className={cn(
+                  'text-[17px] font-semibold truncate',
+                  isDark ? 'text-white' : 'text-gray-900'
+                )}
+              >
+                {name}
+              </span>
+              {verified >= 1 && (
+                <span
+                  className={cn(
+                    'px-1.5 py-0.5 rounded text-[9px] font-normal',
+                    isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
+                  )}
+                >
+                  Verified
+                </span>
+              )}
+              {id && (
+                <span
+                  className={cn(
+                    'px-1.5 py-0.5 rounded text-[9px] font-normal',
+                    isDark ? 'bg-white/[0.06] text-white/50' : 'bg-black/[0.04] text-gray-500'
+                  )}
+                >
+                  #{id}
+                </span>
+              )}
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-normal',
+                  isDark ? 'bg-white/[0.04] text-white/50' : 'bg-black/[0.03] text-gray-500'
+                )}
+              >
+                <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
+                {origin || 'XRPL'}
               </span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={cn("text-[10px] truncate", isDark ? "text-white/40" : "text-gray-400")}>{user || name}</span>
+              <span
+                className={cn('text-[10px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}
+              >
+                {user || name}
+              </span>
               {issuer && (
-                <button onClick={copyIssuer} className={cn("flex items-center gap-0.5 text-[9px] font-mono", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                <button
+                  onClick={copyIssuer}
+                  className={cn(
+                    'flex items-center gap-0.5 text-[9px] font-mono',
+                    isDark
+                      ? 'text-white/30 hover:text-white/50'
+                      : 'text-gray-400 hover:text-gray-600'
+                  )}
+                >
                   {copied ? <Check size={9} className="text-green-500" /> : <Copy size={9} />}
                   {issuer.slice(0, 4)}...{issuer.slice(-4)}
                 </button>
@@ -380,26 +560,85 @@ const TokenSummary = memo(({ token }) => {
 
         {/* Right: Price + Change */}
         <div className="flex flex-col items-end flex-shrink-0">
-          <span className={cn("text-2xl font-bold tracking-tight", priceColor ? "" : isDark ? "text-white" : "text-gray-900")} style={priceColor ? { color: priceColor } : undefined}>
-            {priceDisplay.isCompact ? <>{priceDisplay.symbol}0.0<sub className="text-[0.5em]">{priceDisplay.zeros}</sub>{priceDisplay.significant}</> : <>{priceDisplay.symbol}{priceDisplay.price}</>}
+          <span
+            className={cn(
+              'text-2xl font-bold tracking-tight',
+              priceColor ? '' : isDark ? 'text-white' : 'text-gray-900'
+            )}
+            style={priceColor ? { color: priceColor } : undefined}
+          >
+            {priceDisplay.isCompact ? (
+              <>
+                {priceDisplay.symbol}0.0<sub className="text-[0.5em]">{priceDisplay.zeros}</sub>
+                {priceDisplay.significant}
+              </>
+            ) : (
+              <>
+                {priceDisplay.symbol}
+                {priceDisplay.price}
+              </>
+            )}
           </span>
-          <span className={cn("text-[11px] font-medium", mainChange >= 0 ? "text-green-500" : "text-red-500")}>
+          <span
+            className={cn(
+              'text-[11px] font-medium',
+              mainChange >= 0 ? 'text-green-500' : 'text-red-500'
+            )}
+          >
             {formatPct(mainChange)}
           </span>
         </div>
       </div>
 
       {/* Row 2: Stats Grid */}
-      <div className={cn("grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+      <div
+        className={cn(
+          'grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t',
+          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+        )}
+      >
         {[
-          { label: 'MCAP', value: formatValue(convertedMarketCap), color: isDark ? 'text-white/90' : 'text-gray-800' },
-          { label: 'VOL 24H', value: formatValue(convertedVolume), color: isDark ? 'text-white/90' : 'text-gray-800' },
-          { label: 'TVL', value: formatValue(convertedTvl), color: isDark ? 'text-white/90' : 'text-gray-800' },
-          { label: 'HOLDERS', value: formatValue(holders || 0), color: isDark ? 'text-white/90' : 'text-gray-800', noSymbol: true }
+          {
+            label: 'MCAP',
+            value: formatValue(convertedMarketCap),
+            color: isDark ? 'text-white/90' : 'text-gray-800'
+          },
+          {
+            label: 'VOL 24H',
+            value: formatValue(convertedVolume),
+            color: isDark ? 'text-white/90' : 'text-gray-800'
+          },
+          {
+            label: 'TVL',
+            value: formatValue(convertedTvl),
+            color: isDark ? 'text-white/90' : 'text-gray-800'
+          },
+          {
+            label: 'HOLDERS',
+            value: formatValue(holders || 0),
+            color: isDark ? 'text-white/90' : 'text-gray-800',
+            noSymbol: true
+          }
         ].map((stat) => (
-          <div key={stat.label} className={cn("text-center py-1.5 px-1 rounded-lg", isDark ? "bg-white/[0.025]" : "bg-black/[0.02]")}>
-            <div className={cn("text-[9px] uppercase tracking-wide mb-1", isDark ? "text-white/35" : "text-gray-400")}>{stat.label}</div>
-            <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
+          <div
+            key={stat.label}
+            className={cn(
+              'text-center py-1.5 px-1 rounded-lg',
+              isDark ? 'bg-white/[0.025]' : 'bg-black/[0.02]'
+            )}
+          >
+            <div
+              className={cn(
+                'text-[9px] uppercase tracking-wide mb-1',
+                isDark ? 'text-white/35' : 'text-gray-400'
+              )}
+            >
+              {stat.label}
+            </div>
+            <div className={cn('text-[13px] font-medium', stat.color)}>
+              {stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}
+              {stat.value}
+            </div>
           </div>
         ))}
       </div>
@@ -408,43 +647,118 @@ const TokenSummary = memo(({ token }) => {
       <div className="grid grid-cols-4 gap-1.5 mt-1.5">
         {priceChanges.map((item) => (
           <div key={item.label} className="flex items-center justify-center gap-1 py-1">
-            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/35" : "text-gray-400")}>{item.label}</span>
-            <span className={cn("text-[12px] font-medium px-1.5 py-0.5 rounded", item.value >= 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10")}>{formatPct(item.value)}</span>
+            <span
+              className={cn(
+                'text-[9px] uppercase tracking-wide',
+                isDark ? 'text-white/35' : 'text-gray-400'
+              )}
+            >
+              {item.label}
+            </span>
+            <span
+              className={cn(
+                'text-[12px] font-medium px-1.5 py-0.5 rounded',
+                item.value >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'
+              )}
+            >
+              {formatPct(item.value)}
+            </span>
           </div>
         ))}
       </div>
 
       {/* Row 4: 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-2.5 mt-2 pt-2 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
-          <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/35" : "text-gray-400")}>24H</span>
+        <div
+          className={cn(
+            'flex items-center gap-2.5 mt-2 pt-2 border-t',
+            isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+          )}
+        >
+          <span
+            className={cn(
+              'text-[9px] uppercase tracking-wide flex-shrink-0',
+              isDark ? 'text-white/35' : 'text-gray-400'
+            )}
+          >
+            24H
+          </span>
           <span className="text-[10px] text-green-500/80 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
-            {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
+            {(() => {
+              const rate =
+                metrics[activeFiatCurrency] ||
+                (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ||
+                1;
+              const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate;
+              const p = formatPrice(v);
+              return p?.compact ? (
+                <>
+                  0.0<sub className="text-[8px]">{p.zeros}</sub>
+                  {p.significant}
+                </>
+              ) : (
+                p
+              );
+            })()}
           </span>
           <div className="flex-1 relative py-1.5">
-            <div className={cn("h-1.5 rounded-full", isDark ? "bg-white/[0.06]" : "bg-black/[0.04]")}>
-              <div className={cn("absolute inset-x-0 top-1.5 h-1.5 rounded-full", isDark ? "bg-gradient-to-r from-green-500/20 via-white/10 to-red-500/20" : "bg-gradient-to-r from-green-500/15 via-gray-200 to-red-500/15")} />
+            <div
+              className={cn('h-1.5 rounded-full', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
+            >
+              <div
+                className={cn(
+                  'absolute inset-x-0 top-1.5 h-1.5 rounded-full',
+                  isDark
+                    ? 'bg-gradient-to-r from-green-500/20 via-white/10 to-red-500/20'
+                    : 'bg-gradient-to-r from-green-500/15 via-gray-200 to-red-500/15'
+                )}
+              />
             </div>
             <div
               className="absolute top-1/2 -translate-y-1/2 z-10"
               style={{ left: `clamp(0px, calc(${range24h.percent}% - 4px), calc(100% - 8px))` }}
             >
-              <div className={cn("w-2 h-2 rounded-full", isDark ? "bg-white/90" : "bg-gray-700")} />
+              <div className={cn('w-2 h-2 rounded-full', isDark ? 'bg-white/90' : 'bg-gray-700')} />
             </div>
           </div>
           <span className="text-[10px] text-red-500/80 flex-shrink-0">
             {currencySymbols[activeFiatCurrency]}
-            {(() => { const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1; const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate; const p = formatPrice(v); return p?.compact ? <>0.0<sub className="text-[8px]">{p.zeros}</sub>{p.significant}</> : p; })()}
+            {(() => {
+              const rate =
+                metrics[activeFiatCurrency] ||
+                (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ||
+                1;
+              const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate;
+              const p = formatPrice(v);
+              return p?.compact ? (
+                <>
+                  0.0<sub className="text-[8px]">{p.zeros}</sub>
+                  {p.significant}
+                </>
+              ) : (
+                p
+              );
+            })()}
           </span>
         </div>
       )}
 
       {/* Row 5: Actions */}
-      <div className={cn("flex items-center justify-between gap-2 mt-2 pt-2 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.06]")}>
+      <div
+        className={cn(
+          'flex items-center justify-between gap-2 mt-2 pt-2 border-t',
+          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+        )}
+      >
         <div className="flex items-center gap-1.5 relative">
           {trustStatus && trustStatus !== 'loading' && (
-            <div className={cn("absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap z-50", isDark ? "bg-white/10 text-white" : "bg-gray-800 text-white")}>
+            <div
+              className={cn(
+                'absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap z-50',
+                isDark ? 'bg-white/10 text-white' : 'bg-gray-800 text-white'
+              )}
+            >
               {trustStatus}
             </div>
           )}
@@ -452,21 +766,34 @@ const TokenSummary = memo(({ token }) => {
             onClick={handleSetTrust}
             disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
               isRemove
-                ? isDark ? "text-red-400 border-red-500/20 hover:bg-red-500/10 hover:border-red-500/30" : "text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
-                : isDark ? "text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30" : "text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300",
-              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
+                ? isDark
+                  ? 'text-red-400 border-red-500/20 hover:bg-red-500/10 hover:border-red-500/30'
+                  : 'text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300'
+                : isDark
+                  ? 'text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
+                  : 'text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300',
+              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') &&
+                'opacity-40 cursor-not-allowed'
             )}
           >
-            {trustStatus === 'loading' ? <Loader2 size={13} className="animate-spin" /> : isRemove ? <Unlink2 size={13} /> : <Link2 size={13} />}
+            {trustStatus === 'loading' ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : isRemove ? (
+              <Unlink2 size={13} />
+            ) : (
+              <Link2 size={13} />
+            )}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
           <button
             onClick={() => setShowInfo(true)}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
-              isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 hover:border-[#3f96fe]/30" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300"
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
+              isDark
+                ? 'text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 hover:border-[#3f96fe]/30'
+                : 'text-cyan-600 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300'
             )}
           >
             <Code2 size={13} />
@@ -480,8 +807,10 @@ const TokenSummary = memo(({ token }) => {
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                "px-2 py-1 rounded-lg border text-[10px] font-normal transition-all",
-                isDark ? "border-amber-500/20 text-amber-400 hover:bg-amber-500/10" : "border-amber-200 text-amber-600 hover:bg-amber-50"
+                'px-2 py-1 rounded-lg border text-[10px] font-normal transition-all',
+                isDark
+                  ? 'border-amber-500/20 text-amber-400 hover:bg-amber-500/10'
+                  : 'border-amber-200 text-amber-600 hover:bg-amber-50'
               )}
             >
               Edit
@@ -492,28 +821,98 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Debug Panel */}
       {debugInfo && (
-        <div className={cn("mt-2 p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/20 bg-yellow-500/[0.06]" : "border-yellow-200 bg-yellow-50/50")}>
-          <div className={cn("font-medium mb-1 text-[10px]", isDark ? "text-yellow-400/80" : "text-yellow-600")}>Debug:</div>
+        <div
+          className={cn(
+            'mt-2 p-2 rounded-lg border font-mono text-[9px]',
+            isDark
+              ? 'border-yellow-500/20 bg-yellow-500/[0.06]'
+              : 'border-yellow-200 bg-yellow-50/50'
+          )}
+        >
+          <div
+            className={cn(
+              'font-medium mb-1 text-[10px]',
+              isDark ? 'text-yellow-400/80' : 'text-yellow-600'
+            )}
+          >
+            Debug:
+          </div>
           <div className="space-y-0.5">
-            <div className={isDark ? "text-white/50" : "text-gray-600"}>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
-            <div className={isDark ? "text-white/50" : "text-gray-600"}>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-            <div className={isDark ? "text-white/50" : "text-gray-600"}>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-            <div className={isDark ? "text-white/50" : "text-gray-600"}>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+              wallet_type:{' '}
+              <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+              account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+              walletKeyId:{' '}
+              <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
+                {debugInfo.walletKeyId || 'undefined'}
+              </span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+              seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
+            </div>
           </div>
         </div>
       )}
 
       {/* Technical Info Modal */}
       {showInfo && (
-        <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} onClick={() => setShowInfo(false)}>
-          <div className={cn("w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden", isDark ? "bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50" : "bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30")} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
+          onClick={() => setShowInfo(false)}
+        >
+          <div
+            className={cn(
+              'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden',
+              isDark
+                ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
+                : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
-            <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+            <div
+              className={cn(
+                'flex items-center justify-between px-4 py-3 border-b',
+                isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              )}
+            >
               <div className="flex items-center gap-3 flex-1">
-                <span className={cn("text-[10px] font-semibold uppercase tracking-widest", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Token Details</span>
-                <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+                <span
+                  className={cn(
+                    'text-[10px] font-semibold uppercase tracking-widest',
+                    isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                  )}
+                >
+                  Token Details
+                </span>
+                <div
+                  className="flex-1 h-[14px]"
+                  style={{
+                    backgroundImage: isDark
+                      ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
+                      : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                    backgroundSize: '8px 5px',
+                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                  }}
+                />
               </div>
-              <button onClick={() => setShowInfo(false)} className={cn("p-1 rounded-md", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-gray-100 text-gray-400")}><X size={14} /></button>
+              <button
+                onClick={() => setShowInfo(false)}
+                className={cn(
+                  'p-1 rounded-md',
+                  isDark ? 'hover:bg-white/[0.06] text-white/40' : 'hover:bg-gray-100 text-gray-400'
+                )}
+              >
+                <X size={14} />
+              </button>
             </div>
 
             {/* Content */}
@@ -527,11 +926,44 @@ const TokenSummary = memo(({ token }) => {
                   ...(creator ? [{ label: 'Creator', value: creator }] : []),
                   { label: 'MD5', value: md5 }
                 ].map((item) => (
-                  <button key={item.label} onClick={() => { navigator.clipboard.writeText(item.value); setCopiedField(item.label); setTimeout(() => setCopiedField(null), 1200); }}
-                    className={cn("group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
-                    <span className={cn("text-[10px] w-14 flex-shrink-0", isDark ? "text-white/40" : "text-gray-400")}>{item.label}</span>
-                    <span className={cn("font-mono text-[11px] truncate flex-1", isDark ? "text-white/70" : "text-gray-600")}>{item.value}</span>
-                    <span className={cn("flex-shrink-0", copiedField === item.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/40" : "text-gray-300 group-hover:text-gray-400")}>
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      navigator.clipboard.writeText(item.value);
+                      setCopiedField(item.label);
+                      setTimeout(() => setCopiedField(null), 1200);
+                    }}
+                    className={cn(
+                      'group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left',
+                      isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'text-[10px] w-14 flex-shrink-0',
+                        isDark ? 'text-white/40' : 'text-gray-400'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                    <span
+                      className={cn(
+                        'font-mono text-[11px] truncate flex-1',
+                        isDark ? 'text-white/70' : 'text-gray-600'
+                      )}
+                    >
+                      {item.value}
+                    </span>
+                    <span
+                      className={cn(
+                        'flex-shrink-0',
+                        copiedField === item.label
+                          ? 'text-green-500'
+                          : isDark
+                            ? 'text-white/20 group-hover:text-white/40'
+                            : 'text-gray-300 group-hover:text-gray-400'
+                      )}
+                    >
                       {copiedField === item.label ? <Check size={12} /> : <Copy size={12} />}
                     </span>
                   </button>
@@ -539,35 +971,118 @@ const TokenSummary = memo(({ token }) => {
               </div>
 
               {/* API Endpoints */}
-              <div className={cn("border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-                <button onClick={() => setShowApi(!showApi)} className={cn("w-full flex items-center gap-3 px-4 py-2.5", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}>
-                  <span className={cn("text-[10px] font-semibold uppercase tracking-widest", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>API Endpoints</span>
-                  <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
-                  <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{showApi ? '▲' : '▼'}</span>
+              <div className={cn('border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
+                <button
+                  onClick={() => setShowApi(!showApi)}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-2.5',
+                    isDark
+                      ? 'text-white/50 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-700'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'text-[10px] font-semibold uppercase tracking-widest',
+                      isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                    )}
+                  >
+                    API Endpoints
+                  </span>
+                  <div
+                    className="flex-1 h-[14px]"
+                    style={{
+                      backgroundImage: isDark
+                        ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
+                        : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                      backgroundSize: '8px 5px',
+                      WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                      maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                    }}
+                  />
+                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    {showApi ? '▲' : '▼'}
+                  </span>
                 </button>
                 {showApi && (
                   <div className="px-3 pb-3 space-y-0.5">
                     {[
                       { label: 'Token', url: `https://api.xrpl.to/v1/token/${md5}` },
                       { label: 'Holders', url: `https://api.xrpl.to/v1/holders/list/${md5}` },
-                      { label: 'Order Book', url: `https://api.xrpl.to/v1/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP` },
+                      {
+                        label: 'Order Book',
+                        url: `https://api.xrpl.to/v1/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP`
+                      },
                       { label: 'History', url: `https://api.xrpl.to/v1/history?token=${md5}` },
                       { label: 'OHLC', url: `https://api.xrpl.to/v1/ohlc/${md5}` },
-                      { label: 'Traders', url: `https://api.xrpl.to/v1/traders/token-traders/${md5}` },
-                      { label: 'AMM', url: `https://api.xrpl.to/v1/amm?issuer=${issuer}&currency=${currency}` },
+                      {
+                        label: 'Traders',
+                        url: `https://api.xrpl.to/v1/traders/token-traders/${md5}`
+                      },
+                      {
+                        label: 'AMM',
+                        url: `https://api.xrpl.to/v1/amm?issuer=${issuer}&currency=${currency}`
+                      },
                       { label: 'AI Summary', url: `https://api.xrpl.to/v1/ai/token/${md5}` },
                       { label: 'Quote', url: `https://api.xrpl.to/v1/dex/quote`, method: 'POST' },
-                      { label: 'Rates', url: `https://api.xrpl.to/v1/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8` },
-                      ...(creator ? [{ label: 'Creator', url: `https://api.xrpl.to/v1/creators/${creator}` }] : [])
+                      {
+                        label: 'Rates',
+                        url: `https://api.xrpl.to/v1/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8`
+                      },
+                      ...(creator
+                        ? [{ label: 'Creator', url: `https://api.xrpl.to/v1/creators/${creator}` }]
+                        : [])
                     ].map((ep) => (
-                      <button key={ep.label} onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedField(ep.label); setTimeout(() => setCopiedField(null), 1200); }}
-                        className={cn("group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
-                        <span className={cn("text-[9px] w-14 flex-shrink-0 flex items-center gap-1", isDark ? "text-white/35" : "text-gray-400")}>
+                      <button
+                        key={ep.label}
+                        onClick={() => {
+                          navigator.clipboard.writeText(ep.url);
+                          setCopiedField(ep.label);
+                          setTimeout(() => setCopiedField(null), 1200);
+                        }}
+                        className={cn(
+                          'group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left',
+                          isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'text-[9px] w-14 flex-shrink-0 flex items-center gap-1',
+                            isDark ? 'text-white/35' : 'text-gray-400'
+                          )}
+                        >
                           {ep.label}
-                          {ep.method && <span className={cn("text-[7px] px-1 rounded", isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-600")}>{ep.method}</span>}
+                          {ep.method && (
+                            <span
+                              className={cn(
+                                'text-[7px] px-1 rounded',
+                                isDark
+                                  ? 'bg-amber-500/20 text-amber-400'
+                                  : 'bg-amber-100 text-amber-600'
+                              )}
+                            >
+                              {ep.method}
+                            </span>
+                          )}
                         </span>
-                        <span className={cn("font-mono text-[9px] truncate flex-1", isDark ? "text-blue-400/60" : "text-blue-600/70")}>{ep.url.replace('https://api.xrpl.to', '')}</span>
-                        <span className={cn("flex-shrink-0", copiedField === ep.label ? "text-green-500" : isDark ? "text-white/15 group-hover:text-white/30" : "text-gray-200 group-hover:text-gray-400")}>
+                        <span
+                          className={cn(
+                            'font-mono text-[9px] truncate flex-1',
+                            isDark ? 'text-blue-400/60' : 'text-blue-600/70'
+                          )}
+                        >
+                          {ep.url.replace('https://api.xrpl.to', '')}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-shrink-0',
+                            copiedField === ep.label
+                              ? 'text-green-500'
+                              : isDark
+                                ? 'text-white/15 group-hover:text-white/30'
+                                : 'text-gray-200 group-hover:text-gray-400'
+                          )}
+                        >
                           {copiedField === ep.label ? <Check size={10} /> : <Copy size={10} />}
                         </span>
                       </button>
@@ -578,8 +1093,23 @@ const TokenSummary = memo(({ token }) => {
             </div>
 
             {/* Footer */}
-            <div className={cn("px-4 py-2.5 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-              <a href="/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[10px] py-1.5 rounded-md", isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50")}>
+            <div
+              className={cn(
+                'px-4 py-2.5 border-t',
+                isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              )}
+            >
+              <a
+                href="/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'block text-center text-[10px] py-1.5 rounded-md',
+                  isDark
+                    ? 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                )}
+              >
                 Full API Documentation
               </a>
             </div>

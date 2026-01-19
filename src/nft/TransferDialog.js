@@ -102,7 +102,12 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     <>
       {/* Backdrop */}
       {isLoading && (
-        <div className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}>
+        <div
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
+        >
           <PulseLoader color={'#FF4842'} size={10} />
         </div>
       )}
@@ -110,18 +115,28 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className={cn("absolute inset-0 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}
+          className={cn(
+            'absolute inset-0 backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
           onClick={!isLoading ? handleClose : undefined}
         />
 
         <div
           className={cn(
             'relative w-full max-w-md rounded-2xl border-[1.5px]',
-            isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] text-white shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 text-gray-900 shadow-2xl shadow-gray-300/30'
+            isDark
+              ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] text-white shadow-2xl shadow-black/50'
+              : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 text-gray-900 shadow-2xl shadow-gray-300/30'
           )}
         >
           {/* Header */}
-          <div className={cn("flex items-center justify-between border-b p-4", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+          <div
+            className={cn(
+              'flex items-center justify-between border-b p-4',
+              isDark ? 'border-white/[0.08]' : 'border-gray-200'
+            )}
+          >
             <h2 className="text-[15px] font-normal">Transfer NFT</h2>
             {!isLoading && (
               <button
@@ -151,7 +166,8 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 <p className="text-[13px] font-normal">{nft?.name}</p>
                 {nft?.collection && (
                   <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                    Collection: {typeof nft.collection === 'string' ? nft.collection : nft.collection?.name}
+                    Collection:{' '}
+                    {typeof nft.collection === 'string' ? nft.collection : nft.collection?.name}
                   </p>
                 )}
                 {nft?.rarity_rank && (

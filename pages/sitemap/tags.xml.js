@@ -4,23 +4,32 @@ const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/v1';
 
 const escapeXml = (unsafe) => {
   if (!unsafe) return '';
-  return unsafe
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    .replace(/[<>&'"]/g, (c) => {
-      switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case "'": return '&apos;';
-        case '"': return '&quot;';
-        default: return c;
-      }
-    });
+  return unsafe.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
+      case "'":
+        return '&apos;';
+      case '"':
+        return '&quot;';
+      default:
+        return c;
+    }
+  });
 };
 
 const normalizeTag = (tag) => {
   if (!tag) return '';
-  return tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+  return tag
+    .split(' ')
+    .join('-')
+    .replace(/&/g, 'and')
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9-]/g, '');
 };
 
 const Sitemap = () => null;
@@ -39,7 +48,7 @@ export const getServerSideProps = async ({ res }) => {
       throw new Error(`API returned ${response.status}`);
     }
 
-    const tags = Array.isArray(response.data) ? response.data : (response.data?.tags || []);
+    const tags = Array.isArray(response.data) ? response.data : response.data?.tags || [];
     const time = new Date().toISOString();
 
     res.write('<?xml version="1.0" encoding="UTF-8"?>\n');

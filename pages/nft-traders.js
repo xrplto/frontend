@@ -36,10 +36,13 @@ const TableContainer = styled.div`
   overflow-x: auto;
   scrollbar-width: none;
   background: transparent;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   backdrop-filter: blur(12px);
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const StyledTable = styled.table`
@@ -63,7 +66,8 @@ const StyledTh = styled.th`
   text-transform: uppercase;
   color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
   padding: 16px 12px;
-  border-bottom: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+  border-bottom: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
   text-align: ${({ align }) => align || 'left'};
   width: ${({ width }) => width || 'auto'};
   cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
@@ -72,13 +76,15 @@ const StyledTh = styled.th`
   transition: color 0.15s ease;
 
   &:hover {
-    color: ${({ sortable, darkMode }) => (sortable ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)'))};
+    color: ${({ sortable, darkMode }) =>
+      sortable ? '#3b82f6' : darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)'};
   }
 `;
 
 const StyledTbody = styled.tbody`
   tr {
-    border-bottom: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+    border-bottom: 1.5px solid
+      ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
     transition: all 0.15s ease;
     &:hover {
       background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
@@ -122,13 +128,21 @@ const Badge = styled.span`
   letter-spacing: 0.03em;
   font-weight: 500;
   background: ${({ type }) =>
-    type === 'buyer' ? 'rgba(59, 130, 246, 0.12)' :
-    type === 'seller' ? 'rgba(239,68,68,0.12)' :
-    type === 'both' ? 'rgba(168,85,247,0.12)' : 'rgba(234,179,8,0.12)'};
+    type === 'buyer'
+      ? 'rgba(59, 130, 246, 0.12)'
+      : type === 'seller'
+        ? 'rgba(239,68,68,0.12)'
+        : type === 'both'
+          ? 'rgba(168,85,247,0.12)'
+          : 'rgba(234,179,8,0.12)'};
   color: ${({ type }) =>
-    type === 'buyer' ? '#3b82f6' :
-    type === 'seller' ? '#ef4444' :
-    type === 'both' ? '#a855f7' : '#eab308'};
+    type === 'buyer'
+      ? '#3b82f6'
+      : type === 'seller'
+        ? '#ef4444'
+        : type === 'both'
+          ? '#a855f7'
+          : '#eab308'};
 `;
 
 const PaginationContainer = styled.div`
@@ -141,14 +155,16 @@ const PaginationContainer = styled.div`
   min-height: 36px;
   border-radius: 12px;
   background: transparent;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
 `;
 
 const NavButton = styled.button`
   width: 26px;
   height: 26px;
   border-radius: 12px;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   cursor: pointer;
   display: flex;
@@ -158,19 +174,26 @@ const NavButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    border-color: ${({ darkMode }) =>
+      darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${({ darkMode }) =>
+      darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
-  &:disabled { opacity: 0.3; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 `;
 
 const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
   border-radius: 12px;
-  border: 1.5px solid ${({ selected, darkMode }) => (selected ? '#4285f4' : darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${({ selected, darkMode }) =>
+      selected ? '#4285f4' : darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   background: ${({ selected }) => (selected ? '#4285f4' : 'transparent')};
-  color: ${({ selected, darkMode }) => (selected ? '#fff' : (darkMode ? '#fff' : '#212B36'))};
+  color: ${({ selected, darkMode }) => (selected ? '#fff' : darkMode ? '#fff' : '#212B36')};
   cursor: pointer;
   font-size: 11px;
   font-weight: ${({ selected }) => (selected ? 500 : 400)};
@@ -178,8 +201,10 @@ const PageButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    border-color: ${({ selected, darkMode }) => (selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    background: ${({ selected, darkMode }) => (selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    border-color: ${({ selected, darkMode }) =>
+      selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${({ selected, darkMode }) =>
+      selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 `;
 
@@ -253,11 +278,10 @@ const TABLE_HEAD = [
   { id: 'winRate', label: 'WIN', align: 'right', width: '50px', sortable: true },
   { id: 'holdingsCount', label: 'NFTs', align: 'right', width: '55px', sortable: true },
   { id: 'marketplace', label: 'SOURCE', align: 'center', width: '80px' },
-  { id: 'lastTrade', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true },
+  { id: 'lastTrade', label: 'LAST ACTIVE', align: 'right', width: '90px', sortable: true }
 ];
 
 const ROWS_PER_PAGE = 20;
-
 
 export default function NFTTradersPage({ traders = [], pagination = {}, traderBalances = {} }) {
   const router = useRouter();
@@ -279,20 +303,29 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   const sortBy = router.query.sortBy || 'combinedProfit';
 
   const navigateToPage = (page) => {
-    router.push({
-      pathname: router.pathname,
-      query: { ...router.query, page },
-    }, undefined, { shallow: false });
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, page }
+      },
+      undefined,
+      { shallow: false }
+    );
   };
 
   const handleSortChange = (key) => {
-    router.push({
-      pathname: router.pathname,
-      query: { ...router.query, sortBy: key, page: 1 },
-    }, undefined, { shallow: false });
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, sortBy: key, page: 1 }
+      },
+      undefined,
+      { shallow: false }
+    );
   };
 
-  const getLastActive = (t) => t.lastTrade ? formatDistanceToNowStrict(new Date(t.lastTrade)) : '-';
+  const getLastActive = (t) =>
+    t.lastTrade ? formatDistanceToNowStrict(new Date(t.lastTrade)) : '-';
 
   const getPageNumbers = () => {
     const pages = [];
@@ -301,7 +334,15 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
     } else if (currentPage <= 3) {
       pages.push(1, 2, 3, 4, 5, '...', totalPages);
     } else if (currentPage >= totalPages - 2) {
-      pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        '...',
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages
+      );
     } else {
       pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
     }
@@ -317,35 +358,62 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
       />
 
       <Container>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Title darkMode={darkMode} style={{ marginBottom: 0 }}>NFT Traders Leaderboard</Title>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 4
+          }}
+        >
+          <Title darkMode={darkMode} style={{ marginBottom: 0 }}>
+            NFT Traders Leaderboard
+          </Title>
           <ApiButton />
         </div>
         <Subtitle darkMode={darkMode}>
-          {totalTraders > 0 ? `${fNumber(totalTraders)} traders on XRPL` : 'Top NFT traders by profit'}
+          {totalTraders > 0
+            ? `${fNumber(totalTraders)} traders on XRPL`
+            : 'Top NFT traders by profit'}
         </Subtitle>
 
         {traderBalances.balanceAll > 0 && (
           <StatsGrid>
             <StatCard darkMode={darkMode}>
               <StatLabel darkMode={darkMode}>24h Balance</StatLabel>
-              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance24h || 0)} XRP</StatValue>
-              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders24h || 0)} traders</StatSub>
+              <StatValue darkMode={darkMode}>
+                {fVolume(traderBalances.balance24h || 0)} XRP
+              </StatValue>
+              <StatSub darkMode={darkMode}>
+                {fNumber(traderBalances.traders24h || 0)} traders
+              </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
               <StatLabel darkMode={darkMode}>7d Balance</StatLabel>
-              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance7d || 0)} XRP</StatValue>
-              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders7d || 0)} traders</StatSub>
+              <StatValue darkMode={darkMode}>
+                {fVolume(traderBalances.balance7d || 0)} XRP
+              </StatValue>
+              <StatSub darkMode={darkMode}>
+                {fNumber(traderBalances.traders7d || 0)} traders
+              </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
               <StatLabel darkMode={darkMode}>30d Balance</StatLabel>
-              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balance30d || 0)} XRP</StatValue>
-              <StatSub darkMode={darkMode}>{fNumber(traderBalances.traders30d || 0)} traders</StatSub>
+              <StatValue darkMode={darkMode}>
+                {fVolume(traderBalances.balance30d || 0)} XRP
+              </StatValue>
+              <StatSub darkMode={darkMode}>
+                {fNumber(traderBalances.traders30d || 0)} traders
+              </StatSub>
             </StatCard>
             <StatCard darkMode={darkMode}>
               <StatLabel darkMode={darkMode}>All Time Balance</StatLabel>
-              <StatValue darkMode={darkMode}>{fVolume(traderBalances.balanceAll || 0)} XRP</StatValue>
-              <StatSub darkMode={darkMode}>{fNumber(traderBalances.tradersAll || 0)} traders</StatSub>
+              <StatValue darkMode={darkMode}>
+                {fVolume(traderBalances.balanceAll || 0)} XRP
+              </StatValue>
+              <StatSub darkMode={darkMode}>
+                {fNumber(traderBalances.tradersAll || 0)} traders
+              </StatSub>
             </StatCard>
           </StatsGrid>
         )}
@@ -353,23 +421,163 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
         {traders.length === 0 ? (
           <EmptyState darkMode={darkMode}>
             <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 16px' }}>
-              <div style={{ position: 'absolute', top: -4, left: 4, width: 20, height: 20, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }} />
-              <div style={{ position: 'absolute', top: -4, right: 4, width: 20, height: 20, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }} />
-              <div style={{ position: 'absolute', top: 2, left: 8, width: 10, height: 10, borderRadius: '50%', background: darkMode ? '#3b78e7' : '#3b82f6' }} />
-              <div style={{ position: 'absolute', top: 2, right: 8, width: 10, height: 10, borderRadius: '50%', background: darkMode ? '#3b78e7' : '#3b82f6' }} />
-              <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 48, height: 48, borderRadius: '50%', background: darkMode ? '#4285f4' : '#60a5fa' }}>
-                <div style={{ position: 'absolute', top: 16, left: 10, width: 8, height: 6, borderRadius: '50%', background: '#0a0a0a', transform: 'rotate(-10deg)' }} />
-                <div style={{ position: 'absolute', top: 16, right: 10, width: 8, height: 6, borderRadius: '50%', background: '#0a0a0a', transform: 'rotate(10deg)' }} />
-                <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', width: 16, height: 10, borderRadius: '50%', background: darkMode ? '#5a9fff' : '#93c5fd' }}>
-                  <div style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', width: 6, height: 4, borderRadius: '50%', background: '#0a0a0a' }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  left: 4,
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  background: darkMode ? '#4285f4' : '#60a5fa'
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: 4,
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  background: darkMode ? '#4285f4' : '#60a5fa'
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: 8,
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: darkMode ? '#3b78e7' : '#3b82f6'
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 8,
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: darkMode ? '#3b78e7' : '#3b82f6'
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: darkMode ? '#4285f4' : '#60a5fa'
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 10,
+                    width: 8,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: '#0a0a0a',
+                    transform: 'rotate(-10deg)'
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 10,
+                    width: 8,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: '#0a0a0a',
+                    transform: 'rotate(10deg)'
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 10,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 16,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: darkMode ? '#5a9fff' : '#93c5fd'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 6,
+                      height: 4,
+                      borderRadius: '50%',
+                      background: '#0a0a0a'
+                    }}
+                  />
                 </div>
-                <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', width: 10, height: 5, borderRadius: '8px 8px 0 0', borderTop: '2px solid #0a0a0a', borderLeft: '2px solid #0a0a0a', borderRight: '2px solid #0a0a0a' }} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 6,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 10,
+                    height: 5,
+                    borderRadius: '8px 8px 0 0',
+                    borderTop: '2px solid #0a0a0a',
+                    borderLeft: '2px solid #0a0a0a',
+                    borderRight: '2px solid #0a0a0a'
+                  }}
+                />
               </div>
-              <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2, pointerEvents: 'none' }}>
-                {[...Array(10)].map((_, i) => (<div key={i} style={{ height: 2, width: '100%', background: darkMode ? 'rgba(10,10,10,0.4)' : 'rgba(255,255,255,0.4)' }} />))}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  pointerEvents: 'none'
+                }}
+              >
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      height: 2,
+                      width: '100%',
+                      background: darkMode ? 'rgba(10,10,10,0.4)' : 'rgba(255,255,255,0.4)'
+                    }}
+                  />
+                ))}
               </div>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 500, letterSpacing: '0.1em', marginBottom: 4, color: darkMode ? 'rgba(255,255,255,0.8)' : '#4b5563' }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: '0.1em',
+                marginBottom: 4,
+                color: darkMode ? 'rgba(255,255,255,0.8)' : '#4b5563'
+              }}
+            >
               NO TRADERS DATA
             </div>
             <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>
@@ -409,7 +617,11 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
 
                     return (
                       <tr key={addr || idx}>
-                        <StyledTd align="center" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}>
+                        <StyledTd
+                          align="center"
+                          darkMode={darkMode}
+                          color={darkMode ? 'rgba(255,255,255,0.4)' : '#919EAB'}
+                        >
                           {rank}
                         </StyledTd>
                         <StyledTd darkMode={darkMode}>
@@ -417,13 +629,23 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                             <TraderLink href={`/address/${addr}`}>
                               {addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '-'}
                             </TraderLink>
-                            {trader.traderType && <Badge type={trader.traderType}>{trader.traderType}</Badge>}
+                            {trader.traderType && (
+                              <Badge type={trader.traderType}>{trader.traderType}</Badge>
+                            )}
                           </div>
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
+                        <StyledTd
+                          align="right"
+                          darkMode={darkMode}
+                          style={{ fontWeight: 500, fontSize: 12 }}
+                        >
                           {fVolume(trader.xrpBalance || 0)}
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} style={{ fontWeight: 500, fontSize: 12 }}>
+                        <StyledTd
+                          align="right"
+                          darkMode={darkMode}
+                          style={{ fontWeight: 500, fontSize: 12 }}
+                        >
                           {fVolume(trader.totalVolume || 0)}
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
@@ -438,11 +660,23 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                         <StyledTd align="right" style={{ color: '#ef4444', fontSize: 12 }}>
                           {fVolume(sold)}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: cp >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: 12 }}>
-                          {cp >= 0 ? '+' : ''}{fVolume(cp)}
+                        <StyledTd
+                          align="right"
+                          style={{
+                            color: cp >= 0 ? '#10b981' : '#ef4444',
+                            fontWeight: 600,
+                            fontSize: 12
+                          }}
+                        >
+                          {cp >= 0 ? '+' : ''}
+                          {fVolume(cp)}
                         </StyledTd>
-                        <StyledTd align="right" style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}>
-                          {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
+                        <StyledTd
+                          align="right"
+                          style={{ color: roi >= 0 ? '#10b981' : '#ef4444', fontSize: 11 }}
+                        >
+                          {roi >= 0 ? '+' : ''}
+                          {roi.toFixed(1)}%
                         </StyledTd>
                         <StyledTd align="right" darkMode={darkMode} style={{ fontSize: 11 }}>
                           {(trader.winRate || 0).toFixed(0)}%
@@ -452,11 +686,18 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
                         </StyledTd>
                         <StyledTd align="center" darkMode={darkMode} style={{ fontSize: 10 }}>
                           {(() => {
-                            const markets = Object.keys(trader.marketplaceBreakdown || {}).filter(m => m !== 'XRPL');
+                            const markets = Object.keys(trader.marketplaceBreakdown || {}).filter(
+                              (m) => m !== 'XRPL'
+                            );
                             return markets.length > 0 ? markets.join(', ') : '-';
                           })()}
                         </StyledTd>
-                        <StyledTd align="right" darkMode={darkMode} color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'} style={{ fontSize: 11 }}>
+                        <StyledTd
+                          align="right"
+                          darkMode={darkMode}
+                          color={darkMode ? 'rgba(255,255,255,0.5)' : '#637381'}
+                          style={{ fontSize: 11 }}
+                        >
                           {getLastActive(trader)}
                         </StyledTd>
                       </tr>
@@ -468,25 +709,55 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
 
             {totalPages > 1 && (
               <PaginationContainer darkMode={darkMode}>
-                <NavButton darkMode={darkMode} onClick={() => navigateToPage(1)} disabled={currentPage === 1}>
+                <NavButton
+                  darkMode={darkMode}
+                  onClick={() => navigateToPage(1)}
+                  disabled={currentPage === 1}
+                >
                   <ChevronsLeft size={12} />
                 </NavButton>
-                <NavButton darkMode={darkMode} onClick={() => navigateToPage(currentPage - 1)} disabled={currentPage === 1}>
+                <NavButton
+                  darkMode={darkMode}
+                  onClick={() => navigateToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
                   <ChevronLeft size={12} />
                 </NavButton>
                 {getPageNumbers().map((p, i) =>
                   p === '...' ? (
-                    <span key={`e${i}`} style={{ padding: '0 2px', fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>...</span>
+                    <span
+                      key={`e${i}`}
+                      style={{
+                        padding: '0 2px',
+                        fontSize: 11,
+                        color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      ...
+                    </span>
                   ) : (
-                    <PageButton key={p} selected={p === currentPage} darkMode={darkMode} onClick={() => navigateToPage(p)}>
+                    <PageButton
+                      key={p}
+                      selected={p === currentPage}
+                      darkMode={darkMode}
+                      onClick={() => navigateToPage(p)}
+                    >
                       {p}
                     </PageButton>
                   )
                 )}
-                <NavButton darkMode={darkMode} onClick={() => navigateToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                <NavButton
+                  darkMode={darkMode}
+                  onClick={() => navigateToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
                   <ChevronRight size={12} />
                 </NavButton>
-                <NavButton darkMode={darkMode} onClick={() => navigateToPage(totalPages)} disabled={currentPage === totalPages}>
+                <NavButton
+                  darkMode={darkMode}
+                  onClick={() => navigateToPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
                   <ChevronsRight size={12} />
                 </NavButton>
                 <PaginationInfo darkMode={darkMode}>
@@ -510,7 +781,9 @@ export async function getServerSideProps({ query }) {
 
   try {
     const [tradersRes, marketRes] = await Promise.all([
-      axios.get(`${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`),
+      axios.get(
+        `${BASE_URL}/nft/analytics/traders?sortBy=${sortBy}&limit=${ROWS_PER_PAGE}&page=${page}`
+      ),
       axios.get(`${BASE_URL}/nft/analytics/market`)
     ]);
     const traders = tradersRes.data.traders || [];

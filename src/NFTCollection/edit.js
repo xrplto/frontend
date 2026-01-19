@@ -85,10 +85,12 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
     <div className="relative">
       <div className="relative flex items-center">
         {startText && (
-          <span className={cn(
-            "absolute left-3 text-[13px]",
-            isDark ? "text-gray-400" : "text-gray-600"
-          )}>
+          <span
+            className={cn(
+              'absolute left-3 text-[13px]',
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            )}
+          >
             {startText}
           </span>
         )}
@@ -97,12 +99,12 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
           value={value}
           autoComplete="new-password"
           className={cn(
-            "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors",
-            startText && "pl-[200px]",
+            'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none transition-colors',
+            startText && 'pl-[200px]',
             isDark
-              ? "border-white/15 bg-white/[0.02] text-white placeholder:text-gray-500"
-              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
-            "focus:border-primary"
+              ? 'border-white/15 bg-white/[0.02] text-white placeholder:text-gray-500'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400',
+            'focus:border-primary'
           )}
         />
         <div className="absolute right-3">
@@ -156,11 +158,11 @@ const LoadingButton = ({
       {...props}
       disabled={isDisabled}
       className={cn(
-        "flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+        'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
         isDark
-          ? "border-primary bg-primary text-white hover:bg-primary/90"
-          : "border-primary bg-primary text-white hover:bg-primary/90",
-        isDisabled && "cursor-not-allowed opacity-50",
+          ? 'border-primary bg-primary text-white hover:bg-primary/90'
+          : 'border-primary bg-primary text-white hover:bg-primary/90',
+        isDisabled && 'cursor-not-allowed opacity-50',
         className
       )}
     >
@@ -227,12 +229,14 @@ export default function EditCollection({ collection }) {
   const [openAddCost, setOpenAddCost] = useState(false);
 
   // Normalize name/description: API may return object {collection_name, collection_description} or string
-  const initialName = typeof collection.name === 'object' && collection.name !== null
-    ? collection.name.collection_name || ''
-    : collection.name || '';
-  const initialDescription = typeof collection.description === 'object' && collection.description !== null
-    ? collection.description.collection_description || ''
-    : collection.description || '';
+  const initialName =
+    typeof collection.name === 'object' && collection.name !== null
+      ? collection.name.collection_name || ''
+      : collection.name || '';
+  const initialDescription =
+    typeof collection.description === 'object' && collection.description !== null
+      ? collection.description.collection_description || ''
+      : collection.description || '';
 
   const [name, setName] = useState(initialName);
   const [category, setCategory] = useState(collection.category || 'NONE');
@@ -398,8 +402,7 @@ export default function EditCollection({ collection }) {
         const reader = new FileReader();
         reader.readAsDataURL(pickedFile);
         reader.onloadend = function (e) {
-          if (idx === 1)
-            setFileUrl1(reader.result);
+          if (idx === 1) setFileUrl1(reader.result);
           else if (idx === 2) setFileUrl2(reader.result);
           else if (idx === 3) setFileUrl3(reader.result);
           else if (idx === 4) setFileUrl4(reader.result);
@@ -512,36 +515,31 @@ export default function EditCollection({ collection }) {
         onAddCost={handleAddCost}
       />
       <div className="mt-8 mb-6 flex flex-col gap-2">
-        <h1 className={cn(
-          "text-2xl font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <h1 className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Edit My Collection
         </h1>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           <span className="text-red-500">*</span> Required fields
         </p>
 
         {/* Logo Image */}
-        <p className={cn(
-          "pt-4 pb-2 text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p
+          className={cn(
+            'pt-4 pb-2 text-[15px] font-normal',
+            isDark ? 'text-white' : 'text-gray-900'
+          )}
+        >
           Logo image <span className="text-red-500">*</span>
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           This image will also be used for navigation. 350 x 350 recommended.(Max: 10MB)
         </p>
-        <div className={cn(
-          "rounded-full border-[3px] border-dashed p-1 w-fit cursor-pointer",
-          isDark ? "border-white/20" : "border-gray-300"
-        )}>
+        <div
+          className={cn(
+            'rounded-full border-[3px] border-dashed p-1 w-fit cursor-pointer',
+            isDark ? 'border-white/20' : 'border-gray-300'
+          )}
+        >
           <input
             ref={fileRef1}
             style={{ display: 'none' }}
@@ -550,19 +548,18 @@ export default function EditCollection({ collection }) {
             type="file"
             onChange={handleFileSelect1}
           />
-          <div className={cn(
-            "relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden",
-            isDark ? "bg-white/[0.02]" : "bg-gray-50"
-          )}>
+          <div
+            className={cn(
+              'relative flex items-center justify-center w-[140px] h-[140px] rounded-full overflow-hidden',
+              isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+            )}
+          >
             <div
               onClick={() => fileRef1.current.click()}
               className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity cursor-pointer z-10"
             >
               {fileUrl1 && (
-                <button
-                  onClick={(e) => handleResetFile1(e)}
-                  className="absolute top-2 right-2"
-                >
+                <button onClick={(e) => handleResetFile1(e)} className="absolute top-2 right-2">
                   <X size={20} className="text-white" />
                 </button>
               )}
@@ -570,29 +567,30 @@ export default function EditCollection({ collection }) {
             {fileUrl1 ? (
               <img src={fileUrl1} alt="" className="w-full h-full object-cover" />
             ) : (
-              <Image size={64} className={isDark ? "text-gray-600" : "text-gray-400"} />
+              <Image size={64} className={isDark ? 'text-gray-600' : 'text-gray-400'} />
             )}
           </div>
         </div>
 
         {/* Featured Image */}
-        <p className={cn(
-          "pt-4 pb-2 text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p
+          className={cn(
+            'pt-4 pb-2 text-[15px] font-normal',
+            isDark ? 'text-white' : 'text-gray-900'
+          )}
+        >
           Featured image
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           This image will be used for featuring your collection on the homepage, category pages, or
           other promotional areas of XRPNFT.COM. 600 x 400 recommended.(Max: 10MB)
         </p>
-        <div className={cn(
-          "rounded-xl border-[3px] border-dashed p-1 w-fit cursor-pointer",
-          isDark ? "border-white/20" : "border-gray-300"
-        )}>
+        <div
+          className={cn(
+            'rounded-xl border-[3px] border-dashed p-1 w-fit cursor-pointer',
+            isDark ? 'border-white/20' : 'border-gray-300'
+          )}
+        >
           <input
             ref={fileRef2}
             style={{ display: 'none' }}
@@ -601,19 +599,18 @@ export default function EditCollection({ collection }) {
             type="file"
             onChange={handleFileSelect2}
           />
-          <div className={cn(
-            "relative flex items-center justify-center w-[320px] h-[240px] rounded-xl overflow-hidden",
-            isDark ? "bg-white/[0.02]" : "bg-gray-50"
-          )}>
+          <div
+            className={cn(
+              'relative flex items-center justify-center w-[320px] h-[240px] rounded-xl overflow-hidden',
+              isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+            )}
+          >
             <div
               onClick={() => fileRef2.current.click()}
               className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity cursor-pointer z-10"
             >
               {fileUrl2 && (
-                <button
-                  onClick={(e) => handleResetFile2(e)}
-                  className="absolute top-2 right-2"
-                >
+                <button onClick={(e) => handleResetFile2(e)} className="absolute top-2 right-2">
                   <X size={20} className="text-white" />
                 </button>
               )}
@@ -621,30 +618,31 @@ export default function EditCollection({ collection }) {
             {fileUrl2 ? (
               <img src={fileUrl2} alt="" className="w-full h-full object-cover" />
             ) : (
-              <Image size={100} className={isDark ? "text-gray-600" : "text-gray-400"} />
+              <Image size={100} className={isDark ? 'text-gray-600' : 'text-gray-400'} />
             )}
           </div>
         </div>
 
         {/* Banner Image */}
-        <p className={cn(
-          "pt-4 pb-2 text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p
+          className={cn(
+            'pt-4 pb-2 text-[15px] font-normal',
+            isDark ? 'text-white' : 'text-gray-900'
+          )}
+        >
           Banner image
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           This image will appear at the top of your collection page. Avoid including too much text
           in this banner image, as the dimensions change on different devices. 1400 x 350
           recommended.(Max: 10MB)
         </p>
-        <div className={cn(
-          "rounded-xl border-[3px] border-dashed p-1 cursor-pointer",
-          isDark ? "border-white/20" : "border-gray-300"
-        )}>
+        <div
+          className={cn(
+            'rounded-xl border-[3px] border-dashed p-1 cursor-pointer',
+            isDark ? 'border-white/20' : 'border-gray-300'
+          )}
+        >
           <input
             ref={fileRef3}
             style={{ display: 'none' }}
@@ -653,19 +651,18 @@ export default function EditCollection({ collection }) {
             type="file"
             onChange={handleFileSelect3}
           />
-          <div className={cn(
-            "relative flex items-center justify-center h-[200px] rounded-xl overflow-hidden",
-            isDark ? "bg-white/[0.02]" : "bg-gray-50"
-          )}>
+          <div
+            className={cn(
+              'relative flex items-center justify-center h-[200px] rounded-xl overflow-hidden',
+              isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+            )}
+          >
             <div
               onClick={() => fileRef3.current.click()}
               className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity cursor-pointer z-10"
             >
               {fileUrl3 && (
-                <button
-                  onClick={(e) => handleResetFile3(e)}
-                  className="absolute top-2 right-2"
-                >
+                <button onClick={(e) => handleResetFile3(e)} className="absolute top-2 right-2">
                   <X size={20} className="text-white" />
                 </button>
               )}
@@ -673,16 +670,18 @@ export default function EditCollection({ collection }) {
             {fileUrl3 ? (
               <img src={fileUrl3} alt="" className="w-full h-full object-cover" />
             ) : (
-              <Image size={100} className={isDark ? "text-gray-600" : "text-gray-400"} />
+              <Image size={100} className={isDark ? 'text-gray-600' : 'text-gray-400'} />
             )}
           </div>
         </div>
 
         {/* Name */}
-        <p className={cn(
-          "pt-4 pb-2 text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p
+          className={cn(
+            'pt-4 pb-2 text-[15px] font-normal',
+            isDark ? 'text-white' : 'text-gray-900'
+          )}
+        >
           Name <span className="text-red-500">*</span>
         </p>
 
@@ -702,16 +701,10 @@ export default function EditCollection({ collection }) {
 
       {/* Category */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn(
-          "text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Category
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           This helps your NFT to be found when people search by Category.
         </p>
         <select
@@ -720,10 +713,10 @@ export default function EditCollection({ collection }) {
           value={category}
           onChange={(e) => handleChangeCategory(e.target.value)}
           className={cn(
-            "rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50",
+            'rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50',
             isDark
-              ? "border-white/15 bg-white/[0.02] text-white"
-              : "border-gray-300 bg-gray-50 text-gray-900"
+              ? 'border-white/15 bg-white/[0.02] text-white'
+              : 'border-gray-300 bg-gray-50 text-gray-900'
           )}
         >
           {CATEGORIES.map((cat) => (
@@ -736,16 +729,10 @@ export default function EditCollection({ collection }) {
 
       {/* URL */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn(
-          "text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           URL
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           Customize your URL on XRPNFT.COM. Must only contain lowercase letters, numbers, and
           hyphens.
         </p>
@@ -767,33 +754,27 @@ export default function EditCollection({ collection }) {
 
       {/* Type */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn(
-          "text-[15px] font-normal",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Type <span className="text-red-500">*</span>
         </p>
-        <p className={cn(
-          "text-[13px] font-normal",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className={cn('text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
           Select your collection type.
         </p>
 
         <div className="pl-0 flex flex-col gap-2">
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Normal:</span> You can mint NFTs one by one for this
             collection.
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Normal Bulk:</span> You can upload bulk NFTs and sell
             NFTs nomally with Mints.
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Random Bulk:</span> You can upload bulk NFTs and sell
             NFTs randomly with Mints.
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Sequence Bulk:</span> You can upload bulk NFTs and sell
             NFTs sequently with Mints.
           </p>
@@ -805,12 +786,12 @@ export default function EditCollection({ collection }) {
               key={t}
               onClick={() => handleChangeType(t)}
               className={cn(
-                "rounded-lg border-[1.5px] px-4 py-1.5 text-[13px] font-normal capitalize transition-colors",
+                'rounded-lg border-[1.5px] px-4 py-1.5 text-[13px] font-normal capitalize transition-colors',
                 type === t
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? 'border-primary bg-primary/10 text-primary'
                   : isDark
-                  ? "border-white/15 text-gray-400 hover:border-primary"
-                  : "border-gray-300 text-gray-600 hover:border-primary"
+                    ? 'border-white/15 text-gray-400 hover:border-primary'
+                    : 'border-gray-300 text-gray-600 hover:border-primary'
               )}
             >
               {t}
@@ -822,15 +803,19 @@ export default function EditCollection({ collection }) {
           <>
             <div className="flex flex-col gap-2">
               {type === 'bulk' ? (
-                <p className={cn("text-[14px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+                <p
+                  className={cn('text-[14px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   Costs per NFT <span className="text-red-500">*</span>
                 </p>
               ) : (
-                <p className={cn("text-[14px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+                <p
+                  className={cn('text-[14px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   Costs per Mint <span className="text-red-500">*</span>
                 </p>
               )}
-              <p className={cn("text-[13px] pb-4", isDark ? "text-gray-400" : "text-gray-600")}>
+              <p className={cn('text-[13px] pb-4', isDark ? 'text-gray-400' : 'text-gray-600')}>
                 You need to add at least 1 currency to create a collection.
               </p>
 
@@ -845,14 +830,26 @@ export default function EditCollection({ collection }) {
                       />
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-4">
-                          <span className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+                          <span
+                            className={cn(
+                              'text-[15px] font-normal',
+                              isDark ? 'text-white' : 'text-gray-900'
+                            )}
+                          >
                             {cost.name}
                           </span>
-                          <span className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+                          <span
+                            className={cn(
+                              'text-[15px] font-normal',
+                              isDark ? 'text-white' : 'text-gray-900'
+                            )}
+                          >
                             ✕ {fNumber(cost.exch)}
                           </span>
                         </div>
-                        <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+                        <p
+                          className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}
+                        >
                           {cost.issuer}
                         </p>
                       </div>
@@ -865,11 +862,11 @@ export default function EditCollection({ collection }) {
                       </div>
 
                       <button onClick={() => handleRemoveCost(cost.md5)}>
-                        <XCircle size={20} className={isDark ? "text-gray-400" : "text-gray-600"} />
+                        <XCircle size={20} className={isDark ? 'text-gray-400' : 'text-gray-600'} />
                       </button>
                     </div>
                   </div>
-                  <div className={cn("h-px", isDark ? "bg-white/10" : "bg-gray-200")} />
+                  <div className={cn('h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
                 </div>
               ))}
 
@@ -877,10 +874,10 @@ export default function EditCollection({ collection }) {
                 <button
                   onClick={() => setOpenAddCost(true)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[13px] font-normal transition-colors",
+                    'flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[13px] font-normal transition-colors',
                     isDark
-                      ? "border-white/15 text-white hover:border-primary"
-                      : "border-gray-300 text-gray-900 hover:border-primary"
+                      ? 'border-white/15 text-white hover:border-primary'
+                      : 'border-gray-300 text-gray-900 hover:border-primary'
                   )}
                 >
                   <Plus size={16} />
@@ -890,11 +887,11 @@ export default function EditCollection({ collection }) {
             </div>
 
             <div className="flex flex-col gap-4 pl-0">
-              <p className={cn("text-[14px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+              <p className={cn('text-[14px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                 Paste the Google Drive file shared link URL here.{' '}
                 <span className="text-red-500">*</span>
               </p>
-              <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+              <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
                 Upload .zip file contains your NFT images to Google Drive and copy & paste the
                 shared link URL.
               </p>
@@ -905,26 +902,30 @@ export default function EditCollection({ collection }) {
                 placeholder="https://drive.google.com/file/d/1xjA-1bodiMrvSCtdTEMis5y2Cab74bXU/view"
                 value={bulkUrl}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50",
+                  'rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50',
                   isDark
-                    ? "border-white/15 bg-white/[0.02] text-white"
-                    : "border-gray-300 bg-gray-50 text-gray-900"
+                    ? 'border-white/15 bg-white/[0.02] text-white'
+                    : 'border-gray-300 bg-gray-50 text-gray-900'
                 )}
               />
             </div>
 
             {(type === 'random' || type === 'sequence') && (
               <>
-                <p className={cn(
-                  "pt-4 pb-2 text-[15px] font-normal",
-                  isDark ? "text-white" : "text-gray-900"
-                )}>
+                <p
+                  className={cn(
+                    'pt-4 pb-2 text-[15px] font-normal',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
                   Spinner GIF image
                 </p>
-                <p className={cn(
-                  "text-[13px] font-normal",
-                  isDark ? "text-gray-400" : "text-gray-600"
-                )}>
+                <p
+                  className={cn(
+                    'text-[13px] font-normal',
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  )}
+                >
                   This image will be used for spinning NFTs. If you don't select, the{' '}
                   <a
                     target="_blank"
@@ -933,13 +934,15 @@ export default function EditCollection({ collection }) {
                     className="text-primary underline"
                   >
                     default spinning image
-                  </a>
-                  {' '}will be used. 600 x 400 recommended. (Max: 10MB)
+                  </a>{' '}
+                  will be used. 600 x 400 recommended. (Max: 10MB)
                 </p>
-                <div className={cn(
-                  "rounded-xl border-[3px] border-dashed p-1 w-fit cursor-pointer",
-                  isDark ? "border-white/20" : "border-gray-300"
-                )}>
+                <div
+                  className={cn(
+                    'rounded-xl border-[3px] border-dashed p-1 w-fit cursor-pointer',
+                    isDark ? 'border-white/20' : 'border-gray-300'
+                  )}
+                >
                   <input
                     ref={fileRef4}
                     style={{ display: 'none' }}
@@ -948,10 +951,12 @@ export default function EditCollection({ collection }) {
                     type="file"
                     onChange={handleFileSelect4}
                   />
-                  <div className={cn(
-                    "relative flex items-center justify-center w-[320px] h-[240px] rounded-xl overflow-hidden",
-                    isDark ? "bg-white/[0.02]" : "bg-gray-50"
-                  )}>
+                  <div
+                    className={cn(
+                      'relative flex items-center justify-center w-[320px] h-[240px] rounded-xl overflow-hidden',
+                      isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
+                    )}
+                  >
                     <div
                       onClick={() => fileRef4.current.click()}
                       className="absolute inset-0 flex flex-col items-center justify-center bg-black opacity-0 hover:opacity-60 transition-opacity cursor-pointer z-10"
@@ -968,7 +973,7 @@ export default function EditCollection({ collection }) {
                     {fileUrl4 ? (
                       <img src={fileUrl4} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <Image size={100} className={isDark ? "text-gray-600" : "text-gray-400"} />
+                      <Image size={100} className={isDark ? 'text-gray-600' : 'text-gray-400'} />
                     )}
                   </div>
                 </div>
@@ -980,10 +985,10 @@ export default function EditCollection({ collection }) {
 
       {/* Description */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Description
         </p>
-        <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+        <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
           <a href="https://www.markdownguide.org/cheat-sheet/" className="text-primary underline">
             Markdown
           </a>{' '}
@@ -997,21 +1002,21 @@ export default function EditCollection({ collection }) {
             setDescription(e.target.value);
           }}
           className={cn(
-            "rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none transition-colors",
+            'rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none resize-none transition-colors',
             isDark
-              ? "border-white/15 bg-white/[0.02] text-white placeholder:text-gray-500"
-              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
-            "focus:border-primary"
+              ? 'border-white/15 bg-white/[0.02] text-white placeholder:text-gray-500'
+              : 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400',
+            'focus:border-primary'
           )}
         />
       </div>
 
       {/* Taxon */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Taxon
         </p>
-        <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+        <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
           Taxon links NFTs to this collection, NFTs minted for this collection will have this Taxon
           in their NFTokenID field. Taxon is automatically set.
         </p>
@@ -1022,20 +1027,20 @@ export default function EditCollection({ collection }) {
           placeholder=""
           value={taxon}
           className={cn(
-            "rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50",
+            'rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none cursor-not-allowed opacity-50',
             isDark
-              ? "border-white/15 bg-white/[0.02] text-white"
-              : "border-gray-300 bg-gray-50 text-gray-900"
+              ? 'border-white/15 bg-white/[0.02] text-white'
+              : 'border-gray-300 bg-gray-50 text-gray-900'
           )}
         />
       </div>
 
       {/* Rarity */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Rarity <span className="text-red-500">*</span>
         </p>
-        <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+        <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
           Select your collection's rarity calculation method.{' '}
           <a
             target="_blank"
@@ -1048,23 +1053,23 @@ export default function EditCollection({ collection }) {
         </p>
 
         <div className="pl-0 flex flex-col gap-2">
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Standard:</span> Simply compare the rarest trait of each
             NFT(%).
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Average:</span> Average the rarity of traits that exist
             on the NFT(%).
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Statistical:</span> Multiply all of its trait rarities
             together(%).
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Score:</span> Sum of the Rarity Score of all of its trait
             values(not %, just a value).
           </p>
-          <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+          <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
             <span className="text-red-500">Self:</span> Rarity and Rank are included in each NFT
             metadata.
           </p>
@@ -1081,10 +1086,12 @@ export default function EditCollection({ collection }) {
                 onChange={(e) => handleChangeRarity(e.target.value)}
                 className="w-4 h-4 accent-primary cursor-pointer"
               />
-              <span className={cn(
-                "text-[13px] font-normal capitalize",
-                isDark ? "text-white" : "text-gray-900"
-              )}>
+              <span
+                className={cn(
+                  'text-[13px] font-normal capitalize',
+                  isDark ? 'text-white' : 'text-gray-900'
+                )}
+              >
                 {r}
               </span>
             </label>
@@ -1094,10 +1101,10 @@ export default function EditCollection({ collection }) {
 
       {/* Private */}
       <div className="flex flex-col gap-4 mb-6">
-        <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>
+        <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           Private <span className="text-red-500">*</span>
         </p>
-        <p className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+        <p className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-600')}>
           Make your collection private when you need to upload NFTs or do something private. You can
           make collection public again after you've done all things.
         </p>
@@ -1108,12 +1115,12 @@ export default function EditCollection({ collection }) {
               key={p}
               onClick={() => handleChangePrivate(p)}
               className={cn(
-                "rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors",
+                'rounded-lg border-[1.5px] px-4 py-1 text-[13px] font-normal capitalize transition-colors',
                 privateCollection === p
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? 'border-primary bg-primary/10 text-primary'
                   : isDark
-                  ? "border-white/15 text-gray-400 hover:border-primary"
-                  : "border-gray-300 text-gray-600 hover:border-primary"
+                    ? 'border-white/15 text-gray-400 hover:border-primary'
+                    : 'border-gray-300 text-gray-600 hover:border-primary'
               )}
             >
               {p}

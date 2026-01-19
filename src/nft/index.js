@@ -19,10 +19,12 @@ export default function Detail({ nft }) {
   const { status, costs } = nft;
 
   return (
-    <div className={cn(
-      "grid gap-6 mb-0 max-w-[1400px] mx-auto items-start",
-      "grid-cols-1 lg:grid-cols-12"
-    )}>
+    <div
+      className={cn(
+        'grid gap-6 mb-0 max-w-[1400px] mx-auto items-start',
+        'grid-cols-1 lg:grid-cols-12'
+      )}
+    >
       <div className="lg:col-span-5">
         <NFTDetails nft={nft} />
       </div>

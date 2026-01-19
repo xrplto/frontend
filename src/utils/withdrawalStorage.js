@@ -275,7 +275,7 @@ class WithdrawalStorage {
    */
   async exists(userAddress, withdrawalAddress) {
     const all = await this.getAll(userAddress);
-    return all.some(w => w.address === withdrawalAddress);
+    return all.some((w) => w.address === withdrawalAddress);
   }
 
   /**
@@ -301,7 +301,7 @@ class WithdrawalStorage {
           return;
         }
 
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const deleteRequest = store.delete(key);
           deleteRequest.onsuccess = () => {
             deleted++;

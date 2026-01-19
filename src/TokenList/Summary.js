@@ -93,12 +93,13 @@ const MetricBox = styled.div`
   align-items: flex-start;
   border-radius: 12px;
   background: transparent;
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 
   @media (max-width: 600px) {
@@ -113,7 +114,7 @@ const MetricBox = styled.div`
 const MetricTitle = styled.span`
   font-size: 0.68rem;
   font-weight: 400;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   letter-spacing: 0.02em;
 
   @media (max-width: 600px) {
@@ -124,7 +125,7 @@ const MetricTitle = styled.span`
 const MetricValue = styled.span`
   font-size: 1.25rem;
   font-weight: 600;
-  color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -136,7 +137,7 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.68rem;
-  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
+  color: ${(props) => (props.isPositive ? '#10b981' : '#ef4444')};
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -144,7 +145,8 @@ const PercentageChange = styled.span`
   letter-spacing: -0.01em;
   padding: 1px 4px;
   border-radius: 4px;
-  background: ${(props) => props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
+  background: ${(props) =>
+    props.isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};
 
   @media (max-width: 600px) {
     font-size: 0.58rem;
@@ -154,7 +156,7 @@ const PercentageChange = styled.span`
 
 const VolumePercentage = styled.span`
   font-size: 0.58rem;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(33, 43, 54, 0.45)')};
   font-weight: 400;
 
   @media (max-width: 600px) {
@@ -163,7 +165,7 @@ const VolumePercentage = styled.span`
 `;
 
 const ContentTypography = styled.span`
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -352,53 +354,60 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
       if (chartValues.length < 2) return;
 
-    // Calculate min/max for scaling
-    const minValue = Math.min(...chartValues);
-    const maxValue = Math.max(...chartValues);
-    const range = maxValue - minValue;
+      // Calculate min/max for scaling
+      const minValue = Math.min(...chartValues);
+      const maxValue = Math.max(...chartValues);
+      const range = maxValue - minValue;
 
-    // Scale points to canvas with padding
-    const points = chartValues.map((value, index) => {
-      const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
-      const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
-      return { x, y };
-    });
+      // Scale points to canvas with padding
+      const points = chartValues.map((value, index) => {
+        const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
+        const y =
+          range === 0
+            ? height / 2
+            : padding +
+              (height - padding * 2) -
+              ((value - minValue) / range) * (height - padding * 2);
+        return { x, y };
+      });
 
-    // Calculate median marketcap for threshold
-    const marketcaps = chartData.map(d => Math.max(...(d.tokensInvolved?.map(t => t.marketcap || 0) || [0])));
-    const sortedMc = [...marketcaps].sort((a, b) => a - b);
-    const medianMc = sortedMc[Math.floor(sortedMc.length / 2)] || 1000;
+      // Calculate median marketcap for threshold
+      const marketcaps = chartData.map((d) =>
+        Math.max(...(d.tokensInvolved?.map((t) => t.marketcap || 0) || [0]))
+      );
+      const sortedMc = [...marketcaps].sort((a, b) => a - b);
+      const medianMc = sortedMc[Math.floor(sortedMc.length / 2)] || 1000;
 
-    // Draw segments - green for above-median performers, blue for others
-    for (let i = 0; i < points.length - 1; i++) {
-      const maxMc = marketcaps[i];
-      const isHighPerformer = maxMc > medianMc * 1.5;
-      const segmentColor = isHighPerformer ? '#10b981' : '#3b82f6';
+      // Draw segments - green for above-median performers, blue for others
+      for (let i = 0; i < points.length - 1; i++) {
+        const maxMc = marketcaps[i];
+        const isHighPerformer = maxMc > medianMc * 1.5;
+        const segmentColor = isHighPerformer ? '#10b981' : '#3b82f6';
 
-      // Area fill
-      const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
-      gradient.addColorStop(0, segmentColor + '40');
-      gradient.addColorStop(1, segmentColor + '00');
+        // Area fill
+        const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
+        gradient.addColorStop(0, segmentColor + '40');
+        gradient.addColorStop(1, segmentColor + '00');
 
-      ctx.beginPath();
-      ctx.moveTo(points[i].x, height);
-      ctx.lineTo(points[i].x, points[i].y);
-      ctx.lineTo(points[i + 1].x, points[i + 1].y);
-      ctx.lineTo(points[i + 1].x, height);
-      ctx.closePath();
-      ctx.fillStyle = gradient;
-      ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(points[i].x, height);
+        ctx.lineTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i + 1].x, points[i + 1].y);
+        ctx.lineTo(points[i + 1].x, height);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
 
-      // Line
-      ctx.beginPath();
-      ctx.moveTo(points[i].x, points[i].y);
-      ctx.lineTo(points[i + 1].x, points[i + 1].y);
-      ctx.strokeStyle = segmentColor;
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-    }
+        // Line
+        ctx.beginPath();
+        ctx.moveTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i + 1].x, points[i + 1].y);
+        ctx.strokeStyle = segmentColor;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+      }
     };
 
     // Use rAF to ensure layout is complete
@@ -436,7 +445,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           background: darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(16px)',
           color: darkMode ? '#fff' : '#000',
-          border: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          border: darkMode
+            ? '1px solid rgba(255, 255, 255, 0.08)'
+            : '1px solid rgba(0, 0, 0, 0.08)',
           borderRadius: '10px',
           padding: '10px 12px',
           boxShadow: darkMode ? '0 8px 32px rgba(0, 0, 0, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.12)',
@@ -453,7 +464,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             marginBottom: '8px',
             color: darkMode ? 'rgba(255,255,255,0.9)' : '#333',
             paddingBottom: '6px',
-            borderBottom: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)'
+            borderBottom: darkMode
+              ? '1px solid rgba(255, 255, 255, 0.08)'
+              : '1px solid rgba(0, 0, 0, 0.06)'
           }}
         >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
@@ -485,12 +498,24 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             <>
               <div
                 style={{
-                  borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                  borderTop: darkMode
+                    ? '1px solid rgba(255, 255, 255, 0.08)'
+                    : '1px solid rgba(0, 0, 0, 0.06)',
                   margin: '6px 0 4px',
                   paddingTop: '6px'
                 }}
               >
-                <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Platforms</span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 500,
+                    opacity: 0.5,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.03em'
+                  }}
+                >
+                  Platforms
+                </span>
               </div>
               {Object.entries(tooltip.data.platforms)
                 .filter(([, v]) => v > 0)
@@ -515,56 +540,71 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           <>
             <div
               style={{
-                borderTop: darkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+                borderTop: darkMode
+                  ? '1px solid rgba(255, 255, 255, 0.08)'
+                  : '1px solid rgba(0, 0, 0, 0.06)',
                 margin: '6px 0 4px',
                 paddingTop: '6px'
               }}
             >
-              <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Top Tokens</span>
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  opacity: 0.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.03em'
+                }}
+              >
+                Top Tokens
+              </span>
             </div>
             {[...tooltip.data.tokensInvolved]
               .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0))
-              .slice(0, 3).map((token, i) => (
-              <div
-                key={`tooltip-token-${i}-${token.md5 || token.name}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  margin: '3px 0',
-                  fontSize: '10px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <div style={{
-                    width: '14px',
-                    height: '14px',
-                    minWidth: '14px',
-                    minHeight: '14px',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                    background: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
-                  }}>
-                    <img
-                      src={`https://s1.xrpl.to/token/${token.md5}`}
-                      alt={token.name}
+              .slice(0, 3)
+              .map((token, i) => (
+                <div
+                  key={`tooltip-token-${i}-${token.md5 || token.name}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    margin: '3px 0',
+                    fontSize: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
+                        width: '14px',
+                        height: '14px',
+                        minWidth: '14px',
+                        minHeight: '14px',
+                        borderRadius: '3px',
+                        overflow: 'hidden',
+                        background: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
                       }}
-                      onError={(e) => {
-                        e.target.parentElement.style.display = 'none';
-                      }}
-                    />
+                    >
+                      <img
+                        src={`https://s1.xrpl.to/token/${token.md5}`}
+                        alt={token.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          e.target.parentElement.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                    <span style={{ opacity: 0.8 }}>{token.name}</span>
                   </div>
-                  <span style={{ opacity: 0.8 }}>{token.name}</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {formatNumberWithDecimals(token.marketcap || 0)} XRP
+                  </span>
                 </div>
-                <span style={{ fontWeight: 500 }}>
-                  {formatNumberWithDecimals(token.marketcap || 0)} XRP
-                </span>
-              </div>
-            ))}
+              ))}
           </>
         )}
       </div>,
@@ -636,9 +676,7 @@ export const SummaryTag = ({ tagName }) => {
   return (
     <TagContainer>
       <TagTitle>{tagName} Tokens</TagTitle>
-      <TagSubtitle>
-        Ranked by 24h trading volume
-      </TagSubtitle>
+      <TagSubtitle>Ranked by 24h trading volume</TagSubtitle>
     </TagContainer>
   );
 };
@@ -685,7 +723,9 @@ export const SummaryWatchList = () => {
       <WatchTitle>My Token Watchlist</WatchTitle>
       {!account && (
         <WatchSubtitle>
-          <ContentTypography>Track your favorite XRPL tokens. Log in to manage your personalized watchlist.</ContentTypography>
+          <ContentTypography>
+            Track your favorite XRPL tokens. Log in to manage your personalized watchlist.
+          </ContentTypography>
         </WatchSubtitle>
       )}
     </WatchContainer>
@@ -701,7 +741,8 @@ export default function Summary() {
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
-  const fiatRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+  const fiatRate =
+    metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
 
   const getChartOption = () => ({
     grid: {
@@ -904,7 +945,10 @@ export default function Summary() {
   const xrpPrice =
     activeFiatCurrency === 'XRP'
       ? Rate(1, metrics.USD || 1)
-      : Rate(1, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1);
+      : Rate(
+          1,
+          metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1
+        );
 
   const xrpPriceSymbol =
     activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
@@ -929,29 +973,72 @@ export default function Summary() {
             <Grid>
               <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '110px' } : {}}>
                 <MetricTitle isDark={darkMode}>MCap / TVL</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px', alignItems: 'flex-end' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: isMobile ? '12px' : '16px',
+                    alignItems: 'flex-end'
+                  }}
+                >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <MetricValue isDark={darkMode} style={{ fontSize: isMobile ? '0.85rem' : '1.1rem' }}>
+                    <MetricValue
+                      isDark={darkMode}
+                      style={{ fontSize: isMobile ? '0.85rem' : '1.1rem' }}
+                    >
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
-                        new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber()
+                        new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
+                          .div(fiatRate)
+                          .toNumber()
                       )}
                     </MetricValue>
-                    <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0} style={{ fontSize: '0.55rem' }}>
+                    <PercentageChange
+                      isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}
+                      style={{ fontSize: '0.55rem' }}
+                    >
                       {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
                       {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(1)}%
                     </PercentageChange>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <MetricValue isDark={darkMode} style={{ fontSize: isMobile ? '0.85rem' : '1.1rem', opacity: 0.7 }}>
+                    <MetricValue
+                      isDark={darkMode}
+                      style={{ fontSize: isMobile ? '0.85rem' : '1.1rem', opacity: 0.7 }}
+                    >
                       {currencySymbols[activeFiatCurrency]}
                       {formatNumberWithDecimals(
-                        new Decimal(metrics.global?.gTVL || metrics.global?.totalTVL || metrics.H24?.totalTVL || 0).div(fiatRate).toNumber()
+                        new Decimal(
+                          metrics.global?.gTVL ||
+                            metrics.global?.totalTVL ||
+                            metrics.H24?.totalTVL ||
+                            0
+                        )
+                          .div(fiatRate)
+                          .toNumber()
                       )}
                     </MetricValue>
-                    <PercentageChange isPositive={(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0} style={{ fontSize: '0.55rem' }}>
-                      {(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
-                      {Math.abs(metrics.global?.gTVLPro || metrics.global?.totalTVLPro || metrics.H24?.totalTVLPro || 0).toFixed(1)}%
+                    <PercentageChange
+                      isPositive={
+                        (metrics.global?.gTVLPro ||
+                          metrics.global?.totalTVLPro ||
+                          metrics.H24?.totalTVLPro ||
+                          0) >= 0
+                      }
+                      style={{ fontSize: '0.55rem' }}
+                    >
+                      {(metrics.global?.gTVLPro ||
+                        metrics.global?.totalTVLPro ||
+                        metrics.H24?.totalTVLPro ||
+                        0) >= 0
+                        ? '↑'
+                        : '↓'}
+                      {Math.abs(
+                        metrics.global?.gTVLPro ||
+                          metrics.global?.totalTVLPro ||
+                          metrics.H24?.totalTVLPro ||
+                          0
+                      ).toFixed(1)}
+                      %
                     </PercentageChange>
                   </div>
                 </div>
@@ -968,34 +1055,48 @@ export default function Summary() {
                   )}
                 </MetricValue>
                 {(() => {
-                  const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
-                  const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
+                  const stablePercent =
+                    ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1)) *
+                    100;
+                  const memePercent =
+                    ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1)) * 100;
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexWrap: 'wrap'
+                      }}
+                    >
                       <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                         {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
                         {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                       {!isMobile && (
                         <>
-                          <span style={{
-                            fontSize: '0.58rem',
-                            fontWeight: 500,
-                            padding: '1px 4px',
-                            borderRadius: '4px',
-                            background: 'rgba(16, 185, 129, 0.1)',
-                            color: '#10b981'
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '0.58rem',
+                              fontWeight: 500,
+                              padding: '1px 4px',
+                              borderRadius: '4px',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#10b981'
+                            }}
+                          >
                             {stablePercent.toFixed(0)}% Stable
                           </span>
-                          <span style={{
-                            fontSize: '0.58rem',
-                            fontWeight: 500,
-                            padding: '1px 4px',
-                            borderRadius: '4px',
-                            background: 'rgba(245, 158, 11, 0.1)',
-                            color: '#f59e0b'
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '0.58rem',
+                              fontWeight: 500,
+                              padding: '1px 4px',
+                              borderRadius: '4px',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              color: '#f59e0b'
+                            }}
+                          >
                             {memePercent.toFixed(0)}% Meme
                           </span>
                         </>
@@ -1028,27 +1129,31 @@ export default function Summary() {
                   const buyVol = metrics.H24?.globalBuy24hxrp || 0;
                   const sellVol = metrics.H24?.globalSell24hxrp || 0;
                   const total = buyVol + sellVol;
-                  const buyPercent = total > 0 ? (buyVol / total * 100) : 50;
+                  const buyPercent = total > 0 ? (buyVol / total) * 100 : 50;
                   return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{
-                        fontSize: '0.58rem',
-                        fontWeight: 500,
-                        padding: '1px 4px',
-                        borderRadius: '4px',
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        color: '#10b981'
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '0.58rem',
+                          fontWeight: 500,
+                          padding: '1px 4px',
+                          borderRadius: '4px',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          color: '#10b981'
+                        }}
+                      >
                         {buyPercent.toFixed(0)}% Buy
                       </span>
-                      <span style={{
-                        fontSize: '0.58rem',
-                        fontWeight: 500,
-                        padding: '1px 4px',
-                        borderRadius: '4px',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        color: '#ef4444'
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '0.58rem',
+                          fontWeight: 500,
+                          padding: '1px 4px',
+                          borderRadius: '4px',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          color: '#ef4444'
+                        }}
+                      >
                         {(100 - buyPercent).toFixed(0)}% Sell
                       </span>
                     </div>
@@ -1056,107 +1161,168 @@ export default function Summary() {
                 })()}
               </MetricBox>
 
-              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '130px' } : { minWidth: '160px' }}>
+              <MetricBox
+                isDark={darkMode}
+                style={isMobile ? { minWidth: '130px' } : { minWidth: '160px' }}
+              >
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
                 {(() => {
                   const sentiment = metrics.global?.sentimentScore || 50;
                   const rsi = metrics.global?.avgRSI || 50;
 
-                  const getSentimentColor = (v) => v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
-                  const getRsiColor = (v) => v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
+                  const getSentimentColor = (v) =>
+                    v >= 55 ? '#10b981' : v >= 45 ? '#fbbf24' : '#ef4444';
+                  const getRsiColor = (v) =>
+                    v >= 70 ? '#ef4444' : v <= 30 ? '#8b5cf6' : v >= 50 ? '#10b981' : '#fbbf24';
 
                   const sentColor = getSentimentColor(sentiment);
                   const rsiColor = getRsiColor(rsi);
 
                   return (
-                    <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', alignItems: 'flex-end' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: isMobile ? '16px' : '24px',
+                        alignItems: 'flex-end'
+                      }}
+                    >
                       {/* Sentiment gauge */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
                         <div style={{ position: 'relative', width: '36px', height: '20px' }}>
                           {/* Semi-circle background */}
-                          <div style={{
-                            position: 'absolute',
-                            width: '36px',
-                            height: '18px',
-                            borderRadius: '18px 18px 0 0',
-                            background: `conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)`,
-                            opacity: 0.2
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              width: '36px',
+                              height: '18px',
+                              borderRadius: '18px 18px 0 0',
+                              background: `conic-gradient(from 180deg, #ef4444 0deg, #fbbf24 90deg, #10b981 180deg)`,
+                              opacity: 0.2
+                            }}
+                          />
                           {/* Needle */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '50%',
-                            width: '2px',
-                            height: '14px',
-                            background: sentColor,
-                            transformOrigin: 'bottom center',
-                            transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
-                            borderRadius: '1px'
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '50%',
+                              width: '2px',
+                              height: '14px',
+                              background: sentColor,
+                              transformOrigin: 'bottom center',
+                              transform: `translateX(-50%) rotate(${(sentiment - 50) * 1.8}deg)`,
+                              borderRadius: '1px'
+                            }}
+                          />
                           {/* Center dot */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '-2px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: sentColor
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: sentColor
+                            }}
+                          />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: sentColor, lineHeight: 1 }}>
+                          <span
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: 600,
+                              color: sentColor,
+                              lineHeight: 1
+                            }}
+                          >
                             {sentiment.toFixed(0)}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             Sentiment
                           </span>
                         </div>
                       </div>
 
                       {/* RSI gauge */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
                         <div style={{ position: 'relative', width: '36px', height: '20px' }}>
                           {/* Semi-circle background */}
-                          <div style={{
-                            position: 'absolute',
-                            width: '36px',
-                            height: '18px',
-                            borderRadius: '18px 18px 0 0',
-                            background: `conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)`,
-                            opacity: 0.2
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              width: '36px',
+                              height: '18px',
+                              borderRadius: '18px 18px 0 0',
+                              background: `conic-gradient(from 180deg, #8b5cf6 0deg, #10b981 90deg, #ef4444 180deg)`,
+                              opacity: 0.2
+                            }}
+                          />
                           {/* Needle */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '50%',
-                            width: '2px',
-                            height: '14px',
-                            background: rsiColor,
-                            transformOrigin: 'bottom center',
-                            transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
-                            borderRadius: '1px'
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '50%',
+                              width: '2px',
+                              height: '14px',
+                              background: rsiColor,
+                              transformOrigin: 'bottom center',
+                              transform: `translateX(-50%) rotate(${(rsi - 50) * 1.8}deg)`,
+                              borderRadius: '1px'
+                            }}
+                          />
                           {/* Center dot */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '-2px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: rsiColor
-                          }} />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '-2px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: rsiColor
+                            }}
+                          />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: rsiColor, lineHeight: 1 }}>
+                          <span
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: 600,
+                              color: rsiColor,
+                              lineHeight: 1
+                            }}
+                          >
                             {rsi.toFixed(0)}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             RSI
                           </span>
                         </div>
@@ -1173,27 +1339,74 @@ export default function Summary() {
                   const isUp = today >= yesterday;
                   return (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: '2px'
+                        }}
+                      >
                         <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>
+                          <span
+                            style={{
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              color: darkMode ? '#fff' : '#212B36'
+                            }}
+                          >
                             {today}
                           </span>
-                          <span style={{ fontSize: '0.5rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                          <span
+                            style={{
+                              fontSize: '0.5rem',
+                              color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                            }}
+                          >
                             today
                           </span>
-                          <span style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          <span
+                            style={{ fontSize: '0.65rem', color: isUp ? '#10b981' : '#ef4444' }}
+                          >
                             {isUp ? '↑' : '↓'}
                           </span>
                           {latestToken && (
-                            <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.55rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '6px' }}>
-                              <span style={{ maxWidth: '55px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestToken.name}</span>
-                              <span style={{ color: '#10b981', fontWeight: 500 }}>{formatNumberWithDecimals(latestToken.marketcap || 0)} XRP</span>
+                            <Link
+                              href={`/token/${latestToken.md5}`}
+                              style={{
+                                fontSize: '0.55rem',
+                                color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                                textDecoration: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                                paddingLeft: '6px'
+                              }}
+                            >
+                              <span
+                                style={{
+                                  maxWidth: '55px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {latestToken.name}
+                              </span>
+                              <span style={{ color: '#10b981', fontWeight: 500 }}>
+                                {formatNumberWithDecimals(latestToken.marketcap || 0)} XRP
+                              </span>
                             </Link>
                           )}
                         </div>
                       </div>
-                      <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />
+                      <TokenChart
+                        data={chartData}
+                        activeFiatCurrency={activeFiatCurrency}
+                        darkMode={darkMode}
+                      />
                     </>
                   );
                 })()}
@@ -1207,21 +1420,71 @@ export default function Summary() {
                 const isUp = today >= yesterday;
                 return (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
                       <MetricTitle isDark={darkMode}>New Tokens</MetricTitle>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: darkMode ? '#fff' : '#212B36' }}>{today}</span>
-                        <span style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>today</span>
-                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>{isUp ? '↑' : '↓'}</span>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: darkMode ? '#fff' : '#212B36'
+                          }}
+                        >
+                          {today}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '0.45rem',
+                            color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                          }}
+                        >
+                          today
+                        </span>
+                        <span style={{ fontSize: '0.6rem', color: isUp ? '#10b981' : '#ef4444' }}>
+                          {isUp ? '↑' : '↓'}
+                        </span>
                         {latestToken && (
-                          <Link href={`/token/${latestToken.md5}`} style={{ fontSize: '0.45rem', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingLeft: '4px' }}>
-                            <span style={{ maxWidth: '40px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{latestToken.name}</span>
-                            <span style={{ color: '#10b981', fontWeight: 500 }}>{formatNumberWithDecimals(latestToken.marketcap || 0)} XRP</span>
+                          <Link
+                            href={`/token/${latestToken.md5}`}
+                            style={{
+                              fontSize: '0.45rem',
+                              color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                              textDecoration: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              borderLeft: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                              paddingLeft: '4px'
+                            }}
+                          >
+                            <span
+                              style={{
+                                maxWidth: '40px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {latestToken.name}
+                            </span>
+                            <span style={{ color: '#10b981', fontWeight: 500 }}>
+                              {formatNumberWithDecimals(latestToken.marketcap || 0)} XRP
+                            </span>
                           </Link>
                         )}
                       </div>
                     </div>
-                    <TokenChart data={chartData} activeFiatCurrency={activeFiatCurrency} darkMode={darkMode} />
+                    <TokenChart
+                      data={chartData}
+                      activeFiatCurrency={activeFiatCurrency}
+                      darkMode={darkMode}
+                    />
                   </>
                 );
               })()}

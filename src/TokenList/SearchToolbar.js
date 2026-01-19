@@ -13,7 +13,8 @@ const Container = styled.div`
   flex-direction: column;
   gap: 8px;
   border-radius: 12px;
-  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   padding: 10px 14px;
   position: relative;
@@ -111,8 +112,7 @@ const RowsSelector = styled.select`
   padding: 0 24px 0 10px;
   border: none;
   border-radius: 6px;
-  background: ${(props) =>
-    props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)')};
   color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')};
   font-size: 0.72rem;
   font-weight: 400;
@@ -133,7 +133,8 @@ const RowsSelector = styled.select`
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)'};
+    background-color: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)'};
   }
 
   &:focus {
@@ -181,7 +182,7 @@ const StyledIconButton = styled.button`
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -201,7 +202,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 2px;
   flex-shrink: 0;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)')};
   padding: 3px;
   border-radius: 8px;
   border: none;
@@ -220,25 +221,26 @@ const ButtonGroup = styled.div`
     align-items: center;
     justify-content: center;
     gap: 4px;
-    color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
+    color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)')};
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     transition: all 0.15s ease;
 
     &:hover {
-      color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
-      background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
+      color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)')};
+      background: ${(props) =>
+        props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
     }
   }
 
   & > button.selected {
-    background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.95)' : '#fff'};
-    color: ${(props) => props.darkMode ? '#111' : '#333'};
+    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.95)' : '#fff')};
+    color: ${(props) => (props.darkMode ? '#111' : '#333')};
     font-weight: 500;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 
     &:hover {
-      background: ${(props) => props.darkMode ? '#fff' : '#fff'};
+      background: ${(props) => (props.darkMode ? '#fff' : '#fff')};
     }
   }
 
@@ -262,15 +264,16 @@ const LaunchpadGroup = styled.div`
   gap: 2px;
   padding: 3px 6px 3px 8px;
   border-radius: 6px;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)')};
+  border: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   margin-left: 8px;
 `;
 
 const LaunchpadLabel = styled.span`
   font-size: 0.6rem;
   font-weight: 600;
-  color: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)'};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)')};
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-right: 4px;
@@ -282,10 +285,15 @@ const LaunchpadChip = styled.button`
   padding: 0 6px;
   border: none;
   border-radius: 4px;
-  background: ${(props) => props.selected ? 'rgba(59, 130, 246, 0.15)' : 'transparent'};
-  color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
+  background: ${(props) => (props.selected ? 'rgba(59, 130, 246, 0.15)' : 'transparent')};
+  color: ${(props) =>
+    props.selected
+      ? '#3b82f6'
+      : props.darkMode
+        ? 'rgba(255, 255, 255, 0.6)'
+        : 'rgba(33, 43, 54, 0.6)'};
   font-size: 0.65rem;
-  font-weight: ${(props) => props.selected ? 500 : 400};
+  font-weight: ${(props) => (props.selected ? 500 : 400)};
   cursor: pointer;
   white-space: nowrap;
   height: 20px;
@@ -303,14 +311,28 @@ const TagChip = styled.button`
   align-items: center;
   gap: 4px;
   padding: 0 10px;
-  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1px solid
+    ${(props) =>
+      props.selected
+        ? 'rgba(59, 130, 246, 0.3)'
+        : props.darkMode
+          ? 'rgba(255, 255, 255, 0.06)'
+          : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 6px;
-  background: ${(props) => props.selected
-    ? 'rgba(59, 130, 246, 0.1)'
-    : (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
-  color: ${(props) => props.selected ? '#3b82f6' : (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
+  background: ${(props) =>
+    props.selected
+      ? 'rgba(59, 130, 246, 0.1)'
+      : props.darkMode
+        ? 'rgba(255, 255, 255, 0.03)'
+        : 'rgba(0, 0, 0, 0.02)'};
+  color: ${(props) =>
+    props.selected
+      ? '#3b82f6'
+      : props.darkMode
+        ? 'rgba(255, 255, 255, 0.7)'
+        : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
-  font-weight: ${(props) => props.selected ? 500 : 400};
+  font-weight: ${(props) => (props.selected ? 500 : 400)};
   cursor: pointer;
   white-space: nowrap;
   height: 26px;
@@ -318,7 +340,9 @@ const TagChip = styled.button`
   position: relative;
   overflow: hidden;
   z-index: 1;
-  transition: color 0.3s ease, border-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
 
   &::before {
     content: '';
@@ -358,7 +382,8 @@ const AllTagsButton = styled.button`
   padding: 0 12px;
   border: none;
   border-radius: 16px;
-  background: ${(props) => props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
+  background: ${(props) =>
+    props.darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
   color: #3b82f6;
   font-size: 0.7rem;
   font-weight: 500;
@@ -388,7 +413,7 @@ const Drawer = styled.div`
   right: 0;
   bottom: 0;
   z-index: 1300;
-  display: ${props => props.open ? 'block' : 'none'};
+  display: ${(props) => (props.open ? 'block' : 'none')};
 `;
 
 const DrawerBackdrop = styled.div`
@@ -407,13 +432,17 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)'};
+  background: ${(props) => (props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)')};
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)'};
-  box-shadow: ${props => props.isDark ? '0 -25px 50px -12px rgba(59,130,246,0.1)' : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
+  border-top: 1px solid
+    ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)')};
+  box-shadow: ${(props) =>
+    props.isDark
+      ? '0 -25px 50px -12px rgba(59,130,246,0.1)'
+      : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -431,24 +460,26 @@ const DrawerTitle = styled.h2`
   font-weight: 500;
   font-size: 15px;
   margin: 0;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
 `;
 
 const DrawerClose = styled.button`
   width: 32px;
   height: 32px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
-  transition: border-color 0.15s, color 0.15s;
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)')};
     color: #4285f4;
   }
 `;
@@ -464,16 +495,16 @@ const SearchInputWrapper = styled.div`
   height: 40px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'};
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#fff'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)')};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : '#fff')};
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)')};
   }
 
   &:focus-within {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
   }
 `;
 
@@ -481,7 +512,7 @@ const SearchIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   flex-shrink: 0;
 `;
 
@@ -491,7 +522,7 @@ const SearchInput = styled.input`
   border: none;
   outline: none;
   font-size: 14px;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
   font-family: inherit;
 
   &:focus {
@@ -499,7 +530,7 @@ const SearchInput = styled.input`
   }
 
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)'};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)')};
   }
 `;
 
@@ -536,10 +567,11 @@ const TagButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 4px 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 8px;
   background: transparent;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
   font-size: 0.75rem;
   font-weight: 400;
   cursor: pointer;
@@ -547,7 +579,9 @@ const TagButton = styled.button`
   white-space: nowrap;
   height: 28px;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 
   &:hover {
     background: rgba(59, 130, 246, 0.08);
@@ -566,15 +600,19 @@ const EmptyState = styled.div`
   width: 100%;
   text-align: center;
   padding: 32px 0;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   font-size: 14px;
 `;
-
 
 // Normalize tag function (shared)
 const normalizeTag = (tag) => {
   if (!tag) return '';
-  return tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+  return tag
+    .split(' ')
+    .join('-')
+    .replace(/&/g, 'and')
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9-]/g, '');
 };
 
 // Categories Drawer Content Component
@@ -690,8 +728,7 @@ const SearchToolbar = memo(function SearchToolbar({
 
       // Create temporary container for measuring
       const tempContainer = document.createElement('div');
-      tempContainer.style.cssText =
-        'position:absolute;visibility:hidden;display:flex;gap:4px';
+      tempContainer.style.cssText = 'position:absolute;visibility:hidden;display:flex;gap:4px';
       document.body.appendChild(tempContainer);
 
       for (let i = 0; i < tags.length; i++) {
@@ -785,292 +822,303 @@ const SearchToolbar = memo(function SearchToolbar({
   return (
     <Fragment>
       <Container darkMode={darkMode} ref={containerRef}>
-      {/* Top Categories - first row */}
-      {tags && tags.length > 0 && (
-        <TagsRow>
-          <TagsScrollArea>
-            {/* Display categories dynamically based on available space */}
-            {tags.slice(0, visibleTagCount).map((tag, index) => {
-              const normalizedTag = tag
-                .split(' ')
-                .join('-')
-                .replace(/&/g, 'and')
-                .toLowerCase()
-                .replace(/[^a-zA-Z0-9-]/g, '');
-              const isSelected = tagName === tag;
+        {/* Top Categories - first row */}
+        {tags && tags.length > 0 && (
+          <TagsRow>
+            <TagsScrollArea>
+              {/* Display categories dynamically based on available space */}
+              {tags.slice(0, visibleTagCount).map((tag, index) => {
+                const normalizedTag = tag
+                  .split(' ')
+                  .join('-')
+                  .replace(/&/g, 'and')
+                  .toLowerCase()
+                  .replace(/[^a-zA-Z0-9-]/g, '');
+                const isSelected = tagName === tag;
 
-              return (
-                <TagChip
-                  key={tag}
-                  data-tag="true"
-                  onClick={() => (window.location.href = `/view/${normalizedTag}`)}
-                  selected={isSelected}
+                return (
+                  <TagChip
+                    key={tag}
+                    data-tag="true"
+                    onClick={() => (window.location.href = `/view/${normalizedTag}`)}
+                    selected={isSelected}
+                    darkMode={darkMode}
+                  >
+                    <span>{tag}</span>
+                  </TagChip>
+                );
+              })}
+            </TagsScrollArea>
+
+            {/* All Tags Button - always visible, never hidden by scroll */}
+            <AllButtonWrapper>
+              <AllTagsButton onClick={() => setCategoriesOpen(true)} darkMode={darkMode}>
+                <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
+              </AllTagsButton>
+            </AllButtonWrapper>
+          </TagsRow>
+        )}
+
+        {/* View controls - second row */}
+        <Row spaceBetween>
+          <RowContent>
+            {/* All Tokens */}
+            <TagChip
+              onClick={() => (window.location.href = '/')}
+              selected={currentView === 'tokens'}
+              darkMode={darkMode}
+            >
+              All Tokens
+            </TagChip>
+
+            {/* Discovery items */}
+            <TagChip
+              onClick={() => (window.location.href = '/new')}
+              selected={currentView === 'new'}
+              darkMode={darkMode}
+            >
+              <Newspaper size={13} />
+              <span>New</span>
+            </TagChip>
+            <TagChip
+              onClick={() => (window.location.href = '/trending')}
+              selected={currentView === 'trending'}
+              darkMode={darkMode}
+            >
+              <Flame size={13} />
+              <span>Trending</span>
+            </TagChip>
+            <TagChip
+              onClick={() => (window.location.href = '/gainers/24h')}
+              selected={currentView === 'gainers'}
+              darkMode={darkMode}
+            >
+              <TrendingUp size={13} />
+              <span>Gainers</span>
+            </TagChip>
+            <TagChip
+              onClick={() => (window.location.href = '/spotlight')}
+              selected={currentView === 'spotlight'}
+              darkMode={darkMode}
+            >
+              <Sparkles size={13} />
+              <span>Spotlight</span>
+            </TagChip>
+
+            {/* Launchpads group */}
+            <LaunchpadGroup darkMode={darkMode}>
+              <LaunchpadLabel darkMode={darkMode}>Launchpads</LaunchpadLabel>
+              {[
+                { slug: 'firstledger', name: 'FirstLedger' },
+                { slug: 'magnetic-x', name: 'Magnetic X' },
+                { slug: 'xpmarket', name: 'XPmarket' },
+                { slug: 'aigentrun', name: 'aigent.run' },
+                { slug: 'ledgermeme', name: 'LedgerMeme' },
+                { slug: 'horizon', name: 'Horizon' },
+                { slug: 'moonvalve', name: 'Moonvalve' }
+              ].map((lp) => (
+                <LaunchpadChip
+                  key={lp.slug}
+                  onClick={() => (window.location.href = `/view/${lp.slug}`)}
+                  selected={router.query.tag === lp.slug}
                   darkMode={darkMode}
                 >
-                  <span>{tag}</span>
-                </TagChip>
-              );
-            })}
-          </TagsScrollArea>
+                  {lp.name}
+                </LaunchpadChip>
+              ))}
+            </LaunchpadGroup>
 
-          {/* All Tags Button - always visible, never hidden by scroll */}
-          <AllButtonWrapper>
-            <AllTagsButton onClick={() => setCategoriesOpen(true)} darkMode={darkMode}>
-              <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
-            </AllTagsButton>
-          </AllButtonWrapper>
-        </TagsRow>
-      )}
+            {/* Period selector for gainers or price change sorting */}
+            {(currentView === 'gainers' ||
+              ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
+              <ButtonGroup darkMode={darkMode}>
+                <button
+                  className={currentPeriod === '5m' ? 'selected' : ''}
+                  onClick={() => {
+                    if (currentView === 'gainers') {
+                      window.location.href = '/gainers/5m';
+                    } else {
+                      setOrderBy('pro5m');
+                      setSync((prev) => prev + 1);
+                    }
+                  }}
+                >
+                  5m
+                </button>
+                <button
+                  className={currentPeriod === '1h' ? 'selected' : ''}
+                  onClick={() => {
+                    if (currentView === 'gainers') {
+                      window.location.href = '/gainers/1h';
+                    } else {
+                      setOrderBy('pro1h');
+                      setSync((prev) => prev + 1);
+                    }
+                  }}
+                >
+                  1h
+                </button>
+                <button
+                  className={currentPeriod === '24h' ? 'selected' : ''}
+                  onClick={() => {
+                    if (currentView === 'gainers') {
+                      window.location.href = '/gainers/24h';
+                    } else {
+                      setOrderBy('pro24h');
+                      setSync((prev) => prev + 1);
+                    }
+                  }}
+                >
+                  24h
+                </button>
+                <button
+                  className={currentPeriod === '7d' ? 'selected' : ''}
+                  onClick={() => {
+                    if (currentView === 'gainers') {
+                      window.location.href = '/gainers/7d';
+                    } else {
+                      setOrderBy('pro7d');
+                      setSync((prev) => prev + 1);
+                    }
+                  }}
+                >
+                  7d
+                </button>
+              </ButtonGroup>
+            )}
+          </RowContent>
 
-      {/* View controls - second row */}
-      <Row spaceBetween>
-        <RowContent>
-          {/* All Tokens */}
-          <TagChip
-            onClick={() => (window.location.href = '/')}
-            selected={currentView === 'tokens'}
-            darkMode={darkMode}
-          >
-            All Tokens
-          </TagChip>
+          {/* View mode and rows selectors on the right */}
+          <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
+            {/* View Mode Selector */}
+            {setViewMode && (
+              <ButtonGroup darkMode={darkMode}>
+                <button
+                  className={viewMode === 'classic' ? 'selected' : ''}
+                  onClick={() => setViewMode('classic')}
+                  title="Classic View"
+                >
+                  Classic
+                </button>
+                <button
+                  className={viewMode === 'priceChange' ? 'selected' : ''}
+                  onClick={() => setViewMode('priceChange')}
+                  title="Price Change View"
+                >
+                  Price
+                </button>
+                <button
+                  className={viewMode === 'marketData' ? 'selected' : ''}
+                  onClick={() => setViewMode('marketData')}
+                  title="Market Data View"
+                >
+                  Market
+                </button>
+                <button
+                  className={viewMode === 'topGainers' ? 'selected' : ''}
+                  onClick={() => setViewMode('topGainers')}
+                  title="Top Gainers View"
+                >
+                  Gainers
+                </button>
+                <button
+                  className={viewMode === 'trader' ? 'selected' : ''}
+                  onClick={() => setViewMode('trader')}
+                  title="Trader View"
+                >
+                  Trader
+                </button>
+                <button
+                  className={viewMode === 'custom' ? 'selected' : ''}
+                  onClick={() => setViewMode('custom')}
+                  title="Custom View"
+                >
+                  Custom
+                </button>
+              </ButtonGroup>
+            )}
 
-          {/* Discovery items */}
-          <TagChip
-            onClick={() => (window.location.href = '/new')}
-            selected={currentView === 'new'}
-            darkMode={darkMode}
-          >
-            <Newspaper size={13} />
-            <span>New</span>
-          </TagChip>
-          <TagChip
-            onClick={() => (window.location.href = '/trending')}
-            selected={currentView === 'trending'}
-            darkMode={darkMode}
-          >
-            <Flame size={13} />
-            <span>Trending</span>
-          </TagChip>
-          <TagChip
-            onClick={() => (window.location.href = '/gainers/24h')}
-            selected={currentView === 'gainers'}
-            darkMode={darkMode}
-          >
-            <TrendingUp size={13} />
-            <span>Gainers</span>
-          </TagChip>
-          <TagChip
-            onClick={() => (window.location.href = '/spotlight')}
-            selected={currentView === 'spotlight'}
-            darkMode={darkMode}
-          >
-            <Sparkles size={13} />
-            <span>Spotlight</span>
-          </TagChip>
-
-          {/* Launchpads group */}
-          <LaunchpadGroup darkMode={darkMode}>
-            <LaunchpadLabel darkMode={darkMode}>Launchpads</LaunchpadLabel>
-            {[
-              { slug: 'firstledger', name: 'FirstLedger' },
-              { slug: 'magnetic-x', name: 'Magnetic X' },
-              { slug: 'xpmarket', name: 'XPmarket' },
-              { slug: 'aigentrun', name: 'aigent.run' },
-              { slug: 'ledgermeme', name: 'LedgerMeme' },
-              { slug: 'horizon', name: 'Horizon' },
-              { slug: 'moonvalve', name: 'Moonvalve' }
-            ].map((lp) => (
-              <LaunchpadChip
-                key={lp.slug}
-                onClick={() => (window.location.href = `/view/${lp.slug}`)}
-                selected={router.query.tag === lp.slug}
+            {/* Custom columns settings button */}
+            {viewMode === 'custom' && (
+              <StyledIconButton
+                onClick={() => setCustomSettingsOpen(true)}
                 darkMode={darkMode}
+                title="Configure columns"
+                aria-label="Configure custom columns"
               >
-                {lp.name}
-              </LaunchpadChip>
-            ))}
-          </LaunchpadGroup>
+                ⚙️
+              </StyledIconButton>
+            )}
 
-          {/* Period selector for gainers or price change sorting */}
-          {(currentView === 'gainers' ||
-            ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
-            <ButtonGroup darkMode={darkMode}>
-              <button
-                className={currentPeriod === '5m' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/5m';
-                  } else {
-                    setOrderBy('pro5m');
-                    setSync((prev) => prev + 1);
-                  }
-                }}
+            {/* Rows selector */}
+            <>
+              <label htmlFor="rows-per-page-select" className="visually-hidden">
+                Rows per page
+              </label>
+              <RowsSelector
+                id="rows-per-page-select"
+                darkMode={darkMode}
+                value={rows}
+                onChange={(e) => setRows(parseInt(e.target.value))}
+                noMargin
+                aria-label="Select number of rows to display"
               >
-                5m
-              </button>
-              <button
-                className={currentPeriod === '1h' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/1h';
-                  } else {
-                    setOrderBy('pro1h');
-                    setSync((prev) => prev + 1);
-                  }
-                }}
-              >
-                1h
-              </button>
-              <button
-                className={currentPeriod === '24h' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/24h';
-                  } else {
-                    setOrderBy('pro24h');
-                    setSync((prev) => prev + 1);
-                  }
-                }}
-              >
-                24h
-              </button>
-              <button
-                className={currentPeriod === '7d' ? 'selected' : ''}
-                onClick={() => {
-                  if (currentView === 'gainers') {
-                    window.location.href = '/gainers/7d';
-                  } else {
-                    setOrderBy('pro7d');
-                    setSync((prev) => prev + 1);
-                  }
-                }}
-              >
-                7d
-              </button>
-            </ButtonGroup>
-          )}
-        </RowContent>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </RowsSelector>
+            </>
 
-        {/* View mode and rows selectors on the right */}
-        <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
-          {/* View Mode Selector */}
-          {setViewMode && (
-            <ButtonGroup darkMode={darkMode}>
-              <button
-                className={viewMode === 'classic' ? 'selected' : ''}
-                onClick={() => setViewMode('classic')}
-                title="Classic View"
-              >
-                Classic
-              </button>
-              <button
-                className={viewMode === 'priceChange' ? 'selected' : ''}
-                onClick={() => setViewMode('priceChange')}
-                title="Price Change View"
-              >
-                Price
-              </button>
-              <button
-                className={viewMode === 'marketData' ? 'selected' : ''}
-                onClick={() => setViewMode('marketData')}
-                title="Market Data View"
-              >
-                Market
-              </button>
-              <button
-                className={viewMode === 'topGainers' ? 'selected' : ''}
-                onClick={() => setViewMode('topGainers')}
-                title="Top Gainers View"
-              >
-                Gainers
-              </button>
-              <button
-                className={viewMode === 'trader' ? 'selected' : ''}
-                onClick={() => setViewMode('trader')}
-                title="Trader View"
-              >
-                Trader
-              </button>
-              <button
-                className={viewMode === 'custom' ? 'selected' : ''}
-                onClick={() => setViewMode('custom')}
-                title="Custom View"
-              >
-                Custom
-              </button>
-            </ButtonGroup>
-          )}
+            {/* API Button */}
+            <ApiButton />
+          </Stack>
+        </Row>
+      </Container>
 
-          {/* Custom columns settings button */}
-          {viewMode === 'custom' && (
-            <StyledIconButton
-              onClick={() => setCustomSettingsOpen(true)}
-              darkMode={darkMode}
-              title="Configure columns"
-              aria-label="Configure custom columns"
-            >
-              ⚙️
-            </StyledIconButton>
-          )}
-
-          {/* Rows selector */}
-          <>
-            <label htmlFor="rows-per-page-select" className="visually-hidden">
-              Rows per page
-            </label>
-            <RowsSelector
-              id="rows-per-page-select"
-              darkMode={darkMode}
-              value={rows}
-              onChange={(e) => setRows(parseInt(e.target.value))}
-              noMargin
-              aria-label="Select number of rows to display"
-            >
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </RowsSelector>
-          </>
-
-          {/* API Button */}
-          <ApiButton />
-        </Stack>
-      </Row>
-
-    </Container>
-
-    {/* Categories Drawer - rendered outside Container to avoid position:relative issues */}
-    {categoriesOpen && (
-      <Drawer open={categoriesOpen}>
-        <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
-        <DrawerPaper isDark={darkMode}>
-          <DrawerHeader isDark={darkMode}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3b82f6', whiteSpace: 'nowrap' }}>
-                Categories {tags?.length ? `(${tags.length})` : ''}
-              </span>
-              <div
-                style={{
-                  flex: 1,
-                  height: '14px',
-                  backgroundImage: darkMode
-                    ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                  backgroundSize: '8px 5px',
-                  WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                  maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                }}
-              />
-            </div>
-            <DrawerClose isDark={darkMode} onClick={() => setCategoriesOpen(false)} aria-label="Close">
-              <X size={18} />
-            </DrawerClose>
-          </DrawerHeader>
-          <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
-        </DrawerPaper>
-      </Drawer>
-    )}
-
+      {/* Categories Drawer - rendered outside Container to avoid position:relative issues */}
+      {categoriesOpen && (
+        <Drawer open={categoriesOpen}>
+          <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
+          <DrawerPaper isDark={darkMode}>
+            <DrawerHeader isDark={darkMode}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: '#3b82f6',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Categories {tags?.length ? `(${tags.length})` : ''}
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    height: '14px',
+                    backgroundImage: darkMode
+                      ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
+                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                    backgroundSize: '8px 5px',
+                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                  }}
+                />
+              </div>
+              <DrawerClose
+                isDark={darkMode}
+                onClick={() => setCategoriesOpen(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </DrawerClose>
+            </DrawerHeader>
+            <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
+          </DrawerPaper>
+        </Drawer>
+      )}
     </Fragment>
   );
 });

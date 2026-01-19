@@ -48,27 +48,24 @@ function SwapPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{
-        position: 'absolute',
-        width: 1,
-        height: 1,
-        padding: 0,
-        margin: -1,
-        overflow: 'hidden',
-        clip: 'rect(0,0,0,0)',
-        whiteSpace: 'nowrap',
-        border: 0
-      }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Swap XRPL Tokens
       </h1>
 
       <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
-        <Swap
-          pair={pair}
-          setPair={setPair}
-          revert={revert}
-          setRevert={setRevert}
-        />
+        <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
       </div>
 
       <Footer />

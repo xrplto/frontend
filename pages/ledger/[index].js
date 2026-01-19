@@ -33,11 +33,24 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
     return <p className="text-red-500">{error}</p>;
   }
 
-  const { ledger_index, close_time, close_time_human, ledger_hash, parent_hash, txn_count, total_coins, parent_close_time } = ledgerData;
+  const {
+    ledger_index,
+    close_time,
+    close_time_human,
+    ledger_hash,
+    parent_hash,
+    txn_count,
+    total_coins,
+    parent_close_time
+  } = ledgerData;
   const ledgerIndex = parseInt(ledger_index, 10);
-  const closeTimeLocale = close_time_human ? new Date(close_time_human).toLocaleString() : 'Unknown';
+  const closeTimeLocale = close_time_human
+    ? new Date(close_time_human).toLocaleString()
+    : 'Unknown';
   const totalXrp = total_coins ? (total_coins / 1000000).toLocaleString() : 'Unknown';
-  const xrpBurned = total_coins ? ((100000000000000000 - total_coins) / 1000000).toLocaleString() : 'Unknown';
+  const xrpBurned = total_coins
+    ? ((100000000000000000 - total_coins) / 1000000).toLocaleString()
+    : 'Unknown';
   const closeTime = close_time && parent_close_time ? close_time - parent_close_time : null;
 
   const shortenAddress = (address) => {
@@ -57,10 +70,12 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
   );
 
   return (
-    <div className={cn(
-      'rounded-xl border-[1.5px] p-4 sm:p-6 md:p-8',
-      isDark ? 'border-white/10' : 'border-gray-200'
-    )}>
+    <div
+      className={cn(
+        'rounded-xl border-[1.5px] p-4 sm:p-6 md:p-8',
+        isDark ? 'border-white/10' : 'border-gray-200'
+      )}
+    >
       <h2 className={cn('mb-2 text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
         Ledger transactions #{ledger_index}
       </h2>
@@ -73,7 +88,9 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
           onClick={() => (window.location.href = `/ledger/${ledgerIndex - 1}`)}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
-            isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            isDark
+              ? 'border-white/10 hover:border-primary hover:bg-primary/5'
+              : 'border-gray-200 hover:border-primary hover:bg-primary/5'
           )}
         >
           <ChevronLeft size={20} />
@@ -85,7 +102,9 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
           onClick={() => (window.location.href = `/ledger/${ledgerIndex + 1}`)}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
-            isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            isDark
+              ? 'border-white/10 hover:border-primary hover:bg-primary/5'
+              : 'border-gray-200 hover:border-primary hover:bg-primary/5'
           )}
         >
           <ChevronRight size={20} />
@@ -96,23 +115,65 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
         <table className="w-full">
           <thead>
             <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Index</th>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Type</th>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Address</th>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Status</th>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Hash</th>
+              <th
+                className={cn(
+                  'px-4 py-3 text-left text-[13px] font-medium',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
+                Index
+              </th>
+              <th
+                className={cn(
+                  'px-4 py-3 text-left text-[13px] font-medium',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
+                Type
+              </th>
+              <th
+                className={cn(
+                  'px-4 py-3 text-left text-[13px] font-medium',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
+                Address
+              </th>
+              <th
+                className={cn(
+                  'px-4 py-3 text-left text-[13px] font-medium',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
+                Status
+              </th>
+              <th
+                className={cn(
+                  'px-4 py-3 text-left text-[13px] font-medium',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
+                Hash
+              </th>
             </tr>
           </thead>
           <tbody>
             {sortedTransactions.map((tx) => (
               <tr
                 key={tx.hash}
-                className={cn('border-b transition-colors', isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50')}
+                className={cn(
+                  'border-b transition-colors',
+                  isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
+                )}
               >
-                <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                <td
+                  className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   {tx.meta.TransactionIndex}
                 </td>
-                <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                <td
+                  className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   {tx.tx_json?.TransactionType}
                 </td>
                 <td className="px-4 py-3">
@@ -127,10 +188,12 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={cn(
-                    'text-[13px]',
-                    tx.meta.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
-                  )}>
+                  <span
+                    className={cn(
+                      'text-[13px]',
+                      tx.meta.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
                     {tx.meta.TransactionResult}
                   </span>
                 </td>
@@ -148,33 +211,59 @@ const LedgerDetails = ({ ledgerData, transactions, error }) => {
         </table>
       </div>
 
-      <div className={cn('mt-6 border-t pt-6 space-y-3', isDark ? 'border-white/10' : 'border-gray-200')}>
+      <div
+        className={cn(
+          'mt-6 border-t pt-6 space-y-3',
+          isDark ? 'border-white/10' : 'border-gray-200'
+        )}
+      >
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Closed:</span> {closeTimeLocale}
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Closed:</span>{' '}
+            {closeTimeLocale}
           </p>
           {closeTime && (
             <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-              <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Interval:</span> {closeTime}s
+              <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Interval:</span>{' '}
+              {closeTime}s
             </p>
           )}
           <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span> {txn_count}
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Transactions:</span>{' '}
+            {txn_count}
           </p>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Total XRP:</span> {totalXrp}
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Total XRP:</span>{' '}
+            {totalXrp}
           </p>
           <p className={cn('text-[13px]', isDark ? 'text-orange-400/80' : 'text-orange-600')}>
-            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>XRP Burned:</span> {xrpBurned}
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>XRP Burned:</span>{' '}
+            {xrpBurned}
           </p>
         </div>
-        <p className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/60' : 'text-gray-500')}>
-          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>Ledger hash:</span> {ledger_hash}
+        <p
+          className={cn(
+            'text-[13px] font-mono break-all',
+            isDark ? 'text-white/60' : 'text-gray-500'
+          )}
+        >
+          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>
+            Ledger hash:
+          </span>{' '}
+          {ledger_hash}
         </p>
-        <p className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/60' : 'text-gray-500')}>
-          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>Parent hash:</span> {parent_hash}
+        <p
+          className={cn(
+            'text-[13px] font-mono break-all',
+            isDark ? 'text-white/60' : 'text-gray-500'
+          )}
+        >
+          <span className={cn('font-sans', isDark ? 'text-white/40' : 'text-gray-400')}>
+            Parent hash:
+          </span>{' '}
+          {parent_hash}
         </p>
       </div>
     </div>

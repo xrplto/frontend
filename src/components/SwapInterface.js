@@ -97,13 +97,16 @@ const createTheme = (isDark) => ({
     mode: isDark ? 'dark' : 'light',
     divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
     primary: { main: '#3b82f6' },
-    text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+    text: {
+      primary: isDark ? '#fff' : '#000',
+      secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
+    },
     background: { default: isDark ? '#010815' : '#fff', paper: isDark ? '#020a1a' : '#fff' },
     success: { main: '#4caf50' },
     error: { main: '#f44336' },
     warning: { main: '#ff9800' }
   },
-  spacing: (...args) => args.length === 1 ? args[0] * 8 : args.map(v => v * 8 + 'px').join(' ')
+  spacing: (...args) => (args.length === 1 ? args[0] * 8 : args.map((v) => v * 8 + 'px').join(' '))
 });
 
 // useTheme hook replacement
@@ -116,22 +119,43 @@ const useTheme = () => {
 // Basic MUI component replacements
 const Box = ({ children, sx, style, className, component, onClick, ...props }) => {
   const Component = component || 'div';
-  return <Component style={style} className={className} onClick={onClick} {...props}>{children}</Component>;
+  return (
+    <Component style={style} className={className} onClick={onClick} {...props}>
+      {children}
+    </Component>
+  );
 };
 
-const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justifyContent, style, className, ...props }) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: direction === 'row' ? 'row' : 'column',
-    gap: spacing * 8,
-    alignItems,
-    justifyContent,
-    ...style
-  }} className={className} {...props}>{children}</div>
+const Stack = ({
+  children,
+  direction = 'column',
+  spacing = 0,
+  alignItems,
+  justifyContent,
+  style,
+  className,
+  ...props
+}) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: direction === 'row' ? 'row' : 'column',
+      gap: spacing * 8,
+      alignItems,
+      justifyContent,
+      ...style
+    }}
+    className={className}
+    {...props}
+  >
+    {children}
+  </div>
 );
 
 const Typography = ({ children, variant, sx, style, className, ...props }) => (
-  <span style={style} className={className} {...props}>{children}</span>
+  <span style={style} className={className} {...props}>
+    {children}
+  </span>
 );
 
 const Chip = ({ label, onClick, style, className, ...props }) => (
@@ -148,10 +172,24 @@ const Chip = ({ label, onClick, style, className, ...props }) => (
     }}
     className={className}
     {...props}
-  >{label}</span>
+  >
+    {label}
+  </span>
 );
 
-const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick, sx, startIcon, style, className, ...props }) => {
+const Button = ({
+  children,
+  variant = 'text',
+  size,
+  fullWidth,
+  disabled,
+  onClick,
+  sx,
+  startIcon,
+  style,
+  className,
+  ...props
+}) => {
   const baseStyle = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -170,7 +208,13 @@ const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick
     ...style
   };
   return (
-    <button style={baseStyle} disabled={disabled} onClick={onClick} className={className} {...props}>
+    <button
+      style={baseStyle}
+      disabled={disabled}
+      onClick={onClick}
+      className={className}
+      {...props}
+    >
       {startIcon}
       {children}
     </button>
@@ -201,9 +245,7 @@ const IconButton = ({ children, onClick, size, disabled, style, className, ...pr
 );
 
 // ShareIcon using lucide Share2
-const ShareIcon = ({ sx }) => (
-  <Share2 size={sx?.width || sx?.fontSize || 16} />
-);
+const ShareIcon = ({ sx }) => <Share2 size={sx?.width || sx?.fontSize || 16} />;
 
 // ArrowDropDownIcon
 const ArrowDropDownIcon = ({ sx, className }) => (
@@ -211,7 +253,18 @@ const ArrowDropDownIcon = ({ sx, className }) => (
 );
 
 // Input component (MUI replacement)
-const Input = ({ inputRef, placeholder, value, onChange, onFocus, onBlur, disableUnderline, sx, inputProps, ...props }) => (
+const Input = ({
+  inputRef,
+  placeholder,
+  value,
+  onChange,
+  onFocus,
+  onBlur,
+  disableUnderline,
+  sx,
+  inputProps,
+  ...props
+}) => (
   <input
     ref={inputRef}
     placeholder={placeholder}
@@ -235,18 +288,12 @@ const Input = ({ inputRef, placeholder, value, onChange, onFocus, onBlur, disabl
 );
 
 // SwapHorizIcon using lucide ArrowLeftRight
-const SwapHorizIcon = ({ sx }) => (
-  <ArrowLeftRight size={sx?.width || sx?.fontSize || 20} />
-);
+const SwapHorizIcon = ({ sx }) => <ArrowLeftRight size={sx?.width || sx?.fontSize || 20} />;
 
 // Toggle icons using lucide
-const ToggleOnIcon = ({ sx }) => (
-  <ToggleRight size={sx?.width || sx?.fontSize || 14} />
-);
+const ToggleOnIcon = ({ sx }) => <ToggleRight size={sx?.width || sx?.fontSize || 14} />;
 
-const ToggleOffIcon = ({ sx }) => (
-  <ToggleLeft size={sx?.width || sx?.fontSize || 14} />
-);
+const ToggleOffIcon = ({ sx }) => <ToggleLeft size={sx?.width || sx?.fontSize || 14} />;
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -276,13 +323,13 @@ const ExchangeButton = memo(({ onClick, disabled, children, isDark, className, .
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "w-full rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal tracking-wide transition-colors",
+      'w-full rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal tracking-wide transition-colors',
       disabled
         ? isDark
-          ? "cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500"
-          : "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
-        : "border-primary bg-primary text-white hover:bg-primary/90",
-      "sm:py-2.5 sm:text-[13px]",
+          ? 'cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500'
+          : 'cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400'
+        : 'border-primary bg-primary text-white hover:bg-primary/90',
+      'sm:py-2.5 sm:text-[13px]',
       className
     )}
     {...props}
@@ -295,8 +342,8 @@ const AllowButton = memo(({ onClick, children, isDark, className, ...props }) =>
   <button
     onClick={onClick}
     className={cn(
-      "rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal transition-all",
-      "border-primary/20 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10",
+      'rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal transition-all',
+      'border-primary/20 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10',
       className
     )}
     {...props}
@@ -309,10 +356,10 @@ const ToggleButton = memo(({ onClick, isDark, isSwitching, children, ...props })
   <button
     onClick={onClick}
     className={cn(
-      "absolute left-1/2 top-1/2 z-[2] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-lg border-[1.5px] transition-all",
-      isDark ? "border-white/[0.08] bg-black" : "border-gray-200 bg-white",
-      "hover:border-primary hover:bg-primary hover:text-white",
-      isSwitching && "rotate-180"
+      'absolute left-1/2 top-1/2 z-[2] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-lg border-[1.5px] transition-all',
+      isDark ? 'border-white/[0.08] bg-black' : 'border-gray-200 bg-white',
+      'hover:border-primary hover:bg-primary hover:text-white',
+      isSwitching && 'rotate-180'
     )}
     {...props}
   >
@@ -335,9 +382,9 @@ const getPriceImpactSeverity = (impact) => {
 const WalletDisplay = memo(({ isDark, children, ...props }) => (
   <div
     className={cn(
-      "mb-2 flex items-center justify-between rounded-lg border-[1.5px] px-2.5 py-2 transition-colors",
-      "border-green-500/10 bg-green-500/5 hover:border-green-500/20 hover:bg-green-500/10",
-      "sm:mb-1.5 sm:px-2 sm:py-1.5"
+      'mb-2 flex items-center justify-between rounded-lg border-[1.5px] px-2.5 py-2 transition-colors',
+      'border-green-500/10 bg-green-500/5 hover:border-green-500/20 hover:bg-green-500/10',
+      'sm:mb-1.5 sm:px-2 sm:py-1.5'
     )}
     {...props}
   >
@@ -369,8 +416,8 @@ const WalletDetails = ({ children, ...props }) => (
 const WalletAddress = ({ isDark, children, ...props }) => (
   <span
     className={cn(
-      "text-[12px] font-medium leading-tight sm:text-[11px]",
-      isDark ? "text-white" : "text-black"
+      'text-[12px] font-medium leading-tight sm:text-[11px]',
+      isDark ? 'text-white' : 'text-black'
     )}
     {...props}
   >
@@ -379,10 +426,7 @@ const WalletAddress = ({ isDark, children, ...props }) => (
 );
 
 const WalletType = ({ children, ...props }) => (
-  <span
-    className="text-[10px] font-normal capitalize leading-tight text-green-500"
-    {...props}
-  >
+  <span className="text-[10px] font-normal capitalize leading-tight text-green-500" {...props}>
     {children}
   </span>
 );
@@ -401,7 +445,7 @@ const TokenImage = styled(Image)(({ theme }) => ({
     theme.palette.mode === 'dark'
       ? alpha(theme.palette.divider, 0.08)
       : alpha(theme.palette.divider, 0.08)
-  }`,
+  }`
 }));
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
@@ -470,8 +514,6 @@ const TokenCard = styled(Box)(({ theme }) => ({
   }
 }));
 
-
-
 function truncate(str, n) {
   if (!str) return '';
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
@@ -490,7 +532,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
-
 
   const [token1, setToken1] = useState(curr1);
   const [token2, setToken2] = useState(curr2);
@@ -586,40 +627,66 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   // Debug info for wallet
   useEffect(() => {
     const loadDebugInfo = async () => {
-      if (!accountProfile) { setDebugInfo(null); return; }
-      let walletKeyId = accountProfile.walletKeyId ||
+      if (!accountProfile) {
+        setDebugInfo(null);
+        return;
+      }
+      let walletKeyId =
+        accountProfile.walletKeyId ||
         (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+        (accountProfile.provider && accountProfile.provider_id
+          ? `${accountProfile.provider}_${accountProfile.provider_id}`
+          : null);
       let seed = accountProfile.seed || null;
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+      if (
+        !seed &&
+        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
+      ) {
         try {
           const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
           if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            const walletData = await walletStorage.getWallet(
+              accountProfile.account,
+              storedPassword
+            );
             seed = walletData?.seed || 'encrypted';
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
       // Handle device wallets
       if (!seed && accountProfile.wallet_type === 'device') {
         try {
-          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const { EncryptedWalletStorage, deviceFingerprint } =
+            await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const deviceKeyId = await deviceFingerprint.getDeviceId();
           walletKeyId = deviceKeyId;
           if (deviceKeyId) {
             const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
             if (storedPassword) {
-              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              const walletData = await walletStorage.getWallet(
+                accountProfile.account,
+                storedPassword
+              );
               seed = walletData?.seed || 'encrypted';
             }
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
-      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, accountIndex: accountProfile.accountIndex, seed: seed || 'N/A' });
+      setDebugInfo({
+        wallet_type: accountProfile.wallet_type,
+        account: accountProfile.account,
+        walletKeyId,
+        accountIndex: accountProfile.accountIndex,
+        seed: seed || 'N/A'
+      });
     };
     loadDebugInfo();
   }, [accountProfile]);
@@ -651,17 +718,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           limit: '60'
         });
         if (token1.currency !== 'XRP' && token1.issuer) params.append('base_issuer', token1.issuer);
-        if (token2.currency !== 'XRP' && token2.issuer) params.append('quote_issuer', token2.issuer);
+        if (token2.currency !== 'XRP' && token2.issuer)
+          params.append('quote_issuer', token2.issuer);
 
-        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
+        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, {
+          signal: controller.signal
+        });
         if (res.data?.success) {
-          const parseBids = (res.data.bids || []).map(b => ({
+          const parseBids = (res.data.bids || []).map((b) => ({
             ...b,
             price: parseFloat(b.price) || 0,
             amount: parseFloat(b.amount) || 0,
             total: parseFloat(b.total) || 0
           }));
-          const parseAsks = (res.data.asks || []).map(a => ({
+          const parseAsks = (res.data.asks || []).map((a) => ({
             ...a,
             price: parseFloat(a.price) || 0,
             amount: parseFloat(a.amount) || 0,
@@ -723,7 +793,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         const tokenIsXRP = token?.currency === 'XRP';
         const otherTokenIsXRP = otherToken?.currency === 'XRP';
-        const tokenIsRLUSD = token?.currency === '524C555344000000000000000000000000000000' || token?.name === 'RLUSD';
+        const tokenIsRLUSD =
+          token?.currency === '524C555344000000000000000000000000000000' || token?.name === 'RLUSD';
 
         if (activeFiatCurrency === 'XRP') {
           // When display currency is XRP, show XRP value
@@ -1150,21 +1221,27 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       setQuoteLoading(true);
       try {
-        const destAmount = token2.currency === 'XRP'
-          ? { currency: 'XRP', value: amount2 }
-          : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
+        const destAmount =
+          token2.currency === 'XRP'
+            ? { currency: 'XRP', value: amount2 }
+            : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
 
         // Use logged-in account or default quote account
         const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
 
-        const res = await axios.post(`${BASE_URL}/dex/quote`, {
-          source_account: quoteAccount,
-          destination_amount: destAmount,
-          source_currencies: token1?.currency === 'XRP'
-            ? [{ currency: 'XRP' }]
-            : [{ currency: token1.currency, issuer: token1.issuer }],
-          slippage: slippage / 100
-        }, { signal: quoteAbortRef.current.signal });
+        const res = await axios.post(
+          `${BASE_URL}/dex/quote`,
+          {
+            source_account: quoteAccount,
+            destination_amount: destAmount,
+            source_currencies:
+              token1?.currency === 'XRP'
+                ? [{ currency: 'XRP' }]
+                : [{ currency: token1.currency, issuer: token1.issuer }],
+            slippage: slippage / 100
+          },
+          { signal: quoteAbortRef.current.signal }
+        );
 
         if (res.data?.status === 'success' && res.data.quote) {
           setSwapQuoteApi(res.data.quote);
@@ -1207,17 +1284,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
 
     const ammFill = remaining > 0 ? remaining : 0;
-    const bestPrice = revert ? (bids[0]?.price || 0) : (asks[0]?.price || 0);
+    const bestPrice = revert ? bids[0]?.price || 0 : asks[0]?.price || 0;
     const effectivePrice = outputAmt > 0 ? inputAmt / outputAmt : 0;
     const impactPct = bestPrice > 0 ? ((effectivePrice - bestPrice) / bestPrice) * 100 : 0;
-    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? (ammFill * bestPrice * 0.006) : 0;
+    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? ammFill * bestPrice * 0.006 : 0;
 
     return {
       slippage_tolerance: `${slippage}%`,
       minimum_received: minReceived.toFixed(6),
       from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : null,
       from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : null,
-      price_impact: Math.abs(impactPct) > 0.01 ? `${impactPct > 0 ? '+' : ''}${impactPct.toFixed(2)}%` : null,
+      price_impact:
+        Math.abs(impactPct) > 0.01 ? `${impactPct > 0 ? '+' : ''}${impactPct.toFixed(2)}%` : null,
       amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
       execution_rate: (outputAmt / inputAmt).toFixed(6)
     };
@@ -1225,7 +1303,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   // Show fallback immediately, API quote when ready (no blocking)
   const swapQuoteCalc = swapQuoteApi || swapQuoteFallback;
-
 
   const onSwap = async () => {
     try {
@@ -1511,7 +1588,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       return '';
     }
   };
-
 
   // Create trustline for missing currency
   const onCreateTrustline = async (currency) => {
@@ -1993,7 +2069,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
-
   // Token Selector Functions
   useEffect(() => {
     if (panel1Open || panel2Open) {
@@ -2111,9 +2186,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         // Map category to API endpoint
         const categoryEndpoints = {
-          'trending': `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`,
-          'spotlight': `${BASE_URL}/tokens?start=0&limit=50&sortBy=assessmentScore&sortType=desc`,
-          'new': `${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc`,
+          trending: `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`,
+          spotlight: `${BASE_URL}/tokens?start=0&limit=50&sortBy=assessmentScore&sortType=desc`,
+          new: `${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc`,
           'gainers-24h': `${BASE_URL}/tokens?start=0&limit=50&sortBy=pro24h&sortType=desc`,
           'most-viewed': `${BASE_URL}/tokens?start=0&limit=50&sortBy=nginxScore&sortType=desc`
         };
@@ -2172,46 +2247,77 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       key={token.md5}
       onClick={() => handleSelectToken(token, isToken1)}
       className={cn(
-        "flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-150",
+        'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-150',
         darkMode
-          ? "hover:bg-white/[0.06] hover:border-white/[0.08] border border-transparent"
-          : "hover:bg-gray-100/80 hover:border-gray-200/60 border border-transparent"
+          ? 'hover:bg-white/[0.06] hover:border-white/[0.08] border border-transparent'
+          : 'hover:bg-gray-100/80 hover:border-gray-200/60 border border-transparent'
       )}
     >
       <img
         src={`https://s1.xrpl.to/token/${token.md5}`}
         alt={token.name}
         className="w-9 h-9 rounded-full object-cover"
-        onError={(e) => { e.target.src = '/static/alt.webp'; }}
+        onError={(e) => {
+          e.target.src = '/static/alt.webp';
+        }}
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className={cn("text-[14px] font-medium", darkMode ? "text-white" : "text-gray-900")}>
+          <span
+            className={cn('text-[14px] font-medium', darkMode ? 'text-white' : 'text-gray-900')}
+          >
             {token.user || token.name || token.currency}
           </span>
-          <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>•</span>
-          <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
+          <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>•</span>
+          <span className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}>
             ({token.name || token.currency})
           </span>
         </div>
-        <p className={cn("text-[11px] font-mono truncate mt-0.5", darkMode ? "text-white/25" : "text-gray-400")}>
+        <p
+          className={cn(
+            'text-[11px] font-mono truncate mt-0.5',
+            darkMode ? 'text-white/25' : 'text-gray-400'
+          )}
+        >
           {token.issuer || 'XRPL'}
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", darkMode ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>
+        <span
+          className={cn(
+            'px-2 py-1 text-[10px] font-semibold uppercase rounded',
+            darkMode ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-500'
+          )}
+        >
           Token
         </span>
         {(token.kyc || token.isOMCF === 'yes') && (
-          <span className={cn("flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded", darkMode ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600")}>
+          <span
+            className={cn(
+              'flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded',
+              darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'
+            )}
+          >
             ✓ Verified
           </span>
         )}
         <div className="text-right min-w-[50px]">
-          <span className={cn("text-[13px] font-medium tabular-nums", darkMode ? "text-white/70" : "text-gray-600")}>
+          <span
+            className={cn(
+              'text-[13px] font-medium tabular-nums',
+              darkMode ? 'text-white/70' : 'text-gray-600'
+            )}
+          >
             {token.holders?.toLocaleString() || '-'}
           </span>
-          <p className={cn("text-[9px] uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Holders</p>
+          <p
+            className={cn(
+              'text-[9px] uppercase tracking-wide',
+              darkMode ? 'text-white/30' : 'text-gray-400'
+            )}
+          >
+            Holders
+          </p>
         </div>
       </div>
     </div>
@@ -2227,11 +2333,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <button
         onClick={onClickToken}
         className={cn(
-          "flex items-center gap-2 rounded-xl px-3 py-2 transition-all",
-          "border-[1.5px] bg-transparent cursor-pointer",
+          'flex items-center gap-2 rounded-xl px-3 py-2 transition-all',
+          'border-[1.5px] bg-transparent cursor-pointer',
           darkMode
-            ? "border-white/[0.08] hover:border-primary/30 hover:bg-white/[0.02]"
-            : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+            ? 'border-white/[0.08] hover:border-primary/30 hover:bg-white/[0.02]'
+            : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
         )}
         style={{ background: 'transparent' }}
       >
@@ -2250,10 +2356,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </div>
           )}
         </div>
-        <span className={cn(
-          "text-[14px] font-normal",
-          darkMode ? "text-white" : "text-gray-900"
-        )}>
+        <span className={cn('text-[14px] font-normal', darkMode ? 'text-white' : 'text-gray-900')}>
           {name || 'Select'}
         </span>
         <ChevronDown size={16} className="text-primary ml-auto" />
@@ -2264,54 +2367,72 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
     <>
       {/* Backdrop overlay */}
-      <div onClick={onClose} className={cn(
-        "fixed inset-0 z-[1200]",
-        darkMode
-          ? "bg-black/70 backdrop-blur-md"
-          : "bg-white/60 backdrop-blur-md"
-      )} />
+      <div
+        onClick={onClose}
+        className={cn(
+          'fixed inset-0 z-[1200]',
+          darkMode ? 'bg-black/70 backdrop-blur-md' : 'bg-white/60 backdrop-blur-md'
+        )}
+      />
 
       {/* Modal Panel - Glassmorphism */}
-      <div className={cn(
-        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-2xl overflow-hidden max-h-[80vh] flex flex-col z-[1201]",
-        darkMode
-          ? "bg-black/80 backdrop-blur-2xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/50"
-          : "bg-white/80 backdrop-blur-2xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-300/30"
-      )}>
+      <div
+        className={cn(
+          'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-2xl overflow-hidden max-h-[80vh] flex flex-col z-[1201]',
+          darkMode
+            ? 'bg-black/80 backdrop-blur-2xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/50'
+            : 'bg-white/80 backdrop-blur-2xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-300/30'
+        )}
+      >
         {/* Search Header */}
-        <div className={cn(
-          "flex items-center gap-3 px-4 h-[52px] border-b",
-          darkMode ? "border-white/[0.06]" : "border-gray-200/60"
-        )}>
-          <Search size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
+        <div
+          className={cn(
+            'flex items-center gap-3 px-4 h-[52px] border-b',
+            darkMode ? 'border-white/[0.06]' : 'border-gray-200/60'
+          )}
+        >
+          <Search size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
           <input
             ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tokens..."
             className={cn(
-              "flex-1 bg-transparent text-[14px] outline-none",
-              darkMode ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400"
+              'flex-1 bg-transparent text-[14px] outline-none',
+              darkMode
+                ? 'text-white placeholder:text-white/40'
+                : 'text-gray-900 placeholder:text-gray-400'
             )}
           />
-          <button onClick={onClose} className={cn("p-1.5 rounded-lg transition-colors", darkMode ? "hover:bg-white/10" : "hover:bg-gray-100")}>
-            <X size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
+          <button
+            onClick={onClose}
+            className={cn(
+              'p-1.5 rounded-lg transition-colors',
+              darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+            )}
+          >
+            <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
           </button>
         </div>
 
         {/* Category Filters */}
-        <div className={cn("flex flex-wrap gap-1.5 px-4 py-2 border-b", darkMode ? "border-white/[0.06]" : "border-gray-200/60")}>
+        <div
+          className={cn(
+            'flex flex-wrap gap-1.5 px-4 py-2 border-b',
+            darkMode ? 'border-white/[0.06]' : 'border-gray-200/60'
+          )}
+        >
           {categories.slice(0, 6).map((cat) => (
             <button
               key={cat.value}
               onClick={() => setSelectedCategory(cat.value)}
               className={cn(
-                "px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors",
+                'px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors',
                 selectedCategory === cat.value
-                  ? "bg-primary text-white"
+                  ? 'bg-primary text-white'
                   : darkMode
-                    ? "text-white/50 hover:text-white hover:bg-white/[0.05]"
-                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                    ? 'text-white/50 hover:text-white hover:bg-white/[0.05]'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
               )}
             >
               {cat.label}
@@ -2320,17 +2441,35 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         </div>
 
         {/* Scrollable Content */}
-        <div className={cn(
-          "flex-1 overflow-y-auto overflow-x-hidden",
-          darkMode ? "bg-black/20" : "bg-gray-50/50"
-        )} style={{ scrollbarWidth: 'none' }}>
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto overflow-x-hidden',
+            darkMode ? 'bg-black/20' : 'bg-gray-50/50'
+          )}
+          style={{ scrollbarWidth: 'none' }}
+        >
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
             <div className="p-2">
               <div className="flex items-center gap-3 px-2 py-2">
-                <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Recent</span>
-                <div className="flex-1 h-[14px]" style={{ backgroundImage: darkMode ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
-                <button onClick={handleClearRecent} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors">
+                <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">
+                  Recent
+                </span>
+                <div
+                  className="flex-1 h-[14px]"
+                  style={{
+                    backgroundImage: darkMode
+                      ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
+                      : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                    backgroundSize: '8px 5px',
+                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                  }}
+                />
+                <button
+                  onClick={handleClearRecent}
+                  className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors"
+                >
                   Clear
                 </button>
               </div>
@@ -2342,21 +2481,55 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div className="p-2">
             <div className="flex items-center gap-3 px-2 py-2">
               <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">
-                {searchQuery ? `Results (${filteredTokens.length})` : selectedCategory === 'all' ? 'Tokens' : categories.find((c) => c.value === selectedCategory)?.label}
+                {searchQuery
+                  ? `Results (${filteredTokens.length})`
+                  : selectedCategory === 'all'
+                    ? 'Tokens'
+                    : categories.find((c) => c.value === selectedCategory)?.label}
               </span>
-              <div className="flex-1 h-[14px]" style={{ backgroundImage: darkMode ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
+              <div
+                className="flex-1 h-[14px]"
+                style={{
+                  backgroundImage: darkMode
+                    ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                  backgroundSize: '8px 5px',
+                  WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                }}
+              />
             </div>
 
             {loadingTokens ? (
               <div className="space-y-1">
                 {[...Array(8)].map((_, i) => (
-                  <div key={`skeleton-${i}`} className="flex items-center gap-3 px-2 py-3 animate-pulse">
-                    <div className={cn("w-9 h-9 rounded-full", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                  <div
+                    key={`skeleton-${i}`}
+                    className="flex items-center gap-3 px-2 py-3 animate-pulse"
+                  >
+                    <div
+                      className={cn(
+                        'w-9 h-9 rounded-full',
+                        darkMode ? 'bg-white/10' : 'bg-gray-200'
+                      )}
+                    />
                     <div className="flex-1">
-                      <div className={cn("h-3 w-[40%] rounded mb-1.5", darkMode ? "bg-white/10" : "bg-gray-200")} />
-                      <div className={cn("h-2 w-[60%] rounded", darkMode ? "bg-white/5" : "bg-gray-100")} />
+                      <div
+                        className={cn(
+                          'h-3 w-[40%] rounded mb-1.5',
+                          darkMode ? 'bg-white/10' : 'bg-gray-200'
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          'h-2 w-[60%] rounded',
+                          darkMode ? 'bg-white/5' : 'bg-gray-100'
+                        )}
+                      />
                     </div>
-                    <div className={cn("h-6 w-12 rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    <div
+                      className={cn('h-6 w-12 rounded', darkMode ? 'bg-white/10' : 'bg-gray-200')}
+                    />
                   </div>
                 ))}
               </div>
@@ -2364,7 +2537,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))
             ) : (
               <div className="py-6 text-center">
-                <p className={cn("text-[13px]", darkMode ? "text-white/40" : "text-gray-400")}>
+                <p className={cn('text-[13px]', darkMode ? 'text-white/40' : 'text-gray-400')}>
                   {searchQuery ? `No results for "${searchQuery}"` : 'No tokens available'}
                 </p>
               </div>
@@ -2392,15 +2565,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     <div className="w-full">
       {/* Token Selector Modal */}
       {(panel1Open || panel2Open) &&
-        renderTokenSelectorPanel(
-          currentSelectorToken,
-          selectorTitle,
-          isToken1Selector,
-          () => {
-            setPanel1Open(false);
-            setPanel2Open(false);
-          }
-        )}
+        renderTokenSelectorPanel(currentSelectorToken, selectorTitle, isToken1Selector, () => {
+          setPanel1Open(false);
+          setPanel2Open(false);
+        })}
 
       {/* Swap UI */}
       {!showTokenSelector && (
@@ -2409,26 +2577,41 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div className="flex items-center justify-between w-full px-1">
             <div className="flex gap-1.5">
               <button
-                onClick={() => { setOrderType('market'); setShowOrders(false); setShowOrderbook(false); }}
+                onClick={() => {
+                  setOrderType('market');
+                  setShowOrders(false);
+                  setShowOrderbook(false);
+                }}
                 className={cn(
-                  "px-5 py-2 rounded-lg text-[14px] font-medium transition-colors",
+                  'px-5 py-2 rounded-lg text-[14px] font-medium transition-colors',
                   orderType === 'market'
-                    ? "bg-primary text-white"
-                    : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                    ? 'bg-primary text-white'
+                    : darkMode
+                      ? 'text-primary/50 hover:bg-primary/10'
+                      : 'text-primary/50 hover:bg-primary/10'
                 )}
-                style={{ border: `1.5px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                style={{
+                  border: `1.5px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+                }}
               >
                 Market
               </button>
               <button
-                onClick={() => { setOrderType('limit'); setShowOrders(false); }}
+                onClick={() => {
+                  setOrderType('limit');
+                  setShowOrders(false);
+                }}
                 className={cn(
-                  "px-5 py-2 rounded-lg text-[14px] font-medium transition-colors",
+                  'px-5 py-2 rounded-lg text-[14px] font-medium transition-colors',
                   orderType === 'limit'
-                    ? "bg-primary text-white"
-                    : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                    ? 'bg-primary text-white'
+                    : darkMode
+                      ? 'text-primary/50 hover:bg-primary/10'
+                      : 'text-primary/50 hover:bg-primary/10'
                 )}
-                style={{ border: `1.5px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                style={{
+                  border: `1.5px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+                }}
               >
                 Limit
               </button>
@@ -2437,8 +2620,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors",
-                  darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors',
+                  darkMode
+                    ? 'text-primary/50 hover:bg-primary/10'
+                    : 'text-primary/50 hover:bg-primary/10'
                 )}
               >
                 <Settings size={14} />
@@ -2448,8 +2633,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 onClick={handleShareUrl}
                 aria-label="Share swap URL"
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-colors",
-                  darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                  'px-3 py-2 rounded-lg transition-colors',
+                  darkMode
+                    ? 'text-primary/50 hover:bg-primary/10'
+                    : 'text-primary/50 hover:bg-primary/10'
                 )}
               >
                 <Share2 size={14} />
@@ -2461,13 +2648,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           {/* Horizontal Two-Card Layout - Futuristic Style */}
           <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full">
             {/* First Token Card - You Pay */}
-            <div className={cn(
-              "flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]",
-              focusTop
-                ? "border-primary"
-                : darkMode ? "border-white/[0.06]" : "border-gray-200/60",
-              darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
-            )}>
+            <div
+              className={cn(
+                'flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]',
+                focusTop
+                  ? 'border-primary'
+                  : darkMode
+                    ? 'border-white/[0.06]'
+                    : 'border-gray-200/60',
+                darkMode ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+              )}
+            >
               {/* Cyber corner accents - hidden on mobile */}
               <div className="hidden md:block absolute top-0 left-0 w-16 h-[2px] bg-primary" />
               <div className="hidden md:block absolute top-0 left-0 h-16 w-[2px] bg-primary" />
@@ -2482,7 +2673,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
                     <img
-                      src={token1?.md5 ? `https://s1.xrpl.to/token/${token1.md5}` : '/static/alt.webp'}
+                      src={
+                        token1?.md5 ? `https://s1.xrpl.to/token/${token1.md5}` : '/static/alt.webp'
+                      }
                       width={72}
                       height={72}
                       alt={token1?.name || 'Token'}
@@ -2490,20 +2683,26 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
-                  <span className={cn(
-                    "text-2xl md:text-3xl font-normal tracking-wide",
-                    darkMode ? "text-primary" : "text-primary"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-2xl md:text-3xl font-normal tracking-wide',
+                      darkMode ? 'text-primary' : 'text-primary'
+                    )}
+                  >
                     {token1?.name || token1?.currency || 'Select'}
                   </span>
                 </button>
               </div>
 
               {/* Amount Input */}
-              <div className={cn(
-                "rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]",
-                darkMode ? "bg-white/[0.03] border-white/[0.06]" : "bg-gray-100/50 border-gray-200/60"
-              )}>
+              <div
+                className={cn(
+                  'rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]',
+                  darkMode
+                    ? 'bg-white/[0.03] border-white/[0.06]'
+                    : 'bg-gray-100/50 border-gray-200/60'
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <input
                     ref={amount1Ref}
@@ -2515,15 +2714,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     onFocus={() => setFocusTop(true)}
                     onBlur={() => setFocusTop(false)}
                     className={cn(
-                      "flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono",
-                      darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
+                      'flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono',
+                      darkMode
+                        ? 'text-white placeholder:text-white/30'
+                        : 'text-gray-900 placeholder:text-gray-400'
                     )}
                   />
                   <button
                     onClick={() => setPanel1Open(true)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0",
-                      darkMode ? "bg-white/[0.06] text-white/80 hover:bg-white/10" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0',
+                      darkMode
+                        ? 'bg-white/[0.06] text-white/80 hover:bg-white/10'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     )}
                   >
                     {token1?.name || token1?.currency || 'Select'}
@@ -2536,24 +2739,35 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <div className="flex items-center justify-end mt-3 relative z-10">
                 {isLoggedIn && accountPairBalance ? (
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
-                      Bal: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
+                    <span
+                      className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}
+                    >
+                      Bal:{' '}
+                      {fNumber(
+                        revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value
+                      )}
                     </span>
                     <button
                       onClick={() => {
-                        const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
+                        const balance = revert
+                          ? accountPairBalance?.curr2.value
+                          : accountPairBalance?.curr1.value;
                         handleChangeAmount1({ target: { value: balance.toString() } });
                       }}
                       className={cn(
-                        "px-2.5 py-1 rounded text-[11px] font-medium transition-colors border",
-                        darkMode ? "text-white/60 border-white/10 hover:bg-white/5" : "text-gray-600 border-gray-300 hover:bg-gray-100"
+                        'px-2.5 py-1 rounded text-[11px] font-medium transition-colors border',
+                        darkMode
+                          ? 'text-white/60 border-white/10 hover:bg-white/5'
+                          : 'text-gray-600 border-gray-300 hover:bg-gray-100'
                       )}
                     >
                       MAX
                     </button>
                   </div>
                 ) : (
-                  <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
+                  <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                    &nbsp;
+                  </span>
                 )}
               </div>
             </div>
@@ -2565,23 +2779,32 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 disabled={isSwitching}
                 title="Switch currencies (Alt + S)"
                 className={cn(
-                  "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all border-[1.5px]",
-                  darkMode ? "bg-white/[0.04] border-white/[0.08] hover:bg-primary/20 hover:border-primary" : "bg-gray-100 border-gray-200 hover:bg-primary/10 hover:border-primary",
-                  isSwitching && "rotate-180"
+                  'w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all border-[1.5px]',
+                  darkMode
+                    ? 'bg-white/[0.04] border-white/[0.08] hover:bg-primary/20 hover:border-primary'
+                    : 'bg-gray-100 border-gray-200 hover:bg-primary/10 hover:border-primary',
+                  isSwitching && 'rotate-180'
                 )}
               >
-                <ArrowLeftRight size={20} className={darkMode ? "text-white/60" : "text-gray-500"} />
+                <ArrowLeftRight
+                  size={20}
+                  className={darkMode ? 'text-white/60' : 'text-gray-500'}
+                />
               </button>
             </div>
 
             {/* Second Token Card - You Receive */}
-            <div className={cn(
-              "flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]",
-              focusBottom
-                ? "border-primary"
-                : darkMode ? "border-white/[0.06]" : "border-gray-200/60",
-              darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
-            )}>
+            <div
+              className={cn(
+                'flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]',
+                focusBottom
+                  ? 'border-primary'
+                  : darkMode
+                    ? 'border-white/[0.06]'
+                    : 'border-gray-200/60',
+                darkMode ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+              )}
+            >
               {/* Cyber corner accents - hidden on mobile */}
               <div className="hidden md:block absolute top-0 right-0 w-16 h-[2px] bg-primary" />
               <div className="hidden md:block absolute top-0 right-0 h-16 w-[2px] bg-primary" />
@@ -2596,7 +2819,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
                     <img
-                      src={token2?.md5 ? `https://s1.xrpl.to/token/${token2.md5}` : '/static/alt.webp'}
+                      src={
+                        token2?.md5 ? `https://s1.xrpl.to/token/${token2.md5}` : '/static/alt.webp'
+                      }
                       width={72}
                       height={72}
                       alt={token2?.name || 'Token'}
@@ -2604,20 +2829,26 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
-                  <span className={cn(
-                    "text-2xl md:text-3xl font-normal tracking-wide",
-                    darkMode ? "text-primary" : "text-primary"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-2xl md:text-3xl font-normal tracking-wide',
+                      darkMode ? 'text-primary' : 'text-primary'
+                    )}
+                  >
                     {token2?.name || token2?.currency || 'Select'}
                   </span>
                 </button>
               </div>
 
               {/* Amount Input */}
-              <div className={cn(
-                "rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]",
-                darkMode ? "bg-white/[0.03] border-white/[0.06]" : "bg-gray-100/50 border-gray-200/60"
-              )}>
+              <div
+                className={cn(
+                  'rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]',
+                  darkMode
+                    ? 'bg-white/[0.03] border-white/[0.06]'
+                    : 'bg-gray-100/50 border-gray-200/60'
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
@@ -2628,15 +2859,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     onFocus={() => setFocusBottom(true)}
                     onBlur={() => setFocusBottom(false)}
                     className={cn(
-                      "flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono",
-                      darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
+                      'flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono',
+                      darkMode
+                        ? 'text-white placeholder:text-white/30'
+                        : 'text-gray-900 placeholder:text-gray-400'
                     )}
                   />
                   <button
                     onClick={() => setPanel2Open(true)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0",
-                      darkMode ? "bg-white/[0.06] text-white/80 hover:bg-white/10" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0',
+                      darkMode
+                        ? 'bg-white/[0.06] text-white/80 hover:bg-white/10'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     )}
                   >
                     {token2?.name || token2?.currency || 'Select'}
@@ -2648,11 +2883,16 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               {/* Balance info */}
               <div className="flex items-center justify-end mt-3 relative z-10">
                 {isLoggedIn && accountPairBalance ? (
-                  <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
-                    Bal: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
+                  <span className={cn('text-[12px]', darkMode ? 'text-white/40' : 'text-gray-500')}>
+                    Bal:{' '}
+                    {fNumber(
+                      revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value
+                    )}
                   </span>
                 ) : (
-                  <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
+                  <span className={cn('text-[12px]', darkMode ? 'text-white/30' : 'text-gray-400')}>
+                    &nbsp;
+                  </span>
                 )}
               </div>
             </div>
@@ -2662,441 +2902,638 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div className="w-full rounded-xl relative max-w-[560px]">
             <div className="flex flex-col gap-4">
               {/* Left side - Controls */}
-              <div className={cn(
-                "flex-1 flex flex-col",
-                darkMode ? "bg-transparent" : "bg-transparent"
-              )}>
-            {/* Settings Modal */}
-            {showSettingsModal && (
               <div
                 className={cn(
-                  "fixed inset-0 z-[1200] flex items-center justify-center",
-                  darkMode ? "bg-black/70 backdrop-blur-md" : "bg-white/60 backdrop-blur-md"
+                  'flex-1 flex flex-col',
+                  darkMode ? 'bg-transparent' : 'bg-transparent'
                 )}
-                onClick={() => setShowSettingsModal(false)}
               >
-                <div
-                  onClick={e => e.stopPropagation()}
-                  className={cn(
-                    "w-[320px] rounded-2xl border-[1.5px] p-5",
-                    darkMode
-                      ? "bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50"
-                      : "bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`text-[15px] font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Settings</span>
-                    <button onClick={() => setShowSettingsModal(false)} className="p-1.5 rounded-lg hover:bg-white/10">
-                      <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
-                    </button>
-                  </div>
-
-                  {/* Max Slippage Section */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}>Max Slippage</span>
-                      <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
-                    </div>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 5].map((val) => (
-                        <button
-                          key={val}
-                          onClick={() => setSlippage(val)}
-                          className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
-                            slippage === val
-                              ? 'bg-primary text-white border-primary'
-                              : darkMode ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                          }`}
-                        >
-                          {val}%
-                        </button>
-                      ))}
-                      <div className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={slippage}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9.]/g, '');
-                            if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
-                              setSlippage(val === '' ? '' : parseFloat(val) || val);
-                            }
-                          }}
-                          className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
-                        />
-                        <span className={`text-[12px] ${darkMode ? 'text-white/40' : 'text-gray-400'}`}>%</span>
-                      </div>
-                    </div>
-                    {slippage >= 4 && (
-                      <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        <span className="text-[11px] text-amber-500">High slippage may cause front-running</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Network Fee Section */}
-                  <div className="mb-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}>Network Fee</span>
-                      <span className={`text-[10px] ${darkMode ? 'text-white/25' : 'text-gray-400'}`}>(drops)</span>
-                      <div className="flex-1 h-px" style={{ backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`, backgroundSize: '6px 1px' }} />
-                    </div>
-                    <div className="flex gap-2">
-                      {[12, 15, 20, 50].map((val) => (
-                        <button
-                          key={val}
-                          onClick={() => setTxFee(String(val))}
-                          className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
-                            txFee === String(val)
-                              ? 'bg-primary text-white border-primary'
-                              : darkMode ? 'border-white/10 text-white/60 hover:border-primary/50' : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                          }`}
-                        >
-                          {val}
-                        </button>
-                      ))}
-                      <div className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={txFee}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, '');
-                            setTxFee(val);
-                          }}
-                          className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
-                        />
-                      </div>
-                    </div>
-                    <p className={`text-[10px] mt-2 ${darkMode ? 'text-white/30' : 'text-gray-400'}`}>Higher fees = priority during congestion</p>
-                    {parseInt(txFee) >= 50 && (
-                      <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        <span className="text-[11px] text-amber-500">Only needed during extreme congestion</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => setShowSettingsModal(false)}
-                    className="w-full py-3 rounded-lg bg-primary text-white text-[14px] font-medium border-none cursor-pointer hover:bg-primary/90 transition-colors"
-                  >
-                    Save Settings
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Market Order UI - Quote Summary */}
-            {orderType === 'market' && (
-              <>
-                {/* Swap Quote Summary */}
-                {amount1 && parseFloat(amount1) > 0 && (
-                  <div className={cn(
-                    "mb-4 rounded-lg p-2.5 space-y-1 relative",
-                    darkMode ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-200"
-                  )}>
-                    {/* Rate - show when we have both amounts */}
-                    {amount2 && parseFloat(amount2) > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                          Rate {quoteLoading && <span className="opacity-50">•••</span>}
-                        </span>
-                        <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                          1 {token1?.name || token1?.currency} = {(() => {
-                            const srcVal = parseFloat(amount1);
-                            const dstVal = parseFloat(amount2);
-                            if (srcVal > 0 && dstVal > 0) {
-                              const rate = dstVal / srcVal;
-                              if (rate >= 1000000) return fNumber(rate);
-                              if (rate >= 1) return rate.toFixed(4);
-                              if (rate >= 0.0001) return rate.toFixed(8);
-                              return rate.toExponential(4);
-                            }
-                            return '—';
-                          })()} {token2?.name || token2?.currency}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Min Received - show when we have quote data */}
-                    {swapQuoteCalc && amount2 && (
-                      <div className="flex items-center justify-between">
-                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                          Min received
-                        </span>
-                        <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                          {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* AMM Fee - only show if present */}
-                    {swapQuoteCalc?.amm_pool_fee && (
-                      <div className="flex items-center justify-between">
-                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                          AMM fee {swapQuoteCalc.amm_trading_fee_bps ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)` : ''}
-                        </span>
-                        <span className="text-[10px] font-mono text-orange-400">
-                          {swapQuoteCalc.amm_pool_fee}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Network Fee - always show */}
-                    <div className="flex items-center justify-between">
-                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                        Network Fee
-                      </span>
-                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                        ~0.000012 XRP
-                      </span>
-                    </div>
-
-                    {/* Paths count if > 1 */}
-                    {swapQuoteCalc?.paths_count > 1 && (
-                      <div className={cn("text-[9px] text-right", darkMode ? "text-white/40" : "text-gray-400")}>
-                        via {swapQuoteCalc.paths_count} paths
-                      </div>
-                    )}
-
-                    {/* Trustline Warning */}
-                    {quoteRequiresTrustline && (
-                      <div className="mt-1.5 p-1.5 rounded bg-orange-500/10 border border-orange-500/20">
-                        <span className="text-[10px] text-orange-400">
-                          Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Limit Order UI */}
-            {orderType === 'limit' && (
-              <div className="space-y-3 mb-4">
-                {/* Limit Price Section */}
-                <div className={cn(
-                  "rounded-xl p-3",
-                  darkMode ? "bg-white/[0.03]" : "bg-gray-50"
-                )}
-                style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-white/40" : "text-gray-500")}>
-                      Limit Price ({token2?.name || token2?.currency} per {token1?.name || token1?.currency})
-                    </span>
-                    {/* Quick adjust buttons inline */}
-                    <div className="flex items-center gap-1">
-                      {[
-                        { label: '-1%', mult: 0.99 },
-                        { label: 'Mid', mult: 'mid' },
-                        { label: '+1%', mult: 1.01 }
-                      ].map((adj) => (
-                        <button
-                          key={adj.label}
-                          onClick={() => {
-                            const midPrice = (bids[0]?.price + asks[0]?.price) / 2;
-                            if (adj.mult === 'mid') {
-                              setLimitPrice(midPrice.toFixed(6));
-                            } else {
-                              const basePrice = parseFloat(limitPrice) || midPrice;
-                              setLimitPrice((basePrice * adj.mult).toFixed(6));
-                            }
-                          }}
-                          className={cn(
-                            "px-2 py-0.5 rounded text-[10px] transition-colors",
-                            darkMode
-                              ? "text-primary/60 hover:text-primary hover:bg-primary/10"
-                              : "text-primary/70 hover:text-primary hover:bg-primary/10"
-                          )}
-                        >
-                          {adj.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={limitPrice}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '.') { setLimitPrice('0.'); return; }
-                      if (!isNaN(Number(val)) || val === '') setLimitPrice(val);
-                    }}
+                {/* Settings Modal */}
+                {showSettingsModal && (
+                  <div
                     className={cn(
-                      "w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center",
-                      darkMode
-                        ? "text-white placeholder:text-white/20"
-                        : "text-gray-900 placeholder:text-gray-400"
+                      'fixed inset-0 z-[1200] flex items-center justify-center',
+                      darkMode ? 'bg-black/70 backdrop-blur-md' : 'bg-white/60 backdrop-blur-md'
                     )}
-                    style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}
-                  />
-
-                  {/* Best Bid / Spread / Best Ask - Compact Row */}
-                  {(bids[0] || asks[0]) && (
-                    <div className="flex items-center justify-between mt-2 text-[11px] font-mono">
-                      <button
-                        onClick={() => bids[0] && setLimitPrice(bids[0].price.toFixed(6))}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded transition-colors",
-                          bids[0] ? "hover:bg-green-500/10 cursor-pointer" : "opacity-40 cursor-default"
-                        )}
-                      >
-                        <span className={cn("text-[9px] uppercase", darkMode ? "text-white/30" : "text-gray-400")}>Bid</span>
-                        <span className="text-green-500">{bids[0]?.price.toFixed(4) || '-'}</span>
-                      </button>
-
-                      <span className={cn("text-[10px]", darkMode ? "text-white/30" : "text-gray-400")}>
-                        {bids[0] && asks[0] ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%` : '-'}
-                      </span>
-
-                      <button
-                        onClick={() => asks[0] && setLimitPrice(asks[0].price.toFixed(6))}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded transition-colors",
-                          asks[0] ? "hover:bg-red-500/10 cursor-pointer" : "opacity-40 cursor-default"
-                        )}
-                      >
-                        <span className="text-red-500">{asks[0]?.price.toFixed(4) || '-'}</span>
-                        <span className={cn("text-[9px] uppercase", darkMode ? "text-white/30" : "text-gray-400")}>Ask</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Price difference indicator */}
-                  {limitPrice && parseFloat(limitPrice) > 0 && (() => {
-                    const limit = parseFloat(limitPrice);
-                    const currentPrice = !revert ? (asks[0]?.price || 0) : (bids[0]?.price || 0);
-                    if (currentPrice <= 0) return null;
-                    const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
-                    const isAbove = priceDiff > 0;
-                    if (Math.abs(priceDiff) < 0.01) return null;
-                    return (
-                      <div className={cn(
-                        "mt-2 py-1.5 rounded text-[10px] text-center",
-                        isAbove ? "text-red-400 bg-red-500/10" : "text-green-400 bg-green-500/10"
-                      )}>
-                        {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} market
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Order Expiration - Segmented Control */}
-                <div
-                  className={cn(
-                    "flex rounded-lg overflow-hidden",
-                    darkMode ? "bg-white/[0.03]" : "bg-gray-100"
-                  )}
-                  style={{ border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
-                >
-                  {[
-                    { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
-                    { value: '1h', label: '1H', title: '1 Hour' },
-                    { value: '24h', label: '24H', title: '24 Hours' },
-                    { value: '7d', label: '7D', title: '7 Days' }
-                  ].map((exp, idx) => (
-                    <button
-                      key={exp.value}
-                      title={exp.title}
-                      onClick={() => setOrderExpiry(exp.value)}
+                    onClick={() => setShowSettingsModal(false)}
+                  >
+                    <div
+                      onClick={(e) => e.stopPropagation()}
                       className={cn(
-                        "flex-1 py-2 text-[11px] font-medium transition-all relative",
-                        orderExpiry === exp.value
-                          ? "text-primary"
-                          : darkMode
-                            ? "text-white/40 hover:text-white/70"
-                            : "text-gray-400 hover:text-gray-600"
+                        'w-[320px] rounded-2xl border-[1.5px] p-5',
+                        darkMode
+                          ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
+                          : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
                       )}
                     >
-                      {exp.label}
-                      {orderExpiry === exp.value && (
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-primary" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <span
+                          className={`text-[15px] font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                        >
+                          Settings
+                        </span>
+                        <button
+                          onClick={() => setShowSettingsModal(false)}
+                          className="p-1.5 rounded-lg hover:bg-white/10"
+                        >
+                          <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
+                        </button>
+                      </div>
 
-                {/* Toggle Order Book */}
-                <button
-                  onClick={() => setShowOrderbook(!showOrderbook)}
-                  className={cn(
-                    "w-full py-2 rounded-lg text-[11px] transition-colors flex items-center justify-center gap-1.5",
-                    showOrderbook
-                      ? "bg-primary/10 text-primary"
-                      : darkMode
-                        ? "text-white/40 hover:text-white/60 hover:bg-white/5"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                  )}
-                  style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}
-                >
-                  <List size={12} />
-                  {showOrderbook ? 'Hide' : 'Show'} Order Book
-                </button>
-              </div>
-            )}
-
-            {/* Price Impact for Limit Orders (market orders show it in quote summary) */}
-            {orderType === 'limit' && amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
-              <div className={cn(
-                "flex items-center justify-between mb-4 px-3 py-2 rounded-lg",
-                darkMode ? "bg-white/5" : "bg-gray-100"
-              )}
-              style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}` }}>
-                <span className={cn("text-[11px] font-mono", darkMode ? "text-primary/50" : "text-primary/50")}>
-                  Price Impact
-                </span>
-                <span className="text-[11px] font-mono" style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}>
-                  {priceImpact > 0 ? '+' : ''}{priceImpact}%
-                </span>
-              </div>
-            )}
-
-
-            {/* Debug Panel - Hidden on mobile */}
-            {debugInfo && (
-              <div className={cn("mb-4 p-2 rounded-lg border font-mono text-[9px] hidden sm:block", darkMode ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
-                <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
-                <div className="space-y-0.5">
-                  <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
-                  <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-                  <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-                  <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
-                </div>
-              </div>
-            )}
-
-            {/* Action Button */}
-            {accountProfile && accountProfile.account ? (
-              <button
-                onClick={handlePlaceOrder}
-                disabled={
-                  isProcessing === 1 ||
-                  !isLoggedIn ||
-                  (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                }
-                className={cn(
-                  "w-full py-3 rounded-xl text-[14px] font-medium transition-all",
-                  isProcessing === 1 || !isLoggedIn || (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                    ? darkMode
-                      ? "bg-white/5 text-white/30 cursor-not-allowed"
-                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-primary text-white hover:bg-primary/90"
-                )}
-              >
-                {handleMsg()}
-              </button>
-            ) : (
-              <ConnectWallet text="Connect Wallet" fullWidth />
-            )}
-              </div>
-
+                      {/* Max Slippage Section */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span
+                            className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}
+                          >
+                            Max Slippage
+                          </span>
+                          <div
+                            className="flex-1 h-px"
+                            style={{
+                              backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                              backgroundSize: '6px 1px'
+                            }}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 5].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setSlippage(val)}
+                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                                slippage === val
+                                  ? 'bg-primary text-white border-primary'
+                                  : darkMode
+                                    ? 'border-white/10 text-white/60 hover:border-primary/50'
+                                    : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                              }`}
+                            >
+                              {val}%
+                            </button>
+                          ))}
+                          <div
+                            className={`flex items-center justify-center h-9 px-3 min-w-[56px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}
+                          >
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={slippage}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9.]/g, '');
+                                if (
+                                  val === '' ||
+                                  (!isNaN(parseFloat(val)) &&
+                                    parseFloat(val) >= 0 &&
+                                    parseFloat(val) <= 25)
+                                ) {
+                                  setSlippage(val === '' ? '' : parseFloat(val) || val);
+                                }
+                              }}
+                              className={`w-5 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                            />
+                            <span
+                              className={`text-[12px] ${darkMode ? 'text-white/40' : 'text-gray-400'}`}
+                            >
+                              %
+                            </span>
                           </div>
+                        </div>
+                        {slippage >= 4 && (
+                          <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-amber-500/10">
+                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            <span className="text-[11px] text-amber-500">
+                              High slippage may cause front-running
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Network Fee Section */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span
+                            className={`text-[11px] font-medium uppercase tracking-wide ${darkMode ? 'text-white/40' : 'text-gray-500'}`}
+                          >
+                            Network Fee
+                          </span>
+                          <span
+                            className={`text-[10px] ${darkMode ? 'text-white/25' : 'text-gray-400'}`}
+                          >
+                            (drops)
+                          </span>
+                          <div
+                            className="flex-1 h-px"
+                            style={{
+                              backgroundImage: `radial-gradient(circle, ${darkMode ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.3)'} 1px, transparent 1px)`,
+                              backgroundSize: '6px 1px'
+                            }}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          {[12, 15, 20, 50].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setTxFee(String(val))}
+                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
+                                txFee === String(val)
+                                  ? 'bg-primary text-white border-primary'
+                                  : darkMode
+                                    ? 'border-white/10 text-white/60 hover:border-primary/50'
+                                    : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                              }`}
+                            >
+                              {val}
+                            </button>
+                          ))}
+                          <div
+                            className={`flex items-center h-9 px-3 min-w-[60px] rounded-lg border-[1.5px] ${darkMode ? 'border-white/10' : 'border-gray-200'}`}
+                          >
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={txFee}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                setTxFee(val);
+                              }}
+                              className={`w-8 bg-transparent border-none outline-none text-[13px] font-medium text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                            />
+                          </div>
+                        </div>
+                        <p
+                          className={`text-[10px] mt-2 ${darkMode ? 'text-white/30' : 'text-gray-400'}`}
+                        >
+                          Higher fees = priority during congestion
+                        </p>
+                        {parseInt(txFee) >= 50 && (
+                          <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-amber-500/10">
+                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            <span className="text-[11px] text-amber-500">
+                              Only needed during extreme congestion
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => setShowSettingsModal(false)}
+                        className="w-full py-3 rounded-lg bg-primary text-white text-[14px] font-medium border-none cursor-pointer hover:bg-primary/90 transition-colors"
+                      >
+                        Save Settings
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Market Order UI - Quote Summary */}
+                {orderType === 'market' && (
+                  <>
+                    {/* Swap Quote Summary */}
+                    {amount1 && parseFloat(amount1) > 0 && (
+                      <div
+                        className={cn(
+                          'mb-4 rounded-lg p-2.5 space-y-1 relative',
+                          darkMode
+                            ? 'bg-white/[0.02] border border-white/[0.06]'
+                            : 'bg-gray-50 border border-gray-200'
+                        )}
+                      >
+                        {/* Rate - show when we have both amounts */}
+                        {amount2 && parseFloat(amount2) > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                'text-[10px]',
+                                darkMode ? 'text-white/50' : 'text-gray-500'
+                              )}
+                            >
+                              Rate {quoteLoading && <span className="opacity-50">•••</span>}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-[10px] font-mono',
+                                darkMode ? 'text-white/80' : 'text-gray-700'
+                              )}
+                            >
+                              1 {token1?.name || token1?.currency} ={' '}
+                              {(() => {
+                                const srcVal = parseFloat(amount1);
+                                const dstVal = parseFloat(amount2);
+                                if (srcVal > 0 && dstVal > 0) {
+                                  const rate = dstVal / srcVal;
+                                  if (rate >= 1000000) return fNumber(rate);
+                                  if (rate >= 1) return rate.toFixed(4);
+                                  if (rate >= 0.0001) return rate.toFixed(8);
+                                  return rate.toExponential(4);
+                                }
+                                return '—';
+                              })()}{' '}
+                              {token2?.name || token2?.currency}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Min Received - show when we have quote data */}
+                        {swapQuoteCalc && amount2 && (
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                'text-[10px]',
+                                darkMode ? 'text-white/50' : 'text-gray-500'
+                              )}
+                            >
+                              Min received
+                            </span>
+                            <span
+                              className={cn(
+                                'text-[10px] font-mono',
+                                darkMode ? 'text-white/80' : 'text-gray-700'
+                              )}
+                            >
+                              {fNumber(swapQuoteCalc.minimum_received)}{' '}
+                              {token2?.name || token2?.currency}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* AMM Fee - only show if present */}
+                        {swapQuoteCalc?.amm_pool_fee && (
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                'text-[10px]',
+                                darkMode ? 'text-white/50' : 'text-gray-500'
+                              )}
+                            >
+                              AMM fee{' '}
+                              {swapQuoteCalc.amm_trading_fee_bps
+                                ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)`
+                                : ''}
+                            </span>
+                            <span className="text-[10px] font-mono text-orange-400">
+                              {swapQuoteCalc.amm_pool_fee}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Network Fee - always show */}
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={cn(
+                              'text-[10px]',
+                              darkMode ? 'text-white/50' : 'text-gray-500'
+                            )}
+                          >
+                            Network Fee
+                          </span>
+                          <span
+                            className={cn(
+                              'text-[10px] font-mono',
+                              darkMode ? 'text-white/80' : 'text-gray-700'
+                            )}
+                          >
+                            ~0.000012 XRP
+                          </span>
+                        </div>
+
+                        {/* Paths count if > 1 */}
+                        {swapQuoteCalc?.paths_count > 1 && (
+                          <div
+                            className={cn(
+                              'text-[9px] text-right',
+                              darkMode ? 'text-white/40' : 'text-gray-400'
+                            )}
+                          >
+                            via {swapQuoteCalc.paths_count} paths
+                          </div>
+                        )}
+
+                        {/* Trustline Warning */}
+                        {quoteRequiresTrustline && (
+                          <div className="mt-1.5 p-1.5 rounded bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-[10px] text-orange-400">
+                              Trustline required for{' '}
+                              {getCurrencyDisplayName(
+                                quoteRequiresTrustline.currency,
+                                token2?.name
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Limit Order UI */}
+                {orderType === 'limit' && (
+                  <div className="space-y-3 mb-4">
+                    {/* Limit Price Section */}
+                    <div
+                      className={cn('rounded-xl p-3', darkMode ? 'bg-white/[0.03]' : 'bg-gray-50')}
+                      style={{
+                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span
+                          className={cn(
+                            'text-[11px] uppercase tracking-wide',
+                            darkMode ? 'text-white/40' : 'text-gray-500'
+                          )}
+                        >
+                          Limit Price ({token2?.name || token2?.currency} per{' '}
+                          {token1?.name || token1?.currency})
+                        </span>
+                        {/* Quick adjust buttons inline */}
+                        <div className="flex items-center gap-1">
+                          {[
+                            { label: '-1%', mult: 0.99 },
+                            { label: 'Mid', mult: 'mid' },
+                            { label: '+1%', mult: 1.01 }
+                          ].map((adj) => (
+                            <button
+                              key={adj.label}
+                              onClick={() => {
+                                const midPrice = (bids[0]?.price + asks[0]?.price) / 2;
+                                if (adj.mult === 'mid') {
+                                  setLimitPrice(midPrice.toFixed(6));
+                                } else {
+                                  const basePrice = parseFloat(limitPrice) || midPrice;
+                                  setLimitPrice((basePrice * adj.mult).toFixed(6));
+                                }
+                              }}
+                              className={cn(
+                                'px-2 py-0.5 rounded text-[10px] transition-colors',
+                                darkMode
+                                  ? 'text-primary/60 hover:text-primary hover:bg-primary/10'
+                                  : 'text-primary/70 hover:text-primary hover:bg-primary/10'
+                              )}
+                            >
+                              {adj.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        value={limitPrice}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '.') {
+                            setLimitPrice('0.');
+                            return;
+                          }
+                          if (!isNaN(Number(val)) || val === '') setLimitPrice(val);
+                        }}
+                        className={cn(
+                          'w-full px-3 py-2.5 rounded-lg text-[18px] font-mono bg-transparent outline-none transition-colors text-center',
+                          darkMode
+                            ? 'text-white placeholder:text-white/20'
+                            : 'text-gray-900 placeholder:text-gray-400'
+                        )}
+                        style={{
+                          border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+                        }}
+                      />
+
+                      {/* Best Bid / Spread / Best Ask - Compact Row */}
+                      {(bids[0] || asks[0]) && (
+                        <div className="flex items-center justify-between mt-2 text-[11px] font-mono">
+                          <button
+                            onClick={() => bids[0] && setLimitPrice(bids[0].price.toFixed(6))}
+                            className={cn(
+                              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+                              bids[0]
+                                ? 'hover:bg-green-500/10 cursor-pointer'
+                                : 'opacity-40 cursor-default'
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                'text-[9px] uppercase',
+                                darkMode ? 'text-white/30' : 'text-gray-400'
+                              )}
+                            >
+                              Bid
+                            </span>
+                            <span className="text-green-500">
+                              {bids[0]?.price.toFixed(4) || '-'}
+                            </span>
+                          </button>
+
+                          <span
+                            className={cn(
+                              'text-[10px]',
+                              darkMode ? 'text-white/30' : 'text-gray-400'
+                            )}
+                          >
+                            {bids[0] && asks[0]
+                              ? `${(((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)}%`
+                              : '-'}
+                          </span>
+
+                          <button
+                            onClick={() => asks[0] && setLimitPrice(asks[0].price.toFixed(6))}
+                            className={cn(
+                              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+                              asks[0]
+                                ? 'hover:bg-red-500/10 cursor-pointer'
+                                : 'opacity-40 cursor-default'
+                            )}
+                          >
+                            <span className="text-red-500">{asks[0]?.price.toFixed(4) || '-'}</span>
+                            <span
+                              className={cn(
+                                'text-[9px] uppercase',
+                                darkMode ? 'text-white/30' : 'text-gray-400'
+                              )}
+                            >
+                              Ask
+                            </span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Price difference indicator */}
+                      {limitPrice &&
+                        parseFloat(limitPrice) > 0 &&
+                        (() => {
+                          const limit = parseFloat(limitPrice);
+                          const currentPrice = !revert ? asks[0]?.price || 0 : bids[0]?.price || 0;
+                          if (currentPrice <= 0) return null;
+                          const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
+                          const isAbove = priceDiff > 0;
+                          if (Math.abs(priceDiff) < 0.01) return null;
+                          return (
+                            <div
+                              className={cn(
+                                'mt-2 py-1.5 rounded text-[10px] text-center',
+                                isAbove
+                                  ? 'text-red-400 bg-red-500/10'
+                                  : 'text-green-400 bg-green-500/10'
+                              )}
+                            >
+                              {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}%{' '}
+                              {isAbove ? 'above' : 'below'} market
+                            </div>
+                          );
+                        })()}
+                    </div>
+
+                    {/* Order Expiration - Segmented Control */}
+                    <div
+                      className={cn(
+                        'flex rounded-lg overflow-hidden',
+                        darkMode ? 'bg-white/[0.03]' : 'bg-gray-100'
+                      )}
+                      style={{
+                        border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                      }}
+                    >
+                      {[
+                        { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
+                        { value: '1h', label: '1H', title: '1 Hour' },
+                        { value: '24h', label: '24H', title: '24 Hours' },
+                        { value: '7d', label: '7D', title: '7 Days' }
+                      ].map((exp, idx) => (
+                        <button
+                          key={exp.value}
+                          title={exp.title}
+                          onClick={() => setOrderExpiry(exp.value)}
+                          className={cn(
+                            'flex-1 py-2 text-[11px] font-medium transition-all relative',
+                            orderExpiry === exp.value
+                              ? 'text-primary'
+                              : darkMode
+                                ? 'text-white/40 hover:text-white/70'
+                                : 'text-gray-400 hover:text-gray-600'
+                          )}
+                        >
+                          {exp.label}
+                          {orderExpiry === exp.value && (
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-primary" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Toggle Order Book */}
+                    <button
+                      onClick={() => setShowOrderbook(!showOrderbook)}
+                      className={cn(
+                        'w-full py-2 rounded-lg text-[11px] transition-colors flex items-center justify-center gap-1.5',
+                        showOrderbook
+                          ? 'bg-primary/10 text-primary'
+                          : darkMode
+                            ? 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      )}
+                      style={{
+                        border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                      }}
+                    >
+                      <List size={12} />
+                      {showOrderbook ? 'Hide' : 'Show'} Order Book
+                    </button>
+                  </div>
+                )}
+
+                {/* Price Impact for Limit Orders (market orders show it in quote summary) */}
+                {orderType === 'limit' && amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
+                  <div
+                    className={cn(
+                      'flex items-center justify-between mb-4 px-3 py-2 rounded-lg',
+                      darkMode ? 'bg-white/5' : 'bg-gray-100'
+                    )}
+                    style={{
+                      border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}`
+                    }}
+                  >
+                    <span
+                      className={cn(
+                        'text-[11px] font-mono',
+                        darkMode ? 'text-primary/50' : 'text-primary/50'
+                      )}
+                    >
+                      Price Impact
+                    </span>
+                    <span
+                      className="text-[11px] font-mono"
+                      style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}
+                    >
+                      {priceImpact > 0 ? '+' : ''}
+                      {priceImpact}%
+                    </span>
+                  </div>
+                )}
+
+                {/* Debug Panel - Hidden on mobile */}
+                {debugInfo && (
+                  <div
+                    className={cn(
+                      'mb-4 p-2 rounded-lg border font-mono text-[9px] hidden sm:block',
+                      darkMode
+                        ? 'border-yellow-500/30 bg-yellow-500/10'
+                        : 'border-yellow-200 bg-yellow-50'
+                    )}
+                  >
+                    <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
+                    <div className="space-y-0.5">
+                      <div>
+                        wallet_type:{' '}
+                        <span className="text-blue-400">
+                          {debugInfo.wallet_type || 'undefined'}
+                        </span>
+                      </div>
+                      <div>
+                        account:{' '}
+                        <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
+                      </div>
+                      <div>
+                        walletKeyId:{' '}
+                        <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
+                          {debugInfo.walletKeyId || 'undefined'}
+                        </span>
+                      </div>
+                      <div>
+                        seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Button */}
+                {accountProfile && accountProfile.account ? (
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={
+                      isProcessing === 1 ||
+                      !isLoggedIn ||
+                      (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                    }
+                    className={cn(
+                      'w-full py-3 rounded-xl text-[14px] font-medium transition-all',
+                      isProcessing === 1 ||
+                        !isLoggedIn ||
+                        (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                        ? darkMode
+                          ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-primary text-white hover:bg-primary/90'
+                    )}
+                  >
+                    {handleMsg()}
+                  </button>
+                ) : (
+                  <ConnectWallet text="Connect Wallet" fullWidth />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -3122,37 +3559,72 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <div
             onMouseDown={handleDragStartOB}
             className={cn(
-              "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move",
-              darkMode ? "border-primary/20 bg-white/[0.03]" : "border-primary/15 bg-gray-50"
+              'px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move',
+              darkMode ? 'border-primary/20 bg-white/[0.03]' : 'border-primary/15 bg-gray-50'
             )}
           >
-            <span className={cn("uppercase tracking-wide", darkMode ? "text-primary/70" : "text-primary/70")}>Order Book</span>
+            <span
+              className={cn(
+                'uppercase tracking-wide',
+                darkMode ? 'text-primary/70' : 'text-primary/70'
+              )}
+            >
+              Order Book
+            </span>
             <button
               onClick={() => setShowOrderbook(false)}
               className={cn(
-                "w-5 h-5 flex items-center justify-center rounded hover:bg-white/10",
-                darkMode ? "text-white/50 hover:text-white" : "text-gray-500 hover:text-gray-700"
+                'w-5 h-5 flex items-center justify-center rounded hover:bg-white/10',
+                darkMode ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               )}
             >
               <X size={14} />
             </button>
           </div>
           {asks.length === 0 && bids.length === 0 ? (
-            <div className={cn("p-8 text-center text-[12px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
+            <div
+              className={cn(
+                'p-8 text-center text-[12px] font-mono',
+                darkMode ? 'text-primary/40' : 'text-primary/40'
+              )}
+            >
               No orderbook data available
             </div>
           ) : (
             <>
-              <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
-                <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>Price</span>
-                <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>{token1?.name || 'Token'}</span>
-                <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>Total</span>
+              <div
+                className="flex text-[10px] font-mono px-2 py-1.5 border-b"
+                style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}
+              >
+                <span className={cn('flex-1', darkMode ? 'text-primary/40' : 'text-primary/40')}>
+                  Price
+                </span>
+                <span
+                  className={cn(
+                    'flex-1 text-right',
+                    darkMode ? 'text-primary/40' : 'text-primary/40'
+                  )}
+                >
+                  {token1?.name || 'Token'}
+                </span>
+                <span
+                  className={cn(
+                    'flex-1 text-right',
+                    darkMode ? 'text-primary/40' : 'text-primary/40'
+                  )}
+                >
+                  Total
+                </span>
               </div>
               {/* Asks */}
-              <div ref={asksContainerRef} className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              <div
+                ref={asksContainerRef}
+                className="max-h-[280px] overflow-y-auto scrollbar-none"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 {(() => {
                   const visibleAsks = asks.slice(0, 30);
-                  const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
+                  const maxAmount = Math.max(...visibleAsks.map((a) => a.amount || 0), 1);
                   const userPrice = parseFloat(limitPrice) || 0;
                   const reversedAsks = [...visibleAsks].reverse();
                   const bestAsk = asks[0]?.price || Infinity;
@@ -3165,17 +3637,28 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         key={`ask-${idx}`}
                         onClick={() => setLimitPrice(ask.price.toString())}
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
-                          darkMode ? "text-white/80" : "text-gray-700"
+                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative',
+                          darkMode ? 'text-white/80' : 'text-gray-700'
                         )}
                       >
                         <div
                           className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
                           style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
                         />
-                        <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
+                        <span className="flex-1 text-red-400 relative z-[1]">
+                          {ask.price?.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right relative z-[1]">
+                          {fNumber(ask.amount)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            darkMode ? 'text-white/40' : 'text-gray-400'
+                          )}
+                        >
+                          {fNumber(ask.total)}
+                        </span>
                       </div>
                     );
                   });
@@ -3187,13 +3670,36 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div
                         key="user-order-ask"
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono relative border-y",
-                          willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                          'flex px-2 py-1 text-[11px] font-mono relative border-y',
+                          willFill
+                            ? 'bg-red-500/30 border-red-500/50'
+                            : 'bg-primary/20 border-primary/50'
                         )}
                       >
-                        <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                        <span
+                          className={cn(
+                            'flex-1 relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {userPrice.toFixed(6)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {willFill ? 'INSTANT FILL' : 'Your Order'}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     );
                   }
@@ -3212,19 +3718,28 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
                         <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
                         <span className="flex-1 text-right text-primary">Your Order</span>
-                        <span className="flex-1 text-right text-primary">{revert ? 'SELL' : 'BUY'}</span>
+                        <span className="flex-1 text-right text-primary">
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     )}
-                    <div className={cn(
-                      "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
-                      darkMode ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
-                    )}>
+                    <div
+                      className={cn(
+                        'px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center',
+                        darkMode ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50'
+                      )}
+                    >
                       <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-[10px]",
-                        darkMode ? "bg-white/10" : "bg-gray-200"
-                      )}>
-                        {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded text-[10px]',
+                          darkMode ? 'bg-white/10' : 'bg-gray-200'
+                        )}
+                      >
+                        {asks[0] && bids[0]
+                          ? (((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)
+                          : '0.00'}
+                        %
                       </span>
                       <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
                     </div>
@@ -3232,10 +3747,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 );
               })()}
               {/* Bids */}
-              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              <div
+                className="max-h-[280px] overflow-y-auto scrollbar-none"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 {(() => {
                   const visibleBids = bids.slice(0, 30);
-                  const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
+                  const maxAmount = Math.max(...visibleBids.map((b) => b.amount || 0), 1);
                   const userPrice = parseFloat(limitPrice) || 0;
 
                   let userOrderInserted = false;
@@ -3249,13 +3767,36 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         <div
                           key="user-order-bid"
                           className={cn(
-                            "flex px-2 py-1 text-[11px] font-mono relative border-y",
-                            willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                            'flex px-2 py-1 text-[11px] font-mono relative border-y',
+                            willFill
+                              ? 'bg-red-500/30 border-red-500/50'
+                              : 'bg-primary/20 border-primary/50'
                           )}
                         >
-                          <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                          <span
+                            className={cn(
+                              'flex-1 relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {userPrice.toFixed(6)}
+                          </span>
+                          <span
+                            className={cn(
+                              'flex-1 text-right relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {willFill ? 'INSTANT FILL' : 'Your Order'}
+                          </span>
+                          <span
+                            className={cn(
+                              'flex-1 text-right relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {revert ? 'SELL' : 'BUY'}
+                          </span>
                         </div>
                       );
                       userOrderInserted = true;
@@ -3265,30 +3806,51 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         key={`bid-${idx}`}
                         onClick={() => setLimitPrice(bid.price.toString())}
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
-                          darkMode ? "text-white/80" : "text-gray-700"
+                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative',
+                          darkMode ? 'text-white/80' : 'text-gray-700'
                         )}
                       >
                         <div
                           className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
                           style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
                         />
-                        <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
+                        <span className="flex-1 text-green-400 relative z-[1]">
+                          {bid.price?.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right relative z-[1]">
+                          {fNumber(bid.amount)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            darkMode ? 'text-white/40' : 'text-gray-400'
+                          )}
+                        >
+                          {fNumber(bid.total)}
+                        </span>
                       </div>
                     );
                   });
 
-                  if (!userOrderInserted && userPrice > 0 && userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)) {
+                  if (
+                    !userOrderInserted &&
+                    userPrice > 0 &&
+                    userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)
+                  ) {
                     rows.push(
                       <div
                         key="user-order-bid"
                         className="flex px-2 py-1 text-[11px] font-mono relative bg-primary/20 border-y border-primary/50"
                       >
-                        <span className="flex-1 text-primary relative z-[1]">{userPrice.toFixed(6)}</span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">Your Order</span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">{revert ? 'SELL' : 'BUY'}</span>
+                        <span className="flex-1 text-primary relative z-[1]">
+                          {userPrice.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">
+                          Your Order
+                        </span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     );
                   }

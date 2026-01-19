@@ -55,24 +55,21 @@ const Sitemap = ({ tokens, slug }) => {
       <Header />
 
       <div id="back-to-top-anchor" className="mx-auto max-w-7xl px-4 mt-4">
-        <h1 className={cn("text-3xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+        <h1 className={cn('text-3xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
           {`${capitalizedText(slug)} Sitemap`}
         </h1>
 
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {slugs.map((token) => {
             return (
-              <div
-                key={token}
-                className="overflow-hidden text-ellipsis p-[5px]"
-              >
+              <div key={token} className="overflow-hidden text-ellipsis p-[5px]">
                 <a
                   href={`/${slug}/${token}`}
                   target="_blank"
                   rel="noreferrer noopener nofollow"
                   className={cn(
-                    "text-[15px] no-underline hover:text-gray-400",
-                    isDark ? "text-[#007B55]" : "text-[#147DFE]"
+                    'text-[15px] no-underline hover:text-gray-400',
+                    isDark ? 'text-[#007B55]' : 'text-[#147DFE]'
                   )}
                 >
                   {capitalizedText(token)}
@@ -89,12 +86,12 @@ const Sitemap = ({ tokens, slug }) => {
                 key={pageNum}
                 onClick={(e) => handleChangePage(e, pageNum)}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal",
+                  'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
                   page === pageNum
-                    ? "border-primary bg-primary text-white"
+                    ? 'border-primary bg-primary text-white'
                     : isDark
-                    ? "border-gray-700 hover:border-primary hover:bg-primary/5"
-                    : "border-gray-300 hover:bg-gray-100"
+                      ? 'border-gray-700 hover:border-primary hover:bg-primary/5'
+                      : 'border-gray-300 hover:bg-gray-100'
                 )}
               >
                 {pageNum}
@@ -108,8 +105,8 @@ const Sitemap = ({ tokens, slug }) => {
             href="/sitemap/trustlines"
             rel="noreferrer noopener nofollow"
             className={cn(
-              "text-[15px] no-underline hover:text-gray-400",
-              isDark ? "text-[#007B55]" : "text-[#147DFE]"
+              'text-[15px] no-underline hover:text-gray-400',
+              isDark ? 'text-[#007B55]' : 'text-[#147DFE]'
             )}
           >
             Trustlines Sitemap

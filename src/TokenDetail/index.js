@@ -7,13 +7,7 @@ import TokenTabs from './components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 const TokenDetail = memo(
-  ({
-    token,
-    onTransactionPanelToggle,
-    transactionPanelOpen,
-    onOrderBookToggle,
-    orderBookOpen
-  }) => {
+  ({ token, onTransactionPanelToggle, transactionPanelOpen, onOrderBookToggle, orderBookOpen }) => {
     const { themeName } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
@@ -51,20 +45,23 @@ const TokenDetail = memo(
     }, [orderBookOpen]);
 
     // Handle transaction selection
-    const handleSelectTransaction = useCallback((hash, tradeAccount = null) => {
-      requestAnimationFrame(() => {
-        setSelectedTxHash(hash);
-        setSelectedTradeAccount(tradeAccount);
-        setPanelMode('transaction');
-        setTxDetailsOpen(true);
-        if (onTransactionPanelToggle) {
-          onTransactionPanelToggle(true);
-        }
-        if (onOrderBookToggle) {
-          onOrderBookToggle(false);
-        }
-      });
-    }, [onTransactionPanelToggle, onOrderBookToggle]);
+    const handleSelectTransaction = useCallback(
+      (hash, tradeAccount = null) => {
+        requestAnimationFrame(() => {
+          setSelectedTxHash(hash);
+          setSelectedTradeAccount(tradeAccount);
+          setPanelMode('transaction');
+          setTxDetailsOpen(true);
+          if (onTransactionPanelToggle) {
+            onTransactionPanelToggle(true);
+          }
+          if (onOrderBookToggle) {
+            onOrderBookToggle(false);
+          }
+        });
+      },
+      [onTransactionPanelToggle, onOrderBookToggle]
+    );
 
     // Handle transaction details close - batched updates
     const handleTxDetailsClose = useCallback(() => {

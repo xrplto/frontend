@@ -156,11 +156,16 @@ export default function BuyMintDialog({
       )}
 
       {/* Dialog */}
-      <div className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+      <div
+        className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+      >
         <div
           className={cn(
             'w-full max-w-md rounded-2xl border my-8',
-            isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            isDark
+              ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >
@@ -234,10 +239,7 @@ export default function BuyMintDialog({
 
               <div className="flex flex-row gap-2 mt-2 items-center">
                 <span
-                  className={cn(
-                    'text-[13px] font-medium',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
+                  className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   Quantity <span className="text-[11px] text-[#EB5757]">*</span>
                 </span>
@@ -260,10 +262,7 @@ export default function BuyMintDialog({
 
               <div className="flex flex-row gap-2 mt-3">
                 <span
-                  className={cn(
-                    'text-[13px] font-medium',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
+                  className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   Total {cost.name} Required
                 </span>
@@ -291,8 +290,7 @@ export default function BuyMintDialog({
                     {fNumber(cost.amount * quantity)} {cost.name}
                   </span>
                   . Each Mint will mint the NFT on XRPL and transfer it to my wallet address which
-                  is{' '}
-                  <span className="text-[11px] font-normal text-[#33C2FF]">{account}</span>
+                  is <span className="text-[11px] font-normal text-[#33C2FF]">{account}</span>
                 </label>
               </div>
 

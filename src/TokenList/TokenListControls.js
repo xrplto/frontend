@@ -1,7 +1,14 @@
 import React, { useContext, memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
-import { ChevronsLeft, ChevronsRight, List, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  List,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -31,7 +38,8 @@ const StyledTableCell = styled.th`
   position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
   left: ${(props) => props.left || 'unset'};
   z-index: ${(props) => (props.sticky ? 101 : 'auto')};
-  background: ${(props) => (props.sticky ? (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)') : 'transparent')};
+  background: ${(props) =>
+    props.sticky ? (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)') : 'transparent'};
   font-family: inherit;
   transition: color 0.15s ease;
   width: ${(props) => (props.width ? `${props.width}px` : 'auto')};
@@ -46,7 +54,12 @@ const StyledTableCell = styled.th`
   }
 
   &:hover {
-    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)') : 'inherit')};
+    color: ${(props) =>
+      props.sortable
+        ? props.darkMode
+          ? 'rgba(255, 255, 255, 0.7)'
+          : 'rgba(0, 0, 0, 0.7)'
+        : 'inherit'};
   }
 `;
 
@@ -54,10 +67,17 @@ const SortIndicator = styled.span`
   display: inline-block;
   margin-left: 6px;
   font-size: 8px;
-  color: ${(props) => (props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)')};
+  color: ${(props) =>
+    props.active
+      ? '#4285f4'
+      : props.darkMode
+        ? 'rgba(255, 255, 255, 0.25)'
+        : 'rgba(0, 0, 0, 0.25)'};
   transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
   opacity: ${(props) => (props.active ? 1 : 0.5)};
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 `;
 
 const Tooltip = styled.div`
@@ -116,8 +136,9 @@ const PaginationContainer = styled.div`
   padding: 6px 10px;
   min-height: 36px;
   border-radius: 8px;
-  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
-  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
+  border: 1px solid
+    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
 
   @media (max-width: 900px) {
     width: 100%;
@@ -134,8 +155,9 @@ const RowsSelector = styled.div`
   padding: 6px 10px;
   min-height: 36px;
   border-radius: 8px;
-  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
-  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
+  border: 1px solid
+    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
 
   @media (max-width: 900px) {
     flex: 1;
@@ -153,9 +175,10 @@ const InfoBox = styled.div`
   flex-wrap: wrap;
   padding: 6px 10px;
   min-height: 36px;
-  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border: 1px solid
+    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 8px;
-  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
+  background: ${({ isDark }) => (isDark ? 'transparent' : '#fff')};
 
   @media (max-width: 900px) {
     flex: 1;
@@ -171,15 +194,16 @@ const Chip = styled.span`
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border: 1px solid
+    ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
   border-radius: 4px;
-  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
+  color: ${({ isDark }) => (isDark ? '#fff' : '#000')};
 `;
 
 const Text = styled.span`
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
+  color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)')};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
@@ -193,15 +217,16 @@ const NavButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
+  color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)')};
   padding: 0;
 
   &:hover:not(:disabled) {
-    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
+    background: ${({ isDark }) =>
+      isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
-    color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    color: ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')};
     cursor: not-allowed;
   }
 `;
@@ -211,8 +236,9 @@ const PageButton = styled.button`
   height: 22px;
   border-radius: 8px;
   border: none;
-  background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
-  color: ${(props) => props.selected ? 'white' : props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
+  background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
+  color: ${(props) =>
+    props.selected ? 'white' : props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -225,7 +251,11 @@ const PageButton = styled.button`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.selected ? '#3b7de8' : props.isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
+      props.selected
+        ? '#3b7de8'
+        : props.isDark
+          ? 'rgba(66, 133, 244, 0.1)'
+          : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
@@ -262,8 +292,8 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: ${({ isDark }) => isDark ? '#1a1a1a' : '#fff'};
-  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+  background: ${({ isDark }) => (isDark ? '#1a1a1a' : '#fff')};
+  border: 1px solid ${({ isDark }) => (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
@@ -279,10 +309,11 @@ const SelectOption = styled.button`
   text-align: left;
   cursor: pointer;
   font-size: 11px;
-  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
+  color: ${({ isDark }) => (isDark ? '#fff' : '#000')};
 
   &:hover {
-    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.06)'};
+    background: ${({ isDark }) =>
+      isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.06)'};
   }
 `;
 
@@ -297,7 +328,14 @@ const DESKTOP_TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', order: false, mobileHide: true },
   { id: 'token', label: 'TOKEN', align: 'left', order: true, mobileHide: false },
   { id: 'exch', label: 'PRICE', align: 'right', order: true, mobileHide: false },
-  { id: 'sparkline', label: 'TRENDING 24H', align: 'center', order: false, mobileHide: true, width: 128 },
+  {
+    id: 'sparkline',
+    label: 'TRENDING 24H',
+    align: 'center',
+    order: false,
+    mobileHide: true,
+    width: 128
+  },
   { id: 'pro5m', label: '5M %', align: 'right', order: true, mobileHide: true },
   { id: 'pro1h', label: '1H %', align: 'right', order: true, mobileHide: true },
   { id: 'pro24h', label: '24H %', align: 'right', order: true, mobileHide: false },
@@ -310,7 +348,6 @@ const DESKTOP_TABLE_HEAD = [
   { id: 'holders', label: 'HOLDERS', align: 'right', order: true, mobileHide: true },
   { id: 'origin', label: 'SOURCE', align: 'right', order: true, mobileHide: true }
 ];
-
 
 // ============== TokenListHead Component ==============
 export const TokenListHead = memo(function TokenListHead({
@@ -904,7 +941,9 @@ export const TokenListHead = memo(function TokenListHead({
                 {headCell.order ? (
                   <span>
                     {headCell.id === 'vol24hxrp' ? (
-                      <>Volume <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span></>
+                      <>
+                        Volume <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span>
+                      </>
                     ) : (
                       headCell.label
                     )}
@@ -915,7 +954,9 @@ export const TokenListHead = memo(function TokenListHead({
                     )}
                   </span>
                 ) : headCell.id === 'sparkline' ? (
-                  <span>Trendline <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span></span>
+                  <span>
+                    Trendline <span style={{ opacity: 0.5, fontSize: '10px' }}>24h</span>
+                  </span>
                 ) : (
                   headCell.label
                 )}
@@ -929,7 +970,13 @@ export const TokenListHead = memo(function TokenListHead({
 });
 
 // ============== TokenListToolbar Component ==============
-export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
+export const TokenListToolbar = memo(function TokenListToolbar({
+  rows,
+  setRows,
+  page,
+  setPage,
+  tokens
+}) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const filteredCount = useSelector(selectFilteredCount);
@@ -1032,14 +1079,19 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
           onClick={() => handleChangePage(page - 1)}
           disabled={page === 0}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            page === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-            isDark ? "text-white/50" : "text-gray-500"
+            'p-1.5 rounded-md transition-colors',
+            page === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+            isDark ? 'text-white/50' : 'text-gray-500'
           )}
         >
           <ChevronLeft size={14} />
         </button>
-        <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+        <span
+          className={cn(
+            'text-[11px] px-2 tabular-nums',
+            isDark ? 'text-white/40' : 'text-gray-500'
+          )}
+        >
           {page + 1} / {page_count}
         </span>
         <button
@@ -1047,9 +1099,9 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
           onClick={() => handleChangePage(page + 1)}
           disabled={page === page_count - 1}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            page === page_count - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-            isDark ? "text-white/50" : "text-gray-500"
+            'p-1.5 rounded-md transition-colors',
+            page === page_count - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+            isDark ? 'text-white/50' : 'text-gray-500'
           )}
         >
           <ChevronRight size={14} />
@@ -1066,9 +1118,15 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
           </SelectButton>
           {selectOpen && (
             <SelectMenu isDark={isDark}>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(100)}>100</SelectOption>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(50)}>50</SelectOption>
-              <SelectOption isDark={isDark} onClick={() => handleChangeRows(20)}>20</SelectOption>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(100)}>
+                100
+              </SelectOption>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(50)}>
+                50
+              </SelectOption>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(20)}>
+                20
+              </SelectOption>
             </SelectMenu>
           )}
         </Select>

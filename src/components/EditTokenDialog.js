@@ -41,8 +41,10 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
       <button
         onClick={handleClickOpen}
         className={cn(
-          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
-          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+          'rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal',
+          isDark
+            ? 'border-white/15 hover:border-primary hover:bg-primary/5'
+            : 'border-gray-300 hover:bg-gray-100'
         )}
       >
         <Edit size={14} />
@@ -50,10 +52,14 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className={cn(
-            "rounded-2xl border p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-          )}>
+          <div
+            className={cn(
+              'rounded-2xl border p-6 w-[400px] max-w-[90vw]',
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            )}
+          >
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
                 {label}
@@ -63,10 +69,10 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
                 onChange={onChangeValue}
                 autoFocus
                 className={cn(
-                  "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+                  'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
                   isDark
-                    ? "bg-white/5 border-white/15 text-white focus:border-primary"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-primary"
+                    ? 'bg-white/5 border-white/15 text-white focus:border-primary'
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-primary'
                 )}
               />
             </div>
@@ -74,8 +80,8 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
               <button
                 onClick={handleClose}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
-                  isDark ? "border-white/15 hover:bg-white/5" : "border-gray-300 hover:bg-gray-100"
+                  'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-300 hover:bg-gray-100'
                 )}
               >
                 Cancel
@@ -83,8 +89,8 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
               <button
                 onClick={handleOK}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
-                  "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                  'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  'border-primary bg-primary/10 text-primary hover:bg-primary/20'
                 )}
               >
                 OK
@@ -366,10 +372,14 @@ export default function EditTokenDialog({ token, setToken }) {
       )}
 
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-        <div className={cn(
-          "rounded-2xl border w-full max-w-4xl my-8",
-          isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-        )}>
+        <div
+          className={cn(
+            'rounded-2xl border w-full max-w-4xl my-8',
+            isDark
+              ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+          )}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
             <div className="flex items-center gap-3">
@@ -395,8 +405,8 @@ export default function EditTokenDialog({ token, setToken }) {
               <button
                 onClick={handleSave}
                 className={cn(
-                  "rounded-lg border-[1.5px] p-2 text-[13px] font-normal",
-                  "border-green-500/50 text-green-500 hover:bg-green-500/10"
+                  'rounded-lg border-[1.5px] p-2 text-[13px] font-normal',
+                  'border-green-500/50 text-green-500 hover:bg-green-500/10'
                 )}
                 title="Save"
               >
@@ -405,8 +415,8 @@ export default function EditTokenDialog({ token, setToken }) {
               <button
                 onClick={handleClose}
                 className={cn(
-                  "rounded-lg border-[1.5px] p-2 text-[13px] font-normal",
-                  "border-red-500/50 text-red-500 hover:bg-red-500/10"
+                  'rounded-lg border-[1.5px] p-2 text-[13px] font-normal',
+                  'border-red-500/50 text-red-500 hover:bg-red-500/10'
                 )}
                 title="Cancel"
               >
@@ -419,24 +429,24 @@ export default function EditTokenDialog({ token, setToken }) {
           <div className="p-4">
             <table className="w-full">
               <tbody>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">Issuer</td>
                   <td className="py-2 text-[13px] text-gray-500">{issuer}</td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Currency</td>
                   <td className="py-2 text-[13px]">
                     <span className="text-gray-500">{name}</span>
                     <span className="text-gray-400 text-[11px] ml-2">({currency})</span>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">MD5</td>
                   <td className="py-2 text-[13px] text-gray-500">
                     {md5} <span className="ml-2">{ext.toUpperCase()}</span>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Domain</td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
@@ -448,11 +458,16 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {domain}
                       </a>
-                      <EditDialog label="Domain" value={domain} setValue={setDomain} isDark={isDark} />
+                      <EditDialog
+                        label="Domain"
+                        value={domain}
+                        setValue={setDomain}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">User</td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
@@ -461,10 +476,10 @@ export default function EditTokenDialog({ token, setToken }) {
                       <button
                         onClick={() => setKYC(!kyc)}
                         className={cn(
-                          "rounded-lg border-[1.5px] px-2 py-1 text-[11px] font-medium uppercase tracking-wide",
+                          'rounded-lg border-[1.5px] px-2 py-1 text-[11px] font-medium uppercase tracking-wide',
                           kyc
-                            ? "border-green-500/50 text-green-500 bg-green-500/10"
-                            : "border-gray-500/50 text-gray-500 bg-gray-500/10"
+                            ? 'border-green-500/50 text-green-500 bg-green-500/10'
+                            : 'border-gray-500/50 text-gray-500 bg-gray-500/10'
                         )}
                         title="Click to toggle"
                       >
@@ -473,7 +488,7 @@ export default function EditTokenDialog({ token, setToken }) {
                     </div>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Created Date</td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
@@ -481,8 +496,10 @@ export default function EditTokenDialog({ token, setToken }) {
                       <button
                         onClick={handleGetDate}
                         className={cn(
-                          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
-                          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                          'rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal',
+                          isDark
+                            ? 'border-white/15 hover:border-primary hover:bg-primary/5'
+                            : 'border-gray-300 hover:bg-gray-100'
                         )}
                         title="Get date from online"
                       >
@@ -492,11 +509,15 @@ export default function EditTokenDialog({ token, setToken }) {
                       <span className="text-[11px] text-gray-400">
                         {new Date(dateon).toISOString().split('.')[0].replace('T', ' ')}
                       </span>
-                      <Info size={14} className="text-gray-400" title="Token discovered date by the Ledger Scanner." />
+                      <Info
+                        size={14}
+                        className="text-gray-400"
+                        title="Token discovered date by the Ledger Scanner."
+                      />
                     </div>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">URL Slug</td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
@@ -508,11 +529,16 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {slug}
                       </a>
-                      <EditDialog label="URL Slug" value={slug} setValue={setSlug} isDark={isDark} />
+                      <EditDialog
+                        label="URL Slug"
+                        value={slug}
+                        setValue={setSlug}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
-                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                <tr className={isDark ? 'border-b border-white/5' : 'border-b border-gray-100'}>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Whitepaper</td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
@@ -524,7 +550,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {whitepaper}
                       </a>
-                      <EditDialog label="Whitepaper URL" value={whitepaper} setValue={setWhitepaper} isDark={isDark} />
+                      <EditDialog
+                        label="Whitepaper URL"
+                        value={whitepaper}
+                        setValue={setWhitepaper}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -537,8 +568,8 @@ export default function EditTokenDialog({ token, setToken }) {
                           <span
                             key={md5 + idx + tag}
                             className={cn(
-                              "rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal flex items-center gap-1",
-                              isDark ? "border-white/15 bg-white/5" : "border-gray-300 bg-gray-50"
+                              'rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal flex items-center gap-1',
+                              isDark ? 'border-white/15 bg-white/5' : 'border-gray-300 bg-gray-50'
                             )}
                           >
                             {tag}
@@ -553,8 +584,10 @@ export default function EditTokenDialog({ token, setToken }) {
                       <button
                         onClick={handleAddTagClickOpen}
                         className={cn(
-                          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
-                          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                          'rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal',
+                          isDark
+                            ? 'border-white/15 hover:border-primary hover:bg-primary/5'
+                            : 'border-gray-300 hover:bg-gray-100'
                         )}
                       >
                         <PlusCircle size={14} />
@@ -571,7 +604,9 @@ export default function EditTokenDialog({ token, setToken }) {
             <table className="w-full">
               <tbody>
                 <tr>
-                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">Twitter</td>
+                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">
+                    Twitter
+                  </td>
                   <td className="py-2 w-[35%]">
                     <div className="flex items-center gap-2">
                       <a
@@ -582,10 +617,17 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {twitter}
                       </a>
-                      <EditDialog label="Twitter" value={twitter} setValue={setTwitter} isDark={isDark} />
+                      <EditDialog
+                        label="Twitter"
+                        value={twitter}
+                        setValue={setTwitter}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
-                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">YouTube</td>
+                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">
+                    YouTube
+                  </td>
                   <td className="py-2">
                     <div className="flex items-center gap-2">
                       <a
@@ -596,7 +638,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {youtube}
                       </a>
-                      <EditDialog label="YouTube" value={youtube} setValue={setYoutube} isDark={isDark} />
+                      <EditDialog
+                        label="YouTube"
+                        value={youtube}
+                        setValue={setYoutube}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -612,7 +659,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {facebook}
                       </a>
-                      <EditDialog label="Facebook" value={facebook} setValue={setFacebook} isDark={isDark} />
+                      <EditDialog
+                        label="Facebook"
+                        value={facebook}
+                        setValue={setFacebook}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Medium</td>
@@ -626,7 +678,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {medium}
                       </a>
-                      <EditDialog label="Medium" value={medium} setValue={setMedium} isDark={isDark} />
+                      <EditDialog
+                        label="Medium"
+                        value={medium}
+                        setValue={setMedium}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -642,7 +699,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {linkedin}
                       </a>
-                      <EditDialog label="LinkedIn" value={linkedin} setValue={setLinkedin} isDark={isDark} />
+                      <EditDialog
+                        label="LinkedIn"
+                        value={linkedin}
+                        setValue={setLinkedin}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Twitch</td>
@@ -656,7 +718,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {twitch}
                       </a>
-                      <EditDialog label="Twitch" value={twitch} setValue={setTwitch} isDark={isDark} />
+                      <EditDialog
+                        label="Twitch"
+                        value={twitch}
+                        setValue={setTwitch}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -672,7 +739,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {instagram}
                       </a>
-                      <EditDialog label="Instagram" value={instagram} setValue={setInstagram} isDark={isDark} />
+                      <EditDialog
+                        label="Instagram"
+                        value={instagram}
+                        setValue={setInstagram}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Tiktok</td>
@@ -686,7 +758,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {tiktok}
                       </a>
-                      <EditDialog label="Tiktok" value={tiktok} setValue={setTiktok} isDark={isDark} />
+                      <EditDialog
+                        label="Tiktok"
+                        value={tiktok}
+                        setValue={setTiktok}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -702,7 +779,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {discord}
                       </a>
-                      <EditDialog label="Discord" value={discord} setValue={setDiscord} isDark={isDark} />
+                      <EditDialog
+                        label="Discord"
+                        value={discord}
+                        setValue={setDiscord}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Reddit</td>
@@ -716,7 +798,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {reddit}
                       </a>
-                      <EditDialog label="Reddit" value={reddit} setValue={setReddit} isDark={isDark} />
+                      <EditDialog
+                        label="Reddit"
+                        value={reddit}
+                        setValue={setReddit}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -732,7 +819,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       >
                         {telegram}
                       </a>
-                      <EditDialog label="Telegram" value={telegram} setValue={setTelegram} isDark={isDark} />
+                      <EditDialog
+                        label="Telegram"
+                        value={telegram}
+                        setValue={setTelegram}
+                        isDark={isDark}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -745,10 +837,14 @@ export default function EditTokenDialog({ token, setToken }) {
       {/* Inline AddTag Dialog */}
       {addTagOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className={cn(
-            "rounded-2xl border p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]" : "bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
-          )}>
+          <div
+            className={cn(
+              'rounded-2xl border p-6 w-[400px] max-w-[90vw]',
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            )}
+          >
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
                 Tag
@@ -758,10 +854,10 @@ export default function EditTokenDialog({ token, setToken }) {
                 onChange={onChangeAddTagValue}
                 autoFocus
                 className={cn(
-                  "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+                  'w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none',
                   isDark
-                    ? "bg-white/5 border-white/15 text-white focus:border-primary"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-primary"
+                    ? 'bg-white/5 border-white/15 text-white focus:border-primary'
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-primary'
                 )}
               />
             </div>
@@ -769,8 +865,8 @@ export default function EditTokenDialog({ token, setToken }) {
               <button
                 onClick={handleAddTagClose}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
-                  isDark ? "border-white/15 hover:bg-white/5" : "border-gray-300 hover:bg-gray-100"
+                  'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-300 hover:bg-gray-100'
                 )}
               >
                 Cancel
@@ -778,8 +874,8 @@ export default function EditTokenDialog({ token, setToken }) {
               <button
                 onClick={handleAddTagOK}
                 className={cn(
-                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
-                  "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                  'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  'border-primary bg-primary/10 text-primary hover:bg-primary/20'
                 )}
               >
                 OK

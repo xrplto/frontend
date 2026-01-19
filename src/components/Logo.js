@@ -12,7 +12,12 @@ function Logo({ asLink = true, style }) {
       alt="XRPL.to"
       width={100}
       height={36}
-      style={{ width: style?.width || '100px', height: style?.height || '36px', objectFit: 'contain', ...style }}
+      style={{
+        width: style?.width || '100px',
+        height: style?.height || '36px',
+        objectFit: 'contain',
+        ...style
+      }}
     />
   );
 
@@ -21,10 +26,7 @@ function Logo({ asLink = true, style }) {
   }
 
   return (
-    <a
-      href="/"
-      className="inline-flex cursor-pointer items-center"
-    >
+    <a href="/" className="inline-flex cursor-pointer items-center">
       {imgElement}
     </a>
   );

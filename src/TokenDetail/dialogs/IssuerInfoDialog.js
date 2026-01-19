@@ -33,15 +33,18 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
   return (
     <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className={cn(
-        'relative w-full max-w-md rounded-2xl border overflow-hidden',
-        isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-      )}>
+      <div
+        className={cn(
+          'relative w-full max-w-md rounded-2xl border overflow-hidden',
+          isDark
+            ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+            : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+        )}
+      >
         {/* Dialog Title */}
-        <div className={cn(
-          'flex items-center justify-between p-4',
-          isDark ? 'bg-black' : 'bg-white'
-        )}>
+        <div
+          className={cn('flex items-center justify-between p-4', isDark ? 'bg-black' : 'bg-white')}
+        >
           <div className="flex items-center gap-2">
             <img
               src={imgUrl}
@@ -50,7 +53,9 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             />
             <div>
               <p className="text-primary text-[15px] font-normal">{name}</p>
-              <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-500')}>{user}</p>
+              <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                {user}
+              </p>
             </div>
           </div>
           <button
@@ -65,13 +70,12 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
         </div>
 
         {/* Dialog Content */}
-        <div className={cn(
-          'p-4 space-y-4',
-          isDark ? 'bg-black' : 'bg-gray-50'
-        )}>
+        <div className={cn('p-4 space-y-4', isDark ? 'bg-black' : 'bg-gray-50')}>
           {/* Issuer */}
           <div className="flex items-center gap-2">
-            <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span
+              className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}
+            >
               Issuer:
             </span>
             <div className="flex items-center gap-1 flex-1 min-w-0">
@@ -101,14 +105,18 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
           {/* Currency */}
           <div className="flex items-center gap-2">
-            <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+            <span
+              className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}
+            >
               Currency:
             </span>
             <div className="flex items-center gap-1">
-              <span className={cn(
-                'text-[13px] font-normal text-primary px-2 py-1 rounded',
-                isDark ? 'bg-white/5' : 'bg-gray-100'
-              )}>
+              <span
+                className={cn(
+                  'text-[13px] font-normal text-primary px-2 py-1 rounded',
+                  isDark ? 'bg-white/5' : 'bg-gray-100'
+                )}
+              >
                 {currency}
               </span>
               <button
@@ -136,7 +144,12 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
           {/* Domain */}
           {info.domain && (
             <div className="flex items-center gap-2">
-              <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+              <span
+                className={cn(
+                  'text-[13px] font-normal',
+                  isDark ? 'text-white/60' : 'text-gray-500'
+                )}
+              >
                 Domain:
               </span>
               <a
@@ -166,7 +179,12 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
             ([key, label]) =>
               info[key] && (
                 <div key={key} className="flex items-center gap-2">
-                  <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+                  <span
+                    className={cn(
+                      'text-[13px] font-normal',
+                      isDark ? 'text-white/60' : 'text-gray-500'
+                    )}
+                  >
                     {label}:
                   </span>
                   <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>

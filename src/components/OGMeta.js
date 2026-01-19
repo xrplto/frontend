@@ -4,25 +4,33 @@ const BASE = 'https://xrpl.to';
 const OG_API = `${BASE}/api/og`;
 
 // Normalize name: API may return object {collection_name, collection_description} or string
-const normalizeName = (name) => typeof name === 'object' && name !== null
-  ? name.collection_name || ''
-  : name || '';
+const normalizeName = (name) =>
+  typeof name === 'object' && name !== null ? name.collection_name || '' : name || '';
 
 // All static pages
 const PAGES = {
-  index: { title: 'XRPL.to - XRP Ledger Token Prices & Analytics', desc: 'Real-time XRP Ledger token prices, charts, and trading data.' },
+  index: {
+    title: 'XRPL.to - XRP Ledger Token Prices & Analytics',
+    desc: 'Real-time XRP Ledger token prices, charts, and trading data.'
+  },
   trending: { title: 'Trending Tokens - XRPL.to', desc: 'Most popular tokens on XRP Ledger.' },
   spotlight: { title: 'Spotlight - XRPL.to', desc: 'Featured tokens on XRP Ledger.' },
   'most-viewed': { title: 'Most Viewed - XRPL.to', desc: 'Popular tokens by views on XRPL.' },
   new: { title: 'New Tokens - XRPL.to', desc: 'Recently listed tokens on XRP Ledger.' },
   'amm-pools': { title: 'AMM Pools - XRPL.to', desc: 'XRPL liquidity pools with APY analytics.' },
   swap: { title: 'Swap - XRPL.to', desc: 'Trade tokens on the XRP Ledger DEX.' },
-  collections: { title: 'NFT Collections - XRPL.to', desc: 'Browse NFT collections on XRP Ledger.' },
+  collections: {
+    title: 'NFT Collections - XRPL.to',
+    desc: 'Browse NFT collections on XRP Ledger.'
+  },
   'nft-traders': { title: 'NFT Traders - XRPL.to', desc: 'Top NFT traders on XRP Ledger.' },
   watchlist: { title: 'Watchlist - XRPL.to', desc: 'Track your favorite XRPL tokens.' },
   news: { title: 'News - XRPL.to', desc: 'Latest XRP Ledger ecosystem updates.' },
   about: { title: 'About - XRPL.to', desc: 'Learn about XRPL.to analytics platform.' },
-  'rsi-analysis': { title: 'RSI Analysis - XRPL.to', desc: 'Technical RSI analysis for XRPL tokens.' },
+  'rsi-analysis': {
+    title: 'RSI Analysis - XRPL.to',
+    desc: 'Technical RSI analysis for XRPL tokens.'
+  },
   launch: { title: 'Token Launch - XRPL.to', desc: 'Launch your token on XRP Ledger.' },
   advertise: { title: 'Advertise - XRPL.to', desc: 'Promote your project on XRPL.to.' },
   docs: { title: 'Documentation - XRPL.to', desc: 'XRPL.to API documentation and guides.' },
@@ -30,11 +38,31 @@ const PAGES = {
   ledger: { title: 'Ledger Explorer - XRPL.to', desc: 'Browse XRP Ledger transactions.' },
   'device-login': { title: 'Device Login - XRPL.to', desc: 'Secure wallet authentication.' },
   'wallet-setup': { title: 'Wallet Setup - XRPL.to', desc: 'Create your XRPL wallet.' },
-  'collection-create': { title: 'Create Collection - XRPL.to', desc: 'Launch your NFT collection on XRPL.' },
-  'collection-import': { title: 'Import Collection - XRPL.to', desc: 'Import existing NFTs to XRPL.to.' },
+  'collection-create': {
+    title: 'Create Collection - XRPL.to',
+    desc: 'Launch your NFT collection on XRPL.'
+  },
+  'collection-import': {
+    title: 'Import Collection - XRPL.to',
+    desc: 'Import existing NFTs to XRPL.to.'
+  }
 };
 
-export default function OGMeta({ page, type, token, nft, collection, tag, period, profile, tx, ledgerIndex, title: customTitle, description: customDesc, image: customImage }) {
+export default function OGMeta({
+  page,
+  type,
+  token,
+  nft,
+  collection,
+  tag,
+  period,
+  profile,
+  tx,
+  ledgerIndex,
+  title: customTitle,
+  description: customDesc,
+  image: customImage
+}) {
   let title, desc, image, url;
 
   if (page && PAGES[page]) {
@@ -46,21 +74,33 @@ export default function OGMeta({ page, type, token, nft, collection, tag, period
     const name = token.name || token.currency;
     title = customTitle || `${name} Price - XRPL.to`;
     desc = customDesc || `${name} real-time price and market data on XRP Ledger.`;
-    const params = new URLSearchParams({ name, price: token.price || '', change: token.pro24h || token.priceChange || '' });
+    const params = new URLSearchParams({
+      name,
+      price: token.price || '',
+      change: token.pro24h || token.priceChange || ''
+    });
     image = customImage || `${OG_API}/token/${token.currency}/${token.issuer}?${params}`;
     url = `${BASE}/token/${token.slug || `${token.currency}+${token.issuer}`}`;
   } else if (type === 'nft' && nft) {
     const name = nft.name || nft.nftokenid?.slice(0, 12);
     title = customTitle || `${name} - XRPL.to`;
     desc = customDesc || `${name} NFT on XRP Ledger.`;
-    const params = new URLSearchParams({ name, collection: normalizeName(nft.collection?.name), image: nft.image || '' });
+    const params = new URLSearchParams({
+      name,
+      collection: normalizeName(nft.collection?.name),
+      image: nft.image || ''
+    });
     image = customImage || `${OG_API}/nft/${nft.nftokenid}?${params}`;
     url = `${BASE}/nft/${nft.nftokenid}`;
   } else if (type === 'collection' && collection) {
     const name = normalizeName(collection.name);
     title = customTitle || `${name} Collection - XRPL.to`;
     desc = customDesc || `${name} - ${collection.nfts || 0} NFTs on XRP Ledger.`;
-    const params = new URLSearchParams({ name, nfts: collection.nfts || '', image: collection.image || '' });
+    const params = new URLSearchParams({
+      name,
+      nfts: collection.nfts || '',
+      image: collection.image || ''
+    });
     image = customImage || `${OG_API}/nfts/${collection.slug}?${params}`;
     url = `${BASE}/nfts/${collection.slug}`;
   } else if (type === 'tag' && tag) {

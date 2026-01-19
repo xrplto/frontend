@@ -128,27 +128,30 @@ function ImagesPage() {
     }
   }, [selectedFile, imageName, clearSelection, fetchImages]);
 
-  const handleDelete = useCallback(async (filename) => {
-    try {
-      setError(null);
-      const response = await fetch(`${BASE_URL}/api/images/${filename}`, {
-        method: 'DELETE'
-      });
+  const handleDelete = useCallback(
+    async (filename) => {
+      try {
+        setError(null);
+        const response = await fetch(`${BASE_URL}/api/images/${filename}`, {
+          method: 'DELETE'
+        });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to delete image');
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to delete image');
+        }
+
+        setSuccessMessage('Image deleted successfully');
+        setDeleteConfirm(null);
+        fetchImages();
+
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } catch (err) {
+        setError(err.message);
       }
-
-      setSuccessMessage('Image deleted successfully');
-      setDeleteConfirm(null);
-      fetchImages();
-
-      setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, [fetchImages]);
+    },
+    [fetchImages]
+  );
 
   const copyToClipboard = useCallback(async (url) => {
     try {
@@ -161,27 +164,53 @@ function ImagesPage() {
   }, []);
 
   return (
-    <div className={cn("flex min-h-screen flex-col", isDark ? "bg-black" : "bg-white")}>
+    <div className={cn('flex min-h-screen flex-col', isDark ? 'bg-black' : 'bg-white')}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
       <h1 className="sr-only">Image Upload</h1>
 
-      <div className={cn('flex-1 mt-4 pb-4 sm:pb-6', notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4')}>
+      <div
+        className={cn(
+          'flex-1 mt-4 pb-4 sm:pb-6',
+          notificationPanelOpen ? 'px-4' : 'mx-auto max-w-[1920px] px-4'
+        )}
+      >
         {/* Page Header */}
-        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+        <div
+          className={cn(
+            'mb-4 rounded-xl border-[1.5px] p-4',
+            isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+          )}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", isDark ? "bg-primary/10" : "bg-primary/5")}>
+              <div
+                className={cn(
+                  'flex h-9 w-9 items-center justify-center rounded-lg',
+                  isDark ? 'bg-primary/10' : 'bg-primary/5'
+                )}
+              >
                 <ImageIcon size={18} className="text-primary" />
               </div>
               <div>
-                <h2 className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>Image Upload</h2>
-                <p className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-500")}>Upload and manage images</p>
+                <h2
+                  className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                >
+                  Image Upload
+                </h2>
+                <p className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-500')}>
+                  Upload and manage images
+                </p>
               </div>
             </div>
-            <span className={cn("rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium", isDark ? "border-white/10 text-gray-400" : "border-gray-200 text-gray-500")}>
+            <span
+              className={cn(
+                'rounded-lg border-[1.5px] px-2.5 py-1 text-[11px] font-medium',
+                isDark ? 'border-white/10 text-gray-400' : 'border-gray-200 text-gray-500'
+              )}
+            >
               {images.length} images
             </span>
           </div>
@@ -206,8 +235,18 @@ function ImagesPage() {
         )}
 
         {/* Upload Section */}
-        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.01]" : "border-gray-200")}>
-          <p className={cn("mb-3 text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
+        <div
+          className={cn(
+            'mb-4 rounded-xl border-[1.5px] p-4',
+            isDark ? 'border-white/10 bg-white/[0.01]' : 'border-gray-200'
+          )}
+        >
+          <p
+            className={cn(
+              'mb-3 text-[11px] font-medium uppercase tracking-wide',
+              isDark ? 'text-gray-500' : 'text-gray-500'
+            )}
+          >
             Upload New Image
           </p>
 
@@ -218,29 +257,41 @@ function ImagesPage() {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={cn(
-                "flex flex-col items-center justify-center rounded-xl border-[1.5px] border-dashed p-10 transition-all",
+                'flex flex-col items-center justify-center rounded-xl border-[1.5px] border-dashed p-10 transition-all',
                 dragActive
-                  ? "border-primary bg-primary/5"
+                  ? 'border-primary bg-primary/5'
                   : isDark
-                    ? "border-white/15 hover:border-primary/40 hover:bg-primary/5"
-                    : "border-gray-300 hover:border-primary/50 hover:bg-gray-50"
+                    ? 'border-white/15 hover:border-primary/40 hover:bg-primary/5'
+                    : 'border-gray-300 hover:border-primary/50 hover:bg-gray-50'
               )}
             >
-              <div className={cn("mb-4 flex h-12 w-12 items-center justify-center rounded-xl", isDark ? "bg-primary/10" : "bg-primary/5")}>
+              <div
+                className={cn(
+                  'mb-4 flex h-12 w-12 items-center justify-center rounded-xl',
+                  isDark ? 'bg-primary/10' : 'bg-primary/5'
+                )}
+              >
                 <Upload size={22} className="text-primary" />
               </div>
-              <p className={cn("mb-1 text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+              <p
+                className={cn(
+                  'mb-1 text-[14px] font-medium',
+                  isDark ? 'text-white' : 'text-gray-900'
+                )}
+              >
                 Drag and drop an image here
               </p>
-              <p className={cn("mb-4 text-[12px]", isDark ? "text-gray-500" : "text-gray-500")}>
+              <p className={cn('mb-4 text-[12px]', isDark ? 'text-gray-500' : 'text-gray-500')}>
                 PNG, JPG, GIF up to 10MB
               </p>
-              <label className={cn(
-                "cursor-pointer rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-all",
-                isDark
-                  ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-                  : "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
-              )}>
+              <label
+                className={cn(
+                  'cursor-pointer rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-medium transition-all',
+                  isDark
+                    ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/20'
+                    : 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10'
+                )}
+              >
                 Select Image
                 <input
                   type="file"
@@ -254,15 +305,13 @@ function ImagesPage() {
             <div className="space-y-4">
               {/* Preview */}
               <div className="flex flex-col gap-4 sm:flex-row">
-                <div className={cn(
-                  "relative h-48 w-full overflow-hidden rounded-xl border-[1.5px] sm:w-48",
-                  isDark ? "border-white/15" : "border-gray-300"
-                )}>
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
+                <div
+                  className={cn(
+                    'relative h-48 w-full overflow-hidden rounded-xl border-[1.5px] sm:w-48',
+                    isDark ? 'border-white/15' : 'border-gray-300'
+                  )}
+                >
+                  <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
                   <button
                     onClick={clearSelection}
                     className="absolute right-2 top-2 rounded-lg bg-black/50 p-1.5 text-white hover:bg-black/70"
@@ -273,7 +322,12 @@ function ImagesPage() {
 
                 <div className="flex flex-1 flex-col gap-3">
                   <div>
-                    <label className={cn("mb-1.5 block text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
+                    <label
+                      className={cn(
+                        'mb-1.5 block text-[11px] font-medium uppercase tracking-wide',
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      )}
+                    >
                       Image Name (optional)
                     </label>
                     <input
@@ -282,15 +336,15 @@ function ImagesPage() {
                       onChange={(e) => setImageName(e.target.value)}
                       placeholder="Enter image name"
                       className={cn(
-                        "w-full rounded-lg border-[1.5px] bg-transparent px-3 py-2 text-sm focus:border-primary focus:outline-none",
+                        'w-full rounded-lg border-[1.5px] bg-transparent px-3 py-2 text-sm focus:border-primary focus:outline-none',
                         isDark
-                          ? "border-white/15 text-white placeholder:text-gray-500"
-                          : "border-gray-300 text-gray-900 placeholder:text-gray-400"
+                          ? 'border-white/15 text-white placeholder:text-gray-500'
+                          : 'border-gray-300 text-gray-900 placeholder:text-gray-400'
                       )}
                     />
                   </div>
 
-                  <div className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-500")}>
+                  <div className={cn('text-[13px]', isDark ? 'text-gray-400' : 'text-gray-500')}>
                     <p>File: {selectedFile.name}</p>
                     <p>Size: {(selectedFile.size / 1024).toFixed(1)} KB</p>
                   </div>
@@ -300,17 +354,28 @@ function ImagesPage() {
                       onClick={handleUpload}
                       disabled={uploading}
                       className={cn(
-                        "flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+                        'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
                         uploading
-                          ? "cursor-not-allowed opacity-50"
-                          : "border-primary bg-primary text-white hover:bg-primary/90"
+                          ? 'cursor-not-allowed opacity-50'
+                          : 'border-primary bg-primary text-white hover:bg-primary/90'
                       )}
                     >
                       {uploading ? (
                         <>
                           <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
                           </svg>
                           Uploading...
                         </>
@@ -324,10 +389,10 @@ function ImagesPage() {
                     <button
                       onClick={clearSelection}
                       className={cn(
-                        "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+                        'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors',
                         isDark
-                          ? "border-white/15 hover:border-primary hover:bg-primary/5"
-                          : "border-gray-300 hover:border-primary hover:bg-gray-100"
+                          ? 'border-white/15 hover:border-primary hover:bg-primary/5'
+                          : 'border-gray-300 hover:border-primary hover:bg-gray-100'
                       )}
                     >
                       Cancel
@@ -340,23 +405,45 @@ function ImagesPage() {
         </div>
 
         {/* Images List */}
-        <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]" : "border-gray-200")}>
+        <div
+          className={cn(
+            'rounded-xl border-[1.5px] p-4',
+            isDark
+              ? 'border-[rgba(59,130,246,0.08)] bg-[rgba(255,255,255,0.01)]'
+              : 'border-gray-200'
+          )}
+        >
           <div className="mb-4 flex items-center justify-between">
-            <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-500" : "text-gray-500")}>
+            <p
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wide',
+                isDark ? 'text-gray-500' : 'text-gray-500'
+              )}
+            >
               Uploaded Images
             </p>
             <button
               onClick={fetchImages}
               disabled={loading}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-normal transition-colors",
+                'flex items-center gap-1.5 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-normal transition-colors',
                 isDark
-                  ? "border-[rgba(59,130,246,0.08)] hover:border-primary hover:bg-primary/5"
-                  : "border-gray-200 hover:border-primary hover:bg-gray-50"
+                  ? 'border-[rgba(59,130,246,0.08)] hover:border-primary hover:bg-primary/5'
+                  : 'border-gray-200 hover:border-primary hover:bg-gray-50'
               )}
             >
-              <svg className={cn("h-3.5 w-3.5", loading && "animate-spin")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                className={cn('h-3.5 w-3.5', loading && 'animate-spin')}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               Refresh
             </button>
@@ -365,34 +452,59 @@ function ImagesPage() {
           {loading ? (
             <div className="flex justify-center py-16">
               <svg className="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
             </div>
           ) : images.length === 0 ? (
             <div className="py-16 text-center">
-              <div className={cn("mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl", isDark ? "bg-[rgba(59,130,246,0.05)]" : "bg-gray-100")}>
-                <ImageIcon size={28} className={cn(isDark ? "text-gray-600" : "text-gray-400")} />
+              <div
+                className={cn(
+                  'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl',
+                  isDark ? 'bg-[rgba(59,130,246,0.05)]' : 'bg-gray-100'
+                )}
+              >
+                <ImageIcon size={28} className={cn(isDark ? 'text-gray-600' : 'text-gray-400')} />
               </div>
-              <p className={cn("mb-1 text-[14px] font-medium", isDark ? "text-gray-400" : "text-gray-600")}>
+              <p
+                className={cn(
+                  'mb-1 text-[14px] font-medium',
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                )}
+              >
                 No images uploaded yet
               </p>
-              <p className={cn("text-[12px]", isDark ? "text-gray-600" : "text-gray-500")}>
+              <p className={cn('text-[12px]', isDark ? 'text-gray-600' : 'text-gray-500')}>
                 Upload your first image above
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {images.map((image) => {
-                const imageUrl = typeof image === 'string' ? image : image.url || `${BASE_URL}/api/images/${image.filename}`;
-                const filename = typeof image === 'string' ? image.split('/').pop() : image.filename || image.name;
+                const imageUrl =
+                  typeof image === 'string'
+                    ? image
+                    : image.url || `${BASE_URL}/api/images/${image.filename}`;
+                const filename =
+                  typeof image === 'string' ? image.split('/').pop() : image.filename || image.name;
 
                 return (
                   <div
                     key={filename}
                     className={cn(
-                      "group relative overflow-hidden rounded-xl border-[1.5px]",
-                      isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200"
+                      'group relative overflow-hidden rounded-xl border-[1.5px]',
+                      isDark ? 'border-[rgba(59,130,246,0.12)]' : 'border-gray-200'
                     )}
                   >
                     <div className="aspect-square">
@@ -405,9 +517,11 @@ function ImagesPage() {
                     </div>
 
                     {/* Overlay with actions */}
-                    <div className={cn(
-                      "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-                    )}>
+                    <div
+                      className={cn(
+                        'absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent opacity-0 transition-opacity group-hover:opacity-100'
+                      )}
+                    >
                       <div className="p-2">
                         <p className="mb-2 truncate text-[11px] text-white">{filename}</p>
                         <div className="flex gap-1">
@@ -431,7 +545,9 @@ function ImagesPage() {
                     {/* Delete confirmation */}
                     {deleteConfirm === filename && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 p-4">
-                        <p className="mb-3 text-center text-[13px] text-white">Delete this image?</p>
+                        <p className="mb-3 text-center text-[13px] text-white">
+                          Delete this image?
+                        </p>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleDelete(filename)}

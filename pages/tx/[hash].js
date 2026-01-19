@@ -4,11 +4,34 @@ import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy, ArrowLeftRight, Wallet, TrendingUp, AlertCircle, Home, Search, Share2, Send, Link as LinkIcon, FileText, Scale, Settings, Code, ChevronRight, Check, X } from 'lucide-react';
+import {
+  Copy,
+  ArrowLeftRight,
+  Wallet,
+  TrendingUp,
+  AlertCircle,
+  Home,
+  Search,
+  Share2,
+  Send,
+  Link as LinkIcon,
+  FileText,
+  Scale,
+  Settings,
+  Code,
+  ChevronRight,
+  Check,
+  X
+} from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
-import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode, getNftCoverUrl } from 'src/utils/parseUtils';
+import {
+  rippleTimeToISO8601,
+  dropsToXrp,
+  normalizeCurrencyCode,
+  getNftCoverUrl
+} from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import CryptoJS from 'crypto-js';
@@ -25,7 +48,9 @@ function formatDecimal(decimal, decimalPlaces = null) {
 const alpha = (color, opacity) => {
   if (!color) return `rgba(0,0,0,${opacity})`;
   if (color.startsWith('#')) {
-    const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
+    const r = parseInt(color.slice(1, 3), 16),
+      g = parseInt(color.slice(3, 5), 16),
+      b = parseInt(color.slice(5, 7), 16);
     return `rgba(${r},${g},${b},${opacity})`;
   }
   return color;
@@ -40,7 +65,10 @@ const useTheme = () => {
       primary: { main: '#4285f4' },
       success: { main: '#10b981' },
       error: { main: '#ef4444' },
-      text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+      text: {
+        primary: isDark ? '#fff' : '#000',
+        secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
+      },
       background: { default: isDark ? '#000' : '#fff', paper: isDark ? '#111' : '#fff' },
       divider: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
     }
@@ -49,34 +77,112 @@ const useTheme = () => {
 
 const sx2style = (sx) => {
   if (!sx) return {};
-  const s = {}, u = 8;
+  const s = {},
+    u = 8;
   for (const [k, v] of Object.entries(sx)) {
     if (v === undefined || typeof v === 'object') continue;
     if (k === 'p') s.padding = `${v * u}px`;
     else if (k === 'pt') s.paddingTop = `${v * u}px`;
     else if (k === 'pb') s.paddingBottom = `${v * u}px`;
-    else if (k === 'px') { s.paddingLeft = s.paddingRight = `${v * u}px`; }
-    else if (k === 'py') { s.paddingTop = s.paddingBottom = `${v * u}px`; }
-    else if (k === 'mt') s.marginTop = `${v * u}px`;
+    else if (k === 'px') {
+      s.paddingLeft = s.paddingRight = `${v * u}px`;
+    } else if (k === 'py') {
+      s.paddingTop = s.paddingBottom = `${v * u}px`;
+    } else if (k === 'mt') s.marginTop = `${v * u}px`;
     else if (k === 'mb') s.marginBottom = `${v * u}px`;
     else if (k === 'mr') s.marginRight = `${v * u}px`;
     else if (k === 'ml') s.marginLeft = `${v * u}px`;
-    else if (k === 'mx') { s.marginLeft = s.marginRight = `${v * u}px`; }
-    else if (k === 'my') { s.marginTop = s.marginBottom = `${v * u}px`; }
-    else if (k === 'gap') s.gap = typeof v === 'number' ? `${v * u}px` : v;
+    else if (k === 'mx') {
+      s.marginLeft = s.marginRight = `${v * u}px`;
+    } else if (k === 'my') {
+      s.marginTop = s.marginBottom = `${v * u}px`;
+    } else if (k === 'gap') s.gap = typeof v === 'number' ? `${v * u}px` : v;
     else if (k === 'bgcolor') s.backgroundColor = v;
     else s[k] = v;
   }
   return s;
 };
 
-const Box = ({ children, sx, component: C = 'div', ...p }) => <C style={sx2style(sx)} {...p}>{children}</C>;
-const Typography = ({ children, variant, component: C, sx, ...p }) => { const Tag = C || (variant?.startsWith('h') ? variant : 'span'); return <Tag style={sx2style(sx)} {...p}>{children}</Tag>; };
-const Card = ({ children, sx, ...p }) => <div style={{ borderRadius: '12px', ...sx2style(sx) }} {...p}>{children}</div>;
-const CardContent = ({ children, sx, ...p }) => <div style={{ padding: '16px', ...sx2style(sx) }} {...p}>{children}</div>;
-const Chip = ({ label, sx, ...p }) => <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '9999px', padding: '2px 8px', fontSize: '12px', ...sx2style(sx) }} {...p}>{label}</span>;
-const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => <div style={{ display: 'flex', flexDirection: direction === 'row' ? 'row' : 'column', gap: `${spacing * 8}px`, alignItems, ...sx2style(sx) }} {...p}>{children}</div>;
-const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img key={src} src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
+const Box = ({ children, sx, component: C = 'div', ...p }) => (
+  <C style={sx2style(sx)} {...p}>
+    {children}
+  </C>
+);
+const Typography = ({ children, variant, component: C, sx, ...p }) => {
+  const Tag = C || (variant?.startsWith('h') ? variant : 'span');
+  return (
+    <Tag style={sx2style(sx)} {...p}>
+      {children}
+    </Tag>
+  );
+};
+const Card = ({ children, sx, ...p }) => (
+  <div style={{ borderRadius: '12px', ...sx2style(sx) }} {...p}>
+    {children}
+  </div>
+);
+const CardContent = ({ children, sx, ...p }) => (
+  <div style={{ padding: '16px', ...sx2style(sx) }} {...p}>
+    {children}
+  </div>
+);
+const Chip = ({ label, sx, ...p }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      borderRadius: '9999px',
+      padding: '2px 8px',
+      fontSize: '12px',
+      ...sx2style(sx)
+    }}
+    {...p}
+  >
+    {label}
+  </span>
+);
+const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: direction === 'row' ? 'row' : 'column',
+      gap: `${spacing * 8}px`,
+      alignItems,
+      ...sx2style(sx)
+    }}
+    {...p}
+  >
+    {children}
+  </div>
+);
+const Avatar = ({ src, children, sx, onError, ...p }) => (
+  <div
+    style={{
+      width: 40,
+      height: 40,
+      borderRadius: '50%',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#e0e0e0',
+      ...sx2style(sx)
+    }}
+    {...p}
+  >
+    {src ? (
+      <img
+        key={src}
+        src={src}
+        alt=""
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        onError={onError}
+      />
+    ) : (
+      children
+    )}
+  </div>
+);
 const Tooltip = ({ children, title, onOpen, ...p }) => {
   const [show, setShow] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -100,31 +206,93 @@ const Tooltip = ({ children, title, onOpen, ...p }) => {
       {...p}
     >
       {children}
-      {show && title && typeof title !== 'string' && typeof window !== 'undefined' && createPortal(
-        <div style={{
-          position: 'fixed', top: pos.top, left: pos.left, transform: 'translate(-50%, -100%)',
-          zIndex: 99999, minWidth: 200,
-          background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: 12, padding: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-        }}>{title}</div>,
-        document.body
-      )}
+      {show &&
+        title &&
+        typeof title !== 'string' &&
+        typeof window !== 'undefined' &&
+        createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: pos.top,
+              left: pos.left,
+              transform: 'translate(-50%, -100%)',
+              zIndex: 99999,
+              minWidth: 200,
+              background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              borderRadius: 12,
+              padding: 12,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}
+          >
+            {title}
+          </div>,
+          document.body
+        )}
     </span>
   );
 };
-const IconButton = ({ children, onClick, sx, ...p }) => <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'inline-flex', ...sx2style(sx) }} onClick={onClick} {...p}>{children}</button>;
-const Divider = ({ sx, ...p }) => <hr style={{ border: 'none', borderTop: '1px solid rgba(128,128,128,0.2)', margin: '8px 0', ...sx2style(sx) }} {...p} />;
+const IconButton = ({ children, onClick, sx, ...p }) => (
+  <button
+    type="button"
+    style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '8px',
+      borderRadius: '50%',
+      display: 'inline-flex',
+      ...sx2style(sx)
+    }}
+    onClick={onClick}
+    {...p}
+  >
+    {children}
+  </button>
+);
+const Divider = ({ sx, ...p }) => (
+  <hr
+    style={{
+      border: 'none',
+      borderTop: '1px solid rgba(128,128,128,0.2)',
+      margin: '8px 0',
+      ...sx2style(sx)
+    }}
+    {...p}
+  />
+);
 const FileCopyOutlinedIcon = ({ sx }) => <Copy size={sx?.fontSize ? parseInt(sx.fontSize) : 16} />;
 const SwapHorizIcon = () => <ArrowLeftRight size={18} />;
 const TrendingUpIcon = () => <TrendingUp size={18} />;
 const AccountBalanceWalletIcon = () => <Wallet size={18} />;
 const Grid = ({ children, container, spacing = 0, size, sx, ...p }) => {
-  if (container) return <div style={{ display: 'flex', flexWrap: 'wrap', gap: `${spacing * 8}px`, ...sx2style(sx) }} {...p}>{children}</div>;
-  const xs = size?.xs || 12, md = size?.md;
+  if (container)
+    return (
+      <div
+        style={{ display: 'flex', flexWrap: 'wrap', gap: `${spacing * 8}px`, ...sx2style(sx) }}
+        {...p}
+      >
+        {children}
+      </div>
+    );
+  const xs = size?.xs || 12,
+    md = size?.md;
   const width = md ? undefined : `${(xs / 12) * 100}%`;
-  return <div style={{ flex: md ? `0 0 ${(md / 12) * 100}%` : `0 0 ${width}`, maxWidth: md ? `${(md / 12) * 100}%` : width, ...sx2style(sx) }} {...p}>{children}</div>;
+  return (
+    <div
+      style={{
+        flex: md ? `0 0 ${(md / 12) * 100}%` : `0 0 ${width}`,
+        maxWidth: md ? `${(md / 12) * 100}%` : width,
+        ...sx2style(sx)
+      }}
+      {...p}
+    >
+      {children}
+    </div>
+  );
 };
 
 // Parse date from either ISO string (api.xrpl.to) or ripple epoch (raw XRPL)
@@ -215,16 +383,16 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
         onClick={copyJson}
         title={copied ? 'Copied!' : 'Copy JSON'}
         className={cn(
-          "absolute top-2 right-2 z-10 p-2 rounded-full transition-colors",
-          isDark ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"
+          'absolute top-2 right-2 z-10 p-2 rounded-full transition-colors',
+          isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'
         )}
       >
         <Copy size={14} />
       </button>
       <pre
         className={cn(
-          "font-mono text-xs leading-relaxed p-4 rounded-md whitespace-pre-wrap break-words",
-          isDark ? "bg-white/[0.02] text-white/90" : "bg-gray-100 text-gray-800"
+          'font-mono text-xs leading-relaxed p-4 rounded-md whitespace-pre-wrap break-words',
+          isDark ? 'bg-white/[0.02] text-white/90' : 'bg-gray-100 text-gray-800'
         )}
         dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
       />
@@ -238,16 +406,22 @@ const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
   const isOdd = index % 2 === 1;
 
   return (
-    <div className={cn(
-      "grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px]",
-      isOdd && (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
-    )}>
-      <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>{label}</span>
-      <div className={cn(
-        "text-[13px] flex items-center gap-2",
-        alignValue === 'right' ? "justify-end" : "justify-start",
-        isDark ? "text-white/90" : "text-gray-800"
-      )}>{children}</div>
+    <div
+      className={cn(
+        'grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px]',
+        isOdd && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
+      )}
+    >
+      <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>{label}</span>
+      <div
+        className={cn(
+          'text-[13px] flex items-center gap-2',
+          alignValue === 'right' ? 'justify-end' : 'justify-start',
+          isDark ? 'text-white/90' : 'text-gray-800'
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };
@@ -467,12 +641,27 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   }
 
   // Enhanced tooltip for regular tokens - clean symmetrical layout
-  const chipStyle = { fontSize: '10px', height: '20px', px: 1, backgroundColor: 'rgba(66,133,244,0.08)', color: '#4285f4', border: '1px solid rgba(66,133,244,0.2)', fontWeight: 400 };
-  const greenChipStyle = { ...chipStyle, backgroundColor: 'rgba(16,185,129,0.08)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' };
+  const chipStyle = {
+    fontSize: '10px',
+    height: '20px',
+    px: 1,
+    backgroundColor: 'rgba(66,133,244,0.08)',
+    color: '#4285f4',
+    border: '1px solid rgba(66,133,244,0.2)',
+    fontWeight: 400
+  };
+  const greenChipStyle = {
+    ...chipStyle,
+    backgroundColor: 'rgba(16,185,129,0.08)',
+    color: '#10b981',
+    border: '1px solid rgba(16,185,129,0.2)'
+  };
   const Row = ({ label, value }) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
       <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>{label}</span>
-      <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 500 }}>{value}</span>
+      <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: 500 }}>
+        {value}
+      </span>
     </div>
   );
 
@@ -482,9 +671,23 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         {imageUrl && <Avatar src={imageUrl} sx={{ width: 40, height: 40 }} />}
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff' }}>{token.name || token.user || 'Unknown'}</div>
-          {token.user && token.name !== token.user && <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>"{token.user}"</div>}
-          {token.issuer && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>{token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}</div>}
+          <div style={{ fontSize: '16px', fontWeight: 500, color: '#fff' }}>
+            {token.name || token.user || 'Unknown'}
+          </div>
+          {token.user && token.name !== token.user && (
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>"{token.user}"</div>
+          )}
+          {token.issuer && (
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'rgba(255,255,255,0.4)',
+                fontFamily: 'var(--font-mono)'
+              }}
+            >
+              {token.issuer.slice(0, 8)}...{token.issuer.slice(-6)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -492,16 +695,26 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       {(token.usd || token.exch) && (
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {token.usd && <Chip label={`$${new Decimal(token.usd).toFixed(6)}`} sx={chipStyle} />}
-          {token.exch && <Chip label={`${new Decimal(token.exch).toFixed(6)} XRP`} sx={chipStyle} />}
+          {token.exch && (
+            <Chip label={`${new Decimal(token.exch).toFixed(6)} XRP`} sx={chipStyle} />
+          )}
         </div>
       )}
 
       {/* Market Data Grid */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}>
-        {token.marketcap > 0 && <Row label="Market Cap" value={`${formatDecimal(new Decimal(token.marketcap), 0)} XRP`} />}
+      <div
+        style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}
+      >
+        {token.marketcap > 0 && (
+          <Row label="Market Cap" value={`${formatDecimal(new Decimal(token.marketcap), 0)} XRP`} />
+        )}
         {token.supply && <Row label="Supply" value={formatDecimal(new Decimal(token.supply), 0)} />}
-        {token.holders && <Row label="Holders" value={formatDecimal(new Decimal(token.holders), 0)} />}
-        {token.trustlines && <Row label="Trust Lines" value={formatDecimal(new Decimal(token.trustlines), 0)} />}
+        {token.holders && (
+          <Row label="Holders" value={formatDecimal(new Decimal(token.holders), 0)} />
+        )}
+        {token.trustlines && (
+          <Row label="Trust Lines" value={formatDecimal(new Decimal(token.trustlines), 0)} />
+        )}
       </div>
 
       {/* Features & Social Row */}
@@ -515,7 +728,9 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Info */}
       {token.domain && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}>
+        <div
+          style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12, marginBottom: 12 }}
+        >
           <Row label="Domain" value={token.domain} />
         </div>
       )}
@@ -523,7 +738,9 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       {/* Tags */}
       {token.tags?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {token.tags.slice(0, 4).map((tag) => <Chip key={tag} label={tag} sx={chipStyle} />)}
+          {token.tags.slice(0, 4).map((tag) => (
+            <Chip key={tag} label={tag} sx={chipStyle} />
+          ))}
         </div>
       )}
     </div>
@@ -1605,7 +1822,16 @@ const getTransactionDescription = (txData) => {
   }
 };
 
-const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation, aiLoading, onExplainWithAI, onCloseAI, swapInfo }) => {
+const TransactionSummaryCard = ({
+  txData,
+  activeTab,
+  setActiveTab,
+  aiExplanation,
+  aiLoading,
+  onExplainWithAI,
+  onCloseAI,
+  swapInfo
+}) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
@@ -1616,24 +1842,70 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
   const txUrl = `https://xrpl.to/tx/${hash}`;
   const shareText = `Check out this transaction on XRPL: ${txUrl}`;
 
-  const XIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>;
-  const TelegramIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>;
-  const DiscordIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>;
+  const XIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+  const TelegramIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+    </svg>
+  );
+  const DiscordIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+    </svg>
+  );
 
   const shareOptions = [
-    { name: 'X', icon: <XIcon />, url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}` },
-    { name: 'Telegram', icon: <TelegramIcon />, url: `https://t.me/share/url?url=${encodeURIComponent(txUrl)}&text=${encodeURIComponent('Check out this transaction on XRPL')}` },
-    { name: 'Discord', icon: <DiscordIcon />, action: () => { navigator.clipboard.writeText(shareText); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); } },
-    { name: 'Copy', icon: <LinkIcon size={14} />, action: () => { navigator.clipboard.writeText(shareText); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); } }
+    {
+      name: 'X',
+      icon: <XIcon />,
+      url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+    },
+    {
+      name: 'Telegram',
+      icon: <TelegramIcon />,
+      url: `https://t.me/share/url?url=${encodeURIComponent(txUrl)}&text=${encodeURIComponent('Check out this transaction on XRPL')}`
+    },
+    {
+      name: 'Discord',
+      icon: <DiscordIcon />,
+      action: () => {
+        navigator.clipboard.writeText(shareText);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    },
+    {
+      name: 'Copy',
+      icon: <LinkIcon size={14} />,
+      action: () => {
+        navigator.clipboard.writeText(shareText);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    }
   ];
 
   const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
   const description = getTransactionDescription(txData);
   const parsedDate = parseTransactionDate(date);
-  const timeAgo = parsedDate && !isNaN(parsedDate.getTime()) ? formatDistanceToNow(parsedDate) : null;
-  const dateStr = parsedDate && !isNaN(parsedDate.getTime())
-    ? parsedDate.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' })
-    : null;
+  const timeAgo =
+    parsedDate && !isNaN(parsedDate.getTime()) ? formatDistanceToNow(parsedDate) : null;
+  const dateStr =
+    parsedDate && !isNaN(parsedDate.getTime())
+      ? parsedDate.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: 'short'
+        })
+      : null;
 
   const copyHash = () => {
     navigator.clipboard.writeText(hash);
@@ -1651,54 +1923,63 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
   const isSwap = swapInfo && swapInfo.paid && swapInfo.got;
 
   return (
-    <div className={cn(
-      "rounded-xl mb-4 overflow-hidden",
-      isDark ? "bg-transparent" : "bg-white"
-    )} style={{
-      border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-    }}>
+    <div
+      className={cn('rounded-xl mb-4 overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
+      style={{
+        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
+      }}
+    >
       {/* Header bar */}
-      <div className={cn(
-        "flex items-center justify-between px-4 py-3",
-        isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-      )}>
+      <div
+        className={cn(
+          'flex items-center justify-between px-4 py-3',
+          isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
+        )}
+      >
         <div className="flex items-center gap-3">
-          <span className={cn(
-            "w-7 h-7 rounded-md flex items-center justify-center",
-            isSuccess ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
-          )}>
+          <span
+            className={cn(
+              'w-7 h-7 rounded-md flex items-center justify-center',
+              isSuccess ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
+            )}
+          >
             {isSuccess ? <Check size={16} strokeWidth={2.5} /> : <X size={16} strokeWidth={2.5} />}
           </span>
-          <span className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium uppercase tracking-wide",
-            isDark ? "bg-white/5 text-white/80 border border-white/10" : "bg-gray-50 text-gray-600 border border-gray-200"
-          )}>
+          <span
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium uppercase tracking-wide',
+              isDark
+                ? 'bg-white/5 text-white/80 border border-white/10'
+                : 'bg-gray-50 text-gray-600 border border-gray-200'
+            )}
+          >
             <ArrowLeftRight size={12} />
             {isSwap ? 'Swap' : 'Transaction'}
           </span>
           {/* Swap Summary Inline */}
           {isSwap && isSuccess && (
             <div className="flex items-center gap-1.5 ml-1">
-              <span className={cn("text-[13px] font-mono px-1.5 py-0.5 rounded", isDark ? "text-white/60 bg-white/5" : "text-gray-600 bg-gray-100")}>
+              <span
+                className={cn(
+                  'text-[13px] font-mono px-1.5 py-0.5 rounded',
+                  isDark ? 'text-white/60 bg-white/5' : 'text-gray-600 bg-gray-100'
+                )}
+              >
                 {Account.slice(0, 4)}..{Account.slice(-3)}
               </span>
-              <ChevronRight size={14} className={isDark ? "text-white/25" : "text-gray-300"} />
+              <ChevronRight size={14} className={isDark ? 'text-white/25' : 'text-gray-300'} />
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/15">
                 <span className="text-red-400 text-[13px] font-medium font-mono">
                   -{formatDecimal(new Decimal(swapInfo.paid.value))}
                 </span>
-                <span className="text-red-400/70 text-[12px]">
-                  {swapInfo.paid.currency}
-                </span>
+                <span className="text-red-400/70 text-[12px]">{swapInfo.paid.currency}</span>
               </span>
-              <ChevronRight size={14} className={isDark ? "text-white/25" : "text-gray-300"} />
+              <ChevronRight size={14} className={isDark ? 'text-white/25' : 'text-gray-300'} />
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15">
                 <span className="text-emerald-400 text-[13px] font-medium font-mono">
                   +{formatDecimal(new Decimal(swapInfo.got.value))}
                 </span>
-                <span className="text-emerald-400/70 text-[12px]">
-                  {swapInfo.got.currency}
-                </span>
+                <span className="text-emerald-400/70 text-[12px]">{swapInfo.got.currency}</span>
               </span>
             </div>
           )}
@@ -1709,21 +1990,23 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               onClick={() => setShareOpen(!shareOpen)}
               title="Share"
               className={cn(
-                "w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200",
+                'w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200',
                 isDark
-                  ? "border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06]"
-                  : "border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100"
+                  ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06]'
+                  : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100'
               )}
             >
-              <Share2 size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
+              <Share2 size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
             </button>
             {shareOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
-                <div className={cn(
-                  "absolute right-0 top-11 z-50 rounded-lg border p-1.5 min-w-[140px]",
-                  isDark ? "bg-[#111] border-white/10" : "bg-white border-gray-200 shadow-lg"
-                )}>
+                <div
+                  className={cn(
+                    'absolute right-0 top-11 z-50 rounded-lg border p-1.5 min-w-[140px]',
+                    isDark ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                  )}
+                >
                   {shareOptions.map((opt) => (
                     <button
                       key={opt.name}
@@ -1733,8 +2016,10 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                         setShareOpen(false);
                       }}
                       className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 rounded text-[13px] text-left",
-                        isDark ? "hover:bg-white/10 text-white/80" : "hover:bg-gray-100 text-gray-700"
+                        'w-full flex items-center gap-2 px-3 py-2 rounded text-[13px] text-left',
+                        isDark
+                          ? 'hover:bg-white/10 text-white/80'
+                          : 'hover:bg-gray-100 text-gray-700'
                       )}
                     >
                       {opt.icon}
@@ -1745,13 +2030,21 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               </>
             )}
           </div>
-          {(aiExplanation || aiLoading) ? (
+          {aiExplanation || aiLoading ? (
             <button
               onClick={onCloseAI}
               className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
-                <path d="M18 6L6 18M6 6l12 12"/>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-white/40"
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
           ) : (
@@ -1759,11 +2052,25 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               onClick={onExplainWithAI}
               className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors">
-                <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
-                <path d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z" fill="currentColor"/>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors"
+              >
+                <path
+                  d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z"
+                  fill="currentColor"
+                />
               </svg>
-              <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">Explain with AI</span>
+              <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">
+                Explain with AI
+              </span>
             </button>
           )}
         </div>
@@ -1771,22 +2078,40 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
 
       {/* AI Loading State */}
       {aiLoading && (
-        <div className={cn(
-          "px-6 py-5 relative overflow-hidden",
-          isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-        )}>
+        <div
+          className={cn(
+            'px-6 py-5 relative overflow-hidden',
+            isDark
+              ? 'border-b border-[rgba(255,255,255,0.10)]'
+              : 'border-b border-[rgba(0,0,0,0.08)]'
+          )}
+        >
           <style jsx>{`
             @keyframes scanline {
-              0% { transform: translateX(-100%); }
-              100% { transform: translateX(200%); }
+              0% {
+                transform: translateX(-100%);
+              }
+              100% {
+                transform: translateX(200%);
+              }
             }
             @keyframes glow {
-              0%, 100% { opacity: 0.3; }
-              50% { opacity: 0.8; }
+              0%,
+              100% {
+                opacity: 0.3;
+              }
+              50% {
+                opacity: 0.8;
+              }
             }
             @keyframes pulse-bar {
-              0%, 100% { opacity: 0.15; }
-              50% { opacity: 0.4; }
+              0%,
+              100% {
+                opacity: 0.15;
+              }
+              50% {
+                opacity: 0.4;
+              }
             }
           `}</style>
           <div className="space-y-2.5">
@@ -1799,7 +2124,12 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                 <div
                   className="absolute inset-0 rounded-sm"
                   style={{
-                    background: i === 5 ? 'rgba(139,92,246,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                    background:
+                      i === 5
+                        ? 'rgba(139,92,246,0.3)'
+                        : isDark
+                          ? 'rgba(255,255,255,0.08)'
+                          : 'rgba(0,0,0,0.08)',
                     animation: `pulse-bar 2s ease-in-out infinite`,
                     animationDelay: `${i * 0.15}s`
                   }}
@@ -1807,9 +2137,10 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
                 <div
                   className="absolute inset-0 rounded-sm"
                   style={{
-                    background: i === 5
-                      ? 'linear-gradient(90deg, transparent, #8b5cf6, transparent)'
-                      : `linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}, transparent)`,
+                    background:
+                      i === 5
+                        ? 'linear-gradient(90deg, transparent, #8b5cf6, transparent)'
+                        : `linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}, transparent)`,
                     animation: `scanline 1.5s ease-in-out infinite`,
                     animationDelay: `${i * 0.1}s`
                   }}
@@ -1817,21 +2148,28 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
               </div>
             ))}
           </div>
-          <div className={cn("mt-5 text-[13px] font-mono flex items-center gap-2", isDark ? "text-white/40" : "text-gray-400")}>
+          <div
+            className={cn(
+              'mt-5 text-[13px] font-mono flex items-center gap-2',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}
+          >
             <span
               className="inline-block w-2 h-2 rounded-full bg-[#8b5cf6]"
               style={{ animation: 'glow 1s ease-in-out infinite' }}
             />
             Analyzing
             <span className="inline-flex tracking-widest">
-              {[0, 1, 2].map(i => (
+              {[0, 1, 2].map((i) => (
                 <span
                   key={i}
                   style={{
                     animation: 'glow 1s ease-in-out infinite',
                     animationDelay: `${i * 0.2}s`
                   }}
-                >.</span>
+                >
+                  .
+                </span>
               ))}
             </span>
           </div>
@@ -1839,97 +2177,132 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
       )}
 
       {/* AI Explanation Panel */}
-      {aiExplanation && !aiLoading && (() => {
-        // Parse summary - handle both parsed object and raw/malformed JSON formats
-        let summaryText = 'AI analysis complete.';
-        let keyPoints = [];
+      {aiExplanation &&
+        !aiLoading &&
+        (() => {
+          // Parse summary - handle both parsed object and raw/malformed JSON formats
+          let summaryText = 'AI analysis complete.';
+          let keyPoints = [];
 
-        const raw = aiExplanation.summary?.raw || aiExplanation.summary;
-        if (typeof raw === 'string') {
-          // Extract summary from potentially malformed JSON
-          const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
-          if (summaryMatch) summaryText = summaryMatch[1];
-          // Extract keyPoints array
-          const keyPointsMatch = raw.match(/"keyPoints"\s*:\s*\[([^\]]*)/);
-          if (keyPointsMatch) {
-            const points = keyPointsMatch[1].match(/"([^"]+)"/g);
-            if (points) keyPoints = points.map(p => p.replace(/"/g, ''));
+          const raw = aiExplanation.summary?.raw || aiExplanation.summary;
+          if (typeof raw === 'string') {
+            // Extract summary from potentially malformed JSON
+            const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
+            if (summaryMatch) summaryText = summaryMatch[1];
+            // Extract keyPoints array
+            const keyPointsMatch = raw.match(/"keyPoints"\s*:\s*\[([^\]]*)/);
+            if (keyPointsMatch) {
+              const points = keyPointsMatch[1].match(/"([^"]+)"/g);
+              if (points) keyPoints = points.map((p) => p.replace(/"/g, ''));
+            }
+          } else if (typeof raw === 'object' && raw?.summary) {
+            summaryText = raw.summary;
+            keyPoints = raw.keyPoints || [];
           }
-        } else if (typeof raw === 'object' && raw?.summary) {
-          summaryText = raw.summary;
-          keyPoints = raw.keyPoints || [];
-        }
 
-        return (
-        <div className={cn(
-          "px-6 py-5",
-          isDark ? "border-b border-[rgba(139,92,246,0.12)]" : "border-b border-[rgba(0,0,0,0.08)]"
-        )}>
-          {/* Title with summary */}
-          <h3 className="text-[15px] mb-5">
-            <span className="text-[#a78bfa] font-medium">{aiExplanation.extracted?.type || 'Transaction'}:</span>{' '}
-            <span className={isDark ? "text-white" : "text-gray-900"}>
-              {summaryText}
-            </span>
-          </h3>
+          return (
+            <div
+              className={cn(
+                'px-6 py-5',
+                isDark
+                  ? 'border-b border-[rgba(139,92,246,0.12)]'
+                  : 'border-b border-[rgba(0,0,0,0.08)]'
+              )}
+            >
+              {/* Title with summary */}
+              <h3 className="text-[15px] mb-5">
+                <span className="text-[#a78bfa] font-medium">
+                  {aiExplanation.extracted?.type || 'Transaction'}:
+                </span>{' '}
+                <span className={isDark ? 'text-white' : 'text-gray-900'}>{summaryText}</span>
+              </h3>
 
-          {/* Key Points */}
-          {keyPoints.length > 0 && (
-            <div className="mb-5">
-              <h4 className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-white/60" : "text-gray-500")}>
-                Key Points
-              </h4>
-              <ul className="space-y-2">
-                {keyPoints.map((point, idx) => (
-                  <li key={idx} className={cn("flex items-start gap-2 text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
-                    <span className="text-[#8b5cf6]">•</span>
-                    <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* Key Points */}
+              {keyPoints.length > 0 && (
+                <div className="mb-5">
+                  <h4
+                    className={cn(
+                      'text-[11px] font-medium uppercase tracking-wider mb-3',
+                      isDark ? 'text-white/60' : 'text-gray-500'
+                    )}
+                  >
+                    Key Points
+                  </h4>
+                  <ul className="space-y-2">
+                    {keyPoints.map((point, idx) => (
+                      <li
+                        key={idx}
+                        className={cn(
+                          'flex items-start gap-2 text-[13px] font-mono',
+                          isDark ? 'text-white/80' : 'text-gray-700'
+                        )}
+                      >
+                        <span className="text-[#8b5cf6]">•</span>
+                        <span>{typeof point === 'string' ? point : JSON.stringify(point)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Additional Information */}
+              {aiExplanation.extracted?.platform &&
+                (() => {
+                  const platformUrl = Object.values(KNOWN_SOURCE_TAGS).find(
+                    (t) => t.name === aiExplanation.extracted.platform
+                  )?.url;
+                  return (
+                    <div>
+                      <h4
+                        className={cn(
+                          'text-[11px] font-medium uppercase tracking-wider mb-2',
+                          isDark ? 'text-white/60' : 'text-gray-500'
+                        )}
+                      >
+                        Additional Information
+                      </h4>
+                      <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-600')}>
+                        Transaction via{' '}
+                        {platformUrl ? (
+                          <a
+                            href={platformUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#a78bfa] hover:underline"
+                          >
+                            {aiExplanation.extracted.platform}
+                          </a>
+                        ) : (
+                          <span className="text-[#a78bfa]">{aiExplanation.extracted.platform}</span>
+                        )}
+                      </p>
+                    </div>
+                  );
+                })()}
             </div>
-          )}
-
-          {/* Additional Information */}
-          {aiExplanation.extracted?.platform && (() => {
-            const platformUrl = Object.values(KNOWN_SOURCE_TAGS).find(t => t.name === aiExplanation.extracted.platform)?.url;
-            return (
-              <div>
-                <h4 className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-white/60" : "text-gray-500")}>
-                  Additional Information
-                </h4>
-                <p className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-600")}>
-                  Transaction via {platformUrl ? (
-                    <a href={platformUrl} target="_blank" rel="noopener noreferrer" className="text-[#a78bfa] hover:underline">{aiExplanation.extracted.platform}</a>
-                  ) : (
-                    <span className="text-[#a78bfa]">{aiExplanation.extracted.platform}</span>
-                  )}
-                </p>
-              </div>
-            );
-          })()}
-        </div>
-        );
-      })()}
+          );
+        })()}
 
       {/* Tabs */}
-      <div className={cn(
-        "flex items-center gap-2 px-4 py-3",
-        isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-      )}>
+      <div
+        className={cn(
+          'flex items-center gap-2 px-4 py-3',
+          isDark ? 'border-b border-[rgba(255,255,255,0.10)]' : 'border-b border-[rgba(0,0,0,0.08)]'
+        )}
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border",
+              'flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border',
               activeTab === tab.id
                 ? isDark
-                  ? "bg-white/10 text-white/90 border-white/15"
-                  : "bg-black/[0.06] text-black/80 border-black/10"
+                  ? 'bg-white/10 text-white/90 border-white/15'
+                  : 'bg-black/[0.06] text-black/80 border-black/10'
                 : isDark
-                  ? "text-white/50 border-white/10 hover:bg-white/[0.06] hover:text-white/70"
-                  : "text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700"
+                  ? 'text-white/50 border-white/10 hover:bg-white/[0.06] hover:text-white/70'
+                  : 'text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700'
             )}
           >
             {tab.icon}
@@ -1939,36 +2312,68 @@ const TransactionSummaryCard = ({ txData, activeTab, setActiveTab, aiExplanation
       </div>
 
       {/* Info grid */}
-      <div className={cn(
-        "grid grid-cols-[1fr_2fr_1fr]",
-        isDark ? "divide-x divide-white/[0.06]" : "divide-x divide-gray-100"
-      )}>
+      <div
+        className={cn(
+          'grid grid-cols-[1fr_2fr_1fr]',
+          isDark ? 'divide-x divide-white/[0.06]' : 'divide-x divide-gray-100'
+        )}
+      >
         <div className="px-4 py-3">
-          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
+          <div
+            className={cn(
+              'text-[10px] uppercase tracking-wider mb-1.5',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}
+          >
             Signature
           </div>
           <div className="flex items-center gap-1.5">
-            <code className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
+            <code
+              className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-700')}
+            >
               {hash.slice(0, 4)}...{hash.slice(-4)}
             </code>
-            <button onClick={copyHash} className={cn("p-0.5 rounded transition-colors", isDark ? "text-white/40 hover:text-primary" : "text-gray-400 hover:text-primary")}>
+            <button
+              onClick={copyHash}
+              className={cn(
+                'p-0.5 rounded transition-colors',
+                isDark ? 'text-white/40 hover:text-primary' : 'text-gray-400 hover:text-primary'
+              )}
+            >
               <Copy size={12} />
             </button>
           </div>
         </div>
         <div className="px-4 py-3">
-          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
+          <div
+            className={cn(
+              'text-[10px] uppercase tracking-wider mb-1.5',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}
+          >
             Time
           </div>
-          <div className={cn("text-[13px]", isDark ? "text-white/80" : "text-gray-700")}>
-            {timeAgo ? <><span className="text-primary">{timeAgo} ago</span> <span className={isDark ? "text-white/50" : "text-gray-500"}>({dateStr})</span></> : 'Unknown'}
+          <div className={cn('text-[13px]', isDark ? 'text-white/80' : 'text-gray-700')}>
+            {timeAgo ? (
+              <>
+                <span className="text-primary">{timeAgo} ago</span>{' '}
+                <span className={isDark ? 'text-white/50' : 'text-gray-500'}>({dateStr})</span>
+              </>
+            ) : (
+              'Unknown'
+            )}
           </div>
         </div>
         <div className="px-4 py-3 text-right">
-          <div className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
+          <div
+            className={cn(
+              'text-[10px] uppercase tracking-wider mb-1.5',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}
+          >
             Ledger
           </div>
-          <div className={cn("text-[13px] font-mono", isDark ? "text-white/80" : "text-gray-700")}>
+          <div className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-700')}>
             #{ledger_index?.toLocaleString()}
           </div>
         </div>
@@ -2383,7 +2788,7 @@ const TransactionDetails = ({ txData }) => {
   if (isConversion && exchanges.length === 0 && deliveredAmount && SendMax) {
     // For self-conversion, get actual amounts from balance changes when available
     // Balance changes already have XRP values converted (not in drops)
-    const paidFromChanges = initiatorChanges?.changes?.find(c => {
+    const paidFromChanges = initiatorChanges?.changes?.find((c) => {
       const val = new Decimal(c.value);
       if (typeof SendMax === 'string') {
         return c.currency === 'XRP' && val.isNegative();
@@ -2391,7 +2796,7 @@ const TransactionDetails = ({ txData }) => {
       return c.currency === normalizeCurrencyCode(SendMax.currency) && val.isNegative();
     });
 
-    const gotFromChanges = initiatorChanges?.changes?.find(c => {
+    const gotFromChanges = initiatorChanges?.changes?.find((c) => {
       const val = new Decimal(c.value);
       if (typeof deliveredAmount === 'string') {
         return c.currency === 'XRP' && val.isPositive();
@@ -2635,20 +3040,24 @@ const TransactionDetails = ({ txData }) => {
 
       {/* SUMMARY Tab */}
       {activeTab === 'summary' && (
-        <div className={cn(
-          "rounded-xl overflow-hidden",
-          isDark ? "bg-transparent" : "bg-white"
-        )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-        }}>
-          <div className={cn(
-            "px-4 py-3",
-            isDark ? "border-b border-white/10" : "border-b border-gray-100"
-          )}>
-            <span className={cn(
-              "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/50" : "text-gray-400"
-            )}>
+        <div
+          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
+          style={{
+            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
+          }}
+        >
+          <div
+            className={cn(
+              'px-4 py-3',
+              isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
+            )}
+          >
+            <span
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wider',
+                isDark ? 'text-white/50' : 'text-gray-400'
+              )}
+            >
               Details
             </span>
           </div>
@@ -2661,773 +3070,1024 @@ const TransactionDetails = ({ txData }) => {
                   ? `${Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
                   : TransactionType === 'NFTokenCreateOffer'
                     ? `NFT ${Flags & 1 ? 'Sell' : 'Buy'} Offer`
-                        : TransactionType === 'OfferCancel' && cancelledOffer
-                          ? `Cancel ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
-                          : isConversion ? 'Swap' : TransactionType}
-                  </span>
-                </DetailRow>
+                    : TransactionType === 'OfferCancel' && cancelledOffer
+                      ? `Cancel ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
+                      : isConversion
+                        ? 'Swap'
+                        : TransactionType}
+              </span>
+            </DetailRow>
 
-                <DetailRow label="Timestamp" index={1}>
-                  <span className="font-mono">
-                    {(() => {
-                      const d = parseTransactionDate(date);
-                      return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
-                    })()}
-                  </span>
-                </DetailRow>
+            <DetailRow label="Timestamp" index={1}>
+              <span className="font-mono">
+                {(() => {
+                  const d = parseTransactionDate(date);
+                  return d && !isNaN(d.getTime()) ? d.toLocaleString() : 'Unknown';
+                })()}
+              </span>
+            </DetailRow>
 
-                {/* Account Information */}
-                {TransactionType === 'Payment' && (
-                  <>
-                    {isConversion && Account === Destination ? (
-                      <DetailRow label="Account">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Link href={`/address/${Account}`} passHref>
-                            <Typography
-                              component="span"
-                              variant="body2"
-                              sx={{
-                                color: theme.palette.primary.main,
-                                textDecoration: 'none',
-                                fontFamily: 'var(--font-mono)',
-                                fontSize: '13px',
-                                '&:hover': { textDecoration: 'underline' }
-                              }}
-                            >
-                              {Account}
-                            </Typography>
-                          </Link>
-                        </Box>
-                      </DetailRow>
-                    ) : (
-                      <>
-                        <DetailRow label="From">
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Link href={`/address/${Account}`} passHref>
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                sx={{
-                                  color: theme.palette.primary.main,
-                                  textDecoration: 'none',
-                                  fontFamily: 'var(--font-mono)',
-                                  fontSize: '13px',
-                                  '&:hover': { textDecoration: 'underline' }
-                                }}
-                              >
-                                {Account}
-                              </Typography>
-                            </Link>
-                          </Box>
-                        </DetailRow>
-                        <DetailRow label="To">
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Link href={`/address/${Destination}`} passHref>
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                sx={{
-                                  color: theme.palette.primary.main,
-                                  textDecoration: 'none',
-                                  fontFamily: 'var(--font-mono)',
-                                  fontSize: '13px',
-                                  '&:hover': { textDecoration: 'underline' }
-                                }}
-                              >
-                                {Destination}
-                              </Typography>
-                            </Link>
-                          </Box>
-                        </DetailRow>
-                      </>
-                    )}
-
-                    {!isConversion ? (
-                      <DetailRow label="Amount">
-                        <AmountDisplay amount={deliveredAmount || Amount} />
-                      </DetailRow>
-                    ) : (
-                      !displayExchange &&
-                      isSuccess && (
-                        <DetailRow label="Amount">
-                          <AmountDisplay amount={deliveredAmount || Amount} />
-                        </DetailRow>
-                      )
-                    )}
-                    {SendMax && (
-                      <DetailRow label="Max Spend">
-                        <AmountDisplay amount={SendMax} />
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* Client Information */}
-                {clientInfo && clientInfo.name !== 'N/A' && (
-                  <DetailRow label="Platform">
-                    {clientInfo.url ? (
-                      <Link
-                        href={clientInfo.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        passHref
-                      >
+            {/* Account Information */}
+            {TransactionType === 'Payment' && (
+              <>
+                {isConversion && Account === Destination ? (
+                  <DetailRow label="Account">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Link href={`/address/${Account}`} passHref>
                         <Typography
                           component="span"
-                          variant="body1"
+                          variant="body2"
                           sx={{
-                            color: 'primary.main',
+                            color: theme.palette.primary.main,
                             textDecoration: 'none',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '13px',
                             '&:hover': { textDecoration: 'underline' }
                           }}
                         >
-                          {clientInfo.name}
+                          {Account}
                         </Typography>
                       </Link>
-                    ) : (
-                      <Typography variant="body1">{clientInfo.name}</Typography>
-                    )}
+                    </Box>
+                  </DetailRow>
+                ) : (
+                  <>
+                    <DetailRow label="From">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link href={`/address/${Account}`} passHref>
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '13px',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {Account}
+                          </Typography>
+                        </Link>
+                      </Box>
+                    </DetailRow>
+                    <DetailRow label="To">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link href={`/address/${Destination}`} passHref>
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '13px',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {Destination}
+                          </Typography>
+                        </Link>
+                      </Box>
+                    </DetailRow>
+                  </>
+                )}
+
+                {!isConversion ? (
+                  <DetailRow label="Amount">
+                    <AmountDisplay amount={deliveredAmount || Amount} />
+                  </DetailRow>
+                ) : (
+                  !displayExchange &&
+                  isSuccess && (
+                    <DetailRow label="Amount">
+                      <AmountDisplay amount={deliveredAmount || Amount} />
+                    </DetailRow>
+                  )
+                )}
+                {SendMax && (
+                  <DetailRow label="Max Spend">
+                    <AmountDisplay amount={SendMax} />
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* Client Information */}
+            {clientInfo && clientInfo.name !== 'N/A' && (
+              <DetailRow label="Platform">
+                {clientInfo.url ? (
+                  <Link href={clientInfo.url} target="_blank" rel="noopener noreferrer" passHref>
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {clientInfo.name}
+                    </Typography>
+                  </Link>
+                ) : (
+                  <Typography variant="body1">{clientInfo.name}</Typography>
+                )}
+              </DetailRow>
+            )}
+
+            {/* Failure Information */}
+            {!isSuccess && failureReason.title && (
+              <>
+                <DetailRow label="Failure Reason">
+                  <Typography variant="body1" color="error.main">
+                    {failureReason.title}
+                  </Typography>
+                </DetailRow>
+                <DetailRow label="Description">
+                  <Typography variant="body2" color="text.secondary">
+                    {failureReason.description}
+                  </Typography>
+                </DetailRow>
+              </>
+            )}
+
+            {TransactionType === 'OfferCreate' && (
+              <>
+                <DetailRow label="Offer Sequence">
+                  <Typography variant="body1">#{Sequence}</Typography>
+                </DetailRow>
+                <DetailRow label="Taker Gets">
+                  <AmountDisplay amount={TakerGets} />
+                </DetailRow>
+                <DetailRow label="Taker Pays">
+                  <AmountDisplay amount={TakerPays} />
+                </DetailRow>
+
+                {OfferSequence > 0 && (
+                  <DetailRow label="Replaces Offer">
+                    <Typography variant="body1">#{OfferSequence}</Typography>
                   </DetailRow>
                 )}
 
-                {/* Failure Information */}
-                {!isSuccess && failureReason.title && (
+                <DetailRow label="Order Priority">
+                  <Typography variant="body2">
+                    {Flags & 0x00080000
+                      ? 'Priority is to fully sell the specified amount'
+                      : 'Priority is to buy only the specified amount'}
+                  </Typography>
+                </DetailRow>
+              </>
+            )}
+
+            {TransactionType === 'OfferCancel' && cancelledOffer && (
+              <>
+                <DetailRow label="Cancelled Offer">
+                  <Typography variant="body1">#{OfferSequence}</Typography>
+                </DetailRow>
+                <DetailRow label="Was Offering">
+                  <AmountDisplay amount={cancelledOffer.TakerGets} />
+                </DetailRow>
+                <DetailRow label="Was Requesting">
+                  <AmountDisplay amount={cancelledOffer.TakerPays} />
+                </DetailRow>
+              </>
+            )}
+
+            {TransactionType === 'TrustSet' && (
+              <>
+                {LimitAmount && (
                   <>
-                    <DetailRow label="Failure Reason">
-                      <Typography variant="body1" color="error.main">
-                        {failureReason.title}
-                      </Typography>
+                    <DetailRow label="Token Issuer">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Link href={`/address/${LimitAmount.issuer}`} passHref>
+                          <Typography
+                            component="span"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {LimitAmount.issuer}
+                          </Typography>
+                        </Link>
+                      </Box>
                     </DetailRow>
-                    <DetailRow label="Description">
-                      <Typography variant="body2" color="text.secondary">
-                        {failureReason.description}
-                      </Typography>
+                    <DetailRow label="Trust Limit">
+                      <AmountDisplay amount={LimitAmount} />
                     </DetailRow>
                   </>
                 )}
-
-                {TransactionType === 'OfferCreate' && (
-                  <>
-                    <DetailRow label="Offer Sequence">
-                      <Typography variant="body1">#{Sequence}</Typography>
-                    </DetailRow>
-                    <DetailRow label="Taker Gets">
-                      <AmountDisplay amount={TakerGets} />
-                    </DetailRow>
-                    <DetailRow label="Taker Pays">
-                      <AmountDisplay amount={TakerPays} />
-                    </DetailRow>
-
-                    {OfferSequence > 0 && (
-                      <DetailRow label="Replaces Offer">
-                        <Typography variant="body1">#{OfferSequence}</Typography>
-                      </DetailRow>
-                    )}
-
-                    <DetailRow label="Order Priority">
+                {trustSetState && (
+                  <DetailRow label="Trust Line Settings">
+                    <Stack spacing={0.5}>
                       <Typography variant="body2">
-                        {Flags & 0x00080000
-                          ? 'Priority is to fully sell the specified amount'
-                          : 'Priority is to buy only the specified amount'}
+                        Rippling: {trustSetState.rippling ? 'Enabled' : 'Disabled'}
                       </Typography>
-                    </DetailRow>
-                  </>
+                      <Typography variant="body2">
+                        Frozen: {trustSetState.frozen ? 'Yes' : 'No'}
+                      </Typography>
+                      <Typography variant="body2">
+                        Authorized: {trustSetState.authorized ? 'Yes' : 'No'}
+                      </Typography>
+                    </Stack>
+                  </DetailRow>
                 )}
+              </>
+            )}
 
-                {TransactionType === 'OfferCancel' && cancelledOffer && (
-                  <>
-                    <DetailRow label="Cancelled Offer">
-                      <Typography variant="body1">#{OfferSequence}</Typography>
-                    </DetailRow>
-                    <DetailRow label="Was Offering">
-                      <AmountDisplay amount={cancelledOffer.TakerGets} />
-                    </DetailRow>
-                    <DetailRow label="Was Requesting">
-                      <AmountDisplay amount={cancelledOffer.TakerPays} />
-                    </DetailRow>
-                  </>
+            {TransactionType === 'AMMDeposit' && (
+              <>
+                {(Amount || Amount2) && (
+                  <DetailRow label="Deposited Assets">
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '8px'
+                      }}
+                    >
+                      {Amount && (
+                        <div
+                          style={{
+                            border: '1px solid #666',
+                            borderRadius: '6px',
+                            padding: '6px 10px'
+                          }}
+                        >
+                          <AmountDisplay amount={Amount} />
+                        </div>
+                      )}
+                      {Amount2 && (
+                        <div
+                          style={{
+                            border: '1px solid #666',
+                            borderRadius: '6px',
+                            padding: '6px 10px'
+                          }}
+                        >
+                          <AmountDisplay amount={Amount2} />
+                        </div>
+                      )}
+                    </div>
+                  </DetailRow>
                 )}
+              </>
+            )}
 
-                {TransactionType === 'TrustSet' && (
-                  <>
-                    {LimitAmount && (
-                      <>
-                        <DetailRow label="Token Issuer">
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Link href={`/address/${LimitAmount.issuer}`} passHref>
+            {TransactionType === 'NFTokenCancelOffer' && (
+              <>
+                {cancelledNftOffers.length > 0 ? (
+                  <DetailRow
+                    label={cancelledNftOffers.length > 1 ? 'Cancelled Offers' : 'Cancelled Offer'}
+                  >
+                    {cancelledNftOffers.map((offer) => {
+                      const nftInfo = cancelledNftInfo[offer.NFTokenID];
+                      const isLoading = cancelledNftInfoLoading[offer.NFTokenID];
+                      const fallbackView = (
+                        <Grid container spacing={1}>
+                          <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                            <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                              {offer.offerId}
+                            </Typography>
+                          </DetailRow>
+                          <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                            <Link href={`/nft/${offer.NFTokenID}`} passHref>
                               <Typography
                                 component="span"
                                 variant="body1"
                                 sx={{
                                   color: theme.palette.primary.main,
                                   textDecoration: 'none',
-                                  '&:hover': { textDecoration: 'underline' }
+                                  '&:hover': { textDecoration: 'underline' },
+                                  wordBreak: 'break-all'
                                 }}
                               >
-                                {LimitAmount.issuer}
+                                {offer.NFTokenID}
                               </Typography>
                             </Link>
-                          </Box>
-                        </DetailRow>
-                        <DetailRow label="Trust Limit">
-                          <AmountDisplay amount={LimitAmount} />
-                        </DetailRow>
-                      </>
-                    )}
-                    {trustSetState && (
-                      <DetailRow label="Trust Line Settings">
-                        <Stack spacing={0.5}>
-                          <Typography variant="body2">
-                            Rippling: {trustSetState.rippling ? 'Enabled' : 'Disabled'}
-                          </Typography>
-                          <Typography variant="body2">
-                            Frozen: {trustSetState.frozen ? 'Yes' : 'No'}
-                          </Typography>
-                          <Typography variant="body2">
-                            Authorized: {trustSetState.authorized ? 'Yes' : 'No'}
-                          </Typography>
-                        </Stack>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'AMMDeposit' && (
-                  <>
-                    {(Amount || Amount2) && (
-                      <DetailRow label="Deposited Assets">
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                          {Amount && <div style={{ border: '1px solid #666', borderRadius: '6px', padding: '6px 10px' }}><AmountDisplay amount={Amount} /></div>}
-                          {Amount2 && <div style={{ border: '1px solid #666', borderRadius: '6px', padding: '6px 10px' }}><AmountDisplay amount={Amount2} /></div>}
-                        </div>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'NFTokenCancelOffer' && (
-                  <>
-                    {cancelledNftOffers.length > 0 ? (
-                      <DetailRow
-                        label={
-                          cancelledNftOffers.length > 1 ? 'Cancelled Offers' : 'Cancelled Offer'
-                        }
-                      >
-                        {cancelledNftOffers.map((offer) => {
-                          const nftInfo = cancelledNftInfo[offer.NFTokenID];
-                          const isLoading = cancelledNftInfoLoading[offer.NFTokenID];
-                          const fallbackView = (
-                            <Grid container spacing={1}>
-                              <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                  {offer.offerId}
-                                </Typography>
-                              </DetailRow>
-                              <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                                <Link href={`/nft/${offer.NFTokenID}`} passHref>
+                          </DetailRow>
+                          <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                            <AmountDisplay amount={offer.Amount} />
+                          </DetailRow>
+                          {offer.Destination && (
+                            <DetailRow
+                              label="Destination"
+                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Link href={`/address/${offer.Destination}`} passHref>
                                   <Typography
                                     component="span"
                                     variant="body1"
                                     sx={{
                                       color: theme.palette.primary.main,
                                       textDecoration: 'none',
-                                      '&:hover': { textDecoration: 'underline' },
-                                      wordBreak: 'break-all'
+                                      '&:hover': { textDecoration: 'underline' }
                                     }}
                                   >
-                                    {offer.NFTokenID}
+                                    {offer.Destination}
                                   </Typography>
                                 </Link>
-                              </DetailRow>
-                              <DetailRow label="Amount" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                                <AmountDisplay amount={offer.Amount} />
-                              </DetailRow>
-                              {offer.Destination && (
-                                <DetailRow
-                                  label="Destination"
-                                  sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                                >
-                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                                        <Link href={`/address/${offer.Destination}`} passHref>
-                                      <Typography
-                                        component="span"
-                                        variant="body1"
-                                        sx={{
-                                          color: theme.palette.primary.main,
-                                          textDecoration: 'none',
-                                          '&:hover': { textDecoration: 'underline' }
-                                        }}
-                                      >
-                                        {offer.Destination}
-                                      </Typography>
-                                    </Link>
-                                  </Box>
-                                </DetailRow>
-                              )}
-                            </Grid>
-                          );
-                          return (
-                            <Box
-                              key={offer.offerId}
-                              sx={{
-                                p: 2,
-                                width: '100%',
-                                mb: 2,
-                                background: 'transparent',
-                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                borderRadius: 2
-                              }}
-                            >
-                              <Grid container spacing={2}>
-                                {isLoading ? (
-                                  <Grid size={{ xs: 12 }}>
-                                    <Typography>Loading NFT data...</Typography>
-                                  </Grid>
-                                ) : nftInfo && !nftInfo.error ? (
-                                  <>
-                                    <Grid size={{ xs: 12, md: 4 }}>
-                                      {getNftImage(nftInfo) && (
-                                        <Box
-                                          component="img"
-                                          src={getNftImage(nftInfo)}
-                                          alt={nftInfo.meta?.name || 'NFT Image'}
-                                          sx={{
-                                            width: '100%',
-                                            maxWidth: '220px',
-                                            borderRadius: 2
-                                          }}
-                                        />
-                                      )}
-                                    </Grid>
-                                    <Grid size={{ xs: 12, md: 8 }}>
-                                      {fallbackView}
-                                    </Grid>
-                                  </>
-                                ) : (
-                                  <Grid size={{ xs: 12 }}>
-                                    {fallbackView}
-                                  </Grid>
-                                )}
-                              </Grid>
-                            </Box>
-                          );
-                        })}
-                      </DetailRow>
-                    ) : (
-                      NFTokenOffers &&
-                      NFTokenOffers.length > 0 && (
-                        <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
-                          {NFTokenOffers.map((offer) => (
-                            <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
-                              {offer}
-                            </Typography>
-                          ))}
-                        </DetailRow>
-                      )
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'NFTokenAcceptOffer' && acceptedOfferDetails && (
-                  <>
-                    {NFTokenSellOffer && (
-                      <DetailRow label="Sell Offer">
-                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={NFTokenSellOffer}>
-                          {NFTokenSellOffer}
-                        </span>
-                      </DetailRow>
-                    )}
-                    {NFTokenBuyOffer && (
-                      <DetailRow label="Buy Offer">
-                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={NFTokenBuyOffer}>
-                          {NFTokenBuyOffer}
-                        </span>
-                      </DetailRow>
-                    )}
-                    <DetailRow label="From">
-                      <div className="flex items-center gap-2">
-                                                <Link href={`/address/${acceptedOfferDetails.seller}`}>
-                          <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.seller}</span>
-                        </Link>
-                      </div>
-                    </DetailRow>
-                    <DetailRow label="To">
-                      <div className="flex items-center gap-2">
-                                                <Link href={`/address/${acceptedOfferDetails.buyer}`}>
-                          <span className="text-primary text-[13px] hover:underline">{acceptedOfferDetails.buyer}</span>
-                        </Link>
-                      </div>
-                    </DetailRow>
-                    {/* NFT Card */}
-                    {nftInfoLoading ? (
-                      <DetailRow label="NFT">
-                        <Typography>Loading NFT data...</Typography>
-                      </DetailRow>
-                    ) : acceptedNftInfo ? (
-                      <div className={cn(
-                        "mx-4 my-3 rounded-xl overflow-hidden",
-                        isDark ? "bg-white/[0.02] border border-white/10" : "bg-gray-50 border border-gray-200"
-                      )}>
-                        <div className="flex flex-col sm:flex-row">
-                          {/* NFT Image */}
-                          {getNftImage(acceptedNftInfo) && (
-                            <div className="sm:w-48 flex-shrink-0">
-                              <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                                <img
-                                  src={getNftImage(acceptedNftInfo)}
-                                  alt={acceptedNftInfo.meta?.name || 'NFT'}
-                                  className="w-full sm:w-48 h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                />
-                              </Link>
-                            </div>
-                          )}
-                          {/* NFT Details */}
-                          <div className="flex-1 p-4">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                                  <h3 className={cn(
-                                    "text-[15px] font-medium hover:text-[#4285f4] cursor-pointer",
-                                    isDark ? "text-white" : "text-gray-900"
-                                  )}>
-                                    {acceptedNftInfo.meta?.name || 'Unnamed NFT'}
-                                  </h3>
-                                </Link>
-                                {acceptedNftInfo.collection && (
-                                  <Link href={`/nfts/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}>
-                                    <span className="text-[12px] text-[#4285f4] hover:underline cursor-pointer">
-                                      {acceptedNftInfo.collection}
-                                    </span>
-                                  </Link>
-                                )}
-                              </div>
-                              {typeof acceptedNftInfo.royalty !== 'undefined' && acceptedNftInfo.royalty > 0 && (
-                                <span className={cn(
-                                  "text-[11px] px-2 py-0.5 rounded",
-                                  isDark ? "bg-white/10 text-white/60" : "bg-gray-200 text-gray-600"
-                                )}>
-                                  {acceptedNftInfo.royalty / 1000}% royalty
-                                </span>
-                              )}
-                            </div>
-                            <div className="space-y-2 mt-3">
-                              <div className="flex items-center gap-2">
-                                <span className={cn("text-[11px] uppercase w-16", isDark ? "text-white/40" : "text-gray-400")}>Issuer</span>
-                                <div className="flex items-center gap-1">
-                                                                    <Link href={`/address/${acceptedNftInfo.issuer}`}>
-                                    <span className="text-[12px] text-[#4285f4] hover:underline font-mono">
-                                      {acceptedNftInfo.issuer.slice(0, 8)}...{acceptedNftInfo.issuer.slice(-4)}
-                                    </span>
-                                  </Link>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={cn("text-[11px] uppercase w-16", isDark ? "text-white/40" : "text-gray-400")}>ID</span>
-                                <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                                  <span className="text-[11px] text-[#4285f4] hover:underline font-mono">
-                                    {acceptedNftInfo.NFTokenID.slice(0, 12)}...{acceptedNftInfo.NFTokenID.slice(-8)}
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={cn("text-[11px] uppercase w-16", isDark ? "text-white/40" : "text-gray-400")}>Taxon</span>
-                                <span className={cn("text-[12px]", isDark ? "text-white/70" : "text-gray-600")}>{acceptedNftInfo.taxon}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <DetailRow label="NFT">
-                        <Link href={`/nft/${acceptedOfferDetails.nftokenID}`}>
-                          <span className="text-[#4285f4] hover:underline break-all text-[13px] font-mono">
-                            {acceptedOfferDetails.nftokenID}
-                          </span>
-                        </Link>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'NFTokenCreateOffer' && (
-                  <>
-                    {offerNftInfoLoading ? (
-                      <DetailRow label="NFT">
-                        <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>Loading...</span>
-                      </DetailRow>
-                    ) : offerNftInfo ? (
-                      <>
-                        <DetailRow label="NFT">
-                          <div className="flex items-center gap-3">
-                            {getNftImage(offerNftInfo) && (
-                              <img
-                                src={getNftImage(offerNftInfo)}
-                                alt={offerNftInfo.meta?.name || 'NFT'}
-                                className="w-10 h-10 rounded-lg object-cover"
-                              />
-                            )}
-                            <Link href={`/nft/${offerNftInfo.NFTokenID}`}>
-                              <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]" title={offerNftInfo.NFTokenID}>
-                                {offerNftInfo.NFTokenID}
-                              </span>
-                            </Link>
-                          </div>
-                        </DetailRow>
-                        <DetailRow label="Issuer">
-                          <div className="flex items-center gap-2">
-                                                        <Link href={`/address/${offerNftInfo.issuer}`}>
-                              <span className="text-primary text-[13px] hover:underline">{offerNftInfo.issuer}</span>
-                            </Link>
-                          </div>
-                        </DetailRow>
-                      </>
-                    ) : (
-                      <DetailRow label="NFT">
-                        <Link href={`/nft/${NFTokenID}`}>
-                          <span className="text-primary text-[13px] font-mono hover:underline">{NFTokenID}</span>
-                        </Link>
-                      </DetailRow>
-                    )}
-                    {Owner && (
-                      <DetailRow label="NFT Owner">
-                        <div className="flex items-center gap-2">
-                                                    <Link href={`/address/${Owner}`}>
-                            <span className="text-primary text-[13px] hover:underline">{Owner}</span>
-                          </Link>
-                        </div>
-                      </DetailRow>
-                    )}
-                    {meta.offer_id && (
-                      <DetailRow label="Offer ID">
-                        <span className={cn("text-[13px] font-mono truncate max-w-[300px]", isDark ? "text-white/70" : "text-gray-700")} title={meta.offer_id}>
-                          {meta.offer_id}
-                        </span>
-                      </DetailRow>
-                    )}
-                    <DetailRow label="Amount">
-                      <AmountDisplay amount={Amount} />
-                    </DetailRow>
-                    {Destination && (
-                      <DetailRow label="Destination">
-                        <div className="flex items-center gap-2">
-                                                    <Link href={`/address/${Destination}`}>
-                            <span className="text-primary text-[13px] hover:underline">{Destination}</span>
-                          </Link>
-                        </div>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'NFTokenMint' && (
-                  <>
-                    {meta.nftoken_id && (
-                      <DetailRow label="NFT">
-                        <div className="flex items-center gap-3">
-                          {mintedNftInfoLoading ? (
-                            <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse" />
-                          ) : getNftImage(mintedNftInfo) ? (
-                            <img
-                              src={getNftImage(mintedNftInfo)}
-                              alt={mintedNftInfo?.meta?.name || 'NFT'}
-                              className="w-10 h-10 rounded-lg object-cover"
-                            />
-                          ) : null}
-                          <Link href={`/nft/${meta.nftoken_id}`}>
-                            <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]" title={meta.nftoken_id}>
-                              {meta.nftoken_id}
-                            </span>
-                          </Link>
-                        </div>
-                      </DetailRow>
-                    )}
-                    {typeof TransferFee !== 'undefined' && (
-                      <DetailRow label="Transfer Fee">
-                        <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-700")}>{TransferFee / 1000}%</span>
-                      </DetailRow>
-                    )}
-                    {Flags > 0 && (
-                      <DetailRow label="Flag">
-                        <span className={cn("text-[13px]", isDark ? "text-white/70" : "text-gray-700")}>{getNFTokenMintFlagExplanation(Flags)}</span>
-                      </DetailRow>
-                    )}
-                    {typeof NFTokenTaxon !== 'undefined' && (
-                      <DetailRow label="Taxon">
-                        <span className={cn("text-[13px] font-mono", isDark ? "text-white/70" : "text-gray-700")}>{NFTokenTaxon}</span>
-                      </DetailRow>
-                    )}
-                    {URI && safeHexDecode(URI) && (
-                      <DetailRow label="URI">
-                        <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
-                          <span className="text-primary text-[13px] hover:underline truncate max-w-[300px]" title={safeHexDecode(URI)}>
-                            {safeHexDecode(URI)}
-                          </span>
-                        </Link>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'OracleSet' && (
-                  <>
-                    <DetailRow label="Oracle Data">
-                      <Box
-                        sx={{
-                          p: 2,
-                          width: '100%',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          borderRadius: 2
-                        }}
-                      >
-                        <Grid container spacing={1}>
-                          {typeof OracleDocumentID !== 'undefined' && (
-                            <DetailRow
-                              label="Document ID"
-                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                            >
-                              <Typography variant="body1">{OracleDocumentID}</Typography>
-                            </DetailRow>
-                          )}
-                          {Provider && safeHexDecode(Provider) && (
-                            <DetailRow label="Provider" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Typography variant="body1">
-                                {safeHexDecode(Provider)}
-                              </Typography>
-                            </DetailRow>
-                          )}
-                          {typeof LastUpdateTime !== 'undefined' && (
-                            <DetailRow
-                              label="Last Update Time"
-                              sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
-                            >
-                              <Typography variant="body1">
-                                {formatDistanceToNow(new Date(LastUpdateTime * 1000))} ago (
-                                {new Date(LastUpdateTime * 1000).toLocaleString()})
-                              </Typography>
-                            </DetailRow>
-                          )}
-                          {URI && safeHexDecode(URI) && (
-                            <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
-                              <Link
-                                href={safeHexDecode(URI)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span className="text-[#4285f4] hover:underline break-all text-[13px]">
-                                  {safeHexDecode(URI)}
-                                </span>
-                              </Link>
+                              </Box>
                             </DetailRow>
                           )}
                         </Grid>
-                      </Box>
-                    </DetailRow>
-
-                    {PriceDataSeries && PriceDataSeries.length > 0 && (
-                      <DetailRow label="Price Data Series">
-                        <Box>
-                          {PriceDataSeries.map((series) => {
-                            const { AssetPrice, BaseAsset, QuoteAsset, Scale } = series.PriceData;
-                            if (!AssetPrice) return null;
-                            const price = new Decimal(parseInt(AssetPrice, 16)).div(
-                              new Decimal(10).pow(Scale)
-                            );
-                            const base =
-                              BaseAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(BaseAsset);
-                            const quote =
-                              QuoteAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(QuoteAsset);
-                            const keyStr = `${BaseAsset}-${QuoteAsset}-${AssetPrice}`;
-                            return (
-                              <Typography key={keyStr} variant="body2">
-                                1 {base} = {price.toString()} {quote}
-                              </Typography>
-                            );
-                          })}
+                      );
+                      return (
+                        <Box
+                          key={offer.offerId}
+                          sx={{
+                            p: 2,
+                            width: '100%',
+                            mb: 2,
+                            background: 'transparent',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            borderRadius: 2
+                          }}
+                        >
+                          <Grid container spacing={2}>
+                            {isLoading ? (
+                              <Grid size={{ xs: 12 }}>
+                                <Typography>Loading NFT data...</Typography>
+                              </Grid>
+                            ) : nftInfo && !nftInfo.error ? (
+                              <>
+                                <Grid size={{ xs: 12, md: 4 }}>
+                                  {getNftImage(nftInfo) && (
+                                    <Box
+                                      component="img"
+                                      src={getNftImage(nftInfo)}
+                                      alt={nftInfo.meta?.name || 'NFT Image'}
+                                      sx={{
+                                        width: '100%',
+                                        maxWidth: '220px',
+                                        borderRadius: 2
+                                      }}
+                                    />
+                                  )}
+                                </Grid>
+                                <Grid size={{ xs: 12, md: 8 }}>{fallbackView}</Grid>
+                              </>
+                            ) : (
+                              <Grid size={{ xs: 12 }}>{fallbackView}</Grid>
+                            )}
+                          </Grid>
                         </Box>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {TransactionType === 'AMMWithdraw' && (
-                  <>
-                    {LPTokenIn && (
-                      <DetailRow label="LP Tokens Withdrawn">
-                        <AmountDisplay amount={LPTokenIn} />
-                      </DetailRow>
-                    )}
-                    {Flags > 0 && getAMMWithdrawFlagExplanation(Flags) && (
-                      <DetailRow label="Withdrawal Mode">
-                        <Typography variant="body1">
-                          {getAMMWithdrawFlagExplanation(Flags)}
+                      );
+                    })}
+                  </DetailRow>
+                ) : (
+                  NFTokenOffers &&
+                  NFTokenOffers.length > 0 && (
+                    <DetailRow label={NFTokenOffers.length > 1 ? 'Offers' : 'Offer'}>
+                      {NFTokenOffers.map((offer) => (
+                        <Typography key={offer} variant="body1" sx={{ wordBreak: 'break-all' }}>
+                          {offer}
                         </Typography>
-                      </DetailRow>
-                    )}
-                  </>
+                      ))}
+                    </DetailRow>
+                  )
                 )}
+              </>
+            )}
 
-                {/* NFTokenBurn Details */}
-                {TransactionType === 'NFTokenBurn' && NFTokenID && (
-                  <DetailRow label="Burned NFT">
-                    <Link href={`/nft/${NFTokenID}`} passHref>
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          '&:hover': { textDecoration: 'underline' },
-                          wordBreak: 'break-all'
-                        }}
-                      >
-                        {NFTokenID}
-                      </Typography>
+            {TransactionType === 'NFTokenAcceptOffer' && acceptedOfferDetails && (
+              <>
+                {NFTokenSellOffer && (
+                  <DetailRow label="Sell Offer">
+                    <span
+                      className={cn(
+                        'text-[13px] font-mono truncate max-w-[300px]',
+                        isDark ? 'text-white/70' : 'text-gray-700'
+                      )}
+                      title={NFTokenSellOffer}
+                    >
+                      {NFTokenSellOffer}
+                    </span>
+                  </DetailRow>
+                )}
+                {NFTokenBuyOffer && (
+                  <DetailRow label="Buy Offer">
+                    <span
+                      className={cn(
+                        'text-[13px] font-mono truncate max-w-[300px]',
+                        isDark ? 'text-white/70' : 'text-gray-700'
+                      )}
+                      title={NFTokenBuyOffer}
+                    >
+                      {NFTokenBuyOffer}
+                    </span>
+                  </DetailRow>
+                )}
+                <DetailRow label="From">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/address/${acceptedOfferDetails.seller}`}>
+                      <span className="text-primary text-[13px] hover:underline">
+                        {acceptedOfferDetails.seller}
+                      </span>
+                    </Link>
+                  </div>
+                </DetailRow>
+                <DetailRow label="To">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/address/${acceptedOfferDetails.buyer}`}>
+                      <span className="text-primary text-[13px] hover:underline">
+                        {acceptedOfferDetails.buyer}
+                      </span>
+                    </Link>
+                  </div>
+                </DetailRow>
+                {/* NFT Card */}
+                {nftInfoLoading ? (
+                  <DetailRow label="NFT">
+                    <Typography>Loading NFT data...</Typography>
+                  </DetailRow>
+                ) : acceptedNftInfo ? (
+                  <div
+                    className={cn(
+                      'mx-4 my-3 rounded-xl overflow-hidden',
+                      isDark
+                        ? 'bg-white/[0.02] border border-white/10'
+                        : 'bg-gray-50 border border-gray-200'
+                    )}
+                  >
+                    <div className="flex flex-col sm:flex-row">
+                      {/* NFT Image */}
+                      {getNftImage(acceptedNftInfo) && (
+                        <div className="sm:w-48 flex-shrink-0">
+                          <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
+                            <img
+                              src={getNftImage(acceptedNftInfo)}
+                              alt={acceptedNftInfo.meta?.name || 'NFT'}
+                              className="w-full sm:w-48 h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            />
+                          </Link>
+                        </div>
+                      )}
+                      {/* NFT Details */}
+                      <div className="flex-1 p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
+                              <h3
+                                className={cn(
+                                  'text-[15px] font-medium hover:text-[#4285f4] cursor-pointer',
+                                  isDark ? 'text-white' : 'text-gray-900'
+                                )}
+                              >
+                                {acceptedNftInfo.meta?.name || 'Unnamed NFT'}
+                              </h3>
+                            </Link>
+                            {acceptedNftInfo.collection && (
+                              <Link
+                                href={`/nfts/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}
+                              >
+                                <span className="text-[12px] text-[#4285f4] hover:underline cursor-pointer">
+                                  {acceptedNftInfo.collection}
+                                </span>
+                              </Link>
+                            )}
+                          </div>
+                          {typeof acceptedNftInfo.royalty !== 'undefined' &&
+                            acceptedNftInfo.royalty > 0 && (
+                              <span
+                                className={cn(
+                                  'text-[11px] px-2 py-0.5 rounded',
+                                  isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
+                                )}
+                              >
+                                {acceptedNftInfo.royalty / 1000}% royalty
+                              </span>
+                            )}
+                        </div>
+                        <div className="space-y-2 mt-3">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                'text-[11px] uppercase w-16',
+                                isDark ? 'text-white/40' : 'text-gray-400'
+                              )}
+                            >
+                              Issuer
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <Link href={`/address/${acceptedNftInfo.issuer}`}>
+                                <span className="text-[12px] text-[#4285f4] hover:underline font-mono">
+                                  {acceptedNftInfo.issuer.slice(0, 8)}...
+                                  {acceptedNftInfo.issuer.slice(-4)}
+                                </span>
+                              </Link>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                'text-[11px] uppercase w-16',
+                                isDark ? 'text-white/40' : 'text-gray-400'
+                              )}
+                            >
+                              ID
+                            </span>
+                            <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
+                              <span className="text-[11px] text-[#4285f4] hover:underline font-mono">
+                                {acceptedNftInfo.NFTokenID.slice(0, 12)}...
+                                {acceptedNftInfo.NFTokenID.slice(-8)}
+                              </span>
+                            </Link>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                'text-[11px] uppercase w-16',
+                                isDark ? 'text-white/40' : 'text-gray-400'
+                              )}
+                            >
+                              Taxon
+                            </span>
+                            <span
+                              className={cn(
+                                'text-[12px]',
+                                isDark ? 'text-white/70' : 'text-gray-600'
+                              )}
+                            >
+                              {acceptedNftInfo.taxon}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <DetailRow label="NFT">
+                    <Link href={`/nft/${acceptedOfferDetails.nftokenID}`}>
+                      <span className="text-[#4285f4] hover:underline break-all text-[13px] font-mono">
+                        {acceptedOfferDetails.nftokenID}
+                      </span>
                     </Link>
                   </DetailRow>
                 )}
+              </>
+            )}
 
-                {/* AccountSet Details */}
-                {TransactionType === 'AccountSet' && (
+            {TransactionType === 'NFTokenCreateOffer' && (
+              <>
+                {offerNftInfoLoading ? (
+                  <DetailRow label="NFT">
+                    <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      Loading...
+                    </span>
+                  </DetailRow>
+                ) : offerNftInfo ? (
                   <>
-                    {txData.Domain && safeHexDecode(txData.Domain) && (
-                      <DetailRow label="Domain">
-                        <Typography variant="body1">
-                          {safeHexDecode(txData.Domain)}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.EmailHash && (
-                      <DetailRow label="Email Hash">
-                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
-                          {txData.EmailHash}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.MessageKey && (
-                      <DetailRow label="Message Key">
-                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
-                          {txData.MessageKey}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.SetFlag !== undefined && (
-                      <DetailRow label="Flag Enabled">
-                        <Typography variant="body1">{txData.SetFlag}</Typography>
-                      </DetailRow>
-                    )}
-                    {txData.ClearFlag !== undefined && (
-                      <DetailRow label="Flag Disabled">
-                        <Typography variant="body1">{txData.ClearFlag}</Typography>
-                      </DetailRow>
-                    )}
+                    <DetailRow label="NFT">
+                      <div className="flex items-center gap-3">
+                        {getNftImage(offerNftInfo) && (
+                          <img
+                            src={getNftImage(offerNftInfo)}
+                            alt={offerNftInfo.meta?.name || 'NFT'}
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                        )}
+                        <Link href={`/nft/${offerNftInfo.NFTokenID}`}>
+                          <span
+                            className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]"
+                            title={offerNftInfo.NFTokenID}
+                          >
+                            {offerNftInfo.NFTokenID}
+                          </span>
+                        </Link>
+                      </div>
+                    </DetailRow>
+                    <DetailRow label="Issuer">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/address/${offerNftInfo.issuer}`}>
+                          <span className="text-primary text-[13px] hover:underline">
+                            {offerNftInfo.issuer}
+                          </span>
+                        </Link>
+                      </div>
+                    </DetailRow>
                   </>
+                ) : (
+                  <DetailRow label="NFT">
+                    <Link href={`/nft/${NFTokenID}`}>
+                      <span className="text-primary text-[13px] font-mono hover:underline">
+                        {NFTokenID}
+                      </span>
+                    </Link>
+                  </DetailRow>
                 )}
+                {Owner && (
+                  <DetailRow label="NFT Owner">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/address/${Owner}`}>
+                        <span className="text-primary text-[13px] hover:underline">{Owner}</span>
+                      </Link>
+                    </div>
+                  </DetailRow>
+                )}
+                {meta.offer_id && (
+                  <DetailRow label="Offer ID">
+                    <span
+                      className={cn(
+                        'text-[13px] font-mono truncate max-w-[300px]',
+                        isDark ? 'text-white/70' : 'text-gray-700'
+                      )}
+                      title={meta.offer_id}
+                    >
+                      {meta.offer_id}
+                    </span>
+                  </DetailRow>
+                )}
+                <DetailRow label="Amount">
+                  <AmountDisplay amount={Amount} />
+                </DetailRow>
+                {Destination && (
+                  <DetailRow label="Destination">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/address/${Destination}`}>
+                        <span className="text-primary text-[13px] hover:underline">
+                          {Destination}
+                        </span>
+                      </Link>
+                    </div>
+                  </DetailRow>
+                )}
+              </>
+            )}
 
-                {/* SetRegularKey Details */}
-                {TransactionType === 'SetRegularKey' && txData.RegularKey && (
-                  <DetailRow label="Regular Key">
-                    <Link href={`/address/${txData.RegularKey}`} passHref>
+            {TransactionType === 'NFTokenMint' && (
+              <>
+                {meta.nftoken_id && (
+                  <DetailRow label="NFT">
+                    <div className="flex items-center gap-3">
+                      {mintedNftInfoLoading ? (
+                        <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse" />
+                      ) : getNftImage(mintedNftInfo) ? (
+                        <img
+                          src={getNftImage(mintedNftInfo)}
+                          alt={mintedNftInfo?.meta?.name || 'NFT'}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : null}
+                      <Link href={`/nft/${meta.nftoken_id}`}>
+                        <span
+                          className="text-primary text-[13px] font-mono hover:underline truncate max-w-[300px]"
+                          title={meta.nftoken_id}
+                        >
+                          {meta.nftoken_id}
+                        </span>
+                      </Link>
+                    </div>
+                  </DetailRow>
+                )}
+                {typeof TransferFee !== 'undefined' && (
+                  <DetailRow label="Transfer Fee">
+                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                      {TransferFee / 1000}%
+                    </span>
+                  </DetailRow>
+                )}
+                {Flags > 0 && (
+                  <DetailRow label="Flag">
+                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                      {getNFTokenMintFlagExplanation(Flags)}
+                    </span>
+                  </DetailRow>
+                )}
+                {typeof NFTokenTaxon !== 'undefined' && (
+                  <DetailRow label="Taxon">
+                    <span
+                      className={cn(
+                        'text-[13px] font-mono',
+                        isDark ? 'text-white/70' : 'text-gray-700'
+                      )}
+                    >
+                      {NFTokenTaxon}
+                    </span>
+                  </DetailRow>
+                )}
+                {URI && safeHexDecode(URI) && (
+                  <DetailRow label="URI">
+                    <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
+                      <span
+                        className="text-primary text-[13px] hover:underline truncate max-w-[300px]"
+                        title={safeHexDecode(URI)}
+                      >
+                        {safeHexDecode(URI)}
+                      </span>
+                    </Link>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {TransactionType === 'OracleSet' && (
+              <>
+                <DetailRow label="Oracle Data">
+                  <Box
+                    sx={{
+                      p: 2,
+                      width: '100%',
+                      background: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: 2
+                    }}
+                  >
+                    <Grid container spacing={1}>
+                      {typeof OracleDocumentID !== 'undefined' && (
+                        <DetailRow label="Document ID" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                          <Typography variant="body1">{OracleDocumentID}</Typography>
+                        </DetailRow>
+                      )}
+                      {Provider && safeHexDecode(Provider) && (
+                        <DetailRow label="Provider" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                          <Typography variant="body1">{safeHexDecode(Provider)}</Typography>
+                        </DetailRow>
+                      )}
+                      {typeof LastUpdateTime !== 'undefined' && (
+                        <DetailRow
+                          label="Last Update Time"
+                          sx={{ mb: 1, pb: 1, borderBottom: 'none' }}
+                        >
+                          <Typography variant="body1">
+                            {formatDistanceToNow(new Date(LastUpdateTime * 1000))} ago (
+                            {new Date(LastUpdateTime * 1000).toLocaleString()})
+                          </Typography>
+                        </DetailRow>
+                      )}
+                      {URI && safeHexDecode(URI) && (
+                        <DetailRow label="URI" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
+                          <Link href={safeHexDecode(URI)} target="_blank" rel="noopener noreferrer">
+                            <span className="text-[#4285f4] hover:underline break-all text-[13px]">
+                              {safeHexDecode(URI)}
+                            </span>
+                          </Link>
+                        </DetailRow>
+                      )}
+                    </Grid>
+                  </Box>
+                </DetailRow>
+
+                {PriceDataSeries && PriceDataSeries.length > 0 && (
+                  <DetailRow label="Price Data Series">
+                    <Box>
+                      {PriceDataSeries.map((series) => {
+                        const { AssetPrice, BaseAsset, QuoteAsset, Scale } = series.PriceData;
+                        if (!AssetPrice) return null;
+                        const price = new Decimal(parseInt(AssetPrice, 16)).div(
+                          new Decimal(10).pow(Scale)
+                        );
+                        const base = BaseAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(BaseAsset);
+                        const quote =
+                          QuoteAsset === 'XRP' ? 'XRP' : normalizeCurrencyCode(QuoteAsset);
+                        const keyStr = `${BaseAsset}-${QuoteAsset}-${AssetPrice}`;
+                        return (
+                          <Typography key={keyStr} variant="body2">
+                            1 {base} = {price.toString()} {quote}
+                          </Typography>
+                        );
+                      })}
+                    </Box>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {TransactionType === 'AMMWithdraw' && (
+              <>
+                {LPTokenIn && (
+                  <DetailRow label="LP Tokens Withdrawn">
+                    <AmountDisplay amount={LPTokenIn} />
+                  </DetailRow>
+                )}
+                {Flags > 0 && getAMMWithdrawFlagExplanation(Flags) && (
+                  <DetailRow label="Withdrawal Mode">
+                    <Typography variant="body1">{getAMMWithdrawFlagExplanation(Flags)}</Typography>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* NFTokenBurn Details */}
+            {TransactionType === 'NFTokenBurn' && NFTokenID && (
+              <DetailRow label="Burned NFT">
+                <Link href={`/nft/${NFTokenID}`} passHref>
+                  <Typography
+                    component="span"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                      wordBreak: 'break-all'
+                    }}
+                  >
+                    {NFTokenID}
+                  </Typography>
+                </Link>
+              </DetailRow>
+            )}
+
+            {/* AccountSet Details */}
+            {TransactionType === 'AccountSet' && (
+              <>
+                {txData.Domain && safeHexDecode(txData.Domain) && (
+                  <DetailRow label="Domain">
+                    <Typography variant="body1">{safeHexDecode(txData.Domain)}</Typography>
+                  </DetailRow>
+                )}
+                {txData.EmailHash && (
+                  <DetailRow label="Email Hash">
+                    <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
+                      {txData.EmailHash}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.MessageKey && (
+                  <DetailRow label="Message Key">
+                    <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)' }}>
+                      {txData.MessageKey}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.SetFlag !== undefined && (
+                  <DetailRow label="Flag Enabled">
+                    <Typography variant="body1">{txData.SetFlag}</Typography>
+                  </DetailRow>
+                )}
+                {txData.ClearFlag !== undefined && (
+                  <DetailRow label="Flag Disabled">
+                    <Typography variant="body1">{txData.ClearFlag}</Typography>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* SetRegularKey Details */}
+            {TransactionType === 'SetRegularKey' && txData.RegularKey && (
+              <DetailRow label="Regular Key">
+                <Link href={`/address/${txData.RegularKey}`} passHref>
+                  <Typography
+                    component="span"
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    {txData.RegularKey}
+                  </Typography>
+                </Link>
+              </DetailRow>
+            )}
+
+            {/* Check Transactions */}
+            {(TransactionType === 'CheckCreate' ||
+              TransactionType === 'CheckCash' ||
+              TransactionType === 'CheckCancel') && (
+              <>
+                {txData.CheckID && (
+                  <DetailRow label="Check ID">
+                    <Typography
+                      variant="body1"
+                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                    >
+                      {txData.CheckID}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {TransactionType === 'CheckCash' && txData.DeliverMin && (
+                  <DetailRow label="Minimum Delivery">
+                    <AmountDisplay amount={txData.DeliverMin} />
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* Escrow Transactions */}
+            {(TransactionType === 'EscrowCreate' ||
+              TransactionType === 'EscrowFinish' ||
+              TransactionType === 'EscrowCancel') && (
+              <>
+                {txData.FinishAfter && parseTransactionDate(txData.FinishAfter) && (
+                  <DetailRow label="Can Finish After">
+                    <Typography variant="body1">
+                      {parseTransactionDate(txData.FinishAfter).toLocaleString()}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.CancelAfter && parseTransactionDate(txData.CancelAfter) && (
+                  <DetailRow label="Expires After">
+                    <Typography variant="body1">
+                      {parseTransactionDate(txData.CancelAfter).toLocaleString()}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.OfferSequence && TransactionType !== 'OfferCancel' && (
+                  <DetailRow label="Escrow Sequence">
+                    <Typography variant="body1">#{txData.OfferSequence}</Typography>
+                  </DetailRow>
+                )}
+                {txData.Condition && (
+                  <DetailRow label="Condition">
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                    >
+                      {txData.Condition}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.Fulfillment && (
+                  <DetailRow label="Fulfillment">
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                    >
+                      {txData.Fulfillment}
+                    </Typography>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* Payment Channel Transactions */}
+            {(TransactionType === 'PaymentChannelCreate' ||
+              TransactionType === 'PaymentChannelFund' ||
+              TransactionType === 'PaymentChannelClaim') && (
+              <>
+                {txData.Channel && (
+                  <DetailRow label="Channel ID">
+                    <Typography
+                      variant="body1"
+                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                    >
+                      {txData.Channel}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.SettleDelay && (
+                  <DetailRow label="Settlement Delay">
+                    <Typography variant="body1">{txData.SettleDelay} seconds</Typography>
+                  </DetailRow>
+                )}
+                {txData.PublicKey && (
+                  <DetailRow label="Public Key">
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}
+                    >
+                      {txData.PublicKey}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.Balance && (
+                  <DetailRow label="Channel Balance">
+                    <AmountDisplay amount={txData.Balance} />
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* DID Transactions */}
+            {(TransactionType === 'DIDSet' || TransactionType === 'DIDDelete') && (
+              <>
+                {txData.DIDDocument && (
+                  <DetailRow label="DID Document">
+                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                      {txData.DIDDocument}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {txData.Data && (
+                  <DetailRow label="Data">
+                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                      {txData.Data}
+                    </Typography>
+                  </DetailRow>
+                )}
+              </>
+            )}
+
+            {/* Credential Transactions */}
+            {(TransactionType === 'CredentialCreate' ||
+              TransactionType === 'CredentialAccept' ||
+              TransactionType === 'CredentialDelete') && (
+              <>
+                {txData.CredentialType && (
+                  <DetailRow label="Credential Type">
+                    <Typography variant="body1">{txData.CredentialType}</Typography>
+                  </DetailRow>
+                )}
+                {txData.Issuer && (
+                  <DetailRow label="Issuer">
+                    <Link href={`/address/${txData.Issuer}`} passHref>
                       <Typography
                         component="span"
                         variant="body1"
@@ -3437,333 +4097,234 @@ const TransactionDetails = ({ txData }) => {
                           '&:hover': { textDecoration: 'underline' }
                         }}
                       >
-                        {txData.RegularKey}
+                        {txData.Issuer}
                       </Typography>
                     </Link>
                   </DetailRow>
                 )}
-
-                {/* Check Transactions */}
-                {(TransactionType === 'CheckCreate' || TransactionType === 'CheckCash' || TransactionType === 'CheckCancel') && (
-                  <>
-                    {txData.CheckID && (
-                      <DetailRow label="Check ID">
-                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                          {txData.CheckID}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {TransactionType === 'CheckCash' && txData.DeliverMin && (
-                      <DetailRow label="Minimum Delivery">
-                        <AmountDisplay amount={txData.DeliverMin} />
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* Escrow Transactions */}
-                {(TransactionType === 'EscrowCreate' || TransactionType === 'EscrowFinish' || TransactionType === 'EscrowCancel') && (
-                  <>
-                    {txData.FinishAfter && parseTransactionDate(txData.FinishAfter) && (
-                      <DetailRow label="Can Finish After">
-                        <Typography variant="body1">
-                          {parseTransactionDate(txData.FinishAfter).toLocaleString()}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.CancelAfter && parseTransactionDate(txData.CancelAfter) && (
-                      <DetailRow label="Expires After">
-                        <Typography variant="body1">
-                          {parseTransactionDate(txData.CancelAfter).toLocaleString()}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.OfferSequence && TransactionType !== 'OfferCancel' && (
-                      <DetailRow label="Escrow Sequence">
-                        <Typography variant="body1">#{txData.OfferSequence}</Typography>
-                      </DetailRow>
-                    )}
-                    {txData.Condition && (
-                      <DetailRow label="Condition">
-                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                          {txData.Condition}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.Fulfillment && (
-                      <DetailRow label="Fulfillment">
-                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                          {txData.Fulfillment}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* Payment Channel Transactions */}
-                {(TransactionType === 'PaymentChannelCreate' || TransactionType === 'PaymentChannelFund' || TransactionType === 'PaymentChannelClaim') && (
-                  <>
-                    {txData.Channel && (
-                      <DetailRow label="Channel ID">
-                        <Typography variant="body1" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                          {txData.Channel}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.SettleDelay && (
-                      <DetailRow label="Settlement Delay">
-                        <Typography variant="body1">{txData.SettleDelay} seconds</Typography>
-                      </DetailRow>
-                    )}
-                    {txData.PublicKey && (
-                      <DetailRow label="Public Key">
-                        <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                          {txData.PublicKey}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.Balance && (
-                      <DetailRow label="Channel Balance">
-                        <AmountDisplay amount={txData.Balance} />
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* DID Transactions */}
-                {(TransactionType === 'DIDSet' || TransactionType === 'DIDDelete') && (
-                  <>
-                    {txData.DIDDocument && (
-                      <DetailRow label="DID Document">
-                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                          {txData.DIDDocument}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {txData.Data && (
-                      <DetailRow label="Data">
-                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                          {txData.Data}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* Credential Transactions */}
-                {(TransactionType === 'CredentialCreate' || TransactionType === 'CredentialAccept' || TransactionType === 'CredentialDelete') && (
-                  <>
-                    {txData.CredentialType && (
-                      <DetailRow label="Credential Type">
-                        <Typography variant="body1">{txData.CredentialType}</Typography>
-                      </DetailRow>
-                    )}
-                    {txData.Issuer && (
-                      <DetailRow label="Issuer">
-                        <Link href={`/address/${txData.Issuer}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {txData.Issuer}
-                          </Typography>
-                        </Link>
-                      </DetailRow>
-                    )}
-                    {txData.Subject && (
-                      <DetailRow label="Subject">
-                        <Link href={`/address/${txData.Subject}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {txData.Subject}
-                          </Typography>
-                        </Link>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {/* AMM Create Details */}
-                {TransactionType === 'AMMCreate' && (
-                  <>
-                    {txData.TradingFee !== undefined && (
-                      <DetailRow label="Trading Fee">
-                        <Typography variant="body1">{txData.TradingFee / 1000}%</Typography>
-                      </DetailRow>
-                    )}
-                    {Asset && (
-                      <DetailRow label="Asset 1">
-                        <Typography variant="body1">
-                          {Asset.currency === 'XRP' ? 'XRP' : `${normalizeCurrencyCode(Asset.currency)} (${Asset.issuer?.slice(0, 8)}...)`}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                    {Asset2 && (
-                      <DetailRow label="Asset 2">
-                        <Typography variant="body1">
-                          {Asset2.currency === 'XRP' ? 'XRP' : `${normalizeCurrencyCode(Asset2.currency)} (${Asset2.issuer?.slice(0, 8)}...)`}
-                        </Typography>
-                      </DetailRow>
-                    )}
-                  </>
-                )}
-
-                {displayExchange && isSuccess && (
-                  <>
-                    <DetailRow label="Sold">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-                        {formatDecimal(new Decimal(displayExchange.paid.value))}
-                        {displayExchange.paid.rawCurrency ? (
-                          <TokenDisplay
-                            slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
-                            currency={displayExchange.paid.currency}
-                            rawCurrency={displayExchange.paid.rawCurrency}
-                            variant="body2"
-                          />
-                        ) : (
-                          <XrpDisplay variant="body2" showText={true} />
-                        )}
-                      </span>
-                    </DetailRow>
-                    <DetailRow label="Received">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {formatDecimal(new Decimal(displayExchange.got.value))}
-                        {displayExchange.got.rawCurrency ? (
-                          <TokenDisplay
-                            slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
-                            currency={displayExchange.got.currency}
-                            rawCurrency={displayExchange.got.rawCurrency}
-                            variant="body2"
-                          />
-                        ) : (
-                          <XrpDisplay variant="body2" showText={true} />
-                        )}
-                      </span>
-                    </DetailRow>
-                    <DetailRow label="Rate">
-                      {(() => {
-                        try {
-                          const paidValue = new Decimal(displayExchange.paid.value);
-                          const gotValue = new Decimal(displayExchange.got.value);
-
-                          if (paidValue.isZero() || gotValue.isZero()) {
-                            return <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>N/A</span>;
-                          }
-
-                          const rate = paidValue.div(gotValue);
-                          return (
-                            <span className="text-[13px] font-mono">
-                              1 {displayExchange.got.currency} = {rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6)} {displayExchange.paid.currency}
-                            </span>
-                          );
-                        } catch (error) {
-                          return <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>N/A</span>;
-                        }
-                      })()}
-                    </DetailRow>
-                  </>
-                )}
-
-                {flagExplanations.length > 0 && (
-                  <DetailRow label="Flags">
-                    <div className="flex flex-wrap gap-1.5 justify-end">
-                      {TransactionType === 'Payment' ? (
-                        flagExplanations.map((flag) => (
-                          <span
-                            key={flag.title}
-                            className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                          >
-                            {flag.title}
-                          </span>
-                        ))
-                      ) : (
-                        flagExplanations.map((text) => (
-                          <span
-                            key={text}
-                            className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                          >
-                            {text}
-                          </span>
-                        ))
-                      )}
-                    </div>
+                {txData.Subject && (
+                  <DetailRow label="Subject">
+                    <Link href={`/address/${txData.Subject}`} passHref>
+                      <Typography
+                        component="span"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {txData.Subject}
+                      </Typography>
+                    </Link>
                   </DetailRow>
                 )}
+              </>
+            )}
 
-                {Memos && Memos.length > 0 && (
-                  <DetailRow label="Memo">
-                    <Stack spacing={0.5}>
-                      {Memos.map((memo, idx) => {
-                        // Check if string is valid hex (only 0-9, a-f, A-F and even length)
-                        const isHex = (str) => /^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0;
+            {/* AMM Create Details */}
+            {TransactionType === 'AMMCreate' && (
+              <>
+                {txData.TradingFee !== undefined && (
+                  <DetailRow label="Trading Fee">
+                    <Typography variant="body1">{txData.TradingFee / 1000}%</Typography>
+                  </DetailRow>
+                )}
+                {Asset && (
+                  <DetailRow label="Asset 1">
+                    <Typography variant="body1">
+                      {Asset.currency === 'XRP'
+                        ? 'XRP'
+                        : `${normalizeCurrencyCode(Asset.currency)} (${Asset.issuer?.slice(0, 8)}...)`}
+                    </Typography>
+                  </DetailRow>
+                )}
+                {Asset2 && (
+                  <DetailRow label="Asset 2">
+                    <Typography variant="body1">
+                      {Asset2.currency === 'XRP'
+                        ? 'XRP'
+                        : `${normalizeCurrencyCode(Asset2.currency)} (${Asset2.issuer?.slice(0, 8)}...)`}
+                    </Typography>
+                  </DetailRow>
+                )}
+              </>
+            )}
 
-                        // Decode hex to UTF-8, return null if invalid
-                        const decodeHex = (hexString) => {
-                          if (!hexString) return null;
-                          try {
-                            const bytes = [];
-                            for (let i = 0; i < hexString.length; i += 2) {
-                              bytes.push(parseInt(hexString.substr(i, 2), 16));
-                            }
-                            const decoded = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
-                            // Check if result has replacement chars (invalid UTF-8)
-                            if (decoded.includes('\uFFFD')) return hexString;
-                            return decoded;
-                          } catch {
-                            return hexString;
-                          }
-                        };
+            {displayExchange && isSuccess && (
+              <>
+                <DetailRow label="Sold">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                    {formatDecimal(new Decimal(displayExchange.paid.value))}
+                    {displayExchange.paid.rawCurrency ? (
+                      <TokenDisplay
+                        slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
+                        currency={displayExchange.paid.currency}
+                        rawCurrency={displayExchange.paid.rawCurrency}
+                        variant="body2"
+                      />
+                    ) : (
+                      <XrpDisplay variant="body2" showText={true} />
+                    )}
+                  </span>
+                </DetailRow>
+                <DetailRow label="Received">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    {formatDecimal(new Decimal(displayExchange.got.value))}
+                    {displayExchange.got.rawCurrency ? (
+                      <TokenDisplay
+                        slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
+                        currency={displayExchange.got.currency}
+                        rawCurrency={displayExchange.got.rawCurrency}
+                        variant="body2"
+                      />
+                    ) : (
+                      <XrpDisplay variant="body2" showText={true} />
+                    )}
+                  </span>
+                </DetailRow>
+                <DetailRow label="Rate">
+                  {(() => {
+                    try {
+                      const paidValue = new Decimal(displayExchange.paid.value);
+                      const gotValue = new Decimal(displayExchange.got.value);
 
-                        // Smart decode: only decode if it looks like hex
-                        const decodeMemo = (value) => {
-                          if (!value) return null;
-                          // If it's already readable text, use as-is
-                          if (!isHex(value)) return value;
-                          // Otherwise decode from hex
-                          return decodeHex(value);
-                        };
-
-                        const memoType = decodeMemo(memo.Memo.MemoType);
-                        const memoData = decodeMemo(memo.Memo.MemoData);
-
+                      if (paidValue.isZero() || gotValue.isZero()) {
                         return (
-                          <Typography key={idx} variant="body2" sx={{ fontSize: '13px', wordBreak: 'break-all' }}>
-                            {[memoType, memoData].filter(Boolean).join(': ')}
-                          </Typography>
+                          <span
+                            className={cn(
+                              'text-[13px]',
+                              isDark ? 'text-white/40' : 'text-gray-400'
+                            )}
+                          >
+                            N/A
+                          </span>
                         );
-                      })}
-                    </Stack>
-                  </DetailRow>
-                )}
+                      }
+
+                      const rate = paidValue.div(gotValue);
+                      return (
+                        <span className="text-[13px] font-mono">
+                          1 {displayExchange.got.currency} ={' '}
+                          {rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6)}{' '}
+                          {displayExchange.paid.currency}
+                        </span>
+                      );
+                    } catch (error) {
+                      return (
+                        <span
+                          className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}
+                        >
+                          N/A
+                        </span>
+                      );
+                    }
+                  })()}
+                </DetailRow>
+              </>
+            )}
+
+            {flagExplanations.length > 0 && (
+              <DetailRow label="Flags">
+                <div className="flex flex-wrap gap-1.5 justify-end">
+                  {TransactionType === 'Payment'
+                    ? flagExplanations.map((flag) => (
+                        <span
+                          key={flag.title}
+                          className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        >
+                          {flag.title}
+                        </span>
+                      ))
+                    : flagExplanations.map((text) => (
+                        <span
+                          key={text}
+                          className="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        >
+                          {text}
+                        </span>
+                      ))}
+                </div>
+              </DetailRow>
+            )}
+
+            {Memos && Memos.length > 0 && (
+              <DetailRow label="Memo">
+                <Stack spacing={0.5}>
+                  {Memos.map((memo, idx) => {
+                    // Check if string is valid hex (only 0-9, a-f, A-F and even length)
+                    const isHex = (str) => /^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0;
+
+                    // Decode hex to UTF-8, return null if invalid
+                    const decodeHex = (hexString) => {
+                      if (!hexString) return null;
+                      try {
+                        const bytes = [];
+                        for (let i = 0; i < hexString.length; i += 2) {
+                          bytes.push(parseInt(hexString.substr(i, 2), 16));
+                        }
+                        const decoded = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+                        // Check if result has replacement chars (invalid UTF-8)
+                        if (decoded.includes('\uFFFD')) return hexString;
+                        return decoded;
+                      } catch {
+                        return hexString;
+                      }
+                    };
+
+                    // Smart decode: only decode if it looks like hex
+                    const decodeMemo = (value) => {
+                      if (!value) return null;
+                      // If it's already readable text, use as-is
+                      if (!isHex(value)) return value;
+                      // Otherwise decode from hex
+                      return decodeHex(value);
+                    };
+
+                    const memoType = decodeMemo(memo.Memo.MemoType);
+                    const memoData = decodeMemo(memo.Memo.MemoData);
+
+                    return (
+                      <Typography
+                        key={idx}
+                        variant="body2"
+                        sx={{ fontSize: '13px', wordBreak: 'break-all' }}
+                      >
+                        {[memoType, memoData].filter(Boolean).join(': ')}
+                      </Typography>
+                    );
+                  })}
+                </Stack>
+              </DetailRow>
+            )}
           </div>
 
           {/* Transaction Link */}
-          <div className={cn(
-            "grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px] border-t",
-            isDark ? "border-white/[0.06]" : "border-gray-100"
-          )}>
-            <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>
+          <div
+            className={cn(
+              'grid grid-cols-[140px_1fr] items-center px-4 py-2.5 min-h-[44px] border-t',
+              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+            )}
+          >
+            <span className={cn('text-[13px]', isDark ? 'text-white/50' : 'text-gray-500')}>
               Link
             </span>
             <div className="flex items-center gap-2 justify-end">
               <Link href={`/tx/${hash}`} passHref>
-                <span className="text-primary text-[13px] font-mono hover:underline truncate max-w-[280px]" title={txUrl}>
+                <span
+                  className="text-primary text-[13px] font-mono hover:underline truncate max-w-[280px]"
+                  title={txUrl}
+                >
                   {txUrl}
                 </span>
               </Link>
-              <button onClick={copyUrlToClipboard} className={cn("p-1 rounded hover:bg-white/10 shrink-0", isDark ? "text-white/50 hover:text-primary" : "text-gray-400 hover:text-primary")}>
+              <button
+                onClick={copyUrlToClipboard}
+                className={cn(
+                  'p-1 rounded hover:bg-white/10 shrink-0',
+                  isDark ? 'text-white/50 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                )}
+              >
                 <Copy size={14} />
               </button>
             </div>
@@ -3773,35 +4334,44 @@ const TransactionDetails = ({ txData }) => {
 
       {/* BALANCES Tab */}
       {activeTab === 'balances' && (
-        <div className={cn(
-          "rounded-xl overflow-hidden",
-          isDark ? "bg-transparent" : "bg-white"
-        )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-        }}>
-          <div className={cn(
-            "px-4 py-3",
-            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-          )}>
-            <span className={cn(
-              "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/40" : "text-gray-400"
-            )}>
+        <div
+          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
+          style={{
+            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
+          }}
+        >
+          <div
+            className={cn(
+              'px-4 py-3',
+              isDark
+                ? 'border-b border-[rgba(255,255,255,0.10)]'
+                : 'border-b border-[rgba(0,0,0,0.08)]'
+            )}
+          >
+            <span
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wider',
+                isDark ? 'text-white/40' : 'text-gray-400'
+              )}
+            >
               Balance Changes ({balanceChanges.length})
             </span>
           </div>
           {balanceChanges.length > 0 && isSuccess ? (
-            <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+            <div
+              className="divide-y"
+              style={{ borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+            >
               {balanceChanges.map(({ account, changes }, idx) => (
                 <div
                   key={account}
                   className={cn(
-                    "px-4 py-3 flex items-start gap-4 flex-wrap",
-                    idx % 2 === 1 && (isDark ? "bg-white/[0.02]" : "bg-gray-50/50")
+                    'px-4 py-3 flex items-start gap-4 flex-wrap',
+                    idx % 2 === 1 && (isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50')
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-[280px] flex-1">
-                                        <Link href={`/address/${account}`} passHref>
+                    <Link href={`/address/${account}`} passHref>
                       <span className="text-primary text-[13px] font-mono hover:underline break-all">
                         {account}
                       </span>
@@ -3823,7 +4393,8 @@ const TransactionDetails = ({ txData }) => {
                             color
                           }}
                         >
-                          {sign}{formatDecimal(new Decimal(change.value))}
+                          {sign}
+                          {formatDecimal(new Decimal(change.value))}
                           {change.currency === 'XRP' ? (
                             <XrpDisplay variant="body2" showText={true} />
                           ) : (
@@ -3842,7 +4413,12 @@ const TransactionDetails = ({ txData }) => {
               ))}
             </div>
           ) : (
-            <div className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+            <div
+              className={cn(
+                'px-4 py-8 text-center text-[13px]',
+                isDark ? 'text-white/40' : 'text-gray-400'
+              )}
+            >
               No balance changes
             </div>
           )}
@@ -3851,20 +4427,26 @@ const TransactionDetails = ({ txData }) => {
 
       {/* TECHNICAL Tab */}
       {activeTab === 'technical' && (
-        <div className={cn(
-          "rounded-xl overflow-hidden",
-          isDark ? "bg-transparent" : "bg-white"
-        )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-        }}>
-          <div className={cn(
-            "px-4 py-3",
-            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-          )}>
-            <span className={cn(
-              "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/40" : "text-gray-400"
-            )}>
+        <div
+          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
+          style={{
+            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
+          }}
+        >
+          <div
+            className={cn(
+              'px-4 py-3',
+              isDark
+                ? 'border-b border-[rgba(255,255,255,0.10)]'
+                : 'border-b border-[rgba(0,0,0,0.08)]'
+            )}
+          >
+            <span
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wider',
+                isDark ? 'text-white/40' : 'text-gray-400'
+              )}
+            >
               Technical Details
             </span>
           </div>
@@ -3885,7 +4467,8 @@ const TransactionDetails = ({ txData }) => {
             {LastLedgerSequence && (
               <DetailRow label="Last Ledger" index={3}>
                 <span className="text-[13px]">
-                  #{LastLedgerSequence.toLocaleString()} ({LastLedgerSequence - ledger_index} ledgers)
+                  #{LastLedgerSequence.toLocaleString()} ({LastLedgerSequence - ledger_index}{' '}
+                  ledgers)
                 </span>
               </DetailRow>
             )}
@@ -3900,20 +4483,26 @@ const TransactionDetails = ({ txData }) => {
 
       {/* RAW Tab */}
       {activeTab === 'raw' && (
-        <div className={cn(
-          "rounded-xl overflow-hidden",
-          isDark ? "bg-transparent" : "bg-white"
-        )} style={{
-          border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
-        }}>
-          <div className={cn(
-            "px-4 py-3",
-            isDark ? "border-b border-[rgba(255,255,255,0.10)]" : "border-b border-[rgba(0,0,0,0.08)]"
-          )}>
-            <span className={cn(
-              "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/40" : "text-gray-400"
-            )}>
+        <div
+          className={cn('rounded-xl overflow-hidden', isDark ? 'bg-transparent' : 'bg-white')}
+          style={{
+            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`
+          }}
+        >
+          <div
+            className={cn(
+              'px-4 py-3',
+              isDark
+                ? 'border-b border-[rgba(255,255,255,0.10)]'
+                : 'border-b border-[rgba(0,0,0,0.08)]'
+            )}
+          >
+            <span
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wider',
+                isDark ? 'text-white/40' : 'text-gray-400'
+              )}
+            >
               Raw Transaction JSON
             </span>
           </div>
@@ -3921,14 +4510,13 @@ const TransactionDetails = ({ txData }) => {
             <JsonViewer data={rawData} isDark={isDark} />
           </div>
 
-          <div className={cn(
-            "px-4 py-3 border-t",
-            isDark ? "border-white/10" : "border-gray-200"
-          )}>
-            <span className={cn(
-              "text-[11px] font-medium uppercase tracking-wider",
-              isDark ? "text-white/40" : "text-gray-400"
-            )}>
+          <div className={cn('px-4 py-3 border-t', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <span
+              className={cn(
+                'text-[11px] font-medium uppercase tracking-wider',
+                isDark ? 'text-white/40' : 'text-gray-400'
+              )}
+            >
               Transaction Metadata
             </span>
           </div>
@@ -3941,10 +4529,14 @@ const TransactionDetails = ({ txData }) => {
       {/* Copy notification toast */}
       {urlCopied && (
         <div className="fixed bottom-4 right-4 z-50">
-          <div className={cn(
-            "px-4 py-2.5 rounded-lg text-[13px] font-medium shadow-lg flex items-center gap-2",
-            isDark ? "bg-[#1a1a1a] text-white border border-white/10" : "bg-white text-gray-800 border border-gray-200"
-          )}>
+          <div
+            className={cn(
+              'px-4 py-2.5 rounded-lg text-[13px] font-medium shadow-lg flex items-center gap-2',
+              isDark
+                ? 'bg-[#1a1a1a] text-white border border-white/10'
+                : 'bg-white text-gray-800 border border-gray-200'
+            )}
+          >
             <span className="text-[#22c55e]">✓</span>
             Link copied to clipboard
           </div>
@@ -3966,10 +4558,7 @@ const TxPage = ({ txData, error }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className={cn(
-        "flex-1 max-w-[1920px] mx-auto w-full px-4 mt-4",
-        isDark ? "" : ""
-      )}>
+      <div className={cn('flex-1 max-w-[1920px] mx-auto w-full px-4 mt-4', isDark ? '' : '')}>
         {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
             The imports have been updated, but the component JSX still uses many MUI components like:
             Box, Typography, Paper, Card, CardContent, Stack, Grid, Chip, Avatar, Tooltip, etc.
@@ -3987,50 +4576,93 @@ const TxPage = ({ txData, error }) => {
             See pages/nft-traders.js for a complete migration example.
         */}
         <div className="mb-8">
-          <h1 className="text-3xl font-normal mb-2">
-            Transaction Details
-          </h1>
+          <h1 className="text-3xl font-normal mb-2">Transaction Details</h1>
         </div>
         {error ? (
-          <div className={cn(
-            "rounded-xl border-[1.5px] p-8 text-center max-w-md mx-auto mt-8",
-            isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50/50"
-          )}>
+          <div
+            className={cn(
+              'rounded-xl border-[1.5px] p-8 text-center max-w-md mx-auto mt-8',
+              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
+            )}
+          >
             <div className="relative w-16 h-16 mx-auto mb-5">
-              <div className={cn("absolute -top-1 left-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-              <div className={cn("absolute -top-1 right-1 w-5 h-5 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-              <div className={cn("absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-              <div className={cn("absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-              <div className={cn("absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+              <div
+                className={cn(
+                  'absolute -top-1 left-1 w-5 h-5 rounded-full',
+                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+                )}
+              />
+              <div
+                className={cn(
+                  'absolute -top-1 right-1 w-5 h-5 rounded-full',
+                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+                )}
+              />
+              <div
+                className={cn(
+                  'absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full',
+                  isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                )}
+              />
+              <div
+                className={cn(
+                  'absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full',
+                  isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                )}
+              />
+              <div
+                className={cn(
+                  'absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full',
+                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
+                )}
+              >
                 <div className="absolute top-4 left-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
                 <div className="absolute top-4 right-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                <div className={cn("absolute bottom-2.5 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
-                <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-1 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                <div
+                  className={cn(
+                    'absolute bottom-2.5 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full',
+                    isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
+                  )}
+                >
+                  <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+                </div>
+                <div
+                  className={cn(
+                    'absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-1 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]',
+                    isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
+                  )}
+                />
               </div>
               <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                {[...Array(10)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn('h-[2px] w-full', isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40')}
+                  />
+                ))}
               </div>
             </div>
-            <p className={cn(
-              "text-sm font-medium tracking-widest mb-2",
-              isDark ? "text-white/80" : "text-gray-600"
-            )}>
+            <p
+              className={cn(
+                'text-sm font-medium tracking-widest mb-2',
+                isDark ? 'text-white/80' : 'text-gray-600'
+              )}
+            >
               TX NOT FOUND
             </p>
-            <p className={cn(
-              "text-xs mb-6",
-              isDark ? "text-white/30" : "text-gray-400"
-            )}>
+            <p className={cn('text-xs mb-6', isDark ? 'text-white/30' : 'text-gray-400')}>
               {error}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Link href="/">
-                <button className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
-                  isDark
-                    ? "border-white/15 text-white/80 hover:border-primary hover:bg-primary/5"
-                    : "border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5"
-                )}>
+                <button
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors',
+                    isDark
+                      ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
+                      : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'
+                  )}
+                >
                   <Home size={14} />
                   Go Home
                 </button>
@@ -4038,10 +4670,10 @@ const TxPage = ({ txData, error }) => {
               <button
                 onClick={() => router.back()}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
+                  'flex items-center gap-2 px-4 py-2.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors',
                   isDark
-                    ? "border-white/15 text-white/80 hover:border-primary hover:bg-primary/5"
-                    : "border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5"
+                    ? 'border-white/15 text-white/80 hover:border-primary hover:bg-primary/5'
+                    : 'border-gray-300 text-gray-700 hover:border-primary hover:bg-primary/5'
                 )}
               >
                 <Search size={14} />

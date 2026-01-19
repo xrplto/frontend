@@ -18,70 +18,113 @@ const currencySymbols = {
 };
 
 // Inline Sparkline - SVG based with filled area like Orb design
-const SparklineChart = memo(({ url }) => {
-  const [linePath, setLinePath] = useState('');
-  const [areaPath, setAreaPath] = useState('');
-  const [color, setColor] = useState('#22c55e');
-  const containerRef = useRef(null);
-  const [visible, setVisible] = useState(false);
+const SparklineChart = memo(
+  ({ url }) => {
+    const [linePath, setLinePath] = useState('');
+    const [areaPath, setAreaPath] = useState('');
+    const [color, setColor] = useState('#22c55e');
+    const containerRef = useRef(null);
+    const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { rootMargin: '50px' });
-    obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, []);
+    useEffect(() => {
+      if (!containerRef.current) return;
+      const obs = new IntersectionObserver(
+        ([e]) => {
+          if (e.isIntersecting) {
+            setVisible(true);
+            obs.disconnect();
+          }
+        },
+        { rootMargin: '50px' }
+      );
+      obs.observe(containerRef.current);
+      return () => obs.disconnect();
+    }, []);
 
-  useEffect(() => {
-    if (!visible || !url) return;
-    let cancelled = false;
-    axios.get(url).then(res => {
-      if (cancelled) return;
-      const prices = res.data?.data?.prices?.map(Number) || [];
-      if (prices.length < 2) return;
-      const w = 120, h = 32;
-      const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
-      const pts = prices.map((p, i) => [i / (prices.length - 1) * w, h - ((p - min) / range) * (h - 4) - 2]);
-      const line = 'M' + pts.map(p => p.join(',')).join('L');
-      const area = line + `L${w},${h}L0,${h}Z`;
-      const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
-      setLinePath(line);
-      setAreaPath(area);
-      setColor(c);
-    }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [visible, url]);
+    useEffect(() => {
+      if (!visible || !url) return;
+      let cancelled = false;
+      axios
+        .get(url)
+        .then((res) => {
+          if (cancelled) return;
+          const prices = res.data?.data?.prices?.map(Number) || [];
+          if (prices.length < 2) return;
+          const w = 120,
+            h = 32;
+          const min = Math.min(...prices),
+            max = Math.max(...prices),
+            range = max - min || 1;
+          const pts = prices.map((p, i) => [
+            (i / (prices.length - 1)) * w,
+            h - ((p - min) / range) * (h - 4) - 2
+          ]);
+          const line = 'M' + pts.map((p) => p.join(',')).join('L');
+          const area = line + `L${w},${h}L0,${h}Z`;
+          const c = prices[prices.length - 1] >= prices[0] ? '#22c55e' : '#ef4444';
+          setLinePath(line);
+          setAreaPath(area);
+          setColor(c);
+        })
+        .catch(() => {});
+      return () => {
+        cancelled = true;
+      };
+    }, [visible, url]);
 
-  const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+    const fillColor = color === '#22c55e' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
-  return (
-    <div ref={containerRef} style={{ width: 120, height: 32 }}>
-      {linePath ? (
-        <svg width="120" height="32" viewBox="0 0 120 32" preserveAspectRatio="none" style={{ display: 'block' }}>
-          <path d={areaPath} fill={fillColor} />
-          <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ) : (
-        <div style={{ width: 120, height: 32, background: 'rgba(128,128,128,0.04)', borderRadius: 4 }} />
-      )}
-    </div>
-  );
-}, (prev, next) => prev.url === next.url);
+    return (
+      <div ref={containerRef} style={{ width: 120, height: 32 }}>
+        {linePath ? (
+          <svg
+            width="120"
+            height="32"
+            viewBox="0 0 120 32"
+            preserveAspectRatio="none"
+            style={{ display: 'block' }}
+          >
+            <path d={areaPath} fill={fillColor} />
+            <path
+              d={linePath}
+              fill="none"
+              stroke={color}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <div
+            style={{
+              width: 120,
+              height: 32,
+              background: 'rgba(128,128,128,0.04)',
+              borderRadius: 4
+            }}
+          />
+        )}
+      </div>
+    );
+  },
+  (prev, next) => prev.url === next.url
+);
 
 SparklineChart.displayName = 'SparklineChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
   transition: background 0.15s ease;
-  ${(props) => props.isNew && `
+  ${(props) =>
+    props.isNew &&
+    `
     background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
   `}
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   }
 `;
 
@@ -108,19 +151,22 @@ const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 12px;
-  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
   transition: all 0.15s ease;
   background: transparent;
-  ${(props) => props.isNew && `
+  ${(props) =>
+    props.isNew &&
+    `
     background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
     border-left: 2px solid #22c55e;
   `}
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+    background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
   }
 `;
 
@@ -139,7 +185,7 @@ const MobilePriceCell = styled.div`
   padding: 0 6px;
   font-weight: 500;
   font-size: 13px;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000'};
+  color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.9)' : '#000000')};
   min-width: 0;
   letter-spacing: 0.01em;
 `;
@@ -161,7 +207,7 @@ const TokenImage = styled.div`
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
 `;
 
 const TokenDetails = styled.div`
@@ -175,7 +221,7 @@ const TokenDetails = styled.div`
 const TokenName = styled.span`
   font-weight: 500;
   font-size: ${(props) => (props.isMobile ? '14px' : '15px')};
-  color: ${(props) => props.isDark ? '#FFFFFF' : '#1a1a1a'};
+  color: ${(props) => (props.isDark ? '#FFFFFF' : '#1a1a1a')};
   max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -186,7 +232,7 @@ const TokenName = styled.span`
 
 const UserName = styled.span`
   font-size: ${(props) => (props.isMobile ? '12px' : '13px')};
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)')};
   font-weight: 400;
   display: block;
   max-width: ${(props) => (props.isMobile ? '120px' : '180px')};
@@ -252,9 +298,19 @@ const formatPrice = (price) => {
 const PriceDisplay = ({ price, symbol = '' }) => {
   const formatted = formatPrice(price);
   if (formatted?.compact) {
-    return <>{symbol}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>{formatted.significant}</>;
+    return (
+      <>
+        {symbol}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>
+        {formatted.significant}
+      </>
+    );
   }
-  return <>{symbol}{formatted}</>;
+  return (
+    <>
+      {symbol}
+      {formatted}
+    </>
+  );
 };
 
 // Simple number formatter with thousand separators
@@ -532,14 +588,20 @@ const MobileTokenRow = ({
           />
         </TokenImage>
         <TokenDetails>
-          <TokenName isMobile={true} isDark={darkMode}>{name}</TokenName>
-          <UserName isMobile={true} isDark={darkMode}>{user}</UserName>
+          <TokenName isMobile={true} isDark={darkMode}>
+            {name}
+          </TokenName>
+          <UserName isMobile={true} isDark={darkMode}>
+            {user}
+          </UserName>
         </TokenDetails>
       </MobileTokenInfo>
 
       <MobilePriceCell isDark={darkMode}>{formatMobileValue(mobilePriceColumn)}</MobilePriceCell>
 
-      <MobilePercentCell isDark={darkMode}>{formatMobileValue(mobilePercentColumn)}</MobilePercentCell>
+      <MobilePercentCell isDark={darkMode}>
+        {formatMobileValue(mobilePercentColumn)}
+      </MobilePercentCell>
     </MobileTokenCard>
   );
 };
@@ -631,8 +693,12 @@ const DesktopTokenRow = ({
             />
           </TokenImage>
           <div style={{ minWidth: 0 }}>
-            <TokenName isDark={darkMode} title={name}>{truncate(name, 16)}</TokenName>
-            <UserName isDark={darkMode} title={user}>{truncate(user, 12)}</UserName>
+            <TokenName isDark={darkMode} title={name}>
+              {truncate(name, 16)}
+            </TokenName>
+            <UserName isDark={darkMode} title={user}>
+              {truncate(user, 12)}
+            </UserName>
           </div>
         </div>
       </StyledCell>
@@ -645,9 +711,16 @@ const DesktopTokenRow = ({
         <StyledCell align="right" isDark={darkMode} style={{ minWidth: 100 }}>
           <PriceText flashColor={flashColor} isDark={darkMode}>
             {formatted?.compact ? (
-              <>{currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>{formatted.significant}</>
+              <>
+                {currencySymbols[activeFiatCurrency]}0.0
+                <sub style={{ fontSize: '0.6em' }}>{formatted.zeros}</sub>
+                {formatted.significant}
+              </>
             ) : (
-              <>{currencySymbols[activeFiatCurrency]}{formatted}</>
+              <>
+                {currencySymbols[activeFiatCurrency]}
+                {formatted}
+              </>
             )}
           </PriceText>
         </StyledCell>
@@ -700,7 +773,9 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                  -
+                </span>
               )}
             </StyledCell>
           </>
@@ -712,7 +787,9 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             <StyledCell align="right" isDark={darkMode}>
-              <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
+              <span
+                style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}
+              >
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
@@ -778,7 +855,9 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                  -
+                </span>
               )}
             </StyledCell>
           </>
@@ -808,7 +887,12 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              <span style={{ fontSize: '11px', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                }}
+              >
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -816,7 +900,9 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
+                <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                  -
+                </span>
               )}
             </StyledCell>
           </>
@@ -836,158 +922,179 @@ const DesktopTokenRow = ({
             const extraStyle = {};
 
             switch (column) {
-            case 'price':
-              const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
-              const customFormatted = formatPrice(customPrice);
-              columnElements.push(
-                <StyledCell key="price" align="right" isDark={darkMode} style={extraStyle}>
-                  <PriceText flashColor={flashColor} isDark={darkMode}>
-                    {customFormatted?.compact ? (
-                      <>{currencySymbols[activeFiatCurrency]}0.0<sub style={{ fontSize: '0.6em' }}>{customFormatted.zeros}</sub>{customFormatted.significant}</>
-                    ) : (
-                      <>{currencySymbols[activeFiatCurrency]}{customFormatted}</>
-                    )}
-                  </PriceText>
-                </StyledCell>
-              );
-              break;
-            case 'pro5m':
-              columnElements.push(
-                <StyledCell key="pro5m" align="right" isDark={darkMode} style={extraStyle}>
-                  <PercentText color={getPercentColor(pro5m)}>
-                    {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
-                      ? `${pro5m.toFixed(2)}%`
-                      : '0.00%'}
-                  </PercentText>
-                </StyledCell>
-              );
-              break;
-            case 'pro1h':
-              columnElements.push(
-                <StyledCell key="pro1h" align="right" isDark={darkMode} style={extraStyle}>
-                  <PercentText color={getPercentColor(pro1h)}>
-                    {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
-                      ? `${pro1h.toFixed(2)}%`
-                      : '0.00%'}
-                  </PercentText>
-                </StyledCell>
-              );
-              break;
-            case 'pro24h':
-              columnElements.push(
-                <StyledCell key="pro24h" align="right" isDark={darkMode} style={extraStyle}>
-                  <PercentText color={getPercentColor(pro24h)}>
-                    {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
-                      ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
-                      : '0.0%'}
-                  </PercentText>
-                </StyledCell>
-              );
-              break;
-            case 'pro7d':
-              columnElements.push(
-                <StyledCell key="pro7d" align="right" isDark={darkMode} style={extraStyle}>
-                  <PercentText color={getPercentColor(pro7d)}>
-                    {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
-                      ? `${pro7d.toFixed(2)}%`
-                      : '0.00%'}
-                  </PercentText>
-                </StyledCell>
-              );
-              break;
-            case 'pro30d':
-              columnElements.push(
-                <StyledCell key="pro30d" align="right" isDark={darkMode} style={extraStyle}>
-                  <PercentText color={getPercentColor(pro24h * 30)}>
-                    {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
-                      ? `${(pro24h * 30).toFixed(0)}%`
-                      : '0%'}
-                  </PercentText>
-                </StyledCell>
-              );
-              break;
-            case 'volume24h':
-              columnElements.push(
-                <StyledCell key="volume24h" align="right" isDark={darkMode} style={extraStyle}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatValue(convertedValues.volume)}
-                </StyledCell>
-              );
-              break;
-            case 'volume7d':
-              columnElements.push(
-                <StyledCell key="volume7d" align="right" isDark={darkMode} style={extraStyle}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatValue(convertedValues.volume * 7)}
-                </StyledCell>
-              );
-              break;
-            case 'marketCap':
-              columnElements.push(
-                <StyledCell key="marketCap" align="right" isDark={darkMode} style={extraStyle}>
-                  <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
+              case 'price':
+                const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
+                const customFormatted = formatPrice(customPrice);
+                columnElements.push(
+                  <StyledCell key="price" align="right" isDark={darkMode} style={extraStyle}>
+                    <PriceText flashColor={flashColor} isDark={darkMode}>
+                      {customFormatted?.compact ? (
+                        <>
+                          {currencySymbols[activeFiatCurrency]}0.0
+                          <sub style={{ fontSize: '0.6em' }}>{customFormatted.zeros}</sub>
+                          {customFormatted.significant}
+                        </>
+                      ) : (
+                        <>
+                          {currencySymbols[activeFiatCurrency]}
+                          {customFormatted}
+                        </>
+                      )}
+                    </PriceText>
+                  </StyledCell>
+                );
+                break;
+              case 'pro5m':
+                columnElements.push(
+                  <StyledCell key="pro5m" align="right" isDark={darkMode} style={extraStyle}>
+                    <PercentText color={getPercentColor(pro5m)}>
+                      {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
+                        ? `${pro5m.toFixed(2)}%`
+                        : '0.00%'}
+                    </PercentText>
+                  </StyledCell>
+                );
+                break;
+              case 'pro1h':
+                columnElements.push(
+                  <StyledCell key="pro1h" align="right" isDark={darkMode} style={extraStyle}>
+                    <PercentText color={getPercentColor(pro1h)}>
+                      {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
+                        ? `${pro1h.toFixed(2)}%`
+                        : '0.00%'}
+                    </PercentText>
+                  </StyledCell>
+                );
+                break;
+              case 'pro24h':
+                columnElements.push(
+                  <StyledCell key="pro24h" align="right" isDark={darkMode} style={extraStyle}>
+                    <PercentText color={getPercentColor(pro24h)}>
+                      {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
+                        ? `${pro24h > 0 ? '+' : ''}${pro24h.toFixed(1)}%`
+                        : '0.0%'}
+                    </PercentText>
+                  </StyledCell>
+                );
+                break;
+              case 'pro7d':
+                columnElements.push(
+                  <StyledCell key="pro7d" align="right" isDark={darkMode} style={extraStyle}>
+                    <PercentText color={getPercentColor(pro7d)}>
+                      {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
+                        ? `${pro7d.toFixed(2)}%`
+                        : '0.00%'}
+                    </PercentText>
+                  </StyledCell>
+                );
+                break;
+              case 'pro30d':
+                columnElements.push(
+                  <StyledCell key="pro30d" align="right" isDark={darkMode} style={extraStyle}>
+                    <PercentText color={getPercentColor(pro24h * 30)}>
+                      {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
+                        ? `${(pro24h * 30).toFixed(0)}%`
+                        : '0%'}
+                    </PercentText>
+                  </StyledCell>
+                );
+                break;
+              case 'volume24h':
+                columnElements.push(
+                  <StyledCell key="volume24h" align="right" isDark={darkMode} style={extraStyle}>
                     {currencySymbols[activeFiatCurrency]}
-                    {formatValue(convertedValues.marketCap)}
-                  </span>
-                </StyledCell>
-              );
-              break;
-            case 'tvl':
-              columnElements.push(
-                <StyledCell key="tvl" align="right" isDark={darkMode} style={extraStyle}>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatValue(convertedValues.tvl)}
-                </StyledCell>
-              );
-              break;
-            case 'holders':
-              columnElements.push(
-                <StyledCell key="holders" align="right" isDark={darkMode} style={extraStyle}>
-                  {formatValue(holders, 'int')}
-                </StyledCell>
-              );
-              break;
-            case 'trades':
-              columnElements.push(
-                <StyledCell key="trades" align="right" isDark={darkMode} style={extraStyle}>
-                  {formatValue(vol24htx, 'int')}
-                </StyledCell>
-              );
-              break;
-            case 'created':
-              columnElements.push(
-                <StyledCell key="created" align="right" isDark={darkMode} style={extraStyle}>
-                  <span style={{ fontSize: '11px', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                    {formatTimeAgo(dateon, date)}
-                  </span>
-                </StyledCell>
-              );
-              break;
-            case 'supply':
-              columnElements.push(
-                <StyledCell key="supply" align="right" isDark={darkMode} style={extraStyle}>
-                  {formatValue(amount, 'int')}
-                </StyledCell>
-              );
-              break;
-            case 'origin':
-              columnElements.push(
-                <StyledCell key="origin" align="right" isDark={darkMode} style={extraStyle}>
-                  {origin || 'XRPL'}
-                </StyledCell>
-              );
-              break;
-            case 'sparkline':
-              columnElements.push(
-                <StyledCell key="sparkline" align="right" isDark={darkMode}>
-                  {sparklineUrl ? (
-                    <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
-                  ) : (
-                    <span style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>-</span>
-                  )}
-                </StyledCell>
-              );
-              break;
+                    {formatValue(convertedValues.volume)}
+                  </StyledCell>
+                );
+                break;
+              case 'volume7d':
+                columnElements.push(
+                  <StyledCell key="volume7d" align="right" isDark={darkMode} style={extraStyle}>
+                    {currencySymbols[activeFiatCurrency]}
+                    {formatValue(convertedValues.volume * 7)}
+                  </StyledCell>
+                );
+                break;
+              case 'marketCap':
+                columnElements.push(
+                  <StyledCell key="marketCap" align="right" isDark={darkMode} style={extraStyle}>
+                    <span
+                      style={{
+                        fontWeight: '400',
+                        color: getMarketCapColor(convertedValues.marketCap)
+                      }}
+                    >
+                      {currencySymbols[activeFiatCurrency]}
+                      {formatValue(convertedValues.marketCap)}
+                    </span>
+                  </StyledCell>
+                );
+                break;
+              case 'tvl':
+                columnElements.push(
+                  <StyledCell key="tvl" align="right" isDark={darkMode} style={extraStyle}>
+                    {currencySymbols[activeFiatCurrency]}
+                    {formatValue(convertedValues.tvl)}
+                  </StyledCell>
+                );
+                break;
+              case 'holders':
+                columnElements.push(
+                  <StyledCell key="holders" align="right" isDark={darkMode} style={extraStyle}>
+                    {formatValue(holders, 'int')}
+                  </StyledCell>
+                );
+                break;
+              case 'trades':
+                columnElements.push(
+                  <StyledCell key="trades" align="right" isDark={darkMode} style={extraStyle}>
+                    {formatValue(vol24htx, 'int')}
+                  </StyledCell>
+                );
+                break;
+              case 'created':
+                columnElements.push(
+                  <StyledCell key="created" align="right" isDark={darkMode} style={extraStyle}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
+                      }}
+                    >
+                      {formatTimeAgo(dateon, date)}
+                    </span>
+                  </StyledCell>
+                );
+                break;
+              case 'supply':
+                columnElements.push(
+                  <StyledCell key="supply" align="right" isDark={darkMode} style={extraStyle}>
+                    {formatValue(amount, 'int')}
+                  </StyledCell>
+                );
+                break;
+              case 'origin':
+                columnElements.push(
+                  <StyledCell key="origin" align="right" isDark={darkMode} style={extraStyle}>
+                    {origin || 'XRPL'}
+                  </StyledCell>
+                );
+                break;
+              case 'sparkline':
+                columnElements.push(
+                  <StyledCell key="sparkline" align="right" isDark={darkMode}>
+                    {sparklineUrl ? (
+                      <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
+                    ) : (
+                      <span
+                        style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}
+                      >
+                        -
+                      </span>
+                    )}
+                  </StyledCell>
+                );
+                break;
             }
           });
 
@@ -998,7 +1105,7 @@ const DesktopTokenRow = ({
             </>
           );
         }
-        // Fall through to classic when customColumns is empty
+      // Fall through to classic when customColumns is empty
 
       case 'classic':
       default:
@@ -1011,7 +1118,14 @@ const DesktopTokenRow = ({
               {sparklineUrl ? (
                 <SparklineChart key={sparklineUrl} url={sparklineUrl} darkMode={darkMode} />
               ) : (
-                <div style={{ width: 120, height: 32, background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: 4 }} />
+                <div
+                  style={{
+                    width: 120,
+                    height: 32,
+                    background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                    borderRadius: 4
+                  }}
+                />
               )}
             </td>
             <StyledCell align="right" isDark={darkMode}>
@@ -1047,7 +1161,12 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.volume)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              <span style={{ fontSize: '13px', color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+              <span
+                style={{
+                  fontSize: '13px',
+                  color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
+                }}
+              >
                 {formatTimeAgo(dateon, date)}
               </span>
             </StyledCell>
@@ -1092,7 +1211,11 @@ const DesktopTokenRow = ({
             style={{
               cursor: 'pointer',
               fontSize: '16px',
-              color: watchList.includes(md5) ? '#e85454' : (darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'),
+              color: watchList.includes(md5)
+                ? '#e85454'
+                : darkMode
+                  ? 'rgba(255,255,255,0.25)'
+                  : 'rgba(0,0,0,0.2)',
               display: 'inline-block',
               width: '100%',
               transition: 'color 0.15s ease'
@@ -1112,12 +1235,16 @@ const DesktopTokenRow = ({
           maxWidth: '50px'
         }}
       >
-        <span style={{
-          fontWeight: '400',
-          fontSize: '13px',
-          color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-          fontFamily: 'var(--font-mono)'
-        }}>{idx + 1}</span>
+        <span
+          style={{
+            fontWeight: '400',
+            fontSize: '13px',
+            color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+            fontFamily: 'var(--font-mono)'
+          }}
+        >
+          {idx + 1}
+        </span>
       </StyledCell>
 
       {renderColumns()}
@@ -1271,7 +1398,7 @@ const FTokenRow = memo(
       prevProps.activeFiatCurrency === nextProps.activeFiatCurrency &&
       // Watchlist check
       (prevProps.watchList === nextProps.watchList ||
-        (prevProps.watchList.includes(prev.md5) === nextProps.watchList.includes(next.md5)))
+        prevProps.watchList.includes(prev.md5) === nextProps.watchList.includes(next.md5))
     );
   }
 );
@@ -1327,14 +1454,15 @@ export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)'};
+  background: ${(props) => (props.isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)')};
   backdrop-filter: blur(16px);
-  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1.5px solid
+    ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   font-size: 12px;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0.01em;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   position: sticky;
   top: 0;
   z-index: 10;
@@ -1349,7 +1477,8 @@ export const HeaderCell = styled.div`
   transition: color 0.15s ease;
 
   &:hover {
-    color: ${(props) => props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
+    color: ${(props) =>
+      props.sortable && (props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')};
   }
 `;
 

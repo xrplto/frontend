@@ -35,7 +35,9 @@ async function blitz(client, mainAddress, id) {
       if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
         stats.wallets++;
         stats.xrp += amt;
-        process.stdout.write(`\r💰 ${stats.wallets} wallets | ${stats.xrp.toFixed(0)} XRP | ${(stats.xrp / ((Date.now() - stats.startTime) / 1000)).toFixed(1)} XRP/s`);
+        process.stdout.write(
+          `\r💰 ${stats.wallets} wallets | ${stats.xrp.toFixed(0)} XRP | ${(stats.xrp / ((Date.now() - stats.startTime) / 1000)).toFixed(1)} XRP/s`
+        );
         return true;
       }
     }
@@ -79,7 +81,9 @@ async function ultra() {
 
 process.on('SIGINT', () => {
   const elapsed = (Date.now() - stats.startTime) / 1000;
-  console.log(`\n\n🏁 FINAL: ${stats.wallets} wallets, ${stats.xrp.toFixed(0)} XRP in ${elapsed.toFixed(0)}s`);
+  console.log(
+    `\n\n🏁 FINAL: ${stats.wallets} wallets, ${stats.xrp.toFixed(0)} XRP in ${elapsed.toFixed(0)}s`
+  );
   console.log(`⚡ Average: ${(stats.xrp / elapsed).toFixed(1)} XRP/second`);
   process.exit(0);
 });

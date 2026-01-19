@@ -41,7 +41,12 @@ export default function ChartEmbedTest() {
   return (
     <>
       <Header />
-      <div className={cn('min-h-screen p-6', isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900')}>
+      <div
+        className={cn(
+          'min-h-screen p-6',
+          isDark ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'
+        )}
+      >
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-6 text-xl font-medium">Chart Embed Tester</h1>
 
@@ -68,7 +73,9 @@ export default function ChartEmbedTest() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">Theme</label>
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Theme
+              </label>
               <select
                 value={params.theme}
                 onChange={(e) => setParams({ ...params, theme: e.target.value })}
@@ -83,7 +90,9 @@ export default function ChartEmbedTest() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">Interval</label>
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Interval
+              </label>
               <select
                 value={params.interval}
                 onChange={(e) => setParams({ ...params, interval: e.target.value })}
@@ -102,7 +111,9 @@ export default function ChartEmbedTest() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">Range</label>
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Range
+              </label>
               <select
                 value={params.range}
                 onChange={(e) => setParams({ ...params, range: e.target.value })}
@@ -120,7 +131,9 @@ export default function ChartEmbedTest() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">Height</label>
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Height
+              </label>
               <input
                 type="number"
                 value={params.height}
@@ -150,7 +163,9 @@ export default function ChartEmbedTest() {
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">Show Logo</label>
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Show Logo
+              </label>
               <select
                 value={params.showLogo}
                 onChange={(e) => setParams({ ...params, showLogo: e.target.value })}
@@ -219,7 +234,9 @@ export default function ChartEmbedTest() {
                 isDark ? 'border-white/10' : 'border-gray-200'
               )}
             >
-              <span className="text-[11px] font-medium uppercase tracking-wide opacity-60">Embed Code</span>
+              <span className="text-[11px] font-medium uppercase tracking-wide opacity-60">
+                Embed Code
+              </span>
               <button
                 onClick={() => navigator.clipboard.writeText(iframeCode)}
                 className={cn(

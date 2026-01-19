@@ -29,7 +29,19 @@ function Overview({ data }) {
   return (
     <div className="min-h-screen overflow-hidden">
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         {data?.tagName || 'Tagged'} XRPL Tokens
       </h1>
 
@@ -79,7 +91,6 @@ export async function getServerSideProps(ctx) {
       token.bearbull = token.pro24h < 0 ? -1 : 1;
       token.time = time;
     }
-
   } catch (e) {
     // Error during getStaticProps
   }

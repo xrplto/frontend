@@ -51,7 +51,12 @@ function LinearProgressWithLabel({ value, progressColor, isDark }) {
           }}
         />
       </div>
-      <div className={cn('min-w-[35px] text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
+      <div
+        className={cn(
+          'min-w-[35px] text-[13px] font-normal',
+          isDark ? 'text-gray-400' : 'text-gray-600'
+        )}
+      >
         {value}%
       </div>
     </div>
@@ -104,12 +109,12 @@ export default function SpinNFT({ collection, setView }) {
   } = collection;
 
   // Normalize name/description: API may return object {collection_name, collection_description} or string
-  const name = typeof rawName === 'object' && rawName !== null
-    ? rawName.collection_name || ''
-    : rawName || '';
-  const description = typeof rawDescription === 'object' && rawDescription !== null
-    ? rawDescription.collection_description || ''
-    : rawDescription || '';
+  const name =
+    typeof rawName === 'object' && rawName !== null ? rawName.collection_name || '' : rawName || '';
+  const description =
+    typeof rawDescription === 'object' && rawDescription !== null
+      ? rawDescription.collection_description || ''
+      : rawDescription || '';
 
   const [nft, setNft] = useState(extra?.sampleNft);
 
@@ -171,8 +176,7 @@ export default function SpinNFT({ collection, setView }) {
             setPendingNfts(ret.pendingNfts);
           }
         })
-        .catch((err) => {
-        })
+        .catch((err) => {})
         .then(function () {
           // always executed
         });
@@ -229,8 +233,7 @@ export default function SpinNFT({ collection, setView }) {
           }
         }
       })
-      .catch((err) => {
-      })
+      .catch((err) => {})
       .then(function () {
         // always executed
         setSpinning(false);
@@ -338,9 +341,7 @@ export default function SpinNFT({ collection, setView }) {
               )}
 
               <div className={cn('h-px mt-2 mb-4', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-              <div className="flex flex-col items-center">
-                {/* Mint button removed */}
-              </div>
+              <div className="flex flex-col items-center">{/* Mint button removed */}</div>
             </div>
           </div>
 
@@ -353,24 +354,44 @@ export default function SpinNFT({ collection, setView }) {
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                  <p
+                    className={cn(
+                      'text-[15px] font-normal',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     Buy Mints to participate
                   </p>
                 </li>
                 <li>
-                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                  <p
+                    className={cn(
+                      'text-[15px] font-normal',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     Your Mints:{' '}
                     <span className="text-[15px] font-medium text-[#33C2FF]">{mints}</span>
                   </p>
                 </li>
                 <li>
-                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                  <p
+                    className={cn(
+                      'text-[15px] font-normal',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     Available XRP:{' '}
                     <span className="text-[15px] font-medium text-[#33C2FF]">{xrpBalance}</span>
                   </p>
                 </li>
                 <li>
-                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                  <p
+                    className={cn(
+                      'text-[15px] font-normal',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     Remaining NFTs:{' '}
                     <span className="text-[15px] font-medium" style={{ color: progressColor }}>
                       {pendingNfts}

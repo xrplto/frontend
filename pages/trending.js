@@ -45,11 +45,28 @@ function TrendingPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Trending XRPL Tokens
       </h1>
 
-      <div id="back-to-top-anchor" className={notificationPanelOpen ? "mx-auto w-full px-4 mt-4" : "mx-auto max-w-[1920px] px-4 mt-4"}>
+      <div
+        id="back-to-top-anchor"
+        className={
+          notificationPanelOpen ? 'mx-auto w-full px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
+        }
+      >
         <div className="w-full px-0 py-0">
           <Summary />
         </div>
@@ -107,11 +124,13 @@ export async function getStaticProps() {
           '@type': 'FinancialProduct',
           name: token.name,
           url: `https://xrpl.to/token/${token.slug}`,
-          offers: token.exch ? {
-            '@type': 'Offer',
-            price: token.exch,
-            priceCurrency: 'XRP'
-          } : undefined
+          offers: token.exch
+            ? {
+                '@type': 'Offer',
+                price: token.exch,
+                priceCurrency: 'XRP'
+              }
+            : undefined
         }
       }))
     };

@@ -50,11 +50,16 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
   return (
     <>
       {/* Dialog */}
-      <div className="fixed inset-0 z-[1301] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+      <div
+        className="fixed inset-0 z-[1301] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+      >
         <div
           className={cn(
             'w-full max-w-xs rounded-2xl border',
-            isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            isDark
+              ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
           )}
           onClick={(e) => e.stopPropagation()}
         >
@@ -80,16 +85,11 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
               <div
                 className={cn(
                   'flex items-center p-2 border-[1.5px] rounded-lg',
-                  isDark
-                    ? 'border-white/10 bg-white/[0.02]'
-                    : 'border-gray-200 bg-gray-50/50'
+                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
                 )}
               >
                 <span
-                  className={cn(
-                    'text-[13px] font-normal',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
+                  className={cn('text-[13px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   {token?.name || 'XRP'}
                 </span>

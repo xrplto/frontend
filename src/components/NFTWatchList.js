@@ -29,13 +29,20 @@ function NFTCard({ nft, onRemove, isDark }) {
 
   return (
     <Link href={`/nft/${nft.nftokenId}`} className="block group">
-      <div className={cn(
-        'rounded-lg overflow-hidden transition-all',
-        isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
-      )}>
+      <div
+        className={cn(
+          'rounded-lg overflow-hidden transition-all',
+          isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
+        )}
+      >
         <div className="relative aspect-square overflow-hidden">
           {loadingImg && !imageError && (
-            <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
+            <div
+              className={cn(
+                'absolute inset-0 animate-pulse',
+                isDark ? 'bg-white/5' : 'bg-gray-200'
+              )}
+            />
           )}
           {!imageError ? (
             <img
@@ -43,23 +50,35 @@ function NFTCard({ nft, onRemove, isDark }) {
               alt={nft.name}
               loading="lazy"
               onLoad={() => setLoadingImg(false)}
-              onError={() => { setLoadingImg(false); setImageError(true); }}
+              onError={() => {
+                setLoadingImg(false);
+                setImageError(true);
+              }}
               className={cn(
                 'w-full h-full object-cover transition-transform group-hover:scale-105',
                 loadingImg && 'opacity-0'
               )}
             />
           ) : (
-            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-200')}>
-              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
+            <div
+              className={cn(
+                'w-full h-full flex items-center justify-center',
+                isDark ? 'bg-white/5' : 'bg-gray-200'
+              )}
+            >
+              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                No image
+              </span>
             </div>
           )}
           {/* Rarity badge */}
           {nft.rarityRank && nft.total && (
-            <div className={cn(
-              'absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium',
-              isDark ? 'bg-black/70 text-white/80' : 'bg-white/90 text-gray-700'
-            )}>
+            <div
+              className={cn(
+                'absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium',
+                isDark ? 'bg-black/70 text-white/80' : 'bg-white/90 text-gray-700'
+              )}
+            >
               #{nft.rarityRank}
             </div>
           )}
@@ -68,7 +87,9 @@ function NFTCard({ nft, onRemove, isDark }) {
             disabled={removing}
             className={cn(
               'absolute top-1.5 right-1.5 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all',
-              isDark ? 'bg-black/70 hover:bg-red-500' : 'bg-white/90 hover:bg-red-500 hover:text-white',
+              isDark
+                ? 'bg-black/70 hover:bg-red-500'
+                : 'bg-white/90 hover:bg-red-500 hover:text-white',
               'text-white/70 hover:text-white'
             )}
           >
@@ -76,14 +97,15 @@ function NFTCard({ nft, onRemove, isDark }) {
           </button>
         </div>
         <div className="px-2 py-1.5">
-          <p className={cn('text-[11px] font-normal truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+          <p
+            className={cn(
+              'text-[11px] font-normal truncate',
+              isDark ? 'text-white/80' : 'text-gray-700'
+            )}
+          >
             {nft.name || 'Unnamed'}
           </p>
-          {price && (
-            <p className={cn('text-[10px] font-medium', 'text-primary')}>
-              {price} XRP
-            </p>
-          )}
+          {price && <p className={cn('text-[10px] font-medium', 'text-primary')}>{price} XRP</p>}
         </div>
       </div>
     </Link>
@@ -95,10 +117,7 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
   const items = data.items || [];
 
   return (
-    <div className={cn(
-      'rounded-lg overflow-hidden',
-      isDark ? 'bg-white/[0.02]' : 'bg-gray-50'
-    )}>
+    <div className={cn('rounded-lg overflow-hidden', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
@@ -110,10 +129,12 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
           <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
             {data.collectionName || slug}
           </span>
-          <span className={cn(
-            'px-1.5 py-0.5 rounded text-[10px] font-normal',
-            isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'
-          )}>
+          <span
+            className={cn(
+              'px-1.5 py-0.5 rounded text-[10px] font-normal',
+              isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'
+            )}
+          >
             {items.length}
           </span>
         </div>
@@ -122,14 +143,21 @@ function CollectionGroup({ slug, data, onRemove, isDark, defaultOpen = false }) 
             <Link
               href={`/nfts/${slug}`}
               onClick={(e) => e.stopPropagation()}
-              className={cn('p-1.5 rounded transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200')}
+              className={cn(
+                'p-1.5 rounded transition-colors',
+                isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+              )}
             >
               <ExternalLink size={12} className="text-primary" />
             </Link>
           )}
           <ChevronDown
             size={14}
-            className={cn('transition-transform', isOpen && 'rotate-180', isDark ? 'text-white/40' : 'text-gray-400')}
+            className={cn(
+              'transition-transform',
+              isOpen && 'rotate-180',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}
           />
         </div>
       </button>
@@ -160,7 +188,8 @@ export default function NFTWatchList({ account }) {
       if (res.data?.result === 'success') {
         setWatchlist(res.data.watchlist || {});
         const count = Object.values(res.data.watchlist || {}).reduce(
-          (acc, col) => acc + (col.items?.length || 0), 0
+          (acc, col) => acc + (col.items?.length || 0),
+          0
         );
         setTotalCount(count);
       }
@@ -210,10 +239,12 @@ export default function NFTWatchList({ account }) {
 
   if (collections.length === 0) {
     return (
-      <div className={cn(
-        'rounded-xl border-[1.5px] p-12 text-center',
-        isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
-      )}>
+      <div
+        className={cn(
+          'rounded-xl border-[1.5px] p-12 text-center',
+          isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+        )}
+      >
         <p className={cn('text-[15px]', isDark ? 'text-white/60' : 'text-gray-500')}>
           No NFTs in your watchlist yet
         </p>

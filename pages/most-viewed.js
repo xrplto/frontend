@@ -45,11 +45,28 @@ function MostViewedPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Most Viewed XRPL Tokens
       </h1>
 
-      <div id="back-to-top-anchor" className={notificationPanelOpen ? "mx-auto w-full px-4 mt-4" : "mx-auto max-w-[1920px] px-4 mt-4"}>
+      <div
+        id="back-to-top-anchor"
+        className={
+          notificationPanelOpen ? 'mx-auto w-full px-4 mt-4' : 'mx-auto max-w-[1920px] px-4 mt-4'
+        }
+      >
         <div className="w-full px-0 py-0">
           <Summary mostViewedTokens={data?.tokens?.slice(0, 5)} />
         </div>
@@ -97,7 +114,7 @@ export async function getServerSideProps() {
       'Explore the most viewed XRPL tokens with highest community interest. Discover popular tokens getting the most attention on the XRP Ledger ecosystem.';
 
     // Additional structured metadata for better SEO
-      'most viewed XRPL tokens, popular XRP tokens, community interest, token popularity, crypto views, DEX tokens, XRP ecosystem popular';
+    ('most viewed XRPL tokens, popular XRP tokens, community interest, token popularity, crypto views, DEX tokens, XRP ecosystem popular');
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';

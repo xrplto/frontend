@@ -37,14 +37,14 @@ const Controls = styled.div`
   gap: 12px;
   margin-bottom: 16px;
   padding: 14px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)')};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   width: 100%;
   transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
   }
 `;
 
@@ -61,7 +61,8 @@ const ControlRow = styled.div`
     gap: 12px;
 
     &:not(:last-child) {
-      border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+      border-bottom: 1px solid
+        ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
       padding-bottom: 12px;
     }
   }
@@ -92,16 +93,16 @@ const Button = styled.button`
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
   cursor: pointer;
   font-size: 13px;
   font-weight: 400;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: ${p => p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
-    color: ${p => p.darkMode ? '#fff' : '#333'};
+    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
+    color: ${(p) => (p.darkMode ? '#fff' : '#333')};
   }
 
   &:disabled {
@@ -113,10 +114,10 @@ const Button = styled.button`
 const Select = styled.select`
   padding: 8px 14px;
   padding-right: 30px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   border-radius: 8px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
+  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
@@ -128,7 +129,7 @@ const Select = styled.select`
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
   }
 
   &:focus {
@@ -139,7 +140,7 @@ const Select = styled.select`
 
 const Label = styled.span`
   font-size: 13px;
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   font-weight: 400;
   white-space: nowrap;
 `;
@@ -158,20 +159,22 @@ const SummaryGrid = styled.div`
 
 const SummaryCard = styled.div`
   padding: 16px;
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  transition: border-color 0.2s ease, background 0.2s ease;
+  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 
   &:hover {
-    border-color: ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-    background: ${p => p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+    border-color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
+    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
   }
 `;
 
 const SummaryLabel = styled.div`
   font-size: 12px;
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
+  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -180,14 +183,14 @@ const SummaryLabel = styled.div`
 const SummaryValue = styled.div`
   font-size: 20px;
   font-weight: 600;
-  color: ${p => p.darkMode ? '#fff' : '#000'};
+  color: ${(p) => (p.darkMode ? '#fff' : '#000')};
 `;
 
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  border: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
   width: 100%;
 `;
 
@@ -200,32 +203,34 @@ const Table = styled.table`
 
 const Th = styled.th`
   padding: 10px 8px;
-  text-align: ${p => p.align || 'left'};
+  text-align: ${(p) => p.align || 'left'};
   font-weight: 500;
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'};
-  border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
-  cursor: ${p => p.sortable ? 'pointer' : 'default'};
+  color: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')};
+  background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
+  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
+  cursor: ${(p) => (p.sortable ? 'pointer' : 'default')};
   white-space: nowrap;
   font-family: inherit;
 
   &:hover {
-    ${p => p.sortable && `
+    ${(p) =>
+      p.sortable &&
+      `
       color: ${p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
     `}
   }
 `;
 
 const Tr = styled.tr`
-  border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  border-bottom: 1px solid ${(p) => (p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: ${p => p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'};
+    background: ${(p) => (p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')};
   }
 
   &:last-child {
@@ -236,8 +241,8 @@ const Tr = styled.tr`
 const Td = styled.td`
   padding: 14px 16px;
   font-size: 14px;
-  color: ${p => p.darkMode ? '#fff' : '#333'};
-  text-align: ${p => p.align || 'left'};
+  color: ${(p) => (p.darkMode ? '#fff' : '#333')};
+  text-align: ${(p) => p.align || 'left'};
 `;
 
 const PoolInfo = styled.div`
@@ -252,7 +257,7 @@ const PoolPair = styled.div`
   gap: 8px;
   font-weight: 600;
   font-size: 14px;
-  color: ${p => p.darkMode ? '#fff' : '#000'};
+  color: ${(p) => (p.darkMode ? '#fff' : '#000')};
 `;
 
 const TokenIconPair = styled.div`
@@ -265,7 +270,7 @@ const TokenImage = styled.img`
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid ${p => p.darkMode ? '#1a1a1a' : '#fff'};
+  border: 2px solid ${(p) => (p.darkMode ? '#1a1a1a' : '#fff')};
 
   &:last-child {
     margin-left: -8px;
@@ -274,7 +279,7 @@ const TokenImage = styled.img`
 
 const PoolAccount = styled.div`
   font-size: 11px;
-  color: ${p => p.darkMode ? '#bbb' : '#666'};
+  color: ${(p) => (p.darkMode ? '#bbb' : '#666')};
   font-family: var(--font-mono);
 `;
 
@@ -287,9 +292,9 @@ const APYBadge = styled.span`
   font-weight: 600;
   font-size: 13px;
   min-width: 50px;
-  background: ${p => p.bg};
-  color: ${p => p.color};
-  border: 1.5px solid ${p => p.border};
+  background: ${(p) => p.bg};
+  color: ${(p) => p.color};
+  border: 1.5px solid ${(p) => p.border};
 `;
 
 const StatusBadge = styled.span`
@@ -301,9 +306,9 @@ const StatusBadge = styled.span`
   font-weight: 400;
   font-size: 12px;
   text-transform: uppercase;
-  background: ${p => p.active ? 'rgba(76,175,80,0.1)' : 'rgba(158,158,158,0.1)'};
-  color: ${p => p.active ? '#4caf50' : '#9e9e9e'};
-  border: 1.5px solid ${p => p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)'};
+  background: ${(p) => (p.active ? 'rgba(76,175,80,0.1)' : 'rgba(158,158,158,0.1)')};
+  color: ${(p) => (p.active ? '#4caf50' : '#9e9e9e')};
+  border: 1.5px solid ${(p) => (p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)')};
 `;
 
 function AMMPoolsPage({ data, initialQuery }) {
@@ -379,33 +384,37 @@ function AMMPoolsPage({ data, initialQuery }) {
   }, [params.sortBy, params.status, params.limit, params.page]);
 
   const updateParam = (key, value) => {
-    setParams(prev => ({ ...prev, [key]: value }));
+    setParams((prev) => ({ ...prev, [key]: value }));
   };
 
   const getAPYColor = (apy) => {
-    if (!apy || isNaN(apy)) return {
-      bg: 'transparent',
-      color: darkMode ? '#666' : '#999',
-      border: 'transparent'
-    };
+    if (!apy || isNaN(apy))
+      return {
+        bg: 'transparent',
+        color: darkMode ? '#666' : '#999',
+        border: 'transparent'
+      };
 
-    if (apy >= 100) return {
-      bg: 'rgba(76,175,80,0.2)',
-      color: '#4caf50',
-      border: 'rgba(76,175,80,0.3)'
-    };
+    if (apy >= 100)
+      return {
+        bg: 'rgba(76,175,80,0.2)',
+        color: '#4caf50',
+        border: 'rgba(76,175,80,0.3)'
+      };
 
-    if (apy >= 50) return {
-      bg: 'rgba(139,195,74,0.15)',
-      color: '#8bc34a',
-      border: 'rgba(139,195,74,0.25)'
-    };
+    if (apy >= 50)
+      return {
+        bg: 'rgba(139,195,74,0.15)',
+        color: '#8bc34a',
+        border: 'rgba(139,195,74,0.25)'
+      };
 
-    if (apy >= 20) return {
-      bg: 'rgba(255,193,7,0.15)',
-      color: '#ffc107',
-      border: 'rgba(255,193,7,0.25)'
-    };
+    if (apy >= 20)
+      return {
+        bg: 'rgba(255,193,7,0.15)',
+        color: '#ffc107',
+        border: 'rgba(255,193,7,0.25)'
+      };
 
     return {
       bg: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
@@ -421,25 +430,28 @@ function AMMPoolsPage({ data, initialQuery }) {
     return fNumber(value);
   };
 
-  const formatPair = useMemo(() => (pool) => {
-    const formatCurrency = (cur) => {
-      if (cur === 'XRP') return 'XRP';
-      if (cur.length === 40) {
-        const hex = cur.replace(/00+$/, '');
-        let str = '';
-        for (let i = 0; i < hex.length; i += 2) {
-          const code = parseInt(hex.substr(i, 2), 16);
-          if (code > 0) str += String.fromCharCode(code);
+  const formatPair = useMemo(
+    () => (pool) => {
+      const formatCurrency = (cur) => {
+        if (cur === 'XRP') return 'XRP';
+        if (cur.length === 40) {
+          const hex = cur.replace(/00+$/, '');
+          let str = '';
+          for (let i = 0; i < hex.length; i += 2) {
+            const code = parseInt(hex.substr(i, 2), 16);
+            if (code > 0) str += String.fromCharCode(code);
+          }
+          return str || cur.substring(0, 10);
         }
-        return str || cur.substring(0, 10);
-      }
-      return cur.length > 10 ? cur.substring(0, 10) : cur;
-    };
+        return cur.length > 10 ? cur.substring(0, 10) : cur;
+      };
 
-    const asset1 = formatCurrency(pool.asset1.currency);
-    const asset2 = formatCurrency(pool.asset2.currency);
-    return `${asset1} / ${asset2}`;
-  }, []);
+      const asset1 = formatCurrency(pool.asset1.currency);
+      const asset2 = formatCurrency(pool.asset2.currency);
+      return `${asset1} / ${asset2}`;
+    },
+    []
+  );
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -455,7 +467,19 @@ function AMMPoolsPage({ data, initialQuery }) {
   return (
     <Wrapper>
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
@@ -464,30 +488,50 @@ function AMMPoolsPage({ data, initialQuery }) {
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Total Liquidity</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalLiquidity)} XRP</SummaryValue>
+              <SummaryValue darkMode={darkMode}>
+                {formatCurrency(summary.totalLiquidity)} XRP
+              </SummaryValue>
               {(summary.xrpTokenLiquidity || summary.tokenTokenLiquidity) && (
-                <div style={{ fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginTop: 4 }}>
-                  {summary.xrpTokenLiquidity && <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>}
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                    marginTop: 4
+                  }}
+                >
+                  {summary.xrpTokenLiquidity && (
+                    <span>XRP Pools: {formatCurrency(summary.xrpTokenLiquidity)}</span>
+                  )}
                   {summary.xrpTokenLiquidity && summary.tokenTokenLiquidity && <span> · </span>}
-                  {summary.tokenTokenLiquidity && <span>Token Pools: {formatCurrency(summary.tokenTokenLiquidity)}</span>}
+                  {summary.tokenTokenLiquidity && (
+                    <span>Token Pools: {formatCurrency(summary.tokenTokenLiquidity)}</span>
+                  )}
                 </div>
               )}
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Volume (24h)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume24h)} XRP</SummaryValue>
+              <SummaryValue darkMode={darkMode}>
+                {formatCurrency(summary.totalVolume24h)} XRP
+              </SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Volume (7d)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume7d)} XRP</SummaryValue>
+              <SummaryValue darkMode={darkMode}>
+                {formatCurrency(summary.totalVolume7d)} XRP
+              </SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Fees Earned (24h)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees24h)} XRP</SummaryValue>
+              <SummaryValue darkMode={darkMode}>
+                {formatCurrency(summary.totalFees24h)} XRP
+              </SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Fees Earned (7d)</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees7d)} XRP</SummaryValue>
+              <SummaryValue darkMode={darkMode}>
+                {formatCurrency(summary.totalFees7d)} XRP
+              </SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
               <SummaryLabel darkMode={darkMode}>Avg Trade Fee</SummaryLabel>
@@ -496,9 +540,18 @@ function AMMPoolsPage({ data, initialQuery }) {
           </SummaryGrid>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: 'wrap'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {sortOptions.map(opt => (
+            {sortOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => updateParam('sortBy', opt.value)}
@@ -519,7 +572,7 @@ function AMMPoolsPage({ data, initialQuery }) {
           </div>
           <select
             value={params.limit}
-            onChange={e => updateParam('limit', e.target.value)}
+            onChange={(e) => updateParam('limit', e.target.value)}
             style={{
               padding: '8px 32px 8px 12px',
               borderRadius: 8,
@@ -547,14 +600,30 @@ function AMMPoolsPage({ data, initialQuery }) {
               <tr>
                 <Th darkMode={darkMode}>#</Th>
                 <Th darkMode={darkMode}>POOL</Th>
-                <Th darkMode={darkMode} align="right">TRADE FEE</Th>
-                <Th darkMode={darkMode} align="right">LIQUIDITY</Th>
-                <Th darkMode={darkMode} align="right">VOL (24H)</Th>
-                <Th darkMode={darkMode} align="right">VOL (7D)</Th>
-                <Th darkMode={darkMode} align="right">FEES (24H)</Th>
-                <Th darkMode={darkMode} align="right">FEES (7D)</Th>
-                <Th darkMode={darkMode} align="center">APY (24H)</Th>
-                <Th darkMode={darkMode} align="center">APY (7D)</Th>
+                <Th darkMode={darkMode} align="right">
+                  TRADE FEE
+                </Th>
+                <Th darkMode={darkMode} align="right">
+                  LIQUIDITY
+                </Th>
+                <Th darkMode={darkMode} align="right">
+                  VOL (24H)
+                </Th>
+                <Th darkMode={darkMode} align="right">
+                  VOL (7D)
+                </Th>
+                <Th darkMode={darkMode} align="right">
+                  FEES (24H)
+                </Th>
+                <Th darkMode={darkMode} align="right">
+                  FEES (7D)
+                </Th>
+                <Th darkMode={darkMode} align="center">
+                  APY (24H)
+                </Th>
+                <Th darkMode={darkMode} align="center">
+                  APY (7D)
+                </Th>
               </tr>
             </thead>
             <tbody>
@@ -563,7 +632,8 @@ function AMMPoolsPage({ data, initialQuery }) {
                 const apy7d = pool.apy7d?.apy || 0;
                 const apyColors24h = getAPYColor(apy24h);
                 const apyColors7d = getAPYColor(apy7d);
-                const liquidityXRP = pool.apy7d?.liquidity || pool.currentLiquidity?.asset1Amount || 0;
+                const liquidityXRP =
+                  pool.apy7d?.liquidity || pool.currentLiquidity?.asset1Amount || 0;
                 const liquidityFiat = new Decimal(liquidityXRP).div(exchRate).toNumber();
 
                 return (
@@ -577,19 +647,36 @@ function AMMPoolsPage({ data, initialQuery }) {
                       <PoolInfo>
                         <PoolPair darkMode={darkMode}>
                           <TokenIconPair>
-                            <TokenImage src={`https://s1.xrpl.to/token/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}`} alt="" loading="lazy" darkMode={darkMode} />
-                            <TokenImage src={`https://s1.xrpl.to/token/${pool.asset2.md5}`} alt="" loading="lazy" darkMode={darkMode} />
+                            <TokenImage
+                              src={`https://s1.xrpl.to/token/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}`}
+                              alt=""
+                              loading="lazy"
+                              darkMode={darkMode}
+                            />
+                            <TokenImage
+                              src={`https://s1.xrpl.to/token/${pool.asset2.md5}`}
+                              alt=""
+                              loading="lazy"
+                              darkMode={darkMode}
+                            />
                           </TokenIconPair>
                           {formatPair(pool)}
                         </PoolPair>
-                        <PoolAccount darkMode={darkMode}>{pool.ammAccount.substring(0, 20)}...</PoolAccount>
+                        <PoolAccount darkMode={darkMode}>
+                          {pool.ammAccount.substring(0, 20)}...
+                        </PoolAccount>
                       </PoolInfo>
                     </Td>
                     <Td darkMode={darkMode} align="right">
-                      <span>{pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}</span>
+                      <span>
+                        {pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}
+                      </span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
-                      <span>{currencySymbols[activeFiatCurrency]}{formatCurrency(liquidityFiat)}</span>
+                      <span>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatCurrency(liquidityFiat)}
+                      </span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
                       <span>{formatCurrency(pool.apy24h?.volume || 0)}</span>

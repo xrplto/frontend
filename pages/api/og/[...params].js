@@ -20,7 +20,7 @@ async function getFont() {
 async function fetchTokenData(slug) {
   try {
     const res = await fetch(`${API_BASE}/token/${slug}?desc=yes`, {
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' }
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -53,8 +53,16 @@ const PAGES = {
   ledger: { title: 'Ledger Explorer', subtitle: 'Browse XRPL transactions', icon: 'blocks' },
   'device-login': { title: 'Device Login', subtitle: 'Secure wallet authentication', icon: 'key' },
   'wallet-setup': { title: 'Wallet Setup', subtitle: 'Create your XRPL wallet', icon: 'wallet' },
-  'collection-create': { title: 'Create Collection', subtitle: 'Launch your NFT collection', icon: 'plus' },
-  'collection-import': { title: 'Import Collection', subtitle: 'Import existing NFTs', icon: 'import' },
+  'collection-create': {
+    title: 'Create Collection',
+    subtitle: 'Launch your NFT collection',
+    icon: 'plus'
+  },
+  'collection-import': {
+    title: 'Import Collection',
+    subtitle: 'Import existing NFTs',
+    icon: 'import'
+  }
 };
 
 // Dynamic page handlers
@@ -64,7 +72,9 @@ function getTokenConfig(token) {
   // Issuer display name
   const user = token.user || '';
   // Description (truncate for OG image)
-  const desc = token.description ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '') : '';
+  const desc = token.description
+    ? token.description.slice(0, 120) + (token.description.length > 120 ? '...' : '')
+    : '';
   // Token logo from md5 hash
   const logo = token.md5 ? `https://s1.xrpl.to/token/${token.md5}` : null;
 
@@ -73,7 +83,7 @@ function getTokenConfig(token) {
     user: user,
     description: desc,
     image: logo,
-    isToken: true,
+    isToken: true
   };
 }
 
@@ -81,7 +91,7 @@ function getCollectionConfig(data) {
   return {
     title: data.name || 'NFT Collection',
     subtitle: `${data.nfts || ''} NFTs on XRPL`,
-    image: data.image,
+    image: data.image
   };
 }
 
@@ -89,14 +99,14 @@ function getNftConfig(data) {
   return {
     title: data.name || 'XRPL NFT',
     subtitle: data.collection || 'NFT on XRP Ledger',
-    image: data.image,
+    image: data.image
   };
 }
 
 function getTagConfig(tag) {
   return {
     title: decodeURIComponent(tag || 'Category'),
-    subtitle: 'XRPL Token Category',
+    subtitle: 'XRPL Token Category'
   };
 }
 
@@ -105,28 +115,28 @@ function getGainersConfig(period) {
   return {
     title: `Top Gainers`,
     subtitle: `Biggest movers in ${labels[period] || period}`,
-    accent: '#22c55e',
+    accent: '#22c55e'
   };
 }
 
 function getProfileConfig(data) {
   return {
     title: data.name || `${(data.address || '').slice(0, 8)}...`,
-    subtitle: 'XRPL Wallet Profile',
+    subtitle: 'XRPL Wallet Profile'
   };
 }
 
 function getTxConfig(data) {
   return {
     title: 'Transaction',
-    subtitle: `${(data.hash || '').slice(0, 16)}...`,
+    subtitle: `${(data.hash || '').slice(0, 16)}...`
   };
 }
 
 function getLedgerConfig(data) {
   return {
     title: `Ledger #${data.index || ''}`,
-    subtitle: 'XRP Ledger Block',
+    subtitle: 'XRP Ledger Block'
   };
 }
 
@@ -154,8 +164,10 @@ export default async function handler(req) {
           title: searchParams.get('name') || slug || 'Token',
           user: '',
           description: '',
-          image: searchParams.get('md5') ? `https://s1.xrpl.to/token/${searchParams.get('md5')}` : null,
-          isToken: true,
+          image: searchParams.get('md5')
+            ? `https://s1.xrpl.to/token/${searchParams.get('md5')}`
+            : null,
+          isToken: true
         };
       }
     } else if (type === 'collection') {
@@ -163,14 +175,14 @@ export default async function handler(req) {
         name: searchParams.get('name'),
         slug: pathParts[1],
         nfts: searchParams.get('nfts'),
-        image: searchParams.get('image'),
+        image: searchParams.get('image')
       });
     } else if (type === 'nft') {
       config = getNftConfig({
         name: searchParams.get('name'),
         nftokenid: pathParts[1],
         collection: searchParams.get('collection'),
-        image: searchParams.get('image'),
+        image: searchParams.get('image')
       });
     } else if (type === 'tag' || type === 'view') {
       config = getTagConfig(pathParts[1]);
@@ -179,14 +191,17 @@ export default async function handler(req) {
     } else if (type === 'profile') {
       config = getProfileConfig({
         address: pathParts[1],
-        name: searchParams.get('name'),
+        name: searchParams.get('name')
       });
     } else if (type === 'tx') {
       config = getTxConfig({ hash: pathParts[1] });
     } else if (type === 'ledger-block') {
       config = getLedgerConfig({ index: pathParts[1] });
     } else if (type === 'collection-edit') {
-      config = { title: 'Edit Collection', subtitle: searchParams.get('name') || 'Manage your NFT collection' };
+      config = {
+        title: 'Edit Collection',
+        subtitle: searchParams.get('name') || 'Manage your NFT collection'
+      };
     } else {
       config = PAGES.index;
     }
@@ -198,28 +213,90 @@ export default async function handler(req) {
     const image = new ImageResponse(
       isToken ? (
         // Token layout (side-by-side like Pump.Fun)
-        <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: BG_DARK, padding: 60 }}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            backgroundColor: BG_DARK,
+            padding: 60
+          }}
+        >
           {/* Left content */}
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, paddingRight: 40 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flex: 1,
+              paddingRight: 40
+            }}
+          >
             {/* Logo */}
-            <img src="https://xrpl.to/logo/xrpl-to-logo-white.svg" height={36} style={{ marginBottom: 32 }} />
+            <img
+              src="https://xrpl.to/logo/xrpl-to-logo-white.svg"
+              height={36}
+              style={{ marginBottom: 32 }}
+            />
             {/* Token name/ticker */}
-            <div style={{ fontSize: 64, fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: 8 }}>{config.title}</div>
+            <div
+              style={{
+                fontSize: 64,
+                fontWeight: 700,
+                color: '#fff',
+                lineHeight: 1.1,
+                marginBottom: 8
+              }}
+            >
+              {config.title}
+            </div>
             {/* User/Issuer */}
             {config.user && (
-              <div style={{ fontSize: 28, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginBottom: 16 }}>{config.user}</div>
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 500,
+                  color: 'rgba(255,255,255,0.7)',
+                  marginBottom: 16
+                }}
+              >
+                {config.user}
+              </div>
             )}
             {/* Description */}
             {config.description && (
-              <div style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, maxWidth: 500 }}>{config.description}</div>
+              <div
+                style={{
+                  fontSize: 20,
+                  color: 'rgba(255,255,255,0.5)',
+                  lineHeight: 1.4,
+                  maxWidth: 500
+                }}
+              >
+                {config.description}
+              </div>
             )}
           </div>
           {/* Right side - Token logo */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 340, height: 340, borderRadius: 32, backgroundColor: 'rgba(63,150,254,0.1)', border: '2px solid rgba(63,150,254,0.2)', overflow: 'hidden' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 340,
+              height: 340,
+              borderRadius: 32,
+              backgroundColor: 'rgba(63,150,254,0.1)',
+              border: '2px solid rgba(63,150,254,0.2)',
+              overflow: 'hidden'
+            }}
+          >
             {config.image ? (
               <img src={config.image} width={340} height={340} style={{ objectFit: 'cover' }} />
             ) : (
-              <div style={{ fontSize: 120, fontWeight: 700, color: BRAND_BLUE }}>{config.title.charAt(0)}</div>
+              <div style={{ fontSize: 120, fontWeight: 700, color: BRAND_BLUE }}>
+                {config.title.charAt(0)}
+              </div>
             )}
           </div>
         </div>
@@ -234,23 +311,70 @@ export default async function handler(req) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: BG_DARK,
-            padding: 60,
+            padding: 60
           }}
         >
           {/* Top bar */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${accent}, ${BRAND_BLUE})` }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: `linear-gradient(90deg, ${accent}, ${BRAND_BLUE})`
+            }}
+          />
           {/* Logo */}
-          <img src="https://xrpl.to/logo/xrpl-to-logo-white.svg" height={45} style={{ marginBottom: 32 }} />
+          <img
+            src="https://xrpl.to/logo/xrpl-to-logo-white.svg"
+            height={45}
+            style={{ marginBottom: 32 }}
+          />
           {/* Image if present */}
           {config.image && (
-            <img src={config.image} width={100} height={100} style={{ borderRadius: 14, marginBottom: 20, border: '2px solid rgba(255,255,255,0.1)' }} />
+            <img
+              src={config.image}
+              width={100}
+              height={100}
+              style={{
+                borderRadius: 14,
+                marginBottom: 20,
+                border: '2px solid rgba(255,255,255,0.1)'
+              }}
+            />
           )}
           {/* Title */}
-          <div style={{ fontSize: 58, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.15, marginBottom: 12, maxWidth: 900 }}>{config.title}</div>
+          <div
+            style={{
+              fontSize: 58,
+              fontWeight: 700,
+              color: '#fff',
+              textAlign: 'center',
+              lineHeight: 1.15,
+              marginBottom: 12,
+              maxWidth: 900
+            }}
+          >
+            {config.title}
+          </div>
           {/* Subtitle */}
-          <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.55)', textAlign: 'center', maxWidth: 650 }}>{config.subtitle}</div>
+          <div
+            style={{
+              fontSize: 24,
+              color: 'rgba(255,255,255,0.55)',
+              textAlign: 'center',
+              maxWidth: 650
+            }}
+          >
+            {config.subtitle}
+          </div>
           {/* Domain */}
-          <div style={{ position: 'absolute', bottom: 36, right: 56, fontSize: 18, color: BRAND_BLUE }}>xrpl.to</div>
+          <div
+            style={{ position: 'absolute', bottom: 36, right: 56, fontSize: 18, color: BRAND_BLUE }}
+          >
+            xrpl.to
+          </div>
         </div>
       ),
       {
@@ -258,13 +382,16 @@ export default async function handler(req) {
         height: 630,
         fonts: [{ name: 'Inter', data: font, weight: 700, style: 'normal' }],
         headers: {
-          'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
-        },
+          'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
+        }
       }
     );
 
     // Add cache headers
-    image.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400');
+    image.headers.set(
+      'Cache-Control',
+      'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400'
+    );
     return image;
   } catch (e) {
     return new Response('Error generating image', { status: 500 });

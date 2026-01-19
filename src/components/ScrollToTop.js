@@ -54,12 +54,12 @@ export default function ScrollToTop(props) {
       onClick={handleClick}
       role="presentation"
       className={cn(
-        "fixed bottom-5 right-5 z-[1200] w-[42px] h-[42px] flex items-center justify-center",
-        "rounded-xl cursor-pointer text-base font-normal overflow-hidden border-[1.5px]",
-        "backdrop-blur-md transition-all duration-300",
+        'fixed bottom-5 right-5 z-[1200] w-[42px] h-[42px] flex items-center justify-center',
+        'rounded-xl cursor-pointer text-base font-normal overflow-hidden border-[1.5px]',
+        'backdrop-blur-md transition-all duration-300',
         isDark
-          ? "bg-white/[0.04] border-white/[0.08] text-white/40 hover:bg-white/[0.04] hover:border-white/[0.08] hover:text-white/60"
-          : "bg-black/[0.04] border-black/[0.08] text-black/40 hover:bg-black/[0.08] hover:border-black/[0.08] hover:text-black/60"
+          ? 'bg-white/[0.04] border-white/[0.08] text-white/40 hover:bg-white/[0.04] hover:border-white/[0.08] hover:text-white/60'
+          : 'bg-black/[0.04] border-black/[0.08] text-black/40 hover:bg-black/[0.08] hover:border-black/[0.08] hover:text-black/60'
       )}
       style={{
         background: `linear-gradient(to top, ${

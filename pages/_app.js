@@ -193,12 +193,11 @@ function ThemedToaster() {
       theme={isDark ? 'dark' : 'light'}
       gap={12}
       toastOptions={{
-        className: 'sonner-toast-custom',
+        className: 'sonner-toast-custom'
       }}
     />
   );
 }
-
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
@@ -254,9 +253,16 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             --font-jetbrains-mono: ${jetbrainsMono.style.fontFamily};
           }
           body {
-            font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family:
+              var(--font-inter),
+              -apple-system,
+              BlinkMacSystemFont,
+              'Segoe UI',
+              sans-serif;
           }
-          code, .monospace, input[type="number"] {
+          code,
+          .monospace,
+          input[type='number'] {
             font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
             font-variant-numeric: tabular-nums;
           }

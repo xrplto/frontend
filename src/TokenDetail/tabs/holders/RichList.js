@@ -191,18 +191,22 @@ const RichList = ({ token }) => {
     <div className="flex items-center gap-2">
       {/* WS Status */}
       {page === 1 && !searchTerm && (
-        <div className={cn(
-          'flex items-center gap-1 rounded-md px-2 py-1 text-[10px]',
-          wsConnected ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-white/30'
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-1 rounded-md px-2 py-1 text-[10px]',
+            wsConnected ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-white/30'
+          )}
+        >
           {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
           <span className="hidden sm:inline">{wsConnected ? 'Live' : 'Offline'}</span>
         </div>
       )}
-      <div className={cn(
-        'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
-        isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
-      )}>
+      <div
+        className={cn(
+          'flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5',
+          isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+        )}
+      >
         <Search size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
         <input
           type="text"
@@ -212,11 +216,16 @@ const RichList = ({ token }) => {
           placeholder="Search by address (min 3 chars)"
           className={cn(
             'flex-1 bg-transparent text-[13px] outline-none placeholder:text-[12px]',
-            isDark ? 'text-white placeholder:text-white/30' : 'text-gray-900 placeholder:text-gray-400'
+            isDark
+              ? 'text-white placeholder:text-white/30'
+              : 'text-gray-900 placeholder:text-gray-400'
           )}
         />
         {searchInput && (
-          <button onClick={clearSearch} className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}>
+          <button
+            onClick={clearSearch}
+            className={cn('hover:text-primary', isDark ? 'text-white/40' : 'text-gray-400')}
+          >
             <X size={14} />
           </button>
         )}
@@ -226,7 +235,9 @@ const RichList = ({ token }) => {
         disabled={searchInput.length > 0 && searchInput.length < 3}
         className={cn(
           'rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors disabled:opacity-40',
-          isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+          isDark
+            ? 'border-white/10 hover:border-primary hover:bg-primary/5'
+            : 'border-gray-200 hover:border-primary hover:bg-primary/5'
         )}
       >
         Search
@@ -254,15 +265,21 @@ const RichList = ({ token }) => {
             No results for "{searchTerm}"
           </div>
         )}
-        <div className={cn(
-          'rounded-xl border-[1.5px] border-dashed py-12 text-center',
-          isDark ? 'border-white/15 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
-        )}>
-          <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
+        <div
+          className={cn(
+            'rounded-xl border-[1.5px] border-dashed py-12 text-center',
+            isDark ? 'border-white/15 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
+          )}
+        >
+          <h3
+            className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}
+          >
             {searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
           </h3>
           <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>
-            {searchTerm ? 'Try a different address' : 'Rich list data will appear here when available'}
+            {searchTerm
+              ? 'Try a different address'
+              : 'Rich list data will appear here when available'}
           </p>
         </div>
       </div>
@@ -289,15 +306,33 @@ const RichList = ({ token }) => {
           ].map(({ label, value }) => {
             const hasValue = value !== undefined && value !== null;
             return (
-              <div key={label} className={cn(
-                'rounded-lg border px-3 py-2',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
-              )}>
-                <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
-                <div className={cn(
-                  'text-[14px] font-medium',
-                  hasValue && value > 70 ? 'text-red-400' : hasValue && value > 50 ? 'text-yellow-500' : isDark ? 'text-white' : 'text-gray-900'
-                )}>
+              <div
+                key={label}
+                className={cn(
+                  'rounded-lg border px-3 py-2',
+                  isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                )}
+              >
+                <div
+                  className={cn(
+                    'text-[10px] uppercase tracking-wide',
+                    isDark ? 'text-white/40' : 'text-gray-400'
+                  )}
+                >
+                  {label}
+                </div>
+                <div
+                  className={cn(
+                    'text-[14px] font-medium',
+                    hasValue && value > 70
+                      ? 'text-red-400'
+                      : hasValue && value > 50
+                        ? 'text-yellow-500'
+                        : isDark
+                          ? 'text-white'
+                          : 'text-gray-900'
+                  )}
+                >
                   {hasValue ? `${value}%` : '—'}
                 </div>
               </div>
@@ -309,7 +344,12 @@ const RichList = ({ token }) => {
       {/* Search */}
       {renderSearchBar()}
       {searchTerm && (
-        <div className={cn('flex items-center gap-2 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+        <div
+          className={cn(
+            'flex items-center gap-2 text-[11px]',
+            isDark ? 'text-white/50' : 'text-gray-500'
+          )}
+        >
           Showing results for "{searchTerm}" ({totalHolders} found)
           {loading && <Loader2 size={12} className="animate-spin" />}
         </div>
@@ -320,16 +360,58 @@ const RichList = ({ token }) => {
         <table className="w-full">
           <thead>
             <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-200')}>
-              <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
-              <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
-              <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
+              <th
+                className={cn(
+                  'py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider',
+                  isDark ? 'text-white/40' : 'text-gray-400'
+                )}
+              >
+                #
+              </th>
+              <th
+                className={cn(
+                  'py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider',
+                  isDark ? 'text-white/40' : 'text-gray-400'
+                )}
+              >
+                Address
+              </th>
+              <th
+                className={cn(
+                  'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                  isDark ? 'text-white/40' : 'text-gray-400'
+                )}
+              >
+                Balance
+              </th>
               {!isMobile && (
-                <th className={cn('py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Acquisition</th>
+                <th
+                  className={cn(
+                    'py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider',
+                    isDark ? 'text-white/40' : 'text-gray-400'
+                  )}
+                >
+                  Acquisition
+                </th>
               )}
               {!isMobile && (
-                <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h %</th>
+                <th
+                  className={cn(
+                    'py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                    isDark ? 'text-white/40' : 'text-gray-400'
+                  )}
+                >
+                  24h %
+                </th>
               )}
-              <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Share</th>
+              <th
+                className={cn(
+                  'py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider',
+                  isDark ? 'text-white/40' : 'text-gray-400'
+                )}
+              >
+                Share
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -339,21 +421,27 @@ const RichList = ({ token }) => {
               const isAMM = holder.isAMM;
               const isCreator = holder.isCreator;
               const isFrozen = holder.freeze;
-              const change24h = holder.balance24h ? ((holder.balance - holder.balance24h) / holder.balance24h) * 100 : null;
+              const change24h = holder.balance24h
+                ? ((holder.balance - holder.balance24h) / holder.balance24h) * 100
+                : null;
 
               return (
                 <tr
                   key={holder.account || index}
                   className={cn(
                     'border-b',
-                    isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-100 hover:bg-gray-50'
+                    isDark
+                      ? 'border-white/5 hover:bg-white/[0.02]'
+                      : 'border-gray-100 hover:bg-gray-50'
                   )}
                 >
                   <td className="py-2.5 pr-2">
-                    <span className={cn(
-                      'inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-medium',
-                      getRankStyle(rank)
-                    )}>
+                    <span
+                      className={cn(
+                        'inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-medium',
+                        getRankStyle(rank)
+                      )}
+                    >
                       {rank}
                     </span>
                   </td>
@@ -366,25 +454,52 @@ const RichList = ({ token }) => {
                           isDark ? 'text-white/80' : 'text-gray-700'
                         )}
                       >
-                        {holder.account ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}` : 'Unknown'}
+                        {holder.account
+                          ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}`
+                          : 'Unknown'}
                       </Link>
                       {(isAMM || isCreator || isFrozen || holder.source) && (
                         <div className="flex items-center gap-1 flex-wrap">
-                          {isAMM && <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">AMM</span>}
-                          {isCreator && <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">Creator</span>}
-                          {isFrozen && <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">Frozen</span>}
+                          {isAMM && (
+                            <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                              AMM
+                            </span>
+                          )}
+                          {isCreator && (
+                            <span className="rounded bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-medium text-purple-400">
+                              Creator
+                            </span>
+                          )}
+                          {isFrozen && (
+                            <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-400">
+                              Frozen
+                            </span>
+                          )}
                           {holder.source && (
-                            <span className={cn(
-                              'rounded px-1.5 py-0.5 text-[9px] font-medium',
-                              holder.source === 'traded' ? 'bg-emerald-500/15 text-emerald-400' :
-                              holder.source === 'mixed' ? 'bg-amber-500/15 text-amber-400' :
-                              'bg-white/10 text-white/50'
-                            )}>
-                              {holder.source === 'traded' ? 'Trader' : holder.source === 'mixed' ? 'Mixed' : 'Transfer'}
+                            <span
+                              className={cn(
+                                'rounded px-1.5 py-0.5 text-[9px] font-medium',
+                                holder.source === 'traded'
+                                  ? 'bg-emerald-500/15 text-emerald-400'
+                                  : holder.source === 'mixed'
+                                    ? 'bg-amber-500/15 text-amber-400'
+                                    : 'bg-white/10 text-white/50'
+                              )}
+                            >
+                              {holder.source === 'traded'
+                                ? 'Trader'
+                                : holder.source === 'mixed'
+                                  ? 'Mixed'
+                                  : 'Transfer'}
                             </span>
                           )}
                           {holder.tradeCount > 0 && (
-                            <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                            <span
+                              className={cn(
+                                'text-[9px]',
+                                isDark ? 'text-white/30' : 'text-gray-400'
+                              )}
+                            >
                               {holder.tradeCount} trades
                             </span>
                           )}
@@ -392,34 +507,69 @@ const RichList = ({ token }) => {
                       )}
                     </div>
                   </td>
-                  <td className={cn('py-2.5 px-2 text-right text-[12px] font-medium tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
+                  <td
+                    className={cn(
+                      'py-2.5 px-2 text-right text-[12px] font-medium tabular-nums',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
                     {formatNumber(holder.balance)}
                   </td>
                   {!isMobile && (
                     <td className="py-2.5 px-2">
                       {holder.acquisition ? (
                         <div className="flex items-center justify-center gap-1">
-                          <div className={cn('flex h-1.5 w-16 overflow-hidden rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                          <div
+                            className={cn(
+                              'flex h-1.5 w-16 overflow-hidden rounded-full',
+                              isDark ? 'bg-white/10' : 'bg-gray-200'
+                            )}
+                          >
                             {holder.acquisition.dexPct > 0 && (
-                              <div className="h-full bg-emerald-500" style={{ width: `${holder.acquisition.dexPct}%` }} title={`DEX ${holder.acquisition.dexPct}%`} />
+                              <div
+                                className="h-full bg-emerald-500"
+                                style={{ width: `${holder.acquisition.dexPct}%` }}
+                                title={`DEX ${holder.acquisition.dexPct}%`}
+                              />
                             )}
                             {holder.acquisition.ammPct > 0 && (
-                              <div className="h-full bg-primary" style={{ width: `${holder.acquisition.ammPct}%` }} title={`AMM ${holder.acquisition.ammPct}%`} />
+                              <div
+                                className="h-full bg-primary"
+                                style={{ width: `${holder.acquisition.ammPct}%` }}
+                                title={`AMM ${holder.acquisition.ammPct}%`}
+                              />
                             )}
                             {holder.acquisition.lpPct > 0 && (
-                              <div className="h-full bg-purple-500" style={{ width: `${holder.acquisition.lpPct}%` }} title={`LP ${holder.acquisition.lpPct}%`} />
+                              <div
+                                className="h-full bg-purple-500"
+                                style={{ width: `${holder.acquisition.lpPct}%` }}
+                                title={`LP ${holder.acquisition.lpPct}%`}
+                              />
                             )}
                             {holder.acquisition.transferPct > 0 && (
-                              <div className="h-full bg-gray-500" style={{ width: `${holder.acquisition.transferPct}%` }} title={`Transfer ${holder.acquisition.transferPct}%`} />
+                              <div
+                                className="h-full bg-gray-500"
+                                style={{ width: `${holder.acquisition.transferPct}%` }}
+                                title={`Transfer ${holder.acquisition.transferPct}%`}
+                              />
                             )}
                           </div>
-                          <span className={cn('text-[9px] tabular-nums min-w-[28px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          <span
+                            className={cn(
+                              'text-[9px] tabular-nums min-w-[28px]',
+                              isDark ? 'text-white/40' : 'text-gray-400'
+                            )}
+                          >
                             {holder.tradedPct > 0 ? `${holder.tradedPct}%` : 'T'}
                           </span>
                         </div>
                       ) : (
                         <div className="flex justify-center">
-                          <span className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                          <span
+                            className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}
+                          >
+                            —
+                          </span>
                         </div>
                       )}
                     </td>
@@ -427,23 +577,49 @@ const RichList = ({ token }) => {
                   {!isMobile && (
                     <td className="py-2.5 px-2 text-right">
                       {change24h !== null ? (
-                        <span className={cn('text-[12px] tabular-nums', change24h >= 0 ? 'text-green-500' : 'text-red-500')}>
-                          {Math.abs(change24h) < 0.01 ? '~0' : `${change24h >= 0 ? '+' : ''}${Math.abs(change24h) < 0.1 ? change24h.toFixed(2) : change24h.toFixed(1)}`}%
+                        <span
+                          className={cn(
+                            'text-[12px] tabular-nums',
+                            change24h >= 0 ? 'text-green-500' : 'text-red-500'
+                          )}
+                        >
+                          {Math.abs(change24h) < 0.01
+                            ? '~0'
+                            : `${change24h >= 0 ? '+' : ''}${Math.abs(change24h) < 0.1 ? change24h.toFixed(2) : change24h.toFixed(1)}`}
+                          %
                         </span>
                       ) : (
-                        <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                        <span
+                          className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-300')}
+                        >
+                          —
+                        </span>
                       )}
                     </td>
                   )}
                   <td className="py-2.5 pl-2 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <div className={cn('h-1.5 w-12 overflow-hidden rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(percentOfSupply * 2, 100)}%` }} />
+                      <div
+                        className={cn(
+                          'h-1.5 w-12 overflow-hidden rounded-full',
+                          isDark ? 'bg-white/10' : 'bg-gray-200'
+                        )}
+                      >
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${Math.min(percentOfSupply * 2, 100)}%` }}
+                        />
                       </div>
-                      <span className={cn(
-                        'text-[12px] font-medium tabular-nums min-w-[40px]',
-                        percentOfSupply > 5 ? 'text-yellow-500' : isDark ? 'text-white/70' : 'text-gray-600'
-                      )}>
+                      <span
+                        className={cn(
+                          'text-[12px] font-medium tabular-nums min-w-[40px]',
+                          percentOfSupply > 5
+                            ? 'text-yellow-500'
+                            : isDark
+                              ? 'text-white/70'
+                              : 'text-gray-600'
+                        )}
+                      >
                         {percentOfSupply}%
                       </span>
                     </div>
@@ -462,14 +638,19 @@ const RichList = ({ token }) => {
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className={cn(
-              "p-1.5 rounded-md transition-colors",
-              page === 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-              isDark ? "text-white/50" : "text-gray-500"
+              'p-1.5 rounded-md transition-colors',
+              page === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+              isDark ? 'text-white/50' : 'text-gray-500'
             )}
           >
             <ChevronLeft size={14} />
           </button>
-          <span className={cn("text-[11px] px-2 tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>
+          <span
+            className={cn(
+              'text-[11px] px-2 tabular-nums',
+              isDark ? 'text-white/40' : 'text-gray-500'
+            )}
+          >
             {page} / {totalPages}
           </span>
           <button
@@ -477,9 +658,9 @@ const RichList = ({ token }) => {
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className={cn(
-              "p-1.5 rounded-md transition-colors",
-              page === totalPages ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-              isDark ? "text-white/50" : "text-gray-500"
+              'p-1.5 rounded-md transition-colors',
+              page === totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10',
+              isDark ? 'text-white/50' : 'text-gray-500'
             )}
           >
             <ChevronRight size={14} />

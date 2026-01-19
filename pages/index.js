@@ -37,16 +37,15 @@ function MaintenanceView({ isDark }) {
       <div className="max-w-md w-full text-center">
         <Logo style={{ width: '120px', height: '42px', margin: '0 auto' }} />
         <div className="text-center mt-6">
-          <h1 className={cn(
-            "text-3xl font-normal mb-4",
-            isDark ? "text-primary" : "text-blue-600"
-          )}>
+          <h1
+            className={cn('text-3xl font-normal mb-4', isDark ? 'text-primary' : 'text-blue-600')}
+          >
             Under Maintenance
           </h1>
-          <p className={cn("text-base mb-2", isDark ? "text-white/70" : "text-gray-600")}>
+          <p className={cn('text-base mb-2', isDark ? 'text-white/70' : 'text-gray-600')}>
             We're currently performing some updates to improve our service.
           </p>
-          <p className={cn("text-base", isDark ? "text-white/70" : "text-gray-600")}>
+          <p className={cn('text-base', isDark ? 'text-white/70' : 'text-gray-600')}>
             Please check back soon.
           </p>
         </div>
@@ -96,11 +95,28 @@ function Overview({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         XRPL Tokens Analytics & Trading Platform
       </h1>
 
-      <div id="back-to-top-anchor" className={notificationPanelOpen ? 'mx-auto px-0 mt-4' : 'mx-auto max-w-[1920px] px-0 md:px-4 mt-4'}>
+      <div
+        id="back-to-top-anchor"
+        className={
+          notificationPanelOpen ? 'mx-auto px-0 mt-4' : 'mx-auto max-w-[1920px] px-0 md:px-4 mt-4'
+        }
+      >
         <div className="w-full px-0 py-0">
           <Summary />
         </div>
@@ -145,7 +161,8 @@ export async function getStaticProps() {
       'Discover XRP Ledger tokens with live prices, market cap, 24h volume & trading charts. Track XRPL DeFi tokens, compare performance & find new opportunities on XRP Ledger.';
 
     // Additional structured metadata for better SEO
-    ogp.keywords = 'XRP Ledger, XRPL tokens, XRP tokens, cryptocurrency prices, DeFi tokens, crypto charts, market cap, trading volume, XRP ecosystem, digital assets, blockchain tokens, altcoins';
+    ogp.keywords =
+      'XRP Ledger, XRPL tokens, XRP tokens, cryptocurrency prices, DeFi tokens, crypto charts, market cap, trading volume, XRP ecosystem, digital assets, blockchain tokens, altcoins';
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';

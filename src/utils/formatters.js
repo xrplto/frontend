@@ -141,7 +141,20 @@ export function fToNow(date) {
 export { formatDistanceToNowStrict };
 
 const pad = (n) => String(n).padStart(2, '0');
-const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const shortMonths = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+];
 
 export function formatDateTime(time) {
   if (!time) return '';
@@ -177,18 +190,21 @@ export function formatMonthYearDate(time) {
 
 export function throttle(fn, wait = 100) {
   let timeout, lastRan;
-  return function(...args) {
+  return function (...args) {
     if (!lastRan) {
       fn.apply(this, args);
       lastRan = Date.now();
     } else {
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        if (Date.now() - lastRan >= wait) {
-          fn.apply(this, args);
-          lastRan = Date.now();
-        }
-      }, wait - (Date.now() - lastRan));
+      timeout = setTimeout(
+        () => {
+          if (Date.now() - lastRan >= wait) {
+            fn.apply(this, args);
+            lastRan = Date.now();
+          }
+        },
+        wait - (Date.now() - lastRan)
+      );
     }
   };
 }
@@ -235,12 +251,40 @@ export function checkExpiration(expiration) {
 
 // ==== API HELPERS ====
 
-const essentialFields = ['md5', 'currency', 'issuer', 'name', 'pro24h', 'pro1h', 'pro5m', 'pro7d',
-  'vol24hxrp', 'vol24htx', 'exch', 'tags', 'holders', 'amount', 'id', 'user', 'slug', 'date',
-  'dateon', 'tvl', 'origin', 'isOMCF', 'marketcap'];
+const essentialFields = [
+  'md5',
+  'currency',
+  'issuer',
+  'name',
+  'pro24h',
+  'pro1h',
+  'pro5m',
+  'pro7d',
+  'vol24hxrp',
+  'vol24htx',
+  'exch',
+  'tags',
+  'holders',
+  'amount',
+  'id',
+  'user',
+  'slug',
+  'date',
+  'dateon',
+  'tvl',
+  'origin',
+  'isOMCF',
+  'marketcap'
+];
 
-export async function getTokens(sortBy = 'vol24hxrp', sortType = 'desc', tags = 'yes',
-  showNew = false, showSlug = false, limit = 100) {
+export async function getTokens(
+  sortBy = 'vol24hxrp',
+  sortType = 'desc',
+  tags = 'yes',
+  showNew = false,
+  showSlug = false,
+  limit = 100
+) {
   try {
     const res = await axios.get('https://api.xrpl.to/v1/tokens', {
       params: { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug }
@@ -248,8 +292,11 @@ export async function getTokens(sortBy = 'vol24hxrp', sortType = 'desc', tags = 
 
     return {
       ...res.data,
-      tokens: res.data.tokens.map(token => ({
-        ...essentialFields.reduce((acc, f) => (token[f] !== undefined && (acc[f] = token[f]), acc), {}),
+      tokens: res.data.tokens.map((token) => ({
+        ...essentialFields.reduce(
+          (acc, f) => (token[f] !== undefined && (acc[f] = token[f]), acc),
+          {}
+        ),
         bearbull: token.pro24h < 0 ? -1 : 1,
         time: Date.now()
       }))

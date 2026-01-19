@@ -41,8 +41,9 @@ function Overview({ data }) {
 
   // Load popular/trending tokens
   useEffect(() => {
-    axios.post(`${BASE_URL}/search`, { search: '' })
-      .then(res => setPopularTokens(res.data?.tokens?.slice(0, 6) || []))
+    axios
+      .post(`${BASE_URL}/search`, { search: '' })
+      .then((res) => setPopularTokens(res.data?.tokens?.slice(0, 6) || []))
       .catch(() => {});
   }, []);
 
@@ -56,12 +57,19 @@ function Overview({ data }) {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
+        const res = await axios.post(
+          `${BASE_URL}/search`,
+          { search: searchQuery },
+          { signal: controller.signal }
+        );
         setSearchResults(res.data?.tokens?.slice(0, 8) || []);
       } catch {}
       setSearchLoading(false);
     }, 150);
-    return () => { clearTimeout(timer); controller.abort(); };
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchQuery, searchOpen]);
 
   // Click outside to close
@@ -78,25 +86,43 @@ function Overview({ data }) {
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }, []);
 
-  const addToWatchlist = useCallback((token) => {
-    if (!watchList || !setWatchList) return;
-    const exists = watchList.some(w => w.md5 === token.md5);
-    if (!exists) {
-      setWatchList([...watchList, { md5: token.md5, slug: token.slug }]);
-    }
-    setSearchOpen(false);
-    setSearchQuery('');
-  }, [watchList, setWatchList]);
+  const addToWatchlist = useCallback(
+    (token) => {
+      if (!watchList || !setWatchList) return;
+      const exists = watchList.some((w) => w.md5 === token.md5);
+      if (!exists) {
+        setWatchList([...watchList, { md5: token.md5, slug: token.slug }]);
+      }
+      setSearchOpen(false);
+      setSearchQuery('');
+    },
+    [watchList, setWatchList]
+  );
 
-  const isInWatchlist = useCallback((md5) => {
-    return watchList?.some(w => w.md5 === md5) || false;
-  }, [watchList]);
+  const isInWatchlist = useCallback(
+    (md5) => {
+      return watchList?.some((w) => w.md5 === md5) || false;
+    },
+    [watchList]
+  );
 
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
       <div id="back-to-top-anchor" />
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
         Watchlist XRPL Tokens and NFTs
       </h1>
 
@@ -116,8 +142,12 @@ function Overview({ data }) {
                 className={cn(
                   'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all',
                   activeTab === 'tokens'
-                    ? isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900'
-                    : isDark ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15' : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? isDark
+                      ? 'border-white/20 text-white'
+                      : 'border-gray-300 text-gray-900'
+                    : isDark
+                      ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
+                      : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 )}
               >
                 <Coins size={15} strokeWidth={1.5} />
@@ -128,8 +158,12 @@ function Overview({ data }) {
                 className={cn(
                   'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all',
                   activeTab === 'nfts'
-                    ? isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900'
-                    : isDark ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15' : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? isDark
+                      ? 'border-white/20 text-white'
+                      : 'border-gray-300 text-gray-900'
+                    : isDark
+                      ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
+                      : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 )}
               >
                 <Image size={15} strokeWidth={1.5} />
@@ -141,11 +175,16 @@ function Overview({ data }) {
 
         {/* Content */}
         {!account ? (
-          <div className={cn(
-            'rounded-xl border-[1.5px] p-12 text-center transition-all duration-200 hover:border-primary/30',
-            isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]'
-          )}>
-            <Star size={32} className={cn('mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')} />
+          <div
+            className={cn(
+              'rounded-xl border-[1.5px] p-12 text-center transition-all duration-200 hover:border-primary/30',
+              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]'
+            )}
+          >
+            <Star
+              size={32}
+              className={cn('mx-auto mb-3', isDark ? 'text-white/20' : 'text-gray-300')}
+            />
             <p className={cn('text-[15px] mb-1', isDark ? 'text-white/60' : 'text-gray-600')}>
               Track your favorite tokens and NFTs
             </p>
@@ -158,18 +197,29 @@ function Overview({ data }) {
             {activeTab === 'tokens' && (
               <>
                 {/* Empty state with Add Assets */}
-                {(!watchList || watchList.length === 0) ? (
-                  <div className={cn(
-                    'rounded-xl border-[1.5px] py-16 px-6 text-center',
-                    isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/[0.08] bg-black/[0.02]'
-                  )}>
+                {!watchList || watchList.length === 0 ? (
+                  <div
+                    className={cn(
+                      'rounded-xl border-[1.5px] py-16 px-6 text-center',
+                      isDark
+                        ? 'border-white/10 bg-white/[0.02]'
+                        : 'border-black/[0.08] bg-black/[0.02]'
+                    )}
+                  >
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                       <Star size={24} className="text-primary" fill="currentColor" />
                     </div>
-                    <h2 className={cn('text-lg font-medium mb-2', isDark ? 'text-white' : 'text-gray-900')}>
+                    <h2
+                      className={cn(
+                        'text-lg font-medium mb-2',
+                        isDark ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
                       Build your watchlist
                     </h2>
-                    <p className={cn('text-[14px] mb-6', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    <p
+                      className={cn('text-[14px] mb-6', isDark ? 'text-white/50' : 'text-gray-500')}
+                    >
                       Add assets to your watchlist for a personalized view.
                     </p>
                     <button
@@ -182,7 +232,12 @@ function Overview({ data }) {
                     {/* Popular Assets */}
                     {popularTokens.length > 0 && (
                       <div className="mt-8">
-                        <p className={cn('text-[12px] font-medium uppercase tracking-wide mb-3', isDark ? 'text-white/40' : 'text-gray-400')}>
+                        <p
+                          className={cn(
+                            'text-[12px] font-medium uppercase tracking-wide mb-3',
+                            isDark ? 'text-white/40' : 'text-gray-400'
+                          )}
+                        >
                           Popular Assets
                         </p>
                         <div className="flex flex-wrap justify-center gap-2">
@@ -194,12 +249,23 @@ function Overview({ data }) {
                               className={cn(
                                 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full border-[1.5px] text-[13px] transition-all',
                                 isInWatchlist(token.md5)
-                                  ? isDark ? 'border-white/5 bg-white/5 text-white/30 cursor-not-allowed' : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                  : isDark ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5 text-white/70' : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700'
+                                  ? isDark
+                                    ? 'border-white/5 bg-white/5 text-white/30 cursor-not-allowed'
+                                    : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : isDark
+                                    ? 'border-white/10 hover:border-primary/50 hover:bg-primary/5 text-white/70'
+                                    : 'border-gray-200 hover:border-primary/50 hover:bg-primary/5 text-gray-700'
                               )}
                             >
-                              <Plus size={14} className={isInWatchlist(token.md5) ? 'opacity-30' : ''} />
-                              <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-5 h-5 rounded-full" alt="" />
+                              <Plus
+                                size={14}
+                                className={isInWatchlist(token.md5) ? 'opacity-30' : ''}
+                              />
+                              <img
+                                src={`https://s1.xrpl.to/token/${token.md5}`}
+                                className="w-5 h-5 rounded-full"
+                                alt=""
+                              />
                               <span>{token.user || token.name}</span>
                             </button>
                           ))}
@@ -260,7 +326,10 @@ function Overview({ data }) {
         {/* Search Modal */}
         {searchOpen && (
           <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSearchOpen(false)} />
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setSearchOpen(false)}
+            />
             <div
               ref={searchRef}
               className={cn(
@@ -269,7 +338,12 @@ function Overview({ data }) {
               )}
             >
               {/* Search Input */}
-              <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+              <div
+                className={cn(
+                  'flex items-center gap-3 px-4 py-3 border-b',
+                  isDark ? 'border-white/10' : 'border-gray-200'
+                )}
+              >
                 <Search size={18} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                 <input
                   ref={searchInputRef}
@@ -278,10 +352,15 @@ function Overview({ data }) {
                   placeholder="Search tokens..."
                   className={cn(
                     'flex-1 bg-transparent text-[15px] outline-none',
-                    isDark ? 'text-white placeholder:text-white/40' : 'text-gray-900 placeholder:text-gray-400'
+                    isDark
+                      ? 'text-white placeholder:text-white/40'
+                      : 'text-gray-900 placeholder:text-gray-400'
                   )}
                 />
-                <button onClick={() => setSearchOpen(false)} className={cn('p-1 rounded', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                <button
+                  onClick={() => setSearchOpen(false)}
+                  className={cn('p-1 rounded', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}
+                >
                   <X size={18} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                 </button>
               </div>
@@ -289,13 +368,23 @@ function Overview({ data }) {
               {/* Results */}
               <div className="max-h-[400px] overflow-y-auto">
                 {searchLoading && (
-                  <div className={cn('px-4 py-8 text-center text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div
+                    className={cn(
+                      'px-4 py-8 text-center text-[13px]',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
                     Searching...
                   </div>
                 )}
 
                 {!searchLoading && searchQuery && searchResults.length === 0 && (
-                  <div className={cn('px-4 py-8 text-center text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div
+                    className={cn(
+                      'px-4 py-8 text-center text-[13px]',
+                      isDark ? 'text-white/40' : 'text-gray-400'
+                    )}
+                  >
                     No tokens found
                   </div>
                 )}
@@ -310,17 +399,44 @@ function Overview({ data }) {
                         className={cn(
                           'w-full flex items-center gap-3 px-4 py-3 transition-colors',
                           isInWatchlist(token.md5)
-                            ? isDark ? 'bg-white/5 cursor-not-allowed' : 'bg-gray-50 cursor-not-allowed'
-                            : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                            ? isDark
+                              ? 'bg-white/5 cursor-not-allowed'
+                              : 'bg-gray-50 cursor-not-allowed'
+                            : isDark
+                              ? 'hover:bg-white/5'
+                              : 'hover:bg-gray-50'
                         )}
                       >
-                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-10 h-10 rounded-full" alt="" />
+                        <img
+                          src={`https://s1.xrpl.to/token/${token.md5}`}
+                          className="w-10 h-10 rounded-full"
+                          alt=""
+                        />
                         <div className="flex-1 text-left">
-                          <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{token.user || token.name}</p>
-                          <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>{token.name}</p>
+                          <p
+                            className={cn(
+                              'text-[14px] font-medium',
+                              isDark ? 'text-white' : 'text-gray-900'
+                            )}
+                          >
+                            {token.user || token.name}
+                          </p>
+                          <p
+                            className={cn(
+                              'text-[12px]',
+                              isDark ? 'text-white/40' : 'text-gray-500'
+                            )}
+                          >
+                            {token.name}
+                          </p>
                         </div>
                         {isInWatchlist(token.md5) ? (
-                          <span className={cn('text-[11px] px-2 py-1 rounded', isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500')}>
+                          <span
+                            className={cn(
+                              'text-[11px] px-2 py-1 rounded',
+                              isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'
+                            )}
+                          >
                             Added
                           </span>
                         ) : (
@@ -334,7 +450,12 @@ function Overview({ data }) {
                 {/* Show popular when no query */}
                 {!searchQuery && popularTokens.length > 0 && (
                   <div className="py-2">
-                    <p className={cn('px-4 py-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-white/30' : 'text-gray-400')}>
+                    <p
+                      className={cn(
+                        'px-4 py-2 text-[11px] font-medium uppercase tracking-wide',
+                        isDark ? 'text-white/30' : 'text-gray-400'
+                      )}
+                    >
                       <TrendingUp size={12} className="inline mr-1" />
                       Popular
                     </p>
@@ -346,17 +467,44 @@ function Overview({ data }) {
                         className={cn(
                           'w-full flex items-center gap-3 px-4 py-3 transition-colors',
                           isInWatchlist(token.md5)
-                            ? isDark ? 'bg-white/5 cursor-not-allowed' : 'bg-gray-50 cursor-not-allowed'
-                            : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                            ? isDark
+                              ? 'bg-white/5 cursor-not-allowed'
+                              : 'bg-gray-50 cursor-not-allowed'
+                            : isDark
+                              ? 'hover:bg-white/5'
+                              : 'hover:bg-gray-50'
                         )}
                       >
-                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-10 h-10 rounded-full" alt="" />
+                        <img
+                          src={`https://s1.xrpl.to/token/${token.md5}`}
+                          className="w-10 h-10 rounded-full"
+                          alt=""
+                        />
                         <div className="flex-1 text-left">
-                          <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{token.user || token.name}</p>
-                          <p className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>{token.name}</p>
+                          <p
+                            className={cn(
+                              'text-[14px] font-medium',
+                              isDark ? 'text-white' : 'text-gray-900'
+                            )}
+                          >
+                            {token.user || token.name}
+                          </p>
+                          <p
+                            className={cn(
+                              'text-[12px]',
+                              isDark ? 'text-white/40' : 'text-gray-500'
+                            )}
+                          >
+                            {token.name}
+                          </p>
                         </div>
                         {isInWatchlist(token.md5) ? (
-                          <span className={cn('text-[11px] px-2 py-1 rounded', isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500')}>
+                          <span
+                            className={cn(
+                              'text-[11px] px-2 py-1 rounded',
+                              isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'
+                            )}
+                          >
                             Added
                           </span>
                         ) : (
@@ -396,9 +544,7 @@ export async function getStaticProps() {
 
     var t2 = performance.now();
     var dt = (t2 - t1).toFixed(2);
-
-  } catch (e) {
-  }
+  } catch (e) {}
   let ret = {};
   if (data) {
     let ogp = {};

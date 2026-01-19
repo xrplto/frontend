@@ -25,8 +25,8 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
   return (
     <div
       className={cn(
-        "rounded-xl border-[1.5px] p-4",
-        isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+        'rounded-xl border-[1.5px] p-4',
+        isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
       )}
     >
       {offers && offers.length === 0 && (
@@ -50,16 +50,16 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
             <div
               key={offer.nft_offer_index}
               className={cn(
-                "rounded-lg border-[1.5px] p-3",
-                isDark ? "border-white/10" : "border-gray-200"
+                'rounded-lg border-[1.5px] p-3',
+                isDark ? 'border-white/10' : 'border-gray-200'
               )}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-normal uppercase",
-                      isDark ? "bg-primary/10 text-primary" : "bg-primary/20 text-primary"
+                      'flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-normal uppercase',
+                      isDark ? 'bg-primary/10 text-primary' : 'bg-primary/20 text-primary'
                     )}
                   >
                     {offer.owner.charAt(0)}
@@ -72,8 +72,8 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
                       href={`https://xrpl.to/address/${offer.owner}`}
                       rel="noreferrer noopener nofollow"
                       className={cn(
-                        "break-all text-[11px] font-normal hover:underline",
-                        isDark ? "text-white/60" : "text-gray-600"
+                        'break-all text-[11px] font-normal hover:underline',
+                        isDark ? 'text-white/60' : 'text-gray-600'
                       )}
                     >
                       {offer.owner}
@@ -89,11 +89,13 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
 
               {offer.destination && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Repeat size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
-                  <div className={cn(
-                    "text-[11px] font-normal",
-                    isDark ? "text-white/60" : "text-gray-600"
-                  )}>
+                  <Repeat size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  <div
+                    className={cn(
+                      'text-[11px] font-normal',
+                      isDark ? 'text-white/60' : 'text-gray-600'
+                    )}
+                  >
                     {offer.destination}
                   </div>
                 </div>
@@ -101,11 +103,13 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
 
               {offer.expiration && (
                 <div className="mt-2 flex items-center gap-2">
-                  <Clock size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
-                  <div className={cn(
-                    "text-[11px] font-normal",
-                    isDark ? "text-white/60" : "text-gray-600"
-                  )}>
+                  <Clock size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  <div
+                    className={cn(
+                      'text-[11px] font-normal',
+                      isDark ? 'text-white/60' : 'text-gray-600'
+                    )}
+                  >
                     {expired ? 'Expired' : 'Expires'} on {formatDateTime(offer.expiration * 1000)}
                   </div>
                 </div>

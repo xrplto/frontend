@@ -18,7 +18,12 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL', md5: '84e5efeb89c4eae8f68188982dc290d8', name: 'XRP' };
+const XRP_TOKEN = {
+  currency: 'XRP',
+  issuer: 'XRPL',
+  md5: '84e5efeb89c4eae8f68188982dc290d8',
+  name: 'XRP'
+};
 
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
@@ -31,7 +36,12 @@ const formatCompactPrice = (price) => {
     const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
     if (zeros >= 4) {
       const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-      return <>0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>{significant.slice(0, 4)}</>;
+      return (
+        <>
+          0.0<sub style={{ fontSize: '0.6em' }}>{zeros}</sub>
+          {significant.slice(0, 4)}
+        </>
+      );
     }
     return price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
   }
@@ -79,7 +89,7 @@ const submitTransaction = async (tx_blob) => {
 const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
   const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
   const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
-    keySize: 256/32,
+    keySize: 256 / 32,
     iterations: 100000
   }).toString();
   const privateKeyHex = seedHash.substring(0, 64);
@@ -87,8 +97,15 @@ const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntro
 };
 
 const getDeviceWallet = (accountProfile) => {
-  if (accountProfile?.wallet_type === 'device' && accountProfile?.deviceKeyId && typeof accountProfile?.accountIndex === 'number') {
-    return generateSecureDeterministicWallet(accountProfile.deviceKeyId, accountProfile.accountIndex);
+  if (
+    accountProfile?.wallet_type === 'device' &&
+    accountProfile?.deviceKeyId &&
+    typeof accountProfile?.accountIndex === 'number'
+  ) {
+    return generateSecureDeterministicWallet(
+      accountProfile.deviceKeyId,
+      accountProfile.accountIndex
+    );
   }
   return null;
 };
@@ -120,38 +137,49 @@ const pulse = keyframes`
 
 const Stack = styled.div`
   display: flex;
-  flex-direction: ${props => props.direction || 'column'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  justify-content: ${props => props.justifyContent || 'flex-start'};
-  gap: ${props => {
+  flex-direction: ${(props) => props.direction || 'column'};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  justify-content: ${(props) => props.justifyContent || 'flex-start'};
+  gap: ${(props) => {
     if (typeof props.spacing === 'number') return `${props.spacing * 8}px`;
     return props.gap || '0';
   }};
-  width: ${props => props.width || 'auto'};
-  flex-wrap: ${props => props.flexWrap || 'nowrap'};
-  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
-    if (key === 'mb') return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-    if (key === 'px') return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
-    if (key === 'py') return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-    return '';
-  }).join(' ')}
+  width: ${(props) => props.width || 'auto'};
+  flex-wrap: ${(props) => props.flexWrap || 'nowrap'};
+  ${(props) =>
+    props.sx &&
+    Object.entries(props.sx)
+      .map(([key, value]) => {
+        if (key === 'mb')
+          return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+        if (key === 'px')
+          return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
+        if (key === 'py')
+          return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+        return '';
+      })
+      .join(' ')}
 `;
 
 const Box = styled.div`
-  display: ${props => props.display || 'block'};
-  flex-direction: ${props => props.flexDirection || 'row'};
-  flex: ${props => props.flex || 'initial'};
-  gap: ${props => props.gap || '0'};
-  width: ${props => props.width || 'auto'};
-  justify-content: ${props => props.justifyContent || 'flex-start'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
-    if (key === 'mb') return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-    if (key === 'px') {
-      if (typeof value === 'object') {
-        return `
+  display: ${(props) => props.display || 'block'};
+  flex-direction: ${(props) => props.flexDirection || 'row'};
+  flex: ${(props) => props.flex || 'initial'};
+  gap: ${(props) => props.gap || '0'};
+  width: ${(props) => props.width || 'auto'};
+  justify-content: ${(props) => props.justifyContent || 'flex-start'};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  ${(props) =>
+    props.sx &&
+    Object.entries(props.sx)
+      .map(([key, value]) => {
+        if (key === 'mb')
+          return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+        if (key === 'px') {
+          if (typeof value === 'object') {
+            return `
           padding-left: ${value.xs * 8}px;
           padding-right: ${value.xs * 8}px;
           @media (min-width: 600px) {
@@ -159,53 +187,61 @@ const Box = styled.div`
             padding-right: ${value.sm * 8}px;
           }
         `;
-      }
-      return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
-    }
-    if (key === 'py') return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
-    return '';
-  }).join(' ')}
+          }
+          return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
+        }
+        if (key === 'py')
+          return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+        return '';
+      })
+      .join(' ')}
 `;
 
 const Typography = styled.span`
-  font-size: ${props => {
+  font-size: ${(props) => {
     if (props.variant === 'h6') return '13px';
     if (props.variant === 'subtitle1') return '14px';
     if (props.variant === 'body2') return '12px';
     if (props.variant === 'caption') return '11px';
     return '12px';
   }};
-  font-weight: ${props => props.fontWeight || 400};
-  line-height: ${props => props.lineHeight || 'normal'};
-  color: ${props => {
-    if (props.color === 'textSecondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+  font-weight: ${(props) => props.fontWeight || 400};
+  line-height: ${(props) => props.lineHeight || 'normal'};
+  color: ${(props) => {
+    if (props.color === 'textSecondary')
+      return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
     if (props.color === 'primary') return '#3b82f6';
     if (props.color === 'error') return '#ef4444';
     if (props.color === 'warning.main') return '#f59e0b';
-    if (props.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+    if (props.color === 'text.secondary')
+      return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
     return props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36';
   }};
-  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
-    if (key === 'fontSize') {
-      if (typeof value === 'object') {
-        return `
+  ${(props) =>
+    props.sx &&
+    Object.entries(props.sx)
+      .map(([key, value]) => {
+        if (key === 'fontSize') {
+          if (typeof value === 'object') {
+            return `
           font-size: ${value.xs};
           @media (min-width: 600px) {
             font-size: ${value.sm};
           }
         `;
-      }
-      return `font-size: ${value};`;
-    }
-    if (key === 'color') return `color: ${value};`;
-    if (key === 'display') return `display: ${value};`;
-    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
-    return '';
-  }).join(' ')}
+          }
+          return `font-size: ${value};`;
+        }
+        if (key === 'color') return `color: ${value};`;
+        if (key === 'display') return `display: ${value};`;
+        if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+        return '';
+      })
+      .join(' ')}
 `;
 
 const Button = styled.button`
-  padding: ${props => {
+  padding: ${(props) => {
     if (props.size === 'small') return '3px 6px';
     if (props.sx?.px || props.sx?.py) {
       const px = props.sx.px;
@@ -217,7 +253,7 @@ const Button = styled.button`
     }
     return '6px 12px';
   }};
-  font-size: ${props => {
+  font-size: ${(props) => {
     if (props.sx?.fontSize) {
       if (typeof props.sx.fontSize === 'object') {
         return props.sx.fontSize.xs;
@@ -227,8 +263,8 @@ const Button = styled.button`
     if (props.size === 'small') return '11px';
     return '12px';
   }};
-  min-width: ${props => props.sx?.minWidth || 'auto'};
-  height: ${props => {
+  min-width: ${(props) => props.sx?.minWidth || 'auto'};
+  height: ${(props) => {
     if (props.sx?.height) {
       if (typeof props.sx.height === 'object') {
         return props.sx.height.xs;
@@ -238,56 +274,66 @@ const Button = styled.button`
     return 'auto';
   }};
   border-radius: 6px;
-  text-transform: ${props => props.sx?.textTransform || 'none'};
+  text-transform: ${(props) => props.sx?.textTransform || 'none'};
   font-weight: 400;
-  border: 1px solid ${props => {
-    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)');
-    return 'transparent';
-  }};
-  background: ${props => {
+  border: 1px solid
+    ${(props) => {
+      if (props.variant === 'outlined')
+        return (
+          props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
+        );
+      return 'transparent';
+    }};
+  background: ${(props) => {
     if (props.variant === 'outlined') return props.sx?.backgroundColor || 'transparent';
     if (props.variant === 'text') return 'transparent';
     return '#3b82f6';
   }};
-  color: ${props => {
+  color: ${(props) => {
     if (props.variant === 'outlined' || props.variant === 'text') {
-      if (props.sx?.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+      if (props.sx?.color === 'text.secondary')
+        return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
       return props.sx?.color || '#3b82f6';
     }
     return '#FFFFFF';
   }};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.4 : 1};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.4 : 1)};
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
   &:hover {
-    background: ${props => {
+    background: ${(props) => {
       if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
       if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.05)';
       return '#2563eb';
     }};
-    border-color: ${props => {
-      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') : 'transparent';
+    border-color: ${(props) => {
+      if (props.disabled)
+        return props.variant === 'outlined'
+          ? props.isDark
+            ? 'rgba(255,255,255,0.1)'
+            : 'rgba(0,0,0,0.1)'
+          : 'transparent';
       if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.4)';
       return 'transparent';
     }};
   }
   @media (min-width: 600px) {
-    font-size: ${props => {
+    font-size: ${(props) => {
       if (props.sx?.fontSize && typeof props.sx.fontSize === 'object') {
         return props.sx.fontSize.sm;
       }
       return null;
     }};
-    height: ${props => {
+    height: ${(props) => {
       if (props.sx?.height && typeof props.sx.height === 'object') {
         return props.sx.height.sm;
       }
       return null;
     }};
-    padding: ${props => {
+    padding: ${(props) => {
       if (props.sx?.px && props.sx?.py && typeof props.sx.px === 'object') {
         return `${props.sx.py.sm * 8}px ${props.sx.px.sm * 8}px`;
       }
@@ -297,10 +343,10 @@ const Button = styled.button`
 `;
 
 const Input = styled.input`
-  width: ${props => props.fullWidth ? '100%' : props.sx?.width || '100%'};
-  padding: ${props => props.sx?.input?.padding || '8px'};
-  border: ${props => props.sx?.input?.border || 'none'};
-  font-size: ${props => {
+  width: ${(props) => (props.fullWidth ? '100%' : props.sx?.width || '100%')};
+  padding: ${(props) => props.sx?.input?.padding || '8px'};
+  border: ${(props) => props.sx?.input?.border || 'none'};
+  font-size: ${(props) => {
     if (props.sx?.input?.fontSize) {
       if (typeof props.sx.input.fontSize === 'object') {
         return props.sx.input.fontSize.xs;
@@ -309,22 +355,22 @@ const Input = styled.input`
     }
     return '14px';
   }};
-  text-align: ${props => props.sx?.input?.textAlign || 'left'};
-  appearance: ${props => props.sx?.input?.appearance || 'auto'};
-  font-weight: ${props => props.sx?.input?.fontWeight || 400};
-  background: ${props => props.sx?.backgroundColor || 'transparent'};
-  border-radius: ${props => props.sx?.borderRadius || '0'};
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  text-align: ${(props) => props.sx?.input?.textAlign || 'left'};
+  appearance: ${(props) => props.sx?.input?.appearance || 'auto'};
+  font-weight: ${(props) => props.sx?.input?.fontWeight || 400};
+  background: ${(props) => props.sx?.backgroundColor || 'transparent'};
+  border-radius: ${(props) => props.sx?.borderRadius || '0'};
+  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
   outline: none;
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
   }
   @media (max-width: 600px) {
     font-size: 16px;
     padding: 10px;
   }
   @media (min-width: 600px) {
-    font-size: ${props => {
+    font-size: ${(props) => {
       if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
         return props.sx.input.fontSize.sm;
       }
@@ -334,7 +380,7 @@ const Input = styled.input`
 `;
 
 const IconButton = styled.button`
-  padding: ${props => {
+  padding: ${(props) => {
     if (props.size === 'small') return '6px';
     if (props.sx?.padding) {
       if (typeof props.sx.padding === 'object') {
@@ -344,13 +390,13 @@ const IconButton = styled.button`
     }
     return '8px';
   }};
-  width: ${props => {
+  width: ${(props) => {
     if (props.sx?.width && typeof props.sx.width === 'object') {
       return props.sx.width.xs;
     }
     return props.sx?.width || 'auto';
   }};
-  height: ${props => {
+  height: ${(props) => {
     if (props.sx?.height && typeof props.sx.height === 'object') {
       return props.sx.height.xs;
     }
@@ -358,31 +404,33 @@ const IconButton = styled.button`
   }};
   border: none;
   border-radius: 50%;
-  background: ${props => props.sx?.backgroundColor || 'transparent'};
+  background: ${(props) => props.sx?.backgroundColor || 'transparent'};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.sx?.['&:hover']?.backgroundColor || (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+    background: ${(props) =>
+      props.sx?.['&:hover']?.backgroundColor ||
+      (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   @media (min-width: 600px) {
-    padding: ${props => {
+    padding: ${(props) => {
       if (props.sx?.padding && typeof props.sx.padding === 'object') {
         return props.sx.padding.sm;
       }
       return null;
     }};
-    width: ${props => {
+    width: ${(props) => {
       if (props.sx?.width && typeof props.sx.width === 'object') {
         return props.sx.width.sm;
       }
       return null;
     }};
-    height: ${props => {
+    height: ${(props) => {
       if (props.sx?.height && typeof props.sx.height === 'object') {
         return props.sx.height.sm;
       }
@@ -392,19 +440,20 @@ const IconButton = styled.button`
 `;
 
 const Alert = styled.div`
-  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 10px` : '6px 10px'};
+  padding: ${(props) => (props.sx?.py ? `${props.sx.py * 8}px 10px` : '6px 10px')};
   border-radius: 8px;
-  border: 1px solid ${props => {
-    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
-    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
-    return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-  }};
-  background: ${props => {
+  border: 1px solid
+    ${(props) => {
+      if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
+      if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
+      return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    }};
+  background: ${(props) => {
     if (props.severity === 'error') return 'rgba(239, 68, 68, 0.04)';
     if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.04)';
     return props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)';
   }};
-  margin-top: ${props => props.sx?.mt ? `${props.sx.mt * 8}px` : '0'};
+  margin-top: ${(props) => (props.sx?.mt ? `${props.sx.mt * 8}px` : '0')};
 `;
 
 const Tabs = styled.div`
@@ -419,36 +468,52 @@ const Tab = styled.button`
   letter-spacing: 0.05em;
   text-transform: uppercase;
   background: transparent;
-  border: 1px solid ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  border: 1px solid
+    ${(props) =>
+      props.isActive
+        ? props.isDark
+          ? 'rgba(255,255,255,0.2)'
+          : 'rgba(0,0,0,0.2)'
+        : props.isDark
+          ? 'rgba(255,255,255,0.1)'
+          : 'rgba(0,0,0,0.1)'};
   border-radius: 6px;
-  color: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)') : (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
+  color: ${(props) =>
+    props.isActive
+      ? props.isDark
+        ? 'rgba(255,255,255,0.9)'
+        : 'rgba(0,0,0,0.8)'
+      : props.isDark
+        ? 'rgba(255,255,255,0.4)'
+        : 'rgba(0,0,0,0.4)'};
   cursor: pointer;
   transition: all 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
   }
 `;
 
 const Select = styled.select`
-  padding: ${props => {
+  padding: ${(props) => {
     if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 6px';
     return '4px 8px';
   }};
-  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '11px'};
-  height: ${props => props.sx?.height || 'auto'};
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  font-size: ${(props) =>
+    props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '11px'};
+  height: ${(props) => props.sx?.height || 'auto'};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   border-radius: 6px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : '#fff'};
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#212B36'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : '#fff')};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : '#212B36')};
   cursor: pointer;
   outline: none;
   transition: border-color 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
   }
   &:focus {
-    border-color: rgba(59,130,246,0.4);
+    border-color: rgba(59, 130, 246, 0.4);
   }
 `;
 
@@ -467,20 +532,22 @@ const Tooltip = ({ title, children }) => {
     >
       {children}
       {show && (
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '4px 8px',
-          background: 'rgba(0,0,0,0.9)',
-          color: '#fff',
-          borderRadius: '4px',
-          fontSize: '12px',
-          whiteSpace: 'nowrap',
-          zIndex: 1000,
-          marginBottom: '4px'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '4px 8px',
+            background: 'rgba(0,0,0,0.9)',
+            color: '#fff',
+            borderRadius: '4px',
+            fontSize: '12px',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            marginBottom: '4px'
+          }}
+        >
           {title}
         </div>
       )}
@@ -496,14 +563,14 @@ const CurrencyContent = styled.div`
   padding: 10px 12px;
   border-radius: 10px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.02)')};
   width: 100%;
   justify-content: space-between;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   transition: all 0.15s ease;
   &:focus-within {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
-    background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)')};
+    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)')};
   }
   @media (max-width: 600px) {
     padding: 12px 14px;
@@ -519,7 +586,7 @@ const InputContent = styled.div`
   flex-direction: column;
   align-items: flex-end;
   justify-content: flex-end;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${(props) => (props.isDark ? '#FFFFFF' : '#212B36')};
 `;
 
 const OverviewWrapper = styled.div`
@@ -533,7 +600,7 @@ const OverviewWrapper = styled.div`
   width: 100%;
   min-width: 0;
   background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
   @media (max-width: 600px) {
     border-radius: 12px;
     padding: 10px;
@@ -558,15 +625,15 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.06)' : '#fff'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : '#fff')};
   border-radius: 50%;
   padding: 8px;
   z-index: 1;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
   transition: all 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)'};
-    background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)'};
+    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)')};
+    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)')};
     svg {
       color: #3b82f6 !important;
     }
@@ -594,8 +661,8 @@ const ExchangeButton = styled(Button)`
   }
 
   &:disabled {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'};
+    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')};
     border: none;
   }
 
@@ -619,9 +686,9 @@ const TokenImage = styled(Image)`
 
 const SummaryBox = styled.div`
   padding: 8px 10px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)')};
   border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   margin-top: 6px;
   margin-bottom: 2px;
   @media (max-width: 600px) {
@@ -640,7 +707,6 @@ const RLUSD_TOKEN = {
 };
 
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
-
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
 
@@ -761,29 +827,44 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   // Debug info loader
   useEffect(() => {
     const loadDebugInfo = async () => {
-      if (!accountProfile) { setDebugInfo(null); return; }
-      let walletKeyId = accountProfile.walletKeyId ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      if (!accountProfile) {
+        setDebugInfo(null);
+        return;
+      }
+      let walletKeyId =
+        accountProfile.walletKeyId ||
+        (accountProfile.provider && accountProfile.provider_id
+          ? `${accountProfile.provider}_${accountProfile.provider_id}`
+          : null);
       let seed = accountProfile.seed || null;
 
       // Handle oauth/social wallets
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+      if (
+        !seed &&
+        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
+      ) {
         try {
           const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
           if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            const walletData = await walletStorage.getWallet(
+              accountProfile.account,
+              storedPassword
+            );
             seed = walletData?.seed || 'encrypted';
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
 
       // Handle device wallets
       if (!seed && accountProfile.wallet_type === 'device') {
         try {
-          const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+          const { EncryptedWalletStorage, deviceFingerprint } =
+            await import('src/utils/encryptedWalletStorage');
           const walletStorage = new EncryptedWalletStorage();
           // Use device fingerprint (survives storage clearing)
           const deviceKeyId = await deviceFingerprint.getDeviceId();
@@ -791,14 +872,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           if (deviceKeyId) {
             const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
             if (storedPassword) {
-              const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+              const walletData = await walletStorage.getWallet(
+                accountProfile.account,
+                storedPassword
+              );
               seed = walletData?.seed || 'encrypted';
             }
           }
-        } catch (e) { seed = 'error: ' + e.message; }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
       }
 
-      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
+      setDebugInfo({
+        wallet_type: accountProfile.wallet_type,
+        account: accountProfile.account,
+        walletKeyId,
+        seed: seed || 'N/A'
+      });
     };
     loadDebugInfo();
   }, [accountProfile]);
@@ -964,20 +1055,26 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     setQuoteLoading(true);
     (async () => {
       try {
-        const destAmount = token2.currency === 'XRP'
-          ? { currency: 'XRP', value: amount2 }
-          : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
+        const destAmount =
+          token2.currency === 'XRP'
+            ? { currency: 'XRP', value: amount2 }
+            : { currency: token2.currency, issuer: token2.issuer, value: amount2 };
 
         const quoteAccount = accountProfile?.account || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe';
 
-        const res = await axios.post(`${BASE_URL}/dex/quote`, {
-          source_account: quoteAccount,
-          destination_amount: destAmount,
-          source_currencies: token1?.currency === 'XRP'
-            ? [{ currency: 'XRP' }]
-            : [{ currency: token1.currency, issuer: token1.issuer }],
-          slippage: slippage / 100
-        }, { signal: quoteAbortRef.current.signal });
+        const res = await axios.post(
+          `${BASE_URL}/dex/quote`,
+          {
+            source_account: quoteAccount,
+            destination_amount: destAmount,
+            source_currencies:
+              token1?.currency === 'XRP'
+                ? [{ currency: 'XRP' }]
+                : [{ currency: token1.currency, issuer: token1.issuer }],
+            slippage: slippage / 100
+          },
+          { signal: quoteAbortRef.current.signal }
+        );
 
         if (res.data?.status === 'success' && res.data.quote) {
           setSwapQuoteApi(res.data.quote);
@@ -1020,20 +1117,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
 
     const ammFill = remaining > 0 ? remaining : 0;
-    const bestPrice = revert ? (bids[0]?.price || 0) : (asks[0]?.price || 0);
+    const bestPrice = revert ? bids[0]?.price || 0 : asks[0]?.price || 0;
     const effectivePrice = outputAmt > 0 ? inputAmt / outputAmt : 0;
     const impactPct = bestPrice > 0 ? ((effectivePrice - bestPrice) / bestPrice) * 100 : 0;
-    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? (ammFill * bestPrice * 0.006) : 0;
+    const ammFeeXrp = ammFill > 0 && bestPrice > 0 ? ammFill * bestPrice * 0.006 : 0;
 
     return {
       slippage_tolerance: `${slippage}%`,
       minimum_received: minReceived.toFixed(6),
       from_orderbook: orderbookFill > 0 ? orderbookFill.toFixed(6) : '0',
       from_amm: ammFill > 0.000001 ? ammFill.toFixed(6) : '0',
-      price_impact: Math.abs(impactPct) > 0.01 ? {
-        percent: `${impactPct.toFixed(2)}%`,
-        xrp: `${(inputAmt * Math.abs(impactPct) / 100).toFixed(4)} XRP`
-      } : null,
+      price_impact:
+        Math.abs(impactPct) > 0.01
+          ? {
+              percent: `${impactPct.toFixed(2)}%`,
+              xrp: `${((inputAmt * Math.abs(impactPct)) / 100).toFixed(4)} XRP`
+            }
+          : null,
       amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
       execution_rate: (outputAmt / inputAmt).toFixed(6)
     };
@@ -1049,7 +1149,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     async function fetchRLUSD() {
       try {
-        const res = await axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`);
+        const res = await axios.get(
+          `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`
+        );
         const token = res.data?.token;
         if (mounted && token) {
           setToken2({
@@ -1065,7 +1167,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     fetchRLUSD();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [isXRPTokenPage]);
 
   // Fetch orderbook from API - token (token2) as base, XRP (token1) as quote
@@ -1106,23 +1210,30 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
 
     function processOrderbookData(data) {
-      const parsedBids = (data.bids || []).map(o => ({
+      const parsedBids = (data.bids || []).map((o) => ({
         price: parseFloat(o.price),
         amount: parseFloat(o.amount),
         total: parseFloat(o.total),
         account: o.account,
         funded: o.funded
       }));
-      const parsedAsks = (data.asks || []).map(o => ({
+      const parsedAsks = (data.asks || []).map((o) => ({
         price: parseFloat(o.price),
         amount: parseFloat(o.amount),
         total: parseFloat(o.total),
         account: o.account,
         funded: o.funded
       }));
-      let bidSum = 0, askSum = 0;
-      parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
-      parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+      let bidSum = 0,
+        askSum = 0;
+      parsedBids.forEach((b) => {
+        bidSum += b.amount;
+        b.sumAmount = bidSum;
+      });
+      parsedAsks.forEach((a) => {
+        askSum += a.amount;
+        a.sumAmount = askSum;
+      });
       setBids(parsedBids.slice(0, 30));
       setAsks(parsedAsks.slice(0, 30));
     }
@@ -1254,10 +1365,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       const fetchAllTrustlines = async () => {
         try {
-          const response = await axios.get(
-            `${BASE_URL}/account/trustlines/${account}?limit=400`,
-            { signal: controller.signal, timeout: 5000 }
-          );
+          const response = await axios.get(`${BASE_URL}/account/trustlines/${account}?limit=400`, {
+            signal: controller.signal,
+            timeout: 5000
+          });
           if (!mounted) return [];
           return response.status === 200 && response.data?.result === 'success'
             ? response.data.lines || []
@@ -1309,23 +1420,53 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         };
 
         const issuersMatch = (line, expectedIssuer) => {
-          const lineIssuers = [line.account, line.issuer, line._token1, line._token2, line.Balance?.issuer, line.HighLimit?.issuer, line.LowLimit?.issuer].filter(Boolean);
+          const lineIssuers = [
+            line.account,
+            line.issuer,
+            line._token1,
+            line._token2,
+            line.Balance?.issuer,
+            line.HighLimit?.issuer,
+            line.LowLimit?.issuer
+          ].filter(Boolean);
           return lineIssuers.some((issuer) => issuer === expectedIssuer);
         };
 
-        const hasCurr1Trustline = curr1.currency === 'XRP' || trustlines.some((line) => {
-          const lineCurrencies = [line.Balance?.currency, line.currency, line._currency, line.HighLimit?.currency, line.LowLimit?.currency].filter(Boolean);
-          const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr1.currency));
-          if (!currencyMatch) return false;
-          return issuersMatch(line, curr1.issuer) || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
-        });
+        const hasCurr1Trustline =
+          curr1.currency === 'XRP' ||
+          trustlines.some((line) => {
+            const lineCurrencies = [
+              line.Balance?.currency,
+              line.currency,
+              line._currency,
+              line.HighLimit?.currency,
+              line.LowLimit?.currency
+            ].filter(Boolean);
+            const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr1.currency));
+            if (!currencyMatch) return false;
+            return (
+              issuersMatch(line, curr1.issuer) ||
+              ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency)
+            );
+          });
 
-        const hasCurr2Trustline = curr2.currency === 'XRP' || trustlines.some((line) => {
-          const lineCurrencies = [line.Balance?.currency, line.currency, line._currency, line.HighLimit?.currency, line.LowLimit?.currency].filter(Boolean);
-          const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr2.currency));
-          if (!currencyMatch) return false;
-          return issuersMatch(line, curr2.issuer) || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
-        });
+        const hasCurr2Trustline =
+          curr2.currency === 'XRP' ||
+          trustlines.some((line) => {
+            const lineCurrencies = [
+              line.Balance?.currency,
+              line.currency,
+              line._currency,
+              line.HighLimit?.currency,
+              line.LowLimit?.currency
+            ].filter(Boolean);
+            const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr2.currency));
+            if (!currencyMatch) return false;
+            return (
+              issuersMatch(line, curr2.issuer) ||
+              ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency)
+            );
+          });
 
         setHasTrustline1(hasCurr1Trustline);
         setHasTrustline2(hasCurr2Trustline);
@@ -1381,7 +1522,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     getTokenPrice();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [token1Md5, token2Md5, token1, token2]);
 
   // Legacy Xaman polling code removed - feature disabled
@@ -1419,7 +1562,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const rate2 = new Decimal(tokenExch2 || 0);
 
       if (token1IsXRP || token2IsXRP) {
-
         if (rate1.eq(0) && rate2.eq(0)) {
           return '';
         }
@@ -1461,7 +1603,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         } else {
           result = amt;
         }
-
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       } else {
@@ -1696,9 +1837,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       <OverviewWrapper isDark={isDark}>
         {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
         {isXRPTokenPage && (
-          <Box sx={{ mb: 1.5, p: 1, borderRadius: '8px', background: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)', border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+          <Box
+            sx={{
+              mb: 1.5,
+              p: 1,
+              borderRadius: '8px',
+              background: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)',
+              border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+            }}
+          >
             <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.8 }}>
-              Showing <span style={{ fontWeight: 500, color: '#4285f4' }}>RLUSD/XRP</span> orderbook. XRP is the native asset and cannot have an orderbook against itself.
+              Showing <span style={{ fontWeight: 500, color: '#4285f4' }}>RLUSD/XRP</span>{' '}
+              orderbook. XRP is the native asset and cannot have an orderbook against itself.
             </Typography>
           </Box>
         )}
@@ -1759,7 +1909,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="caption"
                   color="textSecondary"
                   isDark={isDark}
-                  sx={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.7 }}
+                  sx={{
+                    fontSize: '11px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    opacity: 0.7
+                  }}
                 >
                   You pay
                 </Typography>
@@ -1772,7 +1927,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
-                  <Typography variant="subtitle1" isDark={isDark} sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                  <Typography
+                    variant="subtitle1"
+                    isDark={isDark}
+                    sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                  >
                     {curr1.name}
                   </Typography>
                 </Stack>
@@ -1807,7 +1966,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
                         {accountPairBalance?.curr1.value
-                          ? new Decimal(accountPairBalance.curr1.value).toFixed(6).replace(/\.?0+$/, '')
+                          ? new Decimal(accountPairBalance.curr1.value)
+                              .toFixed(6)
+                              .replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
                     </Typography>
@@ -1816,7 +1977,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <button
                           key={p}
                           disabled={!accountPairBalance?.curr1?.value}
-                          onClick={() => p === 1 ? onFillMax() : onFillPercent(p)}
+                          onClick={() => (p === 1 ? onFillMax() : onFillPercent(p))}
                           className={cn(
                             'px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors',
                             !accountPairBalance?.curr1?.value
@@ -1870,7 +2031,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="caption"
                   color="textSecondary"
                   isDark={isDark}
-                  sx={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.7 }}
+                  sx={{
+                    fontSize: '11px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    opacity: 0.7
+                  }}
                 >
                   You receive
                 </Typography>
@@ -1883,7 +2049,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
-                  <Typography variant="subtitle1" isDark={isDark} sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                  <Typography
+                    variant="subtitle1"
+                    isDark={isDark}
+                    sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                  >
                     {curr2.name}
                   </Typography>
                 </Stack>
@@ -1918,7 +2088,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
                         {accountPairBalance?.curr2.value
-                          ? new Decimal(accountPairBalance.curr2.value).toFixed(6).replace(/\.?0+$/, '')
+                          ? new Decimal(accountPairBalance.curr2.value)
+                              .toFixed(6)
+                              .replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
                     </Typography>
@@ -1985,19 +2157,37 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {/* Settings Modal */}
           {showSettingsModal && (
             <div
-              className={cn("fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}
+              className={cn(
+                'fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md',
+                isDark ? 'bg-black/70' : 'bg-white/60'
+              )}
               onClick={() => setShowSettingsModal(false)}
             >
               <div
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 className={cn(
                   'w-[320px] rounded-2xl border-[1.5px] p-5',
-                  isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+                  isDark
+                    ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
+                    : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
                 )}
               >
                 <div className="flex items-center justify-between mb-5">
-                  <span className={cn('text-[14px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>Settings</span>
-                  <button onClick={() => setShowSettingsModal(false)} className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100')}>
+                  <span
+                    className={cn(
+                      'text-[14px] font-medium',
+                      isDark ? 'text-white/90' : 'text-gray-900'
+                    )}
+                  >
+                    Settings
+                  </span>
+                  <button
+                    onClick={() => setShowSettingsModal(false)}
+                    className={cn(
+                      'p-1.5 rounded-lg transition-colors',
+                      isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                    )}
+                  >
                     <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
                   </button>
                 </div>
@@ -2005,7 +2195,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 {/* Max Slippage Section */}
                 <div className="mb-4">
                   <div className="mb-2.5">
-                    <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Max Slippage</span>
+                    <span
+                      className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}
+                    >
+                      Max Slippage
+                    </span>
                   </div>
                   <div className="flex gap-1.5">
                     {[1, 2, 3, 5].map((preset) => (
@@ -2016,31 +2210,52 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           'flex-1 h-8 text-[12px] font-medium rounded-md transition-colors',
                           slippage === preset
                             ? 'bg-primary/15 text-primary'
-                            : isDark ? 'bg-white/[0.03] text-white/50 hover:text-white/70' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                            : isDark
+                              ? 'bg-white/[0.03] text-white/50 hover:text-white/70'
+                              : 'bg-gray-100 text-gray-500 hover:text-gray-700'
                         )}
                       >
                         {preset}%
                       </button>
                     ))}
-                    <div className={cn('flex items-center justify-center h-8 px-2 min-w-[50px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')}>
+                    <div
+                      className={cn(
+                        'flex items-center justify-center h-8 px-2 min-w-[50px] rounded-md',
+                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                      )}
+                    >
                       <input
                         type="text"
                         inputMode="decimal"
                         value={slippage}
                         onChange={(e) => {
                           const val = e.target.value.replace(/[^0-9.]/g, '');
-                          if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 25)) {
+                          if (
+                            val === '' ||
+                            (!isNaN(parseFloat(val)) &&
+                              parseFloat(val) >= 0 &&
+                              parseFloat(val) <= 25)
+                          ) {
                             setSlippage(val === '' ? '' : parseFloat(val) || val);
                           }
                         }}
-                        className={cn('w-5 bg-transparent border-none outline-none text-[12px] font-medium text-center', isDark ? 'text-white/80' : 'text-gray-700')}
+                        className={cn(
+                          'w-5 bg-transparent border-none outline-none text-[12px] font-medium text-center',
+                          isDark ? 'text-white/80' : 'text-gray-700'
+                        )}
                       />
-                      <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>%</span>
+                      <span
+                        className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}
+                      >
+                        %
+                      </span>
                     </div>
                   </div>
                   {Number(slippage) >= 4 && (
                     <div className="flex items-center gap-2 mt-2.5 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                      <span className="text-[10px] text-amber-500">High slippage may cause front-running</span>
+                      <span className="text-[10px] text-amber-500">
+                        High slippage may cause front-running
+                      </span>
                     </div>
                   )}
                 </div>
@@ -2048,8 +2263,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 {/* Network Fee Section */}
                 <div className="mb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
-                    <span className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}>Network Fee</span>
-                    <span className={`text-[10px] ${isDark ? 'text-white/25' : 'text-gray-400'}`}>(drops)</span>
+                    <span
+                      className={`text-[11px] font-medium uppercase tracking-wide ${isDark ? 'text-white/40' : 'text-gray-500'}`}
+                    >
+                      Network Fee
+                    </span>
+                    <span className={`text-[10px] ${isDark ? 'text-white/25' : 'text-gray-400'}`}>
+                      (drops)
+                    </span>
                   </div>
                   <div className="flex gap-1.5">
                     {[12, 15, 20, 50].map((val) => (
@@ -2060,13 +2281,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           'flex-1 h-8 text-[12px] font-medium rounded-md transition-colors',
                           txFee === String(val)
                             ? 'bg-primary/15 text-primary'
-                            : isDark ? 'bg-white/[0.03] text-white/50 hover:text-white/70' : 'bg-gray-100 text-gray-500 hover:text-gray-700'
+                            : isDark
+                              ? 'bg-white/[0.03] text-white/50 hover:text-white/70'
+                              : 'bg-gray-100 text-gray-500 hover:text-gray-700'
                         )}
                       >
                         {val}
                       </button>
                     ))}
-                    <div className={cn('flex items-center h-8 px-2 min-w-[52px] rounded-md', isDark ? 'bg-white/[0.03]' : 'bg-gray-100')}>
+                    <div
+                      className={cn(
+                        'flex items-center h-8 px-2 min-w-[52px] rounded-md',
+                        isDark ? 'bg-white/[0.03]' : 'bg-gray-100'
+                      )}
+                    >
                       <input
                         type="text"
                         inputMode="numeric"
@@ -2075,14 +2303,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           const val = e.target.value.replace(/[^0-9]/g, '');
                           setTxFee(val);
                         }}
-                        className={cn('w-8 bg-transparent border-none outline-none text-[12px] font-medium text-center', isDark ? 'text-white/80' : 'text-gray-700')}
+                        className={cn(
+                          'w-8 bg-transparent border-none outline-none text-[12px] font-medium text-center',
+                          isDark ? 'text-white/80' : 'text-gray-700'
+                        )}
                       />
                     </div>
                   </div>
-                  <p className={cn('text-[10px] mt-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>Higher fees = priority during congestion</p>
+                  <p
+                    className={cn('text-[10px] mt-1.5', isDark ? 'text-white/25' : 'text-gray-400')}
+                  >
+                    Higher fees = priority during congestion
+                  </p>
                   {parseInt(txFee) >= 50 && (
                     <div className="flex items-center gap-2 mt-2 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                      <span className="text-[10px] text-amber-500">Only needed during extreme congestion</span>
+                      <span className="text-[10px] text-amber-500">
+                        Only needed during extreme congestion
+                      </span>
                     </div>
                   )}
                 </div>
@@ -2101,43 +2338,86 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {orderType === 'market' && (
             <Box sx={{ px: 0.5, py: 0.75 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <button onClick={() => setShowSettingsModal(true)} className={cn(
-                  'flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 transition-colors',
-                  isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
-                )}>
+                <button
+                  onClick={() => setShowSettingsModal(true)}
+                  className={cn(
+                    'flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 transition-colors',
+                    isDark
+                      ? 'text-white/50 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-700'
+                  )}
+                >
                   <Settings size={13} />
                   <span className="text-[11px]">Slippage {slippage}%</span>
                 </button>
                 <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                  Impact {swapQuoteCalc?.price_impact?.percent ? parseFloat(swapQuoteCalc.price_impact.percent.replace('%', '')).toFixed(2) : '—'}%
+                  Impact{' '}
+                  {swapQuoteCalc?.price_impact?.percent
+                    ? parseFloat(swapQuoteCalc.price_impact.percent.replace('%', '')).toFixed(2)
+                    : '—'}
+                  %
                 </span>
               </Stack>
 
               {/* Quote Summary */}
               {swapQuoteCalc && (
-                <Box sx={{ mt: 1, p: 1, borderRadius: '6px', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+                <Box
+                  sx={{
+                    mt: 1,
+                    p: 1,
+                    borderRadius: '6px',
+                    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                  }}
+                >
                   <Stack spacing={0.25}>
                     {/* Rate */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
-                        Rate{swapQuoteCalc.ammFallback && <span style={{ color: '#f59e0b' }}> ~est</span>}{quoteLoading && <span style={{ opacity: 0.5 }}> •••</span>}
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        isDark={isDark}
+                        sx={{ fontSize: '10px' }}
+                      >
+                        Rate
+                        {swapQuoteCalc.ammFallback && (
+                          <span style={{ color: '#f59e0b' }}> ~est</span>
+                        )}
+                        {quoteLoading && <span style={{ opacity: 0.5 }}> •••</span>}
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
-                        1 {token2?.name || token2?.currency} = {(() => {
+                      <Typography
+                        variant="caption"
+                        isDark={isDark}
+                        sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                      >
+                        1 {token2?.name || token2?.currency} ={' '}
+                        {(() => {
                           const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
-                          const dstVal = parseFloat(swapQuoteCalc.destination_amount?.value || amount2);
+                          const dstVal = parseFloat(
+                            swapQuoteCalc.destination_amount?.value || amount2
+                          );
                           const rate = dstVal > 0 && srcVal > 0 ? srcVal / dstVal : 0;
                           if (!rate || rate === 0) return '—';
                           return formatCompactPrice(rate);
-                        })()} {token1?.name || token1?.currency}
+                        })()}{' '}
+                        {token1?.name || token1?.currency}
                       </Typography>
                     </Stack>
                     {/* Min Received */}
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        isDark={isDark}
+                        sx={{ fontSize: '10px' }}
+                      >
                         Min received
                       </Typography>
-                      <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
+                      <Typography
+                        variant="caption"
+                        isDark={isDark}
+                        sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                      >
                         {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
                       </Typography>
                     </Stack>
@@ -2146,15 +2426,26 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       const obVal = parseFloat(swapQuoteCalc.from_orderbook) || 0;
                       const ammVal = parseFloat(swapQuoteCalc.from_amm) || 0;
                       const feeStr = swapQuoteCalc.amm_pool_fee;
-                      const feePct = swapQuoteCalc.amm_trading_fee_bps ? (swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2) : null;
+                      const feePct = swapQuoteCalc.amm_trading_fee_bps
+                        ? (swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)
+                        : null;
                       if (obVal === 0 && ammVal === 0 && !feeStr) return null;
 
                       return (
                         <Stack direction="row" alignItems="center" justifyContent="space-between">
-                          <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                          <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            isDark={isDark}
+                            sx={{ fontSize: '10px' }}
+                          >
                             Route
                           </Typography>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
+                          <Typography
+                            variant="caption"
+                            isDark={isDark}
+                            sx={{ fontSize: '10px', fontFamily: 'var(--font-mono)' }}
+                          >
                             {obVal > 0 && ammVal > 0 ? (
                               <span style={{ color: '#22c55e' }}>DEX+AMM</span>
                             ) : obVal > 0 ? (
@@ -2170,8 +2461,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Stack>
                   {/* Trustline Warning */}
                   {quoteRequiresTrustline && (
-                    <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#f59e0b', mt: 0.5, display: 'block' }}>
-                      Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
+                    <Typography
+                      variant="caption"
+                      isDark={isDark}
+                      sx={{ fontSize: '10px', color: '#f59e0b', mt: 0.5, display: 'block' }}
+                    >
+                      Trustline required for{' '}
+                      {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
                     </Typography>
                   )}
                 </Box>
@@ -2184,7 +2480,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             <Box sx={{ px: 0.5, py: 0.25 }}>
               <Stack spacing={0.25}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    isDark={isDark}
+                    sx={{ fontSize: '10px' }}
+                  >
                     Limit Price ({curr2.name} per {curr1.name})
                   </Typography>
                   <Stack direction="row" spacing={0.25} alignItems="center">
@@ -2193,13 +2494,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       variant="text"
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
-                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        const mid =
+                          bestBid != null && bestAsk != null
+                            ? (Number(bestBid) + Number(bestAsk)) / 2
+                            : null;
                         const base = Number(limitPrice || mid || 0);
                         if (!base) return;
                         setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '10px',
+                        minHeight: '16px',
+                        px: 0.5,
+                        py: 0
+                      }}
                     >
                       -1%
                     </Button>
@@ -2208,12 +2518,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       variant="text"
                       disabled={!(bestBid != null && bestAsk != null)}
                       onClick={() => {
-                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        const mid =
+                          bestBid != null && bestAsk != null
+                            ? (Number(bestBid) + Number(bestAsk)) / 2
+                            : null;
                         if (mid == null) return;
                         setLimitPrice(String(new Decimal(mid).toFixed(6)));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '10px',
+                        minHeight: '16px',
+                        px: 0.5,
+                        py: 0
+                      }}
                     >
                       Mid
                     </Button>
@@ -2222,13 +2541,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       variant="text"
                       disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                       onClick={() => {
-                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        const mid =
+                          bestBid != null && bestAsk != null
+                            ? (Number(bestBid) + Number(bestAsk)) / 2
+                            : null;
                         const base = Number(limitPrice || mid || 0);
                         if (!base) return;
                         setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '10px',
+                        minHeight: '16px',
+                        px: 0.5,
+                        py: 0
+                      }}
                     >
                       +1%
                     </Button>
@@ -2261,14 +2589,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 />
                 {/* Live Market Prices - More Prominent Display */}
                 {bestBid != null && bestAsk != null && (
-                  <Box sx={{
-                    mt: 0.5,
-                    p: 0.75,
-                    borderRadius: '6px',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
-                  }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                  <Box
+                    sx={{
+                      mt: 0.5,
+                      p: 0.75,
+                      borderRadius: '6px',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                      background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      spacing={1}
+                    >
                       {/* Bid Price */}
                       <Stack
                         direction="column"
@@ -2277,24 +2612,50 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         sx={{ cursor: 'pointer', flex: 1 }}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
                       >
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
+                        >
                           Best Bid
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            color: '#22c55e',
+                            fontFamily: 'var(--font-mono)'
+                          }}
+                        >
                           {formatCompactPrice(bestBid)}
                         </Typography>
                       </Stack>
 
                       {/* Spread */}
                       <Stack direction="column" alignItems="center" spacing={0} sx={{ flex: 1 }}>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
+                        >
                           Spread
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{
-                          fontSize: '11px',
-                          fontWeight: 500,
-                          color: spreadPct != null && spreadPct > 2 ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')
-                        }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            color:
+                              spreadPct != null && spreadPct > 2
+                                ? '#f59e0b'
+                                : isDark
+                                  ? 'rgba(255,255,255,0.8)'
+                                  : 'rgba(0,0,0,0.8)'
+                          }}
+                        >
                           {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
                         </Typography>
                       </Stack>
@@ -2307,10 +2668,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         sx={{ cursor: 'pointer', flex: 1 }}
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
                       >
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}
+                        >
                           Best Ask
                         </Typography>
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'var(--font-mono)' }}>
+                        <Typography
+                          variant="caption"
+                          isDark={isDark}
+                          sx={{
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            color: '#ef4444',
+                            fontFamily: 'var(--font-mono)'
+                          }}
+                        >
                           {formatCompactPrice(bestAsk)}
                         </Typography>
                       </Stack>
@@ -2318,11 +2692,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Box>
                 )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
-                  <Typography variant="caption" color="error" isDark={isDark} sx={{ fontSize: '10px' }}>
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    isDark={isDark}
+                    sx={{ fontSize: '10px' }}
+                  >
                     Enter a valid limit price greater than 0
                   </Typography>
                 )}
-                {orderType === 'limit' && limitPrice && (() => {
+                {orderType === 'limit' &&
+                  limitPrice &&
+                  (() => {
                     const lp = Number(limitPrice);
                     if (!lp || !isFinite(lp)) return null;
 
@@ -2341,7 +2722,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             isDark={isDark}
                             sx={{ fontSize: '10px', fontWeight: 400, color: '#ef4444' }}
                           >
-                            Instant fill! {pct > 0 ? `${pct.toFixed(1)}% ${willFillBuy ? 'above ask' : 'below bid'}` : 'At market price'}
+                            Instant fill!{' '}
+                            {pct > 0
+                              ? `${pct.toFixed(1)}% ${willFillBuy ? 'above ask' : 'below bid'}`
+                              : 'At market price'}
                           </Typography>
                         </Alert>
                       );
@@ -2355,7 +2739,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         : ((refPrice - lp) / refPrice) * 100;
                       if (Math.abs(pctDiff) > 1) {
                         const direction = pctDiff > 0 ? 'above' : 'below';
-                        const color = pctDiff > 50 ? '#ef4444' : pctDiff > 10 ? '#f59e0b' : '#3b82f6';
+                        const color =
+                          pctDiff > 50 ? '#ef4444' : pctDiff > 10 ? '#f59e0b' : '#3b82f6';
                         return (
                           <Typography
                             variant="caption"
@@ -2371,14 +2756,16 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   })()}
 
                 {/* Order Expiration - Segmented Control */}
-                <div style={{
-                  marginTop: '12px',
-                  display: 'flex',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
-                }}>
+                <div
+                  style={{
+                    marginTop: '12px',
+                    display: 'flex',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    background: isDark ? 'rgba(255,255,255,0.03)' : '#f3f4f6',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                  }}
+                >
                   {[
                     { value: 'never', label: 'GTC', title: 'Good Til Cancelled' },
                     { value: '1h', label: '1H', title: '1 Hour' },
@@ -2399,7 +2786,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         padding: '8px 0',
                         border: 'none',
                         background: 'transparent',
-                        color: orderExpiry === exp.value ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+                        color:
+                          orderExpiry === exp.value
+                            ? '#4285f4'
+                            : isDark
+                              ? 'rgba(255,255,255,0.4)'
+                              : 'rgba(0,0,0,0.4)',
                         cursor: 'pointer',
                         fontSize: '11px',
                         fontWeight: 500,
@@ -2409,16 +2801,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     >
                       {exp.label}
                       {orderExpiry === exp.value && (
-                        <span style={{
-                          position: 'absolute',
-                          bottom: 0,
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: '16px',
-                          height: '2px',
-                          borderRadius: '1px',
-                          background: '#4285f4'
-                        }} />
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '16px',
+                            height: '2px',
+                            borderRadius: '1px',
+                            background: '#4285f4'
+                          }}
+                        />
                       )}
                     </button>
                   ))}
@@ -2432,9 +2826,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: `1px solid ${showOrderbook ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')}`,
+                    border: `1px solid ${showOrderbook ? '#4285f4' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
                     background: showOrderbook ? 'rgba(66,133,244,0.1)' : 'transparent',
-                    color: showOrderbook ? '#4285f4' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+                    color: showOrderbook
+                      ? '#4285f4'
+                      : isDark
+                        ? 'rgba(255,255,255,0.4)'
+                        : 'rgba(0,0,0,0.4)',
                     cursor: 'pointer',
                     fontSize: '11px',
                     fontWeight: 400,
@@ -2447,17 +2845,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 >
                   {showOrderbook ? 'Hide' : 'Show'} Order Book
                 </button>
-
               </Stack>
             </Box>
           )}
-
 
           {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox isDark={isDark}>
               <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
-                <span style={{ fontWeight: 500 }}>{revert ? 'Buy' : 'Sell'}</span> {amount1} {curr1.name} @ {limitPrice} = {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
+                <span style={{ fontWeight: 500 }}>{revert ? 'Buy' : 'Sell'}</span> {amount1}{' '}
+                {curr1.name} @ {limitPrice} ={' '}
+                {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
                 {orderExpiry !== 'never' && <span style={{ opacity: 0.6 }}> · {expiryHours}h</span>}
               </Typography>
             </SummaryBox>
@@ -2481,12 +2879,37 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Debug Panel */}
           {debugInfo && (
-            <div style={{ marginBottom: 8, padding: 8, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`, background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8', fontFamily: 'var(--font-mono)', fontSize: 9 }}>
-              <div style={{ fontWeight: 500, marginBottom: 4, color: '#ca8a04', fontSize: 10 }}>Debug:</div>
-              <div>wallet_type: <span style={{ color: '#3b82f6' }}>{debugInfo.wallet_type || 'undefined'}</span></div>
-              <div>account: <span style={{ opacity: 0.7 }}>{debugInfo.account || 'undefined'}</span></div>
-              <div>walletKeyId: <span style={{ color: debugInfo.walletKeyId ? '#22c55e' : '#ef4444' }}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-              <div>seed: <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span></div>
+            <div
+              style={{
+                marginBottom: 8,
+                padding: 8,
+                borderRadius: 8,
+                border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`,
+                background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9
+              }}
+            >
+              <div style={{ fontWeight: 500, marginBottom: 4, color: '#ca8a04', fontSize: 10 }}>
+                Debug:
+              </div>
+              <div>
+                wallet_type:{' '}
+                <span style={{ color: '#3b82f6' }}>{debugInfo.wallet_type || 'undefined'}</span>
+              </div>
+              <div>
+                account: <span style={{ opacity: 0.7 }}>{debugInfo.account || 'undefined'}</span>
+              </div>
+              <div>
+                walletKeyId:{' '}
+                <span style={{ color: debugInfo.walletKeyId ? '#22c55e' : '#ef4444' }}>
+                  {debugInfo.walletKeyId || 'undefined'}
+                </span>
+              </div>
+              <div>
+                seed:{' '}
+                <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span>
+              </div>
             </div>
           )}
 
@@ -2520,7 +2943,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       <div className="flex items-center gap-1.5 mt-1 mb-0.5 px-1">
         <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={10} />
         <span className={cn('text-[10px] font-mono', isDark ? 'text-white/40' : 'text-gray-400')}>
-          1 {curr1.name} = {(() => {
+          1 {curr1.name} ={' '}
+          {(() => {
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
               return (parseFloat(amount2) / parseFloat(amount1)).toFixed(6);
             }
@@ -2532,13 +2956,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             }
             let rate;
             if (revert) {
-              rate = token1IsXRP && !token2IsXRP ? tokenExch2 : !token1IsXRP && token2IsXRP ? 1 / tokenExch1 : tokenExch2 / tokenExch1;
+              rate =
+                token1IsXRP && !token2IsXRP
+                  ? tokenExch2
+                  : !token1IsXRP && token2IsXRP
+                    ? 1 / tokenExch1
+                    : tokenExch2 / tokenExch1;
             } else {
-              rate = token1IsXRP && !token2IsXRP ? 1 / tokenExch2 : !token1IsXRP && token2IsXRP ? tokenExch1 : tokenExch1 / tokenExch2;
+              rate =
+                token1IsXRP && !token2IsXRP
+                  ? 1 / tokenExch2
+                  : !token1IsXRP && token2IsXRP
+                    ? tokenExch1
+                    : tokenExch1 / tokenExch2;
             }
             if (!isFinite(rate) || isNaN(rate)) return '--';
             return rate.toFixed(6);
-          })()} {curr2.name}
+          })()}{' '}
+          {curr2.name}
         </span>
       </div>
 
@@ -2563,37 +2998,72 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           <div
             onMouseDown={handleDragStart}
             className={cn(
-              "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move",
-              isDark ? "border-primary/20 bg-white/[0.03]" : "border-primary/15 bg-gray-50"
+              'px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between cursor-move',
+              isDark ? 'border-primary/20 bg-white/[0.03]' : 'border-primary/15 bg-gray-50'
             )}
           >
-            <span className={cn("uppercase tracking-wide", isDark ? "text-primary/70" : "text-primary/70")}>Order Book</span>
+            <span
+              className={cn(
+                'uppercase tracking-wide',
+                isDark ? 'text-primary/70' : 'text-primary/70'
+              )}
+            >
+              Order Book
+            </span>
             <button
               onClick={() => setShowOrderbook(false)}
               className={cn(
-                "w-5 h-5 flex items-center justify-center rounded hover:bg-white/10",
-                isDark ? "text-white/50 hover:text-white" : "text-gray-500 hover:text-gray-700"
+                'w-5 h-5 flex items-center justify-center rounded hover:bg-white/10',
+                isDark ? 'text-white/50 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               )}
             >
               <X size={14} />
             </button>
           </div>
           {asks.length === 0 && bids.length === 0 ? (
-            <div className={cn("p-8 text-center text-[12px] font-mono", isDark ? "text-primary/40" : "text-primary/40")}>
+            <div
+              className={cn(
+                'p-8 text-center text-[12px] font-mono',
+                isDark ? 'text-primary/40' : 'text-primary/40'
+              )}
+            >
               No orderbook data available
             </div>
           ) : (
             <>
-              <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
-                <span className={cn("flex-1", isDark ? "text-primary/40" : "text-primary/40")}>Price</span>
-                <span className={cn("flex-1 text-right", isDark ? "text-primary/40" : "text-primary/40")}>{curr1?.name || 'Token'}</span>
-                <span className={cn("flex-1 text-right", isDark ? "text-primary/40" : "text-primary/40")}>Total</span>
+              <div
+                className="flex text-[10px] font-mono px-2 py-1.5 border-b"
+                style={{ borderColor: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}
+              >
+                <span className={cn('flex-1', isDark ? 'text-primary/40' : 'text-primary/40')}>
+                  Price
+                </span>
+                <span
+                  className={cn(
+                    'flex-1 text-right',
+                    isDark ? 'text-primary/40' : 'text-primary/40'
+                  )}
+                >
+                  {curr1?.name || 'Token'}
+                </span>
+                <span
+                  className={cn(
+                    'flex-1 text-right',
+                    isDark ? 'text-primary/40' : 'text-primary/40'
+                  )}
+                >
+                  Total
+                </span>
               </div>
               {/* Asks */}
-              <div ref={asksContainerRef} className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              <div
+                ref={asksContainerRef}
+                className="max-h-[280px] overflow-y-auto scrollbar-none"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 {(() => {
                   const visibleAsks = asks.slice(0, 30);
-                  const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
+                  const maxAmount = Math.max(...visibleAsks.map((a) => a.amount || 0), 1);
                   const userPrice = parseFloat(limitPrice) || 0;
                   const reversedAsks = [...visibleAsks].reverse();
                   const bestAsk = asks[0]?.price || Infinity;
@@ -2606,17 +3076,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         key={`ask-${idx}`}
                         onClick={() => setLimitPrice(ask.price.toString())}
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
-                          isDark ? "text-white/80" : "text-gray-700"
+                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative',
+                          isDark ? 'text-white/80' : 'text-gray-700'
                         )}
                       >
                         <div
                           className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
                           style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
                         />
-                        <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", isDark ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
+                        <span className="flex-1 text-red-400 relative z-[1]">
+                          {ask.price?.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right relative z-[1]">
+                          {fNumber(ask.amount)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            isDark ? 'text-white/40' : 'text-gray-400'
+                          )}
+                        >
+                          {fNumber(ask.total)}
+                        </span>
                       </div>
                     );
                   });
@@ -2628,13 +3109,36 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <div
                         key="user-order-ask"
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono relative border-y",
-                          willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                          'flex px-2 py-1 text-[11px] font-mono relative border-y',
+                          willFill
+                            ? 'bg-red-500/30 border-red-500/50'
+                            : 'bg-primary/20 border-primary/50'
                         )}
                       >
-                        <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                        <span
+                          className={cn(
+                            'flex-1 relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {userPrice.toFixed(6)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {willFill ? 'INSTANT FILL' : 'Your Order'}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            willFill ? 'text-red-400' : 'text-primary'
+                          )}
+                        >
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     );
                   }
@@ -2653,19 +3157,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <div className="flex px-2 py-1 text-[11px] font-mono bg-primary/20 border-y border-primary/50">
                         <span className="flex-1 text-primary">{userPrice.toFixed(6)}</span>
                         <span className="flex-1 text-right text-primary">Your Order</span>
-                        <span className="flex-1 text-right text-primary">{revert ? 'SELL' : 'BUY'}</span>
+                        <span className="flex-1 text-right text-primary">
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     )}
-                    <div className={cn(
-                      "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
-                      isDark ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
-                    )}>
+                    <div
+                      className={cn(
+                        'px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center',
+                        isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50'
+                      )}
+                    >
                       <span className="text-green-400">{bids[0]?.price?.toFixed(6) || '—'}</span>
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-[10px]",
-                        isDark ? "bg-white/10" : "bg-gray-200"
-                      )}>
-                        {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded text-[10px]',
+                          isDark ? 'bg-white/10' : 'bg-gray-200'
+                        )}
+                      >
+                        {asks[0] && bids[0]
+                          ? (((asks[0].price - bids[0].price) / asks[0].price) * 100).toFixed(2)
+                          : '0.00'}
+                        %
                       </span>
                       <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'}</span>
                     </div>
@@ -2673,10 +3186,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 );
               })()}
               {/* Bids */}
-              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              <div
+                className="max-h-[280px] overflow-y-auto scrollbar-none"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 {(() => {
                   const visibleBids = bids.slice(0, 30);
-                  const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
+                  const maxAmount = Math.max(...visibleBids.map((b) => b.amount || 0), 1);
                   const userPrice = parseFloat(limitPrice) || 0;
 
                   // Find where user's order would land in bids (for sell orders)
@@ -2693,13 +3209,36 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <div
                           key="user-order-bid"
                           className={cn(
-                            "flex px-2 py-1 text-[11px] font-mono relative border-y",
-                            willFill ? "bg-red-500/30 border-red-500/50" : "bg-primary/20 border-primary/50"
+                            'flex px-2 py-1 text-[11px] font-mono relative border-y',
+                            willFill
+                              ? 'bg-red-500/30 border-red-500/50'
+                              : 'bg-primary/20 border-primary/50'
                           )}
                         >
-                          <span className={cn("flex-1 relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{userPrice.toFixed(6)}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{willFill ? 'INSTANT FILL' : 'Your Order'}</span>
-                          <span className={cn("flex-1 text-right relative z-[1]", willFill ? "text-red-400" : "text-primary")}>{revert ? 'SELL' : 'BUY'}</span>
+                          <span
+                            className={cn(
+                              'flex-1 relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {userPrice.toFixed(6)}
+                          </span>
+                          <span
+                            className={cn(
+                              'flex-1 text-right relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {willFill ? 'INSTANT FILL' : 'Your Order'}
+                          </span>
+                          <span
+                            className={cn(
+                              'flex-1 text-right relative z-[1]',
+                              willFill ? 'text-red-400' : 'text-primary'
+                            )}
+                          >
+                            {revert ? 'SELL' : 'BUY'}
+                          </span>
                         </div>
                       );
                       userOrderInserted = true;
@@ -2709,34 +3248,55 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         key={`bid-${idx}`}
                         onClick={() => setLimitPrice(bid.price.toString())}
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
-                          isDark ? "text-white/80" : "text-gray-700"
+                          'flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative',
+                          isDark ? 'text-white/80' : 'text-gray-700'
                         )}
                       >
                         <div
                           className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
                           style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
                         />
-                        <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
-                        <span className={cn("flex-1 text-right relative z-[1]", isDark ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
+                        <span className="flex-1 text-green-400 relative z-[1]">
+                          {bid.price?.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right relative z-[1]">
+                          {fNumber(bid.amount)}
+                        </span>
+                        <span
+                          className={cn(
+                            'flex-1 text-right relative z-[1]',
+                            isDark ? 'text-white/40' : 'text-gray-400'
+                          )}
+                        >
+                          {fNumber(bid.total)}
+                        </span>
                       </div>
                     );
                   });
 
                   // If user price is below all bids, add at end
-                  if (!userOrderInserted && userPrice > 0 && userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)) {
+                  if (
+                    !userOrderInserted &&
+                    userPrice > 0 &&
+                    userPrice < (visibleBids[visibleBids.length - 1]?.price || Infinity)
+                  ) {
                     rows.push(
                       <div
                         key="user-order-bid"
                         className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono relative",
-                          "bg-primary/20 border-y border-primary/50"
+                          'flex px-2 py-1 text-[11px] font-mono relative',
+                          'bg-primary/20 border-y border-primary/50'
                         )}
                       >
-                        <span className="flex-1 text-primary relative z-[1]">{userPrice.toFixed(6)}</span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">Your Order</span>
-                        <span className="flex-1 text-right text-primary relative z-[1]">{revert ? 'SELL' : 'BUY'}</span>
+                        <span className="flex-1 text-primary relative z-[1]">
+                          {userPrice.toFixed(6)}
+                        </span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">
+                          Your Order
+                        </span>
+                        <span className="flex-1 text-right text-primary relative z-[1]">
+                          {revert ? 'SELL' : 'BUY'}
+                        </span>
                       </div>
                     );
                   }
@@ -2747,7 +3307,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           )}
         </div>
       )}
-
     </Stack>
   );
 };

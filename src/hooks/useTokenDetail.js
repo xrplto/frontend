@@ -17,18 +17,25 @@ export function useTokenDetail({
 }) {
   const rafRef = useRef(null);
 
-  const wsUrl = enabled && md5
-    ? `wss://api.xrpl.to/ws/token/${md5}?fields=${fields}&delta=${delta}`
-    : null;
+  const wsUrl =
+    enabled && md5 ? `wss://api.xrpl.to/ws/token/${md5}?fields=${fields}&delta=${delta}` : null;
 
-  const processMessage = useCallback((data) => {
-    if (data.exch) {
-      onMetricsUpdate?.({ exch: data.exch, total: data.total, H24: data.H24, global: data.global });
-    }
-    if (data.token) {
-      onTokenUpdate?.(data.token, data.delta || false);
-    }
-  }, [onTokenUpdate, onMetricsUpdate]);
+  const processMessage = useCallback(
+    (data) => {
+      if (data.exch) {
+        onMetricsUpdate?.({
+          exch: data.exch,
+          total: data.total,
+          H24: data.H24,
+          global: data.global
+        });
+      }
+      if (data.token) {
+        onTokenUpdate?.(data.token, data.delta || false);
+      }
+    },
+    [onTokenUpdate, onMetricsUpdate]
+  );
 
   const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
     onMessage: (e) => {
