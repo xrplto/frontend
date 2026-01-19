@@ -1,211 +1,14 @@
 import axios from 'axios';
-import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useEffect, useContext, useCallback, memo, useRef } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
-import { ChevronLeft, ChevronRight, List, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, List } from 'lucide-react';
 import { cn } from 'src/utils/cn';
+import NFTSparklineChart from './NFTSparklineChart';
 
-// Optimized chart wrapper with direct canvas rendering
-const OptimizedChart = memo(
-  ({ salesData, darkMode }) => {
-    const [isVisible, setIsVisible] = useState(false);
-    const [tooltip, setTooltip] = useState(null);
-    const chartRef = useRef(null);
-    const canvasRef = useRef(null);
-    const observerRef = useRef(null);
-    const pointsRef = useRef([]);
-
-    useEffect(() => {
-      if (!chartRef.current) return;
-
-      observerRef.current = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            if (observerRef.current) {
-              observerRef.current.disconnect();
-            }
-          }
-        },
-        {
-          rootMargin: '100px',
-          threshold: 0.01
-        }
-      );
-
-      observerRef.current.observe(chartRef.current);
-
-      return () => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-        }
-      };
-    }, []);
-
-    // Draw chart on canvas
-    useEffect(() => {
-      if (!salesData || !canvasRef.current || !isVisible) return;
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-
-      if (!salesData.length) return;
-
-      // Set canvas size
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-      const width = rect.width;
-      const height = rect.height;
-
-      // Clear canvas
-      ctx.clearRect(0, 0, width, height);
-
-      if (salesData.length < 2) return;
-
-      // Calculate min/max for scaling
-      const values = salesData.map((d) => d.value);
-      const minValue = Math.min(...values);
-      const maxValue = Math.max(...values);
-      const range = maxValue - minValue;
-
-      // Scale points to canvas with padding
-      const padding = height * 0.1;
-      const sidePadding = 4;
-      const chartHeight = height - padding * 2;
-      const chartWidth = width - sidePadding * 2;
-
-      const points = salesData.map((item, index) => {
-        const x = sidePadding + (index / Math.max(salesData.length - 1, 1)) * chartWidth;
-        const y =
-          range === 0
-            ? height / 2
-            : padding + chartHeight - ((item.value - minValue) / range) * chartHeight;
-        return { x, y, value: item.value, sales: item.sales, date: item.date };
-      });
-
-      pointsRef.current = points;
-
-      const color = '#00AB55';
-
-      // Draw gradient fill
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, color + '66');
-      gradient.addColorStop(1, color + '00');
-
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, height - padding);
-      points.forEach((point) => ctx.lineTo(point.x, point.y));
-      ctx.lineTo(points[points.length - 1].x, height - padding);
-      ctx.closePath();
-      ctx.fillStyle = gradient;
-      ctx.fill();
-
-      // Draw line
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      points.forEach((point) => ctx.lineTo(point.x, point.y));
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-    }, [salesData, isVisible]);
-
-    const handleMouseMove = (e) => {
-      if (!pointsRef.current.length) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const closest = pointsRef.current.reduce((prev, curr) =>
-        Math.abs(curr.x - x) < Math.abs(prev.x - x) ? curr : prev
-      );
-      setTooltip({
-        ...closest,
-        screenX: e.clientX,
-        screenY: e.clientY
-      });
-    };
-
-    const handleMouseLeave = () => setTooltip(null);
-
-    // Don't render chart until visible
-    if (!isVisible) {
-      return (
-        <div
-          ref={chartRef}
-          style={{
-            width: '190px',
-            height: '45px',
-            background: 'rgba(128, 128, 128, 0.05)',
-            borderRadius: '4px',
-            contain: 'layout size style'
-          }}
-        />
-      );
-    }
-
-    return (
-      <div
-        ref={chartRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          width: '190px',
-          height: '45px',
-          display: 'inline-block',
-          contain: 'layout size style',
-          position: 'relative'
-        }}
-      >
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block'
-          }}
-        />
-        {tooltip && typeof window !== 'undefined' && ReactDOM.createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              left: tooltip.screenX + 10,
-              top: tooltip.screenY - 50,
-              background: 'rgba(0,0,0,0.9)',
-              color: '#fff',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              fontSize: '11px',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-              zIndex: 9999
-            }}
-          >
-            <div>{tooltip.date}</div>
-            <div>Vol: ✕{tooltip.value.toFixed(2)}</div>
-            <div>Sales: {tooltip.sales}</div>
-          </div>,
-          document.body
-        )}
-      </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    return (
-      JSON.stringify(prevProps.salesData) === JSON.stringify(nextProps.salesData) &&
-      prevProps.darkMode === nextProps.darkMode
-    );
-  }
-);
-
-OptimizedChart.displayName = 'OptimizedChart';
-
-// Styled Components - TokenList Pattern
+// Styled Components
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -642,7 +445,7 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'owners', label: 'OWNERS', align: 'right', width: 'auto', order: true, tooltip: 'Unique holders' },
   { id: 'items', label: 'SUPPLY', align: 'right', width: 'auto', order: true, tooltip: 'Total NFTs in collection' },
   { id: 'origin', label: 'SOURCE', align: 'right', width: 'auto', order: true, tooltip: 'Origin marketplace' },
-  { id: 'sparkline', label: '30D CHART', align: 'center', width: '220px', order: false, style: { paddingLeft: '16px' }, tooltip: '30-day sales history' }
+  { id: 'sparkline', label: 'TRENDLINE', align: 'center', width: '220px', order: false, style: { paddingLeft: '16px' }, tooltip: '7-day floor price trend' }
 ];
 
 // ListHead Component
@@ -670,7 +473,7 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, dar
       case 'totalSales':
         return <>Sales <span style={badgeStyle}>All</span></>;
       case 'sparkline':
-        return <>Trendline <span style={badgeStyle}>30d</span></>;
+        return <>Trendline <span style={badgeStyle}>7d</span></>;
       case 'floor1dPercent':
         return <>Change <span style={badgeStyle}>24h</span></>;
       default:
@@ -810,7 +613,6 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     listedCount,
     owners,
     created,
-    graphData30d,
     origin
   } = collection;
 
@@ -839,23 +641,6 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   const getMarketCapColor = () => {
     return darkMode ? 'rgba(255,255,255,0.9)' : '#1a1a1a';
   };
-
-  // Process chart data
-  const salesData = useMemo(() => {
-    if (!graphData30d || !Array.isArray(graphData30d)) return null;
-
-    const processedData = graphData30d
-      .filter((item) => item && item.date)
-      .map((item) => ({
-        date: item.date,
-        value: item.volume || 0,
-        sales: item.sales || 0
-      }))
-      .slice(-30);
-
-    if (processedData.length === 0) return null;
-    return processedData;
-  }, [graphData30d]);
 
   return (
     <StyledRow onClick={handleRowClick} darkMode={darkMode}>
@@ -928,13 +713,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       </StyledCell>
 
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
-        {salesData ? (
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-            <OptimizedChart salesData={salesData} darkMode={darkMode} />
-          </div>
-        ) : (
-          <span style={{ color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)', fontSize: '12px' }}>-</span>
-        )}
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <NFTSparklineChart slug={slug} period="7d" width={140} height={36} />
+        </div>
       </StyledCell>
     </StyledRow>
   );
