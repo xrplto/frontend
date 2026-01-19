@@ -347,7 +347,7 @@ const TokenSummary = memo(({ token }) => {
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border p-4", isDark ? "border-white/[0.06] bg-white/[0.015]" : "border-black/[0.06] bg-black/[0.01]")}>
+    <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-transparent" : "border-black/[0.06] bg-transparent")}>
       {/* Row 1: Token Info + Price */}
       <div className="flex items-center justify-between gap-4">
         {/* Left: Token Image + Info */}

@@ -91,14 +91,14 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  border-radius: 10px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.018)'};
-  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.3)'};
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.04)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 
   @media (max-width: 600px) {
@@ -106,7 +106,7 @@ const MetricBox = styled.div`
     height: 68px;
     flex: 0 0 auto;
     min-width: 95px;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 `;
 

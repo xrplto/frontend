@@ -44,8 +44,8 @@ const Container = styled.div`
 
 const TableWrapper = styled.div`
   border-radius: 12px;
-  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: transparent;
+  border: 1.5px solid ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   overflow: hidden;
 `;
 
@@ -117,8 +117,9 @@ const SearchContainer = styled.div`
 
 const CustomColumnsPanel = styled.div`
   width: 100%;
-  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.98)')};
-  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  background: ${(props) => (props.darkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)')};
+  backdrop-filter: blur(16px);
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   padding: 24px;
   margin: 20px 0;

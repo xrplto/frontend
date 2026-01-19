@@ -532,8 +532,8 @@ const OverviewWrapper = styled.div`
   padding: 14px;
   width: 100%;
   min-width: 0;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  background: transparent;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
   @media (max-width: 600px) {
     border-radius: 12px;
     padding: 14px;

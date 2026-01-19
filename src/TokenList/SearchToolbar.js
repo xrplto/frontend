@@ -12,8 +12,8 @@ const Container = styled.div`
   flex-direction: column;
   gap: 8px;
   border-radius: 12px;
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)')};
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  background: transparent;
   padding: 10px 14px;
   position: relative;
 

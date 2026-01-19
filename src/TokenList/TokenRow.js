@@ -108,11 +108,12 @@ const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 12px;
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)'};
+  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
-  transition: background 0.3s ease;
+  transition: all 0.15s ease;
+  background: transparent;
   ${(props) => props.isNew && `
     background: ${props.isDark ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.06)'};
     border-left: 2px solid #22c55e;
@@ -1326,9 +1327,9 @@ export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: ${(props) => props.isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)'};
+  backdrop-filter: blur(16px);
+  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   font-size: 12px;
   font-weight: 400;
   text-transform: none;

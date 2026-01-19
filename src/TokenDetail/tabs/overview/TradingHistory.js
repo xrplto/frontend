@@ -698,9 +698,9 @@ const TableCell = styled.td`
 
 const TableContainer = styled.div`
   border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
   overflow: auto;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
+  background: transparent;
 `;
 
 const Link = styled.a`

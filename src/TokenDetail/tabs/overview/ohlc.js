@@ -45,8 +45,8 @@ const formatMcap = (v) => {
 const Card = styled.div`
   width: 100%; height: 100%;
   padding: ${p => p.isMobile ? '10px' : '14px'};
-  background: ${p => p.isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)'};
-  border: 1px solid ${p => p.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  background: transparent;
+  border: 1.5px solid ${p => p.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
   border-radius: 12px;
   position: relative;
   overflow: hidden;

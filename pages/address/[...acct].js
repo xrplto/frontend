@@ -13,7 +13,7 @@ import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { getNftCoverUrl } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Wallet, Copy, ExternalLink, Coins, Image, Clock, ArrowDownLeft, ArrowUpRight, Code2, Check, AlertTriangle } from 'lucide-react';
+import { Wallet, Copy, ExternalLink, Coins, Image, Clock, ArrowDownLeft, ArrowUpRight, Code2, Check, AlertTriangle, ArrowLeftRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Filter } from 'lucide-react';
 
 const ADDRESS_API_ENDPOINTS = [
   { label: 'Profile', url: 'https://api.xrpl.to/api/traders/{account}' },
@@ -76,6 +76,10 @@ const OverView = ({ account }) => {
   const [nftHistory, setNftHistory] = useState([]);
   const [showApi, setShowApi] = useState(false);
   const [copiedApiIdx, setCopiedApiIdx] = useState(null);
+  const [hideSpam, setHideSpam] = useState(true);
+  const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
+  const [nftTradesPage, setNftTradesPage] = useState(0);
+  const ITEMS_PER_PAGE = 10;
 
   // Set XRP price from holdings data
   useEffect(() => {
@@ -531,7 +535,7 @@ const OverView = ({ account }) => {
                     <div className={cn('absolute top-full left-0 mt-2 p-3 rounded-xl border z-50 w-[300px]', isDark ? 'bg-black/95 backdrop-blur-xl border-[#3f96fe]/10 shadow-lg' : 'bg-white border-gray-200 shadow-lg')}>
                       <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Address API Endpoints</div>
                       {ADDRESS_API_ENDPOINTS.map((ep, idx) => (
-                        <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/[0.04]" : "bg-gray-100/50")}>
                           <div className="flex justify-between items-center mb-1">
                             <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{ep.label}</span>
                             <button onClick={() => { navigator.clipboard.writeText(ep.url.replace('{account}', account)); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (isDark ? "text-white/40" : "text-gray-400"))}>
@@ -600,7 +604,7 @@ const OverView = ({ account }) => {
 
             {/* AI Analysis Panel */}
             {(accountAILoading || accountAI) && (
-              <div className={cn("mb-4 p-4 rounded-xl border", isDark ? "bg-[#0d0d0d] border-white/[0.06]" : "bg-white border-gray-200")}>
+              <div className={cn("mb-4 p-4 rounded-xl border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                 {accountAILoading ? (
                   <div className="space-y-2.5">
                     {[95, 80, 88, 65, 92, 100, 70].map((w, i) => (
@@ -715,7 +719,7 @@ const OverView = ({ account }) => {
 
             {/* No Trading Data Message */}
             {hasNoTradingData && holdings?.accountActive !== false && (
-              <div className={cn("text-center py-8 mb-4 rounded-xl border", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+              <div className={cn("text-center py-8 mb-4 rounded-xl border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                 <div className={cn("w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-100")}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isDark ? "text-white/30" : "text-gray-400"}>
                     <path d="M3 3v18h18M7 16l4-4 4 4 6-6" />
@@ -730,7 +734,7 @@ const OverView = ({ account }) => {
             {/* Summary Stats - Clean 4-box layout */}
             {(data || nftStats) && (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                <div className={cn("p-4 rounded-lg col-span-2", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+                <div className={cn("p-4 rounded-lg col-span-2 border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                   <div className="flex items-center justify-between mb-1">
                     <p className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>Balance</p>
                     {accountInfo?.rank && <p className={cn("text-[10px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>#{accountInfo.rank.toLocaleString()}</p>}
@@ -748,22 +752,22 @@ const OverView = ({ account }) => {
                     </div>
                   </div>
                 </div>
-                <div className={cn("p-4 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                   <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total P&L</p>
                   <p className={cn("text-[22px] font-medium tabular-nums", (totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
                     {(totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))} <span className="text-[14px] opacity-60">XRP</span>
                   </p>
                 </div>
-                <div className={cn("p-4 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                   <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total Trades</p>
                   <p className={cn("text-[22px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
                     {fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}
                   </p>
                 </div>
-                <div className={cn("p-4 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
                   <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total Volume</p>
                   <p className={cn("text-[22px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
-                    {fCurrency5((data?.totalVolume || 0) + (nftStats?.totalVolume || 0))} <span className={cn("text-[14px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+                    {fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))} <span className={cn("text-[14px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
                   </p>
                 </div>
               </div>
@@ -773,7 +777,7 @@ const OverView = ({ account }) => {
             {(data || nftStats) && (
               <div className={cn("grid md:grid-cols-2 gap-4 mb-6")}>
                 {/* Token Trading */}
-                <div className={cn("p-5 rounded-xl border h-full", isDark ? "bg-[#0a0a0a] border-white/[0.08]" : "bg-white border-gray-200")}>
+                <div className={cn("p-5 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
                   {data && !data.error ? (
                     <>
                       <div className="flex items-center justify-between mb-4">
@@ -783,22 +787,25 @@ const OverView = ({ account }) => {
                           </div>
                           <span className={cn("text-[12px] font-semibold", isDark ? "text-white" : "text-gray-900")}>Token Trading</span>
                         </div>
-                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.04]" : "bg-gray-50")}>
+                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
                           <span className="text-emerald-500 tabular-nums">{fCurrency5(data.buyCount || 0)}</span>
                           <span className={isDark ? "text-white/20" : "text-gray-300"}>|</span>
                           <span className="text-red-500 tabular-nums">{fCurrency5(data.sellCount || 0)}</span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-4 gap-4 mb-4">
+                      <div className="flex items-center mb-4">
                         {[
                           { label: 'P&L', value: fCurrency5(totalPnL), color: totalPnL >= 0 ? 'text-emerald-500' : 'text-red-500' },
                           { label: 'ROI', value: `${(data.roi || 0).toFixed(1)}%`, color: (data.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500' },
                           { label: 'WIN', value: `${winRate.toFixed(0)}%`, color: isDark ? 'text-white' : 'text-gray-900' },
-                          { label: 'VOL', value: fCurrency5(data.totalVolume || 0), color: isDark ? 'text-white' : 'text-gray-900' }
-                        ].map(s => (
-                          <div key={s.label} className={cn("p-2.5 rounded-lg text-center", isDark ? "bg-white/[0.02]" : "bg-gray-50/50")}>
-                            <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
-                            <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
+                          { label: 'VOL', value: fCurrency5((data.dexVolume || 0) + (data.ammVolume || 0)), color: isDark ? 'text-white' : 'text-gray-900' }
+                        ].map((s, i, arr) => (
+                          <div key={s.label} className="flex items-center flex-1">
+                            <div className="p-2.5 text-center flex-1">
+                              <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
+                              <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
+                            </div>
+                            {i < arr.length - 1 && <div className={cn("w-px h-8", isDark ? "bg-white/10" : "bg-gray-200")} />}
                           </div>
                         ))}
                       </div>
@@ -831,7 +838,7 @@ const OverView = ({ account }) => {
                 </div>
 
                 {/* NFT Trading */}
-                <div className={cn("p-5 rounded-xl border h-full", isDark ? "bg-[#0a0a0a] border-white/[0.08]" : "bg-white border-gray-200")}>
+                <div className={cn("p-5 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
                   {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
                     <>
                       <div className="flex items-center justify-between mb-4">
@@ -842,13 +849,13 @@ const OverView = ({ account }) => {
                           <span className={cn("text-[12px] font-semibold", isDark ? "text-white" : "text-gray-900")}>NFT Trading</span>
                           {nftStats.holdingsCount > 0 && <span className={cn("text-[9px] px-1.5 py-0.5 rounded-md font-medium", isDark ? "bg-violet-500/10 text-violet-400" : "bg-violet-50 text-violet-500")}>{nftStats.holdingsCount} held</span>}
                         </div>
-                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.04]" : "bg-gray-50")}>
+                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
                           <span className="text-emerald-500 tabular-nums">{fCurrency5(nftStats.buyCount || 0)}</span>
                           <span className={isDark ? "text-white/20" : "text-gray-300"}>|</span>
                           <span className="text-red-500 tabular-nums">{fCurrency5(nftStats.sellCount || 0)}</span>
                         </div>
                       </div>
-                      <div className={cn("grid gap-4 mb-4", nftStats.holdingsCount > 0 ? "grid-cols-6" : "grid-cols-5")}>
+                      <div className="flex items-center mb-4">
                         {[
                           { label: 'REALIZED', value: fCurrency5(nftStats.profit || 0), color: (nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500' },
                           { label: 'UNREAL', value: fCurrency5(nftStats.unrealizedProfit || 0), color: (nftStats.unrealizedProfit || 0) === 0 ? (isDark ? 'text-white' : 'text-gray-900') : (nftStats.unrealizedProfit || 0) > 0 ? 'text-emerald-500' : 'text-amber-500' },
@@ -856,11 +863,14 @@ const OverView = ({ account }) => {
                           { label: 'WIN', value: `${(nftStats.winRate || 0).toFixed(0)}%`, color: isDark ? 'text-white' : 'text-gray-900' },
                           { label: 'VOL', value: fCurrency5(nftStats.totalVolume || 0), color: isDark ? 'text-white' : 'text-gray-900' },
                           ...(nftStats.holdingsCount > 0 ? [{ label: 'VALUE', value: fCurrency5(nftStats.holdingsValue || 0), color: isDark ? 'text-white' : 'text-gray-900', subLabel: 'COST', subValue: fCurrency5(nftStats.holdingsCost || 0) }] : [])
-                        ].map(s => (
-                          <div key={s.label} className={cn("p-2.5 rounded-lg text-center", isDark ? "bg-white/[0.02]" : "bg-gray-50/50")}>
-                            <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
-                            <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
-                            {s.subLabel && <p className={cn("text-[8px] uppercase tracking-wider mt-1", isDark ? "text-white/20" : "text-gray-300")}>{s.subLabel} <span className={cn("tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{s.subValue}</span></p>}
+                        ].map((s, i, arr) => (
+                          <div key={s.label} className="flex items-center flex-1">
+                            <div className="p-2.5 text-center flex-1">
+                              <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
+                              <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
+                              {s.subLabel && <p className={cn("text-[8px] uppercase tracking-wider mt-1", isDark ? "text-white/20" : "text-gray-300")}>{s.subLabel} <span className={cn("tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{s.subValue}</span></p>}
+                            </div>
+                            {i < arr.length - 1 && <div className={cn("w-px h-8", isDark ? "bg-white/10" : "bg-gray-200")} />}
                           </div>
                         ))}
                       </div>
@@ -959,12 +969,12 @@ const OverView = ({ account }) => {
                   const totalValue = filteredLines.reduce((sum, l) => sum + (l.value || 0), 0);
 
                   return (
-                    <div className={cn("rounded-2xl border mb-6 overflow-hidden backdrop-blur-sm", isDark ? "bg-[#0c0c0c]/80 border-white/[0.06]" : "bg-white border-gray-200/80")}>
-                      <div className={cn("flex items-center justify-between px-5 py-4", isDark ? "bg-white/[0.02]" : "bg-gray-50/50")}>
+                    <div className={cn("rounded-xl border-[1.5px] mb-6 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                      <div className={cn("flex items-center justify-between px-4 py-3", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
                         <div className="flex items-center gap-3">
-                          <p className={cn("text-[12px] font-semibold tracking-wide", isDark ? "text-white/70" : "text-gray-700")}>
+                          <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
                             Holdings <span className={cn("font-normal ml-1", isDark ? "text-white/30" : "text-gray-400")}>{holdings.total}</span>
-                          </p>
+                          </span>
                           {zeroCount > 0 && (
                             <button
                               onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
@@ -989,11 +999,11 @@ const OverView = ({ account }) => {
                           </div>
                         )}
                       </div>
-                      <div className="px-5 py-4">
+                      <div className="px-4 py-4">
                       {filteredLines.length > 0 ? (
                         <div className="space-y-0">
                           {/* Table Header */}
-                          <div className={cn("grid px-3 py-2.5 rounded-lg mb-1", isDark ? "bg-white/[0.02]" : "bg-gray-50")} style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
+                          <div className="grid px-3 py-2.5 mb-1" style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium", isDark ? "text-white/40" : "text-gray-500")}>Token</span>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Price</span>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>24h</span>
@@ -1002,18 +1012,18 @@ const OverView = ({ account }) => {
                           </div>
                           {/* XRP Row */}
                           {holdings.accountData?.balanceDrops > 0 && (
-                            <div className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")} style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
+                            <Link href="/token/xrpl-xrp" className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")} style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
                               <div className="flex items-center gap-3">
                                 <div className={cn("w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                   <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" className="w-full h-full object-cover" alt="" />
                                 </div>
-                                <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>XRP</span>
+                                <span className={cn("text-[13px] font-medium group-hover:text-[#4285f4] transition-colors", isDark ? "text-white" : "text-gray-900")}>XRP</span>
                               </div>
                               <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{xrpPrice ? `$${parseFloat(xrpPrice).toFixed(4)}` : '—'}</span>
                               <span className={cn("text-[12px] text-right tabular-nums font-medium", holdings?.xrp?.pro24h >= 0 ? "text-emerald-400" : "text-red-400")}>{holdings?.xrp?.pro24h ? `${holdings.xrp.pro24h >= 0 ? '+' : ''}${holdings.xrp.pro24h.toFixed(1)}%` : '—'}</span>
                               <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(holdings.accountData.balanceDrops / 1000000)}</span>
                               <span className={cn("text-[13px] text-right tabular-nums font-semibold", isDark ? "text-white" : "text-gray-900")}>{xrpPrice ? `$${fCurrency5((holdings.accountData.balanceDrops / 1000000) * xrpPrice)}` : `${fCurrency5(holdings.accountData.balanceDrops / 1000000)} XRP`}</span>
-                            </div>
+                            </Link>
                           )}
                           {/* Table Rows */}
                           {filteredLines.map((line, idx) => {
@@ -1089,11 +1099,11 @@ const OverView = ({ account }) => {
                   const maxProfit = Math.max(...filteredTokens.map(t => Math.abs(t.profit || 0)), 1);
 
                   return (
-                    <div className={cn("rounded-2xl border mb-6 overflow-hidden backdrop-blur-sm", isDark ? "bg-[#0c0c0c]/80 border-white/[0.06]" : "bg-white border-gray-200/80")}>
-                      <div className={cn("flex items-center justify-between px-5 py-4", isDark ? "bg-white/[0.02]" : "bg-gray-50/50")}>
-                        <p className={cn("text-[12px] font-semibold tracking-wide", isDark ? "text-white/70" : "text-gray-700")}>
+                    <div className={cn("rounded-xl border-[1.5px] mb-6 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                      <div className={cn("flex items-center justify-between px-4 py-3", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
                           Trading Performance <span className={cn("font-normal ml-1", isDark ? "text-white/30" : "text-gray-400")}>{totalCount}</span>
-                        </p>
+                        </span>
                         <div className={cn("flex items-center rounded-lg overflow-hidden", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
                           <input
                             type="text"
@@ -1326,19 +1336,19 @@ const OverView = ({ account }) => {
 
                 {/* Collection Trading Stats */}
                 {nftCollectionStats.length > 0 && !selectedNftCollection && (
-                  <div className={cn("rounded-xl border mt-4", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                    <div className={cn("p-4 border-b", isDark ? "border-white/10" : "border-gray-100")}>
-                      <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>Trading Stats by Collection</p>
+                  <div className={cn("rounded-xl border-[1.5px] mt-4 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                    <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                      <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>Trading Stats by Collection</span>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-[12px]">
+                      <table className="w-full">
                         <thead>
-                          <tr className={cn("text-left text-[10px] uppercase", isDark ? "text-white/40" : "text-gray-400")}>
-                            <th className="px-4 py-3">Collection</th>
-                            <th className="px-4 py-3 text-right">Volume</th>
-                            <th className="px-4 py-3 text-right">P/L</th>
-                            <th className="px-4 py-3 text-right">ROI</th>
-                            <th className="px-4 py-3 text-right">Trades</th>
+                          <tr className={cn(isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                            <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Collection</th>
+                            <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Volume</th>
+                            <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>P/L</th>
+                            <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>ROI</th>
+                            <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Trades</th>
                           </tr>
                         </thead>
                         <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
@@ -1347,13 +1357,13 @@ const OverView = ({ account }) => {
                               <td className="px-4 py-3">
                                 <Link href={`/collection/${c.slug}`} className="flex items-center gap-2 group">
                                   {c.logo && <img src={`https://s1.xrpl.to/nft-collection/${c.logo}`} alt="" className="w-6 h-6 rounded object-cover" />}
-                                  <span className={cn("group-hover:text-blue-500 truncate max-w-[120px]", isDark ? "text-white/90" : "text-gray-900")}>{c.name}</span>
+                                  <span className={cn("text-[13px] group-hover:text-[#4285f4] truncate max-w-[120px]", isDark ? "text-white" : "text-gray-900")}>{c.name}</span>
                                 </Link>
                               </td>
-                              <td className={cn("px-4 py-3 text-right tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{c.volume?.toFixed(1) || 0} XRP</td>
-                              <td className={cn("px-4 py-3 text-right tabular-nums font-medium", c.profit >= 0 ? "text-emerald-500" : "text-red-400")}>{c.profit >= 0 ? '+' : ''}{c.profit?.toFixed(1) || 0}</td>
-                              <td className={cn("px-4 py-3 text-right tabular-nums", c.roi >= 0 ? "text-emerald-500" : "text-red-400")}>{c.roi?.toFixed(1) || 0}%</td>
-                              <td className={cn("px-4 py-3 text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{c.trades || 0}</td>
+                              <td className={cn("px-4 py-3 text-right text-[12px] tabular-nums", isDark ? "text-white/70" : "text-gray-700")}>{c.volume?.toFixed(1) || 0} XRP</td>
+                              <td className={cn("px-4 py-3 text-right text-[12px] tabular-nums font-medium", c.profit >= 0 ? "text-emerald-400" : "text-red-400")}>{c.profit >= 0 ? '+' : ''}{c.profit?.toFixed(1) || 0}</td>
+                              <td className={cn("px-4 py-3 text-right text-[12px] tabular-nums", c.roi >= 0 ? "text-emerald-400" : "text-red-400")}>{c.roi?.toFixed(1) || 0}%</td>
+                              <td className={cn("px-4 py-3 text-right text-[12px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{c.trades || 0}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1367,35 +1377,48 @@ const OverView = ({ account }) => {
             {/* Activity Tab */}
             {activeTab === 'activity' && (
               <>
-              {/* History View Toggle */}
-              <div className="flex gap-1 mb-4">
-                {['tokens', 'onchain'].map((view) => (
+              {/* History View Toggle - Styled like screenshot */}
+              <div className={cn("flex items-center border-b mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+                {[
+                  { id: 'tokens', label: 'TOKENS', icon: Coins },
+                  { id: 'onchain', label: 'ONCHAIN', icon: Code2 }
+                ].map((view) => (
                   <button
-                    key={view}
-                    onClick={() => setHistoryView(view)}
+                    key={view.id}
+                    onClick={() => setHistoryView(view.id)}
                     className={cn(
-                      "px-3 py-1.5 text-[12px] font-medium rounded-lg transition-colors capitalize",
-                      historyView === view
-                        ? isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white"
-                        : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                      "flex items-center gap-2 px-4 py-3 text-[12px] font-medium tracking-wide transition-colors border-b-2 -mb-px",
+                      historyView === view.id
+                        ? cn("border-white", isDark ? "text-white" : "text-gray-900 border-gray-900")
+                        : cn("border-transparent", isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700")
                     )}
                   >
-                    {view}
+                    <view.icon size={14} />
+                    {view.label}
                   </button>
                 ))}
               </div>
 
-              {/* Onchain History */}
+              {/* Onchain History - Styled like screenshot */}
               {historyView === 'onchain' && (
-              <div className={cn("rounded-xl border overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                {/* Header */}
+                <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                  <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>Onchain transactions</span>
+                  <button className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] transition-colors", isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-50")}>
+                    <span>Filters</span>
+                    <Filter size={14} />
+                  </button>
+                </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40 border-b border-white/10" : "text-gray-400 border-b border-gray-100")}>
-                        <th className="text-left font-medium px-4 py-3">Type</th>
-                        <th className="text-left font-medium px-4 py-3">Info</th>
-                        <th className="text-left font-medium px-4 py-3">Time</th>
-                        <th className="text-right font-medium px-4 py-3">Hash</th>
+                      <tr className={cn(isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Type</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Info</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Time</th>
+                        <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")}>Signature</th>
                       </tr>
                     </thead>
                     <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
@@ -1409,25 +1432,53 @@ const OverView = ({ account }) => {
                           <tr key={parsed.id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                {parsed.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-white/40" />}
-                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{parsed.label}</span>
+                                {parsed.type === 'in' ? (
+                                  <ArrowDownLeft size={14} className="text-emerald-400" />
+                                ) : (
+                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-100")}>
+                                    <Clock size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
+                                  </div>
+                                )}
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{parsed.label}</span>
                                 {parsed.isDust && <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               {parsed.amount ? (
-                                <span className={cn("text-[13px] tabular-nums", parsed.type === 'in' ? "text-emerald-400" : isDark ? "text-white/70" : "text-gray-700")}>{parsed.type === 'in' ? '+' : ''} {parsed.amount}</span>
+                                <div className="flex items-center gap-2">
+                                  {parsed.type === 'in' ? (
+                                    <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">+</span>
+                                  ) : (
+                                    <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">-</span>
+                                  )}
+                                  <span className={cn("text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{parsed.amount}</span>
+                                </div>
                               ) : (
-                                <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>-</span>
+                                <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>See more details</span>
                               )}
                             </td>
                             <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
-                              {parsed.time ? new Date(parsed.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                              {parsed.time ? (() => {
+                                const diff = Date.now() - new Date(parsed.time).getTime();
+                                const mins = Math.floor(diff / 60000);
+                                const hrs = Math.floor(diff / 3600000);
+                                const days = Math.floor(diff / 86400000);
+                                if (mins < 1) return 'Just now';
+                                if (mins < 60) return `${mins} min ago`;
+                                if (hrs < 24) return `${hrs} hr ago`;
+                                if (days < 7) return `${days} day ago`;
+                                return new Date(parsed.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                              })() : '-'}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <Link href={`/tx/${parsed.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
-                                {parsed.hash?.slice(0, 4)}...{parsed.hash?.slice(-4)}
-                              </Link>
+                              <div className="flex items-center justify-end gap-1">
+                                <Link href={`/tx/${parsed.hash}`} target="_blank" className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}>
+                                  {parsed.hash?.slice(0, 4)}...{parsed.hash?.slice(-4)}
+                                </Link>
+                                <button onClick={() => navigator.clipboard.writeText(parsed.hash)} className={cn("p-1 rounded transition-colors", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                                  <Copy size={12} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1438,138 +1489,156 @@ const OverView = ({ account }) => {
               </div>
               )}
 
-              {/* Token History */}
-              {historyView === 'tokens' && (
-              <div className={cn("rounded-xl border overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                {/* Filters */}
-                <div className={cn("px-4 py-3 flex flex-wrap items-center gap-4 border-b", isDark ? "border-white/10" : "border-gray-100")}>
-                  <div className="flex gap-1">
-                    {['all', 'trades', 'liquidity'].map((t) => (
-                      <button key={t} onClick={() => setTokenHistoryType(t)} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors capitalize", tokenHistoryType === t ? (isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white") : (isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"))}>{t}</button>
-                    ))}
+              {/* Token History - Styled like screenshot */}
+              {historyView === 'tokens' && (() => {
+                const fmtVal = (v) => {
+                  const n = parseFloat(v);
+                  return n >= 1 ? n.toFixed(2) : n >= 0.01 ? n.toFixed(4) : String(n);
+                };
+                const fmtCurrency = (c) => {
+                  if (!c || c === 'XRP') return 'XRP';
+                  if (c.length === 3) return c;
+                  if (c.length === 40) {
+                    try {
+                      const hex = c.replace(/0+$/, '');
+                      let decoded = '';
+                      for (let i = 0; i < hex.length; i += 2) {
+                        const char = parseInt(hex.substr(i, 2), 16);
+                        if (char) decoded += String.fromCharCode(char);
+                      }
+                      return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : c.slice(0, 6);
+                    } catch { return c.slice(0, 6); }
+                  }
+                  return c;
+                };
+                const getTokenMd5 = (t) => t?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : t?.issuer ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString() : null;
+
+                // Filter spam (small XRP trades)
+                const filteredHistory = hideSpam ? tokenHistory.filter(trade => {
+                  const paidVal = parseFloat(trade.paid?.value || 0);
+                  const gotVal = parseFloat(trade.got?.value || 0);
+                  const paidIsXRP = trade.paid?.currency === 'XRP';
+                  const gotIsXRP = trade.got?.currency === 'XRP';
+                  const xrpVal = paidIsXRP ? paidVal : gotIsXRP ? gotVal : 0;
+                  return xrpVal >= 0.01 || (!paidIsXRP && !gotIsXRP);
+                }) : tokenHistory;
+
+                const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE);
+                const paginatedHistory = filteredHistory.slice(tokenHistoryPage * ITEMS_PER_PAGE, (tokenHistoryPage + 1) * ITEMS_PER_PAGE);
+
+                return (
+              <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                {/* Header with filters */}
+                <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                  <div className="flex items-center gap-4">
+                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>Token Trades</span>
+                    <label className={cn("flex items-center gap-2 cursor-pointer select-none px-2 py-1 rounded-lg", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
+                      <div className={cn("w-4 h-4 rounded border-[1.5px] flex items-center justify-center transition-colors", hideSpam ? "bg-white border-white" : isDark ? "border-white/30" : "border-gray-300")}>
+                        {hideSpam && <Check size={12} className="text-black" />}
+                      </div>
+                      <input type="checkbox" checked={hideSpam} onChange={(e) => setHideSpam(e.target.checked)} className="sr-only" />
+                      <span className={cn("text-[12px]", isDark ? "text-white/60" : "text-gray-600")}>Hide spam</span>
+                    </label>
+                    <div className="flex gap-1">
+                      {['all', 'trades', 'liquidity'].map((t) => (
+                        <button key={t} onClick={() => { setTokenHistoryType(t); setTokenHistoryPage(0); }} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors capitalize", tokenHistoryType === t ? (isDark ? "bg-white/10 text-white" : "bg-gray-200 text-gray-900") : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700"))}>{t}</button>
+                      ))}
+                    </div>
                   </div>
-                  <div className={cn("w-px h-4", isDark ? "bg-white/10" : "bg-gray-200")} />
-                  <div className="flex gap-1">
-                    {[{ v: '', l: 'All Pairs' }, { v: 'xrp', l: 'XRP' }, { v: 'token', l: 'Token' }].map((p) => (
-                      <button key={p.v} onClick={() => setTokenHistoryPairType(p.v)} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors", tokenHistoryPairType === p.v ? (isDark ? "bg-white/10 text-white" : "bg-gray-900 text-white") : (isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"))}>{p.l}</button>
-                    ))}
-                  </div>
-                  {tokenHistoryLoading && <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Loading...</span>}
+                  <button className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] transition-colors", isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-50")}>
+                    <span>Filters</span>
+                    <Filter size={14} />
+                  </button>
                 </div>
+
+                {/* Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr>
-                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '60px' }}>Time</th>
-                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '45px' }}>Type</th>
-                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")}>Amount</th>
-                        <th className={cn("text-left text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")}>Total</th>
-                        <th className={cn("text-right text-[9px] font-normal uppercase tracking-wider py-2", isDark ? "text-white/35" : "text-gray-400")} style={{ width: '40px' }}></th>
+                      <tr className={cn(isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '15%'}}>Type</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '40%'}}>Info</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '20%'}}>Time</th>
+                        <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '25%'}}>Signature</th>
                       </tr>
                     </thead>
                     <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
                       {tokenHistoryLoading && tokenHistory.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className={cn("py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>Loading...</td>
+                          <td colSpan={4} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>Loading...</td>
                         </tr>
-                      ) : tokenHistory.length === 0 ? (
+                      ) : paginatedHistory.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-10">
-                            <div className="flex flex-col items-center">
-                              <div className="relative w-24 h-24 mb-4">
-                                <div className={cn("absolute -top-1.5 left-1.5 w-7 h-7 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                                <div className={cn("absolute -top-1.5 right-1.5 w-7 h-7 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                                <div className={cn("absolute top-0.5 left-3 w-3.5 h-3.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-                                <div className={cn("absolute top-0.5 right-3 w-3.5 h-3.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-                                <div className={cn("absolute top-4 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
-                                  <div className="absolute top-6 left-4 w-3 h-2.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                                  <div className="absolute top-6 right-4 w-3 h-2.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                                  <div className={cn("absolute bottom-4 left-1/2 -translate-x-1/2 w-7 h-5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
-                                    <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-[#0a0a0a]" />
-                                  </div>
-                                  <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 rounded-t-full border-t-2 border-l-2 border-r-2", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
-                                </div>
-                                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-20 flex flex-col justify-start gap-[3px] pointer-events-none overflow-hidden rounded-full">
-                                  {[...Array(14)].map((_, i) => (
-                                    <div key={i} className={cn("h-[3px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
-                                  ))}
-                                </div>
-                              </div>
-                              <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>No trades found</p>
-                            </div>
-                          </td>
+                          <td colSpan={4} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>No transactions found</td>
                         </tr>
-                      ) : tokenHistory.map((trade) => {
-                        const isMaker = trade.maker === account;
-                        const fmtVal = (v) => {
-                          const n = parseFloat(v);
-                          return n >= 1 ? n.toFixed(2) : n >= 0.01 ? n.toFixed(4) : String(n);
-                        };
-                        const fmtCurrency = (c) => {
-                          if (!c || c === 'XRP') return 'XRP';
-                          if (c.length === 3) return c;
-                          if (c.length === 40) {
-                            try {
-                              const hex = c.replace(/0+$/, '');
-                              let decoded = '';
-                              for (let i = 0; i < hex.length; i += 2) {
-                                const char = parseInt(hex.substr(i, 2), 16);
-                                if (char) decoded += String.fromCharCode(char);
-                              }
-                              return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : c.slice(0, 6);
-                            } catch { return c.slice(0, 6); }
-                          }
-                          return c;
-                        };
+                      ) : paginatedHistory.map((trade) => {
                         const paidIsXRP = trade.paid?.currency === 'XRP';
                         const gotIsXRP = trade.got?.currency === 'XRP';
                         const isTokenToToken = !paidIsXRP && !gotIsXRP;
                         const isBuy = paidIsXRP;
-                        const tradeType = trade.isLiquidity ? (trade.type || 'Liquidity') : isTokenToToken ? 'Swap' : isBuy ? 'Buy' : 'Sell';
-                        const getTokenMd5 = (t) => t?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : t?.issuer ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString() : null;
+                        const tradeType = trade.isLiquidity ? 'Transaction' : isTokenToToken ? 'Swap' : isBuy ? 'Transaction' : 'Transaction';
                         const paidMd5 = getTokenMd5(trade.paid);
                         const gotMd5 = getTokenMd5(trade.got);
-                        const xrpAmount = paidIsXRP ? parseFloat(trade.paid?.value || 0) : gotIsXRP ? parseFloat(trade.got?.value || 0) : 0;
-                        const barWidth = Math.min(100, Math.max(15, Math.log10(xrpAmount + 1) * 25));
-                        const barColor = isBuy ? 'rgba(34,197,94,' : 'rgba(239,68,68,';
+
                         return (
-                          <tr key={trade._id} className={cn("transition-colors relative", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
-                            <td className={cn("py-2 text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
+                          <tr key={trade._id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {isTokenToToken ? (
+                                  <ArrowLeftRight size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                                ) : (
+                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-gray-100")}>
+                                    <Clock size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
+                                  </div>
+                                )}
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{isTokenToToken ? 'Swap' : 'Transaction'}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {isTokenToToken || trade.paid || trade.got ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {/* Paid amount */}
+                                  <div className="flex items-center gap-1">
+                                    <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">-</span>
+                                    {paidMd5 && <img src={`https://s1.xrpl.to/token/${paidMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                    <span className={cn("text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.paid?.value)}</span>
+                                    <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.paid?.currency)}</span>
+                                  </div>
+                                  {/* Plus sign */}
+                                  <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">+</span>
+                                  {/* Got amount */}
+                                  <div className="flex items-center gap-1">
+                                    {gotMd5 && <img src={`https://s1.xrpl.to/token/${gotMd5}`} className="w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
+                                    <span className={cn("text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.got?.value)}</span>
+                                    <span className={cn("text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.got?.currency)}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>See more details</span>
+                              )}
+                            </td>
+                            <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
                               {trade.time ? (() => {
                                 const diff = Date.now() - trade.time;
                                 const mins = Math.floor(diff / 60000);
                                 const hrs = Math.floor(diff / 3600000);
                                 const days = Math.floor(diff / 86400000);
-                                if (mins < 1) return 'now';
-                                if (mins < 60) return `${mins}m`;
-                                if (hrs < 24) return `${hrs}h`;
-                                if (days < 30) return `${days}d`;
-                                return new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                                if (mins < 1) return 'Just now';
+                                if (mins < 60) return `${mins} min ago`;
+                                if (hrs < 24) return `${hrs} hr ago`;
+                                if (days < 7) return `${days} day ago`;
+                                return new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                               })() : '-'}
                             </td>
-                            <td className="py-2">
-                              <span className={cn("text-[11px] font-medium", isTokenToToken ? (isDark ? "text-white/50" : "text-gray-500") : isBuy ? "text-[#22c55e]" : "text-[#ef4444]")}>{tradeType}</span>
-                            </td>
-                            <td className="py-2">
-                              <div className="relative flex items-center gap-1.5 px-2 py-1 h-[26px]">
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[22px] rounded" style={{ width: `${barWidth}%`, background: `linear-gradient(90deg, ${barColor}${isDark ? '0.12' : '0.08'}) 0%, ${barColor}${isDark ? '0.22' : '0.18'}) 100%)`, borderLeft: `2px solid ${barColor}0.5)` }} />
-                                {paidMd5 && <img src={`https://s1.xrpl.to/token/${paidMd5}`} className="relative z-10 w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
-                                <span className={cn("relative z-10 text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.paid?.value)}</span>
-                                <span className={cn("relative z-10 text-[10px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.paid?.currency)}</span>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Link href={`/tx/${trade.hash}`} target="_blank" className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}>
+                                  {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                                </Link>
+                                <button onClick={() => navigator.clipboard.writeText(trade.hash)} className={cn("p-1 rounded transition-colors", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                                  <Copy size={12} />
+                                </button>
                               </div>
-                            </td>
-                            <td className="py-2">
-                              <div className="relative flex items-center gap-1.5 px-2 py-1 h-[26px]">
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[22px] rounded" style={{ width: `${barWidth}%`, background: `linear-gradient(90deg, ${barColor}${isDark ? '0.12' : '0.08'}) 0%, ${barColor}${isDark ? '0.22' : '0.18'}) 100%)`, borderLeft: `2px solid ${barColor}0.5)` }} />
-                                {gotMd5 && <img src={`https://s1.xrpl.to/token/${gotMd5}`} className="relative z-10 w-4 h-4 rounded-full" onError={(e) => { e.target.style.display = 'none'; }} alt="" />}
-                                <span className={cn("relative z-10 text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{fmtVal(trade.got?.value)}</span>
-                                <span className={cn("relative z-10 text-[10px]", isDark ? "text-white/50" : "text-gray-500")}>{fmtCurrency(trade.got?.currency)}</span>
-                              </div>
-                            </td>
-                            <td className="py-2 text-right">
-                              <Link href={`/tx/${trade.hash}`} className={cn("inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/[0.06]" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}>
-                                <ExternalLink size={14} />
-                              </Link>
                             </td>
                           </tr>
                         );
@@ -1577,31 +1646,63 @@ const OverView = ({ account }) => {
                     </tbody>
                   </table>
                 </div>
-                {tokenHistoryHasMore && (
-                  <div className={cn("px-4 py-3 border-t", isDark ? "border-white/10" : "border-gray-100")}>
-                    <button
-                      onClick={loadMoreTokenHistory}
-                      disabled={tokenHistoryLoading}
-                      className={cn("w-full py-2 text-[12px] font-medium rounded-lg transition-colors", isDark ? "bg-white/5 hover:bg-white/10 text-white/70" : "bg-gray-100 hover:bg-gray-200 text-gray-600")}
-                    >
-                      {tokenHistoryLoading ? 'Loading...' : 'Load More'}
+
+                {/* Pagination */}
+                <div className={cn("px-4 py-3 flex items-center justify-between border-t", isDark ? "border-white/10" : "border-gray-100")}>
+                  <div className="flex items-center gap-3">
+                    <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>Transactions per page</span>
+                    <div className={cn("flex items-center gap-1 px-2 py-1 rounded border", isDark ? "border-white/10" : "border-gray-200")}>
+                      <span className={cn("text-[13px] tabular-nums min-w-[20px] text-center", isDark ? "text-white" : "text-gray-900")}>{ITEMS_PER_PAGE}</span>
+                      <div className="flex flex-col">
+                        <ChevronUp size={10} className={cn(isDark ? "text-white/40" : "text-gray-400")} />
+                        <ChevronDown size={10} className={cn(isDark ? "text-white/40" : "text-gray-400")} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setTokenHistoryPage(0)} disabled={tokenHistoryPage === 0} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &laquo;
+                    </button>
+                    <button onClick={() => setTokenHistoryPage(p => Math.max(0, p - 1))} disabled={tokenHistoryPage === 0} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &lsaquo;
+                    </button>
+                    <span className={cn("text-[13px] px-2", isDark ? "text-white/70" : "text-gray-600")}>Page {tokenHistoryPage + 1}</span>
+                    <button onClick={() => { setTokenHistoryPage(p => p + 1); if ((tokenHistoryPage + 2) * ITEMS_PER_PAGE >= filteredHistory.length && tokenHistoryHasMore) loadMoreTokenHistory(); }} disabled={!tokenHistoryHasMore && tokenHistoryPage >= totalPages - 1} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &rsaquo;
+                    </button>
+                    <button onClick={() => { if (tokenHistoryHasMore) loadMoreTokenHistory(); setTokenHistoryPage(totalPages - 1); }} disabled={!tokenHistoryHasMore && tokenHistoryPage >= totalPages - 1} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &raquo;
                     </button>
                   </div>
-                )}
+                </div>
               </div>
-              )}
+                );
+              })()}
 
-              {/* NFT Trades Section */}
-              {nftTrades.length > 0 && (
-              <div className={cn("rounded-xl border mt-4 overflow-hidden", isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-gray-200")}>
-                <div className={cn("px-4 py-3 border-b flex items-center gap-2", isDark ? "border-white/10" : "border-gray-100")}>
-                  <Image size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
-                  <p className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-white/50" : "text-gray-500")}>NFT Trades</p>
+              {/* NFT Trades Section - Styled like screenshot */}
+              {nftTrades.length > 0 && (() => {
+                const nftTotalPages = Math.ceil(nftTrades.length / ITEMS_PER_PAGE);
+                const paginatedNftTrades = nftTrades.slice(nftTradesPage * ITEMS_PER_PAGE, (nftTradesPage + 1) * ITEMS_PER_PAGE);
+                return (
+              <div className={cn("rounded-xl border-[1.5px] mt-4 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                  <div className="flex items-center gap-2">
+                    <Image size={14} className={isDark ? "text-white/50" : "text-gray-500"} />
+                    <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>NFT Trades</span>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
+                    <thead>
+                      <tr className={cn(isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '15%'}}>Type</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '40%'}}>Info</th>
+                        <th className={cn("text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '20%'}}>Time</th>
+                        <th className={cn("text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3", isDark ? "text-white/40" : "text-gray-500")} style={{width: '25%'}}>Signature</th>
+                      </tr>
+                    </thead>
                     <tbody className={cn("divide-y", isDark ? "divide-white/[0.06]" : "divide-gray-100")}>
-                      {nftTrades.slice(0, 20).map((trade) => {
+                      {paginatedNftTrades.map((trade) => {
                         const isSeller = trade.seller === account;
                         const label = isSeller ? 'Sold NFT' : 'Bought NFT';
                         const amt = trade.costXRP ?? trade.cost ?? 0;
@@ -1611,20 +1712,46 @@ const OverView = ({ account }) => {
                           <tr key={trade._id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                {isSeller ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-white/40" />}
-                                <span className={cn("text-[13px] font-medium", isDark ? "text-white/90" : "text-gray-900")}>{label}</span>
+                                {isSeller ? (
+                                  <ArrowUpRight size={14} className="text-emerald-400" />
+                                ) : (
+                                  <ArrowDownLeft size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                                )}
+                                <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>{label}</span>
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <span className={cn("text-[13px] tabular-nums", isSeller ? "text-emerald-400" : isDark ? "text-white/70" : "text-gray-700")}>{isSeller ? '+' : '-'}{amtStr} {currency}</span>
+                              <div className="flex items-center gap-2">
+                                {isSeller ? (
+                                  <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">+</span>
+                                ) : (
+                                  <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">-</span>
+                                )}
+                                <span className={cn("text-[12px] tabular-nums", isDark ? "text-white" : "text-gray-900")}>{amtStr} {currency}</span>
+                              </div>
                             </td>
                             <td className={cn("px-4 py-3 text-[12px]", isDark ? "text-white/50" : "text-gray-500")}>
-                              {trade.time ? new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                              {trade.time ? (() => {
+                                const diff = Date.now() - trade.time;
+                                const mins = Math.floor(diff / 60000);
+                                const hrs = Math.floor(diff / 3600000);
+                                const days = Math.floor(diff / 86400000);
+                                if (mins < 1) return 'Just now';
+                                if (mins < 60) return `${mins} min ago`;
+                                if (hrs < 24) return `${hrs} hr ago`;
+                                if (days < 7) return `${days} day ago`;
+                                return new Date(trade.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                              })() : '-'}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <Link href={`/tx/${trade.hash}`} className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}>
-                                {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
-                              </Link>
+                              <div className="flex items-center justify-end gap-1">
+                                <Link href={`/tx/${trade.hash}`} target="_blank" className={cn("text-[12px] font-mono hover:underline", isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700")}>
+                                  {trade.hash?.slice(0, 4)}...{trade.hash?.slice(-4)}
+                                </Link>
+                                <button onClick={() => navigator.clipboard.writeText(trade.hash)} className={cn("p-1 rounded transition-colors", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                                  <Copy size={12} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1632,8 +1759,37 @@ const OverView = ({ account }) => {
                     </tbody>
                   </table>
                 </div>
+                {/* Pagination */}
+                <div className={cn("px-4 py-3 flex items-center justify-between border-t", isDark ? "border-white/10" : "border-gray-100")}>
+                  <div className="flex items-center gap-3">
+                    <span className={cn("text-[13px]", isDark ? "text-white/50" : "text-gray-500")}>Transactions per page</span>
+                    <div className={cn("flex items-center gap-1 px-2 py-1 rounded border", isDark ? "border-white/10" : "border-gray-200")}>
+                      <span className={cn("text-[13px] tabular-nums min-w-[20px] text-center", isDark ? "text-white" : "text-gray-900")}>{ITEMS_PER_PAGE}</span>
+                      <div className="flex flex-col">
+                        <ChevronUp size={10} className={cn(isDark ? "text-white/40" : "text-gray-400")} />
+                        <ChevronDown size={10} className={cn(isDark ? "text-white/40" : "text-gray-400")} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setNftTradesPage(0)} disabled={nftTradesPage === 0} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &laquo;
+                    </button>
+                    <button onClick={() => setNftTradesPage(p => Math.max(0, p - 1))} disabled={nftTradesPage === 0} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &lsaquo;
+                    </button>
+                    <span className={cn("text-[13px] px-2", isDark ? "text-white/70" : "text-gray-600")}>Page {nftTradesPage + 1}</span>
+                    <button onClick={() => setNftTradesPage(p => Math.min(nftTotalPages - 1, p + 1))} disabled={nftTradesPage >= nftTotalPages - 1} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &rsaquo;
+                    </button>
+                    <button onClick={() => setNftTradesPage(nftTotalPages - 1)} disabled={nftTradesPage >= nftTotalPages - 1} className={cn("text-[14px] px-1 transition-colors disabled:opacity-30", isDark ? "text-white/50 hover:text-white disabled:hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                      &raquo;
+                    </button>
+                  </div>
+                </div>
               </div>
-              )}
+                );
+              })()}
               </>
             )}
 

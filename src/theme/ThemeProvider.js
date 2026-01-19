@@ -19,9 +19,11 @@ const ThemeProviderWrapper = (props) => {
     if (typeof document !== 'undefined') {
       if (isDark) {
         document.documentElement.classList.add('dark');
+        document.body.style.backgroundColor = '#080808';
         document.body.style.color = '#ffffff';
       } else {
         document.documentElement.classList.remove('dark');
+        document.body.style.backgroundColor = '#ffffff';
         document.body.style.color = '#000000';
       }
     }

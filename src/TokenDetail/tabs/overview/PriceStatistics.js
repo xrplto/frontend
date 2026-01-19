@@ -474,8 +474,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     <Box
       style={{
         borderRadius: '12px',
-        background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa',
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+        background: 'transparent',
+        border: `1.5px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"}`,
         width: '100%',
         marginBottom: '8px',
         overflow: 'hidden'
@@ -551,107 +551,45 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         </Stack>
       </Box>
 
-      {/* AI Review Section */}
+      {/* Safety Score */}
       {(aiReview || aiLoading) && (
         <Box style={{
-          margin: '10px',
-          padding: '14px',
-          borderRadius: '12px',
-          background: isDark ? 'rgba(255,255,255,0.02)' : '#fff',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`
+          margin: '8px 10px',
+          padding: '10px 12px',
+          borderRadius: '10px',
+          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`
         }}>
-          {/* Header */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" style={{ marginBottom: '14px' }}>
-            <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: '10px',
-                background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Sparkles size={16} color="#8b5cf6" />
-              </div>
-              <Stack style={{ gap: '2px' }}>
-                <Typography style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
-                  Safety Score
-                </Typography>
-                <Typography style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                  Multi-factor analysis {aiReview?.timestamp && `· ${(() => {
-                    const diff = Date.now() - new Date(aiReview.timestamp).getTime();
-                    const mins = Math.floor(diff / 60000);
-                    if (mins < 1) return 'just now';
-                    if (mins < 60) return `${mins}m ago`;
-                    const hrs = Math.floor(mins / 60);
-                    if (hrs < 24) return `${hrs}h ago`;
-                    const days = Math.floor(hrs / 24);
-                    return `${days}d ago`;
-                  })()}`}
-                </Typography>
-              </Stack>
+          {aiLoading ? (
+            <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+              <div style={{ width: 14, height: 14, border: '2px solid rgba(139,92,246,0.2)', borderTopColor: '#8b5cf6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Analyzing...</Typography>
             </Stack>
-            {aiLoading && (
-              <div style={{
-                width: 16,
-                height: 16,
-                border: '2px solid rgba(139,92,246,0.2)',
-                borderTopColor: '#8b5cf6',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-            )}
-          </Stack>
+          ) : aiReview && (() => {
+            const score = aiReview.score;
+            const color = score <= 2 ? '#22c55e' : score <= 4 ? '#84cc16' : score <= 6 ? '#f59e0b' : '#ef4444';
+            const label = aiReview.riskLevel || (score <= 2 ? 'Low' : score <= 4 ? 'Moderate' : score <= 6 ? 'Elevated' : 'High');
+            const Icon = score <= 2 ? ShieldCheck : score <= 6 ? ShieldAlert : AlertTriangle;
 
-          {aiReview && (() => {
-              const score = aiReview.score;
-              const isGreen = score <= 2;
-              const isYellow = score >= 3 && score <= 4;
-              const isOrange = score >= 5 && score <= 6;
-              const color = isGreen ? '#22c55e' : isYellow ? '#84cc16' : isOrange ? '#f59e0b' : '#ef4444';
-              const label = aiReview.riskLevel || (score <= 2 ? 'Low' : score <= 4 ? 'Moderate' : score <= 6 ? 'Elevated' : score <= 8 ? 'High' : 'Critical');
-              const Icon = isGreen ? ShieldCheck : (isYellow || isOrange) ? ShieldAlert : AlertTriangle;
-
-              return (
-            <>
-              {/* Score Display */}
-              <Stack direction="row" alignItems="center" style={{ gap: '10px', marginBottom: '8px' }}>
-                <Icon size={18} color={color} strokeWidth={1.5} />
-                <Stack direction="row" alignItems="baseline" style={{ gap: '2px', flex: 1 }}>
-                  <Typography style={{ fontSize: '20px', fontWeight: 600, color, lineHeight: 1 }}>{score}</Typography>
-                  <Typography style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)' }}>/10</Typography>
-                  <Typography style={{ fontSize: '11px', fontWeight: 500, color, textTransform: 'uppercase', marginLeft: '8px' }}>{label}</Typography>
+            return (
+              <Stack direction="row" alignItems="center" style={{ gap: '10px' }}>
+                <Icon size={15} color={color} strokeWidth={1.5} />
+                <Stack direction="row" alignItems="baseline" style={{ gap: '3px' }}>
+                  <Typography style={{ fontSize: '15px', fontWeight: 600, color, lineHeight: 1 }}>{score}</Typography>
+                  <Typography style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }}>/10</Typography>
                 </Stack>
+                <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                  <div style={{ width: `${score * 10}%`, height: '100%', background: color }} />
+                </div>
+                <Typography style={{ fontSize: '10px', fontWeight: 500, color, textTransform: 'uppercase' }}>{label}</Typography>
+                {aiReview.riskCount > 0 && (
+                  <Typography style={{ fontSize: '10px', color: '#f59e0b' }}>{aiReview.riskCount} risk{aiReview.riskCount !== 1 ? 's' : ''}</Typography>
+                )}
+                {aiReview.positiveCount > 0 && (
+                  <Typography style={{ fontSize: '10px', color: '#22c55e' }}>{aiReview.positiveCount} positive{aiReview.positiveCount !== 1 ? 's' : ''}</Typography>
+                )}
               </Stack>
-              {/* Progress bar */}
-              <div style={{ height: '4px', borderRadius: '2px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', overflow: 'hidden', marginBottom: '6px' }}>
-                <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '2px', background: color }} />
-              </div>
-
-              {/* Summary counts */}
-              {(aiReview.riskCount > 0 || aiReview.positiveCount > 0) && (
-                <Stack direction="row" alignItems="center" style={{ gap: '12px', padding: '4px 0' }}>
-                  {aiReview.riskCount > 0 && (
-                    <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b' }} />
-                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
-                        {aiReview.riskCount} risk{aiReview.riskCount !== 1 ? 's' : ''}
-                      </Typography>
-                    </Stack>
-                  )}
-                  {aiReview.positiveCount > 0 && (
-                    <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
-                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#22c55e' }} />
-                      <Typography style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)' }}>
-                        {aiReview.positiveCount} positive{aiReview.positiveCount !== 1 ? 's' : ''}
-                      </Typography>
-                    </Stack>
-                  )}
-                </Stack>
-              )}
-            </>
-              );
+            );
           })()}
         </Box>
       )}
