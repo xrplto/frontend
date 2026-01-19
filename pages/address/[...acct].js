@@ -76,8 +76,7 @@ const OverView = ({ account }) => {
   const [nftHistory, setNftHistory] = useState([]);
   const [showApi, setShowApi] = useState(false);
   const [copiedApiIdx, setCopiedApiIdx] = useState(null);
-  const [hideSpam, setHideSpam] = useState(true);
-  const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
+    const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
   const [nftTradesPage, setNftTradesPage] = useState(0);
   const ITEMS_PER_PAGE = 10;
 
@@ -985,25 +984,17 @@ const OverView = ({ account }) => {
                           )}
                         </div>
                         {filteredLines.length > 0 && (
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-baseline gap-1.5">
+                          <div className="flex items-baseline gap-1.5">
                               <span className={cn("text-[20px] font-semibold tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(totalValue + (holdings.accountData?.balanceDrops || 0) / 1000000)}</span>
                               <span className={cn("text-[11px] font-medium", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
                             </div>
-                            {xrpPrice && (
-                              <div className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px]", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
-                                <span className={isDark ? "text-white/40" : "text-gray-400"}>XRP</span>
-                                <span className={cn("font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>${parseFloat(xrpPrice).toFixed(4)}</span>
-                              </div>
-                            )}
-                          </div>
                         )}
                       </div>
                       <div className="px-4 py-4">
                       {filteredLines.length > 0 ? (
                         <div className="space-y-0">
                           {/* Table Header */}
-                          <div className="grid px-3 py-2.5 mb-1" style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
+                          <div className="grid px-3 py-2.5 mb-1" style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium", isDark ? "text-white/40" : "text-gray-500")}>Token</span>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Price</span>
                             <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>24h</span>
@@ -1012,7 +1003,7 @@ const OverView = ({ account }) => {
                           </div>
                           {/* XRP Row */}
                           {holdings.accountData?.balanceDrops > 0 && (
-                            <Link href="/token/xrpl-xrp" className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")} style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
+                            <Link href="/token/xrpl-xrp" className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group border-b", isDark ? "hover:bg-white/[0.03] border-white/[0.04]" : "hover:bg-gray-50 border-gray-100")} style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
                               <div className="flex items-center gap-3">
                                 <div className={cn("w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                   <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" className="w-full h-full object-cover" alt="" />
@@ -1031,7 +1022,7 @@ const OverView = ({ account }) => {
                             const change24h = line.token?.pro24h || 0;
                             const pctOwned = line.percentOwned || 0;
                             return (
-                              <div key={idx} className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")} style={{ gridTemplateColumns: '2.5fr 1fr 0.7fr 1fr 1fr' }}>
+                              <div key={idx} className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50", idx < filteredLines.length - 1 && (isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"))} style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
                                 <Link href={`/token/${line.token?.md5}`} className="flex items-center gap-3">
                                   <div className={cn("w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                     <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-full h-full object-cover" onError={(e) => { e.target.parentElement.style.display = 'none'; }} alt="" />
@@ -1139,7 +1130,7 @@ const OverView = ({ account }) => {
                               const bought = token.xrpBought || 0;
                               const sold = token.xrpSold || 0;
                               return (
-                                <tr key={idx} className={cn("group transition-all duration-200", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                                <tr key={idx} className={cn("group transition-all duration-200 border-b", isDark ? "hover:bg-white/[0.02] border-white/[0.04] last:border-transparent" : "hover:bg-gray-50 border-gray-100 last:border-transparent")}>
                                   <td className="py-3.5 pr-3">
                                     <Link href={`/token/${token.tokenId}`} className="flex items-center gap-2.5">
                                       <div className={cn("w-7 h-7 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
@@ -1513,18 +1504,8 @@ const OverView = ({ account }) => {
                 };
                 const getTokenMd5 = (t) => t?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : t?.issuer ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString() : null;
 
-                // Filter spam (small XRP trades)
-                const filteredHistory = hideSpam ? tokenHistory.filter(trade => {
-                  const paidVal = parseFloat(trade.paid?.value || 0);
-                  const gotVal = parseFloat(trade.got?.value || 0);
-                  const paidIsXRP = trade.paid?.currency === 'XRP';
-                  const gotIsXRP = trade.got?.currency === 'XRP';
-                  const xrpVal = paidIsXRP ? paidVal : gotIsXRP ? gotVal : 0;
-                  return xrpVal >= 0.01 || (!paidIsXRP && !gotIsXRP);
-                }) : tokenHistory;
-
-                const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE);
-                const paginatedHistory = filteredHistory.slice(tokenHistoryPage * ITEMS_PER_PAGE, (tokenHistoryPage + 1) * ITEMS_PER_PAGE);
+                const totalPages = Math.ceil(tokenHistory.length / ITEMS_PER_PAGE);
+                const paginatedHistory = tokenHistory.slice(tokenHistoryPage * ITEMS_PER_PAGE, (tokenHistoryPage + 1) * ITEMS_PER_PAGE);
 
                 return (
               <div className={cn("rounded-xl border-[1.5px] overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
@@ -1532,13 +1513,6 @@ const OverView = ({ account }) => {
                 <div className={cn("px-4 py-3 flex items-center justify-between", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
                   <div className="flex items-center gap-4">
                     <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>Token Trades</span>
-                    <label className={cn("flex items-center gap-2 cursor-pointer select-none px-2 py-1 rounded-lg", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
-                      <div className={cn("w-4 h-4 rounded border-[1.5px] flex items-center justify-center transition-colors", hideSpam ? "bg-white border-white" : isDark ? "border-white/30" : "border-gray-300")}>
-                        {hideSpam && <Check size={12} className="text-black" />}
-                      </div>
-                      <input type="checkbox" checked={hideSpam} onChange={(e) => setHideSpam(e.target.checked)} className="sr-only" />
-                      <span className={cn("text-[12px]", isDark ? "text-white/60" : "text-gray-600")}>Hide spam</span>
-                    </label>
                     <div className="flex gap-1">
                       {['all', 'trades', 'liquidity'].map((t) => (
                         <button key={t} onClick={() => { setTokenHistoryType(t); setTokenHistoryPage(0); }} className={cn("px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors capitalize", tokenHistoryType === t ? (isDark ? "bg-white/10 text-white" : "bg-gray-200 text-gray-900") : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700"))}>{t}</button>
