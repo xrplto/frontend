@@ -418,42 +418,53 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       return;
     }
 
-    if (detectedHexId) {
-      const controller = new AbortController();
-      axios.post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
-        .then(res => {
-          const nftData = res.data?.nfts?.[0];
+    const controller = new AbortController();
+    const debounceMs = (detectedHexId || detectedAddress) ? 0 : 300;
+    console.log('[Search] Start:', { query: trimmedQuery, debounceMs, detectedAddress: !!detectedAddress, time: Date.now() });
+    const searchStart = Date.now();
+    const runSearch = () => {
+      console.log('[Search] Running after', Date.now() - searchStart, 'ms');
+      if (detectedHexId) {
+        axios.post(`${BASE_URL}/search`, { search: detectedHexId }, { signal: controller.signal })
+          .then(res => {
+            const nftData = res.data?.nfts?.[0];
+            setSearchResults({
+              tokens: res.data?.tokens?.slice(0, 5) || [],
+              collections: res.data?.collections?.slice(0, 3) || [],
+              txHash: nftData ? null : detectedHexId,
+              nft: nftData || null,
+              address: null, ledger: null
+            });
+          })
+          .catch(() => {
+            setSearchResults({ tokens: [], collections: [], txHash: detectedHexId, nft: null, address: null, ledger: null });
+          });
+        return;
+      }
+
+      setSearchLoading(true);
+      (async () => {
+        try {
+          console.log('[Search] API call start');
+          const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
+          console.log('[Search] API response after', Date.now() - searchStart, 'ms', 'account:', res.data?.account);
+          const account = res.data?.account;
           setSearchResults({
             tokens: res.data?.tokens?.slice(0, 5) || [],
             collections: res.data?.collections?.slice(0, 3) || [],
-            txHash: nftData ? null : detectedHexId,
-            nft: nftData || null,
-            address: null, ledger: null
+            txHash: null,
+            nft: null,
+            address: account ? { address: account.address, balance: account.balance, rank: account.rank } : null,
+            ledger: null
           });
-        })
-        .catch(() => {
-          setSearchResults({ tokens: [], collections: [], txHash: detectedHexId, nft: null, address: null, ledger: null });
-        });
-      return () => controller.abort();
-    }
+          console.log('[Search] State updated after', Date.now() - searchStart, 'ms');
+        } catch (e) { console.log('[Search] Error:', e.message); }
+        setSearchLoading(false);
+      })();
+    };
+    const debounceTimer = debounceMs > 0 ? setTimeout(runSearch, debounceMs) : (runSearch(), null);
 
-    const controller = new AbortController();
-    setSearchLoading(true);
-    (async () => {
-      try {
-        const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
-        setSearchResults({
-          tokens: res.data?.tokens?.slice(0, 5) || [],
-          collections: res.data?.collections?.slice(0, 3) || [],
-          txHash: null,
-          nft: null,
-          address: detectedAddress,
-          ledger: null
-        });
-      } catch {}
-      setSearchLoading(false);
-    })();
-    return () => controller.abort();
+    return () => { if (debounceTimer) clearTimeout(debounceTimer); controller.abort(); };
   }, [searchQuery, searchOpen, fullSearch]);
 
   const handleSearchSelect = useCallback((item, type) => {
@@ -1027,16 +1038,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <span className={cn("text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Account</span>
                       <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
                     </div>
-                    <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
+                    <div onClick={() => handleSearchSelect(searchResults.address.address, 'address')} className={cn("flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                       <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-purple-500/10 border border-purple-500/20" : "bg-purple-50")}>
                         <Wallet size={18} className={isDark ? "text-purple-400" : "text-purple-500"} />
                       </div>
                       <div className="w-[200px] min-w-[200px]">
-                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white/90" : "text-gray-900")}>View Profile</span>
-                        <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>XRPL Account</span>
+                        <span className={cn("text-[14px] font-medium block", isDark ? "text-white/90" : "text-gray-900")}>{searchResults.address.balance != null ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP` : 'View Profile'}</span>
+                        <span className={cn("text-[12px] block", isDark ? "text-white/40" : "text-gray-500")}>{searchResults.address.rank ? `Rank #${searchResults.address.rank.toLocaleString()}` : 'XRPL Account'}</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address}</p>
+                        <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address.address}</p>
                       </div>
                       <div className="flex items-center gap-2 w-[180px] justify-end">
                         <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide", isDark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600")}>Account</span>
@@ -1284,13 +1295,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <span className={cn("text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>Account</span>
                     <div className="flex-1 h-[14px]" style={{ backgroundImage: 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)', backgroundSize: '8px 5px' }} />
                   </div>
-                  <div onClick={() => handleSearchSelect(searchResults.address, 'address')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
+                  <div onClick={() => handleSearchSelect(searchResults.address.address, 'address')} className={cn("flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200", isDark ? "hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30" : "hover:bg-gray-50 border border-transparent hover:border-gray-200")}>
                     <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", isDark ? "bg-purple-500/10 border border-purple-500/20" : "bg-purple-50")}>
                       <Wallet size={18} className={isDark ? "text-purple-400" : "text-purple-500"} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>View Profile</span>
-                      <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address}</p>
+                      <span className={cn("text-[14px] font-medium block", isDark ? "text-white" : "text-gray-900")}>{searchResults.address.balance != null ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP` : 'View Profile'}</span>
+                      <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/25" : "text-gray-400")}>{searchResults.address.rank ? `Rank #${searchResults.address.rank.toLocaleString()} · ` : ''}{searchResults.address.address}</p>
                     </div>
                     <span className={cn("px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md", isDark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600")}>Account</span>
                   </div>
