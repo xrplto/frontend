@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
-import { Code2, Copy, Check, X } from 'lucide-react';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
@@ -187,57 +187,6 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
 });
 Pagination.displayName = 'Pagination';
 
-// News API Endpoints
-const NEWS_API_ENDPOINTS = [
-  { label: 'News', url: 'https://api.xrpl.to/api/news', params: 'page, limit, source' },
-  { label: 'Search', url: 'https://api.xrpl.to/api/news/search', params: 'q, page, limit, source' },
-  { label: 'Sentiment', url: 'https://api.xrpl.to/api/news/sentiment-chart', params: 'days' }
-];
-
-const NewsApiModal = memo(({ open, onClose, isDark }) => {
-  const [copiedField, setCopiedField] = useState(null);
-  if (!open) return null;
-
-  const copyToClipboard = (url, label) => {
-    navigator.clipboard.writeText(url);
-    setCopiedField(label);
-    setTimeout(() => setCopiedField(null), 1200);
-  };
-
-  return (
-    <div className="fixed inset-0 z-[1400] flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
-      <div className={cn("w-full max-w-md rounded-xl border max-h-[85vh] overflow-hidden flex flex-col", isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200")} onClick={e => e.stopPropagation()}>
-        <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-          <div className="flex items-center gap-3 flex-1">
-            <span className={cn("text-[10px] font-semibold uppercase tracking-widest", isDark ? "text-[#3f96fe]/70" : "text-cyan-600")}>News API</span>
-            <div className="flex-1 h-[14px]" style={{ backgroundImage: isDark ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)', backgroundSize: '8px 5px', WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)', maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)' }} />
-          </div>
-          <button onClick={onClose} className={cn("p-1 rounded-md", isDark ? "hover:bg-white/[0.06] text-white/40" : "hover:bg-gray-100 text-gray-400")}><X size={14} /></button>
-        </div>
-        <div className="overflow-y-auto p-3 space-y-1">
-          {NEWS_API_ENDPOINTS.map(ep => (
-            <button key={ep.label} onClick={() => copyToClipboard(ep.url, ep.label)} className={cn("group w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
-              <span className={cn("text-[10px] w-16 flex-shrink-0", isDark ? "text-white/40" : "text-gray-400")}>{ep.label}</span>
-              <div className="flex-1 min-w-0">
-                <div className={cn("font-mono text-[10px] truncate", isDark ? "text-blue-400/70" : "text-cyan-600/80")}>{ep.url.replace('https://api.xrpl.to', '')}</div>
-                {ep.params && <div className={cn("text-[9px] mt-0.5", isDark ? "text-white/30" : "text-gray-400")}>{ep.params}</div>}
-              </div>
-              <span className={cn("flex-shrink-0", copiedField === ep.label ? "text-green-500" : isDark ? "text-white/20 group-hover:text-white/40" : "text-gray-300 group-hover:text-gray-400")}>
-                {copiedField === ep.label ? <Check size={12} /> : <Copy size={12} />}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className={cn("px-4 py-2.5 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
-          <a href="/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[10px] py-1.5 rounded-md", isDark ? "text-white/40 hover:text-white/60 hover:bg-white/[0.04]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50")}>
-            Full API Documentation
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-});
-NewsApiModal.displayName = 'NewsApiModal';
 
 function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment, initialChart, initialQuery }) {
   const router = useRouter();
@@ -259,7 +208,6 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
   const [chartData, setChartData] = useState(initialChart);
   const [chartPeriod, setChartPeriod] = useState(30);
   const [chartHover, setChartHover] = useState(null);
-  const [apiModalOpen, setApiModalOpen] = useState(false);
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const extractTitle = useCallback((html) => html.match(/>([^<]+)</)?.[1] || html, []);
@@ -388,13 +336,7 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
                   </button>
                 )}
               </form>
-              <button
-                onClick={() => setApiModalOpen(true)}
-                className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all", isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 hover:border-[#3f96fe]/30" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300")}
-              >
-                <Code2 size={13} />
-                API
-              </button>
+              <ApiButton />
               </div>
             </div>
 
@@ -452,7 +394,6 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
         )}
       </div>
       <Footer />
-      <NewsApiModal open={apiModalOpen} onClose={() => setApiModalOpen(false)} isDark={isDark} />
     </div>
   );
 }

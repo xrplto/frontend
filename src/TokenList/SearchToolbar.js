@@ -4,7 +4,8 @@ import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
-import { Search, X, Code2, Copy, Check, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
+import { Search, X, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 // Styled Components
 const Container = styled.div`
@@ -569,232 +570,6 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
-// API Button styled like the Trust/API buttons in TokenSummary
-const ApiButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 10px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(63, 150, 254, 0.2)' : 'rgba(6, 182, 212, 0.3)'};
-  background: transparent;
-  color: ${props => props.isDark ? '#3f96fe' : '#0891b2'};
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: ${props => props.isDark ? 'rgba(63, 150, 254, 0.1)' : 'rgba(6, 182, 212, 0.1)'};
-    border-color: ${props => props.isDark ? 'rgba(63, 150, 254, 0.3)' : 'rgba(6, 182, 212, 0.4)'};
-  }
-
-  @media (max-width: 600px) {
-    height: 28px;
-    padding: 0 8px;
-    font-size: 10px;
-  }
-`;
-
-// Token List API Endpoints
-const TOKEN_LIST_API_ENDPOINTS = [
-  { label: 'Tokens', url: 'https://api.xrpl.to/api/tokens', params: 'tag, start, limit, sortBy, sortType, filter' },
-  { label: 'Trending', url: 'https://api.xrpl.to/api/tokens?sortBy=trendingScore&sortType=desc' },
-  { label: 'New Tokens', url: 'https://api.xrpl.to/api/tokens?sortBy=dateon&sortType=desc' },
-  { label: 'Categories', url: 'https://api.xrpl.to/api/tags' },
-  { label: 'Sparkline', url: 'https://api.xrpl.to/api/sparkline/{md5}', params: 'period, lightweight, maxPoints' },
-  { label: 'Top Gainers', url: 'https://api.xrpl.to/api/tokens?sortBy=pro24h&sortType=desc' },
-  { label: 'By Volume', url: 'https://api.xrpl.to/api/tokens?sortBy=vol24hxrp&sortType=desc' },
-  { label: 'By MCap', url: 'https://api.xrpl.to/api/tokens?sortBy=marketcap&sortType=desc' },
-  { label: 'Most Viewed', url: 'https://api.xrpl.to/api/tokens?sortBy=nginxScore&sortType=desc' },
-  { label: 'Stats', url: 'https://api.xrpl.to/api/stats' }
-];
-
-// API Info Modal Component
-const ApiInfoModal = memo(function ApiInfoModal({ open, onClose, isDark }) {
-  const [copiedField, setCopiedField] = useState(null);
-
-  if (!open) return null;
-
-  const copyToClipboard = (url, label) => {
-    navigator.clipboard.writeText(url);
-    setCopiedField(label);
-    setTimeout(() => setCopiedField(null), 1200);
-  };
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1400,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
-        background: 'rgba(0, 0, 0, 0.5)'
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '480px',
-          borderRadius: '12px',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-          background: isDark ? '#0a0a0a' : '#fff',
-          maxHeight: '85vh',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
-          borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-            <span style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              color: isDark ? 'rgba(63, 150, 254, 0.7)' : '#0891b2'
-            }}>
-              Token List API
-            </span>
-            <div style={{
-              flex: 1,
-              height: '14px',
-              backgroundImage: isDark
-                ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-              backgroundSize: '8px 5px',
-              WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-              maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-            }} />
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '4px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              color: isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <X size={14} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div style={{ overflowY: 'auto', padding: '8px 12px' }}>
-          {TOKEN_LIST_API_ENDPOINTS.map(ep => (
-            <button
-              key={ep.label}
-              onClick={() => copyToClipboard(ep.url, ep.label)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span style={{
-                fontSize: '10px',
-                width: '70px',
-                flexShrink: 0,
-                color: isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
-              }}>
-                {ep.label}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontFamily: 'monospace',
-                  fontSize: '10px',
-                  color: isDark ? 'rgba(96, 165, 250, 0.8)' : 'rgba(8, 145, 178, 0.9)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {ep.url.replace('https://api.xrpl.to', '')}
-                </div>
-                {ep.params && (
-                  <div style={{
-                    fontSize: '9px',
-                    color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                    marginTop: '2px'
-                  }}>
-                    {ep.params}
-                  </div>
-                )}
-              </div>
-              <span style={{
-                flexShrink: 0,
-                color: copiedField === ep.label ? '#22c55e' : (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)')
-              }}>
-                {copiedField === ep.label ? <Check size={12} /> : <Copy size={12} />}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div style={{
-          padding: '10px 16px',
-          borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`
-        }}>
-          <a
-            href="/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'block',
-              textAlign: 'center',
-              fontSize: '10px',
-              padding: '6px',
-              borderRadius: '6px',
-              color: isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.5)',
-              textDecoration: 'none',
-              transition: 'all 0.15s'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)';
-              e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.7)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.5)';
-            }}
-          >
-            Full API Documentation
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-});
 
 // Normalize tag function (shared)
 const normalizeTag = (tag) => {
@@ -883,7 +658,6 @@ const SearchToolbar = memo(function SearchToolbar({
   const { darkMode } = useContext(AppContext);
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [apiModalOpen, setApiModalOpen] = useState(false);
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
@@ -1259,14 +1033,7 @@ const SearchToolbar = memo(function SearchToolbar({
           </>
 
           {/* API Button */}
-          <ApiButton
-            isDark={darkMode}
-            onClick={() => setApiModalOpen(true)}
-            title="View API endpoints"
-          >
-            <Code2 size={13} />
-            API
-          </ApiButton>
+          <ApiButton />
         </Stack>
       </Row>
 
@@ -1304,12 +1071,6 @@ const SearchToolbar = memo(function SearchToolbar({
       </Drawer>
     )}
 
-    {/* API Info Modal */}
-    <ApiInfoModal
-      open={apiModalOpen}
-      onClose={() => setApiModalOpen(false)}
-      isDark={darkMode}
-    />
     </Fragment>
   );
 });

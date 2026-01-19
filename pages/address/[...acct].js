@@ -13,14 +13,8 @@ import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { getNftCoverUrl } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Wallet, Copy, ExternalLink, Coins, Image, Clock, ArrowDownLeft, ArrowUpRight, Code2, Check, AlertTriangle, ArrowLeftRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Filter } from 'lucide-react';
-
-const ADDRESS_API_ENDPOINTS = [
-  { label: 'Profile', url: 'https://api.xrpl.to/api/traders/{account}' },
-  { label: 'Trustlines', url: 'https://api.xrpl.to/api/trustlines/{account}', params: 'limit, page, format' },
-  { label: 'NFT Stats', url: 'https://api.xrpl.to/api/account/{account}/nfts', params: 'limit, page' },
-  { label: 'Transactions', url: 'https://api.xrpl.to/api/account/{account}/transactions', params: 'limit, marker' }
-];
+import { Wallet, Copy, ExternalLink, Coins, Image, Clock, ArrowDownLeft, ArrowUpRight, Check, AlertTriangle, ArrowLeftRight, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Filter } from 'lucide-react';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
 
 // Same wrapper as index.js for consistent width
@@ -77,9 +71,7 @@ const OverView = ({ account }) => {
   const [nftCollectionStats, setNftCollectionStats] = useState([]);
   const [nftCollectionStatsLoading, setNftCollectionStatsLoading] = useState(false);
   const [nftHistory, setNftHistory] = useState([]);
-  const [showApi, setShowApi] = useState(false);
-  const [copiedApiIdx, setCopiedApiIdx] = useState(null);
-    const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
+  const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
   const [nftTradesPage, setNftTradesPage] = useState(0);
   const ITEMS_PER_PAGE = 10;
 
@@ -540,33 +532,7 @@ const OverView = ({ account }) => {
                   </div>
                 )}
                 {/* API Button */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowApi(!showApi)}
-                    className={cn("flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium border transition-colors", isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50")}
-                  >
-                    <Code2 size={12} />
-                    API
-                  </button>
-                  {showApi && (
-                    <div className={cn('absolute top-full left-0 mt-2 p-3 rounded-xl border z-50 w-[300px]', isDark ? 'bg-black/95 backdrop-blur-xl border-[#3f96fe]/10 shadow-lg' : 'bg-white border-gray-200 shadow-lg')}>
-                      <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Address API Endpoints</div>
-                      {ADDRESS_API_ENDPOINTS.map((ep, idx) => (
-                        <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/[0.04]" : "bg-gray-100/50")}>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{ep.label}</span>
-                            <button onClick={() => { navigator.clipboard.writeText(ep.url.replace('{account}', account)); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (isDark ? "text-white/40" : "text-gray-400"))}>
-                              {copiedApiIdx === idx ? <Check size={12} /> : <Copy size={12} />}
-                            </button>
-                          </div>
-                          <code className={cn("text-[10px] break-all block", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>{ep.url.replace('{account}', account)}</code>
-                          {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
-                        </div>
-                      ))}
-                      <a href="https://xrpl.to/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
-                    </div>
-                  )}
-                </div>
+                <ApiButton />
                 {data?.isAMM && (
                   <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
                     AMM

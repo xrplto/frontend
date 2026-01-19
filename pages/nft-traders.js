@@ -6,7 +6,8 @@ import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight, Code2, Copy, Check, X } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
@@ -257,54 +258,12 @@ const TABLE_HEAD = [
 
 const ROWS_PER_PAGE = 20;
 
-const NFT_API_ENDPOINTS = [
-  { label: 'Traders', url: 'https://api.xrpl.to/api/nft/analytics/traders', params: 'sortBy, limit, page' },
-  { label: 'Market', url: 'https://api.xrpl.to/api/nft/analytics/market', params: '' },
-  { label: 'Collections', url: 'https://api.xrpl.to/api/nft/analytics/collections', params: 'sortBy, limit, page' }
-];
-
-const ApiModal = ({ open, onClose, darkMode }) => {
-  const [copiedField, setCopiedField] = useState(null);
-  if (!open) return null;
-
-  const copyToClipboard = (url, label) => {
-    navigator.clipboard.writeText(url);
-    setCopiedField(label);
-    setTimeout(() => setCopiedField(null), 1200);
-  };
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 400, borderRadius: 12, border: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, background: darkMode ? '#0a0a0a' : '#fff', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-          <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3b82f6' }}>NFT Traders API</span>
-          <button onClick={onClose} style={{ padding: 4, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}><X size={14} /></button>
-        </div>
-        <div style={{ overflowY: 'auto', padding: 12 }}>
-          {NFT_API_ENDPOINTS.map(ep => (
-            <button key={ep.label} onClick={() => copyToClipboard(ep.url, ep.label)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', marginBottom: 4 }}>
-              <span style={{ fontSize: 10, width: 70, flexShrink: 0, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>{ep.label}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#3b82f6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ep.url.replace('https://api.xrpl.to', '')}</div>
-                {ep.params && <div style={{ fontSize: 9, marginTop: 2, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{ep.params}</div>}
-              </div>
-              <span style={{ flexShrink: 0, color: copiedField === ep.label ? '#10b981' : (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') }}>
-                {copiedField === ep.label ? <Check size={12} /> : <Copy size={12} />}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function NFTTradersPage({ traders = [], pagination = {}, traderBalances = {} }) {
   const router = useRouter();
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const [apiModalOpen, setApiModalOpen] = useState(false);
 
   const currentPage = pagination.page || 1;
   const totalPages = pagination.totalPages || 1;
@@ -352,13 +311,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
       <Container>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <Title darkMode={darkMode} style={{ marginBottom: 0 }}>NFT Traders Leaderboard</Title>
-          <button
-            onClick={() => setApiModalOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: `1px solid ${darkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'}`, background: 'transparent', cursor: 'pointer', fontSize: 11, fontWeight: 500, color: '#3b82f6' }}
-          >
-            <Code2 size={13} />
-            API
-          </button>
+          <ApiButton />
         </div>
         <Subtitle darkMode={darkMode}>
           {totalTraders > 0 ? `${fNumber(totalTraders)} traders on XRPL` : 'Top NFT traders by profit'}
@@ -539,7 +492,6 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
 
       <ScrollToTop />
       <Footer />
-      <ApiModal open={apiModalOpen} onClose={() => setApiModalOpen(false)} darkMode={darkMode} />
     </div>
   );
 }
