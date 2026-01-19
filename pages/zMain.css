@@ -55,10 +55,7 @@ body {
   background: #ffffff;
 }
 
-/* Dark mode */
-html.dark body {
-  background: #000000;
-}
+/* Theme backgrounds set by ThemeProvider.js */
 
 /* Firefox focus fix */
 *::-moz-focus-inner { border: 0; padding: 0; outline: none; }
