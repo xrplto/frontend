@@ -55,6 +55,8 @@ const isDark = themeName === 'XrplToDarkTheme';
 
 **Design**: Flat design, no shadows/gradients, `rounded-xl`, `border-[1.5px]`, `border-white/10`
 
+**Layout**: Always fill containers symmetrically. Tables must use flexible `fr` units to distribute columns evenly across full width. Never bunch content to one side.
+
 **Colors**: Primary `#4285f4`, Success `emerald-400`, Error `red-400`, Warning `amber-400`
 
 ## Wallet System
