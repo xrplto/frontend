@@ -1,24 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
-import { Code2, Copy, Check } from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/AppContext';
-
-// Utils
-import { cn } from 'src/utils/cn';
 
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Swap from 'src/components/SwapInterface';
-
-const SWAP_API_ENDPOINTS = [
-  { label: 'Token List', url: 'https://api.xrpl.to/api/tokens', params: 'start, limit, sortBy, sortType, filter' },
-  { label: 'Token Detail', url: 'https://api.xrpl.to/api/token/{md5}' },
-  { label: 'Orderbook', url: 'https://api.xrpl.to/api/orderbook/{base}/{quote}', params: 'limit' },
-  { label: 'Rates', url: 'https://api.xrpl.to/api/rates' }
-];
 
 // Default tokens with correct md5 hashes
 const XRP_TOKEN = {
@@ -39,8 +28,7 @@ const DEFAULT_PAIR = {
 };
 
 function SwapPage({ data }) {
-  const { accountProfile, themeName } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
+  const { accountProfile } = useContext(AppContext);
 
   // Prevent body scroll
   useEffect(() => {
@@ -53,8 +41,6 @@ function SwapPage({ data }) {
   const [revert, setRevert] = useState(false);
   const [pair, setPair] = useState(DEFAULT_PAIR);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const [showApi, setShowApi] = useState(false);
-  const [copiedApiIdx, setCopiedApiIdx] = useState(null);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden fixed top-0 left-0 right-0 bottom-0">
@@ -77,44 +63,12 @@ function SwapPage({ data }) {
       </h1>
 
       <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
-        <div className="relative">
-          <Swap
-            pair={pair}
-            setPair={setPair}
-            revert={revert}
-            setRevert={setRevert}
-          />
-          {/* API Button */}
-          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-            <div className="relative">
-              <button
-                onClick={() => setShowApi(!showApi)}
-                className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-colors", isDark ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 bg-black/50" : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 bg-white/80")}
-              >
-                <Code2 size={12} />
-                API
-              </button>
-              {showApi && (
-                <div className={cn('absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border z-50 w-[300px]', isDark ? 'bg-black/95 backdrop-blur-xl border-[#3f96fe]/10 shadow-lg' : 'bg-white border-gray-200 shadow-lg')}>
-                  <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Swap API Endpoints</div>
-                  {SWAP_API_ENDPOINTS.map((ep, idx) => (
-                    <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{ep.label}</span>
-                        <button onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (isDark ? "text-white/40" : "text-gray-400"))}>
-                          {copiedApiIdx === idx ? <Check size={12} /> : <Copy size={12} />}
-                        </button>
-                      </div>
-                      <code className={cn("text-[10px] break-all block", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>{ep.url}</code>
-                      {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
-                    </div>
-                  ))}
-                  <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <Swap
+          pair={pair}
+          setPair={setPair}
+          revert={revert}
+          setRevert={setRevert}
+        />
       </div>
 
       <Footer />

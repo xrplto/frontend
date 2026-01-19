@@ -40,6 +40,9 @@ const OverView = ({ account }) => {
   const [txHistory, setTxHistory] = useState([]);
   const [filteredTxHistory, setFilteredTxHistory] = useState([]);
   const [txFilter, setTxFilter] = useState('all');
+  const [txMarker, setTxMarker] = useState(null);
+  const [txHasMore, setTxHasMore] = useState(false);
+  const [txLoading, setTxLoading] = useState(false);
   const [holdings, setHoldings] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
   const [txPage, setTxPage] = useState(0);
@@ -91,6 +94,8 @@ const OverView = ({ account }) => {
     // Reset data and loading state when account changes
     setData(null);
     setTxHistory([]);
+    setTxMarker(null);
+    setTxHasMore(false);
     setHoldings(null);
     setHoldingsPage(0);
     setTxPage(0);
@@ -214,18 +219,31 @@ const OverView = ({ account }) => {
   }, [selectedNftCollection, account]);
 
   // Fetch onchain history when onchain view is selected
-  useEffect(() => {
-    if (activeTab !== 'activity' || historyView !== 'onchain' || !account || txHistory.length > 0) return;
-    axios.get(`https://api.xrpl.to/api/account/tx/${account}?limit=200`)
+  const fetchTxHistory = (marker = null) => {
+    if (!account) return;
+    setTxLoading(true);
+    const url = marker
+      ? `https://api.xrpl.to/api/account/tx/${account}?limit=50&marker=${encodeURIComponent(JSON.stringify(marker))}`
+      : `https://api.xrpl.to/api/account/tx/${account}?limit=50`;
+    axios.get(url)
       .then(res => {
-        if (res.data?.result === 'success' || res.data?.txs || res.data?.transactions) {
-          const txs = res.data.txs || res.data.transactions || [];
-          setTxHistory(txs);
-          setFilteredTxHistory(txs);
+        if (res.data?.result === 'success') {
+          const txs = res.data.txs || [];
+          setTxHistory(prev => marker ? [...prev, ...txs] : txs);
+          setFilteredTxHistory(prev => marker ? [...prev, ...txs] : txs);
+          setTxMarker(res.data.marker || null);
+          setTxHasMore(res.data.hasMore || false);
         }
       })
-      .catch(err => console.error('TX history fetch failed:', err));
-  }, [activeTab, historyView, account]);
+      .catch(err => console.error('TX history fetch failed:', err))
+      .finally(() => setTxLoading(false));
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'activity' || historyView !== 'onchain' || !account) return;
+    if (txHistory.length > 0) return;
+    fetchTxHistory();
+  }, [activeTab, historyView, account, txHistory.length]);
 
   // Fetch NFT trades when activity tab is viewed
   useEffect(() => {
@@ -545,19 +563,10 @@ const OverView = ({ account }) => {
                           {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
                         </div>
                       ))}
-                      <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
+                      <a href="https://xrpl.to/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
                     </div>
                   )}
                 </div>
-                <a
-                  href={`https://xrpscan.com/account/${account}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn("p-1.5 rounded-lg transition-colors", isDark ? "text-white/40 hover:text-white/70 hover:bg-white/5" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100")}
-                  title="View on XRPScan"
-                >
-                  <ExternalLink size={14} />
-                </a>
                 {data?.isAMM && (
                   <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
                     AMM
@@ -732,17 +741,17 @@ const OverView = ({ account }) => {
 
             {/* Summary Stats - Clean 4-box layout */}
             {(data || nftStats) && (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                <div className={cn("p-4 rounded-lg col-span-2 border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
-                  <div className="flex items-center justify-between mb-1">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div className={cn("p-3 rounded-lg col-span-2 border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+                  <div className="flex items-center justify-between mb-0.5">
                     <p className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-500")}>Balance</p>
                     {accountInfo?.rank && <p className={cn("text-[10px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>#{accountInfo.rank.toLocaleString()}</p>}
                   </div>
-                  <div className="flex items-baseline gap-3">
-                    <p className={cn("text-[22px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
-                      {accountInfo?.total ?? (holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—')} <span className={cn("text-[14px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+                  <div className="flex items-baseline gap-2">
+                    <p className={cn("text-[20px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                      {accountInfo?.total ?? (holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—')} <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
                     </p>
-                    <div className={cn("flex items-center gap-2 text-[10px] flex-wrap", isDark ? "text-white/30" : "text-gray-400")}>
+                    <div className={cn("flex items-center gap-1.5 text-[9px] flex-wrap", isDark ? "text-white/30" : "text-gray-400")}>
                       {accountInfo?.balance != null && <span>{fCurrency5(accountInfo.balance)} spendable</span>}
                       {accountInfo?.reserve > 0 && <span>· {Math.round(accountInfo.reserve * 100) / 100} reserved</span>}
                       {accountInfo?.inception && <span>· {new Date(accountInfo.inception).toLocaleDateString()}</span>}
@@ -751,22 +760,22 @@ const OverView = ({ account }) => {
                     </div>
                   </div>
                 </div>
-                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
-                  <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total P&L</p>
-                  <p className={cn("text-[22px] font-medium tabular-nums", (totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
-                    {(totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))} <span className="text-[14px] opacity-60">XRP</span>
+                <div className={cn("p-3 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+                  <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Total P&L</p>
+                  <p className={cn("text-[20px] font-medium tabular-nums", (totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? "text-[#22c55e]" : "text-[#ef4444]")}>
+                    {(totalPnL + (nftStats?.combinedProfit || 0)) >= 0 ? '+' : ''}{fCurrency5(totalPnL + (nftStats?.combinedProfit || 0))} <span className="text-[13px] opacity-60">XRP</span>
                   </p>
                 </div>
-                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
-                  <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total Trades</p>
-                  <p className={cn("text-[22px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                <div className={cn("p-3 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+                  <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Total Trades</p>
+                  <p className={cn("text-[20px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
                     {fCurrency5((data?.totalTrades || 0) + (nftStats?.totalTrades || 0))}
                   </p>
                 </div>
-                <div className={cn("p-4 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
-                  <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-500")}>Total Volume</p>
-                  <p className={cn("text-[22px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
-                    {fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))} <span className={cn("text-[14px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
+                <div className={cn("p-3 rounded-lg border-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+                  <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-500")}>Total Volume</p>
+                  <p className={cn("text-[20px] font-medium tabular-nums", isDark ? "text-white" : "text-gray-900")}>
+                    {fCurrency5((data?.dexVolume || 0) + (data?.ammVolume || 0) + (nftStats?.totalVolume || 0))} <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
                   </p>
                 </div>
               </div>
@@ -774,25 +783,25 @@ const OverView = ({ account }) => {
 
             {/* Two-column trading breakdown */}
             {(data || nftStats) && (
-              <div className={cn("grid md:grid-cols-2 gap-4 mb-6")}>
+              <div className={cn("grid md:grid-cols-2 gap-3 mb-4")}>
                 {/* Token Trading */}
-                <div className={cn("p-5 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
+                <div className={cn("p-4 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
                   {data && !data.error ? (
                     <>
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
-                            <Coins size={14} className="text-emerald-500" />
+                          <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
+                            <Coins size={12} className="text-emerald-500" />
                           </div>
-                          <span className={cn("text-[12px] font-semibold", isDark ? "text-white" : "text-gray-900")}>Token Trading</span>
+                          <span className={cn("text-[11px] font-semibold", isDark ? "text-white" : "text-gray-900")}>Token Trading</span>
                         </div>
-                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
+                        <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
                           <span className="text-emerald-500 tabular-nums">{fCurrency5(data.buyCount || 0)}</span>
                           <span className={isDark ? "text-white/20" : "text-gray-300"}>|</span>
                           <span className="text-red-500 tabular-nums">{fCurrency5(data.sellCount || 0)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center mb-4">
+                      <div className="flex items-center mb-3">
                         {[
                           { label: 'P&L', value: fCurrency5(totalPnL), color: totalPnL >= 0 ? 'text-emerald-500' : 'text-red-500' },
                           { label: 'ROI', value: `${(data.roi || 0).toFixed(1)}%`, color: (data.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500' },
@@ -800,16 +809,16 @@ const OverView = ({ account }) => {
                           { label: 'VOL', value: fCurrency5((data.dexVolume || 0) + (data.ammVolume || 0)), color: isDark ? 'text-white' : 'text-gray-900' }
                         ].map((s, i, arr) => (
                           <div key={s.label} className="flex items-center flex-1">
-                            <div className="p-2.5 text-center flex-1">
+                            <div className="py-1.5 px-1 text-center flex-1">
                               <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
-                              <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
+                              <p className={cn("text-[14px] font-semibold tabular-nums", s.color)}>{s.value}</p>
                             </div>
-                            {i < arr.length - 1 && <div className={cn("w-px h-8", isDark ? "bg-white/10" : "bg-gray-200")} />}
+                            {i < arr.length - 1 && <div className={cn("w-px h-7", isDark ? "bg-white/10" : "bg-gray-200")} />}
                           </div>
                         ))}
                       </div>
-                      <div className={cn("flex items-center justify-between pt-3 text-[10px]", isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100")}>
-                        <div className="flex items-center gap-3">
+                      <div className={cn("flex items-center justify-between pt-2.5 text-[10px]", isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100")}>
+                        <div className="flex items-center gap-2.5">
                           <span><span className={isDark ? "text-white/30" : "text-gray-400"}>DEX</span> <span className={cn("tabular-nums font-medium", (data.dexProfit || 0) >= 0 ? "text-emerald-500" : "text-red-500")}>{(data.dexProfit || 0) >= 0 ? '+' : ''}{fCurrency5(data.dexProfit || 0)}</span></span>
                           <span><span className={isDark ? "text-white/30" : "text-gray-400"}>AMM</span> <span className={cn("tabular-nums font-medium", (data.ammProfit || 0) >= 0 ? "text-emerald-500" : "text-red-500")}>{(data.ammProfit || 0) >= 0 ? '+' : ''}{fCurrency5(data.ammProfit || 0)}</span></span>
                         </div>
@@ -826,9 +835,9 @@ const OverView = ({ account }) => {
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[180px]">
-                      <div className={cn("w-10 h-10 mb-3 rounded-xl flex items-center justify-center", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
-                        <Coins size={18} className={isDark ? "text-emerald-500/50" : "text-emerald-400"} />
+                    <div className="flex flex-col items-center justify-center h-full min-h-[140px]">
+                      <div className={cn("w-9 h-9 mb-2 rounded-xl flex items-center justify-center", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
+                        <Coins size={16} className={isDark ? "text-emerald-500/50" : "text-emerald-400"} />
                       </div>
                       <p className={cn("text-[11px] font-semibold tracking-wide mb-0.5", isDark ? "text-white/60" : "text-gray-600")}>No Token Trades</p>
                       <p className={cn("text-[10px]", isDark ? "text-white/25" : "text-gray-400")}>Activity will appear here</p>
@@ -837,24 +846,24 @@ const OverView = ({ account }) => {
                 </div>
 
                 {/* NFT Trading */}
-                <div className={cn("p-5 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
+                <div className={cn("p-4 rounded-xl border-[1.5px] h-full", isDark ? "border-white/10" : "border-gray-200")}>
                   {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
                     <>
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", isDark ? "bg-violet-500/10" : "bg-violet-50")}>
-                            <Image size={14} className="text-violet-500" />
+                          <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center", isDark ? "bg-violet-500/10" : "bg-violet-50")}>
+                            <Image size={12} className="text-violet-500" />
                           </div>
-                          <span className={cn("text-[12px] font-semibold", isDark ? "text-white" : "text-gray-900")}>NFT Trading</span>
+                          <span className={cn("text-[11px] font-semibold", isDark ? "text-white" : "text-gray-900")}>NFT Trading</span>
                           {nftStats.holdingsCount > 0 && <span className={cn("text-[9px] px-1.5 py-0.5 rounded-md font-medium", isDark ? "bg-violet-500/10 text-violet-400" : "bg-violet-50 text-violet-500")}>{nftStats.holdingsCount} held</span>}
                         </div>
-                        <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
+                        <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px]", isDark ? "bg-white/[0.05]" : "bg-gray-100/50")}>
                           <span className="text-emerald-500 tabular-nums">{fCurrency5(nftStats.buyCount || 0)}</span>
                           <span className={isDark ? "text-white/20" : "text-gray-300"}>|</span>
                           <span className="text-red-500 tabular-nums">{fCurrency5(nftStats.sellCount || 0)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center mb-4">
+                      <div className="flex items-center mb-3">
                         {[
                           { label: 'REALIZED', value: fCurrency5(nftStats.profit || 0), color: (nftStats.profit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500' },
                           { label: 'UNREAL', value: fCurrency5(nftStats.unrealizedProfit || 0), color: (nftStats.unrealizedProfit || 0) === 0 ? (isDark ? 'text-white' : 'text-gray-900') : (nftStats.unrealizedProfit || 0) > 0 ? 'text-emerald-500' : 'text-amber-500' },
@@ -864,17 +873,17 @@ const OverView = ({ account }) => {
                           ...(nftStats.holdingsCount > 0 ? [{ label: 'VALUE', value: fCurrency5(nftStats.holdingsValue || 0), color: isDark ? 'text-white' : 'text-gray-900', subLabel: 'COST', subValue: fCurrency5(nftStats.holdingsCost || 0) }] : [])
                         ].map((s, i, arr) => (
                           <div key={s.label} className="flex items-center flex-1">
-                            <div className="p-2.5 text-center flex-1">
+                            <div className="py-1.5 px-1 text-center flex-1">
                               <p className={cn("text-[9px] uppercase tracking-wider mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{s.label}</p>
-                              <p className={cn("text-[15px] font-semibold tabular-nums", s.color)}>{s.value}</p>
-                              {s.subLabel && <p className={cn("text-[8px] uppercase tracking-wider mt-1", isDark ? "text-white/20" : "text-gray-300")}>{s.subLabel} <span className={cn("tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{s.subValue}</span></p>}
+                              <p className={cn("text-[14px] font-semibold tabular-nums", s.color)}>{s.value}</p>
+                              {s.subLabel && <p className={cn("text-[8px] uppercase tracking-wider mt-0.5", isDark ? "text-white/20" : "text-gray-300")}>{s.subLabel} <span className={cn("tabular-nums", isDark ? "text-white/40" : "text-gray-500")}>{s.subValue}</span></p>}
                             </div>
-                            {i < arr.length - 1 && <div className={cn("w-px h-8", isDark ? "bg-white/10" : "bg-gray-200")} />}
+                            {i < arr.length - 1 && <div className={cn("w-px h-7", isDark ? "bg-white/10" : "bg-gray-200")} />}
                           </div>
                         ))}
                       </div>
-                      <div className={cn("flex items-center justify-between pt-3 text-[10px]", isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100")}>
-                        <div className="flex items-center gap-3">
+                      <div className={cn("flex items-center justify-between pt-2.5 text-[10px]", isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100")}>
+                        <div className="flex items-center gap-2.5">
                           <span><span className={isDark ? "text-white/30" : "text-gray-400"}>FLIPS</span> <span className={cn("tabular-nums font-medium", isDark ? "text-white/70" : "text-gray-600")}>{nftStats.flips || 0}</span></span>
                           <span><span className={isDark ? "text-white/30" : "text-gray-400"}>HOLD</span> <span className={cn("tabular-nums font-medium", isDark ? "text-white/70" : "text-gray-600")}>{(nftStats.avgHoldingDays || 0).toFixed(0)}d</span></span>
                           {nftStats.collections?.slice(0, 2).map(c => (
@@ -898,34 +907,26 @@ const OverView = ({ account }) => {
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <div className="relative w-14 h-14 mb-4">
+                    <div className="flex flex-col items-center justify-center py-5">
+                      <div className="relative w-10 h-10 mb-3">
                         {/* Ears */}
-                        <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                        <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                        <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-                        <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        <div className={cn("absolute -top-0.5 left-0 w-3 h-3 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute -top-0.5 right-0 w-3 h-3 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute top-0 left-1 w-1.5 h-1.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        <div className={cn("absolute top-0 right-1 w-1.5 h-1.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
                         {/* Face */}
-                        <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                        <div className={cn("absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
                           {/* Eyes */}
-                          <div className="absolute top-3 left-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                          <div className="absolute top-3 right-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                          <div className="absolute top-2 left-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
+                          <div className="absolute top-2 right-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
                           {/* Snout */}
-                          <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
-                            <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+                          <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                            <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-0.5 rounded-full bg-[#0a0a0a]" />
                           </div>
-                          {/* Frown */}
-                          <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
-                        </div>
-                        {/* Scanlines */}
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                          {[...Array(10)].map((_, i) => (
-                            <div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
-                          ))}
                         </div>
                       </div>
-                      <p className={cn("text-xs font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>NO NFT TRADES</p>
-                      <p className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>NFT trading activity will appear here</p>
+                      <p className={cn("text-[10px] font-medium tracking-widest mb-0.5", isDark ? "text-white/80" : "text-gray-600")}>NO NFT TRADES</p>
+                      <p className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>NFT trading activity will appear here</p>
                     </div>
                   )}
                 </div>
@@ -933,7 +934,7 @@ const OverView = ({ account }) => {
             )}
 
             {/* Tabs */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-1.5 mb-4">
               {[
                 { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: nftStats?.holdingsCount || 0 },
@@ -943,15 +944,15 @@ const OverView = ({ account }) => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium tracking-wider rounded-md border transition-all",
                     activeTab === tab.id
                       ? cn(isDark ? "border-white/20 text-white" : "border-gray-300 text-gray-900")
                       : cn(isDark ? "border-white/10 text-white/40 hover:text-white/60 hover:border-white/15" : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300")
                   )}
                 >
-                  <tab.icon size={15} strokeWidth={1.5} />
+                  <tab.icon size={13} strokeWidth={1.5} />
                   {tab.label}
-                  <span className={cn("text-[11px]", activeTab === tab.id ? (isDark ? "text-white/50" : "text-gray-500") : (isDark ? "text-white/20" : "text-gray-400"))}>{tab.count}</span>
+                  <span className={cn("text-[10px]", activeTab === tab.id ? (isDark ? "text-white/50" : "text-gray-500") : (isDark ? "text-white/20" : "text-gray-400"))}>{tab.count}</span>
                 </button>
               ))}
             </div>
@@ -968,52 +969,52 @@ const OverView = ({ account }) => {
                   const totalValue = filteredLines.reduce((sum, l) => sum + (l.value || 0), 0);
 
                   return (
-                    <div className={cn("rounded-xl border-[1.5px] mb-6 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
-                      <div className={cn("flex items-center justify-between px-4 py-3", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
-                        <div className="flex items-center gap-3">
-                          <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <div className={cn("rounded-xl border-[1.5px] mb-4 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                      <div className={cn("flex items-center justify-between px-3 py-2.5", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
                             Holdings <span className={cn("font-normal ml-1", isDark ? "text-white/30" : "text-gray-400")}>{holdings.total}</span>
                           </span>
                           {zeroCount > 0 && (
                             <button
                               onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
-                              className={cn("text-[10px] px-2.5 py-1 rounded-full transition-all duration-200", hideZeroHoldings ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : (isDark ? "bg-white/[0.04] text-white/40 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-500 hover:bg-gray-200"))}
+                              className={cn("text-[9px] px-2 py-0.5 rounded-full transition-all duration-200", hideZeroHoldings ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20" : (isDark ? "bg-white/[0.04] text-white/40 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-500 hover:bg-gray-200"))}
                             >
                               {hideZeroHoldings ? `+${zeroCount} hidden` : 'Hide empty'}
                             </button>
                           )}
                         </div>
                         {filteredLines.length > 0 && (
-                          <div className="flex items-baseline gap-1.5">
-                              <span className={cn("text-[20px] font-semibold tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(totalValue + (holdings.accountData?.balanceDrops || 0) / 1000000)}</span>
-                              <span className={cn("text-[11px] font-medium", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                          <div className="flex items-baseline gap-1">
+                              <span className={cn("text-[18px] font-semibold tabular-nums tracking-tight", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(totalValue + (holdings.accountData?.balanceDrops || 0) / 1000000)}</span>
+                              <span className={cn("text-[10px] font-medium", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
                             </div>
                         )}
                       </div>
-                      <div className="px-4 py-4">
+                      <div className="px-3 py-3">
                       {filteredLines.length > 0 ? (
                         <div className="space-y-0">
                           {/* Table Header */}
-                          <div className="grid px-3 py-2.5 mb-1" style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
-                            <span className={cn("text-[10px] uppercase tracking-wider font-medium", isDark ? "text-white/40" : "text-gray-500")}>Token</span>
-                            <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Price</span>
-                            <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>24h</span>
-                            <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Balance</span>
-                            <span className={cn("text-[10px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Value</span>
+                          <div className="grid px-2 py-2 mb-0.5" style={{ gridTemplateColumns: '2fr 1.1fr 1.1fr 1.1fr 0.7fr' }}>
+                            <span className={cn("text-[9px] uppercase tracking-wider font-medium", isDark ? "text-white/40" : "text-gray-500")}>Token</span>
+                            <span className={cn("text-[9px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Balance</span>
+                            <span className={cn("text-[9px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Value</span>
+                            <span className={cn("text-[9px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>Price</span>
+                            <span className={cn("text-[9px] uppercase tracking-wider font-medium text-right", isDark ? "text-white/40" : "text-gray-500")}>24h</span>
                           </div>
                           {/* XRP Row */}
                           {holdings.accountData?.balanceDrops > 0 && (
-                            <Link href="/token/xrpl-xrp" className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group border-b", isDark ? "hover:bg-white/[0.03] border-white/[0.04]" : "hover:bg-gray-50 border-gray-100")} style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
-                              <div className="flex items-center gap-3">
-                                <div className={cn("w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
+                            <Link href="/token/xrpl-xrp" className={cn("grid px-2 py-2.5 items-center rounded-lg transition-all duration-200 group border-b", isDark ? "hover:bg-white/[0.03] border-white/[0.04]" : "hover:bg-gray-50 border-gray-100")} style={{ gridTemplateColumns: '2fr 1.1fr 1.1fr 1.1fr 0.7fr' }}>
+                              <div className="flex items-center gap-2.5">
+                                <div className={cn("w-7 h-7 rounded-full overflow-hidden ring-2 transition-all duration-200", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                   <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" className="w-full h-full object-cover" alt="" />
                                 </div>
-                                <span className={cn("text-[13px] font-medium group-hover:text-[#4285f4] transition-colors", isDark ? "text-white" : "text-gray-900")}>XRP</span>
+                                <span className={cn("text-[12px] font-medium group-hover:text-[#4285f4] transition-colors", isDark ? "text-white" : "text-gray-900")}>XRP</span>
                               </div>
-                              <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{xrpPrice ? `$${parseFloat(xrpPrice).toFixed(4)}` : '—'}</span>
-                              <span className={cn("text-[12px] text-right tabular-nums font-medium", holdings?.xrp?.pro24h >= 0 ? "text-emerald-400" : "text-red-400")}>{holdings?.xrp?.pro24h ? `${holdings.xrp.pro24h >= 0 ? '+' : ''}${holdings.xrp.pro24h.toFixed(1)}%` : '—'}</span>
-                              <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(holdings.accountData.balanceDrops / 1000000)}</span>
-                              <span className={cn("text-[13px] text-right tabular-nums font-semibold", isDark ? "text-white" : "text-gray-900")}>{xrpPrice ? `$${fCurrency5((holdings.accountData.balanceDrops / 1000000) * xrpPrice)}` : `${fCurrency5(holdings.accountData.balanceDrops / 1000000)} XRP`}</span>
+                              <span className={cn("text-[12px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(holdings.accountData.balanceDrops / 1000000)}</span>
+                              <span className={cn("text-[12px] text-right tabular-nums font-semibold", isDark ? "text-white" : "text-gray-900")}>{xrpPrice ? `$${fCurrency5((holdings.accountData.balanceDrops / 1000000) * xrpPrice)}` : `${fCurrency5(holdings.accountData.balanceDrops / 1000000)} XRP`}</span>
+                              <span className={cn("text-[12px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{xrpPrice ? `$${parseFloat(xrpPrice).toFixed(4)}` : '—'}</span>
+                              <span className={cn("text-[11px] text-right tabular-nums font-medium", holdings?.xrp?.pro24h >= 0 ? "text-emerald-400" : "text-red-400")}>{holdings?.xrp?.pro24h ? `${holdings.xrp.pro24h >= 0 ? '+' : ''}${holdings.xrp.pro24h.toFixed(1)}%` : '—'}</span>
                             </Link>
                           )}
                           {/* Table Rows */}
@@ -1022,56 +1023,50 @@ const OverView = ({ account }) => {
                             const change24h = line.token?.pro24h || 0;
                             const pctOwned = line.percentOwned || 0;
                             return (
-                              <div key={idx} className={cn("grid px-3 py-3.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50", idx < filteredLines.length - 1 && (isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"))} style={{ gridTemplateColumns: '2fr 1.1fr 0.7fr 1.1fr 1.1fr' }}>
-                                <Link href={`/token/${line.token?.md5}`} className="flex items-center gap-3">
-                                  <div className={cn("w-8 h-8 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
+                              <div key={idx} className={cn("grid px-2 py-2.5 items-center rounded-lg transition-all duration-200 group", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50", idx < filteredLines.length - 1 && (isDark ? "border-b border-white/[0.04]" : "border-b border-gray-100"))} style={{ gridTemplateColumns: '2fr 1.1fr 1.1fr 1.1fr 0.7fr' }}>
+                                <Link href={`/token/${line.token?.md5}`} className="flex items-center gap-2.5">
+                                  <div className={cn("w-7 h-7 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                     <img src={`https://s1.xrpl.to/token/${line.token?.md5}`} className="w-full h-full object-cover" onError={(e) => { e.target.parentElement.style.display = 'none'; }} alt="" />
                                   </div>
                                   <div className="flex flex-col min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className={cn("text-[13px] font-medium group-hover:text-[#4285f4] transition-colors truncate", isDark ? "text-white" : "text-gray-900")}>{line.token?.name || line.currency}</span>
-                                      {line.token?.verified >= 1 && <span className={cn("px-1.5 py-0.5 rounded-md text-[9px] font-medium flex-shrink-0", isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")}>Verified</span>}
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={cn("text-[12px] font-medium group-hover:text-[#4285f4] transition-colors truncate", isDark ? "text-white" : "text-gray-900")}>{line.token?.name || line.currency}</span>
+                                      {line.token?.verified >= 1 && <span className={cn("px-1 py-0.5 rounded text-[8px] font-medium flex-shrink-0", isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")}>Verified</span>}
                                     </div>
-                                    {pctOwned > 0.01 && <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>{pctOwned.toFixed(2)}% supply</span>}
+                                    {pctOwned > 0.01 && <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{pctOwned.toFixed(2)}% supply</span>}
                                   </div>
                                 </Link>
-                                <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{priceInXrp ? `${fCurrency5(priceInXrp)}` : '—'}</span>
-                                <span className={cn("text-[12px] text-right tabular-nums font-medium", change24h >= 0 ? "text-emerald-400" : "text-red-400")}>{change24h ? `${change24h >= 0 ? '+' : ''}${change24h.toFixed(1)}%` : '—'}</span>
-                                <span className={cn("text-[13px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
-                                <span className={cn("text-[13px] text-right tabular-nums font-semibold", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(line.value)} XRP</span>
+                                <span className={cn("text-[12px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</span>
+                                <span className={cn("text-[12px] text-right tabular-nums font-semibold", isDark ? "text-white" : "text-gray-900")}>{fCurrency5(line.value)} XRP</span>
+                                <span className={cn("text-[12px] text-right tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{priceInXrp ? `${fCurrency5(priceInXrp)}` : '—'}</span>
+                                <span className={cn("text-[11px] text-right tabular-nums font-medium", change24h >= 0 ? "text-emerald-400" : "text-red-400")}>{change24h ? `${change24h >= 0 ? '+' : ''}${change24h.toFixed(1)}%` : '—'}</span>
                               </div>
                             );
                           })}
                           {/* Pagination */}
-                          <div className={cn("flex items-center justify-end gap-1 mt-4 pt-4 border-t", isDark ? "border-white/[0.04]" : "border-gray-100")}>
-                            <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-[14px] transition-all duration-200", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:bg-white/[0.04] hover:text-white/70" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"))}>‹</button>
-                            <span className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-[12px] tabular-nums font-medium", isDark ? "bg-white/[0.04] text-white/60" : "bg-gray-100 text-gray-600")}>{holdingsPage + 1}</span>
-                            <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-[14px] transition-all duration-200", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:bg-white/[0.04] hover:text-white/70" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"))}>›</button>
+                          <div className={cn("flex items-center justify-end gap-1 mt-3 pt-3 border-t", isDark ? "border-white/[0.04]" : "border-gray-100")}>
+                            <button onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))} disabled={holdingsPage === 0} className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[13px] transition-all duration-200", holdingsPage === 0 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:bg-white/[0.04] hover:text-white/70" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"))}>‹</button>
+                            <span className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[11px] tabular-nums font-medium", isDark ? "bg-white/[0.04] text-white/60" : "bg-gray-100 text-gray-600")}>{holdingsPage + 1}</span>
+                            <button onClick={() => setHoldingsPage(holdingsPage + 1)} disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1} className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[13px] transition-all duration-200", holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/10" : "text-gray-200") : (isDark ? "text-white/40 hover:bg-white/[0.04] hover:text-white/70" : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"))}>›</button>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <div className="relative w-14 h-14 mb-4">
-                            <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                            <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
-                            <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-                            <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
-                            <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
-                              <div className="absolute top-3 left-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                              <div className="absolute top-3 right-2 w-1.5 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                              <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
-                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
+                        <div className="flex flex-col items-center justify-center py-5">
+                          <div className="relative w-10 h-10 mb-3">
+                            <div className={cn("absolute -top-0.5 left-0 w-3 h-3 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                            <div className={cn("absolute -top-0.5 right-0 w-3 h-3 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                            <div className={cn("absolute top-0 left-1 w-1.5 h-1.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                            <div className={cn("absolute top-0 right-1 w-1.5 h-1.5 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                            <div className={cn("absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                              <div className="absolute top-2 left-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
+                              <div className="absolute top-2 right-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
+                              <div className={cn("absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}>
+                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-0.5 rounded-full bg-[#0a0a0a]" />
                               </div>
-                              <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
-                            </div>
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-11 h-11 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                              {[...Array(10)].map((_, i) => (
-                                <div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />
-                              ))}
                             </div>
                           </div>
-                          <p className={cn("text-xs font-medium tracking-widest mb-1", isDark ? "text-white/80" : "text-gray-600")}>{hideZeroHoldings ? 'NO TOKENS WITH BALANCE' : 'NO TOKEN HOLDINGS'}</p>
-                          <p className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>Token holdings will appear here</p>
+                          <p className={cn("text-[10px] font-medium tracking-widest mb-0.5", isDark ? "text-white/80" : "text-gray-600")}>{hideZeroHoldings ? 'NO TOKENS WITH BALANCE' : 'NO TOKEN HOLDINGS'}</p>
+                          <p className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>Token holdings will appear here</p>
                         </div>
                       )}
                       </div>
@@ -1090,37 +1085,37 @@ const OverView = ({ account }) => {
                   const maxProfit = Math.max(...filteredTokens.map(t => Math.abs(t.profit || 0)), 1);
 
                   return (
-                    <div className={cn("rounded-xl border-[1.5px] mb-6 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
-                      <div className={cn("flex items-center justify-between px-4 py-3", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
-                        <span className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                    <div className={cn("rounded-xl border-[1.5px] mb-4 overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+                      <div className={cn("flex items-center justify-between px-3 py-2.5", isDark ? "border-b border-white/10" : "border-b border-gray-100")}>
+                        <span className={cn("text-[12px] font-medium", isDark ? "text-white" : "text-gray-900")}>
                           Trading Performance <span className={cn("font-normal ml-1", isDark ? "text-white/30" : "text-gray-400")}>{totalCount}</span>
                         </span>
-                        <div className={cn("flex items-center rounded-lg overflow-hidden", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                        <div className={cn("flex items-center rounded-md overflow-hidden", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
                           <input
                             type="text"
                             placeholder="Search tokens..."
                             value={tokenSearch}
                             onChange={(e) => setTokenSearch(e.target.value)}
                             className={cn(
-                              "text-[12px] px-3 py-2 bg-transparent border-none outline-none w-36",
+                              "text-[11px] px-2.5 py-1.5 bg-transparent border-none outline-none w-32",
                               isDark ? "text-white/70 placeholder:text-white/30" : "text-gray-600 placeholder:text-gray-400"
                             )}
                           />
                         </div>
                       </div>
                       {/* Table */}
-                      <div className="px-5 py-4 overflow-x-auto">
+                      <div className="px-3 py-3 overflow-x-auto">
                         <table className="w-full">
                           <thead>
                             <tr>
-                              <th className={cn("py-2.5 pr-3 text-left text-[10px] font-medium uppercase tracking-wider rounded-l-lg", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Token</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Volume</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Trades</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-emerald-400/60 bg-white/[0.02]" : "text-emerald-600/70 bg-gray-50")}>Bought</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-red-400/60 bg-white/[0.02]" : "text-red-600/70 bg-gray-50")}>Sold</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>ROI</th>
-                              <th className={cn("py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>PNL</th>
-                              <th className={cn("py-2.5 pl-3 text-right text-[10px] font-medium uppercase tracking-wider rounded-r-lg", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Period</th>
+                              <th className={cn("py-2 pr-2 text-left text-[9px] font-medium uppercase tracking-wider rounded-l-lg", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Token</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Volume</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Trades</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-emerald-400/60 bg-white/[0.02]" : "text-emerald-600/70 bg-gray-50")}>Bought</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-red-400/60 bg-white/[0.02]" : "text-red-600/70 bg-gray-50")}>Sold</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>ROI</th>
+                              <th className={cn("py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>PNL</th>
+                              <th className={cn("py-2 pl-2 text-right text-[9px] font-medium uppercase tracking-wider rounded-r-lg", isDark ? "text-white/40 bg-white/[0.02]" : "text-gray-500 bg-gray-50")}>Period</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1131,36 +1126,36 @@ const OverView = ({ account }) => {
                               const sold = token.xrpSold || 0;
                               return (
                                 <tr key={idx} className={cn("group transition-all duration-200 border-b", isDark ? "hover:bg-white/[0.02] border-white/[0.04] last:border-transparent" : "hover:bg-gray-50 border-gray-100 last:border-transparent")}>
-                                  <td className="py-3.5 pr-3">
-                                    <Link href={`/token/${token.tokenId}`} className="flex items-center gap-2.5">
-                                      <div className={cn("w-7 h-7 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
+                                  <td className="py-2.5 pr-2">
+                                    <Link href={`/token/${token.tokenId}`} className="flex items-center gap-2">
+                                      <div className={cn("w-6 h-6 rounded-full overflow-hidden ring-2 transition-all duration-200 flex-shrink-0", isDark ? "ring-white/[0.06] group-hover:ring-white/[0.12]" : "ring-gray-100 group-hover:ring-gray-200")}>
                                         <img src={`https://s1.xrpl.to/token/${token.tokenId}`} className="w-full h-full object-cover" onError={(e) => { e.target.parentElement.style.display = 'none'; }} alt="" />
                                       </div>
-                                      <span className={cn("text-[12px] font-medium group-hover:text-[#4285f4] transition-colors", isDark ? "text-white/80" : "text-gray-700")}>{token.name}</span>
+                                      <span className={cn("text-[11px] font-medium group-hover:text-[#4285f4] transition-colors", isDark ? "text-white/80" : "text-gray-700")}>{token.name}</span>
                                     </Link>
                                   </td>
-                                  <td className={cn("py-3.5 px-3 text-right text-[12px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(token.volume || 0)}</td>
-                                  <td className={cn("py-3.5 px-3 text-right text-[12px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(token.trades || 0)}</td>
-                                  <td className="py-3.5 px-3 text-right">
-                                    <span className="text-[12px] tabular-nums font-medium text-emerald-400">{fCurrency5(bought)}</span>
-                                    {token.avgBuyPrice > 0 && <span className={cn("text-[9px] ml-1", isDark ? "text-white/25" : "text-gray-400")}>@{token.avgBuyPrice < 0.001 ? token.avgBuyPrice.toExponential(1) : fCurrency5(token.avgBuyPrice)}</span>}
+                                  <td className={cn("py-2.5 px-2 text-right text-[11px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(token.volume || 0)}</td>
+                                  <td className={cn("py-2.5 px-2 text-right text-[11px] tabular-nums", isDark ? "text-white/50" : "text-gray-500")}>{fCurrency5(token.trades || 0)}</td>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className="text-[11px] tabular-nums font-medium text-emerald-400">{fCurrency5(bought)}</span>
+                                    {token.avgBuyPrice > 0 && <span className={cn("text-[8px] ml-0.5", isDark ? "text-white/25" : "text-gray-400")}>@{token.avgBuyPrice < 0.001 ? token.avgBuyPrice.toExponential(1) : fCurrency5(token.avgBuyPrice)}</span>}
                                   </td>
-                                  <td className="py-3.5 px-3 text-right">
-                                    <span className="text-[12px] tabular-nums font-medium text-red-400">{fCurrency5(sold)}</span>
-                                    {token.avgSellPrice > 0 && <span className={cn("text-[9px] ml-1", isDark ? "text-white/25" : "text-gray-400")}>@{token.avgSellPrice < 0.001 ? token.avgSellPrice.toExponential(1) : fCurrency5(token.avgSellPrice)}</span>}
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className="text-[11px] tabular-nums font-medium text-red-400">{fCurrency5(sold)}</span>
+                                    {token.avgSellPrice > 0 && <span className={cn("text-[8px] ml-0.5", isDark ? "text-white/25" : "text-gray-400")}>@{token.avgSellPrice < 0.001 ? token.avgSellPrice.toExponential(1) : fCurrency5(token.avgSellPrice)}</span>}
                                   </td>
-                                  <td className="py-3.5 px-3 text-right">
-                                    <span className={cn("text-[12px] tabular-nums font-medium px-2 py-0.5 rounded-md", roi >= 0 ? (isDark ? "text-emerald-400 bg-emerald-500/10" : "text-emerald-600 bg-emerald-50") : (isDark ? "text-red-400 bg-red-500/10" : "text-red-600 bg-red-50"))}>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className={cn("text-[10px] tabular-nums font-medium px-1.5 py-0.5 rounded", roi >= 0 ? (isDark ? "text-emerald-400 bg-emerald-500/10" : "text-emerald-600 bg-emerald-50") : (isDark ? "text-red-400 bg-red-500/10" : "text-red-600 bg-red-50"))}>
                                       {roi >= 0 ? '+' : ''}{roi.toFixed(1)}%
                                     </span>
                                   </td>
-                                  <td className="py-3.5 px-3 text-right">
-                                    <span className={cn("text-[12px] font-semibold tabular-nums", profit >= 0 ? "text-emerald-400" : "text-red-400")}>
+                                  <td className="py-2.5 px-2 text-right">
+                                    <span className={cn("text-[11px] font-semibold tabular-nums", profit >= 0 ? "text-emerald-400" : "text-red-400")}>
                                       {profit >= 0 ? '+' : ''}{fCurrency5(profit)}
                                     </span>
                                   </td>
-                                  <td className="py-3.5 pl-3 text-right">
-                                    <span className={cn("text-[10px] tabular-nums whitespace-nowrap", isDark ? "text-white/30" : "text-gray-400")}>
+                                  <td className="py-2.5 pl-2 text-right">
+                                    <span className={cn("text-[9px] tabular-nums whitespace-nowrap", isDark ? "text-white/30" : "text-gray-400")}>
                                       {token.firstTradeDate ? new Date(token.firstTradeDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }) : '—'}
                                       {token.lastTradeDate && token.firstTradeDate !== token.lastTradeDate && (
                                         <> → {new Date(token.lastTradeDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</>
@@ -1174,7 +1169,7 @@ const OverView = ({ account }) => {
                         </table>
                       </div>
                       {filteredTokens.length > 10 && (
-                        <button onClick={() => setShowAllTokens(!showAllTokens)} className={cn("w-full text-center py-3.5 text-[12px] font-medium border-t transition-all duration-200", isDark ? "border-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.02]" : "border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50")}>
+                        <button onClick={() => setShowAllTokens(!showAllTokens)} className={cn("w-full text-center py-2.5 text-[11px] font-medium border-t transition-all duration-200", isDark ? "border-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.02]" : "border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50")}>
                           {showAllTokens ? 'Show less' : `Show all ${filteredTokens.length} tokens`}
                         </button>
                       )}
@@ -1417,7 +1412,7 @@ const OverView = ({ account }) => {
                         <tr>
                           <td colSpan={4} className={cn("px-4 py-8 text-center text-[13px]", isDark ? "text-white/35" : "text-gray-400")}>No transactions found</td>
                         </tr>
-                      ) : txHistory.slice(0, 50).map((tx) => {
+                      ) : txHistory.map((tx) => {
                         const parsed = parseTx(tx);
                         return (
                           <tr key={parsed.id} className={cn("transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
@@ -1477,6 +1472,15 @@ const OverView = ({ account }) => {
                     </tbody>
                   </table>
                 </div>
+                {txHasMore && (
+                  <button
+                    onClick={() => fetchTxHistory(txMarker)}
+                    disabled={txLoading}
+                    className={cn("w-full text-center py-3.5 text-[12px] font-medium border-t transition-all duration-200", isDark ? "border-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.02]" : "border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50")}
+                  >
+                    {txLoading ? 'Loading...' : `Load more transactions`}
+                  </button>
+                )}
               </div>
               )}
 

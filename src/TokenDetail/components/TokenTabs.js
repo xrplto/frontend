@@ -214,13 +214,13 @@ const TokenTabs = memo(({ currentMd5 }) => {
       {/* Search Modal */}
       {searchOpen && (
         <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[12vh]" onClick={() => { setSearchOpen(false); setQuery(''); }}>
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className={cn("fixed inset-0 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} />
           <div
             ref={searchRef}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'relative w-full max-w-md mx-4 rounded-xl border overflow-hidden',
-              isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200 shadow-xl'
+              'relative w-full max-w-md mx-4 rounded-2xl border-[1.5px] overflow-hidden',
+              isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
             )}
           >
             <div className={cn('flex items-center gap-3 px-4 py-3 border-b', isDark ? 'border-white/10' : 'border-gray-100')}>

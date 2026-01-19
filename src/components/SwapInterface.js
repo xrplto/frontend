@@ -24,7 +24,10 @@ import {
   ToggleLeft,
   ToggleRight,
   List,
-  Settings
+  Settings,
+  Code2,
+  Copy,
+  Check
 } from 'lucide-react';
 
 // Utils
@@ -475,6 +478,13 @@ function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
 
+const SWAP_API_ENDPOINTS = [
+  { label: 'Token List', url: 'https://api.xrpl.to/api/tokens', params: 'start, limit, sortBy, sortType, filter' },
+  { label: 'Token Detail', url: 'https://api.xrpl.to/api/token/{md5}' },
+  { label: 'Orderbook', url: 'https://api.xrpl.to/api/orderbook/{base}/{quote}', params: 'limit' },
+  { label: 'Rates', url: 'https://api.xrpl.to/api/rates' }
+];
+
 function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAsks }) {
   const theme = useTheme();
   const router = useRouter();
@@ -541,6 +551,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [showDepthPanel, setShowDepthPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+  const [showApi, setShowApi] = useState(false);
+  const [copiedApiIdx, setCopiedApiIdx] = useState(null);
 
   const amount1Ref = useRef(null);
 
@@ -2171,8 +2183,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       key={token.md5}
       onClick={() => handleSelectToken(token, isToken1)}
       className={cn(
-        "flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150",
-        darkMode ? "hover:bg-white/[0.03]" : "hover:bg-gray-50"
+        "flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-150",
+        darkMode
+          ? "hover:bg-white/[0.06] hover:border-white/[0.08] border border-transparent"
+          : "hover:bg-gray-100/80 hover:border-gray-200/60 border border-transparent"
       )}
     >
       <img
@@ -2261,19 +2275,24 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
     <>
       {/* Backdrop overlay */}
-      <div onClick={onClose} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1200]" />
-
-      {/* Modal Panel */}
-      <div className={cn(
-        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-xl border overflow-hidden max-h-[80vh] flex flex-col z-[1201]",
+      <div onClick={onClose} className={cn(
+        "fixed inset-0 z-[1200]",
         darkMode
-          ? "bg-[#070b12]/98 backdrop-blur-xl border-blue-500/20 shadow-2xl shadow-blue-500/10"
-          : "bg-white backdrop-blur-2xl border-blue-200 shadow-xl shadow-blue-200/50"
+          ? "bg-black/70 backdrop-blur-md"
+          : "bg-white/60 backdrop-blur-md"
+      )} />
+
+      {/* Modal Panel - Glassmorphism */}
+      <div className={cn(
+        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-2xl overflow-hidden max-h-[80vh] flex flex-col z-[1201]",
+        darkMode
+          ? "bg-black/80 backdrop-blur-2xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/50"
+          : "bg-white/80 backdrop-blur-2xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-300/30"
       )}>
         {/* Search Header */}
         <div className={cn(
           "flex items-center gap-3 px-4 h-[52px] border-b",
-          darkMode ? "border-primary/10" : "border-primary/10"
+          darkMode ? "border-white/[0.06]" : "border-gray-200/60"
         )}>
           <Search size={16} className={darkMode ? "text-white/40" : "text-gray-400"} />
           <input
@@ -2292,7 +2311,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         </div>
 
         {/* Category Filters */}
-        <div className={cn("flex flex-wrap gap-1.5 px-4 py-2 border-b", darkMode ? "border-primary/10" : "border-primary/10")}>
+        <div className={cn("flex flex-wrap gap-1.5 px-4 py-2 border-b", darkMode ? "border-white/[0.06]" : "border-gray-200/60")}>
           {categories.slice(0, 6).map((cat) => (
             <button
               key={cat.value}
@@ -2312,7 +2331,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'none' }}>
+        <div className={cn(
+          "flex-1 overflow-y-auto overflow-x-hidden",
+          darkMode ? "bg-black/20" : "bg-gray-50/50"
+        )} style={{ scrollbarWidth: 'none' }}>
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
             <div className="p-2">
@@ -2443,6 +2465,43 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               >
                 <Share2 size={14} />
               </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowApi(!showApi)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-colors",
+                    darkMode
+                      ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 bg-black/50"
+                      : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 bg-white/80"
+                  )}
+                >
+                  <Code2 size={12} />
+                  API
+                </button>
+                {showApi && (
+                  <div className={cn(
+                    'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-xl border z-50 w-[300px]',
+                    darkMode
+                      ? 'bg-black/95 backdrop-blur-xl border-[#3f96fe]/10 shadow-lg'
+                      : 'bg-white border-gray-200 shadow-lg'
+                  )}>
+                    <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Swap API Endpoints</div>
+                    {SWAP_API_ENDPOINTS.map((ep, idx) => (
+                      <div key={ep.label} className={cn("mb-2 p-2 rounded-lg", darkMode ? "bg-white/5" : "bg-gray-50")}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className={cn("text-[11px] font-medium", darkMode ? "text-white" : "text-gray-900")}>{ep.label}</span>
+                          <button onClick={() => { navigator.clipboard.writeText(ep.url); setCopiedApiIdx(idx); setTimeout(() => setCopiedApiIdx(null), 1500); }} className={cn("p-1", copiedApiIdx === idx ? "text-emerald-500" : (darkMode ? "text-white/40" : "text-gray-400"))}>
+                            {copiedApiIdx === idx ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        </div>
+                        <code className={cn("text-[10px] break-all block", darkMode ? "text-[#3f96fe]" : "text-cyan-600")}>{ep.url}</code>
+                        {ep.params && <div className="text-[9px] mt-1" style={{ color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
+                      </div>
+                    ))}
+                    <a href="https://xrpl.to/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", darkMode ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -2657,12 +2716,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {/* Settings Modal */}
             {showSettingsModal && (
               <div
-                className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                className={cn(
+                  "fixed inset-0 z-[1200] flex items-center justify-center",
+                  darkMode ? "bg-black/70 backdrop-blur-md" : "bg-white/60 backdrop-blur-md"
+                )}
                 onClick={() => setShowSettingsModal(false)}
               >
                 <div
                   onClick={e => e.stopPropagation()}
-                  className={`w-[320px] rounded-xl border-[1.5px] p-5 ${darkMode ? 'bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20' : 'bg-white border-gray-200'}`}
+                  className={cn(
+                    "w-[320px] rounded-2xl border-[1.5px] p-5",
+                    darkMode
+                      ? "bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50"
+                      : "bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30"
+                  )}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className={`text-[15px] font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Settings</span>

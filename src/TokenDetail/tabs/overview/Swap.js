@@ -1985,14 +1985,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {/* Settings Modal */}
           {showSettingsModal && (
             <div
-              className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+              className={cn("fixed inset-0 z-[1000] flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}
               onClick={() => setShowSettingsModal(false)}
             >
               <div
                 onClick={e => e.stopPropagation()}
                 className={cn(
-                  'w-[320px] rounded-xl border p-5',
-                  isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                  'w-[320px] rounded-2xl border-[1.5px] p-5',
+                  isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
                 )}
               >
                 <div className="flex items-center justify-between mb-5">

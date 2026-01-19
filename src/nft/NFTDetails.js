@@ -306,7 +306,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             </div>
             {openImage && (
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+                className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/80" : "bg-black/70")}
                 onClick={() => setOpenImage(false)}
               >
                 <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
@@ -318,7 +318,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                   />
                   <button
                     onClick={(e) => { e.stopPropagation(); setOpenImage(false); }}
-                    className="absolute top-4 right-4 p-2 text-white bg-black/50 hover:bg-black/70 rounded-full"
+                    className="absolute top-4 right-4 p-2 text-white bg-black/60 hover:bg-black/80 rounded-full backdrop-blur-sm"
                   >
                     <X size={24} />
                   </button>
@@ -561,7 +561,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                       {ep.params && <div className="text-[9px] mt-1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
                     </div>
                   ))}
-                  <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
+                  <a href="https://xrpl.to/docs" target="_blank" rel="noopener noreferrer" className={cn("block text-center text-[11px] mt-1", isDark ? "text-[#3f96fe]" : "text-cyan-600")}>Full API Docs →</a>
                 </div>
               )}
             </div>

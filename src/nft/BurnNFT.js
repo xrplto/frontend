@@ -68,7 +68,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   return (
     <>
       {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+        <div className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}>
           <PulseLoader color="#FF4842" size={10} />
         </div>
       )}

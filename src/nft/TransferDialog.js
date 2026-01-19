@@ -102,7 +102,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     <>
       {/* Backdrop */}
       {isLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className={cn("fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}>
           <PulseLoader color={'#FF4842'} size={10} />
         </div>
       )}
@@ -110,14 +110,14 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="absolute inset-0 bg-black/50"
+          className={cn("absolute inset-0 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")}
           onClick={!isLoading ? handleClose : undefined}
         />
 
         <div
           className={cn(
-            'relative w-full max-w-md rounded-xl',
-            isDark ? 'bg-[#0d0d0d] border border-white/[0.08] text-white' : 'bg-white text-gray-900'
+            'relative w-full max-w-md rounded-2xl border-[1.5px]',
+            isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] text-white shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 text-gray-900 shadow-2xl shadow-gray-300/30'
           )}
         >
           {/* Header */}

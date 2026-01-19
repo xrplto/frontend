@@ -24,12 +24,12 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/50" onClick={handleClose} />
+      <div className={cn("fixed inset-0 z-50 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} onClick={handleClose} />
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2">
         <div
           className={cn(
-            "rounded-xl border-[1.5px] p-6",
-            isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+            "rounded-2xl border-[1.5px] p-6",
+            isDark ? "bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50" : "bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30"
           )}
         >
           <button

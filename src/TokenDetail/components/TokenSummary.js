@@ -505,8 +505,8 @@ const TokenSummary = memo(({ token }) => {
 
       {/* Technical Info Modal */}
       {showInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInfo(false)}>
-          <div className={cn("w-full max-w-md rounded-xl border max-h-[85vh] overflow-hidden", isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200")} onClick={(e) => e.stopPropagation()}>
+        <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} onClick={() => setShowInfo(false)}>
+          <div className={cn("w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden", isDark ? "bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50" : "bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30")} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-100")}>
               <div className="flex items-center gap-3 flex-1">

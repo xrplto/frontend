@@ -519,7 +519,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   return (
     <AppContext.Provider value={contextValue}>
       {loading && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-md">
           <PuffLoader color={'#00AB55'} size={50} />
         </div>
       )}

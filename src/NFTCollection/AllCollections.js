@@ -911,7 +911,7 @@ const NftApiModal = ({ open, onClose, isDark }) => {
               {ep.params && <div style={{ marginTop: '4px', fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Params: {ep.params}</div>}
             </div>
           ))}
-          <a href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '8px', fontSize: '12px', color: isDark ? '#3f96fe' : '#0891b2' }}>
+          <a href="https://xrpl.to/docs" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '8px', fontSize: '12px', color: isDark ? '#3f96fe' : '#0891b2' }}>
             Full API Documentation →
           </a>
         </div>

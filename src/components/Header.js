@@ -1139,7 +1139,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         {/* Mobile Full Search */}
         {fullSearch && isTabletOrMobile && (
           <>
-          <div className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-sm" onClick={() => { setFullSearch(false); setSearchQuery(''); }} />
+          <div className={cn("fixed inset-0 z-[9998] backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} onClick={() => { setFullSearch(false); setSearchQuery(''); }} />
           <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-2" ref={searchRef}>
             <div className={cn("flex items-center gap-2 rounded-xl px-4 h-11 border transition-all", isDark ? "bg-black/90 backdrop-blur-xl border-[#3f96fe]/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "bg-white/98 backdrop-blur-xl border-gray-200 shadow-[0_4px_16px_rgba(0,0,0,0.06)]")}>
               <Search size={18} className={isDark ? "text-[#3f96fe]/70" : "text-cyan-600"} />
@@ -1592,11 +1592,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       {/* Mobile Drawer */}
       {openDrawer && (
         <>
-          <div className="fixed inset-0 z-[2147483646] bg-black/50" onClick={() => toggleDrawer(false)} />
+          <div className={cn("fixed inset-0 z-[2147483646] backdrop-blur-md", isDark ? "bg-black/70" : "bg-white/60")} onClick={() => toggleDrawer(false)} />
           <div
             className={cn(
-              'fixed inset-x-4 top-2 bottom-4 z-[2147483647] rounded-2xl border animate-in fade-in zoom-in-95 duration-200',
-              isDark ? 'bg-[#0a0f1a] border-[rgba(63,150,254,20' : 'bg-white border-blue-200/50 shadow-xl'
+              'fixed inset-x-4 top-2 bottom-4 z-[2147483647] rounded-2xl border-[1.5px] animate-in fade-in zoom-in-95 duration-200',
+              isDark ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50' : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
             )}
             style={{ overflowY: 'auto' }}
           >

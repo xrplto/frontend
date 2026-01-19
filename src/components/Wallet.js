@@ -144,8 +144,9 @@ const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) 
     return (
       <div
         className={cn(
-          "fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200",
-          isVisible ? "opacity-100 bg-black/50" : "opacity-0"
+          "fixed inset-0 z-[9999] flex items-start justify-center pt-16 px-4 transition-opacity duration-200 backdrop-blur-md",
+          isVisible ? "opacity-100" : "opacity-0",
+          isDark ? "bg-black/70" : "bg-white/60"
         )}
         onClick={onClose}
       >
