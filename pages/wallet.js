@@ -1030,8 +1030,23 @@ export default function WalletPage() {
                 {txLoading ? (
                   <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
                 ) : transactions.length === 0 ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                    <p className="text-[11px]">No recent activity</p>
+                  <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <div className="relative w-12 h-12 mx-auto mb-3">
+                      <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                        <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                        <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                        <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                        <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                      </div>
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                        {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                      </div>
+                    </div>
+                    <p className={cn("text-[10px] font-medium tracking-wider mb-1", isDark ? "text-white/60" : "text-gray-500")}>NO RECENT ACTIVITY</p>
                   </div>
                 ) : (
                   <table className="w-full">
@@ -1142,8 +1157,24 @@ export default function WalletPage() {
 
                   {/* Token Rows */}
                   {filteredTokens.length === 0 ? (
-                    <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                      <p className="text-[13px]">No tokens found</p>
+                    <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                      <div className="relative w-12 h-12 mx-auto mb-3">
+                        <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                        <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                        <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                          <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                          <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                          <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                          <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                        </div>
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                          {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                        </div>
+                      </div>
+                      <p className={cn("text-[10px] font-medium tracking-wider mb-1", isDark ? "text-white/60" : "text-gray-500")}>NO TOKENS FOUND</p>
+                      <a href="/" className="text-[9px] text-blue-400 hover:underline">Browse tokens</a>
                     </div>
                   ) : (
                     filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
@@ -1218,7 +1249,22 @@ export default function WalletPage() {
                     </div>
                     {tokenOffers.length === 0 ? (
                       <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                        <p className="text-[13px]">No open DEX offers</p>
+                        <div className="relative w-12 h-12 mx-auto mb-3">
+                          <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                          <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                          <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                          <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                          <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                            <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                            <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                            <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                            <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                          </div>
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                            {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                          </div>
+                        </div>
+                        <p className={cn("text-[10px] font-medium tracking-wider", isDark ? "text-white/60" : "text-gray-500")}>NO OPEN DEX OFFERS</p>
                       </div>
                     ) : (
                       <div className="divide-y divide-blue-500/5">
@@ -1249,7 +1295,22 @@ export default function WalletPage() {
                     </div>
                     {nftOffers.length === 0 ? (
                       <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                        <p className="text-[13px]">No NFT offers</p>
+                        <div className="relative w-12 h-12 mx-auto mb-3">
+                          <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                          <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                          <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                          <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                          <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                            <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                            <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                            <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                            <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                          </div>
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                            {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                          </div>
+                        </div>
+                        <p className={cn("text-[10px] font-medium tracking-wider", isDark ? "text-white/60" : "text-gray-500")}>NO NFT OFFERS</p>
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-500/20">
@@ -1307,8 +1368,23 @@ export default function WalletPage() {
               {txLoading ? (
                 <div className={cn("p-8 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading...</div>
               ) : transactions.length === 0 ? (
-                <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                  <p className="text-[13px]">No transactions found</p>
+                <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                  <div className="relative w-12 h-12 mx-auto mb-3">
+                    <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                      <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                      <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                      <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                      <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                    </div>
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                      {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                    </div>
+                  </div>
+                  <p className={cn("text-[10px] font-medium tracking-wider", isDark ? "text-white/60" : "text-gray-500")}>NO TRANSACTIONS</p>
                 </div>
               ) : (
                 <div className="divide-y divide-blue-500/5">
@@ -1401,10 +1477,24 @@ export default function WalletPage() {
                   <button onClick={() => setShowAddWithdrawal(true)} className={cn("text-[11px] font-medium uppercase tracking-wide flex items-center gap-1 transition-colors", isDark ? "text-blue-400/80 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}><Plus size={12} /> Add New</button>
                 </div>
                 {withdrawals.length === 0 ? (
-                  <div className={cn("p-8 text-center", isDark ? "text-white/35" : "text-gray-400")}>
-                    <Building2 size={32} className="mx-auto mb-3 opacity-50" />
-                    <p className="text-[13px]">No saved addresses yet</p>
-                    <p className="text-[11px] mt-1">Add exchange or wallet addresses for quick withdrawals</p>
+                  <div className={cn("p-6 text-center", isDark ? "text-white/35" : "text-gray-400")}>
+                    <div className="relative w-12 h-12 mx-auto mb-3">
+                      <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                      <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                      <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                        <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                        <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                        <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                        <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                      </div>
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                        {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                      </div>
+                    </div>
+                    <p className={cn("text-[10px] font-medium tracking-wider mb-1", isDark ? "text-white/60" : "text-gray-500")}>NO SAVED ADDRESSES</p>
+                    <p className={cn("text-[9px]", isDark ? "text-white/40" : "text-gray-400")}>Add exchange or wallet addresses for quick withdrawals</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-blue-500/5">
@@ -1579,10 +1669,24 @@ export default function WalletPage() {
                 <div className={cn("p-12 text-center", isDark ? "text-white/40" : "text-gray-400")}>Loading collections...</div>
               ) : collections.length === 0 ? (
                 <div className={cn("rounded-xl p-12 text-center", isDark ? "bg-white/[0.04] border border-blue-500/15" : "bg-white border border-blue-200/50")}>
-                  <Image size={40} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
-                  <p className={cn("text-[13px] font-medium mb-1", isDark ? "text-white/50" : "text-gray-500")}>No NFTs found</p>
-                  <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>NFTs you own will appear here</p>
-                  <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[11px] text-blue-400 hover:underline mt-2 inline-block">Browse collections</a>
+                  <div className="relative w-12 h-12 mx-auto mb-3">
+                    <div className={cn("absolute -top-0.5 left-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute -top-0.5 right-0.5 w-4 h-4 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")} />
+                    <div className={cn("absolute top-0.5 left-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-0.5 right-1.5 w-2 h-2 rounded-full", isDark ? "bg-[#3b78e7]" : "bg-blue-500")} />
+                    <div className={cn("absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full", isDark ? "bg-[#4285f4]" : "bg-blue-400")}>
+                      <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
+                      <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
+                      <div className={cn("absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full", isDark ? "bg-[#5a9fff]" : "bg-blue-300")}><div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" /></div>
+                      <div className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r", isDark ? "border-[#0a0a0a]" : "border-blue-600")} />
+                    </div>
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
+                      {[...Array(8)].map((_, i) => (<div key={i} className={cn("h-[2px] w-full", isDark ? "bg-[#0a0a0a]/40" : "bg-white/40")} />))}
+                    </div>
+                  </div>
+                  <p className={cn("text-[10px] font-medium tracking-wider mb-1", isDark ? "text-white/60" : "text-gray-500")}>NO NFTS FOUND</p>
+                  <p className={cn("text-[9px]", isDark ? "text-white/40" : "text-gray-400")}>NFTs you own will appear here</p>
+                  <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-400 hover:underline mt-2 inline-block">Browse collections</a>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
