@@ -1417,10 +1417,10 @@ const WalletContent = ({
             <div
               className={cn(
                 'w-2 h-2 rounded-full',
-                accountsActivation[accountLogin] === false ? 'bg-amber-400/60' : 'bg-emerald-400'
+                accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value) ? 'bg-amber-400/60' : 'bg-emerald-400'
               )}
             />
-            {!addressCopied && accountsActivation[accountLogin] !== false && (
+            {!addressCopied && !(accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)) && (
               <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
             )}
           </div>
@@ -1461,7 +1461,7 @@ const WalletContent = ({
       >
         <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="font-mono text-2xl font-semibold tracking-tight">
-            {accountBalance?.curr1?.value || '0'}
+            {accountBalance ? (accountBalance.curr1?.value || '0') : '...'}
           </span>
           <span className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>XRP</span>
           <ChevronRight
@@ -1470,10 +1470,9 @@ const WalletContent = ({
           />
         </div>
         <div className={cn('text-[11px]', isDark ? 'text-white/35' : 'text-gray-400')}>
-          {accountTotalXrp ||
-            Number(accountBalance?.curr1?.value || 0) + Number(accountBalance?.curr2?.value || 0) ||
-            '0'}{' '}
-          total · {accountBalance?.curr2?.value || '0'} reserved
+          {accountBalance
+            ? `${accountTotalXrp || Number(accountBalance.curr1?.value || 0) + Number(accountBalance.curr2?.value || 0) || '0'} total · ${accountBalance.curr2?.value || '0'} reserved`
+            : 'Loading...'}
         </div>
       </Link>
 
@@ -1573,7 +1572,7 @@ const WalletContent = ({
               const startIndex = walletPage * walletsPerPage;
               return sorted.slice(startIndex, startIndex + walletsPerPage).map((profile) => {
                 const isCurrent = profile.account === accountLogin;
-                const isInactive = accountsActivation[profile.account] === false;
+                const isInactive = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
                 return (
                   <button
                     key={profile.account}
@@ -1609,7 +1608,7 @@ const WalletContent = ({
                     >
                       {truncateAccount(profile.account, 8)}
                     </span>
-                    {isCurrent && (
+                    {isCurrent && !isInactive && (
                       <span className="text-[9px] font-medium text-emerald-500">Active</span>
                     )}
                     {isInactive && (
@@ -1662,7 +1661,7 @@ const WalletContent = ({
           <div className="max-h-[160px] overflow-y-auto">
             {profiles.map((profile) => {
               const isCurrent = profile.account === accountLogin;
-              const isInactiveAccount = accountsActivation[profile.account] === false;
+              const isInactiveAccount = accountsActivation[profile.account] === false && !(isCurrent && parseFloat(accountBalance?.curr1?.value));
               return (
                 <div
                   key={profile.account}
@@ -3316,13 +3315,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     'h-2 w-2 rounded-full',
                     showNewWalletScreen && newWalletData
                       ? 'bg-amber-400'
-                      : accountsActivation[accountLogin] === false
+                      : accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)
                         ? 'bg-red-500'
                         : 'bg-emerald-400'
                   )}
                 />
                 {!(showNewWalletScreen && newWalletData) &&
-                  accountsActivation[accountLogin] !== false && (
+                  !(accountsActivation[accountLogin] === false && !parseFloat(accountBalance?.curr1?.value)) && (
                     <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
                   )}
               </div>

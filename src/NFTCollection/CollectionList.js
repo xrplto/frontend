@@ -949,7 +949,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(items)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={400}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={400} style={{ paddingRight: '16px' }}>
         <span
           style={{
             fontFamily: 'var(--font-sans)',
