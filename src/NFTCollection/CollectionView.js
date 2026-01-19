@@ -932,6 +932,49 @@ const PriceChart = React.memo(({ slug }) => {
   const [error, setError] = useState(null);
   const [legend, setLegend] = useState(null);
 
+  // Sales panel state
+  const [salesOpen, setSalesOpen] = useState(false);
+  const [salesData, setSalesData] = useState(null);
+  const [salesLoading, setSalesLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [salesSort, setSalesSort] = useState('time');
+  const [salesOffset, setSalesOffset] = useState(0);
+  const SALES_LIMIT = 20;
+
+  // Fetch sales for a specific date
+  const fetchSales = useCallback(async (date, sort = 'time', offset = 0) => {
+    if (!slug || !date) return;
+    setSalesLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/nft/collections/${slug}/ohlc/${date}/sales?limit=${SALES_LIMIT}&offset=${offset}&sortBy=${sort}`);
+      setSalesData(res.data);
+    } catch (err) {
+      console.error('Error fetching sales:', err);
+      setSalesData(null);
+    } finally {
+      setSalesLoading(false);
+    }
+  }, [slug]);
+
+  // Handle chart click
+  const handleChartClick = useCallback((date) => {
+    const d = dataMapRef.current[date];
+    if (d && d.s > 0) {
+      setSelectedDate(date);
+      setSalesOffset(0);
+      setSalesSort('time');
+      setSalesOpen(true);
+      fetchSales(date, 'time', 0);
+    }
+  }, [fetchSales]);
+
+  // Refetch when sort/offset changes
+  useEffect(() => {
+    if (salesOpen && selectedDate) {
+      fetchSales(selectedDate, salesSort, salesOffset);
+    }
+  }, [salesSort, salesOffset, salesOpen, selectedDate, fetchSales]);
+
   useEffect(() => {
     if (!slug || !chartContainerRef.current) return;
     let chart = null;
@@ -1039,6 +1082,13 @@ const PriceChart = React.memo(({ slug }) => {
           }
         });
 
+        // Click handler to show sales for that day
+        chart.subscribeClick(param => {
+          if (param.time) {
+            handleChartClick(param.time);
+          }
+        });
+
         chart.timeScale().fitContent();
         chartRef.current = chart;
 
@@ -1059,7 +1109,7 @@ const PriceChart = React.memo(({ slug }) => {
       chartRef.current?.remove();
       chartRef.current = null;
     };
-  }, [slug, isDark]);
+  }, [slug, isDark, handleChartClick]);
 
   return (
     <div className="w-full">
@@ -1086,10 +1136,70 @@ const PriceChart = React.memo(({ slug }) => {
         </div>
       )}
       <div className="relative w-full h-[350px]">
-        <div ref={chartContainerRef} className="w-full h-full" />
+        <div ref={chartContainerRef} className="w-full h-full cursor-pointer" />
         {loading && <div className="absolute inset-0 flex justify-center items-center"><Loader2 className="animate-spin text-primary" size={32} /></div>}
         {error && <div className={cn("absolute inset-0 flex justify-center items-center text-sm", isDark ? "text-white/40" : "text-gray-400")}>{error}</div>}
       </div>
+
+      {/* Sales Panel */}
+      {salesOpen && (
+        <div className={cn("mt-2 border-t pt-2", isDark ? "border-white/5" : "border-gray-100")}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className={cn("text-[11px] font-medium", isDark ? "text-white/70" : "text-gray-600")}>{selectedDate}</span>
+              <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{salesData?.total || 0} sales</span>
+              {salesData?.sales?.length > 0 && (
+                <span className={cn("text-[10px]", isDark ? "text-emerald-400/80" : "text-emerald-600")}>
+                  {salesData.sales.reduce((sum, s) => sum + (s.costXRP || 0), 0).toFixed(1)} XRP total
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <select value={salesSort} onChange={(e) => { setSalesSort(e.target.value); setSalesOffset(0); }} className={cn("text-[10px] px-1.5 py-0.5 rounded border-0 outline-none", isDark ? "bg-white/5 text-white/60" : "bg-gray-100 text-gray-500")}>
+                <option value="time">Recent</option>
+                <option value="costXRP">Price</option>
+              </select>
+              <button onClick={() => { setSalesOpen(false); setSalesData(null); }} className={cn(isDark ? "text-white/30 hover:text-white/50" : "text-gray-300 hover:text-gray-500")}><X size={14} /></button>
+            </div>
+          </div>
+          {salesLoading ? (
+            <div className="flex justify-center py-3"><Loader2 className="animate-spin text-primary" size={16} /></div>
+          ) : salesData?.sales?.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1">
+                {salesData.sales.map((sale, idx) => {
+                  const thumb = sale.thumbnail?.medium || sale.thumbnail?.small;
+                  const imgUrl = thumb ? `https://s1.xrpl.to/nft/${thumb}` : sale.image?.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${sale.image.slice(7)}` : '';
+                  return (
+                    <a key={sale.NFTokenID || idx} href={`/nft/${sale.NFTokenID}`} className={cn("flex items-center gap-2 p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-50")}>
+                      <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0" style={{ backgroundColor: isDark ? '#222' : '#eee' }}>
+                        {imgUrl && <Image src={imgUrl} alt="" fill sizes="40px" className="object-cover" unoptimized />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className={cn("text-[10px] font-medium truncate", isDark ? "text-white/80" : "text-gray-700")}>{sale.name || `#${sale.serial || '?'}`}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-semibold text-primary">{sale.costXRP} XRP</span>
+                          <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{new Date(sale.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                      <div className={cn("text-[8px] text-right flex-shrink-0", isDark ? "text-white/25" : "text-gray-300")}>
+                        <div className="truncate max-w-[60px]">{sale.buyer?.slice(0,8) || '?'}...</div>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+              {salesData.total > SALES_LIMIT && (
+                <div className="flex items-center justify-center gap-2 mt-2 pt-2" style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
+                  <button onClick={() => setSalesOffset(Math.max(0, salesOffset - SALES_LIMIT))} disabled={salesOffset === 0} className={cn("p-0.5 disabled:opacity-30", isDark ? "text-white/40" : "text-gray-400")}><ChevronLeft size={14} /></button>
+                  <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{Math.floor(salesOffset/SALES_LIMIT)+1}/{Math.ceil(salesData.total/SALES_LIMIT)}</span>
+                  <button onClick={() => setSalesOffset(salesOffset + SALES_LIMIT)} disabled={salesOffset + SALES_LIMIT >= salesData.total} className={cn("p-0.5 disabled:opacity-30", isDark ? "text-white/40" : "text-gray-400")}><ChevronRight size={14} /></button>
+                </div>
+              )}
+            </>
+          ) : <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>No sales</span>}
+        </div>
+      )}
     </div>
   );
 });
