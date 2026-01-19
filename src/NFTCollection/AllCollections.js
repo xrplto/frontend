@@ -72,14 +72,14 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  border-radius: 10px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.018)'};
-  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.3)'};
-    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.04)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
   }
 
   @media (max-width: 600px) {
@@ -87,7 +87,7 @@ const MetricBox = styled.div`
     height: 68px;
     flex: 0 0 auto;
     min-width: 95px;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 `;
 
@@ -571,11 +571,11 @@ const TagsContainer = styled.div`
   flex-direction: column;
   gap: 6px;
   border-radius: 12px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  background: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
+  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  background: transparent;
   padding: 8px 12px;
   position: relative;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   @media (max-width: 600px) {
     padding: 6px 8px;
@@ -625,22 +625,22 @@ const TagChip = styled.button`
   align-items: center;
   gap: 3px;
   padding: 3px 10px;
-  border: 1px solid ${(props) => props.selected ? (props.isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  border-radius: 6px;
-  background: ${(props) => props.selected ? (props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)') : 'transparent'};
-  color: ${(props) => props.selected ? (props.isDark ? '#fff' : '#000') : (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
+  border: 1.5px solid ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
+  background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
+  color: ${(props) => props.selected ? '#fff' : (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
   font-size: 0.68rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
   white-space: nowrap;
   height: 24px;
   flex-shrink: 0;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
-    color: ${(props) => props.isDark ? '#fff' : '#000'};
+    background: ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+    border-color: ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    color: ${(props) => props.selected ? '#fff' : (props.isDark ? '#fff' : '#000')};
   }
 
   @media (max-width: 600px) {
@@ -657,9 +657,9 @@ const AllTagsButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
-  border-radius: 6px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
+  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
+  background: transparent;
   color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
   font-size: 0.7rem;
   font-weight: 500;
@@ -668,11 +668,11 @@ const AllTagsButton = styled.button`
   height: 26px;
   flex-shrink: 0;
   margin-left: auto;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
+    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
   }
 
   @media (max-width: 600px) {
@@ -709,11 +709,11 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
+  background: transparent;
+  backdrop-filter: blur(12px);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  border-top: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -737,24 +737,25 @@ const DrawerTitle = styled.h2`
 const DrawerClose = styled.button`
   width: 32px;
   height: 32px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 8px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  transition: all 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
     color: ${props => props.isDark ? '#fff' : '#000'};
   }
 `;
 
 const SearchBox = styled.div`
   padding: 12px 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
 `;
 
 const SearchInputWrapper = styled.div`
@@ -776,15 +777,16 @@ const SearchIconWrapper = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 12px 12px 12px 40px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 8px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
   font-size: 15px;
   outline: none;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+  background: transparent;
   color: ${props => props.isDark ? '#fff' : '#000'};
   font-family: inherit;
+  transition: all 0.15s ease;
   &:focus {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
   }
   &::placeholder {
     color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0, 0, 0, 0.35)'};
@@ -809,8 +811,8 @@ const TagButton = styled.button`
   max-width: 200px;
   height: 40px;
   padding: 0 14px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-  border-radius: 8px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
   background: transparent;
   color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
   font-size: 13px;
@@ -821,10 +823,10 @@ const TagButton = styled.button`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.15s ease;
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
     color: ${props => props.isDark ? '#fff' : '#000'};
   }
 `;
@@ -1324,11 +1326,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics, c
           style={{
             minHeight: '50vh',
             position: 'relative',
-            zIndex: 1,
-            background: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
-            borderRadius: '12px',
-            overflow: 'hidden'
+            zIndex: 1
           }}
         >
           <CollectionList

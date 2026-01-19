@@ -30,6 +30,10 @@ const TableContainer = styled.div`
   min-width: 0;
   scrollbar-width: none;
   box-sizing: border-box;
+  background: transparent;
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
 
   &::-webkit-scrollbar {
     display: none;
@@ -54,18 +58,18 @@ const StyledTableBody = styled.tbody`
     padding: 0;
 
     &:hover {
-      background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)')};
+      background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
     }
   }
 `;
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
+    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 `;
 
@@ -96,13 +100,14 @@ const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 12px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0,0,0,0.04)')};
+  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
+    background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 `;
 
@@ -132,10 +137,10 @@ const MobileCell = styled.div`
 const CollectionImage = styled.div`
   width: ${(props) => (props.isMobile ? '28px' : '36px')};
   height: ${(props) => (props.isMobile ? '28px' : '36px')};
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')};
 `;
 
 const CollectionDetails = styled.div`
@@ -181,7 +186,7 @@ const StyledToolbar = styled.div`
   padding: 12px 16px;
   gap: 8px;
   flex-wrap: wrap;
-  border-top: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border-top: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
 
   @media (max-width: 900px) {
@@ -222,8 +227,8 @@ const Text = styled.span`
 const NavButton = styled.button`
   width: 26px;
   height: 26px;
-  border-radius: 8px;
-  border: none;
+  border-radius: 12px;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   cursor: pointer;
   display: inline-flex;
@@ -231,9 +236,11 @@ const NavButton = styled.button`
   justify-content: center;
   color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
   padding: 0;
+  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: rgba(66, 133, 244, 0.08);
+    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 
   &:disabled {
@@ -245,8 +252,8 @@ const NavButton = styled.button`
 const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
-  border-radius: 8px;
-  border: none;
+  border-radius: 12px;
+  border: 1.5px solid ${(props) => (props.selected ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
   color: ${(props) =>
     props.selected ? 'white' : (props.darkMode ? '#ffffff' : '#212B36')};
@@ -259,10 +266,11 @@ const PageButton = styled.button`
   font-size: 11px;
   font-weight: ${(props) => (props.selected ? 500 : 400)};
   font-variant-numeric: tabular-nums;
+  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: ${(props) =>
-      props.selected ? '#1976D2' : 'rgba(66, 133, 244, 0.08)'};
+    border-color: ${(props) => (props.selected ? '#1976D2' : props.darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${(props) => (props.selected ? '#1976D2' : props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
   }
 
   &:disabled {
@@ -302,12 +310,12 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(20, 20, 20, 0.98)' : '#ffffff')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
-  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
   z-index: 1000;
   min-width: 50px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 `;
 
 const SelectOption = styled.button`
@@ -336,7 +344,7 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  background: ${(props) => (props.darkMode ? 'transparent' : 'rgba(255, 255, 255, 0.95)')};
+  background: transparent;
   backdrop-filter: blur(12px);
 `;
 
@@ -347,7 +355,7 @@ const StyledTableCell = styled.th`
   text-transform: uppercase;
   color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.55)')};
   padding: 14px 8px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)')};
+  border-bottom: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -355,7 +363,7 @@ const StyledTableCell = styled.th`
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   font-family: inherit;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
 
   &:first-of-type {
     padding-left: 12px;
@@ -390,15 +398,18 @@ const MobileContainer = styled.div`
   padding: 0;
   margin: 0;
   background: transparent;
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
 `;
 
 const StyledMobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.isDark ? 'transparent' : 'rgba(255, 255, 255, 0.95)'};
+  background: transparent;
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-bottom: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
@@ -833,9 +844,9 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           onClick={onPrevHandler}
           disabled={!hasPrev}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            !hasPrev ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-            darkMode ? "text-white/50" : "text-gray-500"
+            "p-1.5 rounded-xl border-[1.5px] transition-all",
+            !hasPrev ? "opacity-30 cursor-not-allowed" : "",
+            darkMode ? "text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]"
           )}
         >
           <ChevronLeft size={14} />
@@ -848,9 +859,9 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           onClick={onNextHandler}
           disabled={!hasNext}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            !hasNext ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10",
-            darkMode ? "text-white/50" : "text-gray-500"
+            "p-1.5 rounded-xl border-[1.5px] transition-all",
+            !hasNext ? "opacity-30 cursor-not-allowed" : "",
+            darkMode ? "text-white/50 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]"
           )}
         >
           <ChevronRight size={14} />
@@ -1008,7 +1019,7 @@ export default function CollectionList({ type, category, tag, onGlobalMetrics, i
           })}
         </MobileContainer>
       ) : (
-        <TableContainer>
+        <TableContainer darkMode={darkMode}>
           <StyledTable>
             <ListHead
               order={order}

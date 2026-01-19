@@ -34,6 +34,10 @@ const Subtitle = styled.p`
 const TableContainer = styled.div`
   overflow-x: auto;
   scrollbar-width: none;
+  background: transparent;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
   &::-webkit-scrollbar { display: none; }
 `;
 
@@ -47,7 +51,7 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: 0;
   z-index: 10;
-  background: ${({ darkMode }) => (darkMode ? '#0a0a0a' : '#ffffff')};
+  background: transparent;
   backdrop-filter: blur(12px);
 `;
 
@@ -58,7 +62,7 @@ const StyledTh = styled.th`
   text-transform: uppercase;
   color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)')};
   padding: 16px 12px;
-  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
+  border-bottom: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
   text-align: ${({ align }) => align || 'left'};
   width: ${({ width }) => width || 'auto'};
   cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
@@ -73,10 +77,10 @@ const StyledTh = styled.th`
 
 const StyledTbody = styled.tbody`
   tr {
-    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-    transition: background 0.2s ease;
+    border-bottom: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+    transition: all 0.15s ease;
     &:hover {
-      background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
+      background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
     }
   }
 `;
@@ -134,42 +138,48 @@ const PaginationContainer = styled.div`
   margin-top: 16px;
   padding: 6px 10px;
   min-height: 36px;
-  border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
+  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
 `;
 
 const NavButton = styled.button`
   width: 26px;
   height: 26px;
-  border-radius: 5px;
-  border: none;
+  border-radius: 12px;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
-  transition: background 0.2s ease;
+  transition: all 0.15s ease;
 
-  &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+  &:hover:not(:disabled) {
+    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+  }
   &:disabled { opacity: 0.3; cursor: not-allowed; }
 `;
 
 const PageButton = styled.button`
   min-width: 22px;
   height: 22px;
-  border-radius: 5px;
-  border: none;
-  background: ${({ selected }) => (selected ? '#3b82f6' : 'transparent')};
+  border-radius: 12px;
+  border: 1.5px solid ${({ selected, darkMode }) => (selected ? '#4285f4' : darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
+  background: ${({ selected }) => (selected ? '#4285f4' : 'transparent')};
   color: ${({ selected, darkMode }) => (selected ? '#fff' : (darkMode ? '#fff' : '#212B36'))};
   cursor: pointer;
   font-size: 11px;
   font-weight: ${({ selected }) => (selected ? 500 : 400)};
   padding: 0 4px;
-  transition: background 0.2s ease;
+  transition: all 0.15s ease;
 
-  &:hover:not(:disabled) { background: ${({ selected }) => (selected ? '#2563eb' : 'rgba(59, 130, 246, 0.1)')}; }
+  &:hover:not(:disabled) {
+    border-color: ${({ selected, darkMode }) => (selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
+    background: ${({ selected, darkMode }) => (selected ? '#1976D2' : darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
+  }
 `;
 
 const EmptyState = styled.div`
@@ -197,9 +207,15 @@ const StatsGrid = styled.div`
 
 const StatCard = styled.div`
   padding: 16px;
-  border-radius: 10px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
+  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)')};
+    background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
+  }
 `;
 
 const StatLabel = styled.div`
@@ -401,7 +417,7 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
           </EmptyState>
         ) : (
           <>
-            <TableContainer>
+            <TableContainer darkMode={darkMode}>
               <StyledTable>
                 <StyledTableHead darkMode={darkMode}>
                   <tr>

@@ -815,18 +815,24 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     return currency;
   };
 
-  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
+  const isWalletConnected = accountProfile && accountProfile.account;
+  const isAccountActivated = accountPairBalance !== null;
+  const isLoggedIn = isWalletConnected && isAccountActivated;
 
   let isSufficientBalance = false;
   let errMsg = '';
 
-  if (isLoggedIn) {
+  if (!isWalletConnected) {
+    errMsg = 'Connect your wallet!';
+    isSufficientBalance = false;
+  } else if (!isAccountActivated) {
+    errMsg = 'Account not activated';
+    isSufficientBalance = false;
+  } else {
     errMsg = '';
     isSufficientBalance = false;
 
     // Check trustlines first
-    // Note: hasTrustline1/2 correspond to curr1/2 from the pair, not token1/2
-    // But for error messages, we want to show what the user sees (token1/2)
     if (!hasTrustline1 && curr1.currency !== 'XRP') {
       const displayName = getCurrencyDisplayName(curr1.currency, curr1?.name);
       errMsg = `No trustline for ${displayName}`;
@@ -843,9 +849,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
         if (amount1 && amount2) {
           if (fAmount > 0 && fValue > 0) {
-            // Check balance against the correct currency based on revert state
-            // When revert=false: user spends curr1 (amount1), so check against accountAmount (curr1.value)
-            // When revert=true: user spends curr2 (amount2), so check against accountValue (curr2.value)
             const spendingAmount = revert ? parseFloat(amount2 || 0) : parseFloat(amount1 || 0);
             const availableBalance = revert ? accountValue : accountAmount;
 
@@ -862,9 +865,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         errMsg = 'Insufficient wallet balance';
       }
     }
-  } else {
-    errMsg = 'Connect your wallet!';
-    isSufficientBalance = false;
   }
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
@@ -1076,7 +1076,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       // Get dynamic exchange rates from API
       axios
-        .get(`${BASE_URL}/rates?md51=${md51}&md52=${md52}`)
+        .get(`${BASE_URL}/stats/rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
@@ -2393,31 +2393,31 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       {/* Swap UI */}
       {!showTokenSelector && (
-        <div className="flex flex-col items-center gap-4 md:gap-6 mx-auto w-full max-w-[900px] px-2 md:px-0 pt-2 md:pt-0">
+        <div className="flex flex-col items-center gap-5 md:gap-8 mx-auto w-full max-w-[1000px] px-3 md:px-4 pt-2 md:pt-0">
           {/* Header with Market/Limit Tabs - Futuristic */}
-          <div className="flex items-center justify-between w-full px-2">
-            <div className="flex gap-1">
+          <div className="flex items-center justify-between w-full px-1">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => { setOrderType('market'); setShowOrders(false); setShowOrderbook(false); }}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-[13px] font-mono transition-colors",
+                  "px-5 py-2 rounded-lg text-[14px] font-medium transition-colors",
                   orderType === 'market'
                     ? "bg-primary text-white"
                     : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
                 )}
-                style={{ border: `1px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                style={{ border: `1.5px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
               >
                 Market
               </button>
               <button
                 onClick={() => { setOrderType('limit'); setShowOrders(false); setShowOrderbook(true); }}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-[13px] font-mono transition-colors",
+                  "px-5 py-2 rounded-lg text-[14px] font-medium transition-colors",
                   orderType === 'limit'
                     ? "bg-primary text-white"
                     : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
                 )}
-                style={{ border: `1px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                style={{ border: `1.5px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
               >
                 Limit
               </button>
@@ -2426,48 +2426,48 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               onClick={handleShareUrl}
               aria-label="Share swap URL"
               className={cn(
-                "p-2 rounded-lg transition-colors",
+                "p-2.5 rounded-lg transition-colors",
                 darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
               )}
             >
-              <Share2 size={16} />
+              <Share2 size={18} />
             </button>
           </div>
 
           {/* Horizontal Two-Card Layout - Futuristic Style */}
-          <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 w-full">
+          <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full">
             {/* First Token Card - You Pay */}
             <div className={cn(
-              "flex-1 min-w-0 rounded-xl p-4 md:p-5 transition-all relative overflow-hidden border-[1.5px]",
+              "flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]",
               focusTop
                 ? "border-primary"
                 : darkMode ? "border-white/[0.06]" : "border-gray-200/60",
               darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
             )}>
               {/* Cyber corner accents - hidden on mobile */}
-              <div className="hidden md:block absolute top-0 left-0 w-12 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute top-0 left-0 h-12 w-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 right-0 w-12 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 right-0 h-12 w-[2px] bg-primary" />
+              <div className="hidden md:block absolute top-0 left-0 w-16 h-[2px] bg-primary" />
+              <div className="hidden md:block absolute top-0 left-0 h-16 w-[2px] bg-primary" />
+              <div className="hidden md:block absolute bottom-0 right-0 w-16 h-[2px] bg-primary" />
+              <div className="hidden md:block absolute bottom-0 right-0 h-16 w-[2px] bg-primary" />
               {/* Token Display */}
-              <div className="flex flex-col items-center mb-3 md:mb-4 relative z-10">
+              <div className="flex flex-col items-center mb-5 md:mb-6 relative z-10">
                 <button
                   onClick={() => setPanel1Open(true)}
-                  className="flex items-center gap-3 md:gap-4 group"
+                  className="flex items-center gap-4 md:gap-5 group"
                 >
                   <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all" />
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
                     <img
                       src={token1?.md5 ? `https://s1.xrpl.to/token/${token1.md5}` : '/static/alt.webp'}
-                      width={48}
-                      height={48}
+                      width={72}
+                      height={72}
                       alt={token1?.name || 'Token'}
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
                   <span className={cn(
-                    "text-xl md:text-2xl font-normal tracking-wide",
+                    "text-2xl md:text-3xl font-normal tracking-wide",
                     darkMode ? "text-primary" : "text-primary"
                   )}>
                     {token1?.name || token1?.currency || 'Select'}
@@ -2477,10 +2477,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
               {/* Amount Input */}
               <div className={cn(
-                "rounded-xl px-3 py-2.5 transition-colors relative z-10 border-[1.5px]",
+                "rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]",
                 darkMode ? "bg-white/[0.03] border-white/[0.06]" : "bg-gray-100/50 border-gray-200/60"
               )}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <input
                     ref={amount1Ref}
                     type="text"
@@ -2491,28 +2491,28 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     onFocus={() => setFocusTop(true)}
                     onBlur={() => setFocusTop(false)}
                     className={cn(
-                      "flex-1 min-w-0 text-left text-lg font-normal bg-transparent border-none outline-none font-mono",
+                      "flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono",
                       darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
                     )}
                   />
                   <button
                     onClick={() => setPanel1Open(true)}
                     className={cn(
-                      "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-normal transition-colors flex-shrink-0",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0",
                       darkMode ? "bg-white/[0.06] text-white/80 hover:bg-white/10" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     )}
                   >
                     {token1?.name || token1?.currency || 'Select'}
-                    <ChevronDown size={12} className="opacity-50" />
+                    <ChevronDown size={14} className="opacity-50" />
                   </button>
                 </div>
               </div>
 
               {/* Balance */}
-              <div className="flex items-center justify-end mt-2 relative z-10">
+              <div className="flex items-center justify-end mt-3 relative z-10">
                 {isLoggedIn && accountPairBalance ? (
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-[11px]", darkMode ? "text-white/40" : "text-gray-500")}>
+                    <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
                       Bal: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
                     </span>
                     <button
@@ -2521,7 +2521,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         handleChangeAmount1({ target: { value: balance.toString() } });
                       }}
                       className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-medium transition-colors border",
+                        "px-2.5 py-1 rounded text-[11px] font-medium transition-colors border",
                         darkMode ? "text-white/60 border-white/10 hover:bg-white/5" : "text-gray-600 border-gray-300 hover:bg-gray-100"
                       )}
                     >
@@ -2529,59 +2529,59 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     </button>
                   </div>
                 ) : (
-                  <span className={cn("text-[11px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
+                  <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
                 )}
               </div>
             </div>
 
             {/* Swap Toggle Button - Center */}
-            <div className="flex items-center justify-center md:self-center relative py-1 md:py-0">
+            <div className="flex items-center justify-center md:self-center relative py-2 md:py-0">
               <button
                 onClick={onRevertExchange}
                 disabled={isSwitching}
                 title="Switch currencies (Alt + S)"
                 className={cn(
-                  "w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all",
-                  darkMode ? "bg-white/[0.04] hover:bg-primary/20" : "bg-gray-100 hover:bg-primary/10",
+                  "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all border-[1.5px]",
+                  darkMode ? "bg-white/[0.04] border-white/[0.08] hover:bg-primary/20 hover:border-primary" : "bg-gray-100 border-gray-200 hover:bg-primary/10 hover:border-primary",
                   isSwitching && "rotate-180"
                 )}
               >
-                <ArrowLeftRight size={16} className={darkMode ? "text-white/60" : "text-gray-500"} />
+                <ArrowLeftRight size={20} className={darkMode ? "text-white/60" : "text-gray-500"} />
               </button>
             </div>
 
             {/* Second Token Card - You Receive */}
             <div className={cn(
-              "flex-1 min-w-0 rounded-xl p-4 md:p-5 transition-all relative overflow-hidden border-[1.5px]",
+              "flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]",
               focusBottom
                 ? "border-primary"
                 : darkMode ? "border-white/[0.06]" : "border-gray-200/60",
               darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
             )}>
               {/* Cyber corner accents - hidden on mobile */}
-              <div className="hidden md:block absolute top-0 right-0 w-12 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute top-0 right-0 h-12 w-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 left-0 w-12 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 left-0 h-12 w-[2px] bg-primary" />
+              <div className="hidden md:block absolute top-0 right-0 w-16 h-[2px] bg-primary" />
+              <div className="hidden md:block absolute top-0 right-0 h-16 w-[2px] bg-primary" />
+              <div className="hidden md:block absolute bottom-0 left-0 w-16 h-[2px] bg-primary" />
+              <div className="hidden md:block absolute bottom-0 left-0 h-16 w-[2px] bg-primary" />
               {/* Token Display */}
-              <div className="flex flex-col items-center mb-3 md:mb-4 relative z-10">
+              <div className="flex flex-col items-center mb-5 md:mb-6 relative z-10">
                 <button
                   onClick={() => setPanel2Open(true)}
-                  className="flex items-center gap-3 md:gap-4 group"
+                  className="flex items-center gap-4 md:gap-5 group"
                 >
                   <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all" />
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
                     <img
                       src={token2?.md5 ? `https://s1.xrpl.to/token/${token2.md5}` : '/static/alt.webp'}
-                      width={48}
-                      height={48}
+                      width={72}
+                      height={72}
                       alt={token2?.name || 'Token'}
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
                   <span className={cn(
-                    "text-xl md:text-2xl font-normal tracking-wide",
+                    "text-2xl md:text-3xl font-normal tracking-wide",
                     darkMode ? "text-primary" : "text-primary"
                   )}>
                     {token2?.name || token2?.currency || 'Select'}
@@ -2591,10 +2591,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
               {/* Amount Input */}
               <div className={cn(
-                "rounded-xl px-3 py-2.5 transition-colors relative z-10 border-[1.5px]",
+                "rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]",
                 darkMode ? "bg-white/[0.03] border-white/[0.06]" : "bg-gray-100/50 border-gray-200/60"
               )}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <input
                     type="text"
                     inputMode="decimal"
@@ -2604,38 +2604,38 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     onFocus={() => setFocusBottom(true)}
                     onBlur={() => setFocusBottom(false)}
                     className={cn(
-                      "flex-1 min-w-0 text-left text-lg font-normal bg-transparent border-none outline-none font-mono",
+                      "flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono",
                       darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
                     )}
                   />
                   <button
                     onClick={() => setPanel2Open(true)}
                     className={cn(
-                      "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-normal transition-colors flex-shrink-0",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0",
                       darkMode ? "bg-white/[0.06] text-white/80 hover:bg-white/10" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     )}
                   >
                     {token2?.name || token2?.currency || 'Select'}
-                    <ChevronDown size={12} className="opacity-50" />
+                    <ChevronDown size={14} className="opacity-50" />
                   </button>
                 </div>
               </div>
 
               {/* Balance info */}
-              <div className="flex items-center justify-end mt-2 relative z-10">
+              <div className="flex items-center justify-end mt-3 relative z-10">
                 {isLoggedIn && accountPairBalance ? (
-                  <span className={cn("text-[11px]", darkMode ? "text-white/40" : "text-gray-500")}>
+                  <span className={cn("text-[12px]", darkMode ? "text-white/40" : "text-gray-500")}>
                     Bal: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
                   </span>
                 ) : (
-                  <span className={cn("text-[11px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
+                  <span className={cn("text-[12px]", darkMode ? "text-white/30" : "text-gray-400")}>&nbsp;</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Bottom Controls Container */}
-          <div className="w-full rounded-xl relative max-w-[500px]">
+          <div className="w-full rounded-xl relative max-w-[560px]">
             <div className="flex flex-col gap-4">
               {/* Left side - Controls */}
               <div className={cn(
@@ -2769,46 +2769,49 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   </button>
                 </div>
 
-                {/* Swap Quote Summary - Concise */}
-                {swapQuoteCalc && amount1 && amount2 && (
+                {/* Swap Quote Summary */}
+                {amount1 && parseFloat(amount1) > 0 && (
                   <div className={cn(
                     "mb-4 rounded-lg p-2.5 space-y-1 relative",
                     darkMode ? "bg-white/[0.02] border border-white/[0.06]" : "bg-gray-50 border border-gray-200"
                   )}>
-                    {/* Rate */}
-                    <div className="flex items-center justify-between">
-                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                        Rate {quoteLoading && <span className="opacity-50">•••</span>}
-                      </span>
-                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                        1 {token1?.name || token1?.currency} = {(() => {
-                          let rate = parseFloat(swapQuoteCalc.execution_rate);
-                          if (!rate || rate === 0) {
-                            const srcVal = parseFloat(swapQuoteCalc.source_amount?.value || amount1);
-                            const dstVal = parseFloat(swapQuoteCalc.minimum_received || amount2);
-                            if (srcVal > 0 && dstVal > 0) rate = dstVal / srcVal;
-                          }
-                          if (!rate || rate === 0) return '—';
-                          if (rate >= 1000000) return fNumber(rate);
-                          if (rate >= 1) return rate.toFixed(4);
-                          if (rate >= 0.0001) return rate.toFixed(8);
-                          return rate.toExponential(4);
-                        })()} {token2?.name || token2?.currency}
-                      </span>
-                    </div>
+                    {/* Rate - show when we have both amounts */}
+                    {amount2 && parseFloat(amount2) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                          Rate {quoteLoading && <span className="opacity-50">•••</span>}
+                        </span>
+                        <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                          1 {token1?.name || token1?.currency} = {(() => {
+                            const srcVal = parseFloat(amount1);
+                            const dstVal = parseFloat(amount2);
+                            if (srcVal > 0 && dstVal > 0) {
+                              const rate = dstVal / srcVal;
+                              if (rate >= 1000000) return fNumber(rate);
+                              if (rate >= 1) return rate.toFixed(4);
+                              if (rate >= 0.0001) return rate.toFixed(8);
+                              return rate.toExponential(4);
+                            }
+                            return '—';
+                          })()} {token2?.name || token2?.currency}
+                        </span>
+                      </div>
+                    )}
 
-                    {/* Min Received */}
-                    <div className="flex items-center justify-between">
-                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
-                        Min received
-                      </span>
-                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
-                        {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
-                      </span>
-                    </div>
+                    {/* Min Received - show when we have quote data */}
+                    {swapQuoteCalc && amount2 && (
+                      <div className="flex items-center justify-between">
+                        <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                          Min received
+                        </span>
+                        <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                          {fNumber(swapQuoteCalc.minimum_received)} {token2?.name || token2?.currency}
+                        </span>
+                      </div>
+                    )}
 
                     {/* AMM Fee - only show if present */}
-                    {swapQuoteCalc.amm_pool_fee && (
+                    {swapQuoteCalc?.amm_pool_fee && (
                       <div className="flex items-center justify-between">
                         <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
                           AMM fee {swapQuoteCalc.amm_trading_fee_bps ? `(${(swapQuoteCalc.amm_trading_fee_bps / 1000).toFixed(2)}%)` : ''}
@@ -2819,8 +2822,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       </div>
                     )}
 
+                    {/* Network Fee - always show */}
+                    <div className="flex items-center justify-between">
+                      <span className={cn("text-[10px]", darkMode ? "text-white/50" : "text-gray-500")}>
+                        Network Fee
+                      </span>
+                      <span className={cn("text-[10px] font-mono", darkMode ? "text-white/80" : "text-gray-700")}>
+                        ~0.000012 XRP
+                      </span>
+                    </div>
+
                     {/* Paths count if > 1 */}
-                    {swapQuoteCalc.paths_count > 1 && (
+                    {swapQuoteCalc?.paths_count > 1 && (
                       <div className={cn("text-[9px] text-right", darkMode ? "text-white/40" : "text-gray-400")}>
                         via {swapQuoteCalc.paths_count} paths
                       </div>
@@ -2830,7 +2843,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {quoteRequiresTrustline && (
                       <div className="mt-1.5 p-1.5 rounded bg-orange-500/10 border border-orange-500/20">
                         <span className="text-[10px] text-orange-400">
-                          ⚠ Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
+                          Trustline required for {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
                         </span>
                       </div>
                     )}
@@ -3022,14 +3035,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </div>
             )}
 
-            {/* Network Fee */}
-            <div className={cn(
-              "flex items-center justify-between mb-4 text-[11px]",
-              darkMode ? "text-white/40" : "text-gray-500"
-            )}>
-              <span>Network Fee</span>
-              <span>~0.000012 XRP</span>
-            </div>
 
             {/* Debug Panel - Hidden on mobile */}
             {debugInfo && (

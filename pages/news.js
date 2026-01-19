@@ -40,7 +40,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
             <button
               key={p}
               onClick={() => onPeriodChange(p)}
-              className={cn("rounded px-2 py-0.5 text-[10px] font-medium transition-colors", period === p ? "bg-primary text-white" : isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600")}
+              className={cn("rounded-lg px-2 py-0.5 text-[10px] font-medium border-[1.5px] transition-all", period === p ? "bg-primary text-white border-primary" : isDark ? "text-gray-500 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-400 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}
             >
               {p === 'all' ? 'All' : `${p}D`}
             </button>
@@ -100,7 +100,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => onSourceSelect(null)}
-          className={cn("rounded-md px-2 py-1 text-[11px] font-medium transition-colors", !selectedSource ? "bg-primary text-white" : isDark ? "text-gray-400 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100")}
+          className={cn("rounded-xl px-2 py-1 text-[11px] font-medium border-[1.5px] transition-all", !selectedSource ? "bg-primary text-white border-primary" : isDark ? "text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}
         >
           All Sources
         </button>
@@ -111,7 +111,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
             <button
               key={source}
               onClick={() => onSourceSelect(source)}
-              className={cn("group relative flex items-center gap-1 rounded-md px-2 py-1 text-[11px] transition-colors", isSelected ? "bg-primary text-white" : isDark ? "text-gray-400 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100")}
+              className={cn("group relative flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] border-[1.5px] transition-all", isSelected ? "bg-primary text-white border-primary" : isDark ? "text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-600 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}
             >
               <span className="font-medium">{source}</span>
               <span className={cn("tabular-nums", isSelected ? "opacity-70" : "opacity-40")}>{data.count}</span>
@@ -120,7 +120,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
           );
         })}
         {sortedSources.length > displayLimit && (
-          <button onClick={() => setShowAll(!showAll)} className={cn("rounded-md px-2 py-1 text-[11px] transition-colors", isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600")}>
+          <button onClick={() => setShowAll(!showAll)} className={cn("rounded-xl px-2 py-1 text-[11px] border-[1.5px] transition-all", isDark ? "text-gray-500 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-400 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}>
             {showAll ? 'Less' : `+${hiddenCount}`}
           </button>
         )}
@@ -135,7 +135,7 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
     href={article.sourceUrl}
     target="_blank"
     rel="noopener noreferrer"
-    className={cn("group flex gap-4 rounded-xl border-[1.5px] p-4 transition-all", isDark ? "border-white/10 bg-[rgba(255,255,255,0.01)] hover:border-primary/30 hover:bg-white/[0.02]" : "border-gray-200 hover:border-primary/30 hover:bg-gray-50")}
+    className={cn("group flex gap-4 rounded-xl border-[1.5px] p-4 transition-all", isDark ? "border-white/10 bg-transparent hover:border-white/[0.15] hover:bg-white/[0.02]" : "border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}
   >
     <div className="w-1 shrink-0 rounded-full" style={{ backgroundColor: getSentimentColor(article.sentiment) }} />
     <div className="min-w-0 flex-1">
@@ -168,17 +168,17 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
 
   return (
     <div className="mt-6 flex items-center justify-center gap-1">
-      <button onClick={() => onPageChange(null, currentPage - 1)} disabled={currentPage === 1} className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:opacity-30", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
+      <button onClick={() => onPageChange(null, currentPage - 1)} disabled={currentPage === 1} className={cn("flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-all disabled:opacity-30", isDark ? "border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}>
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><ChevronLeft /></svg>
       </button>
       {pages.map((p, i) =>
         p === '...' ? (
           <span key={`e${i}`} className={cn("px-1 text-[12px]", isDark ? "text-gray-600" : "text-gray-400")}>...</span>
         ) : (
-          <button key={p} onClick={() => onPageChange(null, p)} className={cn("flex h-8 min-w-[32px] items-center justify-center rounded-md text-[12px] tabular-nums transition-colors", p === currentPage ? "bg-primary text-white" : isDark ? "text-gray-400 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100")}>{p}</button>
+          <button key={p} onClick={() => onPageChange(null, p)} className={cn("flex h-8 min-w-[32px] items-center justify-center rounded-xl text-[12px] tabular-nums border-[1.5px] transition-all", p === currentPage ? "bg-primary text-white border-primary" : isDark ? "text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "text-gray-600 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}>{p}</button>
         )
       )}
-      <button onClick={() => onPageChange(null, currentPage + 1)} disabled={currentPage === totalPages} className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-colors disabled:opacity-30", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
+      <button onClick={() => onPageChange(null, currentPage + 1)} disabled={currentPage === totalPages} className={cn("flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-all disabled:opacity-30", isDark ? "border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]" : "border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}>
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><ChevronRight /></svg>
       </button>
       <span className={cn("ml-2 text-[11px] tabular-nums", isDark ? "text-gray-600" : "text-gray-400")}>{currentPage}/{totalPages}</span>
@@ -376,14 +376,14 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <h2 className={cn("text-[17px] font-medium", isDark ? "text-white" : "text-gray-900")}>News</h2>
-                <span className={cn("rounded px-1.5 py-0.5 text-[11px] tabular-nums", isDark ? "bg-white/10 text-gray-400" : "bg-gray-100 text-gray-500")}>{totalCount.toLocaleString()}</span>
+                <span className={cn("rounded px-1.5 py-0.5 text-[11px] tabular-nums", isDark ? "bg-white/10 text-gray-400" : "bg-black/[0.04] text-gray-500")}>{totalCount.toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-2">
-                <form onSubmit={handleSearch} className={cn("flex h-9 items-center gap-2 rounded-lg px-3 transition-all", isDark ? "bg-white/5 focus-within:bg-white/8" : "bg-gray-100 focus-within:bg-gray-200/80")}>
+                <form onSubmit={handleSearch} className={cn("flex h-9 items-center gap-2 rounded-xl border-[1.5px] px-3 transition-all", isDark ? "border-white/10 bg-transparent focus-within:border-white/[0.15]" : "border-black/[0.06] focus-within:border-black/10")}>
                 <svg className={cn("h-4 w-4 shrink-0", isDark ? "text-gray-500" : "text-gray-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor"><SearchIcon /></svg>
                 <input type="text" placeholder="Search..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className={cn("w-full min-w-[180px] bg-transparent text-[13px] focus:outline-none sm:w-[240px]", isDark ? "text-white placeholder:text-gray-500" : "text-gray-900 placeholder:text-gray-400")} />
                 {searchInput && (
-                  <button type="button" onClick={handleClearSearch} className={cn("shrink-0 rounded p-0.5", isDark ? "hover:bg-white/10" : "hover:bg-gray-300")}>
+                  <button type="button" onClick={handleClearSearch} className={cn("shrink-0 rounded p-0.5", isDark ? "hover:bg-white/[0.08]" : "hover:bg-black/[0.06]")}>
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><CloseIcon /></svg>
                   </button>
                 )}
@@ -398,13 +398,13 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
               </div>
             </div>
 
-            <div className={cn("mb-4 rounded-xl border-[1.5px] p-3", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+            <div className={cn("mb-4 rounded-xl border-[1.5px] p-3 transition-all", isDark ? "border-white/10 bg-transparent hover:border-white/[0.15] hover:bg-white/[0.02]" : "border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]")}>
               <SentimentChart data={chartData} period={chartPeriod} onPeriodChange={setChartPeriod} onHover={setChartHover} hoverIdx={chartHover} isDark={isDark} />
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 pt-3 border-t border-white/5">
+              <div className={cn("flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 pt-3 border-t", isDark ? "border-white/[0.06]" : "border-black/[0.04]")}>
                 {[{ period: '24H', stats: sentimentStats.last24h }, { period: '7D', stats: sentimentStats.last7d }, { period: '30D', stats: sentimentStats.last30d }, { period: 'ALL', stats: sentimentStats.all }].map((item) => (
                   <div key={item.period} className="flex items-center gap-2">
                     <span className={cn("w-7 text-[10px] font-medium", isDark ? "text-gray-500" : "text-gray-400")}>{item.period}</span>
-                    <div className={cn("flex h-1.5 w-20 overflow-hidden rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
+                    <div className={cn("flex h-1.5 w-20 overflow-hidden rounded-full", isDark ? "bg-white/10" : "bg-black/[0.06]")}>
                       <div style={{ width: `${item.stats?.bullish || 0}%` }} className="bg-green-500" />
                       <div style={{ width: `${item.stats?.bearish || 0}%` }} className="bg-red-500" />
                     </div>
