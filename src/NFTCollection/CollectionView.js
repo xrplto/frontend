@@ -77,7 +77,7 @@ import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/util
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from '../components/ShareButtons';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
-import { ApiButton } from 'src/components/ApiEndpointsModal';
+import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 // Inline Tab Components
 const TabContextProvider = createContext();
@@ -1843,6 +1843,13 @@ export default function CollectionView({ collection }) {
   const feesDropdownRef = useRef(null);
 
   const BASE_URL = 'https://api.xrpl.to/api';
+
+  // Register server-side API calls
+  useEffect(() => {
+    if (collection?.slug) {
+      registerApiCalls([`https://api.xrpl.to/api/nft/collections/${collection.slug}`]);
+    }
+  }, [collection?.slug]);
 
   // Persist chart visibility
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styled from '@emotion/styled';
@@ -7,7 +7,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ApiButton } from 'src/components/ApiEndpointsModal';
+import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 import { fNumber, fVolume, formatDistanceToNowStrict } from 'src/utils/formatters';
 import Link from 'next/link';
 
@@ -264,6 +264,14 @@ export default function NFTTradersPage({ traders = [], pagination = {}, traderBa
   const { themeName } = useContext(AppContext);
   const darkMode = themeName === 'XrplToDarkTheme';
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+
+  // Register server-side API calls
+  useEffect(() => {
+    registerApiCalls([
+      'https://api.xrpl.to/api/nft/analytics/traders',
+      'https://api.xrpl.to/api/nft/analytics/market'
+    ]);
+  }, []);
 
   const currentPage = pagination.page || 1;
   const totalPages = pagination.totalPages || 1;

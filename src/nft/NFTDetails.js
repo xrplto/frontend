@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState, useContext } from 'react';
+import React, { memo, useMemo, useState, useContext, useEffect } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });
@@ -24,7 +24,7 @@ import {
   TrendingUp,
   Check
 } from 'lucide-react';
-import { ApiButton } from 'src/components/ApiEndpointsModal';
+import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -367,6 +367,13 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   const accountLogin = accountProfile?.account;
   const [isSaved, setIsSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  // Register server-side API calls
+  useEffect(() => {
+    if (nft?.NFTokenID) {
+      registerApiCalls([`https://api.xrpl.to/api/nft/${nft.NFTokenID}`]);
+    }
+  }, [nft?.NFTokenID]);
+
   // Check if NFT is in watchlist
   React.useEffect(() => {
     if (!accountLogin || !nft?.NFTokenID) return;

@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
-import { ApiButton } from 'src/components/ApiEndpointsModal';
+import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
@@ -211,6 +211,15 @@ function NewsPage({ initialNews, initialTotal, initialSources, initialSentiment,
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const extractTitle = useCallback((html) => html.match(/>([^<]+)</)?.[1] || html, []);
+
+  // Register server-side API calls
+  useEffect(() => {
+    registerApiCalls([
+      'https://api.xrpl.to/api/news',
+      'https://api.xrpl.to/api/news/search',
+      'https://api.xrpl.to/api/news/sentiment-chart'
+    ]);
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);

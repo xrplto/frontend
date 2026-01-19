@@ -30,6 +30,18 @@ const subscribe = (listener) => {
   return () => { window.__apiListeners = window.__apiListeners.filter(l => l !== listener); };
 };
 
+// Register API calls manually (for server-side fetched endpoints)
+export const registerApiCalls = (urls) => {
+  if (typeof window === 'undefined') return;
+  const arr = Array.isArray(urls) ? urls : [urls];
+  arr.forEach(url => {
+    if (url.includes('api.xrpl.to/api/')) {
+      window.__apiCallsStore.add(url.split('?')[0]);
+    }
+  });
+  window.__apiListeners.forEach(l => l());
+};
+
 // Comprehensive API Reference
 const API_REFERENCE = {
   tokens: {
