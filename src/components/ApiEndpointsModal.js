@@ -389,15 +389,21 @@ export const ApiButton = memo(({ className = '' }) => {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-colors",
+          "group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium transition-all duration-300 overflow-hidden",
           isDark
-            ? "text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 bg-black/50"
-            : "text-cyan-600 border-cyan-200 hover:bg-cyan-50 bg-white/80",
+            ? "bg-[#0d0d1a] text-blue-300 border border-blue-500/30 hover:border-blue-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+            : "bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 border border-blue-200 hover:from-blue-100 hover:to-cyan-100 hover:border-blue-300",
           className
         )}
       >
-        <Code2 size={12} />
-        API
+        {isDark && (
+          <>
+            <span className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/20 to-blue-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
+            <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.15),transparent_50%)]" />
+          </>
+        )}
+        <Code2 size={12} className="relative z-10" />
+        <span className="relative z-10">API</span>
       </button>
       <ApiEndpointsModal open={open} onClose={() => setOpen(false)} />
     </>
