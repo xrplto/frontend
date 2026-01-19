@@ -637,15 +637,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
   ];
 
-  // NFT menu items (left: discovery, right: analytics)
-  const nftMenuItemsLeft = [
-    {
-      path: '/nfts',
-      name: 'Collections',
-      desc: 'Browse NFT collections',
-      icon: <Palette size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
-    }
-  ];
+  // NFT menu items (analytics only - Collections linked via NFTs nav item)
   const nftMenuItemsRight = [
     {
       path: '/nft-traders',
@@ -660,7 +652,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       icon: <Activity size={18} className={isDark ? 'text-white/60' : 'text-gray-500'} />
     }
   ];
-  const nftMenuItems = [...nftMenuItemsLeft, ...nftMenuItemsRight];
+  const nftMenuItems = nftMenuItemsRight;
 
   const handleFullSearch = useCallback(() => {
     setFullSearch(true);
@@ -879,8 +871,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   >
                     <div className="grid grid-cols-2 gap-1 p-3">
-                      <div className="flex flex-col gap-1">
-                        {nftMenuItemsLeft.map((item) => (
+                      {nftMenuItemsRight.map((item) => (
                           <div
                             key={item.path}
                             onClick={() => handleTokenOptionSelect(item.path)}
@@ -922,53 +913,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               </span>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {nftMenuItemsRight.map((item) => (
-                          <div
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            className={cn(
-                              'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
-                              isActive(item.path)
-                                ? isDark
-                                  ? 'bg-white/10'
-                                  : 'bg-blue-50'
-                                : isDark
-                                  ? 'hover:bg-white/5'
-                                  : 'hover:bg-gray-50'
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
-                                isDark ? 'bg-white/5' : 'bg-gray-100'
-                              )}
-                            >
-                              {item.icon}
-                            </div>
-                            <div className="flex flex-col">
-                              <span
-                                className={cn(
-                                  'text-[14px] font-medium',
-                                  isDark ? 'text-white' : 'text-gray-900'
-                                )}
-                              >
-                                {item.name}
-                              </span>
-                              <span
-                                className={cn(
-                                  'text-[12px]',
-                                  isDark ? 'text-white/50' : 'text-gray-500'
-                                )}
-                              >
-                                {item.desc}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      ))}
                     </div>
                   </div>
                 )}
