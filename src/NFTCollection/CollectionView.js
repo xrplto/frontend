@@ -47,6 +47,27 @@ import {
   Check
 } from 'lucide-react';
 
+// Simple Pagination Component
+const Pagination = ({ currentPage, totalPages, hasPrev, hasNext, onPrev, onNext, className = '' }) => (
+  <div className={`flex items-center justify-center gap-2 ${className}`}>
+    <button
+      onClick={onPrev}
+      disabled={!hasPrev}
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-colors"
+    >
+      <ChevronLeft size={16} />
+    </button>
+    <span className="text-[11px] text-white/50">{currentPage} / {totalPages}</span>
+    <button
+      onClick={onNext}
+      disabled={!hasNext}
+      className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition-colors"
+    >
+      <ChevronRight size={16} />
+    </button>
+  </div>
+);
+
 const COLLECTION_API_ENDPOINTS = [
   { label: 'Collection', url: 'https://api.xrpl.to/api/nft/collection/{slug}' },
   { label: 'NFTs', url: 'https://api.xrpl.to/api/nft/collection/{slug}/nfts', params: 'start, limit, sortBy, listed' },
@@ -1815,6 +1836,7 @@ export default function CollectionView({ collection }) {
 
   const [openShare, setOpenShare] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
+  const [openFees, setOpenFees] = useState(false);
   const [openApi, setOpenApi] = useState(false);
   const [copiedApiIdx, setCopiedApiIdx] = useState(null);
   const apiDropdownRef = useRef(null);
@@ -1828,6 +1850,7 @@ export default function CollectionView({ collection }) {
     return true;
   });
   const infoDropdownRef = useRef(null);
+  const feesDropdownRef = useRef(null);
 
   const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -1915,6 +1938,9 @@ export default function CollectionView({ collection }) {
       if (infoDropdownRef.current && !infoDropdownRef.current.contains(e.target)) {
         setOpenInfo(false);
       }
+      if (feesDropdownRef.current && !feesDropdownRef.current.contains(e.target)) {
+        setOpenFees(false);
+      }
       if (apiDropdownRef.current && !apiDropdownRef.current.contains(e.target)) {
         setOpenApi(false);
       }
@@ -1954,6 +1980,9 @@ export default function CollectionView({ collection }) {
     category,
     transferFee,
     royaltyFee,
+    totalRoyalties,
+    totalBrokerFees,
+    totalFees,
     taxon,
     issuer,
     twitter,
@@ -1969,7 +1998,10 @@ export default function CollectionView({ collection }) {
   } = collection?.collection || collection || {};
 
   // Royalty fee: API may return as transferFee (basis points 0-50000) or royaltyFee (percentage)
-  const royaltyPercent = royaltyFee ?? (transferFee ? (transferFee / 1000).toFixed(2) : null);
+  // Also check initialNfts[0].royalty as fallback (individual NFT royalty in basis points)
+  const initialNfts = collection?.nfts || collection?.collection?.nfts || [];
+  const nftRoyalty = initialNfts?.[0]?.royalty;
+  const royaltyPercent = royaltyFee ?? (transferFee ? (transferFee / 1000).toFixed(2) : (nftRoyalty ? (nftRoyalty / 1000).toFixed(2) : null));
 
   // Normalize name/description: API may return object {collection_name, collection_description} or string
   const name = typeof rawName === 'object' && rawName !== null
@@ -2120,7 +2152,6 @@ export default function CollectionView({ collection }) {
                 <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[280px]', isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]')}>
                   {descriptionText && <p className={cn("text-[11px] mb-2", isDark ? "text-white/70" : "text-gray-600")}>{descriptionText}</p>}
                   <div className="space-y-1 text-[10px]">
-                    {royaltyPercent !== null && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Royalty</span><span className="text-primary font-medium">{royaltyPercent}%</span></div>}
                     {category && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Category</span><span>{category}</span></div>}
                     {taxon !== undefined && <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Taxon</span><span className="font-mono">{taxon}</span></div>}
                     <div className="flex justify-between"><span className={isDark ? "text-white/40" : "text-gray-500"}>Issuer</span><span className="font-mono truncate max-w-[140px]">{account}</span></div>
@@ -2136,6 +2167,38 @@ export default function CollectionView({ collection }) {
                           )}
                           <Link href={`/token/${linkedToken}`} className="text-primary hover:underline font-medium" onClick={() => setOpenInfo(false)}>View →</Link>
                         </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Fees */}
+            <div className="relative" ref={feesDropdownRef}>
+              <button onClick={() => setOpenFees(!openFees)} className={cn("px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>Fees</button>
+              {openFees && (
+                <div className={cn('absolute top-full right-0 mt-2 p-3 rounded-2xl border z-50 w-[220px]', isDark ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]' : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]')}>
+                  <div className="space-y-1.5 text-[11px]">
+                    <div className="flex justify-between items-center">
+                      <span className={isDark ? "text-white/50" : "text-gray-500"}>Royalty Rate</span>
+                      <span className="text-primary font-semibold">{royaltyPercent !== null ? `${royaltyPercent}%` : 'N/A'}</span>
+                    </div>
+                    {totalRoyalties > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className={isDark ? "text-white/50" : "text-gray-500"}>Royalties Paid</span>
+                        <span className="text-orange-400 font-semibold">✕{totalRoyalties.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
+                    {totalBrokerFees > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className={isDark ? "text-white/50" : "text-gray-500"}>Broker Fees</span>
+                        <span className="text-purple-400 font-semibold">✕{totalBrokerFees.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
+                    {totalFees > 0 && (
+                      <div className={cn("flex justify-between items-center pt-1.5 mt-1.5 border-t", isDark ? "border-white/10" : "border-gray-100")}>
+                        <span className={isDark ? "text-white/70" : "text-gray-600"}>Total Fees</span>
+                        <span className={cn("font-bold", isDark ? "text-white" : "text-gray-900")}>✕{totalFees.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                       </div>
                     )}
                   </div>

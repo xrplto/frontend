@@ -569,17 +569,16 @@ const CollectionCreationChart = ({ data, isDark }) => {
 const TagsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   border-radius: 12px;
   border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
   background: transparent;
-  padding: 8px 12px;
+  padding: 10px 14px;
   position: relative;
-  transition: all 0.15s ease;
 
   @media (max-width: 600px) {
-    padding: 6px 8px;
-    gap: 6px;
+    padding: 8px 10px;
+    gap: 8px;
   }
 `;
 
@@ -623,32 +622,53 @@ const AllButtonWrapper = styled.div`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 10px;
-  border: 1.5px solid ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 12px;
-  background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
-  color: ${(props) => props.selected ? '#fff' : (props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)')};
-  font-size: 0.68rem;
+  gap: 4px;
+  padding: 0 10px;
+  border: 1px solid ${(props) => props.selected ? 'rgba(59, 130, 246, 0.3)' : (props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 6px;
+  background: ${(props) => props.selected
+    ? 'rgba(59, 130, 246, 0.1)'
+    : (props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)')};
+  color: ${(props) => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)')};
+  font-size: 0.7rem;
   font-weight: ${(props) => props.selected ? 500 : 400};
   cursor: pointer;
   white-space: nowrap;
-  height: 24px;
+  height: 26px;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.3s ease, border-color 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+    border-radius: 6px;
+  }
 
   &:hover {
-    background: ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)')};
-    border-color: ${(props) => props.selected ? '#4285f4' : (props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')};
-    color: ${(props) => props.selected ? '#fff' : (props.isDark ? '#fff' : '#000')};
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
+  &:hover::before {
+    transform: translateX(0);
   }
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    height: 28px;
-    padding: 4px 10px;
-    gap: 4px;
-    min-width: fit-content;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 0 10px;
+    gap: 3px;
   }
 `;
 
@@ -656,11 +676,11 @@ const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
-  background: transparent;
-  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
+  padding: 0 12px;
+  border: none;
+  border-radius: 16px;
+  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)'};
+  color: #3b82f6;
   font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
@@ -671,15 +691,14 @@ const AllTagsButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-    border-color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    background: rgba(59, 130, 246, 0.2);
   }
 
   @media (max-width: 600px) {
-    font-size: 0.72rem;
-    height: 28px;
-    padding: 4px 12px;
-    gap: 4px;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 0 10px;
+    gap: 3px;
   }
 `;
 
@@ -709,11 +728,13 @@ const DrawerPaper = styled.div`
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: transparent;
-  backdrop-filter: blur(12px);
+  background: ${props => props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.98)'};
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  border-top: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(191,219,254,1)'};
+  box-shadow: ${props => props.isDark ? '0 -25px 50px -12px rgba(59,130,246,0.1)' : '0 -25px 50px -12px rgba(191,219,254,0.5)'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -737,59 +758,69 @@ const DrawerTitle = styled.h2`
 const DrawerClose = styled.button`
   width: 32px;
   height: 32px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
-  transition: all 0.15s ease;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  transition: border-color 0.15s, color 0.15s;
+
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-    color: ${props => props.isDark ? '#fff' : '#000'};
+    border-color: ${props => props.isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.5)'};
+    color: #4285f4;
   }
 `;
 
 const SearchBox = styled.div`
   padding: 12px 16px;
-  border-bottom: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
 `;
 
 const SearchInputWrapper = styled.div`
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#fff'};
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.3)'};
+  }
+
+  &:focus-within {
+    border-color: ${props => props.isDark ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.5)'};
+  }
 `;
 
 const SearchIconWrapper = styled.div`
-  position: absolute;
-  left: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'};
-  pointer-events: none;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  flex-shrink: 0;
 `;
 
 const SearchInput = styled.input`
-  width: 100%;
-  padding: 12px 12px 12px 40px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
-  font-size: 15px;
-  outline: none;
+  flex: 1;
   background: transparent;
-  color: ${props => props.isDark ? '#fff' : '#000'};
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: ${props => props.isDark ? '#fff' : '#212B36'};
   font-family: inherit;
-  transition: all 0.15s ease;
+
   &:focus {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
+    outline: none;
   }
+
   &::placeholder {
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0, 0, 0, 0.35)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33, 43, 54, 0.4)'};
   }
 `;
 
@@ -807,27 +838,33 @@ const TagsGrid = styled.div`
 `;
 
 const TagButton = styled.button`
-  min-width: 80px;
-  max-width: 200px;
-  height: 40px;
-  padding: 0 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 8px;
   background: transparent;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
-  font-size: 13px;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  font-size: 0.75rem;
   font-weight: 400;
   cursor: pointer;
   font-family: inherit;
-  text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.15s ease;
+  height: 28px;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
   &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.01)'};
-    color: ${props => props.isDark ? '#fff' : '#000'};
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+  }
+
+  @media (max-width: 600px) {
+    height: 32px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
   }
 `;
 
