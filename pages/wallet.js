@@ -4,7 +4,8 @@ import Head from 'next/head';
 import { useSelector } from 'react-redux';
 import styled from '@emotion/styled';
 import { MD5 } from 'crypto-js';
-import { Client } from 'xrpl';
+import { Client, Wallet as XRPLWallet } from 'xrpl';
+import { toast } from 'sonner';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -111,6 +112,84 @@ export default function WalletPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+
+  const handleRemoveTrustline = async (token) => {
+    if (!token.currency || !token.issuer) return;
+    setRemovingTrustline(token.currency + token.issuer);
+    const toastId = toast.loading(`Removing ${token.symbol}...`, { description: 'Connecting to XRPL' });
+
+    try {
+      let seed = null;
+
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        return;
+      }
+
+      toast.loading(`Removing ${token.symbol}...`, { id: toastId, description: 'Signing transaction' });
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      const tx = {
+        TransactionType: 'TrustSet',
+        Account: address,
+        LimitAmount: {
+          currency: token.currency,
+          issuer: token.issuer,
+          value: '0'
+        },
+        Flags: 2147483648
+      };
+
+      toast.loading(`Removing ${token.symbol}...`, { id: toastId, description: 'Submitting to XRPL' });
+      const prepared = await client.autofill(tx);
+      const signed = wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      await client.disconnect();
+
+      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+        const txHash = result.result.hash;
+        setTokens(prev => prev.filter(t => !(t.currency === token.currency && t.issuer === token.issuer)));
+        toast.success(`${token.symbol} trustline removed`, {
+          id: toastId,
+          duration: 6000,
+          description: <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">View transaction <ExternalLink size={10} /></a>
+        });
+      } else {
+        toast.error('Transaction failed', { id: toastId, description: result.result.meta.TransactionResult });
+      }
+    } catch (err) {
+      console.error('Remove trustline error:', err);
+      toast.error('Failed to remove trustline', { id: toastId, description: err.message });
+    } finally {
+      setRemovingTrustline(null);
+    }
+  };
+
   const [tokenDropdownOpen, setTokenDropdownOpen] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
   const [nftToTransfer, setNftToTransfer] = useState(null);
@@ -147,6 +226,7 @@ export default function WalletPage() {
   const [showAddWithdrawal, setShowAddWithdrawal] = useState(false);
   const [newWithdrawal, setNewWithdrawal] = useState({ name: '', address: '', tag: '' });
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
+  const [removingTrustline, setRemovingTrustline] = useState(null);
   const [withdrawalError, setWithdrawalError] = useState('');
 
   // Debug info state
@@ -281,6 +361,7 @@ export default function WalletPage() {
       icon: t.icon || null,
       slug: t.slug || null,
       issuer: line.issuer,
+      currency: line.currency,
       md5: t.md5 || null,
       // Additional fields
       price: price,
@@ -1738,44 +1819,35 @@ export default function WalletPage() {
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[1.4fr_1.2fr_1.2fr_1.2fr_0.7fr_72px] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_56px] gap-3 px-3 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
                             <span>Token</span>
                             <span className="text-right">Balance</span>
-                            <span className="text-right">Price</span>
                             <span className="text-right">Value</span>
                             <span className="text-right">24h</span>
                             <span></span>
                           </div>
                           {/* Table Body */}
                           <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
-                            {allTokens.slice(0, 8).map((token) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[1.4fr_1.2fr_1.2fr_1.2fr_0.7fr_72px] gap-4 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                            {allTokens.slice(0, 5).map((token) => (
+                              <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_56px] gap-3 items-center px-3 py-2 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                                 {/* Token */}
                                 <div className="flex items-center gap-2 min-w-0">
                                   {token.md5 ? (
-                                    <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
+                                    <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
                                   ) : (
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
+                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
                                   )}
-                                  <div className="min-w-0">
-                                    <p className={cn("text-xs font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
-                                    {totalValue > 0 && token.rawValue > 0 && <p className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>{((token.rawValue / totalValue) * 100).toFixed(1)}% of portfolio</p>}
-                                  </div>
+                                  <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
                                 </div>
                                 {/* Balance */}
-                                <div className="text-right">
-                                  <p className={cn("text-[11px] tabular-nums truncate", isDark ? "text-white/70" : "text-gray-700")}>{token.amount}</p>
-                                  {token.percentOwned > 0 && <p className={cn("text-[9px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{token.percentOwned.toFixed(2)}%</p>}
-                                </div>
-                                {/* Price */}
-                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
+                                <p className={cn("text-[11px] tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
                                 {/* Value */}
-                                <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}</p>
+                                <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}</p>
                                 {/* 24h Change */}
-                                <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                                <p className={cn("text-[10px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                                 {/* Send */}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-all justify-self-end border", isDark ? "text-blue-400 border-blue-500/40 hover:border-blue-500/60 hover:bg-blue-500/15" : "text-blue-500 border-blue-200 hover:border-blue-300 hover:bg-blue-50")}>
-                                  <Send size={10} /> Send
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center w-7 h-7 rounded-md transition-all justify-self-end", isDark ? "text-blue-400 hover:bg-blue-500/15" : "text-blue-500 hover:bg-blue-50")}>
+                                  <Send size={12} />
                                 </button>
                               </div>
                             ))}
@@ -1828,15 +1900,13 @@ export default function WalletPage() {
                         </button>
                       </div>
                       {collectionsLoading ? (
-                        <div className={cn('p-6 text-center flex items-center justify-center', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
                       ) : collections.length === 0 ? (
-                        <div className={cn('flex flex-col items-center justify-center p-8', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <div className={cn("w-14 h-14 mb-4 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.04] border border-white/[0.08]" : "bg-gray-50 border border-gray-100")}>
-                            <Image size={24} className={cn(isDark ? "text-blue-400/50" : "text-blue-400")} />
-                          </div>
-                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
-                          <p className={cn('text-[12px] mb-5 max-w-[240px] text-center leading-relaxed', isDark ? 'text-white/40' : 'text-gray-500')}>Start your collection by exploring NFT marketplaces on XRPL</p>
-                          <a href="/nfts" className="px-5 py-2.5 rounded-lg text-[12px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">Browse NFTs</a>
+                        <div className={cn('flex-1 flex flex-col items-center justify-center py-10')}>
+                          <Image size={28} strokeWidth={1.5} className={cn("mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                          <p className={cn('text-xs font-medium mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs found</p>
+                          <p className={cn('text-[11px] mb-4', isDark ? 'text-white/30' : 'text-gray-400')}>Explore XRPL marketplaces</p>
+                          <a href="/nfts" className={cn("text-[11px] font-medium transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>Browse NFTs</a>
                         </div>
                       ) : (
                         <>
@@ -2226,7 +2296,7 @@ export default function WalletPage() {
                       )}
                     >
                       {/* Table Header */}
-                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/[0.08] bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
+                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_90px_80px_140px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/[0.08] bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
                         <div>Asset</div>
                         <div className="text-right">Balance</div>
                         <div className="text-right">Price</div>
@@ -2286,7 +2356,7 @@ export default function WalletPage() {
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                           {filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
-                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_90px_80px_140px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                               {/* Asset */}
                               <div className="flex items-center gap-2.5 min-w-0">
                                 {token.md5 ? (
@@ -2329,9 +2399,19 @@ export default function WalletPage() {
                               {/* Holders */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
                               {/* Actions */}
-                              <div className="flex items-center justify-end gap-1.5">
-                                {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors border", isDark ? "text-white/40 border-white/10 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10" : "text-gray-400 border-gray-200 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50")}><ArrowRightLeft size={12} /></Link>}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-all border", isDark ? "text-blue-400 border-blue-500/40 hover:border-blue-500/60 hover:bg-blue-500/15" : "text-blue-500 border-blue-200 hover:border-blue-300 hover:bg-blue-50")}><Send size={10} /> Send</button>
+                              <div className="flex items-center justify-end gap-1">
+                                {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")} title="Trade"><ArrowRightLeft size={12} /></Link>}
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all", isDark ? "text-blue-400 hover:bg-blue-500/15" : "text-blue-500 hover:bg-blue-50")} title="Send"><Send size={11} /> Send</button>
+                                {token.rawAmount === 0 && token.currency && token.issuer && (
+                                  <button
+                                    onClick={() => handleRemoveTrustline(token)}
+                                    disabled={removingTrustline === token.currency + token.issuer}
+                                    className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-red-400 hover:bg-red-500/15" : "text-red-500 hover:bg-red-50")}
+                                    title="Remove trustline"
+                                  >
+                                    <Trash2 size={11} /> {removingTrustline === token.currency + token.issuer ? '...' : 'Remove'}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           ))}
