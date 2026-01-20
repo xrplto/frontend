@@ -259,9 +259,6 @@ export default function NFTActions({ nft }) {
       if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target)) {
         setOpenShare(false);
       }
-      if (apiDropdownRef.current && !apiDropdownRef.current.contains(e.target)) {
-        setOpenApi(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);

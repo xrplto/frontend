@@ -2926,7 +2926,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       />
                     </span>
                     <span className="font-medium tabular-nums">
-                      {parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP
+                      {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
                     </span>
                     {profiles?.length > 1 && (
                       <span
@@ -2991,7 +2991,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       />
                     </span>
                     <span className="tabular-nums">
-                      {parseFloat(accountProfile.xrp || 0).toFixed(1)}
+                      {accountProfile.xrp != null ? parseFloat(accountProfile.xrp).toFixed(1) : '...'}
                     </span>
                   </>
                 ) : (
@@ -3336,7 +3336,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       />
                     </span>
                     <span className="font-medium tabular-nums">
-                      {parseFloat(accountProfile.xrp || 0).toFixed(2)} XRP
+                      {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
                     </span>
                     {profiles?.length > 1 && (
                       <span

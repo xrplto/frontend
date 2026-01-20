@@ -1206,23 +1206,18 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   const [offersPage, setOffersPage] = useState(0);
   const offersLimit = 10;
 
-  // Mock data for user's token assets (TODO: implement assets API)
-  const mockAssets = {
-    balance: 125000,
-    avgBuyPrice: 0.00221,
-    currentPrice: 0.00256,
-    totalValue: 320.0,
-    totalCost: 276.25,
-    pnl: 43.75,
-    pnlPercent: 15.84,
-    trustlineSet: true,
-    limitAmount: 1000000000
-  };
+  // Real assets data from trustlines API
+  const [assetsLoading, setAssetsLoading] = useState(false);
+  const [tokenAssets, setTokenAssets] = useState(null);
 
-  // Mock data for user's trading history (TODO: implement trades API)
-  const mockMyTrades = [];
+  // Real trading history from history API
+  const [tradesLoading, setTradesLoading] = useState(false);
+  const [myTrades, setMyTrades] = useState([]);
+  const [tradesHasMore, setTradesHasMore] = useState(false);
+  const [tradesCursor, setTradesCursor] = useState(null);
+  const [tradesInitialized, setTradesInitialized] = useState(false);
 
-  // Fetch open offers from API
+  // Fetch open offers from API with md5 filter
   const fetchOpenOffers = useCallback(async () => {
     const account = accountProfile?.account || accountProfile?.address;
     if (!account || !token?.md5) return;
@@ -1230,11 +1225,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        pair: token.md5,
+        md5: token.md5,
         page: offersPage.toString(),
         limit: offersLimit.toString()
       });
-      const res = await axios.get(`https://api.xrpl.to/v1/account/offers/${account}?${params}`);
+      const res = await axios.get(`https://api.xrpl.to/api/account/offers/${account}?${params}`);
       if (res.data?.result === 'success') {
         setOpenOffers(res.data.offers || []);
         setOffersTotal(res.data.total || 0);
@@ -1251,6 +1246,92 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       fetchOpenOffers();
     }
   }, [activeSubTab, fetchOpenOffers]);
+
+  // Fetch user's token stats from dedicated endpoint
+  const fetchTokenAssets = useCallback(async () => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account || !token?.md5) return;
+
+    setAssetsLoading(true);
+    try {
+      const res = await axios.get(`https://api.xrpl.to/api/account/token-stats/${account}/${token.md5}`);
+      const stats = res.data;
+      if (stats) {
+        const balance = Math.abs(stats.balance) || 0;
+        const currentPrice = token?.exch || 0;
+        const totalValue = balance * currentPrice;
+        const avgBuyPrice = stats.avgBuyPrice || null;
+        const realizedPnl = stats.realizedPnl || 0;
+        const unrealizedPnl = stats.unrealizedPnl || 0;
+        const costBasis = avgBuyPrice ? balance * avgBuyPrice : 0;
+        const currentValue = balance * currentPrice;
+        const pnl = costBasis > 0 ? currentValue - costBasis : null;
+        const pnlPercent = costBasis > 0 ? (pnl / costBasis) * 100 : null;
+        setTokenAssets({
+          balance,
+          trustlineSet: balance > 0 || stats.tradeCount > 0,
+          totalValue,
+          currentPrice,
+          avgBuyPrice,
+          pnl,
+          pnlPercent,
+          realizedPnl,
+          unrealizedPnl,
+          totalBought: stats.totalBought || 0,
+          totalSold: stats.totalSold || 0,
+          tradeCount: stats.tradeCount || 0
+        });
+      } else {
+        setTokenAssets({ balance: 0, trustlineSet: false, totalValue: 0 });
+      }
+    } catch (err) {
+      console.error('Failed to fetch token assets:', err);
+      setTokenAssets({ balance: 0, trustlineSet: false, totalValue: 0 });
+    } finally {
+      setAssetsLoading(false);
+    }
+  }, [accountProfile, token?.md5, token?.exch]);
+
+  // Fetch user's trading history for this token with md5 filter
+  const fetchMyTrades = useCallback(async (loadMore = false) => {
+    const account = accountProfile?.account || accountProfile?.address;
+    if (!account || !token?.md5) return;
+    if (loadMore && !tradesCursor) return;
+
+    setTradesLoading(true);
+    try {
+      let url = `https://api.xrpl.to/api/history?account=${account}&md5=${token.md5}&limit=20`;
+      if (loadMore && tradesCursor) url += `&cursor=${tradesCursor}`;
+      const res = await axios.get(url);
+      const trades = res.data?.hists || res.data?.trades || [];
+      const nextCursor = res.data?.nextCursor || null;
+
+      if (loadMore) {
+        setMyTrades(prev => [...prev, ...trades]);
+      } else {
+        setMyTrades(trades);
+        setTradesInitialized(true);
+      }
+      setTradesCursor(nextCursor);
+      setTradesHasMore(!!nextCursor && trades.length > 0);
+    } catch (err) {
+      console.error('Failed to fetch trades:', err);
+    } finally {
+      setTradesLoading(false);
+    }
+  }, [accountProfile, token?.md5, tradesCursor]);
+
+  useEffect(() => {
+    if (activeSubTab === 'assets') {
+      fetchTokenAssets();
+    }
+  }, [activeSubTab, fetchTokenAssets]);
+
+  useEffect(() => {
+    if (activeSubTab === 'history' && !tradesInitialized) {
+      fetchMyTrades(false);
+    }
+  }, [activeSubTab, tradesInitialized]);
 
   const handleCancelOffer = (offerId) => {
     // TODO: Implement offer cancellation
@@ -1384,7 +1465,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
           onClick={() => setActiveSubTab('history')}
           isDark={isDark}
         >
-          My Trades ({mockMyTrades.length})
+          My Trades
         </SubTab>
         <SubTab
           selected={activeSubTab === 'offers'}
@@ -1398,298 +1479,188 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       {/* Assets */}
       {activeSubTab === 'assets' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Balance Card */}
-          <OfferCard isDark={isDark}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                flexWrap: 'wrap',
-                gap: '16px'
-              }}
-            >
-              <div>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                    display: 'block',
-                    marginBottom: '4px'
-                  }}
-                >
-                  Balance
-                </span>
-                <span
-                  style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}
-                >
-                  {formatTradeDisplay(mockAssets.balance)}{' '}
-                  <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
-                </span>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                    display: 'block',
-                    marginBottom: '4px'
-                  }}
-                >
-                  Value
-                </span>
-                <span
-                  style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}
-                >
-                  {mockAssets.totalValue.toFixed(2)}{' '}
-                  <span style={{ fontSize: '12px', opacity: 0.5 }}>XRP</span>
-                </span>
-              </div>
+          {assetsLoading ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+              <Spinner size={20} style={{ marginBottom: '8px' }} />
+              <div style={{ fontSize: '12px' }}>Loading assets...</div>
             </div>
-          </OfferCard>
-
-          {/* P&L Card */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-              gap: '12px'
-            }}
-          >
-            <OfferCard isDark={isDark}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  display: 'block',
-                  marginBottom: '6px'
-                }}
-              >
-                Unrealized P&L
-              </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '18px',
-                    fontWeight: 600,
-                    color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444'
-                  }}
-                >
-                  {mockAssets.pnl >= 0 ? '+' : ''}
-                  {mockAssets.pnl.toFixed(2)} XRP
-                </span>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444'
-                  }}
-                >
-                  ({mockAssets.pnl >= 0 ? '+' : ''}
-                  {mockAssets.pnlPercent.toFixed(2)}%)
-                </span>
-              </div>
-            </OfferCard>
-
-            <OfferCard isDark={isDark}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  display: 'block',
-                  marginBottom: '6px'
-                }}
-              >
-                Avg Buy Price
-              </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 500,
-                    color: isDark ? '#fff' : '#1a1a1a',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
-                  {formatPrice(mockAssets.avgBuyPrice)}
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                  }}
-                >
-                  XRP
-                </span>
-              </div>
-            </OfferCard>
-          </div>
-
-          {/* Trustline Info */}
-          <OfferCard isDark={isDark}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: mockAssets.trustlineSet ? '#22c55e' : '#ef4444'
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: '12px',
-                    color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'
-                  }}
-                >
-                  Trustline {mockAssets.trustlineSet ? 'Active' : 'Not Set'}
-                </span>
-              </div>
-              <span
-                style={{
-                  fontSize: '11px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                }}
-              >
-                Limit: {abbreviateNumber(mockAssets.limitAmount)}
-              </span>
+          ) : !tokenAssets ? (
+            <div style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '10px' }}>
+              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No position in this token</span>
             </div>
-          </OfferCard>
+          ) : (
+            <>
+              {/* Balance Card */}
+              <OfferCard isDark={isDark}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Balance</span>
+                    <span style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
+                      {formatTradeDisplay(tokenAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Value</span>
+                    <span style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                      {(tokenAssets.totalValue || 0).toFixed(2)} <span style={{ fontSize: '12px', opacity: 0.5 }}>XRP</span>
+                    </span>
+                  </div>
+                </div>
+              </OfferCard>
+
+              {/* P&L Card */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                <OfferCard isDark={isDark}>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Unrealized P&L</span>
+                  {tokenAssets.pnl != null ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 600, color: tokenAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                        {tokenAssets.pnl >= 0 ? '+' : ''}{tokenAssets.pnl.toFixed(2)} XRP
+                      </span>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: tokenAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                        ({tokenAssets.pnl >= 0 ? '+' : ''}{(tokenAssets.pnlPercent || 0).toFixed(2)}%)
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>No trade history</span>
+                  )}
+                </OfferCard>
+
+                <OfferCard isDark={isDark}>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
+                  {tokenAssets.avgBuyPrice != null ? (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'var(--font-mono)' }}>
+                        {formatPrice(tokenAssets.avgBuyPrice)}
+                      </span>
+                      <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>XRP</span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>—</span>
+                  )}
+                </OfferCard>
+              </div>
+
+              {/* Trustline Info */}
+              <OfferCard isDark={isDark}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: tokenAssets.trustlineSet ? '#22c55e' : '#ef4444' }} />
+                    <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
+                      Trustline {tokenAssets.trustlineSet ? 'Active' : 'Not Set'}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                    Limit: {abbreviateNumber(tokenAssets.limitAmount || 0)}
+                  </span>
+                </div>
+              </OfferCard>
+            </>
+          )}
         </div>
       )}
 
       {/* My Trading History */}
       {activeSubTab === 'history' && (
         <>
-          {/* Header */}
-          {!isMobile && (
-            <TableHeader isDark={isDark}>
-              <div style={{ flex: '0.8' }}>Time</div>
-              <div style={{ flex: '0.6' }}>Type</div>
-              <div style={{ flex: '1' }}>Amount</div>
-              <div style={{ flex: '0.8' }}>Price</div>
-              <div style={{ flex: '0.8' }}>Total</div>
-              <div style={{ flex: '0.6' }}>Status</div>
-              <div style={{ flex: '0.3' }}></div>
-            </TableHeader>
-          )}
-
-          {mockMyTrades.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '24px',
-                border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
-                borderRadius: '10px'
-              }}
-            >
-              <span style={{ color: 'inherit' }}>No trades yet for this token</span>
+          {tradesLoading && myTrades.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+              <Spinner size={20} style={{ marginBottom: '8px' }} />
+              <div style={{ fontSize: '12px' }}>Loading trades...</div>
+            </div>
+          ) : myTrades.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px' }}>
+              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No trades yet for this token</span>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {mockMyTrades.map((trade) => (
-                <Card key={trade._id} isDark={isDark}>
-                  <CardContent style={{ padding: isMobile ? '10px 0' : '10px 0' }}>
-                    {isMobile ? (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '8px'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-                            }}
-                          >
-                            {formatRelativeTime(trade.time)}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
-                          {formatTradeDisplay(trade.amount)} {tokenCurrency}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'
-                          }}
-                        >
-                          {formatXRPAmount(trade.total)} XRP
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span
-                          style={{
-                            flex: '0.8',
-                            fontSize: '11px',
-                            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                          }}
-                        >
-                          {formatRelativeTime(trade.time)}
-                        </span>
-                        <div style={{ flex: '0.6' }}>
-                          <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
-                        </div>
-                        <span
-                          style={{
-                            flex: '1',
-                            fontSize: '12px',
-                            color: isDark ? '#fff' : '#1a1a1a'
-                          }}
-                        >
-                          {formatTradeDisplay(trade.amount)}{' '}
-                          <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
-                        </span>
-                        <span
-                          style={{
-                            flex: '0.8',
-                            fontSize: '12px',
-                            fontFamily: 'var(--font-mono)',
-                            color: isDark ? '#fff' : '#1a1a1a'
-                          }}
-                        >
-                          {formatPrice(trade.price)}
-                        </span>
-                        <span
-                          style={{
-                            flex: '0.8',
-                            fontSize: '12px',
-                            color: isDark ? '#fff' : '#1a1a1a'
-                          }}
-                        >
-                          {formatXRPAmount(trade.total)} <span style={{ opacity: 0.5 }}>XRP</span>
-                        </span>
-                        <span
-                          style={{
-                            flex: '0.6',
-                            fontSize: '10px',
-                            color: '#22c55e',
-                            textTransform: 'uppercase'
-                          }}
-                        >
-                          {trade.status}
-                        </span>
-                        <div style={{ flex: '0.3' }}>
-                          <IconButton
-                            onClick={() => onTransactionClick && onTransactionClick(trade.hash)}
-                            isDark={isDark}
-                          >
-                            <ExternalLink size={12} />
-                          </IconButton>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <>
+              {/* Header */}
+              {!isMobile && (
+                <TableHeader isDark={isDark}>
+                  <div style={{ flex: '0.7' }}>Time</div>
+                  <div style={{ flex: '0.5' }}>Type</div>
+                  <div style={{ flex: '1' }}>Amount</div>
+                  <div style={{ flex: '0.8' }}>Price</div>
+                  <div style={{ flex: '0.8' }}>Total</div>
+                  <div style={{ flex: '0.3' }}></div>
+                </TableHeader>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {myTrades.map((trade, idx) => {
+                  const isBuy = trade.paid?.currency === 'XRP';
+                  const tokenAmount = isBuy ? trade.got : trade.paid;
+                  const xrpAmount = isBuy ? trade.paid : trade.got;
+                  const price = parseFloat(xrpAmount?.value) / parseFloat(tokenAmount?.value) || 0;
+
+                  return (
+                    <Card key={trade._id || trade.hash || idx} isDark={isDark}>
+                      <CardContent style={{ padding: isMobile ? '10px 0' : '6px 0' }}>
+                        {isMobile ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 500, color: isBuy ? '#22c55e' : '#ef4444' }}>{isBuy ? 'Buy' : 'Sell'}</span>
+                              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                                {formatRelativeTime(trade.time)}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                              {formatTradeDisplay(tokenAmount?.value)} {tokenCurrency}
+                            </span>
+                            <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+                              {formatTradeDisplay(xrpAmount?.value)} XRP
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ flex: '0.7', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                              {formatRelativeTime(trade.time)}
+                            </span>
+                            <span style={{ flex: '0.5', fontSize: '11px', fontWeight: 500, color: isBuy ? '#22c55e' : '#ef4444' }}>
+                              {isBuy ? 'Buy' : 'Sell'}
+                            </span>
+                            <span style={{ flex: '1', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                              {formatTradeDisplay(tokenAmount?.value)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
+                            </span>
+                            <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
+                              {formatPrice(price)}
+                            </span>
+                            <span style={{ flex: '0.8', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                              {formatTradeDisplay(xrpAmount?.value)} <span style={{ opacity: 0.5 }}>XRP</span>
+                            </span>
+                            <div style={{ flex: '0.3' }}>
+                              <IconButton onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark}>
+                                <ExternalLink size={12} />
+                              </IconButton>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              {/* Load More */}
+              {tradesHasMore && (
+                <button
+                  onClick={() => fetchMyTrades(true)}
+                  disabled={tradesLoading}
+                  style={{
+                    marginTop: '12px',
+                    padding: '10px 16px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                    borderRadius: '8px',
+                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                    cursor: tradesLoading ? 'not-allowed' : 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  {tradesLoading ? 'Loading...' : 'Load More'}
+                </button>
+              )}
+            </>
           )}
         </>
       )}
@@ -1706,7 +1677,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
               style={{
                 textAlign: 'center',
                 padding: '24px',
-                border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
+                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
                 borderRadius: '10px'
               }}
             >
@@ -1868,26 +1839,6 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
             </div>
           )}
 
-          {/* Info note */}
-          <div
-            style={{
-              padding: '12px 14px',
-              background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)',
-              borderRadius: '8px',
-              border: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
-              marginTop: '8px'
-            }}
-          >
-            <span
-              style={{
-                fontSize: '11px',
-                color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-              }}
-            >
-              Open offers are stored on the XRP Ledger. Cancelling an offer requires a transaction
-              fee.
-            </span>
-          </div>
         </>
       )}
     </div>

@@ -2,6 +2,8 @@ import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useSelector } from 'react-redux';
+import styled from '@emotion/styled';
+import { MD5 } from 'crypto-js';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -120,6 +122,9 @@ export default function WalletPage() {
   // Transactions state
   const [transactions, setTransactions] = useState([]);
   const [txLoading, setTxLoading] = useState(false);
+  const [txPage, setTxPage] = useState(0);
+  const [txTotal, setTxTotal] = useState(0);
+  const txLimit = 20;
 
   // Offers state
   const [tokenOffers, setTokenOffers] = useState([]);
@@ -138,6 +143,37 @@ export default function WalletPage() {
 
   // Account status
   const [isInactive, setIsInactive] = useState(false);
+
+  // Account info & trading stats
+  const [accountInfo, setAccountInfo] = useState(null);
+
+  // Activity/History state
+  const [historyView, setHistoryView] = useState('tokens');
+  const [tokenHistory, setTokenHistory] = useState([]);
+  const [tokenHistoryLoading, setTokenHistoryLoading] = useState(false);
+  const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
+  const [tokenHistoryTotal, setTokenHistoryTotal] = useState(0);
+  const [tokenHistoryType, setTokenHistoryType] = useState('all');
+  const tokenHistoryLimit = 20;
+  const [nftTrades, setNftTrades] = useState([]);
+  const [nftTradesLoading, setNftTradesLoading] = useState(false);
+
+  // Performance logging - track initial load
+  useEffect(() => {
+    if (address) {
+      console.log('[Wallet] ========== INITIAL LOAD START ==========');
+      console.log('[Wallet] Address:', address);
+      console.time('[Wallet] TOTAL INITIAL LOAD');
+    }
+  }, [address]);
+
+  // Log when all loading states are done
+  useEffect(() => {
+    if (address && !tokensLoading && !txLoading) {
+      console.timeEnd('[Wallet] TOTAL INITIAL LOAD');
+      console.log('[Wallet] ========== INITIAL LOAD COMPLETE ==========');
+    }
+  }, [address, tokensLoading, txLoading]);
 
   // Debug info loader
   useEffect(() => {
@@ -212,14 +248,15 @@ export default function WalletPage() {
     const change = t.pro24h ?? 0;
     const displayName = t.name || t.user || 'Unknown';
     const price = t.exch || 0;
+    const balance = Math.abs(parseFloat(line.balance || 0));
     return {
       symbol: displayName,
       name: t.user || displayName,
-      amount: parseFloat(line.balance || 0).toLocaleString(undefined, {
+      amount: balance.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 6
       }),
-      rawAmount: parseFloat(line.balance || 0),
+      rawAmount: balance,
       value: line.value
         ? `${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`
         : '0 XRP',
@@ -269,22 +306,30 @@ export default function WalletPage() {
 
   const parseTx = (tx) => {
     const type = tx.TransactionType;
-    const isOutgoing = tx.Account === address;
+    // For Payment, check if user is sender (Account) or receiver (Destination)
+    const isOutgoing = type === 'Payment'
+      ? tx.Account === address && tx.Destination !== address
+      : tx.Account === address;
+    const isIncoming = type === 'Payment' && tx.Destination === address;
     let label = type;
     let amount = '';
     let isDust = false;
+    let counterparty = null;
     if (type === 'Payment') {
       const delivered = tx.meta?.delivered_amount || tx.DeliverMax || tx.Amount;
       if (typeof delivered === 'string') {
         const xrpAmt = parseInt(delivered) / 1000000;
         amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        isDust = !isOutgoing && xrpAmt < 0.001;
+        isDust = isIncoming && xrpAmt < 0.001;
       } else if (delivered?.value) {
         amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
       }
-      label = isOutgoing ? 'Sent' : 'Received';
+      label = isIncoming ? 'Received' : 'Sent';
+      // For incoming: show sender (Account), for outgoing: show receiver (Destination)
+      counterparty = isIncoming ? tx.Account : tx.Destination;
     } else if (type === 'OfferCreate') {
       label = 'Trade';
+      counterparty = tx.Account === address ? null : tx.Account;
     } else if (type === 'NFTokenAcceptOffer') {
       const offerNode = tx.meta?.AffectedNodes?.find(
         (n) => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer'
@@ -307,13 +352,16 @@ export default function WalletPage() {
         const isSeller = offer?.Owner === address;
         label = isSeller ? 'Sold NFT' : 'Bought NFT';
       }
+      counterparty = offer?.Owner === address ? tx.Account : offer?.Owner;
     } else if (type === 'TrustSet') {
       label = 'Trustline';
+      counterparty = tx.Account === address ? null : tx.Account;
+    } else {
+      counterparty = tx.Account === address ? tx.Destination : tx.Account;
     }
-    const counterparty = isOutgoing ? tx.Destination : tx.Account;
     return {
       id: tx.hash || tx.ctid,
-      type: isOutgoing ? 'out' : 'in',
+      type: isIncoming ? 'in' : (isOutgoing ? 'out' : 'out'),
       label,
       amount,
       isDust,
@@ -330,12 +378,15 @@ export default function WalletPage() {
       if (!address) return;
       setTokensLoading(true);
       setIsInactive(false);
+      console.time('[Wallet] fetchTokens');
       try {
         const res = await fetch(
           `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true`,
           { signal: controller.signal }
         );
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchTokens');
+        console.log('[Wallet] fetchTokens: received', data.lines?.length || 0, 'tokens');
         if (data.result === 'success') {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
@@ -347,6 +398,7 @@ export default function WalletPage() {
           setTokens([]);
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchTokens');
         if (e.name !== 'AbortError') console.error('Failed to load tokens:', e);
       } finally {
         if (!controller.signal.aborted) setTokensLoading(false);
@@ -360,15 +412,72 @@ export default function WalletPage() {
   useEffect(() => {
     const loadWithdrawals = async () => {
       if (!address) return;
+      console.time('[Wallet] loadWithdrawals');
       try {
         const saved = await withdrawalStorage.getAll(address);
+        console.timeEnd('[Wallet] loadWithdrawals');
         setWithdrawals(saved);
       } catch (e) {
+        console.timeEnd('[Wallet] loadWithdrawals');
         console.error('Failed to load withdrawals:', e);
       }
     };
     loadWithdrawals();
   }, [address]);
+
+  // Load account info (creation date, reserve, objects, trading stats)
+  useEffect(() => {
+    if (!address) return;
+    console.time('[Wallet] fetchAccountInfo');
+    fetch(`${BASE_URL}/v1/account/balance/${address}`)
+      .then(res => res.json())
+      .then(data => {
+        console.timeEnd('[Wallet] fetchAccountInfo');
+        setAccountInfo(data);
+      })
+      .catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
+  }, [address]);
+
+  // Load token trading history when trades tab + tokens view
+  useEffect(() => {
+    if (activeTab !== 'trades' || historyView !== 'tokens' || !address) return;
+    setTokenHistoryLoading(true);
+    console.time('[Wallet] fetchTokenHistory');
+    const url = `${BASE_URL}/v1/history?account=${address}&limit=${tokenHistoryLimit}&page=${tokenHistoryPage}${tokenHistoryType !== 'all' ? `&type=${tokenHistoryType}` : ''}`;
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        console.timeEnd('[Wallet] fetchTokenHistory');
+        console.log('[Wallet] fetchTokenHistory: received', data.hists?.length || 0, 'trades');
+        setTokenHistory(data.hists || []);
+        setTokenHistoryTotal(data.count || data.totalRecords || 0);
+      })
+      .catch(() => {
+        console.timeEnd('[Wallet] fetchTokenHistory');
+        setTokenHistory([]);
+      })
+      .finally(() => setTokenHistoryLoading(false));
+  }, [activeTab, historyView, address, tokenHistoryType, tokenHistoryPage]);
+
+  // Load NFT trades when trades tab + nfts view
+  useEffect(() => {
+    if (activeTab !== 'trades' || historyView !== 'nfts' || !address || nftTrades.length > 0) return;
+    setNftTradesLoading(true);
+    console.time('[Wallet] fetchNftTrades');
+    fetch(`${BASE_URL}/v1/nft/analytics/trader/${address}/trades?limit=50`)
+      .then(res => res.json())
+      .then(data => {
+        console.timeEnd('[Wallet] fetchNftTrades');
+        console.log('[Wallet] fetchNftTrades: received', data.trades?.length || 0, 'trades');
+        setNftTrades(data.trades || []);
+      })
+      .catch(() => {
+        console.timeEnd('[Wallet] fetchNftTrades');
+        setNftTrades([]);
+      })
+      .finally(() => setNftTradesLoading(false));
+  }, [activeTab, historyView, address]);
+
 
   // Load recent transactions
   useEffect(() => {
@@ -376,15 +485,20 @@ export default function WalletPage() {
     const fetchTx = async () => {
       if (!address) return;
       setTxLoading(true);
+      console.time('[Wallet] fetchTransactions');
       try {
-        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=20`, {
+        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=${txLimit}&page=${txPage}`, {
           signal: controller.signal
         });
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchTransactions');
+        console.log('[Wallet] fetchTransactions: received', data.txs?.length || 0, 'txs');
         if (data.result === 'success' && data.txs) {
           setTransactions(data.txs.map(parseTx));
+          setTxTotal(data.total || data.txs.length);
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchTransactions');
         if (e.name !== 'AbortError') console.error('Failed to load transactions:', e);
       } finally {
         if (!controller.signal.aborted) setTxLoading(false);
@@ -392,19 +506,22 @@ export default function WalletPage() {
     };
     fetchTx();
     return () => controller.abort();
-  }, [address]);
+  }, [address, txPage]);
 
-  // Load NFT collections summary
+  // Load NFT collections summary - only when NFTs tab is active
   useEffect(() => {
+    if (activeTab !== 'nfts' || !address || collections.length > 0) return;
     const controller = new AbortController();
     const fetchCollections = async () => {
-      if (!address) return;
       setCollectionsLoading(true);
+      console.time('[Wallet] fetchNftCollections');
       try {
         const res = await fetch(`${BASE_URL}/api/nft/account/${address}/nfts`, {
           signal: controller.signal
         });
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchNftCollections');
+        console.log('[Wallet] fetchNftCollections: received', data.collections?.length || 0, 'collections');
         if (data.collections) {
           setCollections(
             data.collections.map((col) => ({
@@ -421,6 +538,7 @@ export default function WalletPage() {
           setNftPortfolioValue(data.portfolioValue || 0);
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchNftCollections');
         if (e.name !== 'AbortError') console.error('Failed to load collections:', e);
       } finally {
         if (!controller.signal.aborted) setCollectionsLoading(false);
@@ -428,14 +546,15 @@ export default function WalletPage() {
     };
     fetchCollections();
     return () => controller.abort();
-  }, [address]);
+  }, [activeTab, address]);
 
-  // Load offers (DEX + NFT)
+  // Load offers (DEX + NFT) - only when Offers tab is active
   useEffect(() => {
+    if (activeTab !== 'offers' || !address || tokenOffers.length > 0 || nftOffers.length > 0) return;
     const controller = new AbortController();
     const fetchOffers = async () => {
-      if (!address) return;
       setOffersLoading(true);
+      console.time('[Wallet] fetchOffers (DEX+NFT)');
       try {
         const [dexRes, nftRes] = await Promise.all([
           fetch(`${BASE_URL}/api/account/offers/${address}`, { signal: controller.signal }),
@@ -444,6 +563,8 @@ export default function WalletPage() {
           })
         ]);
         const [dexData, nftData] = await Promise.all([dexRes.json(), nftRes.json()]);
+        console.timeEnd('[Wallet] fetchOffers (DEX+NFT)');
+        console.log('[Wallet] fetchOffers: DEX', dexData.offers?.length || 0, ', NFT', (nftData.offers?.length || 0) + (nftData.incomingOffers?.length || 0));
         if (dexData.result === 'success' && dexData.offers) {
           setTokenOffers(
             dexData.offers.map((offer) => {
@@ -490,6 +611,7 @@ export default function WalletPage() {
         const buyOffers = (nftData.incomingOffers || []).map((o) => parseNftOffer(o, 'buy'));
         setNftOffers([...sellOffers, ...buyOffers]);
       } catch (e) {
+        console.timeEnd('[Wallet] fetchOffers (DEX+NFT)');
         if (e.name !== 'AbortError') console.error('Failed to load offers:', e);
       } finally {
         if (!controller.signal.aborted) setOffersLoading(false);
@@ -497,7 +619,7 @@ export default function WalletPage() {
     };
     fetchOffers();
     return () => controller.abort();
-  }, [address]);
+  }, [activeTab, address]);
 
   // Fetch more tokens when Tokens tab opened
   useEffect(() => {
@@ -505,17 +627,20 @@ export default function WalletPage() {
     const controller = new AbortController();
     const fetchMore = async () => {
       setTokensLoading(true);
+      console.time('[Wallet] fetchMoreTokens (tab)');
       try {
         const res = await fetch(
           `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&limit=50`,
           { signal: controller.signal }
         );
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchMoreTokens (tab)');
         if (data.result === 'success') {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchMoreTokens (tab)');
         if (e.name !== 'AbortError') console.error('Failed to load more tokens:', e);
       } finally {
         if (!controller.signal.aborted) setTokensLoading(false);
@@ -531,15 +656,18 @@ export default function WalletPage() {
     const controller = new AbortController();
     const fetchMore = async () => {
       setTxLoading(true);
+      console.time('[Wallet] fetchMoreTx (tab)');
       try {
         const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=50`, {
           signal: controller.signal
         });
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchMoreTx (tab)');
         if (data.result === 'success' && data.txs) {
           setTransactions(data.txs.map(parseTx));
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchMoreTx (tab)');
         if (e.name !== 'AbortError') console.error('Failed to load more transactions:', e);
       } finally {
         if (!controller.signal.aborted) setTxLoading(false);
@@ -559,12 +687,15 @@ export default function WalletPage() {
       const col = collections.find((c) => c.name === selectedCollection);
       if (!col?.slug) return;
       setCollectionNftsLoading(true);
+      console.time('[Wallet] fetchCollectionNfts');
       try {
         // Use collection endpoint which returns files with thumbnails
         const res = await fetch(
           `${BASE_URL}/api/nft/collections/${col.slug}/nfts?limit=50&skip=0&owner=${address}`
         );
         const data = await res.json();
+        console.timeEnd('[Wallet] fetchCollectionNfts');
+        console.log('[Wallet] fetchCollectionNfts: received', data.nfts?.length || 0, 'NFTs');
         if (data.nfts) {
           setCollectionNfts(
             data.nfts.map((nft) => ({
@@ -578,6 +709,7 @@ export default function WalletPage() {
           );
         }
       } catch (e) {
+        console.timeEnd('[Wallet] fetchCollectionNfts');
         console.error('Failed to load collection NFTs:', e);
       } finally {
         setCollectionNftsLoading(false);
@@ -1315,6 +1447,34 @@ export default function WalletPage() {
                   </div>
                 </div>
 
+                {/* Account Stats Row */}
+                {accountInfo && (
+                  <div className={cn('flex flex-wrap items-center gap-x-6 gap-y-2 px-1 text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                    {accountInfo.inception && (
+                      <span>Created <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{new Date(accountInfo.inception).toLocaleDateString()}</span></span>
+                    )}
+                    {accountInfo.reserve > 0 && (
+                      <span>Reserve <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{accountInfo.reserve} XRP</span></span>
+                    )}
+                    {accountInfo.ownerCount > 0 && (
+                      <span>Objects <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{accountInfo.ownerCount}</span></span>
+                    )}
+                    {accountInfo.rank && (
+                      <span>Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.rank.toLocaleString()}</span></span>
+                    )}
+                    {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
+                      <span>P&L <span className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500'}>
+                        {((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0 ? '+' : '')}{(accountInfo.pnl || accountInfo.dex_profit || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
+                      </span></span>
+                    )}
+                    {accountInfo.roi !== undefined && (
+                      <span>ROI <span className={(accountInfo.roi >= 0) ? 'text-emerald-500' : 'text-red-500'}>
+                        {accountInfo.roi >= 0 ? '+' : ''}{accountInfo.roi.toFixed(1)}%
+                      </span></span>
+                    )}
+                  </div>
+                )}
+
                 {/* Main Content Grid - Symmetrical 2 columns */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Left Column - Assets */}
@@ -1628,11 +1788,8 @@ export default function WalletPage() {
                                         {/* Table Body */}
                                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                                           {transactions.slice(0, 6).map((tx) => (
-                                            <a
+                                            <div
                                               key={tx.id}
-                                              href={`/tx/${tx.hash}`}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
                                               className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}
                                             >
                                               {/* Icon */}
@@ -1647,16 +1804,25 @@ export default function WalletPage() {
                                                 </p>
                                               </div>
                                               {/* Counterparty */}
-                                              <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
-                                                {tx.counterparty ? `${tx.counterparty.slice(0, 10)}...${tx.counterparty.slice(-8)}` : '—'}
-                                              </p>
+                                              {tx.counterparty ? (
+                                                <Link
+                                                  href={`/address/${tx.counterparty}`}
+                                                  className={cn("text-[11px] font-mono truncate hover:underline", isDark ? "text-white/50 hover:text-blue-400" : "text-gray-500 hover:text-blue-500")}
+                                                >
+                                                  {`${tx.counterparty.slice(0, 10)}...${tx.counterparty.slice(-8)}`}
+                                                </Link>
+                                              ) : (
+                                                <span className={cn("text-[11px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>—</span>
+                                              )}
                                               {/* Amount */}
                                               <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{tx.amount || '—'}</p>
                                               {/* Date */}
                                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{tx.time ? new Date(tx.time).toLocaleDateString() : '—'}</p>
                                               {/* Link */}
-                                              <ExternalLink size={12} className={cn("justify-self-end", isDark ? "text-white/20" : "text-gray-300")} />
-                                            </a>
+                                              <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className={cn("justify-self-end p-1 rounded transition-colors", isDark ? "text-white/30 hover:text-blue-400" : "text-gray-400 hover:text-blue-500")}>
+                                                <ExternalLink size={12} />
+                                              </a>
+                                            </div>
                                           ))}
                                         </div>
                                       </>
@@ -2424,7 +2590,7 @@ export default function WalletPage() {
               </div>
             )}
 
-            {/* Trades Tab */}
+            {/* Activity Tab */}
             {activeTab === 'trades' && (
               <div
                 className={cn(
@@ -2434,145 +2600,231 @@ export default function WalletPage() {
                     : 'bg-white border border-gray-200'
                 )}
               >
-                <div className="p-4 border-b border-white/10">
-                  <p
-                    className={cn(
-                      'text-[11px] font-semibold uppercase tracking-[0.15em]',
-                      isDark ? 'text-blue-400' : 'text-blue-500'
-                    )}
-                  >
-                    Transaction History
-                  </p>
-                </div>
-                {txLoading ? (
-                  <div
-                    className={cn('p-8 text-center', isDark ? 'text-white/40' : 'text-gray-400')}
-                  >
-                    Loading...
-                  </div>
-                ) : transactions.length === 0 ? (
-                  <div
-                    className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}
-                  >
-                    <div className="relative w-12 h-12 mx-auto mb-3">
-                      <div
-                        className={cn(
-                          'absolute -top-0.5 left-0.5 w-4 h-4 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute -top-0.5 right-0.5 w-4 h-4 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      >
-                        <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                        <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                        <div
-                          className={cn(
-                            'absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full',
-                            isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
-                          )}
-                        >
-                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
-                        </div>
-                        <div
-                          className={cn(
-                            'absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r',
-                            isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
-                          )}
-                        />
-                      </div>
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                        {[...Array(8)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              'h-[2px] w-full',
-                              isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40'
-                            )}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p
+                {/* View Toggle */}
+                <div className={cn('flex items-center gap-1 p-2 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {['tokens', 'nfts', 'onchain'].map((view) => (
+                    <button
+                      key={view}
+                      onClick={() => setHistoryView(view)}
                       className={cn(
-                        'text-[10px] font-medium tracking-wider',
-                        isDark ? 'text-white/60' : 'text-gray-500'
+                        'px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+                        historyView === view
+                          ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-900'
+                          : isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
                       )}
                     >
-                      NO TRANSACTIONS
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    {/* Table Header */}
-                    <div className={cn("grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/5 bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
-                      <div></div>
-                      <div>Type</div>
-                      <div>Counterparty</div>
-                      <div className="text-right">Amount</div>
-                      <div className="text-right">Date</div>
-                      <div></div>
-                    </div>
-                    {/* Table Rows */}
-                    <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
-                      {transactions.map((tx) => (
-                        <div
-                          key={tx.id}
+                      {view === 'tokens' ? 'Tokens' : view === 'nfts' ? 'NFTs' : 'On-chain'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Tokens View */}
+                {historyView === 'tokens' && (
+                  <>
+                    {/* Type Filter */}
+                    <div className={cn('flex items-center gap-2 px-4 py-2 border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+                      {['all', 'buy', 'sell'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setTokenHistoryType(type)}
                           className={cn(
-                            'grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-3 items-center transition-colors',
-                            isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+                            'px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors',
+                            tokenHistoryType === type
+                              ? type === 'buy' ? 'bg-emerald-500/10 text-emerald-500'
+                                : type === 'sell' ? 'bg-red-500/10 text-red-400'
+                                : isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-500'
+                              : isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600'
                           )}
                         >
-                          {/* Icon */}
-                          <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                            {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                          </div>
-                          {/* Type */}
-                          <div className="flex items-center gap-1.5">
-                            <p className={cn('text-[12px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{tx.label}</p>
-                            {tx.isDust && <span className={cn('text-[8px] px-1 py-0.5 rounded font-medium', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
-                          </div>
-                          {/* Counterparty */}
-                          <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
-                            {tx.counterparty ? `${tx.counterparty.slice(0, 8)}...${tx.counterparty.slice(-6)}` : '—'}
-                          </p>
-                          {/* Amount */}
-                          <p className={cn('text-[11px] font-medium tabular-nums text-right', tx.type === 'in' ? 'text-emerald-500' : 'text-red-400')}>
-                            {tx.amount ? `${tx.type === 'in' ? '+' : '-'}${tx.amount}` : '—'}
-                          </p>
-                          {/* Date */}
-                          <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
-                            {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
-                          </p>
-                          {/* Link */}
-                          <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1.5 rounded-md transition-colors justify-self-end', isDark ? 'text-white/30 hover:text-blue-400 hover:bg-blue-500/10' : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50')}>
-                            <ExternalLink size={12} />
-                          </a>
-                        </div>
+                          {type === 'all' ? 'All' : type === 'buy' ? 'Buys' : 'Sells'}
+                        </button>
                       ))}
                     </div>
-                  </div>
+                    {tokenHistoryLoading ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                    ) : tokenHistory.length === 0 ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No token trades</div>
+                    ) : (
+                      <>
+                        <div className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                          <div></div>
+                          <div>Token</div>
+                          <div className="text-right">Amount</div>
+                          <div className="text-right">Price</div>
+                          <div className="text-right">Time</div>
+                          <div></div>
+                        </div>
+                        <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
+                          {tokenHistory.map((trade, i) => {
+                            const isBuy = trade.paid?.currency === 'XRP';
+                            const tokenData = isBuy ? trade.got : trade.paid;
+                            const xrpData = isBuy ? trade.paid : trade.got;
+                            const tokenAmount = Math.abs(parseFloat(tokenData?.value || 0));
+                            const xrpAmount = Math.abs(parseFloat(xrpData?.value || 0));
+                            const price = tokenAmount > 0 ? xrpAmount / tokenAmount : 0;
+                            const tokenName = tokenData?.currency?.length === 40
+                              ? Buffer.from(tokenData.currency, 'hex').toString('utf8').replace(/\x00/g, '')
+                              : tokenData?.currency || 'Unknown';
+                            return (
+                              <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                                <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                  {isBuy ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                </div>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{tokenName}</span>
+                                </div>
+                                <p className={cn('text-[11px] tabular-nums text-right', isBuy ? 'text-emerald-500' : 'text-red-400')}>
+                                  {isBuy ? '+' : '-'}{tokenAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}
+                                </p>
+                                <p className={cn('text-[11px] tabular-nums text-right', isDark ? 'text-white/60' : 'text-gray-600')}>
+                                  {price > 0 ? price.toFixed(6) : '—'} XRP
+                                </p>
+                                <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                  {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
+                                </p>
+                                <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
+                                  <ExternalLink size={12} />
+                                </a>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Pagination */}
+                        {tokenHistoryTotal > tokenHistoryLimit && (
+                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                            <button
+                              onClick={() => setTokenHistoryPage(p => p - 1)}
+                              disabled={tokenHistoryPage === 0 || tokenHistoryLoading}
+                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', tokenHistoryPage === 0 ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
+                            >
+                              Prev
+                            </button>
+                            <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              {tokenHistoryPage + 1} / {Math.ceil(tokenHistoryTotal / tokenHistoryLimit)}
+                            </span>
+                            <button
+                              onClick={() => setTokenHistoryPage(p => p + 1)}
+                              disabled={(tokenHistoryPage + 1) * tokenHistoryLimit >= tokenHistoryTotal || tokenHistoryLoading}
+                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', (tokenHistoryPage + 1) * tokenHistoryLimit >= tokenHistoryTotal ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
+                            >
+                              Next
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* NFTs View */}
+                {historyView === 'nfts' && (
+                  <>
+                    {nftTradesLoading ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                    ) : nftTrades.length === 0 ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No NFT trades</div>
+                    ) : (
+                      <>
+                        <div className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                          <div></div>
+                          <div>NFT</div>
+                          <div className="text-right">Price</div>
+                          <div className="text-right">Time</div>
+                          <div></div>
+                        </div>
+                        <div className={cn('divide-y max-h-[400px] overflow-y-auto', isDark ? 'divide-white/5' : 'divide-gray-50')}>
+                          {nftTrades.map((trade, i) => (
+                            <div key={i} className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5">
+                                {trade.nft?.image && <img src={trade.nft.image} alt="" className="w-full h-full object-cover" />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{trade.nft?.name || 'NFT'}</p>
+                                <p className={cn('text-[10px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}>{trade.collection?.name || ''}</p>
+                              </div>
+                              <p className={cn('text-[11px] font-medium tabular-nums text-right', isDark ? 'text-white/80' : 'text-gray-700')}>
+                                {trade.price ? `${parseFloat(trade.price).toLocaleString()} XRP` : '—'}
+                              </p>
+                              <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
+                              </p>
+                              <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
+                                <ExternalLink size={12} />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* On-chain View */}
+                {historyView === 'onchain' && (
+                  <>
+                    {txLoading ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                    ) : transactions.length === 0 ? (
+                      <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No transactions</div>
+                    ) : (
+                      <>
+                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                          <div></div>
+                          <div>Type</div>
+                          <div>Counterparty</div>
+                          <div className="text-right">Amount</div>
+                          <div className="text-right">Date</div>
+                          <div></div>
+                        </div>
+                        <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
+                          {transactions.map((tx) => (
+                            <div key={tx.id} className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                              <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <p className={cn('text-[12px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{tx.label}</p>
+                                {tx.isDust && <span className={cn('text-[8px] px-1 py-0.5 rounded font-medium', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                              </div>
+                              <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                {tx.counterparty ? `${tx.counterparty.slice(0, 8)}...${tx.counterparty.slice(-6)}` : '—'}
+                              </p>
+                              <p className={cn('text-[11px] font-medium tabular-nums text-right', tx.type === 'in' ? 'text-emerald-500' : 'text-red-400')}>
+                                {tx.amount ? `${tx.type === 'in' ? '+' : '-'}${tx.amount}` : '—'}
+                              </p>
+                              <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
+                              </p>
+                              <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
+                                <ExternalLink size={12} />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                        {txTotal > txLimit && (
+                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                            <button
+                              onClick={() => setTxPage(p => p - 1)}
+                              disabled={txPage === 0 || txLoading}
+                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', txPage === 0 ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
+                            >
+                              Prev
+                            </button>
+                            <span className={cn('text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              {txPage + 1} / {Math.ceil(txTotal / txLimit)}
+                            </span>
+                            <button
+                              onClick={() => setTxPage(p => p + 1)}
+                              disabled={(txPage + 1) * txLimit >= txTotal || txLoading}
+                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', (txPage + 1) * txLimit >= txTotal ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
+                            >
+                              Next
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
                 )}
               </div>
             )}

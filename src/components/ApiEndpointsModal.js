@@ -1,4 +1,5 @@
 import { memo, useState, useContext, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Code2,
   Copy,
@@ -371,7 +372,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
     return unsub;
   }, [open]);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
 
   const handleCopy = (path) => {
     navigator.clipboard.writeText(`https://api.xrpl.to/v1${path}`);
@@ -425,13 +426,13 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
       }, {})
     : API_REFERENCE;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className={cn('fixed inset-0', isDark ? 'bg-black/70' : 'bg-black/30')} />
+  return createPortal(
+    <div className="fixed inset-0 z-[1400] flex items-center justify-center p-4" onClick={onClose}>
+      <div className={cn('fixed inset-0 z-[1400]', isDark ? 'bg-black/70' : 'bg-black/30')} />
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'relative rounded-xl border w-full max-w-[480px] max-h-[85vh] overflow-hidden flex flex-col',
+          'relative z-[1401] rounded-xl border w-full max-w-[480px] max-h-[85vh] overflow-hidden flex flex-col',
           isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'
         )}
       >
@@ -867,7 +868,8 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 });
 
