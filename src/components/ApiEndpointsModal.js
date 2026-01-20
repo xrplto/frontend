@@ -16,6 +16,29 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import axios from 'axios';
 
+// JSON syntax highlighter
+const JsonHighlight = ({ data, maxLen = 500 }) => {
+  const str = JSON.stringify(data, null, 2);
+  const truncated = str.slice(0, maxLen);
+  const parts = truncated.split(/("(?:[^"\\]|\\.)*"|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!part) return null;
+        if (/^".*":?$/.test(part)) {
+          const isKey = part.endsWith(':') || (parts[i + 1] && parts[i + 1].trim().startsWith(':'));
+          return <span key={i} style={{ color: isKey ? '#60a5fa' : '#22c55e' }}>{part}</span>;
+        }
+        if (/^(true|false)$/.test(part)) return <span key={i} style={{ color: '#f59e0b' }}>{part}</span>;
+        if (/^null$/.test(part)) return <span key={i} style={{ color: '#ef4444' }}>{part}</span>;
+        if (/^-?\d/.test(part)) return <span key={i} style={{ color: '#a78bfa' }}>{part}</span>;
+        return <span key={i}>{part}</span>;
+      })}
+      {str.length > maxLen && '...'}
+    </>
+  );
+};
+
 // Global store for tracked API calls
 if (typeof window !== 'undefined') {
   window.__apiCallsStore = window.__apiCallsStore || new Set();
@@ -640,8 +663,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                             isDark ? 'text-white/70' : 'text-gray-600'
                           )}
                         >
-                          {JSON.stringify(responsePreview.data, null, 2).slice(0, 500)}
-                          {JSON.stringify(responsePreview.data, null, 2).length > 500 && '...'}
+                          <JsonHighlight data={responsePreview.data} />
                         </pre>
                       </div>
                     )}
@@ -814,9 +836,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                                       isDark ? 'text-white/70' : 'text-gray-600'
                                     )}
                                   >
-                                    {JSON.stringify(responsePreview.data, null, 2).slice(0, 500)}
-                                    {JSON.stringify(responsePreview.data, null, 2).length > 500 &&
-                                      '...'}
+                                    <JsonHighlight data={responsePreview.data} />
                                   </pre>
                                 </div>
                               )}

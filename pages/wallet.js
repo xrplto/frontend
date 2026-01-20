@@ -36,6 +36,7 @@ import {
   Coins
 } from 'lucide-react';
 import Link from 'next/link';
+import QRCode from 'react-qr-code';
 
 const BASE_URL = 'https://api.xrpl.to';
 
@@ -1318,11 +1319,7 @@ export default function WalletPage() {
                       <div className="flex flex-col items-center">
                         {/* QR Code */}
                         <div className="p-3 bg-white rounded-xl mb-4">
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${address}&bgcolor=ffffff&color=000000&margin=0`}
-                            alt="QR"
-                            className="w-40 h-40"
-                          />
+                          <QRCode value={address} size={160} />
                         </div>
 
                         {/* Address Display */}
@@ -1530,7 +1527,7 @@ export default function WalletPage() {
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_36px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/5" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/5" : "text-gray-400 border-b border-gray-100")}>
                             <span>Token</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Price</span>
@@ -1541,7 +1538,7 @@ export default function WalletPage() {
                           {/* Table Body */}
                           <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                             {allTokens.slice(0, 8).map((token) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                              <div key={token.symbol} className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                                 {/* Token */}
                                 <div className="flex items-center gap-2 min-w-0">
                                   {token.md5 ? (
@@ -1566,8 +1563,8 @@ export default function WalletPage() {
                                 {/* 24h Change */}
                                 <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                                 {/* Send */}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("p-1.5 rounded-md transition-colors justify-self-end", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}>
-                                  <Send size={12} />
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors justify-self-end", isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-500 hover:text-blue-500 hover:bg-blue-50")}>
+                                  <Send size={10} /> Send
                                 </button>
                               </div>
                             ))}
@@ -1951,7 +1948,7 @@ export default function WalletPage() {
                       )}
                     >
                       {/* Table Header */}
-                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_80px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/5 bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
+                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/5 bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
                         <div>Asset</div>
                         <div className="text-right">Balance</div>
                         <div className="text-right">Price</div>
@@ -2045,7 +2042,7 @@ export default function WalletPage() {
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                           {filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
-                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_80px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
                               {/* Asset */}
                               <div className="flex items-center gap-2.5 min-w-0">
                                 {token.md5 ? (
@@ -2079,7 +2076,7 @@ export default function WalletPage() {
                               {/* Actions */}
                               <div className="flex items-center justify-end gap-1">
                                 {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}><ArrowRightLeft size={12} /></Link>}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}><Send size={12} /></button>
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors", isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-500 hover:text-blue-500 hover:bg-blue-50")}><Send size={10} /> Send</button>
                               </div>
                             </div>
                           ))}
