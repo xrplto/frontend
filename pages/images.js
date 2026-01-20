@@ -241,14 +241,16 @@ function ImagesPage() {
             isDark ? 'border-white/10 bg-white/[0.01]' : 'border-gray-200'
           )}
         >
-          <p
-            className={cn(
-              'mb-3 text-[11px] font-medium uppercase tracking-wide',
-              isDark ? 'text-gray-500' : 'text-gray-500'
-            )}
-          >
-            Upload New Image
-          </p>
+          <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-primary/50 -mx-4 -mt-4 mb-4", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+            <p
+              className={cn(
+                'text-[11px] font-bold uppercase tracking-wider',
+                isDark ? 'text-white/70' : 'text-gray-600'
+              )}
+            >
+              Upload New Image
+            </p>
+          </div>
 
           {!selectedFile ? (
             <div
@@ -257,7 +259,7 @@ function ImagesPage() {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={cn(
-                'flex flex-col items-center justify-center rounded-xl border-[1.5px] border-dashed p-10 transition-all',
+                'flex flex-col items-center justify-center rounded-xl border-[1.5px] border-dashed p-6 transition-all',
                 dragActive
                   ? 'border-primary bg-primary/5'
                   : isDark
@@ -267,21 +269,21 @@ function ImagesPage() {
             >
               <div
                 className={cn(
-                  'mb-4 flex h-12 w-12 items-center justify-center rounded-xl',
+                  'mb-3 flex h-10 w-10 items-center justify-center rounded-lg',
                   isDark ? 'bg-primary/10' : 'bg-primary/5'
                 )}
               >
-                <Upload size={22} className="text-primary" />
+                <Upload size={18} className="text-primary" />
               </div>
               <p
                 className={cn(
-                  'mb-1 text-[14px] font-medium',
+                  'mb-0.5 text-[13px] font-medium',
                   isDark ? 'text-white' : 'text-gray-900'
                 )}
               >
                 Drag and drop an image here
               </p>
-              <p className={cn('mb-4 text-[12px]', isDark ? 'text-gray-500' : 'text-gray-500')}>
+              <p className={cn('mb-3 text-[11px]', isDark ? 'text-gray-500' : 'text-gray-500')}>
                 PNG, JPG, GIF up to 10MB
               </p>
               <label
@@ -413,11 +415,11 @@ function ImagesPage() {
               : 'border-gray-200'
           )}
         >
-          <div className="mb-4 flex items-center justify-between">
+          <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-primary/50 -mx-4 -mt-4 mb-4", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
             <p
               className={cn(
-                'text-[11px] font-medium uppercase tracking-wide',
-                isDark ? 'text-gray-500' : 'text-gray-500'
+                'text-[11px] font-bold uppercase tracking-wider',
+                isDark ? 'text-white/70' : 'text-gray-600'
               )}
             >
               Uploaded Images
@@ -426,14 +428,14 @@ function ImagesPage() {
               onClick={fetchImages}
               disabled={loading}
               className={cn(
-                'flex items-center gap-1.5 rounded-lg border-[1.5px] px-3 py-1.5 text-[12px] font-normal transition-colors',
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide transition-colors',
                 isDark
-                  ? 'border-[rgba(59,130,246,0.08)] hover:border-primary hover:bg-primary/5'
-                  : 'border-gray-200 hover:border-primary hover:bg-gray-50'
+                  ? 'text-primary hover:bg-primary/10'
+                  : 'text-primary hover:bg-primary/5'
               )}
             >
               <svg
-                className={cn('h-3.5 w-3.5', loading && 'animate-spin')}
+                className={cn('h-3 w-3', loading && 'animate-spin')}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -450,8 +452,8 @@ function ImagesPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-16">
-              <svg className="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+            <div className="flex justify-center py-10">
+              <svg className="h-6 w-6 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -468,29 +470,29 @@ function ImagesPage() {
               </svg>
             </div>
           ) : images.length === 0 ? (
-            <div className="py-16 text-center">
+            <div className="py-10 text-center">
               <div
                 className={cn(
-                  'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl',
-                  isDark ? 'bg-[rgba(59,130,246,0.05)]' : 'bg-gray-100'
+                  'mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl',
+                  isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100'
                 )}
               >
-                <ImageIcon size={28} className={cn(isDark ? 'text-gray-600' : 'text-gray-400')} />
+                <ImageIcon size={22} className={cn(isDark ? 'text-primary/50' : 'text-primary')} />
               </div>
               <p
                 className={cn(
-                  'mb-1 text-[14px] font-medium',
-                  isDark ? 'text-gray-400' : 'text-gray-600'
+                  'mb-0.5 text-[12px] font-semibold',
+                  isDark ? 'text-white/50' : 'text-gray-500'
                 )}
               >
                 No images uploaded yet
               </p>
-              <p className={cn('text-[12px]', isDark ? 'text-gray-600' : 'text-gray-500')}>
+              <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>
                 Upload your first image above
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
               {images.map((image) => {
                 const imageUrl =
                   typeof image === 'string'

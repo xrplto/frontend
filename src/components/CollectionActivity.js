@@ -169,8 +169,14 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                     ))}
                   </div>
-                  <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                  <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                  <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                    <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                    <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                  </div>
+                  <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                    <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                    <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                  </div>
                   <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                     <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
                   </div>

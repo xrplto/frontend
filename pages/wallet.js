@@ -1835,13 +1835,13 @@ export default function WalletPage() {
                             <Image size={24} className={cn(isDark ? "text-blue-400/50" : "text-blue-400")} />
                           </div>
                           <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
-                          <p className={cn('text-[10px] mb-4 max-w-[200px] text-center', isDark ? 'text-white/30' : 'text-gray-400')}>Start your collection by exploring NFT marketplaces on XRPL</p>
-                          <a href="/nfts" className="px-4 py-2 rounded-lg text-[11px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">Browse NFTs</a>
+                          <p className={cn('text-[12px] mb-5 max-w-[240px] text-center leading-relaxed', isDark ? 'text-white/40' : 'text-gray-500')}>Start your collection by exploring NFT marketplaces on XRPL</p>
+                          <a href="/nfts" className="px-5 py-2.5 rounded-lg text-[12px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">Browse NFTs</a>
                         </div>
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[1fr_80px_80px_80px] gap-2 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
@@ -1853,7 +1853,7 @@ export default function WalletPage() {
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[1fr_80px_80px_80px] gap-2 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
+                                className={cn("w-full grid grid-cols-[2fr_1fr_1fr_1fr] gap-3 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   {col.logo ? (
@@ -2258,8 +2258,14 @@ export default function WalletPage() {
                                   <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                                 ))}
                               </div>
-                              <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                              <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
+                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
                               <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                                 <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
                               </div>
@@ -2476,8 +2482,14 @@ export default function WalletPage() {
                                   <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                                 ))}
                               </div>
-                              <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                              <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
+                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
                               <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                                 <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
                               </div>
@@ -2602,8 +2614,14 @@ export default function WalletPage() {
                                   <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                                 ))}
                               </div>
-                              <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                              <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
+                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                              </div>
                               <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                                 <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
                               </div>
@@ -3279,9 +3297,15 @@ export default function WalletPage() {
                               <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                             ))}
                           </div>
-                          {/* Eyes */}
-                          <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                          <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                          {/* X Eyes */}
+                          <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                            <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                            <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                          </div>
+                          <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                            <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                            <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                          </div>
                           {/* Muzzle */}
                           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                             <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
@@ -3929,8 +3953,14 @@ export default function WalletPage() {
                             <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
                           ))}
                         </div>
-                        <div className="absolute top-3 left-2.5 w-2 h-2 rounded-full bg-white/30" />
-                        <div className="absolute top-3 right-2.5 w-2 h-2 rounded-full bg-white/30" />
+                        <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                          <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                          <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                        </div>
+                        <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                          <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
+                          <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
+                        </div>
                         <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
                           <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
                         </div>

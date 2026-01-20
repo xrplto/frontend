@@ -2893,25 +2893,33 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span className="relative z-10">Launch</span>
               </a>
 
-              <button
-                onClick={() => setOpenWalletModal(true)}
-                className={cn(
-                  'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
-                  accountProfile
-                    ? parseFloat(accountProfile.xrp || 0) < 1
+              {accountProfile ? (
+                <div
+                  className={cn(
+                    'relative flex h-8 items-center rounded-lg text-[13px] font-medium border overflow-hidden',
+                    parseFloat(accountProfile.xrp || 0) < 1
                       ? isDark
-                        ? 'bg-amber-500/5 text-white border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/10'
-                        : 'bg-amber-50 text-gray-900 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50'
+                        ? 'bg-amber-500/5 text-white border-amber-500/20'
+                        : 'bg-amber-50 text-gray-900 border-amber-200'
                       : isDark
-                        ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
-                        : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
-                    : isDark
-                      ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
-                )}
-              >
-                {accountProfile ? (
-                  <>
+                        ? 'bg-emerald-500/5 text-white border-emerald-500/20'
+                        : 'bg-emerald-50 text-gray-900 border-emerald-200'
+                  )}
+                >
+                  {/* Main area - links to /wallet */}
+                  <a
+                    href="/wallet"
+                    className={cn(
+                      'flex items-center gap-2 px-3 h-full transition-all duration-200',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'hover:bg-amber-500/10'
+                          : 'hover:bg-amber-100/50'
+                        : isDark
+                          ? 'hover:bg-emerald-500/10'
+                          : 'hover:bg-emerald-100/50'
+                    )}
+                  >
                     <span className="relative flex h-2 w-2">
                       {parseFloat(accountProfile.xrp || 0) >= 1 && (
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -2942,15 +2950,51 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         {profiles.length}
                       </span>
                     )}
+                  </a>
+                  {/* Divider */}
+                  <div
+                    className={cn(
+                      'h-4 w-px',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'bg-amber-500/20'
+                          : 'bg-amber-200'
+                        : isDark
+                          ? 'bg-emerald-500/20'
+                          : 'bg-emerald-200'
+                    )}
+                  />
+                  {/* Dropdown trigger - opens modal */}
+                  <button
+                    onClick={() => setOpenWalletModal(true)}
+                    className={cn(
+                      'flex items-center justify-center px-2 h-full transition-all duration-200',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'hover:bg-amber-500/10'
+                          : 'hover:bg-amber-100/50'
+                        : isDark
+                          ? 'hover:bg-emerald-500/10'
+                          : 'hover:bg-emerald-100/50'
+                    )}
+                  >
                     <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-                  </>
-                ) : (
-                  <>
-                    <Wallet size={14} />
-                    <span>Connect</span>
-                  </>
-                )}
-              </button>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setOpenWalletModal(true)}
+                  className={cn(
+                    'relative flex h-8 items-center gap-2 rounded-lg px-3 text-[13px] font-medium transition-all duration-200 border',
+                    isDark
+                      ? 'bg-white/[0.04] text-white/70 border-white/15 hover:border-white/30 hover:bg-white/[0.06]'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                  )}
+                >
+                  <Wallet size={14} />
+                  <span>Connect</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -2958,25 +3002,33 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           {isTabletOrMobile && !fullSearch && (
             <div className="flex items-center gap-1">
               {/* Mobile Wallet Button */}
-              <button
-                onClick={() => setOpenWalletModal(true)}
-                className={cn(
-                  'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
-                  accountProfile
-                    ? parseFloat(accountProfile.xrp || 0) < 1
+              {accountProfile ? (
+                <div
+                  className={cn(
+                    'flex h-8 items-center rounded-lg text-[12px] font-medium border overflow-hidden',
+                    parseFloat(accountProfile.xrp || 0) < 1
                       ? isDark
                         ? 'bg-amber-500/5 text-white border-amber-500/20'
                         : 'bg-amber-50 text-gray-900 border-amber-200'
                       : isDark
                         ? 'bg-emerald-500/5 text-white border-emerald-500/20'
                         : 'bg-emerald-50 text-gray-900 border-emerald-200'
-                    : isDark
-                      ? 'bg-white/[0.04] text-white/60 border-white/15'
-                      : 'bg-gray-50 text-gray-500 border-gray-200'
-                )}
-              >
-                {accountProfile ? (
-                  <>
+                  )}
+                >
+                  {/* Main area - links to /wallet */}
+                  <a
+                    href="/wallet"
+                    className={cn(
+                      'flex items-center gap-1.5 px-2.5 h-full transition-all duration-200',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'hover:bg-amber-500/10'
+                          : 'hover:bg-amber-100/50'
+                        : isDark
+                          ? 'hover:bg-emerald-500/10'
+                          : 'hover:bg-emerald-100/50'
+                    )}
+                  >
                     <span className="relative flex h-1.5 w-1.5">
                       {parseFloat(accountProfile.xrp || 0) >= 1 && (
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -2993,11 +3045,50 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <span className="tabular-nums">
                       {accountProfile.xrp != null ? parseFloat(accountProfile.xrp).toFixed(1) : '...'}
                     </span>
-                  </>
-                ) : (
+                  </a>
+                  {/* Divider */}
+                  <div
+                    className={cn(
+                      'h-4 w-px',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'bg-amber-500/20'
+                          : 'bg-amber-200'
+                        : isDark
+                          ? 'bg-emerald-500/20'
+                          : 'bg-emerald-200'
+                    )}
+                  />
+                  {/* Dropdown trigger - opens modal */}
+                  <button
+                    onClick={() => setOpenWalletModal(true)}
+                    className={cn(
+                      'flex items-center justify-center px-1.5 h-full transition-all duration-200',
+                      parseFloat(accountProfile.xrp || 0) < 1
+                        ? isDark
+                          ? 'hover:bg-amber-500/10'
+                          : 'hover:bg-amber-100/50'
+                        : isDark
+                          ? 'hover:bg-emerald-500/10'
+                          : 'hover:bg-emerald-100/50'
+                    )}
+                  >
+                    <ChevronDown size={10} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setOpenWalletModal(true)}
+                  className={cn(
+                    'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-all duration-200 border',
+                    isDark
+                      ? 'bg-white/[0.04] text-white/60 border-white/15'
+                      : 'bg-gray-50 text-gray-500 border-gray-200'
+                  )}
+                >
                   <Wallet size={14} />
-                )}
-              </button>
+                </button>
+              )}
               {/* Menu Button */}
               <button
                 aria-label="Open menu"
@@ -3306,53 +3397,97 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
               <div className="px-1">
                 {accountProfile ? (
-                  <button
-                    onClick={() => {
-                      setOpenWalletModal(true);
-                      toggleDrawer(false);
-                    }}
+                  <div
                     className={cn(
-                      'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
+                      'flex w-full items-center rounded-lg text-[13px] font-medium border overflow-hidden',
                       parseFloat(accountProfile.xrp || 0) < 1
                         ? isDark
-                          ? 'bg-amber-500/5 text-white border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/10'
-                          : 'bg-amber-50 text-gray-900 border-amber-200 hover:border-amber-300 hover:bg-amber-100/50'
+                          ? 'bg-amber-500/5 text-white border-amber-500/20'
+                          : 'bg-amber-50 text-gray-900 border-amber-200'
                         : isDark
-                          ? 'bg-emerald-500/5 text-white border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/10'
-                          : 'bg-emerald-50 text-gray-900 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100/50'
+                          ? 'bg-emerald-500/5 text-white border-emerald-500/20'
+                          : 'bg-emerald-50 text-gray-900 border-emerald-200'
                     )}
                   >
-                    <span className="relative flex h-2 w-2">
-                      {parseFloat(accountProfile.xrp || 0) >= 1 && (
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    {/* Main area - links to /wallet */}
+                    <a
+                      href="/wallet"
+                      onClick={() => toggleDrawer(false)}
+                      className={cn(
+                        'flex flex-1 items-center justify-center gap-2 px-4 py-2.5 transition-all duration-200',
+                        parseFloat(accountProfile.xrp || 0) < 1
+                          ? isDark
+                            ? 'hover:bg-amber-500/10'
+                            : 'hover:bg-amber-100/50'
+                          : isDark
+                            ? 'hover:bg-emerald-500/10'
+                            : 'hover:bg-emerald-100/50'
                       )}
-                      <span
-                        className={cn(
-                          'relative inline-flex h-2 w-2 rounded-full',
-                          parseFloat(accountProfile.xrp || 0) < 1
-                            ? 'bg-amber-400/60'
-                            : 'bg-emerald-500'
+                    >
+                      <span className="relative flex h-2 w-2">
+                        {parseFloat(accountProfile.xrp || 0) >= 1 && (
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                         )}
-                      />
-                    </span>
-                    <span className="font-medium tabular-nums">
-                      {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
-                    </span>
-                    {profiles?.length > 1 && (
-                      <span
-                        className={cn(
-                          'text-[10px] px-1.5 py-0.5 rounded font-semibold',
-                          isDark
-                            ? 'bg-white/10 text-white/60'
-                            : parseFloat(accountProfile.xrp || 0) < 1
-                              ? 'bg-amber-100 text-amber-600'
-                              : 'bg-emerald-100 text-emerald-600'
-                        )}
-                      >
-                        {profiles.length}
+                        <span
+                          className={cn(
+                            'relative inline-flex h-2 w-2 rounded-full',
+                            parseFloat(accountProfile.xrp || 0) < 1
+                              ? 'bg-amber-400/60'
+                              : 'bg-emerald-500'
+                          )}
+                        />
                       </span>
-                    )}
-                  </button>
+                      <span className="font-medium tabular-nums">
+                        {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
+                      </span>
+                      {profiles?.length > 1 && (
+                        <span
+                          className={cn(
+                            'text-[10px] px-1.5 py-0.5 rounded font-semibold',
+                            isDark
+                              ? 'bg-white/10 text-white/60'
+                              : parseFloat(accountProfile.xrp || 0) < 1
+                                ? 'bg-amber-100 text-amber-600'
+                                : 'bg-emerald-100 text-emerald-600'
+                          )}
+                        >
+                          {profiles.length}
+                        </span>
+                      )}
+                    </a>
+                    {/* Divider */}
+                    <div
+                      className={cn(
+                        'h-6 w-px',
+                        parseFloat(accountProfile.xrp || 0) < 1
+                          ? isDark
+                            ? 'bg-amber-500/20'
+                            : 'bg-amber-200'
+                          : isDark
+                            ? 'bg-emerald-500/20'
+                            : 'bg-emerald-200'
+                      )}
+                    />
+                    {/* Dropdown trigger - opens modal */}
+                    <button
+                      onClick={() => {
+                        setOpenWalletModal(true);
+                        toggleDrawer(false);
+                      }}
+                      className={cn(
+                        'flex items-center justify-center px-3 py-2.5 transition-all duration-200',
+                        parseFloat(accountProfile.xrp || 0) < 1
+                          ? isDark
+                            ? 'hover:bg-amber-500/10'
+                            : 'hover:bg-amber-100/50'
+                          : isDark
+                            ? 'hover:bg-emerald-500/10'
+                            : 'hover:bg-emerald-100/50'
+                      )}
+                    >
+                      <ChevronDown size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                    </button>
+                  </div>
                 ) : (
                   <>
                     <button
