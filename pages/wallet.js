@@ -812,7 +812,7 @@ export default function WalletPage() {
             className={cn(
               'text-center p-10 rounded-xl max-w-md',
               isDark
-                ? 'bg-white/[0.04] border border-white/10'
+                ? 'bg-white/[0.04] border border-white/[0.15]'
                 : 'bg-white border border-gray-200'
             )}
           >
@@ -839,7 +839,7 @@ export default function WalletPage() {
             </p>
             <button
               onClick={() => setOpenWalletModal(true)}
-              className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200"
+              className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
             >
               Connect Wallet
             </button>
@@ -899,23 +899,23 @@ export default function WalletPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-2 mb-6 overflow-x-auto">
+            <div className="flex items-center gap-1 mb-6 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium tracking-wider rounded-md border transition-all whitespace-nowrap',
+                    'flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold tracking-widest rounded-lg transition-all whitespace-nowrap',
                     activeTab === tab.id
-                      ? cn(isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900')
+                      ? cn(isDark ? 'bg-white/[0.08] text-white' : 'bg-gray-100 text-gray-900')
                       : cn(
                           isDark
-                            ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
-                            : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                         )
                   )}
                 >
-                  <tab.icon size={15} strokeWidth={1.5} />
+                  <tab.icon size={14} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
                   {tab.label.toUpperCase()}
                 </button>
               ))}
@@ -943,7 +943,7 @@ export default function WalletPage() {
                   <div
                     className={cn(
                       'flex items-center justify-between p-4 border-b',
-                      isDark ? 'border-white/5' : 'border-gray-100'
+                      isDark ? 'border-white/[0.08]' : 'border-gray-100'
                     )}
                   >
                     <div
@@ -1001,7 +1001,7 @@ export default function WalletPage() {
                         className={cn(
                           'rounded-xl mb-4 overflow-hidden',
                           isDark
-                            ? 'bg-white/[0.02] border border-white/5'
+                            ? 'bg-white/[0.02] border border-white/[0.08]'
                             : 'bg-gray-50 border border-gray-100'
                         )}
                       >
@@ -1010,7 +1010,7 @@ export default function WalletPage() {
                           onClick={() => setTokenDropdownOpen(!tokenDropdownOpen)}
                           className={cn(
                             'w-full flex items-center justify-between px-4 py-3 transition-colors',
-                            isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-100/50'
+                            isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-100/50'
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -1083,7 +1083,7 @@ export default function WalletPage() {
                           <div
                             className={cn(
                               'border-t max-h-[160px] overflow-y-auto',
-                              isDark ? 'border-white/5' : 'border-gray-100'
+                              isDark ? 'border-white/[0.08]' : 'border-gray-100'
                             )}
                           >
                             {allTokens.map((t) => (
@@ -1243,7 +1243,7 @@ export default function WalletPage() {
                                     ? 'border-amber-500/50'
                                     : 'border-amber-400'
                                   : isDark
-                                    ? 'border-white/10 focus:border-blue-500/50'
+                                    ? 'border-white/[0.15] focus:border-blue-500/50'
                                     : 'border-gray-200 focus:border-blue-400'
                             )}
                           />
@@ -1280,7 +1280,7 @@ export default function WalletPage() {
                           className={cn(
                             'w-full px-3 py-2.5 rounded-xl text-sm font-mono outline-none transition-colors duration-150',
                             isDark
-                              ? 'bg-white/[0.03] text-white border border-white/10 placeholder:text-white/25 focus:border-blue-500/50'
+                              ? 'bg-white/[0.03] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-blue-500/50'
                               : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                           )}
                         />
@@ -1384,19 +1384,20 @@ export default function WalletPage() {
                 {/* Portfolio Header - Single Row */}
                 <div
                   className={cn(
-                    'rounded-xl p-4 flex flex-wrap items-center gap-6',
-                    isDark ? 'bg-white/[0.03] border border-white/10' : 'bg-white border border-gray-200'
+                    'rounded-xl p-5 flex flex-wrap items-center gap-6',
+                    isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200'
                   )}
                 >
                   {/* Portfolio Value */}
                   <div className="flex items-center gap-4">
                     <div>
-                      <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>Portfolio</p>
-                      <p className={cn('text-2xl font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                        {tokensLoading ? '...' : `${(totalValue + nftPortfolioValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`}
+                      <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>Portfolio</p>
+                      <p className={cn('text-3xl font-bold tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                        {tokensLoading ? '...' : `${(totalValue + nftPortfolioValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        <span className={cn('text-lg font-semibold ml-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>XRP</span>
                       </p>
                     </div>
-                    {isInactive && <span className="text-[10px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400">Inactive</span>}
+                    {isInactive && <span className="text-[10px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 font-semibold">Inactive</span>}
                   </div>
 
                   <div className={cn('w-px h-10 hidden sm:block', isDark ? 'bg-white/10' : 'bg-gray-200')} />
@@ -1481,24 +1482,24 @@ export default function WalletPage() {
                       className={cn(
                         'rounded-xl h-full flex flex-col',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                           : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                      <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                         <div className="flex items-center gap-2">
                           <p
                             className={cn(
-                              'text-[10px] font-semibold uppercase tracking-wider',
-                              isDark ? 'text-white/50' : 'text-gray-500'
+                              'text-[11px] font-bold uppercase tracking-wider',
+                              isDark ? 'text-white/70' : 'text-gray-600'
                             )}
                           >
                             Top Assets
                           </p>
                           <span
                             className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-medium',
-                              isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500'
+                              'text-[9px] px-1.5 py-0.5 rounded font-semibold',
+                              isDark ? 'bg-blue-500/10 text-blue-400/70' : 'bg-blue-50 text-blue-500'
                             )}
                           >
                             {allTokens.length}
@@ -1519,15 +1520,18 @@ export default function WalletPage() {
                       {tokensLoading ? (
                         <div className={cn('p-6 text-center', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
                       ) : allTokens.length === 0 ? (
-                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <Coins size={24} className="mx-auto mb-2 opacity-40" />
-                          <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>NO TOKENS</p>
-                          <a href="/" className="text-[9px] text-blue-400 hover:underline">Browse tokens</a>
+                        <div className={cn('p-8 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <div className={cn("w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.04] border border-white/[0.08]" : "bg-gray-50 border border-gray-100")}>
+                            <Coins size={20} className={cn(isDark ? "text-blue-400/50" : "text-blue-400")} />
+                          </div>
+                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
+                          <p className={cn('text-[10px] mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Start building your portfolio</p>
+                          <a href="/" className={cn("inline-flex items-center gap-1.5 text-[10px] font-medium px-3 py-1.5 rounded-lg transition-colors", isDark ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20" : "text-blue-500 bg-blue-50 hover:bg-blue-100")}>Browse tokens</a>
                         </div>
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/5" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
                             <span>Token</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Price</span>
@@ -1538,7 +1542,7 @@ export default function WalletPage() {
                           {/* Table Body */}
                           <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                             {allTokens.slice(0, 8).map((token) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                              <div key={token.symbol} className={cn("grid grid-cols-[minmax(120px,1fr)_120px_140px_100px_70px_60px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                                 {/* Token */}
                                 <div className="flex items-center gap-2 min-w-0">
                                   {token.md5 ? (
@@ -1559,11 +1563,11 @@ export default function WalletPage() {
                                 {/* Price */}
                                 <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? '--' : <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></>}</p>
                                 {/* Value */}
-                                <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{token.value}</p>
+                                <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
                                 {/* 24h Change */}
                                 <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                                 {/* Send */}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors justify-self-end", isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-500 hover:text-blue-500 hover:bg-blue-50")}>
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-all justify-self-end border", isDark ? "text-blue-300/80 border-blue-500/20 hover:text-blue-300 hover:border-blue-500/40 hover:bg-blue-500/10" : "text-blue-500 border-blue-200 hover:border-blue-300 hover:bg-blue-50")}>
                                   <Send size={10} /> Send
                                 </button>
                               </div>
@@ -1581,24 +1585,24 @@ export default function WalletPage() {
                       className={cn(
                         'rounded-xl h-full flex flex-col',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                           : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                      <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                         <div className="flex items-center gap-2">
                           <p
                             className={cn(
-                              'text-[10px] font-semibold uppercase tracking-wider',
-                              isDark ? 'text-white/50' : 'text-gray-500'
+                              'text-[11px] font-bold uppercase tracking-wider',
+                              isDark ? 'text-white/70' : 'text-gray-600'
                             )}
                           >
                             NFT Collections
                           </p>
                           <span
                             className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-medium',
-                              isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500'
+                              'text-[9px] px-1.5 py-0.5 rounded font-semibold',
+                              isDark ? 'bg-blue-500/10 text-blue-400/70' : 'bg-blue-50 text-blue-500'
                             )}
                           >
                             {collections.length}
@@ -1619,16 +1623,18 @@ export default function WalletPage() {
                       {collectionsLoading ? (
                         <div className={cn('p-6 text-center min-h-[300px] flex items-center justify-center', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
                       ) : collections.length === 0 ? (
-                        <div className={cn('flex flex-col items-center justify-center min-h-[300px] p-6', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <Image size={32} className="mb-3 opacity-30" />
-                          <p className={cn('text-[11px] font-medium mb-2', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs yet</p>
+                        <div className={cn('flex flex-col items-center justify-center min-h-[300px] p-8', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <div className={cn("w-14 h-14 mb-4 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.04] border border-white/[0.08]" : "bg-gray-50 border border-gray-100")}>
+                            <Image size={24} className={cn(isDark ? "text-blue-400/50" : "text-blue-400")} />
+                          </div>
+                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Yet</p>
                           <p className={cn('text-[10px] mb-4 max-w-[200px] text-center', isDark ? 'text-white/30' : 'text-gray-400')}>Start your collection by exploring NFT marketplaces on XRPL</p>
                           <a href="/nfts" className="px-4 py-2 rounded-lg text-[11px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">Browse NFTs</a>
                         </div>
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[1fr_80px_80px_80px] gap-2 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/5" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[1fr_80px_80px_80px] gap-2 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
@@ -1640,7 +1646,7 @@ export default function WalletPage() {
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[1fr_80px_80px_80px] gap-2 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}
+                                className={cn("w-full grid grid-cols-[1fr_80px_80px_80px] gap-2 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   {col.logo ? (
@@ -1667,15 +1673,15 @@ export default function WalletPage() {
                   className={cn(
                     'rounded-xl mt-4',
                     isDark
-                      ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                      ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                       : 'bg-white border border-gray-200'
                   )}
                 >
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                  <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                     <p
                       className={cn(
-                        'text-[10px] font-semibold uppercase tracking-wider',
-                        isDark ? 'text-white/50' : 'text-gray-500'
+                        'text-[11px] font-bold uppercase tracking-wider',
+                        isDark ? 'text-white/70' : 'text-gray-600'
                       )}
                     >
                       Recent Activity
@@ -1718,13 +1724,13 @@ export default function WalletPage() {
                                           <div
                                             className={cn(
                                               'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                                             )}
                                           />
                                           <div
                                             className={cn(
                                               'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                                             )}
                                           />
                                           <div
@@ -1774,7 +1780,7 @@ export default function WalletPage() {
                                     ) : (
                                       <>
                                         {/* Table Header */}
-                                        <div className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/5" : "text-gray-400 border-b border-gray-100")}>
+                                        <div className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
                                           <span></span>
                                           <span>Type</span>
                                           <span>Counterparty</span>
@@ -1787,7 +1793,7 @@ export default function WalletPage() {
                                           {transactions.slice(0, 6).map((tx) => (
                                             <div
                                               key={tx.id}
-                                              className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}
+                                              className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
                                             >
                                               {/* Icon */}
                                               <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
@@ -1855,7 +1861,7 @@ export default function WalletPage() {
                       className={cn(
                         'rounded-xl p-4',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                           : 'bg-white border border-gray-200'
                       )}
                     >
@@ -1877,7 +1883,7 @@ export default function WalletPage() {
                             className={cn(
                               'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/10 placeholder:text-white/30 focus:border-blue-500/40'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                             )}
                           />
@@ -1890,7 +1896,7 @@ export default function WalletPage() {
                             className={cn(
                               'px-3 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-[#1a1a1a] text-white border border-white/10 [&>option]:bg-[#1a1a1a]'
+                                ? 'bg-[#1a1a1a] text-white border border-white/[0.15] [&>option]:bg-[#1a1a1a]'
                                 : 'bg-gray-50 border border-gray-200'
                             )}
                           >
@@ -1943,12 +1949,12 @@ export default function WalletPage() {
                       className={cn(
                         'rounded-xl overflow-hidden',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                           : 'bg-white border border-gray-200'
                       )}
                     >
                       {/* Table Header */}
-                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/5 bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
+                      <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b", isDark ? "text-white/40 border-white/[0.08] bg-white/[0.02]" : "text-gray-500 border-gray-100 bg-gray-50")}>
                         <div>Asset</div>
                         <div className="text-right">Balance</div>
                         <div className="text-right">Price</div>
@@ -1983,13 +1989,13 @@ export default function WalletPage() {
                             <div
                               className={cn(
                                 'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
                               className={cn(
                                 'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
@@ -2042,7 +2048,7 @@ export default function WalletPage() {
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                           {filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
-                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50")}>
+                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_100px_100px_100px_100px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                               {/* Asset */}
                               <div className="flex items-center gap-2.5 min-w-0">
                                 {token.md5 ? (
@@ -2066,7 +2072,7 @@ export default function WalletPage() {
                               {/* Price */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? '--' : <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></>}</p>
                               {/* Value */}
-                              <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{token.value}</p>
+                              <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
                               {/* 24h */}
                               <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                               {/* Vol 24h */}
@@ -2074,9 +2080,9 @@ export default function WalletPage() {
                               {/* Holders */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
                               {/* Actions */}
-                              <div className="flex items-center justify-end gap-1">
-                                {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")}><ArrowRightLeft size={12} /></Link>}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors", isDark ? "text-white/50 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-500 hover:text-blue-500 hover:bg-blue-50")}><Send size={10} /> Send</button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors border", isDark ? "text-white/40 border-white/10 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-500/10" : "text-gray-400 border-gray-200 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50")}><ArrowRightLeft size={12} /></Link>}
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); setActiveTab('overview'); }} className={cn("flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-all border", isDark ? "text-blue-300/80 border-blue-500/20 hover:text-blue-300 hover:border-blue-500/40 hover:bg-blue-500/10" : "text-blue-500 border-blue-200 hover:border-blue-300 hover:bg-blue-50")}><Send size={10} /> Send</button>
                               </div>
                             </div>
                           ))}
@@ -2090,7 +2096,7 @@ export default function WalletPage() {
                         className={cn(
                           'rounded-xl p-3 flex items-center justify-between',
                           isDark
-                            ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                            ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                             : 'bg-white border border-gray-200'
                         )}
                       >
@@ -2166,7 +2172,7 @@ export default function WalletPage() {
                     className={cn(
                       'p-8 text-center rounded-xl',
                       isDark
-                        ? 'bg-white/[0.04] border border-white/10 text-white/40'
+                        ? 'bg-white/[0.04] border border-white/[0.15] text-white/40'
                         : 'bg-white border border-gray-200 text-gray-400'
                     )}
                   >
@@ -2179,11 +2185,11 @@ export default function WalletPage() {
                       className={cn(
                         'rounded-xl',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                           : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className="p-4 border-b border-white/10 flex items-center gap-2">
+                      <div className="p-4 border-b border-white/[0.15] flex items-center gap-2">
                         <RotateCcw
                           size={14}
                           className={isDark ? 'text-blue-400' : 'text-blue-500'}
@@ -2200,7 +2206,7 @@ export default function WalletPage() {
                           className={cn(
                             'ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide',
                             isDark
-                              ? 'bg-white/5 text-white/50 border border-white/10'
+                              ? 'bg-white/5 text-white/50 border border-white/[0.15]'
                               : 'bg-gray-100 text-gray-500'
                           )}
                         >
@@ -2230,13 +2236,13 @@ export default function WalletPage() {
                             <div
                               className={cn(
                                 'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
                               className={cn(
                                 'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
@@ -2290,7 +2296,7 @@ export default function WalletPage() {
                               key={offer.id}
                               className={cn(
                                 'flex items-center gap-3 px-3 py-2.5 transition-all duration-150',
-                                isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+                                isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                               )}
                             >
                               <div
@@ -2366,7 +2372,7 @@ export default function WalletPage() {
                           className={cn(
                             'ml-auto text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide',
                             isDark
-                              ? 'bg-white/5 text-white/50 border border-white/10'
+                              ? 'bg-white/5 text-white/50 border border-white/[0.15]'
                               : 'bg-gray-100 text-gray-500'
                           )}
                         >
@@ -2396,13 +2402,13 @@ export default function WalletPage() {
                             <div
                               className={cn(
                                 'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
                               className={cn(
                                 'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                                isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                               )}
                             />
                             <div
@@ -2593,12 +2599,12 @@ export default function WalletPage() {
                 className={cn(
                   'rounded-xl',
                   isDark
-                    ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                    ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                     : 'bg-white border border-gray-200'
                 )}
               >
                 {/* View Toggle */}
-                <div className={cn('flex items-center gap-1 p-2 border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+                <div className={cn('flex items-center gap-1 p-2 border-b', isDark ? 'border-white/[0.15]' : 'border-gray-200')}>
                   {['tokens', 'nfts', 'onchain'].map((view) => (
                     <button
                       key={view}
@@ -2619,7 +2625,7 @@ export default function WalletPage() {
                 {historyView === 'tokens' && (
                   <>
                     {/* Type Filter */}
-                    <div className={cn('flex items-center gap-2 px-4 py-2 border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+                    <div className={cn('flex items-center gap-2 px-4 py-2 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                       {['all', 'buy', 'sell'].map((type) => (
                         <button
                           key={type}
@@ -2643,7 +2649,7 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No token trades</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/[0.08]' : 'text-gray-500 border-gray-100')}>
                           <div></div>
                           <div>Token</div>
                           <div className="text-right">Amount</div>
@@ -2663,7 +2669,7 @@ export default function WalletPage() {
                               ? Buffer.from(tokenData.currency, 'hex').toString('utf8').replace(/\x00/g, '')
                               : tokenData?.currency || 'Unknown';
                             return (
-                              <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                              <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
                                 <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
                                   {isBuy ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
                                 </div>
@@ -2688,7 +2694,7 @@ export default function WalletPage() {
                         </div>
                         {/* Pagination */}
                         {tokenHistoryTotal > tokenHistoryLimit && (
-                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                             <button
                               onClick={() => setTokenHistoryPage(p => p - 1)}
                               disabled={tokenHistoryPage === 0 || tokenHistoryLoading}
@@ -2722,7 +2728,7 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No NFT trades</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/[0.08]' : 'text-gray-500 border-gray-100')}>
                           <div></div>
                           <div>NFT</div>
                           <div className="text-right">Price</div>
@@ -2731,7 +2737,7 @@ export default function WalletPage() {
                         </div>
                         <div className={cn('divide-y max-h-[400px] overflow-y-auto', isDark ? 'divide-white/5' : 'divide-gray-50')}>
                           {nftTrades.map((trade, i) => (
-                            <div key={i} className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                            <div key={i} className={cn('grid grid-cols-[60px_1.5fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
                               <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5">
                                 {trade.nft?.image && <img src={trade.nft.image} alt="" className="w-full h-full object-cover" />}
                               </div>
@@ -2765,7 +2771,7 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No transactions</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/5' : 'text-gray-500 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/[0.08]' : 'text-gray-500 border-gray-100')}>
                           <div></div>
                           <div>Type</div>
                           <div>Counterparty</div>
@@ -2775,7 +2781,7 @@ export default function WalletPage() {
                         </div>
                         <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
                           {transactions.map((tx) => (
-                            <div key={tx.id} className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                            <div key={tx.id} className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
                               <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
                                 {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
                               </div>
@@ -2799,7 +2805,7 @@ export default function WalletPage() {
                           ))}
                         </div>
                         {txTotal > txLimit && (
-                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                          <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                             <button
                               onClick={() => setTxPage(p => p - 1)}
                               disabled={txPage === 0 || txLoading}
@@ -2951,7 +2957,7 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/10 placeholder:text-white/30 focus:border-blue-500/40'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                             )}
                           />
@@ -2975,7 +2981,7 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/10 placeholder:text-white/30 focus:border-blue-500/40'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                             )}
                           />
@@ -3002,7 +3008,7 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/10 placeholder:text-white/30 focus:border-blue-500/40'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                             )}
                           />
@@ -3013,7 +3019,7 @@ export default function WalletPage() {
                         <button
                           onClick={handleAddWithdrawal}
                           disabled={withdrawalLoading}
-                          className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors duration-200"
+                          className="w-full py-4 rounded-lg text-[13px] font-medium disabled:opacity-50 flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
                         >
                           {withdrawalLoading ? (
                             'Saving...'
@@ -3032,11 +3038,11 @@ export default function WalletPage() {
                   className={cn(
                     'rounded-xl',
                     isDark
-                      ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                      ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                       : 'bg-white border border-gray-200'
                   )}
                 >
-                  <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                  <div className="p-4 border-b border-white/[0.15] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <p
                         className={cn(
@@ -3050,7 +3056,7 @@ export default function WalletPage() {
                         className={cn(
                           'text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide',
                           isDark
-                            ? 'bg-white/5 text-white/50 border border-white/10'
+                            ? 'bg-white/5 text-white/50 border border-white/[0.15]'
                             : 'bg-gray-100 text-gray-500'
                         )}
                       >
@@ -3089,13 +3095,13 @@ export default function WalletPage() {
                         <div
                           className={cn(
                             'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                            isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                            isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                           )}
                         />
                         <div
                           className={cn(
                             'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                            isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                            isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                           )}
                         />
                         <div
@@ -3152,7 +3158,7 @@ export default function WalletPage() {
                           key={wallet.id}
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 group transition-all duration-150',
-                            isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
+                            isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
                           )}
                         >
                           <div
@@ -3256,7 +3262,7 @@ export default function WalletPage() {
                       className={cn(
                         'w-full max-w-md rounded-xl p-6',
                         isDark
-                          ? 'bg-[#070b12]/98 backdrop-blur-xl border border-white/10'
+                          ? 'bg-[#070b12]/98 backdrop-blur-xl border border-white/[0.15]'
                           : 'bg-white/98 backdrop-blur-xl border border-gray-200'
                       )}
                       onClick={(e) => e.stopPropagation()}
@@ -3286,7 +3292,7 @@ export default function WalletPage() {
                         className={cn(
                           'flex items-center gap-4 p-3 rounded-lg mb-4',
                           isDark
-                            ? 'bg-white/[0.04] border border-white/10'
+                            ? 'bg-white/[0.04] border border-white/[0.15]'
                             : 'bg-gray-50 border border-gray-200'
                         )}
                       >
@@ -3332,7 +3338,7 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/10 placeholder:text-white/30 focus:border-blue-500/40'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
                                 : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
                             )}
                           />
@@ -3347,7 +3353,7 @@ export default function WalletPage() {
                         >
                           This will transfer ownership. This action cannot be undone.
                         </div>
-                        <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 transition-colors duration-200">
+                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors">
                           <Send size={16} /> Transfer NFT
                         </button>
                       </div>
@@ -3365,7 +3371,7 @@ export default function WalletPage() {
                       className={cn(
                         'w-full max-w-md rounded-xl p-6',
                         isDark
-                          ? 'bg-[#070b12]/98 backdrop-blur-xl border border-white/10'
+                          ? 'bg-[#070b12]/98 backdrop-blur-xl border border-white/[0.15]'
                           : 'bg-white/98 backdrop-blur-xl border border-gray-200'
                       )}
                       onClick={(e) => e.stopPropagation()}
@@ -3395,7 +3401,7 @@ export default function WalletPage() {
                         className={cn(
                           'flex items-center gap-4 p-3 rounded-lg mb-4',
                           isDark
-                            ? 'bg-white/[0.04] border border-white/10'
+                            ? 'bg-white/[0.04] border border-white/[0.15]'
                             : 'bg-gray-50 border border-gray-200'
                         )}
                       >
@@ -3455,7 +3461,7 @@ export default function WalletPage() {
                             className={cn(
                               'flex items-center rounded-lg overflow-hidden',
                               isDark
-                                ? 'bg-white/[0.04] border border-white/10'
+                                ? 'bg-white/[0.04] border border-white/[0.15]'
                                 : 'bg-gray-50 border border-gray-200'
                             )}
                           >
@@ -3490,7 +3496,7 @@ export default function WalletPage() {
                           className={cn(
                             'flex items-center justify-between p-3 rounded-lg text-[11px]',
                             isDark
-                              ? 'bg-white/[0.04] border border-white/10'
+                              ? 'bg-white/[0.04] border border-white/[0.15]'
                               : 'bg-gray-50 border border-gray-200'
                           )}
                         >
@@ -3506,7 +3512,7 @@ export default function WalletPage() {
                           className={cn(
                             'flex items-center justify-between p-3 rounded-lg',
                             isDark
-                              ? 'bg-white/[0.04] border border-white/10'
+                              ? 'bg-white/[0.04] border border-white/[0.15]'
                               : 'bg-gray-50 border border-gray-200'
                           )}
                         >
@@ -3528,7 +3534,7 @@ export default function WalletPage() {
                             XRP
                           </span>
                         </div>
-                        <button className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center gap-2 transition-colors duration-200">
+                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors">
                           <ArrowUpRight size={16} /> List for Sale
                         </button>
                       </div>
@@ -3585,7 +3591,7 @@ export default function WalletPage() {
                         className={cn(
                           'rounded-xl py-12 px-8 text-center',
                           isDark
-                            ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                            ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                             : 'bg-white border border-gray-200'
                         )}
                       >
@@ -3605,13 +3611,13 @@ export default function WalletPage() {
                           <div
                             className={cn(
                               'absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full',
-                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                             )}
                           />
                           <div
                             className={cn(
                               'absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full',
-                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                             )}
                           />
                           <div
@@ -3674,7 +3680,7 @@ export default function WalletPage() {
                             className={cn(
                               'rounded-xl overflow-hidden group',
                               isDark
-                                ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                                ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                                 : 'bg-white border border-gray-200'
                             )}
                           >
@@ -3715,7 +3721,7 @@ export default function WalletPage() {
                                 </button>
                                 <button
                                   onClick={() => setNftToSell(nft)}
-                                  className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                                  className="p-2 rounded-lg text-[11px] font-medium flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
                                 >
                                   <ArrowUpRight size={12} /> Sell
                                 </button>
@@ -3757,7 +3763,7 @@ export default function WalletPage() {
                     className={cn(
                       'rounded-xl p-12 text-center',
                       isDark
-                        ? 'bg-black/40 backdrop-blur-sm border border-white/10'
+                        ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
                         : 'bg-white border border-gray-200'
                     )}
                   >
@@ -3777,13 +3783,13 @@ export default function WalletPage() {
                       <div
                         className={cn(
                           'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                         )}
                       />
                       <div
                         className={cn(
                           'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
+                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
                         )}
                       />
                       <div
@@ -3850,7 +3856,7 @@ export default function WalletPage() {
                         className={cn(
                           'rounded-xl overflow-hidden text-left group',
                           isDark
-                            ? 'bg-black/40 backdrop-blur-sm border border-white/10 hover:border-white/20'
+                            ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15] hover:border-white/20'
                             : 'bg-white border border-gray-200 hover:border-gray-300'
                         )}
                       >
@@ -3908,7 +3914,7 @@ export default function WalletPage() {
         <div
           className={cn(
             'max-w-5xl mx-auto px-4 py-4 mb-4 rounded-xl text-[11px] font-mono',
-            isDark ? 'bg-white/[0.02] border border-white/10' : 'bg-gray-50 border border-gray-200'
+            isDark ? 'bg-white/[0.02] border border-white/[0.15]' : 'bg-gray-50 border border-gray-200'
           )}
         >
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
