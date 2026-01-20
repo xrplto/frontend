@@ -1538,77 +1538,60 @@ export default function WalletPage() {
 
                   return (
                     <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
-                      {/* Asset Grid - 4 columns + Actions */}
-                      <div className="flex items-stretch gap-3">
-                        {/* Portfolio Total */}
-                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                          <div className="flex items-center gap-2">
-                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-white/[0.05]' : 'bg-gray-100')}>
-                              <PieChart size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} strokeWidth={1.5} />
-                            </div>
-                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Portfolio</span>
-                          </div>
-                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                      {/* Portfolio Row */}
+                      <div className="flex items-center">
+                        {/* Portfolio */}
+                        <div className="flex items-center gap-2 pr-6">
+                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>Portfolio</span>
+                          <span className={cn('text-xl font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                             {tokensLoading ? '...' : totalPortfolio.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
-                          </p>
+                          </span>
                         </div>
+
+                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
 
                         {/* XRP */}
-                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-[#23292F] flex items-center justify-center text-white text-[10px] font-bold shrink-0">✕</div>
-                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>XRP</span>
-                          </div>
-                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                        <div className="flex items-center gap-2 px-6">
+                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>XRP</span>
+                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                             {xrpToken ? parseFloat(xrpToken.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                          </p>
-                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
-                            Native asset
                           </span>
                         </div>
+
+                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
 
                         {/* Tokens */}
-                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                          <div className="flex items-center gap-2">
-                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-blue-500/10' : 'bg-blue-50')}>
-                              <Coins size={14} className="text-blue-500" strokeWidth={1.5} />
-                            </div>
-                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Tokens</span>
-                          </div>
-                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                        <div className="flex items-center gap-2 px-6">
+                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            Tokens <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{allTokens.length}</span>
+                          </span>
+                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                             {tokensOnlyValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
-                          </p>
-                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
-                            {allTokens.length} assets
+                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
                           </span>
                         </div>
+
+                        <div className={cn('w-px h-6', isDark ? 'bg-white/10' : 'bg-gray-200')} />
 
                         {/* NFTs */}
-                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                          <div className="flex items-center gap-2">
-                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}>
-                              <Gem size={14} className="text-purple-500" strokeWidth={1.5} />
-                            </div>
-                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>NFTs</span>
-                          </div>
-                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                        <div className="flex items-center gap-2 px-6">
+                          <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            NFTs <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{nftCount}</span>
+                          </span>
+                          <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
                             {nftPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
-                          </p>
-                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
-                            {nftCount} items
+                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
                           </span>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex flex-col justify-center gap-2 shrink-0">
-                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-semibold text-center">Inactive</span>}
-                          <button onClick={() => setShowPanel('send')} className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                        {/* Actions - pushed right */}
+                        <div className="flex items-center gap-2 ml-auto">
+                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-semibold">Inactive</span>}
+                          <button onClick={() => setShowPanel('send')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
                             <ArrowUpRight size={14} /> Send
                           </button>
-                          <button onClick={() => setShowPanel('receive')} className={cn('flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
+                          <button onClick={() => setShowPanel('receive')} className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
                             <ArrowDownLeft size={14} /> Receive
                           </button>
                         </div>
@@ -1909,7 +1892,7 @@ export default function WalletPage() {
                           <span></span>
                         </div>
                         <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
-                          {transactions.slice(0, 5).map((tx) => (
+                          {transactions.slice(0, 20).map((tx) => (
                             <div
                               key={tx.id}
                               className={cn(
