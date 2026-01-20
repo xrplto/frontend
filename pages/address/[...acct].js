@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import styled from '@emotion/styled';
+import { Client } from 'xrpl';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
@@ -305,26 +306,33 @@ const OverView = ({ account }) => {
       .finally(() => setAncestryLoading(false));
   }, [activeTab, account]);
 
-  // Fetch onchain history when onchain view is selected
-  const fetchTxHistory = (marker = null) => {
+  // Fetch onchain history directly from XRP Ledger node via WebSocket
+  const fetchTxHistory = async (marker = null) => {
     if (!account) return;
     setTxLoading(true);
-    const url = marker
-      ? `https://api.xrpl.to/v1/account/tx/${account}?limit=50&marker=${encodeURIComponent(JSON.stringify(marker))}`
-      : `https://api.xrpl.to/v1/account/tx/${account}?limit=50`;
-    axios
-      .get(url)
-      .then((res) => {
-        if (res.data?.result === 'success') {
-          const txs = res.data.txs || [];
-          setTxHistory((prev) => (marker ? [...prev, ...txs] : txs));
-          setFilteredTxHistory((prev) => (marker ? [...prev, ...txs] : txs));
-          setTxMarker(res.data.marker || null);
-          setTxHasMore(res.data.hasMore || false);
-        }
-      })
-      .catch((err) => console.error('TX history fetch failed:', err))
-      .finally(() => setTxLoading(false));
+    const client = new Client('wss://s1.ripple.com');
+    try {
+      await client.connect();
+      const request = {
+        command: 'account_tx',
+        account,
+        ledger_index_min: -1,
+        ledger_index_max: -1,
+        limit: 50
+      };
+      if (marker) request.marker = marker;
+      const response = await client.request(request);
+      const txs = response.result?.transactions || [];
+      setTxHistory((prev) => (marker ? [...prev, ...txs] : txs));
+      setFilteredTxHistory((prev) => (marker ? [...prev, ...txs] : txs));
+      setTxMarker(response.result?.marker || null);
+      setTxHasMore(!!response.result?.marker);
+    } catch (err) {
+      console.error('TX history fetch failed:', err);
+    } finally {
+      client.disconnect();
+      setTxLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -459,24 +467,47 @@ const OverView = ({ account }) => {
   const parseTx = (tx) => {
     const txData = tx.tx_json || tx.tx || tx;
     const meta = tx.meta;
+    const hash = tx.hash || txData.hash;
     const type = txData.TransactionType;
+    const txResult = meta?.TransactionResult || 'tesSUCCESS';
+    const isFailed = txResult !== 'tesSUCCESS';
     const isOutgoing = txData.Account === account;
+    const isIncoming = type === 'Payment' && txData.Destination === account;
     let label = type;
-    let amount = '';
+    let amount = isFailed ? 'Failed' : '';
     let isDust = false;
+    let txType = isOutgoing ? 'out' : 'in';
 
-    if (type === 'Payment') {
+    if (isFailed) {
+      // Skip parsing for failed txs
+    } else if (type === 'Payment') {
       const delivered = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
-      if (typeof delivered === 'string') {
-        const xrpAmt = parseInt(delivered) / 1000000;
-        amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        isDust = !isOutgoing && xrpAmt < 0.001;
-      } else if (delivered?.value) {
-        const val = parseFloat(delivered.value);
-        const valStr = val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val);
-        amount = `${valStr} ${decodeCurrency(delivered.currency)}`;
+      const isSwap = txData.Account === txData.Destination && txData.SendMax;
+      const formatAmt = (amt) => {
+        if (!amt) return null;
+        if (typeof amt === 'string') {
+          const xrpAmt = parseInt(amt) / 1000000;
+          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        } else if (amt?.value) {
+          const val = parseFloat(amt.value);
+          return `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(amt.currency)}`;
+        }
+        return null;
+      };
+      if (isSwap) {
+        label = 'Swap';
+        amount = formatAmt(delivered) || '';
+      } else {
+        if (typeof delivered === 'string') {
+          const xrpAmt = parseInt(delivered) / 1000000;
+          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+          isDust = isIncoming && xrpAmt < 0.001;
+        } else if (delivered?.value) {
+          const val = parseFloat(delivered.value);
+          amount = `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(delivered.currency)}`;
+        }
+        label = isOutgoing ? 'Sent' : 'Received';
       }
-      label = isOutgoing ? 'Sent' : 'Received';
     } else if (type === 'OfferCreate') {
       // Parse trade amounts from TakerGets/TakerPays
       const takerGets = txData.TakerGets;
@@ -529,19 +560,33 @@ const OverView = ({ account }) => {
     } else if (type === 'TrustSet') {
       const limit = txData.LimitAmount;
       if (limit) {
-        const val = parseFloat(limit.value);
+        const isRemoval = limit.value === '0';
         const currency = decodeCurrency(limit.currency);
-        if (val === 0) {
-          label = 'Remove Trustline';
-          amount = currency;
-        } else {
-          label = 'Set Trustline';
-          const fmtVal = val >= 1 ? val.toFixed(0) : val.toFixed(4);
-          amount = `${fmtVal} ${currency}`;
-        }
+        label = isRemoval ? 'Remove Trustline' : 'Add Trustline';
+        amount = currency;
+        txType = isRemoval ? 'out' : 'in';
       } else {
         label = 'Trustline';
       }
+    } else if (type === 'AMMDeposit' || type === 'AMMWithdraw') {
+      label = type === 'AMMDeposit' ? 'AMM Deposit' : 'AMM Withdraw';
+      txType = type === 'AMMDeposit' ? 'out' : 'in';
+      const formatAmt = (amt) => {
+        if (!amt) return null;
+        if (typeof amt === 'string') {
+          const xrpAmt = parseInt(amt) / 1000000;
+          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        } else if (amt?.value) {
+          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
+        }
+        return null;
+      };
+      const amounts = [];
+      const amt1 = formatAmt(txData.Amount);
+      const amt2 = formatAmt(txData.Amount2);
+      if (amt1) amounts.push(amt1);
+      if (amt2) amounts.push(amt2);
+      amount = amounts.join(' + ') || '';
     } else if (type === 'CheckCreate') {
       label = 'Create Check';
       const sendMax = txData.SendMax;
@@ -574,15 +619,14 @@ const OverView = ({ account }) => {
       label = 'Burn NFT';
     }
 
-    const txId = txData.hash || tx.hash || txData.ctid || tx.ctid;
     return {
-      id: txId,
-      type: isOutgoing ? 'out' : 'in',
+      id: hash || txData.ctid,
+      type: isFailed ? 'failed' : txType,
       label,
       amount,
       isDust,
       time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
-      hash: txId
+      hash
     };
   };
 
@@ -2893,20 +2937,12 @@ const OverView = ({ account }) => {
                                 >
                                   <td className="px-4 py-3">
                                     <div className="flex items-center gap-2">
-                                      {parsed.type === 'in' ? (
+                                      {parsed.type === 'failed' ? (
+                                        <AlertTriangle size={14} className="text-amber-400" />
+                                      ) : parsed.type === 'in' ? (
                                         <ArrowDownLeft size={14} className="text-emerald-400" />
                                       ) : (
-                                        <div
-                                          className={cn(
-                                            'w-5 h-5 rounded-full flex items-center justify-center',
-                                            isDark ? 'bg-white/5' : 'bg-gray-100'
-                                          )}
-                                        >
-                                          <Clock
-                                            size={12}
-                                            className={isDark ? 'text-white/40' : 'text-gray-400'}
-                                          />
-                                        </div>
+                                        <ArrowUpRight size={14} className="text-red-400" />
                                       )}
                                       <span
                                         className={cn(
@@ -2933,7 +2969,11 @@ const OverView = ({ account }) => {
                                   <td className="px-4 py-3">
                                     {parsed.amount ? (
                                       <div className="flex items-center gap-2">
-                                        {parsed.type === 'in' ? (
+                                        {parsed.type === 'failed' ? (
+                                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+                                            !
+                                          </span>
+                                        ) : parsed.type === 'in' ? (
                                           <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                                             +
                                           </span>

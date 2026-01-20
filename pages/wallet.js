@@ -1,9 +1,10 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useSelector } from 'react-redux';
 import styled from '@emotion/styled';
 import { MD5 } from 'crypto-js';
+import { Client } from 'xrpl';
 import { AppContext } from 'src/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -33,7 +34,8 @@ import {
   Trash2,
   X,
   Star,
-  Coins
+  Coins,
+  AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
@@ -123,8 +125,8 @@ export default function WalletPage() {
   // Transactions state
   const [transactions, setTransactions] = useState([]);
   const [txLoading, setTxLoading] = useState(false);
-  const [txPage, setTxPage] = useState(0);
-  const [txTotal, setTxTotal] = useState(0);
+  const [txMarker, setTxMarker] = useState(null);
+  const [txHasMore, setTxHasMore] = useState(false);
   const txLimit = 20;
 
   // Offers state
@@ -305,34 +307,59 @@ export default function WalletPage() {
     return currency;
   };
 
-  const parseTx = (tx) => {
+  const parseTx = (rawTx) => {
+    const tx = rawTx.tx_json || rawTx.tx || rawTx;
+    const meta = rawTx.meta || tx.meta;
+    const hash = rawTx.hash || tx.hash;
     const type = tx.TransactionType;
+    const txResult = meta?.TransactionResult || 'tesSUCCESS';
+    const isFailed = txResult !== 'tesSUCCESS';
     // For Payment, check if user is sender (Account) or receiver (Destination)
     const isOutgoing = type === 'Payment'
       ? tx.Account === address && tx.Destination !== address
       : tx.Account === address;
     const isIncoming = type === 'Payment' && tx.Destination === address;
     let label = type;
-    let amount = '';
+    let amount = isFailed ? 'Failed' : '';
     let isDust = false;
     let counterparty = null;
-    if (type === 'Payment') {
-      const delivered = tx.meta?.delivered_amount || tx.DeliverMax || tx.Amount;
-      if (typeof delivered === 'string') {
-        const xrpAmt = parseInt(delivered) / 1000000;
-        amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        isDust = isIncoming && xrpAmt < 0.001;
-      } else if (delivered?.value) {
-        amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
+    if (isFailed) {
+      // Skip amount parsing for failed txs
+      counterparty = tx.Account === address ? tx.Destination : tx.Account;
+    } else if (type === 'Payment') {
+      const delivered = meta?.delivered_amount || tx.DeliverMax || tx.Amount;
+      const isSwap = tx.Account === tx.Destination && tx.SendMax;
+      const formatAmt = (amt) => {
+        if (!amt) return null;
+        if (typeof amt === 'string') {
+          const xrpAmt = parseInt(amt) / 1000000;
+          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        } else if (amt?.value) {
+          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
+        }
+        return null;
+      };
+      if (isSwap) {
+        label = 'Swap';
+        const spent = formatAmt(tx.SendMax);
+        const received = formatAmt(delivered);
+        amount = `${received}`;
+      } else {
+        if (typeof delivered === 'string') {
+          const xrpAmt = parseInt(delivered) / 1000000;
+          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+          isDust = isIncoming && xrpAmt < 0.001;
+        } else if (delivered?.value) {
+          amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
+        }
+        label = isIncoming ? 'Received' : 'Sent';
       }
-      label = isIncoming ? 'Received' : 'Sent';
-      // For incoming: show sender (Account), for outgoing: show receiver (Destination)
-      counterparty = isIncoming ? tx.Account : tx.Destination;
+      counterparty = isSwap ? null : (isIncoming ? tx.Account : tx.Destination);
     } else if (type === 'OfferCreate') {
       label = 'Trade';
       counterparty = tx.Account === address ? null : tx.Account;
     } else if (type === 'NFTokenAcceptOffer') {
-      const offerNode = tx.meta?.AffectedNodes?.find(
+      const offerNode = meta?.AffectedNodes?.find(
         (n) => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer'
       );
       const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
@@ -355,19 +382,79 @@ export default function WalletPage() {
       }
       counterparty = offer?.Owner === address ? tx.Account : offer?.Owner;
     } else if (type === 'TrustSet') {
-      label = 'Trustline';
-      counterparty = tx.Account === address ? null : tx.Account;
+      const limit = tx.LimitAmount;
+      const isRemoval = limit?.value === '0';
+      label = isRemoval ? 'Remove Trustline' : 'Add Trustline';
+      amount = decodeCurrency(limit?.currency);
+      counterparty = limit?.issuer;
+      // Override type for correct icon
+      return {
+        id: hash || tx.ctid,
+        type: isRemoval ? 'out' : 'in',
+        label,
+        amount,
+        isDust: false,
+        time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
+        hash,
+        counterparty
+      };
+    } else if (type === 'AMMDeposit' || type === 'AMMWithdraw') {
+      label = type === 'AMMDeposit' ? 'AMM Deposit' : 'AMM Withdraw';
+      const formatAmt = (amt) => {
+        if (!amt) return null;
+        if (typeof amt === 'string') {
+          const xrpAmt = parseInt(amt) / 1000000;
+          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        } else if (amt?.value) {
+          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
+        }
+        return null;
+      };
+      const amounts = [];
+      // For AMMWithdraw, check metadata for actual withdrawn amounts
+      if (type === 'AMMWithdraw' && meta?.AffectedNodes) {
+        const balanceChanges = [];
+        meta.AffectedNodes.forEach((node) => {
+          const modified = node.ModifiedNode;
+          if (modified?.LedgerEntryType === 'AccountRoot' && modified.FinalFields?.Account === address) {
+            const prev = parseInt(modified.PreviousFields?.Balance || 0);
+            const final = parseInt(modified.FinalFields?.Balance || 0);
+            const diff = final - prev;
+            if (diff > 0) balanceChanges.push(formatAmt(String(diff)));
+          }
+          if (modified?.LedgerEntryType === 'RippleState') {
+            const prevBal = parseFloat(modified.PreviousFields?.Balance?.value || 0);
+            const finalBal = parseFloat(modified.FinalFields?.Balance?.value || 0);
+            const diff = Math.abs(finalBal - prevBal);
+            if (diff > 0) {
+              const curr = modified.FinalFields?.Balance?.currency;
+              balanceChanges.push(`${diff.toFixed(2)} ${decodeCurrency(curr)}`);
+            }
+          }
+        });
+        if (balanceChanges.length > 0) amounts.push(...balanceChanges);
+      }
+      // Fallback to tx fields
+      if (amounts.length === 0) {
+        const amt1 = formatAmt(tx.Amount);
+        const amt2 = formatAmt(tx.Amount2);
+        const lpToken = formatAmt(tx.LPTokenOut || tx.LPTokenIn);
+        if (amt1) amounts.push(amt1);
+        if (amt2) amounts.push(amt2);
+        if (lpToken && amounts.length === 0) amounts.push(lpToken);
+      }
+      amount = amounts.join(' + ') || '';
     } else {
       counterparty = tx.Account === address ? tx.Destination : tx.Account;
     }
     return {
-      id: tx.hash || tx.ctid,
-      type: isIncoming ? 'in' : (isOutgoing ? 'out' : 'out'),
+      id: hash || tx.ctid,
+      type: isFailed ? 'failed' : (isIncoming ? 'in' : 'out'),
       label,
       amount,
       isDust,
       time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
-      hash: tx.hash,
+      hash,
       counterparty
     };
   };
@@ -480,34 +567,41 @@ export default function WalletPage() {
   }, [activeTab, historyView, address]);
 
 
-  // Load recent transactions
+  // Load recent transactions directly from XRP Ledger node via WebSocket
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
     const fetchTx = async () => {
       if (!address) return;
       setTxLoading(true);
       console.time('[Wallet] fetchTransactions');
+      const client = new Client('wss://s1.ripple.com');
       try {
-        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=${txLimit}&page=${txPage}`, {
-          signal: controller.signal
+        await client.connect();
+        const response = await client.request({
+          command: 'account_tx',
+          account: address,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: txLimit
         });
-        const data = await res.json();
         console.timeEnd('[Wallet] fetchTransactions');
-        console.log('[Wallet] fetchTransactions: received', data.txs?.length || 0, 'txs');
-        if (data.result === 'success' && data.txs) {
-          setTransactions(data.txs.map(parseTx));
-          setTxTotal(data.total || data.txs.length);
-        }
+        if (cancelled) return;
+        const txs = response.result?.transactions || [];
+        console.log('[Wallet] fetchTransactions: received', txs.length, 'txs');
+        setTransactions(txs.map(parseTx));
+        setTxMarker(response.result?.marker || null);
+        setTxHasMore(!!response.result?.marker);
       } catch (e) {
         console.timeEnd('[Wallet] fetchTransactions');
-        if (e.name !== 'AbortError') console.error('Failed to load transactions:', e);
+        if (!cancelled) console.error('Failed to load transactions:', e);
       } finally {
-        if (!controller.signal.aborted) setTxLoading(false);
+        client.disconnect();
+        if (!cancelled) setTxLoading(false);
       }
     };
     fetchTx();
-    return () => controller.abort();
-  }, [address, txPage]);
+    return () => { cancelled = true; };
+  }, [address]);
 
   // Load NFT collections summary - only when NFTs tab is active
   useEffect(() => {
@@ -654,28 +748,36 @@ export default function WalletPage() {
   // Fetch more transactions when History tab opened
   useEffect(() => {
     if (activeTab !== 'trades' || !address || transactions.length >= 50) return;
-    const controller = new AbortController();
+    let cancelled = false;
     const fetchMore = async () => {
       setTxLoading(true);
       console.time('[Wallet] fetchMoreTx (tab)');
+      const client = new Client('wss://s1.ripple.com');
       try {
-        const res = await fetch(`${BASE_URL}/api/account/tx/${address}?limit=50`, {
-          signal: controller.signal
+        await client.connect();
+        const response = await client.request({
+          command: 'account_tx',
+          account: address,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: 50
         });
-        const data = await res.json();
         console.timeEnd('[Wallet] fetchMoreTx (tab)');
-        if (data.result === 'success' && data.txs) {
-          setTransactions(data.txs.map(parseTx));
-        }
+        if (cancelled) return;
+        const txs = response.result?.transactions || [];
+        setTransactions(txs.map(parseTx));
+        setTxMarker(response.result?.marker || null);
+        setTxHasMore(!!response.result?.marker);
       } catch (e) {
         console.timeEnd('[Wallet] fetchMoreTx (tab)');
-        if (e.name !== 'AbortError') console.error('Failed to load more transactions:', e);
+        if (!cancelled) console.error('Failed to load more transactions:', e);
       } finally {
-        if (!controller.signal.aborted) setTxLoading(false);
+        client.disconnect();
+        if (!cancelled) setTxLoading(false);
       }
     };
     fetchMore();
-    return () => controller.abort();
+    return () => { cancelled = true; };
   }, [activeTab, address]);
 
   // Load NFTs for selected collection (using collection slug endpoint for full data with thumbnails)
@@ -1796,8 +1898,8 @@ export default function WalletPage() {
                                               className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
                                             >
                                               {/* Icon */}
-                                              <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                                {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                              <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                                {tx.type === 'failed' ? <AlertTriangle size={14} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
                                               </div>
                                               {/* Type */}
                                               <div className="min-w-0">
@@ -2782,8 +2884,8 @@ export default function WalletPage() {
                         <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
                           {transactions.map((tx) => (
                             <div key={tx.id} className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
-                              <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                {tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                              <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                {tx.type === 'failed' ? <AlertTriangle size={14} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <p className={cn('text-[12px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{tx.label}</p>
@@ -2792,8 +2894,8 @@ export default function WalletPage() {
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                 {tx.counterparty ? `${tx.counterparty.slice(0, 8)}...${tx.counterparty.slice(-6)}` : '—'}
                               </p>
-                              <p className={cn('text-[11px] font-medium tabular-nums text-right', tx.type === 'in' ? 'text-emerald-500' : 'text-red-400')}>
-                                {tx.amount ? `${tx.type === 'in' ? '+' : '-'}${tx.amount}` : '—'}
+                              <p className={cn('text-[11px] font-medium tabular-nums text-right', tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-500' : 'text-red-400')}>
+                                {tx.amount ? (tx.type === 'failed' ? tx.amount : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
                               </p>
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                 {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
@@ -2804,24 +2906,38 @@ export default function WalletPage() {
                             </div>
                           ))}
                         </div>
-                        {txTotal > txLimit && (
+                        {txHasMore && (
                           <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                             <button
-                              onClick={() => setTxPage(p => p - 1)}
-                              disabled={txPage === 0 || txLoading}
-                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', txPage === 0 ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
+                              onClick={async () => {
+                                if (!txMarker || txLoading) return;
+                                setTxLoading(true);
+                                const client = new Client('wss://s1.ripple.com');
+                                try {
+                                  await client.connect();
+                                  const response = await client.request({
+                                    command: 'account_tx',
+                                    account: address,
+                                    ledger_index_min: -1,
+                                    ledger_index_max: -1,
+                                    limit: txLimit,
+                                    marker: txMarker
+                                  });
+                                  const txs = response.result?.transactions || [];
+                                  setTransactions(prev => [...prev, ...txs.map(parseTx)]);
+                                  setTxMarker(response.result?.marker || null);
+                                  setTxHasMore(!!response.result?.marker);
+                                } catch (e) {
+                                  console.error('Failed to load more:', e);
+                                } finally {
+                                  client.disconnect();
+                                  setTxLoading(false);
+                                }
+                              }}
+                              disabled={txLoading}
+                              className={cn('px-4 py-1.5 text-[11px] font-medium rounded-lg transition-colors', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
                             >
-                              Prev
-                            </button>
-                            <span className={cn('text-[11px] tabular-nums', isDark ? 'text-white/50' : 'text-gray-500')}>
-                              {txPage + 1} / {Math.ceil(txTotal / txLimit)}
-                            </span>
-                            <button
-                              onClick={() => setTxPage(p => p + 1)}
-                              disabled={(txPage + 1) * txLimit >= txTotal || txLoading}
-                              className={cn('px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors', (txPage + 1) * txLimit >= txTotal ? 'opacity-30 cursor-not-allowed' : '', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}
-                            >
-                              Next
+                              {txLoading ? 'Loading...' : 'Load More'}
                             </button>
                           </div>
                         )}
