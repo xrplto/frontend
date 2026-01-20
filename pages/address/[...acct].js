@@ -123,7 +123,7 @@ const OverView = ({ account }) => {
   const [collectionNftsLoading, setCollectionNftsLoading] = useState(false);
   const [nftTrades, setNftTrades] = useState([]);
   const [nftTradesLoading, setNftTradesLoading] = useState(false);
-  const [historyView, setHistoryView] = useState('tokens');
+  const [historyView, setHistoryView] = useState('onchain');
   const [tokenHistory, setTokenHistory] = useState([]);
   const [tokenHistoryLoading, setTokenHistoryLoading] = useState(false);
   const [tokenHistoryCursor, setTokenHistoryCursor] = useState(null);
@@ -478,8 +478,16 @@ const OverView = ({ account }) => {
     let isDust = false;
     let txType = isOutgoing ? 'out' : 'in';
 
+    let counterparty = null;
     if (isFailed) {
-      // Skip parsing for failed txs
+      // Set label and details for failed txs
+      if (type === 'AMMDeposit') label = 'AMM Deposit';
+      else if (type === 'AMMWithdraw') label = 'AMM Withdraw';
+      else if (type === 'TrustSet') label = 'Add Trustline';
+      // Extract asset info for details
+      const asset = txData.Asset || txData.Asset2;
+      const limit = txData.LimitAmount;
+      counterparty = asset?.currency ? decodeCurrency(asset.currency) : limit?.currency ? decodeCurrency(limit.currency) : null;
     } else if (type === 'Payment') {
       const delivered = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
       const isSwap = txData.Account === txData.Destination && txData.SendMax;
@@ -495,8 +503,37 @@ const OverView = ({ account }) => {
         return null;
       };
       if (isSwap) {
-        label = 'Swap';
+        // Received XRP = Sell, Received tokens = Buy
+        const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
+        label = isBuy ? 'Buy' : 'Sell';
+        txType = isBuy ? 'in' : 'out';
         amount = formatAmt(delivered) || '';
+        // Calculate actual spent from metadata
+        let actualSpent = null;
+        if (meta?.AffectedNodes) {
+          const userAcct = meta.AffectedNodes.find(n =>
+            n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
+            n.ModifiedNode?.FinalFields?.Account === account
+          )?.ModifiedNode;
+          if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+            const prevBal = parseInt(userAcct.PreviousFields.Balance);
+            const finalBal = parseInt(userAcct.FinalFields.Balance);
+            const fee = parseInt(txData.Fee || 0);
+            const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
+            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
+          }
+        }
+        return {
+          id: hash || txData.ctid,
+          type: isFailed ? 'failed' : txType,
+          label,
+          amount,
+          fromAmount: actualSpent || formatAmt(txData.SendMax),
+          toAmount: amount,
+          isDust: false,
+          time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
+          hash
+        };
       } else {
         if (typeof delivered === 'string') {
           const xrpAmt = parseInt(delivered) / 1000000;
@@ -626,7 +663,8 @@ const OverView = ({ account }) => {
       amount,
       isDust,
       time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
-      hash
+      hash,
+      counterparty
     };
   };
 
@@ -2801,8 +2839,8 @@ const OverView = ({ account }) => {
                   )}
                 >
                   {[
-                    { id: 'tokens', label: 'TOKENS', icon: Coins },
-                    { id: 'onchain', label: 'ONCHAIN', icon: Code2 }
+                    { id: 'onchain', label: 'ONCHAIN', icon: Code2 },
+                    { id: 'tokens', label: 'TOKENS', icon: Coins }
                   ].map((view) => (
                     <button
                       key={view.id}
@@ -2864,202 +2902,59 @@ const OverView = ({ account }) => {
                       </button>
                     </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr
-                            className={cn(
-                              isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
-                            )}
-                          >
-                            <th
-                              className={cn(
-                                'text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              Type
-                            </th>
-                            <th
-                              className={cn(
-                                'text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              Info
-                            </th>
-                            <th
-                              className={cn(
-                                'text-left text-[11px] font-medium uppercase tracking-wider px-4 py-3',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              Time
-                            </th>
-                            <th
-                              className={cn(
-                                'text-right text-[11px] font-medium uppercase tracking-wider px-4 py-3',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              Signature
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody
-                          className={cn(
-                            'divide-y',
-                            isDark ? 'divide-white/[0.06]' : 'divide-gray-100'
-                          )}
-                        >
-                          {txHistory.length === 0 ? (
-                            <tr>
-                              <td
-                                colSpan={4}
-                                className={cn(
-                                  'px-4 py-8 text-center text-[13px]',
-                                  isDark ? 'text-white/35' : 'text-gray-400'
-                                )}
+                    {txHistory.length === 0 ? (
+                      <div className={cn('p-8 text-center text-[13px]', isDark ? 'text-white/35' : 'text-gray-400')}>
+                        {txLoading ? 'Loading...' : 'No transactions found'}
+                      </div>
+                    ) : (
+                      <>
+                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+                          <span></span>
+                          <span>Type</span>
+                          <span>Details</span>
+                          <span className="text-right">Amount</span>
+                          <span className="text-right">Date</span>
+                          <span></span>
+                        </div>
+                        <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                          {txHistory.map((tx) => {
+                            const parsed = parseTx(tx);
+                            return (
+                              <div
+                                key={parsed.id}
+                                className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                                onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
                               >
-                                {txLoading ? 'Loading...' : 'No transactions found'}
-                              </td>
-                            </tr>
-                          ) : (
-                            txHistory.map((tx) => {
-                              const parsed = parseTx(tx);
-                              return (
-                                <tr
-                                  key={parsed.id}
-                                  className={cn(
-                                    'transition-colors',
-                                    isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
-                                  )}
-                                >
-                                  <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                      {parsed.type === 'failed' ? (
-                                        <AlertTriangle size={14} className="text-amber-400" />
-                                      ) : parsed.type === 'in' ? (
-                                        <ArrowDownLeft size={14} className="text-emerald-400" />
-                                      ) : (
-                                        <ArrowUpRight size={14} className="text-red-400" />
-                                      )}
-                                      <span
-                                        className={cn(
-                                          'text-[13px] font-medium',
-                                          isDark ? 'text-white' : 'text-gray-900'
-                                        )}
-                                      >
-                                        {parsed.label}
-                                      </span>
-                                      {parsed.isDust && (
-                                        <span
-                                          className={cn(
-                                            'text-[9px] px-1.5 py-0.5 rounded',
-                                            isDark
-                                              ? 'bg-amber-500/10 text-amber-400'
-                                              : 'bg-amber-100 text-amber-600'
-                                          )}
-                                        >
-                                          Dust
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-3">
-                                    {parsed.amount ? (
-                                      <div className="flex items-center gap-2">
-                                        {parsed.type === 'failed' ? (
-                                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
-                                            !
-                                          </span>
-                                        ) : parsed.type === 'in' ? (
-                                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                                            +
-                                          </span>
-                                        ) : (
-                                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">
-                                            -
-                                          </span>
-                                        )}
-                                        <span
-                                          className={cn(
-                                            'text-[12px] tabular-nums',
-                                            isDark ? 'text-white' : 'text-gray-900'
-                                          )}
-                                        >
-                                          {parsed.amount}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <span
-                                        className={cn(
-                                          'text-[12px]',
-                                          isDark ? 'text-white/40' : 'text-gray-400'
-                                        )}
-                                      >
-                                        See more details
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td
-                                    className={cn(
-                                      'px-4 py-3 text-[12px]',
-                                      isDark ? 'text-white/50' : 'text-gray-500'
-                                    )}
-                                  >
-                                    {parsed.time
-                                      ? (() => {
-                                          const diff = Date.now() - new Date(parsed.time).getTime();
-                                          const mins = Math.floor(diff / 60000);
-                                          const hrs = Math.floor(diff / 3600000);
-                                          const days = Math.floor(diff / 86400000);
-                                          if (mins < 1) return 'Just now';
-                                          if (mins < 60) return `${mins} min ago`;
-                                          if (hrs < 24) return `${hrs} hr ago`;
-                                          if (days < 7) return `${days} day ago`;
-                                          return new Date(parsed.time).toLocaleDateString('en-GB', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric'
-                                          });
-                                        })()
-                                      : '-'}
-                                  </td>
-                                  <td className="px-4 py-3 text-right">
-                                    <div className="flex items-center justify-end gap-1">
-                                      <Link
-                                        href={`/tx/${parsed.hash}`}
-                                        target="_blank"
-                                        className={cn(
-                                          'text-[12px] font-mono hover:underline',
-                                          isDark
-                                            ? 'text-white/50 hover:text-white/70'
-                                            : 'text-gray-500 hover:text-gray-700'
-                                        )}
-                                      >
-                                        {parsed.hash?.slice(0, 4)}...{parsed.hash?.slice(-4)}
-                                      </Link>
-                                      <button
-                                        onClick={() => navigator.clipboard.writeText(parsed.hash)}
-                                        className={cn(
-                                          'p-1 rounded transition-colors',
-                                          isDark
-                                            ? 'text-white/30 hover:text-white/50'
-                                            : 'text-gray-400 hover:text-gray-600'
-                                        )}
-                                      >
-                                        <Copy size={12} />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500/10' : parsed.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                  {parsed.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                </div>
+                                <div className="min-w-0 flex items-center gap-2">
+                                  <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</p>
+                                  {parsed.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600')}>Failed</span>}
+                                  {parsed.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                </div>
+                                <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                  {parsed.counterparty ? (parsed.counterparty.startsWith('r') ? <Link href={`/address/${parsed.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{parsed.counterparty.slice(0, 10)}...{parsed.counterparty.slice(-6)}</Link> : parsed.counterparty) : parsed.fromAmount ? 'DEX Swap' : '—'}
+                                </p>
+                                <p className={cn('text-[12px] font-semibold tabular-nums text-right', parsed.type === 'failed' ? 'text-amber-500' : parsed.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                                  {parsed.fromAmount && parsed.toAmount ? (
+                                    <span className="flex items-center justify-end gap-1">
+                                      <span className="text-red-400">-{parsed.fromAmount}</span>
+                                      <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
+                                      <span className="text-emerald-400">+{parsed.toAmount}</span>
+                                    </span>
+                                  ) : parsed.amount ? (parsed.type === 'failed' ? '—' : `${parsed.type === 'in' ? '+' : '-'}${parsed.amount}`) : '—'}
+                                </p>
+                                <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                  {parsed.time ? new Date(parsed.time).toLocaleDateString() : '—'}
+                                </p>
+                                <ExternalLink size={12} className={cn('justify-self-end opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'text-white/40' : 'text-gray-400')} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
                     {txHasMore && (
                       <button
                         onClick={() => fetchTxHistory(txMarker)}

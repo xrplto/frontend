@@ -35,8 +35,13 @@ import {
   X,
   Star,
   Coins,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  PieChart,
+  Layers,
+  Gem
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
 
@@ -151,7 +156,8 @@ export default function WalletPage() {
   const [accountInfo, setAccountInfo] = useState(null);
 
   // Activity/History state
-  const [historyView, setHistoryView] = useState('tokens');
+  const [recentView, setRecentView] = useState('onchain');
+  const [historyView, setHistoryView] = useState('onchain');
   const [tokenHistory, setTokenHistory] = useState([]);
   const [tokenHistoryLoading, setTokenHistoryLoading] = useState(false);
   const [tokenHistoryPage, setTokenHistoryPage] = useState(0);
@@ -324,8 +330,14 @@ export default function WalletPage() {
     let isDust = false;
     let counterparty = null;
     if (isFailed) {
-      // Skip amount parsing for failed txs
-      counterparty = tx.Account === address ? tx.Destination : tx.Account;
+      // Set label and details for failed txs
+      if (type === 'AMMDeposit') label = 'AMM Deposit';
+      else if (type === 'AMMWithdraw') label = 'AMM Withdraw';
+      else if (type === 'TrustSet') label = 'Add Trustline';
+      // Extract asset info for details
+      const asset = tx.Asset || tx.Asset2;
+      const limit = tx.LimitAmount;
+      counterparty = asset?.currency ? decodeCurrency(asset.currency) : limit?.currency ? decodeCurrency(limit.currency) : (tx.Account === address ? tx.Destination : tx.Account);
     } else if (type === 'Payment') {
       const delivered = meta?.delivered_amount || tx.DeliverMax || tx.Amount;
       const isSwap = tx.Account === tx.Destination && tx.SendMax;
@@ -340,10 +352,39 @@ export default function WalletPage() {
         return null;
       };
       if (isSwap) {
-        label = 'Swap';
-        const spent = formatAmt(tx.SendMax);
+        // Received XRP = Sell, Received tokens = Buy
+        const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
+        label = isBuy ? 'Buy' : 'Sell';
+        // Calculate actual spent from metadata
+        let actualSpent = null;
+        if (meta?.AffectedNodes) {
+          const userAcct = meta.AffectedNodes.find(n =>
+            n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
+            n.ModifiedNode?.FinalFields?.Account === address
+          )?.ModifiedNode;
+          if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+            const prevBal = parseInt(userAcct.PreviousFields.Balance);
+            const finalBal = parseInt(userAcct.FinalFields.Balance);
+            const fee = parseInt(tx.Fee || 0);
+            const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
+            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
+          }
+        }
         const received = formatAmt(delivered);
-        amount = `${received}`;
+        amount = received;
+        // Return early with swap-specific data
+        return {
+          id: hash || tx.ctid,
+          type: isBuy ? 'in' : 'out',
+          label,
+          amount,
+          fromAmount: actualSpent || formatAmt(tx.SendMax),
+          toAmount: received,
+          isDust: false,
+          time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
+          hash,
+          counterparty: null
+        };
       } else {
         if (typeof delivered === 'string') {
           const xrpAmt = parseInt(delivered) / 1000000;
@@ -526,9 +567,10 @@ export default function WalletPage() {
       .catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
   }, [address]);
 
-  // Load token trading history when trades tab + tokens view
+  // Load token trading history when trades tab + tokens view OR overview + tokens recent
   useEffect(() => {
-    if (activeTab !== 'trades' || historyView !== 'tokens' || !address) return;
+    const shouldFetch = (activeTab === 'trades' && historyView === 'tokens') || (activeTab === 'overview' && recentView === 'tokens');
+    if (!shouldFetch || !address) return;
     setTokenHistoryLoading(true);
     console.time('[Wallet] fetchTokenHistory');
     const url = `${BASE_URL}/v1/history?account=${address}&limit=${tokenHistoryLimit}&page=${tokenHistoryPage}${tokenHistoryType !== 'all' ? `&type=${tokenHistoryType}` : ''}`;
@@ -545,11 +587,12 @@ export default function WalletPage() {
         setTokenHistory([]);
       })
       .finally(() => setTokenHistoryLoading(false));
-  }, [activeTab, historyView, address, tokenHistoryType, tokenHistoryPage]);
+  }, [activeTab, historyView, recentView, address, tokenHistoryType, tokenHistoryPage]);
 
-  // Load NFT trades when trades tab + nfts view
+  // Load NFT trades when trades tab + nfts view OR overview + nfts recent
   useEffect(() => {
-    if (activeTab !== 'trades' || historyView !== 'nfts' || !address || nftTrades.length > 0) return;
+    const shouldFetch = (activeTab === 'trades' && historyView === 'nfts') || (activeTab === 'overview' && recentView === 'nfts');
+    if (!shouldFetch || !address || nftTrades.length > 0) return;
     setNftTradesLoading(true);
     console.time('[Wallet] fetchNftTrades');
     fetch(`${BASE_URL}/v1/nft/analytics/trader/${address}/trades?limit=50`)
@@ -564,7 +607,7 @@ export default function WalletPage() {
         setNftTrades([]);
       })
       .finally(() => setNftTradesLoading(false));
-  }, [activeTab, historyView, address]);
+  }, [activeTab, historyView, recentView, address]);
 
 
   // Load recent transactions directly from XRP Ledger node via WebSocket
@@ -1001,23 +1044,23 @@ export default function WalletPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 mb-6 overflow-x-auto">
+            <div className="flex items-center gap-1.5 mb-6 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold tracking-widest rounded-lg transition-all whitespace-nowrap',
+                    'flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium tracking-wider rounded-md border transition-all whitespace-nowrap',
                     activeTab === tab.id
-                      ? cn(isDark ? 'bg-white/[0.08] text-white' : 'bg-gray-100 text-gray-900')
+                      ? cn(isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900')
                       : cn(
                           isDark
-                            ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
+                            : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
                         )
                   )}
                 >
-                  <tab.icon size={14} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
+                  <tab.icon size={13} strokeWidth={1.5} />
                   {tab.label.toUpperCase()}
                 </button>
               ))}
@@ -1483,69 +1526,96 @@ export default function WalletPage() {
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-4">
-                {/* Portfolio Header - Single Row */}
-                <div
-                  className={cn(
-                    'rounded-xl p-5 flex flex-wrap items-center gap-6',
-                    isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200'
-                  )}
-                >
-                  {/* Portfolio Value */}
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>Portfolio</p>
-                      <p className={cn('text-3xl font-bold tabular-nums tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
-                        {tokensLoading ? '...' : `${(totalValue + nftPortfolioValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                        <span className={cn('text-lg font-semibold ml-1.5', isDark ? 'text-white/50' : 'text-gray-400')}>XRP</span>
-                      </p>
+                {/* Portfolio Header */}
+                {(() => {
+                  const totalPortfolio = totalValue + nftPortfolioValue;
+                  const xrpValue = xrpToken ? parseFloat(xrpToken.amount) : 0;
+                  const tokensOnlyValue = totalValue - xrpValue;
+                  const xrpPercent = totalPortfolio > 0 ? (xrpValue / totalPortfolio) * 100 : 0;
+                  const tokensPercent = totalPortfolio > 0 ? (tokensOnlyValue / totalPortfolio) * 100 : 0;
+                  const nftsPercent = totalPortfolio > 0 ? (nftPortfolioValue / totalPortfolio) * 100 : 0;
+                  const nftCount = collections.reduce((sum, c) => sum + c.count, 0);
+
+                  return (
+                    <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
+                      {/* Asset Grid - 4 columns + Actions */}
+                      <div className="flex items-stretch gap-3">
+                        {/* Portfolio Total */}
+                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-white/[0.05]' : 'bg-gray-100')}>
+                              <PieChart size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} strokeWidth={1.5} />
+                            </div>
+                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Portfolio</span>
+                          </div>
+                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                            {tokensLoading ? '...' : totalPortfolio.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                          </p>
+                        </div>
+
+                        {/* XRP */}
+                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-[#23292F] flex items-center justify-center text-white text-[10px] font-bold shrink-0">✕</div>
+                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>XRP</span>
+                          </div>
+                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                            {xrpToken ? parseFloat(xrpToken.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                          </p>
+                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
+                            Native asset
+                          </span>
+                        </div>
+
+                        {/* Tokens */}
+                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-blue-500/10' : 'bg-blue-50')}>
+                              <Coins size={14} className="text-blue-500" strokeWidth={1.5} />
+                            </div>
+                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Tokens</span>
+                          </div>
+                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                            {tokensOnlyValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                          </p>
+                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
+                            {allTokens.length} assets
+                          </span>
+                        </div>
+
+                        {/* NFTs */}
+                        <div className={cn('flex-1 rounded-lg p-3 flex flex-col', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', isDark ? 'bg-purple-500/10' : 'bg-purple-50')}>
+                              <Gem size={14} className="text-purple-500" strokeWidth={1.5} />
+                            </div>
+                            <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>NFTs</span>
+                          </div>
+                          <p className={cn('text-xl font-bold tabular-nums mt-auto', isDark ? 'text-white' : 'text-gray-900')}>
+                            {nftPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                          </p>
+                          <span className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
+                            {nftCount} items
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col justify-center gap-2 shrink-0">
+                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-semibold text-center">Inactive</span>}
+                          <button onClick={() => setShowPanel('send')} className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                            <ArrowUpRight size={14} /> Send
+                          </button>
+                          <button onClick={() => setShowPanel('receive')} className={cn('flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
+                            <ArrowDownLeft size={14} /> Receive
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    {isInactive && <span className="text-[10px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 font-semibold">Inactive</span>}
-                  </div>
-
-                  <div className={cn('w-px h-10 hidden sm:block', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-
-                  {/* XRP Balance */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[#23292F] flex items-center justify-center text-white text-[10px] font-bold">✕</div>
-                    <div>
-                      <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>XRP</p>
-                      <p className={cn('text-sm font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{xrpToken ? xrpToken.amount : '0.00'}</p>
-                    </div>
-                  </div>
-
-                  <div className={cn('w-px h-10 hidden sm:block', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-
-                  {/* Tokens */}
-                  <div>
-                    <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>Tokens</p>
-                    <p className={cn('text-sm font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                      {allTokens.length} <span className={cn('font-normal', isDark ? 'text-white/50' : 'text-gray-500')}>· {totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP</span>
-                    </p>
-                  </div>
-
-                  <div className={cn('w-px h-10 hidden sm:block', isDark ? 'bg-white/10' : 'bg-gray-200')} />
-
-                  {/* NFTs */}
-                  <div>
-                    <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>NFTs</p>
-                    <p className={cn('text-sm font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                      {collections.reduce((sum, c) => sum + c.count, 0)} <span className={cn('font-normal', isDark ? 'text-white/50' : 'text-gray-500')}>· {nftPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP</span>
-                    </p>
-                  </div>
-
-                  {/* Actions - pushed to right */}
-                  <div className="flex gap-2 ml-auto">
-                    <button onClick={() => setShowPanel('send')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
-                      <ArrowUpRight size={14} /> Send
-                    </button>
-                    <button onClick={() => setShowPanel('receive')} className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
-                      <ArrowDownLeft size={14} /> Receive
-                    </button>
-                    <Link href="/watchlist" className={cn('flex items-center justify-center w-9 h-9 rounded-lg transition-colors', isDark ? 'bg-white/[0.05] text-white/60 hover:bg-white/[0.08] hover:text-amber-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-amber-500')} title="Watchlist">
-                      <Star size={16} />
-                    </Link>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Account Stats Row */}
                 {accountInfo && (
@@ -1773,166 +1843,231 @@ export default function WalletPage() {
                 {/* Recent Activity - Full Width */}
                 <div
                   className={cn(
-                    'rounded-xl mt-4',
+                    'rounded-xl mt-4 overflow-hidden',
                     isDark
-                      ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
+                      ? 'bg-black/50 backdrop-blur-sm border border-white/[0.12]'
                       : 'bg-white border border-gray-200'
                   )}
                 >
-                  <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
-                    <p
-                      className={cn(
-                        'text-[11px] font-bold uppercase tracking-wider',
-                        isDark ? 'text-white/70' : 'text-gray-600'
-                      )}
-                    >
-                      Recent Activity
-                    </p>
+                  {/* Header */}
+                  <div className={cn("flex items-center justify-between px-4 py-3", isDark ? "border-b border-white/[0.08]" : "border-b border-gray-100")}>
+                    <div className="flex items-center gap-1">
+                      {['onchain', 'tokens', 'nfts'].map((view) => (
+                        <button
+                          key={view}
+                          onClick={() => setRecentView(view)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-md text-[10px] font-medium uppercase tracking-wide transition-colors',
+                            recentView === view
+                              ? (isDark ? 'bg-white/10 text-white' : 'bg-gray-200 text-gray-900')
+                              : (isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600')
+                          )}
+                        >
+                          {view === 'onchain' ? 'On-chain' : view === 'nfts' ? 'NFTs' : 'Tokens'}
+                        </button>
+                      ))}
+                    </div>
                     <button
                       onClick={() => handleTabChange('trades')}
                       className={cn(
                         'text-[10px] font-medium uppercase tracking-wide transition-colors',
-                        isDark
-                          ? 'text-blue-400 hover:text-blue-300'
-                          : 'text-blue-500 hover:text-blue-600'
+                        isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-500 hover:text-blue-600'
                       )}
                     >
                       View All
                     </button>
                   </div>
-                                    {txLoading ? (
-                                      <div
-                                        className={cn('p-8 text-center', isDark ? 'text-white/40' : 'text-gray-400')}
-                                      >
-                                        Loading...
-                                      </div>
-                                    ) : transactions.length === 0 ? (
-                                      <div
-                                        className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}
-                                      >
-                                        <div className="relative w-12 h-12 mx-auto mb-3">
-                                          <div
-                                            className={cn(
-                                              'absolute -top-0.5 left-0.5 w-4 h-4 rounded-full',
-                                              isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                            )}
-                                          />
-                                          <div
-                                            className={cn(
-                                              'absolute -top-0.5 right-0.5 w-4 h-4 rounded-full',
-                                              isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                            )}
-                                          />
-                                          <div
-                                            className={cn(
-                                              'absolute top-0.5 left-1.5 w-2 h-2 rounded-full',
-                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
-                                            )}
-                                          />
-                                          <div
-                                            className={cn(
-                                              'absolute top-0.5 right-1.5 w-2 h-2 rounded-full',
-                                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
-                                            )}
-                                          />
-                                          <div
-                                            className={cn(
-                                              'absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full',
-                                              isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                            )}
-                                          >
-                                            <div className="absolute top-3 left-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                                            <div className="absolute top-3 right-2 w-1.5 h-1 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                                            <div
-                                              className={cn(
-                                                'absolute bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-2 rounded-full',
-                                                isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
-                                              )}
-                                            >
-                                              <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
-                                            </div>
-                                            <div
-                                              className={cn(
-                                                'absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-1 rounded-t-full border-t border-l border-r',
-                                                isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
-                                              )}
-                                            />
-                                          </div>
-                                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                                            {[...Array(8)].map((_, i) => (
-                                              <div
-                                                key={i}
-                                                className={cn(
-                                                  'h-[2px] w-full',
-                                                  isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40'
-                                                )}
-                                              />
-                                            ))}
-                                          </div>
-                                        </div>
-                                        <p
-                                          className={cn(
-                                            'text-[10px] font-medium tracking-wider mb-1',
-                                            isDark ? 'text-white/60' : 'text-gray-500'
-                                          )}
-                                        >
-                                          NO RECENT ACTIVITY
-                                        </p>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        {/* Table Header */}
-                                        <div className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
-                                          <span></span>
-                                          <span>Type</span>
-                                          <span>Counterparty</span>
-                                          <span className="text-right">Amount</span>
-                                          <span className="text-right">Date</span>
-                                          <span></span>
-                                        </div>
-                                        {/* Table Body */}
-                                        <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
-                                          {transactions.slice(0, 6).map((tx) => (
-                                            <div
-                                              key={tx.id}
-                                              className={cn("grid grid-cols-[40px_minmax(100px,1fr)_180px_140px_120px_36px] gap-3 items-center px-4 py-2.5 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
-                                            >
-                                              {/* Icon */}
-                                              <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                                {tx.type === 'failed' ? <AlertTriangle size={14} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                                              </div>
-                                              {/* Type */}
-                                              <div className="min-w-0">
-                                                <p className={cn("text-xs font-medium", isDark ? "text-white/90" : "text-gray-900")}>
-                                                  {tx.label}
-                                                  {tx.isDust && <span className={cn("ml-2 text-[9px] px-1 py-0.5 rounded font-medium", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
-                                                </p>
-                                              </div>
-                                              {/* Counterparty */}
-                                              {tx.counterparty ? (
-                                                <Link
-                                                  href={`/address/${tx.counterparty}`}
-                                                  className={cn("text-[11px] font-mono truncate hover:underline", isDark ? "text-white/50 hover:text-blue-400" : "text-gray-500 hover:text-blue-500")}
-                                                >
-                                                  {`${tx.counterparty.slice(0, 10)}...${tx.counterparty.slice(-8)}`}
-                                                </Link>
-                                              ) : (
-                                                <span className={cn("text-[11px] font-mono", isDark ? "text-white/50" : "text-gray-500")}>—</span>
-                                              )}
-                                              {/* Amount */}
-                                              <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{tx.amount || '—'}</p>
-                                              {/* Date */}
-                                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{tx.time ? new Date(tx.time).toLocaleDateString() : '—'}</p>
-                                              {/* Link */}
-                                              <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className={cn("justify-self-end p-1 rounded transition-colors", isDark ? "text-white/30 hover:text-blue-400" : "text-gray-400 hover:text-blue-500")}>
-                                                <ExternalLink size={12} />
-                                              </a>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
+
+                  {/* On-chain Content */}
+                  {recentView === 'onchain' && (
+                    txLoading ? (
+                      <div className="p-6">
+                        <div className="space-y-3">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className={cn("h-12 rounded-lg animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : transactions.length === 0 ? (
+                      <div className={cn('py-10 text-center')}>
+                        <Clock size={24} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                        <p className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          No recent activity
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className={cn(
+                          "grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider",
+                          isDark ? "text-white/30 border-b border-white/[0.06]" : "text-gray-400 border-b border-gray-100"
+                        )}>
+                          <span></span>
+                          <span>Type</span>
+                          <span>Details</span>
+                          <span className="text-right">Amount</span>
+                          <span className="text-right">Time</span>
+                          <span></span>
+                        </div>
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                          {transactions.slice(0, 5).map((tx) => (
+                            <div
+                              key={tx.id}
+                              className={cn(
+                                "grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 items-center px-4 py-3 transition-colors cursor-pointer group",
+                                isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50"
+                              )}
+                              onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
+                            >
+                              <div className={cn(
+                                "w-9 h-9 rounded-full flex items-center justify-center",
+                                tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                              )}>
+                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                              </div>
+                              <div className="min-w-0 flex items-center gap-2">
+                                <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{tx.label}</p>
+                                {tx.type === 'failed' && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/15 text-amber-400" : "bg-amber-100 text-amber-600")}>Failed</span>}
+                                {tx.isDust && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                              </div>
+                              <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
+                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
+                              </p>
+                              <p className={cn("text-[12px] font-semibold tabular-nums text-right", tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                                {tx.fromAmount && tx.toAmount ? (
+                                  <span className="flex items-center justify-end gap-1">
+                                    <span className="text-red-400">-{tx.fromAmount}</span>
+                                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
+                                    <span className="text-emerald-400">+{tx.toAmount}</span>
+                                  </span>
+                                ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
+                              </p>
+                              <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-400")}>
+                                {tx.time ? formatDistanceToNow(new Date(tx.time), { addSuffix: false }) : '—'}
+                              </p>
+                              <ExternalLink size={12} className={cn("justify-self-end opacity-0 group-hover:opacity-100 transition-opacity", isDark ? "text-white/40" : "text-gray-400")} />
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )
+                  )}
+
+                  {/* Tokens Content */}
+                  {recentView === 'tokens' && (
+                    tokenHistoryLoading ? (
+                      <div className="p-6">
+                        <div className="space-y-3">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className={cn("h-12 rounded-lg animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : tokenHistory.length === 0 ? (
+                      <div className={cn('py-10 text-center')}>
+                        <Coins size={24} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                        <p className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>No token trades</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className={cn(
+                          "grid grid-cols-[44px_1.5fr_2fr_1.5fr_1fr_32px] gap-2 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider",
+                          isDark ? "text-white/30 border-b border-white/[0.06]" : "text-gray-400 border-b border-gray-100"
+                        )}>
+                          <span></span>
+                          <span>Type</span>
+                          <span>Pair</span>
+                          <span className="text-right">Amount</span>
+                          <span className="text-right">Time</span>
+                          <span></span>
+                        </div>
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                          {tokenHistory.slice(0, 5).map((h) => {
+                            const isBuy = h.got?.currency !== 'XRP';
+                            const gotCurrency = decodeCurrency(h.got?.currency);
+                            const paidCurrency = decodeCurrency(h.paid?.currency);
+                            return (
+                              <div
+                                key={h._id}
+                                className={cn("grid grid-cols-[44px_1.5fr_2fr_1.5fr_1fr_32px] gap-2 items-center px-4 py-3 transition-colors cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}
+                                onClick={() => window.open(`/tx/${h.hash}`, '_blank')}
+                              >
+                                <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                  {isBuy ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                </div>
+                                <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{isBuy ? 'Buy' : 'Sell'}</p>
+                                <p className={cn("text-[11px] truncate", isDark ? "text-white/50" : "text-gray-500")}>{gotCurrency}/{paidCurrency}</p>
+                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isBuy ? 'text-emerald-500' : 'text-red-400')}>
+                                  {h.got?.value ? `${parseFloat(h.got.value).toFixed(2)} ${gotCurrency}` : '—'}
+                                </p>
+                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>
+                                  {h.time ? formatDistanceToNow(new Date(h.time), { addSuffix: false }) : '—'}
+                                </p>
+                                <ExternalLink size={12} className={cn("justify-self-end", isDark ? "text-white/20" : "text-gray-300")} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )
+                  )}
+
+                  {/* NFTs Content */}
+                  {recentView === 'nfts' && (
+                    nftTradesLoading ? (
+                      <div className="p-6">
+                        <div className="space-y-3">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className={cn("h-12 rounded-lg animate-pulse", isDark ? "bg-white/5" : "bg-gray-100")} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : nftTrades.length === 0 ? (
+                      <div className={cn('py-10 text-center')}>
+                        <Image size={24} className={cn("mx-auto mb-3", isDark ? "text-white/20" : "text-gray-300")} />
+                        <p className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>No NFT trades</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className={cn(
+                          "grid grid-cols-[44px_1.5fr_2fr_1.5fr_1fr_32px] gap-2 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider",
+                          isDark ? "text-white/30 border-b border-white/[0.06]" : "text-gray-400 border-b border-gray-100"
+                        )}>
+                          <span></span>
+                          <span>Type</span>
+                          <span>NFT</span>
+                          <span className="text-right">Price</span>
+                          <span className="text-right">Time</span>
+                          <span></span>
+                        </div>
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                          {nftTrades.slice(0, 5).map((t) => {
+                            const isSeller = t.seller === address;
+                            return (
+                              <div
+                                key={t._id}
+                                className={cn("grid grid-cols-[44px_1.5fr_2fr_1.5fr_1fr_32px] gap-2 items-center px-4 py-3 transition-colors cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}
+                                onClick={() => window.open(`/tx/${t.hash}`, '_blank')}
+                              >
+                                <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isSeller ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                  {isSeller ? <ArrowUpRight size={16} className="text-emerald-500" /> : <ArrowDownLeft size={16} className="text-red-400" />}
+                                </div>
+                                <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{isSeller ? 'Sold' : 'Bought'}</p>
+                                <p className={cn("text-[11px] truncate", isDark ? "text-white/50" : "text-gray-500")}>{t.name || t.NFTokenID?.slice(0, 12) + '...'}</p>
+                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isSeller ? 'text-emerald-500' : 'text-red-400')}>
+                                  {t.price ? `${parseFloat(t.price).toFixed(2)} XRP` : '—'}
+                                </p>
+                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>
+                                  {t.time ? formatDistanceToNow(new Date(t.time), { addSuffix: false }) : '—'}
+                                </p>
+                                <ExternalLink size={12} className={cn("justify-self-end", isDark ? "text-white/20" : "text-gray-300")} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )
+                  )}
+                </div>
               </div>
             )}
 
@@ -2706,19 +2841,19 @@ export default function WalletPage() {
                 )}
               >
                 {/* View Toggle */}
-                <div className={cn('flex items-center gap-1 p-2 border-b', isDark ? 'border-white/[0.15]' : 'border-gray-200')}>
-                  {['tokens', 'nfts', 'onchain'].map((view) => (
+                <div className={cn('flex items-center border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {['onchain', 'tokens', 'nfts'].map((view) => (
                     <button
                       key={view}
                       onClick={() => setHistoryView(view)}
                       className={cn(
-                        'px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors',
+                        'px-4 py-3 text-[12px] font-medium tracking-wide transition-colors border-b-2 -mb-px',
                         historyView === view
-                          ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-900'
-                          : isDark ? 'text-white/50 hover:text-white/70' : 'text-gray-500 hover:text-gray-700'
+                          ? cn('border-white', isDark ? 'text-white' : 'text-gray-900 border-gray-900')
+                          : cn('border-transparent', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-500 hover:text-gray-700')
                       )}
                     >
-                      {view === 'tokens' ? 'Tokens' : view === 'nfts' ? 'NFTs' : 'On-chain'}
+                      {view === 'tokens' ? 'TOKENS' : view === 'nfts' ? 'NFTS' : 'ONCHAIN'}
                     </button>
                   ))}
                 </div>
@@ -2761,15 +2896,13 @@ export default function WalletPage() {
                         </div>
                         <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
                           {tokenHistory.map((trade, i) => {
-                            const isBuy = trade.paid?.currency === 'XRP';
+                            const isBuy = trade.got?.currency !== 'XRP';
                             const tokenData = isBuy ? trade.got : trade.paid;
                             const xrpData = isBuy ? trade.paid : trade.got;
                             const tokenAmount = Math.abs(parseFloat(tokenData?.value || 0));
                             const xrpAmount = Math.abs(parseFloat(xrpData?.value || 0));
                             const price = tokenAmount > 0 ? xrpAmount / tokenAmount : 0;
-                            const tokenName = tokenData?.currency?.length === 40
-                              ? Buffer.from(tokenData.currency, 'hex').toString('utf8').replace(/\x00/g, '')
-                              : tokenData?.currency || 'Unknown';
+                            const tokenName = decodeCurrency(tokenData?.currency) || 'Unknown';
                             return (
                               <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
                                 <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
@@ -2873,36 +3006,45 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No transactions</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/40 border-white/[0.08]' : 'text-gray-500 border-gray-100')}>
-                          <div></div>
-                          <div>Type</div>
-                          <div>Counterparty</div>
-                          <div className="text-right">Amount</div>
-                          <div className="text-right">Date</div>
-                          <div></div>
+                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+                          <span></span>
+                          <span>Type</span>
+                          <span>Details</span>
+                          <span className="text-right">Amount</span>
+                          <span className="text-right">Date</span>
+                          <span></span>
                         </div>
-                        <div className={cn('divide-y', isDark ? 'divide-white/5' : 'divide-gray-50')}>
+                        <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
                           {transactions.map((tx) => (
-                            <div key={tx.id} className={cn('grid grid-cols-[40px_1fr_1.5fr_1fr_1fr_40px] gap-4 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
-                              <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                {tx.type === 'failed' ? <AlertTriangle size={14} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                            <div
+                              key={tx.id}
+                              className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                              onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
+                            >
+                              <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <p className={cn('text-[12px] font-medium', isDark ? 'text-white/90' : 'text-gray-900')}>{tx.label}</p>
-                                {tx.isDust && <span className={cn('text-[8px] px-1 py-0.5 rounded font-medium', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                              <div className="min-w-0 flex items-center gap-2">
+                                <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{tx.label}</p>
+                                {tx.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600')}>Failed</span>}
+                                {tx.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
                               </div>
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                {tx.counterparty ? `${tx.counterparty.slice(0, 8)}...${tx.counterparty.slice(-6)}` : '—'}
+                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn('text-[11px] font-medium tabular-nums text-right', tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-500' : 'text-red-400')}>
-                                {tx.amount ? (tx.type === 'failed' ? tx.amount : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
+                              <p className={cn('text-[12px] font-semibold tabular-nums text-right', tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                                {tx.fromAmount && tx.toAmount ? (
+                                  <span className="flex items-center justify-end gap-1">
+                                    <span className="text-red-400">-{tx.fromAmount}</span>
+                                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
+                                    <span className="text-emerald-400">+{tx.toAmount}</span>
+                                  </span>
+                                ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
                               </p>
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                 {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
                               </p>
-                              <a href={`/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
-                                <ExternalLink size={12} />
-                              </a>
+                              <ExternalLink size={12} className={cn('justify-self-end opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'text-white/40' : 'text-gray-400')} />
                             </div>
                           ))}
                         </div>
