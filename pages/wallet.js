@@ -39,7 +39,10 @@ import {
   Clock,
   PieChart,
   Layers,
-  Gem
+  Gem,
+  Download,
+  Share2,
+  Trophy
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -154,6 +157,8 @@ export default function WalletPage() {
 
   // Account info & trading stats
   const [accountInfo, setAccountInfo] = useState(null);
+  const [showPLCard, setShowPLCard] = useState(false);
+  const plCardRef = useRef(null);
 
   // Activity/History state
   const [recentView, setRecentView] = useState('onchain');
@@ -558,13 +563,28 @@ export default function WalletPage() {
   useEffect(() => {
     if (!address) return;
     console.time('[Wallet] fetchAccountInfo');
-    fetch(`${BASE_URL}/v1/account/balance/${address}`)
-      .then(res => res.json())
-      .then(data => {
-        console.timeEnd('[Wallet] fetchAccountInfo');
-        setAccountInfo(data);
-      })
-      .catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
+    Promise.all([
+      fetch(`${BASE_URL}/v1/account/balance/${address}?rank=true`).then(res => res.json()).catch(() => null),
+      fetch(`${BASE_URL}/v1/traders/${address}`).then(res => res.json()).catch(() => null)
+    ]).then(([balanceData, traderData]) => {
+      console.timeEnd('[Wallet] fetchAccountInfo');
+      const merged = { ...balanceData };
+      if (traderData && !traderData.error) {
+        merged.tradingRank = traderData.rank;
+        merged.pnl = traderData.profit;
+        merged.roi = traderData.roi;
+        merged.totalTrades = traderData.totalTrades;
+        merged.totalTokensTraded = traderData.totalTokensTraded;
+        merged.winRate = traderData.winRate;
+        merged.winningTrades = traderData.winningTrades;
+        merged.losingTrades = traderData.losingTrades;
+        merged.maxProfitTrade = traderData.maxProfitTrade;
+        merged.maxLossTrade = traderData.maxLossTrade;
+        merged.buyVolume = traderData.buyVolume;
+        merged.sellVolume = traderData.sellVolume;
+      }
+      setAccountInfo(merged);
+    }).catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
   }, [address]);
 
   // Load token trading history when trades tab + tokens view OR overview + tokens recent
@@ -1627,7 +1647,10 @@ export default function WalletPage() {
                             <span>Objects <span className={isDark ? 'text-white/70' : 'text-gray-700'}>{accountInfo.ownerCount}</span></span>
                           )}
                           {accountInfo.rank && (
-                            <span>Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.rank.toLocaleString()}</span></span>
+                            <span>XRP Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.rank.toLocaleString()}</span></span>
+                          )}
+                          {accountInfo.tradingRank && (
+                            <span>Trading Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.tradingRank.toLocaleString()}</span></span>
                           )}
                           {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
                             <span>P&L <span className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500'}>
@@ -1638,6 +1661,18 @@ export default function WalletPage() {
                             <span>ROI <span className={(accountInfo.roi >= 0) ? 'text-emerald-500' : 'text-red-500'}>
                               {accountInfo.roi >= 0 ? '+' : ''}{accountInfo.roi.toFixed(1)}%
                             </span></span>
+                          )}
+                          {accountInfo.totalTrades > 0 && (
+                            <button
+                              onClick={() => setShowPLCard(true)}
+                              className={cn(
+                                'ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                                isDark ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                              )}
+                            >
+                              <Share2 size={10} />
+                              Share P/L
+                            </button>
                           )}
                         </div>
                       )}
@@ -4201,6 +4236,215 @@ export default function WalletPage() {
           </div>
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
             seed: <span className="text-emerald-400 break-all">{debugInfo.seed}</span>
+          </div>
+        </div>
+      )}
+
+      {/* P/L Card Modal */}
+      {showPLCard && accountInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setShowPLCard(false)}>
+          <div onClick={e => e.stopPropagation()} className="relative">
+            {/* Card for display and capture */}
+            <div
+              ref={plCardRef}
+              className="w-[400px] p-6 rounded-2xl bg-black"
+            >
+              {/* Header with logo */}
+              <div className="flex items-center justify-between mb-6">
+                <img src="/logo/xrpl-to-logo-white.svg" alt="XRPL.to" className="h-6" />
+                <span className="text-white/40 text-xs">DEX Trading Stats</span>
+              </div>
+
+              {/* Address */}
+              <div className="mb-4">
+                <div className="text-[10px] uppercase tracking-wider mb-1 text-white/40">Wallet</div>
+                <div className="text-xs font-mono text-white/70">{address?.slice(0, 12)}...{address?.slice(-8)}</div>
+              </div>
+
+              {/* Main P/L */}
+              <div className="mb-6">
+                <div className="text-[10px] uppercase tracking-wider mb-1 text-white/40">Total P/L</div>
+                <div className={cn('text-3xl font-bold', (accountInfo.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                  {(accountInfo.pnl || 0) >= 0 ? '+' : ''}{(accountInfo.pnl || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                </div>
+                <div className={cn('text-sm', (accountInfo.roi || 0) >= 0 ? 'text-emerald-400/70' : 'text-red-400/70')}>
+                  {(accountInfo.roi || 0) >= 0 ? '+' : ''}{(accountInfo.roi || 0).toFixed(1)}% ROI
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Trades</div>
+                  <div className="text-lg font-semibold text-white">{accountInfo.totalTrades || 0}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Win Rate</div>
+                  <div className="text-lg font-semibold text-white">{(accountInfo.winRate || 0).toFixed(0)}%</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Tokens</div>
+                  <div className="text-lg font-semibold text-white">{accountInfo.totalTokensTraded || 0}</div>
+                </div>
+              </div>
+
+              {/* Win/Loss */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex-1 rounded-lg p-3 bg-white/5">
+                  <div className="text-emerald-400/60 text-[10px] uppercase tracking-wider">Best Trade</div>
+                  <div className="text-emerald-400 font-semibold">+{(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                </div>
+                <div className="flex-1 rounded-lg p-3 bg-white/5">
+                  <div className="text-red-400/60 text-[10px] uppercase tracking-wider">Worst Trade</div>
+                  <div className="text-red-400 font-semibold">{(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                </div>
+              </div>
+
+              {/* Ranking */}
+              {accountInfo.tradingRank && (
+                <div className="flex items-center gap-2 text-amber-400/80">
+                  <Trophy size={14} />
+                  <span className="text-sm">Trading Rank #{accountInfo.tradingRank.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={async () => {
+                  const pnl = accountInfo.pnl || 0;
+                  const roi = accountInfo.roi || 0;
+                  const text = `My XRPL DEX Trading Stats\n\n${pnl >= 0 ? '📈' : '📉'} P/L: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP (${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%)\n🎯 ${accountInfo.totalTrades || 0} trades | ${(accountInfo.winRate || 0).toFixed(0)}% win rate\n\nTrack your trading at @xrplto\nhttps://xrpl.to/address/${address}`;
+
+                  // Generate PNG for sharing
+                  const canvas = document.createElement('canvas');
+                  const scale = 2;
+                  canvas.width = 400 * scale;
+                  canvas.height = 340 * scale;
+                  const ctx = canvas.getContext('2d');
+                  const bgColor = '#000';
+                  const textColor = '#fff';
+                  const mutedColor = 'rgba(255,255,255,0.4)';
+                  const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
+
+                  ctx.fillStyle = bgColor;
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                  const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
+                    ctx.fillStyle = color;
+                    ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                    ctx.textAlign = align;
+                    ctx.fillText(t, x * scale, y * scale);
+                  };
+
+                  drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
+                  drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                  drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: 'rgba(255,255,255,0.7)' });
+                  drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 158, { size: 28, weight: '700', color: pnlColor });
+                  drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
+                  const statsY = 210;
+                  drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(accountInfo.totalTrades || 0), 24, statsY + 24, { size: 18, weight: '600' });
+                  drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${(accountInfo.winRate || 0).toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                  drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
+                  const boxY = 260;
+                  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                  ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                  ctx.fill();
+                  ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                  ctx.fill();
+                  drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                  drawText(`+${(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                  drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                  drawText(`${(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+
+                  // Try Web Share API with image
+                  try {
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                    const file = new File([blob], 'xrpl-pl.png', { type: 'image/png' });
+                    if (navigator.canShare?.({ files: [file] })) {
+                      await navigator.share({ text, files: [file] });
+                      return;
+                    }
+                  } catch {}
+                  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-black hover:bg-neutral-900 text-white rounded-xl font-medium transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Share
+              </button>
+              <button
+                onClick={() => {
+                  const canvas = document.createElement('canvas');
+                  const scale = 2;
+                  canvas.width = 400 * scale;
+                  canvas.height = 340 * scale;
+                  const ctx = canvas.getContext('2d');
+                  const bgColor = '#000';
+                  const textColor = '#fff';
+                  const mutedColor = 'rgba(255,255,255,0.4)';
+                  const pnl = accountInfo.pnl || 0;
+                  const roi = accountInfo.roi || 0;
+                  const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
+
+                  ctx.fillStyle = bgColor;
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                  const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
+                    ctx.fillStyle = color;
+                    ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                    ctx.textAlign = align;
+                    ctx.fillText(t, x * scale, y * scale);
+                  };
+
+                  drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
+                  drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                  drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: 'rgba(255,255,255,0.7)' });
+                  drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 158, { size: 28, weight: '700', color: pnlColor });
+                  drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
+                  const statsY = 210;
+                  drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(accountInfo.totalTrades || 0), 24, statsY + 24, { size: 18, weight: '600' });
+                  drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(`${(accountInfo.winRate || 0).toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                  drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
+                  const boxY = 260;
+                  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                  ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                  ctx.fill();
+                  ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                  ctx.fill();
+                  drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                  drawText(`+${(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                  drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                  drawText(`${(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+
+                  const link = document.createElement('a');
+                  link.download = `xrpl-to-pl-${address?.slice(0, 8)}.png`;
+                  link.href = canvas.toDataURL('image/png');
+                  link.click();
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+              >
+                <Download size={16} />
+                Download PNG
+              </button>
+              <button
+                onClick={() => setShowPLCard(false)}
+                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
