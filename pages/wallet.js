@@ -54,7 +54,7 @@ export default function WalletPage() {
     useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
-  const exchRate =
+  const metricsRate =
     metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
   const currencySymbols = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
   const accountLogin = accountProfile?.account;
@@ -931,6 +931,12 @@ export default function WalletPage() {
   const allTokens = xrpToken ? [xrpToken, ...tokens] : tokens;
   const totalValue = allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0);
 
+  // XRP price in fiat for conversions (from API)
+  const xrpUsdPrice = xrpData?.xrp?.usd ? parseFloat(xrpData.xrp.usd) : 1;
+  // For converting XRP values to fiat: multiply by xrpUsdPrice
+  // exchRate kept for backwards compatibility with metricsRate pattern
+  const exchRate = metricsRate;
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Wallet },
     { id: 'tokens', label: 'Tokens', icon: () => <span className="text-xs">◎</span> },
@@ -1521,6 +1527,16 @@ export default function WalletPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Debug Info */}
+                  {debugInfo && (
+                    <div className={cn('px-4 py-3 border-t text-[10px] font-mono', isDark ? 'border-white/[0.08] text-white/40' : 'border-gray-100 text-gray-400')}>
+                      <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+                      <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+                      <div>walletKeyId: <span className={debugInfo.walletKeyId ? 'text-emerald-400' : 'text-red-400'}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+                      <div>seed: <span className="text-emerald-400 break-all">{debugInfo.seed}</span></div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1546,8 +1562,8 @@ export default function WalletPage() {
                         <div className="flex items-center gap-2 pr-6">
                           <span className={cn('text-[11px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-500')}>Portfolio</span>
                           <span className={cn('text-xl font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {tokensLoading ? '...' : totalPortfolio.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                            {tokensLoading ? '...' : <>{activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? totalPortfolio : totalPortfolio * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
+                            <span className={cn('text-xs font-medium ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
                           </span>
                         </div>
 
@@ -1569,8 +1585,8 @@ export default function WalletPage() {
                             Tokens <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{allTokens.length}</span>
                           </span>
                           <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {tokensOnlyValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                            {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? tokensOnlyValue : tokensOnlyValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
                           </span>
                         </div>
 
@@ -1582,8 +1598,8 @@ export default function WalletPage() {
                             NFTs <span className={isDark ? 'text-white/25' : 'text-gray-400'}>{nftCount}</span>
                           </span>
                           <span className={cn('text-base font-semibold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
-                            {nftPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>XRP</span>
+                            {activeFiatCurrency !== 'XRP' && currencySymbols[activeFiatCurrency]}{(activeFiatCurrency === 'XRP' ? nftPortfolioValue : nftPortfolioValue * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span className={cn('text-[10px] font-medium ml-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>{activeFiatCurrency}</span>
                           </span>
                         </div>
 
@@ -1717,9 +1733,9 @@ export default function WalletPage() {
                                   {token.percentOwned > 0 && <p className={cn("text-[9px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{token.percentOwned.toFixed(2)}%</p>}
                                 </div>
                                 {/* Price */}
-                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? '--' : <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></>}</p>
+                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
                                 {/* Value */}
-                                <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
+                                <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}</p>
                                 {/* 24h Change */}
                                 <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                                 {/* Send */}
@@ -2302,13 +2318,13 @@ export default function WalletPage() {
                                 {token.percentOwned > 0 && <p className={cn("text-[9px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{token.percentOwned.toFixed(2)}% supply</p>}
                               </div>
                               {/* Price */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? '--' : <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></>}</p>
+                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
                               {/* Value */}
-                              <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{token.value}</p>
+                              <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{activeFiatCurrency}</span></>}</p>
                               {/* 24h */}
                               <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
                               {/* Vol 24h */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? <>{token.vol24h >= 1000000 ? `${(token.vol24h/1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h/1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : '—'}</p>
+                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? (activeFiatCurrency === 'XRP' ? <>{token.vol24h >= 1000000 ? `${(token.vol24h/1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h/1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{(() => { const v = token.vol24h * xrpUsdPrice; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(0); })()} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : '—'}</p>
                               {/* Holders */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
                               {/* Actions */}
