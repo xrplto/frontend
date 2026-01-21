@@ -34,6 +34,7 @@ import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap';
 import TokenSummary from '../../components/TokenSummary';
+import OrderBook from './OrderBook';
 
 const Overview = memo(
   ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
@@ -181,12 +182,18 @@ const Overview = memo(
       <div className="flex flex-col">
         {/* Main content row */}
         <div className="flex flex-col md:flex-row items-stretch gap-2 mb-2">
-          {/* Left column: Chart + Trading History */}
+          {/* Left column: Chart + OrderBook + Trading History */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
-            <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
-              <h2 className="sr-only">Price Chart</h2>
-              <PriceChart token={token} />
-            </section>
+            <div className="flex gap-2" style={{ position: 'relative', zIndex: 10 }}>
+              <section aria-label="Price Chart" className="flex-1 min-w-0">
+                <h2 className="sr-only">Price Chart</h2>
+                <PriceChart token={token} />
+              </section>
+              <section aria-label="Order Book" className="w-[280px] flex-shrink-0 hidden lg:block h-[640px]">
+                <h2 className="sr-only">Order Book</h2>
+                <OrderBook token={token} />
+              </section>
+            </div>
             <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
               <h2 className="sr-only">Trading History</h2>
               <TradingHistory

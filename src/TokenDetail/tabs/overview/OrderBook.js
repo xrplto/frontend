@@ -17,6 +17,7 @@ const formatPrice = (price) => {
 import { BookOpen } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
+const fetchInFlight = new Map();
 
 const Container = styled.div`
   border-radius: 12px;
@@ -155,6 +156,7 @@ const OrderBook = ({ token, onPriceClick }) => {
   const asksSideRef = useRef(null);
   const [rlusdToken, setRlusdToken] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
+  const [viewMode, setViewMode] = useState('both'); // 'both', 'buy', 'sell'
   const wsRef = useRef(null);
 
   // XRP is native asset - show RLUSD/XRP orderbook instead
@@ -465,7 +467,49 @@ const OrderBook = ({ token, onPriceClick }) => {
           <BookOpen size={14} style={{ opacity: 0.7 }} />
           {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
         </Title>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '1px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '4px', padding: '2px' }}>
+            {['both', 'buy', 'sell'].map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                title={mode === 'both' ? 'Both sides' : mode === 'buy' ? 'Bids only' : 'Asks only'}
+                style={{
+                  width: '22px',
+                  height: '18px',
+                  borderRadius: '3px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  padding: '3px',
+                  background: viewMode === mode ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)') : 'transparent'
+                }}
+              >
+                {mode === 'both' && (
+                  <>
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
+                  </>
+                )}
+                {mode === 'sell' && (
+                  <>
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
+                  </>
+                )}
+                {mode === 'buy' && (
+                  <>
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
+                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
           <div
             style={{
               display: 'flex',
@@ -480,95 +524,93 @@ const OrderBook = ({ token, onPriceClick }) => {
           >
             {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
           </div>
-          <span
-            style={{
-              fontSize: '10px',
-              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-            }}
-          >
-            {bids.length}B · {asks.length}A
-          </span>
         </div>
       </Header>
 
-      <Content>
-        {/* Asks (Sell Orders) - reversed so lowest ask at bottom near spread */}
-        <Side ref={asksSideRef} type="asks">
-          <ColumnHeader isDark={isDark}>
-            <span style={{ color: '#ef4444' }}>XRP</span>
-            <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
-            <span>By</span>
-          </ColumnHeader>
-          {[...asks].reverse().map((ask, idx) => {
-            const acc = ask.account || ask.Account;
-            return (
-              <Row key={idx} type="ask" onClick={() => onPriceClick?.(ask.price)}>
-                <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-                <Price type="ask">{formatPrice(ask.price)}</Price>
-                <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
-                <Maker
-                  isDark={isDark}
-                  title={acc || ''}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    acc && window.open(`/address/${acc}`, '_blank');
-                  }}
-                >
-                  {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
-                </Maker>
-              </Row>
-            );
-          })}
-        </Side>
+      <Content style={{ gridTemplateRows: viewMode === 'both' ? '1fr auto 1fr' : '1fr' }}>
+        {/* Asks (Sell Orders) */}
+        {(viewMode === 'both' || viewMode === 'sell') && (
+          <Side ref={asksSideRef} type="asks">
+            <ColumnHeader isDark={isDark}>
+              <span style={{ color: '#ef4444' }}>XRP</span>
+              <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
+              <span>By</span>
+            </ColumnHeader>
+            {[...asks].reverse().map((ask, idx) => {
+              const acc = ask.account || ask.Account;
+              return (
+                <Row key={idx} type="ask" onClick={() => onPriceClick?.(ask.price)}>
+                  <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
+                  <Price type="ask">{formatPrice(ask.price)}</Price>
+                  <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
+                  <Maker
+                    isDark={isDark}
+                    title={acc || ''}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      acc && window.open(`/address/${acc}`, '_blank');
+                    }}
+                  >
+                    {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                  </Maker>
+                </Row>
+              );
+            })}
+          </Side>
+        )}
 
-        {/* Spread indicator in middle */}
-        <SpreadBar isDark={isDark}>
-          <span style={{ color: '#22c55e' }}>
-            ▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}
-          </span>
-          <span
-            style={{
-              padding: '2px 8px',
-              borderRadius: '8px',
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              fontWeight: 500
-            }}
-          >
-            {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
-          </span>
-          <span style={{ color: '#ef4444' }}>
-            ✕{bestAsk != null ? formatPrice(bestAsk) : '—'} ▼
-          </span>
-        </SpreadBar>
+        {/* Spread indicator */}
+        {viewMode === 'both' && (
+          <SpreadBar isDark={isDark}>
+            <span style={{ color: '#22c55e' }}>
+              ▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}
+            </span>
+            <span
+              style={{
+                padding: '2px 8px',
+                borderRadius: '8px',
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                fontWeight: 500
+              }}
+            >
+              {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
+            </span>
+            <span style={{ color: '#ef4444' }}>
+              ✕{bestAsk != null ? formatPrice(bestAsk) : '—'} ▼
+            </span>
+          </SpreadBar>
+        )}
 
-        {/* Bids (Buy Orders) - highest bid at top near spread */}
-        <Side type="bids">
-          <ColumnHeader isDark={isDark}>
-            <span style={{ color: '#22c55e' }}>XRP</span>
-            <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
-            <span>By</span>
-          </ColumnHeader>
-          {bids.map((bid, idx) => {
-            const acc = bid.account || bid.Account;
-            return (
-              <Row key={idx} type="bid" onClick={() => onPriceClick?.(bid.price)}>
-                <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-                <Price type="bid">{formatPrice(bid.price)}</Price>
-                <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
-                <Maker
-                  isDark={isDark}
-                  title={acc || ''}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    acc && window.open(`/address/${acc}`, '_blank');
-                  }}
-                >
-                  {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
-                </Maker>
-              </Row>
-            );
-          })}
-        </Side>
+        {/* Bids (Buy Orders) */}
+        {(viewMode === 'both' || viewMode === 'buy') && (
+          <Side type="bids">
+            <ColumnHeader isDark={isDark}>
+              <span style={{ color: '#22c55e' }}>XRP</span>
+              <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
+              <span>By</span>
+            </ColumnHeader>
+            {bids.map((bid, idx) => {
+              const acc = bid.account || bid.Account;
+              return (
+                <Row key={idx} type="bid" onClick={() => onPriceClick?.(bid.price)}>
+                  <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
+                  <Price type="bid">{formatPrice(bid.price)}</Price>
+                  <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
+                  <Maker
+                    isDark={isDark}
+                    title={acc || ''}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      acc && window.open(`/address/${acc}`, '_blank');
+                    }}
+                  >
+                    {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                  </Maker>
+                </Row>
+              );
+            })}
+          </Side>
+        )}
       </Content>
     </Container>
   );
