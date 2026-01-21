@@ -2187,11 +2187,12 @@ export default function WalletPage() {
                               <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_56px] gap-3 items-center px-3 py-2 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                                 {/* Token */}
                                 <div className="flex items-center gap-2 min-w-0">
-                                  {token.md5 ? (
-                                    <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
-                                  ) : (
-                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
-                                  )}
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
+                                    alt=""
+                                    className="w-6 h-6 rounded-full object-cover shrink-0 bg-white/10"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
                                   <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
                                 </div>
                                 {/* Balance */}
@@ -2394,12 +2395,13 @@ export default function WalletPage() {
                     ) : (
                       <>
                         <div className={cn(
-                          "grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider",
+                          "grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider",
                           isDark ? "text-white/30 border-b border-white/[0.06]" : "text-gray-400 border-b border-gray-100"
                         )}>
                           <span></span>
                           <span>Type</span>
                           <span>Details</span>
+                          <span>Signature</span>
                           <span className="text-right">Amount</span>
                           <span className="text-right">Time</span>
                           <span></span>
@@ -2409,16 +2411,34 @@ export default function WalletPage() {
                             <div
                               key={tx.id}
                               className={cn(
-                                "grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 items-center px-4 py-3 transition-colors cursor-pointer group",
+                                "grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 items-center px-4 py-3 transition-colors cursor-pointer group",
                                 isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50"
                               )}
                               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                             >
-                              <div className={cn(
-                                "w-9 h-9 rounded-full flex items-center justify-center",
-                                tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10'
-                              )}>
-                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                              <div className="relative">
+                                {tx.tokenCurrency ? (
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${tx.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${tx.tokenIssuer}_${tx.tokenCurrency}`).toString()}`}
+                                    alt=""
+                                    className="w-9 h-9 rounded-full object-cover bg-white/10"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                ) : (
+                                  <div className={cn(
+                                    "w-9 h-9 rounded-full flex items-center justify-center",
+                                    tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                                  )}>
+                                    {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                  </div>
+                                )}
+                                <div className={cn(
+                                  "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2",
+                                  isDark ? "border-[#070b12]" : "border-white",
+                                  tx.type === 'failed' ? 'bg-amber-500' : tx.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
+                                )}>
+                                  {tx.type === 'failed' ? <AlertTriangle size={8} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={8} className="text-white" /> : <ArrowUpRight size={8} className="text-white" />}
+                                </div>
                               </div>
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{tx.label}</p>
@@ -2428,6 +2448,9 @@ export default function WalletPage() {
                               </div>
                               <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
+                              </p>
+                              <p className={cn("text-[10px] font-mono truncate", isDark ? "text-white/40" : "text-gray-500")}>
+                                {tx.hash ? `${tx.hash.slice(0, 8)}...${tx.hash.slice(-6)}` : '—'}
                               </p>
                               <div className="flex items-center justify-end gap-2">
                                 {tx.fromAmount && tx.toAmount ? (
@@ -2772,11 +2795,12 @@ export default function WalletPage() {
                             <div key={token.symbol} onClick={() => token.slug && router.push(`/token/${token.slug}`)} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_90px_80px_140px] gap-4 px-5 py-3 items-center transition-colors", token.slug && "cursor-pointer", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                               {/* Asset */}
                               <div className="flex items-center gap-2.5 min-w-0">
-                                {token.md5 ? (
-                                  <img src={`https://s1.xrpl.to/token/${token.md5}`} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: token.color }}>{token.icon || token.symbol[0]}</div>
-                                )}
+                                <img
+                                  src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
+                                  alt=""
+                                  className="w-8 h-8 rounded-full object-cover shrink-0 bg-white/10"
+                                  onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                />
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5">
                                     <p className={cn("text-xs font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
@@ -3492,10 +3516,11 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No transactions</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
                           <span></span>
                           <span>Type</span>
                           <span>Details</span>
+                          <span>Signature</span>
                           <span className="text-right">Amount</span>
                           <span className="text-right">Date</span>
                           <span></span>
@@ -3504,11 +3529,29 @@ export default function WalletPage() {
                           {transactions.filter(tx => txTypeFilter === 'all' || tx.txType === txTypeFilter).map((tx) => (
                             <div
                               key={tx.id}
-                              className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                              className={cn('grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                             >
-                              <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                              <div className="relative">
+                                {tx.tokenCurrency ? (
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${tx.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${tx.tokenIssuer}_${tx.tokenCurrency}`).toString()}`}
+                                    alt=""
+                                    className="w-9 h-9 rounded-full object-cover bg-white/10"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                ) : (
+                                  <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                    {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                  </div>
+                                )}
+                                <div className={cn(
+                                  'absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2',
+                                  isDark ? 'border-[#070b12]' : 'border-white',
+                                  tx.type === 'failed' ? 'bg-amber-500' : tx.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
+                                )}>
+                                  {tx.type === 'failed' ? <AlertTriangle size={8} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={8} className="text-white" /> : <ArrowUpRight size={8} className="text-white" />}
+                                </div>
                               </div>
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{tx.label}</p>
@@ -3518,6 +3561,9 @@ export default function WalletPage() {
                               </div>
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
+                              </p>
+                              <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                {tx.hash ? `${tx.hash.slice(0, 8)}...${tx.hash.slice(-6)}` : '—'}
                               </p>
                               <div className="flex items-center justify-end gap-2">
                                 {tx.fromAmount && tx.toAmount ? (
@@ -3559,7 +3605,10 @@ export default function WalletPage() {
                         {txHasMore && (
                           <div className={cn('flex items-center justify-center gap-2 p-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                             <button
-                              onClick={async () => {
+                              type="button"
+                              onClick={async (evt) => {
+                                evt.preventDefault();
+                                evt.stopPropagation();
                                 if (!txMarker || txLoading) return;
                                 setTxLoading(true);
                                 const client = new Client('wss://s1.ripple.com');
@@ -3577,8 +3626,8 @@ export default function WalletPage() {
                                   setTransactions(prev => [...prev, ...txs.map(parseTx)]);
                                   setTxMarker(response.result?.marker || null);
                                   setTxHasMore(!!response.result?.marker);
-                                } catch (e) {
-                                  console.error('Failed to load more:', e);
+                                } catch (err) {
+                                  console.error('Failed to load more:', err);
                                 } finally {
                                   client.disconnect();
                                   setTxLoading(false);

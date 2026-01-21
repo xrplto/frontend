@@ -231,6 +231,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     setDarkMode,
     accountProfile,
     accountLogin,
+    accountBalance,
     activeFiatCurrency,
     toggleFiatCurrency,
     themeName,
@@ -240,6 +241,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     profiles
   } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const availableXrp = accountBalance?.curr1?.value;
+  const isAccountActivated = parseFloat(accountBalance?.curr2?.value || 0) > 0;
 
   // Check if current path matches for active state
   const isActive = useCallback(
@@ -2897,7 +2900,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <div
                   className={cn(
                     'relative flex h-8 items-center rounded-lg text-[13px] font-medium border overflow-hidden',
-                    parseFloat(accountProfile.xrp || 0) < 1
+                    !isAccountActivated
                       ? isDark
                         ? 'bg-amber-500/5 text-white border-amber-500/20'
                         : 'bg-amber-50 text-gray-900 border-amber-200'
@@ -2911,7 +2914,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     href="/wallet"
                     className={cn(
                       'flex items-center gap-2 px-3 h-full transition-all duration-200',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
                           : 'hover:bg-amber-100/50'
@@ -2921,20 +2924,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   >
                     <span className="relative flex h-2 w-2">
-                      {parseFloat(accountProfile.xrp || 0) >= 1 && (
+                      {isAccountActivated && (
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       )}
                       <span
                         className={cn(
                           'relative inline-flex h-2 w-2 rounded-full',
-                          parseFloat(accountProfile.xrp || 0) < 1
+                          !isAccountActivated
                             ? 'bg-amber-400/60'
                             : 'bg-emerald-500'
                         )}
                       />
                     </span>
                     <span className="font-medium tabular-nums">
-                      {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
+                      {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)} XRP` : '...'}
                     </span>
                     {profiles?.length > 1 && (
                       <span
@@ -2942,7 +2945,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           'text-[10px] px-1.5 py-0.5 rounded font-semibold',
                           isDark
                             ? 'bg-white/10 text-white/60'
-                            : parseFloat(accountProfile.xrp || 0) < 1
+                            : !isAccountActivated
                               ? 'bg-amber-100 text-amber-600'
                               : 'bg-emerald-100 text-emerald-600'
                         )}
@@ -2955,7 +2958,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'h-4 w-px',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'bg-amber-500/20'
                           : 'bg-amber-200'
@@ -2969,7 +2972,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
                       'flex items-center justify-center px-2 h-full transition-all duration-200',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
                           : 'hover:bg-amber-100/50'
@@ -3006,7 +3009,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <div
                   className={cn(
                     'flex h-8 items-center rounded-lg text-[12px] font-medium border overflow-hidden',
-                    parseFloat(accountProfile.xrp || 0) < 1
+                    !isAccountActivated
                       ? isDark
                         ? 'bg-amber-500/5 text-white border-amber-500/20'
                         : 'bg-amber-50 text-gray-900 border-amber-200'
@@ -3020,7 +3023,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     href="/wallet"
                     className={cn(
                       'flex items-center gap-1.5 px-2.5 h-full transition-all duration-200',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
                           : 'hover:bg-amber-100/50'
@@ -3030,27 +3033,27 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   >
                     <span className="relative flex h-1.5 w-1.5">
-                      {parseFloat(accountProfile.xrp || 0) >= 1 && (
+                      {isAccountActivated && (
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       )}
                       <span
                         className={cn(
                           'relative inline-flex h-1.5 w-1.5 rounded-full',
-                          parseFloat(accountProfile.xrp || 0) < 1
+                          !isAccountActivated
                             ? 'bg-amber-400/60'
                             : 'bg-emerald-500'
                         )}
                       />
                     </span>
                     <span className="tabular-nums">
-                      {accountProfile.xrp != null ? parseFloat(accountProfile.xrp).toFixed(1) : '...'}
+                      {availableXrp != null ? parseFloat(availableXrp).toFixed(1) : '...'}
                     </span>
                   </a>
                   {/* Divider */}
                   <div
                     className={cn(
                       'h-4 w-px',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'bg-amber-500/20'
                           : 'bg-amber-200'
@@ -3064,7 +3067,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onClick={() => setOpenWalletModal(true)}
                     className={cn(
                       'flex items-center justify-center px-1.5 h-full transition-all duration-200',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'hover:bg-amber-500/10'
                           : 'hover:bg-amber-100/50'
@@ -3400,7 +3403,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'flex w-full items-center rounded-lg text-[13px] font-medium border overflow-hidden',
-                      parseFloat(accountProfile.xrp || 0) < 1
+                      !isAccountActivated
                         ? isDark
                           ? 'bg-amber-500/5 text-white border-amber-500/20'
                           : 'bg-amber-50 text-gray-900 border-amber-200'
@@ -3415,7 +3418,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       onClick={() => toggleDrawer(false)}
                       className={cn(
                         'flex flex-1 items-center justify-center gap-2 px-4 py-2.5 transition-all duration-200',
-                        parseFloat(accountProfile.xrp || 0) < 1
+                        !isAccountActivated
                           ? isDark
                             ? 'hover:bg-amber-500/10'
                             : 'hover:bg-amber-100/50'
@@ -3425,20 +3428,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       )}
                     >
                       <span className="relative flex h-2 w-2">
-                        {parseFloat(accountProfile.xrp || 0) >= 1 && (
+                        {isAccountActivated && (
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                         )}
                         <span
                           className={cn(
                             'relative inline-flex h-2 w-2 rounded-full',
-                            parseFloat(accountProfile.xrp || 0) < 1
+                            !isAccountActivated
                               ? 'bg-amber-400/60'
                               : 'bg-emerald-500'
                           )}
                         />
                       </span>
                       <span className="font-medium tabular-nums">
-                        {accountProfile.xrp != null ? `${parseFloat(accountProfile.xrp).toFixed(2)} XRP` : '...'}
+                        {availableXrp != null ? `${parseFloat(availableXrp).toFixed(2)} XRP` : '...'}
                       </span>
                       {profiles?.length > 1 && (
                         <span
@@ -3446,7 +3449,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             'text-[10px] px-1.5 py-0.5 rounded font-semibold',
                             isDark
                               ? 'bg-white/10 text-white/60'
-                              : parseFloat(accountProfile.xrp || 0) < 1
+                              : !isAccountActivated
                                 ? 'bg-amber-100 text-amber-600'
                                 : 'bg-emerald-100 text-emerald-600'
                           )}
@@ -3459,7 +3462,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     <div
                       className={cn(
                         'h-6 w-px',
-                        parseFloat(accountProfile.xrp || 0) < 1
+                        !isAccountActivated
                           ? isDark
                             ? 'bg-amber-500/20'
                             : 'bg-amber-200'
@@ -3476,7 +3479,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       }}
                       className={cn(
                         'flex items-center justify-center px-3 py-2.5 transition-all duration-200',
-                        parseFloat(accountProfile.xrp || 0) < 1
+                        !isAccountActivated
                           ? isDark
                             ? 'hover:bg-amber-500/10'
                             : 'hover:bg-amber-100/50'

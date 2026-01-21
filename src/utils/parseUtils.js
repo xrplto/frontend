@@ -1066,6 +1066,8 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
   let isDust = false;
   let counterparty = null;
   let txType = isOutgoing ? 'out' : 'in';
+  let tokenCurrency = null;
+  let tokenIssuer = null;
 
   // Format fee in XRP
   const fee = tx.Fee ? (parseInt(tx.Fee) / 1000000) : 0;
@@ -1134,6 +1136,11 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       const amt = tx.DeliverMax || tx.Amount;
       amount = formatAmt(amt) || 'Failed';
       counterparty = isOutgoing ? tx.Destination : tx.Account;
+      // Extract token info for failed payments too
+      if (amt?.currency && amt?.issuer) {
+        tokenCurrency = amt.currency;
+        tokenIssuer = amt.issuer;
+      }
     } else if (isSwap) {
       // DEX Swap: Account === Destination with SendMax
       const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
@@ -1189,6 +1196,17 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       const sendToken = tx.SendMax?.currency ? decodeCurrency(tx.SendMax.currency) : 'XRP';
       const receiveToken = typeof delivered === 'string' ? 'XRP' : decodeCurrency(delivered?.currency);
 
+      // Get token info for swap (prefer non-XRP side)
+      let swapTokenCurrency = null;
+      let swapTokenIssuer = null;
+      if (typeof delivered !== 'string' && delivered?.currency) {
+        swapTokenCurrency = delivered.currency;
+        swapTokenIssuer = delivered.issuer;
+      } else if (tx.SendMax?.currency) {
+        swapTokenCurrency = tx.SendMax.currency;
+        swapTokenIssuer = tx.SendMax.issuer;
+      }
+
       return {
         id: hash || tx.ctid,
         type: txType,
@@ -1203,7 +1221,9 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
         counterparty: `${sendToken}/${receiveToken}`,
         sourceTag: tx.SourceTag,
         sourceTagName: getSourceTagName(tx.SourceTag),
-        fee: feeStr
+        fee: feeStr,
+        tokenCurrency: swapTokenCurrency,
+        tokenIssuer: swapTokenIssuer
       };
     } else {
       // Regular payment
@@ -1211,9 +1231,12 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
         const xrpAmt = parseInt(delivered) / 1000000;
         amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
         isDust = isIncoming && xrpAmt < 0.001;
+        tokenCurrency = 'XRP';
       } else if (delivered?.value) {
         const val = parseFloat(delivered.value);
         amount = `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(delivered.currency)}`;
+        tokenCurrency = delivered.currency;
+        tokenIssuer = delivered.issuer;
       }
       label = isIncoming ? 'Received' : 'Sent';
       if (isDust) label = 'Dust';
@@ -1298,6 +1321,14 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       txType = isSell ? 'out' : 'in';
     }
     counterparty = `${getsToken}/${paysToken}`;
+    // Set token info for the non-XRP side
+    if (!getsIsXRP) {
+      tokenCurrency = tx.TakerGets?.currency;
+      tokenIssuer = tx.TakerGets?.issuer;
+    } else if (!paysIsXRP) {
+      tokenCurrency = tx.TakerPays?.currency;
+      tokenIssuer = tx.TakerPays?.issuer;
+    }
   } else if (type === 'OfferCancel') {
     label = 'Cancel Offer';
     const deletedOffer = meta?.AffectedNodes?.find(n => n.DeletedNode?.LedgerEntryType === 'Offer')?.DeletedNode?.FinalFields;
@@ -1342,6 +1373,8 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     // Show issuer address for better details
     counterparty = limit?.issuer || currency;
     txType = isRemoval ? 'out' : 'in';
+    tokenCurrency = limit?.currency;
+    tokenIssuer = limit?.issuer;
 
     if (isFailed) {
       label = isRemoval ? 'Remove Failed' : 'Trustline Failed';
@@ -1394,6 +1427,17 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
         if (lpToken && amounts.length === 0) amounts.push(lpToken);
       }
       amount = amounts.join(' + ') || '';
+    }
+    // Extract token info from Asset2, Amount, or Amount2 (prefer non-XRP)
+    if (tx.Asset2?.currency && tx.Asset2?.issuer) {
+      tokenCurrency = tx.Asset2.currency;
+      tokenIssuer = tx.Asset2.issuer;
+    } else if (tx.Amount?.currency && tx.Amount?.issuer) {
+      tokenCurrency = tx.Amount.currency;
+      tokenIssuer = tx.Amount.issuer;
+    } else if (tx.Amount2?.currency && tx.Amount2?.issuer) {
+      tokenCurrency = tx.Amount2.currency;
+      tokenIssuer = tx.Amount2.issuer;
     }
   } else if (type === 'NFTokenAcceptOffer') {
     const offerNode = meta?.AffectedNodes?.find(
@@ -1553,7 +1597,9 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     counterparty,
     sourceTag: tx.SourceTag,
     sourceTagName: getSourceTagName(tx.SourceTag),
-    fee: feeStr
+    fee: feeStr,
+    tokenCurrency,
+    tokenIssuer
   };
 }
 
