@@ -29,7 +29,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   const { flag = 0, account = '', NFTokenID = '' } = nft || {};
   const isBurnable = accountLogin === account && account !== '';
 
-  const onBurnNFTXumm = async () => {
+  const onBurnNFT = async () => {
     if (!accountLogin || !accountToken) {
       openSnackbar('Please login', 'error');
       return;
@@ -37,21 +37,12 @@ export default function BurnNFT({ nft, onHandleBurn }) {
 
     setLoading(true);
     try {
-      const user_token = accountProfile?.user_token;
       const wallet_type = accountProfile?.wallet_type;
 
-      const burnTxData = {
-        TransactionType: 'NFTokenBurn',
-        Account: accountLogin,
-        Owner: account,
-        NFTokenID,
-        Memos: configureMemos('XRPNFT-nft-burn', '', `https://xrpnft.com`)
-      };
-
       if (wallet_type === 'device') {
-        openSnackbar('Device authentication for NFT burn coming soon', 'info');
+        openSnackbar('NFT burn coming soon', 'info');
       } else {
-        openSnackbar('Device authentication required', 'error');
+        openSnackbar('Device wallet required', 'error');
       }
     } catch (err) {
       console.error(err);
@@ -78,7 +69,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         </div>
       )}
 
-      <ConfirmBurnDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={onBurnNFTXumm} />
+      <ConfirmBurnDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={onBurnNFT} />
 
       <button
         className={cn(

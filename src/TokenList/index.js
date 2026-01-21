@@ -26,8 +26,6 @@ const MemoizedTokenRow = TokenRow;
 const LazyEditTokenDialog = lazy(
   () => import(/* webpackChunkName: "edit-token-dialog" */ 'src/components/EditTokenDialog')
 );
-// TrustSetDialog removed - Xaman no longer used
-const LazyTrustSetDialog = () => null;
 const LazySearchToolbar = lazy(
   () => import(/* webpackChunkName: "search-toolbar" */ './SearchToolbar')
 );

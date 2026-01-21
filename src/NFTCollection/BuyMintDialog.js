@@ -94,11 +94,6 @@ export default function BuyMintDialog({
     };
   }, [openScanQR, uuid]);
 
-  const onPaymentXumm = async () => {
-    openSnackbar('Xaman no longer supported', 'info');
-    return; // Function disabled
-  };
-
   const handleScanQRClose = () => {
     setOpenScanQR(false);
   };

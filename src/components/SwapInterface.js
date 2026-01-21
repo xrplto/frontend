@@ -1525,7 +1525,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       transactionData.Memos = configureMemos('', '', memoData);
 
       // TODO: Implement wallet-specific transaction signing here
-      // Based on wallet_type (device, xumm, etc.)
     } catch (err) {
       dispatch(updateProcess(0));
     }

@@ -6,6 +6,7 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
+import { toast } from 'sonner';
 import { ConnectWallet } from 'src/components/Wallet';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -673,7 +674,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const metrics = useSelector(selectMetrics);
   const isProcessing = useSelector(selectProcess);
 
-  const { accountProfile, themeName, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
+  const { accountProfile, themeName, setLoading, sync, setSync, activeFiatCurrency } =
     useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -935,34 +936,25 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     errMsg = '';
     isSufficientBalance = false;
 
-    if (!hasTrustline1 && curr1.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
-      errMsg = `No trustline for ${displayName}`;
-    } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
-      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
-      errMsg = `No trustline for ${displayName}`;
-    } else {
-      try {
-        const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
-        const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
+    try {
+      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
 
-        if (amount1 && amount2) {
-          const fAmount1 = new Decimal(amount1 || 0).toNumber();
-          const fAmount2 = new Decimal(amount2 || 0).toNumber();
+      if (amount1 && amount2) {
+        const fAmount1 = new Decimal(amount1 || 0).toNumber();
+        const fAmount2 = new Decimal(amount2 || 0).toNumber();
 
-          if (fAmount1 > 0 && fAmount2 > 0) {
-            if (accountAmount >= fAmount1) {
-              isSufficientBalance = true;
-            } else {
-              errMsg = 'Insufficient wallet balance';
-            }
+        if (fAmount1 > 0 && fAmount2 > 0) {
+          if (accountAmount >= fAmount1) {
+            isSufficientBalance = true;
           } else {
             errMsg = 'Insufficient wallet balance';
           }
+        } else {
+          errMsg = 'Insufficient wallet balance';
         }
-      } catch (e) {
-        errMsg = 'Insufficient wallet balance';
       }
+    } catch (e) {
+      errMsg = 'Insufficient wallet balance';
     }
   } else {
     errMsg = 'Connect your wallet!';
@@ -1363,26 +1355,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     };
   }, [token1Md5, token2Md5, token1, token2]);
 
-  // Legacy Xaman polling code removed - feature disabled
-
-  const onOfferCreateXumm = async () => {
-    openSnackbar('Xaman no longer supported', 'info');
-    return;
-    // Function disabled
-  };
-
-  const onDisconnectXumm = async (uuid) => {
-    return;
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
-    setLoading(false);
-  };
-
   const calcQuantity = (amount, active) => {
     try {
       const amt = new Decimal(amount || 0).toNumber();
@@ -1465,28 +1437,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const handlePlaceOrder = async (e) => {
-    if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
-      onCreateTrustline(curr1);
-      return;
-    }
-    if (isLoggedIn && !hasTrustline2 && curr2.currency !== 'XRP') {
-      onCreateTrustline(curr2);
-      return;
-    }
-
     const fAmount = Number(amount1);
     const fValue = Number(amount2);
     if (!(fAmount > 0 && fValue > 0)) {
-      openSnackbar('Invalid values!', 'error');
+      toast.error('Invalid values');
       return;
     }
     if (orderType === 'limit' && !limitPrice) {
-      openSnackbar('Please enter a limit price!', 'error');
+      toast.error('Please enter a limit price');
       return;
     }
 
     if (!accountProfile?.account) {
-      openSnackbar('Please connect wallet', 'error');
+      toast.error('Please connect wallet');
       return;
     }
 
@@ -1496,7 +1459,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       return;
     }
 
-    dispatch(updateProcess(1));
+    const toastId = toast.loading('Processing swap...', { description: 'Preparing transaction' });
+
     try {
       const { Wallet } = await import('xrpl');
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
@@ -1506,24 +1470,44 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
 
       if (!storedPassword) {
-        openSnackbar('Wallet locked - please unlock first', 'error');
-        dispatch(updateProcess(0));
+        toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
         return;
       }
 
       const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
       if (!walletData?.seed) {
-        openSnackbar('Could not retrieve wallet credentials', 'error');
-        dispatch(updateProcess(0));
+        toast.error('Wallet error', { id: toastId, description: 'Could not retrieve credentials' });
         return;
       }
 
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
+      // Auto-create trustlines if needed
+      if (!hasTrustline1 && curr1.currency !== 'XRP') {
+        toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr1.name}` });
+        const success = await onCreateTrustline(curr1, true);
+        if (!success) {
+          toast.error('Trustline failed', { id: toastId });
+          return;
+        }
+        setHasTrustline1(true);
+      }
+      if (!hasTrustline2 && curr2.currency !== 'XRP') {
+        toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr2.name}` });
+        const success = await onCreateTrustline(curr2, true);
+        if (!success) {
+          toast.error('Trustline failed', { id: toastId });
+          return;
+        }
+        setHasTrustline2(true);
+      }
+
+      toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
+
       // Build OfferCreate transaction
       const takerGets = curr1.currency === 'XRP'
-        ? String(Math.floor(fAmount * 1000000)) // XRP in drops
+        ? String(Math.floor(fAmount * 1000000))
         : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount) };
 
       const takerPays = curr2.currency === 'XRP'
@@ -1535,11 +1519,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         TransactionType: 'OfferCreate',
         TakerGets: takerGets,
         TakerPays: takerPays,
-        Flags: orderType === 'market' ? 0x00080000 : 0, // tfImmediateOrCancel for market orders
+        Flags: orderType === 'market' ? 0x00080000 : 0,
         SourceTag: 161803
       };
 
-      // Autofill
       const [seqRes, feeRes] = await Promise.all([
         axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
         axios.get('https://api.xrpl.to/v1/submit/fee')
@@ -1556,25 +1539,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
-        dispatch(updateProcess(2));
-        dispatch(updateTxHash(result.data.hash || signed.hash));
-        openSnackbar('Order placed successfully!', 'success');
+        toast.success('Swap complete!', { id: toastId, description: `TX: ${signed.hash.slice(0, 8)}...` });
         setAmount1('');
         setAmount2('');
-        // Refresh balances after tx confirms
         setTimeout(() => {
           setSync((s) => s + 1);
           setIsSwapped((v) => !v);
-          dispatch(updateProcess(0));
         }, 2000);
       } else {
-        openSnackbar(`Transaction failed: ${result.data.engine_result}`, 'error');
-        dispatch(updateProcess(0));
+        toast.error('Transaction failed', { id: toastId, description: result.data.engine_result });
       }
     } catch (err) {
       console.error('Swap error:', err);
-      openSnackbar(err.message?.slice(0, 50) || 'Swap failed', 'error');
-      dispatch(updateProcess(0));
+      toast.error('Swap failed', { id: toastId, description: err.message?.slice(0, 50) });
     }
   };
 
@@ -1642,20 +1619,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
-
-    if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
-      const missingToken = getCurrencyDisplayName(curr1.currency, token1?.name);
-      return `Set Trustline for ${missingToken}`;
-    }
-    if (isLoggedIn && !hasTrustline2 && curr2.currency !== 'XRP') {
-      const missingToken = getCurrencyDisplayName(curr2.currency, token2?.name);
-      return `Set Trustline for ${missingToken}`;
-    }
-
     if (!amount1 || !amount2) return 'Enter an Amount';
-    else if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
-    else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return orderType === 'limit' ? 'Place Limit Order' : 'Exchange';
+    if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
+    if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
+    return orderType === 'limit' ? 'Place Limit Order' : 'Exchange';
   };
 
   const onFillMax = () => {
@@ -1689,10 +1656,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
   };
 
-  const onCreateTrustline = async (currency) => {
-    if (!accountProfile?.account) return;
+  const onCreateTrustline = async (currency, silent = false) => {
+    if (!accountProfile?.account) return false;
 
-    dispatch(updateProcess(1));
+    if (!silent) dispatch(updateProcess(1));
     try {
       const { Wallet } = await import('xrpl');
       const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
@@ -1702,16 +1669,16 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
 
       if (!storedPassword) {
-        openSnackbar('Wallet locked - please unlock first', 'error');
-        dispatch(updateProcess(0));
-        return;
+        if (!silent) toast.error('Wallet locked', { description: 'Please unlock first' });
+        if (!silent) dispatch(updateProcess(0));
+        return false;
       }
 
       const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
       if (!walletData?.seed) {
-        openSnackbar('Could not retrieve wallet credentials', 'error');
-        dispatch(updateProcess(0));
-        return;
+        if (!silent) toast.error('Wallet error', { description: 'Could not retrieve credentials' });
+        if (!silent) dispatch(updateProcess(0));
+        return false;
       }
 
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
@@ -1723,7 +1690,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         LimitAmount: {
           issuer: currency.issuer,
           currency: currency.currency,
-          value: '1000000000'
+          value: new Decimal(currency.supply).toFixed(0)
         },
         Flags: 0x00020000,
         SourceTag: 161803
@@ -1745,22 +1712,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
-        dispatch(updateProcess(2));
-        dispatch(updateTxHash(result.data.hash || signed.hash));
-        openSnackbar('Trustline created successfully!', 'success');
-        setTimeout(() => {
-          setSync((s) => s + 1);
-          setIsSwapped((v) => !v);
-          dispatch(updateProcess(0));
-        }, 2000);
+        if (!silent) {
+          toast.success('Trustline set!', { description: `TX: ${signed.hash.slice(0, 8)}...` });
+          setTimeout(() => {
+            setSync((s) => s + 1);
+            setIsSwapped((v) => !v);
+          }, 2000);
+        }
+        return true;
       } else {
-        openSnackbar('Transaction failed: ' + result.data.engine_result, 'error');
-        dispatch(updateProcess(0));
+        if (!silent) toast.error('Trustline failed', { description: result.data.engine_result });
+        return false;
       }
     } catch (err) {
       console.error('Trustline error:', err);
-      openSnackbar(err.message?.slice(0, 50) || 'Failed to create trustline', 'error');
-      dispatch(updateProcess(0));
+      if (!silent) toast.error('Trustline failed', { description: err.message?.slice(0, 50) });
+      return false;
     }
   };
 
@@ -2391,17 +2358,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       );
                     })()}
                   </Stack>
-                  {/* Trustline Warning - only show if we don't have trustline */}
-                  {quoteRequiresTrustline && !hasTrustline2 && (
-                    <Typography
-                      variant="caption"
-                      isDark={isDark}
-                      sx={{ fontSize: '10px', color: '#f59e0b', mt: 0.5, display: 'block' }}
-                    >
-                      Trustline required for{' '}
-                      {getCurrencyDisplayName(quoteRequiresTrustline.currency, token2?.name)}
-                    </Typography>
-                  )}
                 </Box>
               )}
             </Box>
