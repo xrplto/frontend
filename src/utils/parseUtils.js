@@ -22,6 +22,34 @@ const BLACKHOLE_ACCOUNTS = [
   'rrrrrrrrrrrrrrrrrrrn5RM1rHd'
 ];
 
+// Known source tags for wallets/services
+const SOURCE_TAGS = {
+  111: 'Horizon',
+  589123: 'Katz Wallet',
+  10011010: 'Magnetic',
+  12345654321: 'XRPL.to',
+  11782013: 'Anodos',
+  13888813: 'Zerpmon',
+  19089388: 'HBot',
+  20102305: 'Opulencex',
+  20221212: 'xpmarket',
+  30033003: 'Calypso Wallet',
+  42697468: 'Bithomp Faucet',
+  54955974: 'XAH Teleport',
+  69420589: 'Bidds',
+  74920348: 'First Ledger',
+  89898989: 'Axelar Bridge',
+  100010010: 'StaticBit',
+  101102979: 'XRP Cafe',
+  110100111: 'Sologenic Wallet',
+  280957156: 'Dhali',
+  510162502: 'Sonar Muse'
+};
+
+export function getSourceTagName(tag) {
+  return SOURCE_TAGS[tag] || null;
+}
+
 function adjustQualityForXRP(quality, takerGetsCurrency, takerPaysCurrency) {
   // quality = takerPays.value/takerGets.value
   // using drops (1e-6 XRP) for XRP values
@@ -1174,6 +1202,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
         hash,
         counterparty: `${sendToken}/${receiveToken}`,
         sourceTag: tx.SourceTag,
+        sourceTagName: getSourceTagName(tx.SourceTag),
         fee: feeStr
       };
     } else {
@@ -1523,6 +1552,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     hash,
     counterparty,
     sourceTag: tx.SourceTag,
+    sourceTagName: getSourceTagName(tx.SourceTag),
     fee: feeStr
   };
 }
