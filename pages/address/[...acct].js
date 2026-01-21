@@ -1751,72 +1751,123 @@ const OverView = ({ account }) => {
                               </div>
                             </div>
                           ) : (
-                            <div className="flex flex-col items-center justify-center py-5">
-                              <div className="relative w-10 h-10 mb-3">
-                                <div
-                                  className={cn(
-                                    'absolute -top-0.5 left-0 w-3 h-3 rounded-full',
-                                    isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                  )}
-                                />
-                                <div
-                                  className={cn(
-                                    'absolute -top-0.5 right-0 w-3 h-3 rounded-full',
-                                    isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                  )}
-                                />
-                                <div
-                                  className={cn(
-                                    'absolute top-0 left-1 w-1.5 h-1.5 rounded-full',
-                                    isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                                  )}
-                                />
-                                <div
-                                  className={cn(
-                                    'absolute top-0 right-1 w-1.5 h-1.5 rounded-full',
-                                    isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                                  )}
-                                />
-                                <div
-                                  className={cn(
-                                    'absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full',
-                                    isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                                  )}
-                                >
-                                  <div className="absolute top-2 left-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
-                                  <div className="absolute top-2 right-1.5 w-1 h-1 rounded-full bg-[#0a0a0a]" />
-                                  <div
-                                    className={cn(
-                                      'absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-2 rounded-full',
-                                      isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
-                                    )}
-                                  >
-                                    <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-0.5 rounded-full bg-[#0a0a0a]" />
+                            <div className="flex flex-col items-center justify-center py-6">
+                              <div className="relative w-14 h-14 mb-3">
+                                <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                                  <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                                </div>
+                                <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                                  <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                                </div>
+                                <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                                    {[...Array(5)].map((_, i) => (
+                                      <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                                    ))}
+                                  </div>
+                                  <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                                    <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                                    <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                                  </div>
+                                  <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                                    <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                                    <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                                  </div>
+                                  <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
+                                    <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
                                   </div>
                                 </div>
                               </div>
-                              <p
-                                className={cn(
-                                  'text-[10px] font-medium tracking-widest mb-0.5',
-                                  isDark ? 'text-white/80' : 'text-gray-600'
-                                )}
-                              >
+                              <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                                 {hideZeroHoldings ? 'NO TOKENS WITH BALANCE' : 'NO TOKEN HOLDINGS'}
                               </p>
-                              <p
-                                className={cn(
-                                  'text-[9px]',
-                                  isDark ? 'text-white/30' : 'text-gray-400'
-                                )}
-                              >
-                                Token holdings will appear here
-                              </p>
+                              <a href="/" className="text-[9px] text-[#137DFE] hover:underline">Browse tokens</a>
                             </div>
                           )}
                         </div>
                       </div>
                     );
                   })()}
+
+                {/* Issued Tokens */}
+                {holdings?.issued?.length > 0 && (
+                  <div
+                    className={cn(
+                      'rounded-xl border-[1.5px] mb-4 overflow-hidden',
+                      isDark ? 'border-white/10' : 'border-gray-200'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex items-center justify-between px-3 py-2.5',
+                        isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
+                      )}
+                    >
+                      <span className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                        Issued Tokens{' '}
+                        <span className={cn('font-normal ml-1', isDark ? 'text-white/30' : 'text-gray-400')}>
+                          {holdings.issued.length}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="p-2">
+                      {holdings.issued.map((token, idx) => (
+                        <Link
+                          key={idx}
+                          href={`/token/${token.md5}`}
+                          className={cn(
+                            'grid px-2 py-2.5 items-center rounded-lg transition-all duration-200 group',
+                            isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-50',
+                            idx < holdings.issued.length - 1 && (isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100')
+                          )}
+                          style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr' }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={cn(
+                                'w-7 h-7 rounded-full overflow-hidden ring-2 flex-shrink-0',
+                                isDark ? 'ring-white/[0.06]' : 'ring-gray-100'
+                              )}
+                            >
+                              <img
+                                src={`https://s1.xrpl.to/token/${token.md5}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                                alt=""
+                              />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className={cn('text-[12px] font-medium group-hover:text-[#4285f4] truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                                {token.name || token.currency}
+                              </span>
+                              <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                {token.user}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn('text-[12px] tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
+                              {fCurrency5(parseFloat(token.supply))}
+                            </div>
+                            <div className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>Supply</div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn('text-[12px] tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
+                              {token.holders?.toLocaleString()}
+                            </div>
+                            <div className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>Holders</div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn('text-[12px] tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>
+                              ${fCurrency5(parseFloat(token.supply) * parseFloat(token.usd || 0))}
+                            </div>
+                            <div className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>Market Cap</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Trading Performance */}
                 {data?.tokenPerformance?.length > 0 &&
@@ -2298,88 +2349,38 @@ const OverView = ({ account }) => {
                     Loading collections...
                   </div>
                 ) : nftCollections.length === 0 ? (
-                  <div
-                    className={cn(
-                      'rounded-xl py-16 px-8 text-center',
-                      isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'
-                    )}
-                  >
-                    <div className="relative w-20 h-20 mx-auto mb-6">
-                      {/* Ears */}
-                      <div
-                        className={cn(
-                          'absolute -top-1 left-1 w-6 h-6 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute -top-1 right-1 w-6 h-6 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute top-0.5 left-2 w-3 h-3 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          'absolute top-0.5 right-2 w-3 h-3 rounded-full',
-                          isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                        )}
-                      />
-                      {/* Face */}
-                      <div
-                        className={cn(
-                          'absolute top-3 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full',
-                          isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                        )}
-                      >
-                        {/* Eyes - sad droopy */}
-                        <div className="absolute top-5 left-3 w-2.5 h-2 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                        <div className="absolute top-5 right-3 w-2.5 h-2 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                        {/* Snout */}
-                        <div
-                          className={cn(
-                            'absolute bottom-3 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full',
-                            isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
-                          )}
-                        >
-                          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full bg-[#0a0a0a]" />
-                        </div>
-                        {/* Frown */}
-                        <div
-                          className={cn(
-                            'absolute bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-1.5 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]',
-                            isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
-                          )}
-                        />
+                  <div className={cn('rounded-xl py-12 px-8 text-center', isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50')}>
+                    <div className="relative w-14 h-14 mx-auto mb-4">
+                      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
                       </div>
-                      {/* Scanlines */}
-                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-16 flex flex-col justify-start gap-[3px] pointer-events-none overflow-hidden rounded-full">
-                        {[...Array(12)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              'h-[3px] w-full',
-                              isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40'
-                            )}
-                          />
-                        ))}
+                      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                      </div>
+                      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                        <div className="absolute inset-0 rounded-full overflow-hidden">
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                          ))}
+                        </div>
+                        <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                        </div>
+                        <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                        </div>
+                        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
+                          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
+                        </div>
                       </div>
                     </div>
-                    <p
-                      className={cn(
-                        'text-sm font-medium tracking-widest mb-2',
-                        isDark ? 'text-white/80' : 'text-gray-600'
-                      )}
-                    >
+                    <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                       NO NFTS FOUND
                     </p>
-                    <p className={cn('text-xs', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      Once this wallet has NFTs, you'll be able to see them here
+                    <p className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      NFTs will appear here once acquired
                     </p>
                   </div>
                 ) : (

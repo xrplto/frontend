@@ -4702,61 +4702,30 @@ const TxPage = ({ txData, error }) => {
               isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50/50'
             )}
           >
-            <div className="relative w-16 h-16 mx-auto mb-5">
-              <div
-                className={cn(
-                  'absolute -top-1 left-1 w-5 h-5 rounded-full',
-                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                )}
-              />
-              <div
-                className={cn(
-                  'absolute -top-1 right-1 w-5 h-5 rounded-full',
-                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                )}
-              />
-              <div
-                className={cn(
-                  'absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full',
-                  isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                )}
-              />
-              <div
-                className={cn(
-                  'absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full',
-                  isDark ? 'bg-[#3b78e7]' : 'bg-blue-500'
-                )}
-              />
-              <div
-                className={cn(
-                  'absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full',
-                  isDark ? 'bg-[#4285f4]' : 'bg-blue-400'
-                )}
-              >
-                <div className="absolute top-4 left-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[-10deg]" />
-                <div className="absolute top-4 right-2.5 w-2 h-1.5 rounded-full bg-[#0a0a0a] rotate-[10deg]" />
-                <div
-                  className={cn(
-                    'absolute bottom-2.5 left-1/2 -translate-x-1/2 w-4 h-2.5 rounded-full',
-                    isDark ? 'bg-[#5a9fff]' : 'bg-blue-300'
-                  )}
-                >
-                  <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-[#0a0a0a]" />
-                </div>
-                <div
-                  className={cn(
-                    'absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-1 rounded-t-full border-t-[1.5px] border-l-[1.5px] border-r-[1.5px]',
-                    isDark ? 'border-[#0a0a0a]' : 'border-blue-600'
-                  )}
-                />
+            <div className="relative w-14 h-14 mx-auto mb-4">
+              <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
               </div>
-              <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-12 flex flex-col justify-start gap-[2px] pointer-events-none overflow-hidden rounded-full">
-                {[...Array(10)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn('h-[2px] w-full', isDark ? 'bg-[#0a0a0a]/40' : 'bg-white/40')}
-                  />
-                ))}
+              <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+              </div>
+              <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                <div className="absolute inset-0 rounded-full overflow-hidden">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                  ))}
+                </div>
+                <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                </div>
+                <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+                  <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                  <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                </div>
+                <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
+                  <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
+                </div>
               </div>
             </div>
             <p
