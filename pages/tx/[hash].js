@@ -1846,7 +1846,8 @@ const TransactionSummaryCard = ({
   onExplainWithAI,
   onCloseAI,
   swapInfo,
-  isBurn
+  isBurn,
+  isBlackholed
 }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -2331,9 +2332,11 @@ const TransactionSummaryCard = ({
           >
             Ledger
           </div>
-          <div className={cn('text-[13px] font-mono', isDark ? 'text-white/80' : 'text-gray-700')}>
-            #{ledger_index?.toLocaleString()}
-          </div>
+          <Link href={`/ledger/${ledger_index}`}>
+            <span className="text-[13px] font-mono text-primary hover:underline cursor-pointer">
+              #{ledger_index?.toLocaleString()}
+            </span>
+          </Link>
         </div>
       </div>
     </div>
@@ -2346,6 +2349,8 @@ const TransactionDetails = ({ txData }) => {
   const [urlCopied, setUrlCopied] = useState(false);
   const [aiExplanation, setAiExplanation] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [isDestBlackholed, setIsDestBlackholed] = useState(false);
+  const [destAccountData, setDestAccountData] = useState(null);
 
   const {
     hash,
@@ -2990,6 +2995,57 @@ const TransactionDetails = ({ txData }) => {
     (typeof deliveredAmount === 'object' && deliveredAmount?.issuer === Destination)
   );
 
+  // Check if destination account is blackholed
+  useEffect(() => {
+    const checkBlackholed = async () => {
+      if (!isBurn || !Destination) return;
+
+      // Skip if destination is already a known blackhole address
+      if (BLACKHOLE_ACCOUNTS.includes(Destination)) {
+        setIsDestBlackholed(true);
+        return;
+      }
+
+      try {
+        // Fetch both endpoints - balance has more info, live has RegularKey
+        const [balanceRes, liveRes] = await Promise.all([
+          axios.get(`https://api.xrpl.to/v1/account/balance/${Destination}?rank=true`).catch(() => null),
+          axios.get(`https://api.xrpl.to/v1/account/info/live/${Destination}`).catch(() => null)
+        ]);
+
+        const balanceData = balanceRes?.data;
+        const liveData = liveRes?.data?.account_data;
+
+        if (!balanceData && !liveData) return;
+
+        // Merge data from both endpoints
+        const mergedData = {
+          ...balanceData,
+          RegularKey: liveData?.RegularKey
+        };
+        setDestAccountData(mergedData);
+
+        // Check if account is blackholed:
+        // 1. Master key disabled (lsfDisableMaster = 0x00100000)
+        // 2. RegularKey is missing or set to a blackhole address
+        const lsfDisableMaster = 0x00100000;
+        const flags = balanceData?.flags || liveData?.Flags || 0;
+        const masterDisabled = (flags & lsfDisableMaster) !== 0;
+        const regularKeyBlackholed = !liveData?.RegularKey ||
+          BLACKHOLE_ACCOUNTS.includes(liveData?.RegularKey);
+
+        if (masterDisabled && regularKeyBlackholed) {
+          setIsDestBlackholed(true);
+        }
+      } catch (err) {
+        // If account info not found, can't confirm blackholed
+        console.log('Could not fetch account info for blackhole check');
+      }
+    };
+
+    checkBlackholed();
+  }, [isBurn, Destination]);
+
   return (
     <div>
       <TransactionSummaryCard
@@ -3002,6 +3058,7 @@ const TransactionDetails = ({ txData }) => {
         onCloseAI={closeAI}
         swapInfo={displayExchange}
         isBurn={isBurn}
+        isBlackholed={isDestBlackholed}
       />
 
       {/* SUMMARY Tab */}
@@ -3099,27 +3156,106 @@ const TransactionDetails = ({ txData }) => {
                     </DetailRow>
                     <DetailRow label="To">
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Link href={`/address/${Destination}`} passHref>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '13px',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
+                        {isDestBlackholed && destAccountData ? (
+                          <Tooltip
+                            title={
+                              <div style={{ minWidth: 240 }}>
+                                <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: 4, color: '#f87171' }}>
+                                  Blackholed Account
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+                                  {Destination.slice(0, 10)}...{Destination.slice(-8)}
+                                </div>
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 8 }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Balance</span>
+                                    <span style={{ color: '#fff' }}>{destAccountData.total?.toFixed(2) || '0'} XRP</span>
+                                  </div>
+                                  {destAccountData.rank && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
+                                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>Richlist Rank</span>
+                                      <span style={{ color: '#fff' }}>#{destAccountData.rank.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  {destAccountData.inception && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
+                                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>Created</span>
+                                      <span style={{ color: '#fff' }}>{new Date(destAccountData.inception).toLocaleDateString()}</span>
+                                    </div>
+                                  )}
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: 4 }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Master Key</span>
+                                    <span style={{ color: '#f87171' }}>Disabled</span>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Regular Key</span>
+                                    <span style={{ color: '#f87171', fontFamily: 'var(--font-mono)', fontSize: '10px' }}>
+                                      {destAccountData.RegularKey ? `${destAccountData.RegularKey.slice(0, 8)}...` : 'None'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            }
                           >
-                            {Destination}
-                          </Typography>
-                        </Link>
-                        {(BLACKHOLE_ACCOUNTS.includes(Destination) ||
-                          (typeof Amount === 'object' && Amount?.issuer === Destination) ||
-                          (typeof deliveredAmount === 'object' && deliveredAmount?.issuer === Destination)) && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/15 text-orange-400 border border-orange-500/20">
-                            Burn
-                          </span>
+                            <Link href={`/address/${Destination}`} passHref>
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                sx={{
+                                  color: '#f87171',
+                                  textDecoration: 'none',
+                                  fontFamily: 'var(--font-mono)',
+                                  fontSize: '13px',
+                                  '&:hover': { textDecoration: 'underline' }
+                                }}
+                              >
+                                {Destination}
+                              </Typography>
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <Link href={`/address/${Destination}`} passHref>
+                            <Typography
+                              component="span"
+                              variant="body2"
+                              sx={{
+                                color: theme.palette.primary.main,
+                                textDecoration: 'none',
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '13px',
+                                '&:hover': { textDecoration: 'underline' }
+                              }}
+                            >
+                              {Destination}
+                            </Typography>
+                          </Link>
+                        )}
+                        {isBurn && (
+                          <Tooltip
+                            title={
+                              <div style={{ minWidth: 200 }}>
+                                <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: 8, color: isDestBlackholed ? '#f87171' : '#fb923c' }}>
+                                  {isDestBlackholed ? 'Blackholed Account' : 'Token Burn'}
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
+                                  {isDestBlackholed
+                                    ? 'This account has its master key disabled and no valid regular key. It cannot sign transactions, making tokens sent here permanently destroyed.'
+                                    : 'Tokens sent back to their issuer are burned and permanently removed from circulation.'}
+                                </div>
+                              </div>
+                            }
+                          >
+                            <span
+                              className={cn(
+                                'px-1.5 py-0.5 rounded text-[10px] font-medium cursor-help',
+                                isDestBlackholed
+                                  ? 'bg-red-500/15 text-red-400 border border-red-500/20'
+                                  : 'bg-orange-500/15 text-orange-400 border border-orange-500/20'
+                              )}
+                            >
+                              {isDestBlackholed ? 'Blackholed' : 'Burn'}
+                            </span>
+                          </Tooltip>
                         )}
                       </Box>
                     </DetailRow>
@@ -4444,8 +4580,12 @@ const TransactionDetails = ({ txData }) => {
             {LastLedgerSequence && (
               <DetailRow label="Last Ledger" index={3}>
                 <span className="text-[13px]">
-                  #{LastLedgerSequence.toLocaleString()} ({LastLedgerSequence - ledger_index}{' '}
-                  ledgers)
+                  <Link href={`/ledger/${LastLedgerSequence}`}>
+                    <span className="text-primary hover:underline cursor-pointer">
+                      #{LastLedgerSequence.toLocaleString()}
+                    </span>
+                  </Link>
+                  {' '}({LastLedgerSequence - ledger_index} ledgers)
                 </span>
               </DetailRow>
             )}

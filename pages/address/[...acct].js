@@ -11,7 +11,7 @@ import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
-import { getNftCoverUrl, parseTransaction } from 'src/utils/parseUtils';
+import { getNftCoverUrl, parseTransaction, BLACKHOLE_ACCOUNTS } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import {
@@ -118,6 +118,7 @@ const OverView = ({ account }) => {
   const [accountAILoading, setAccountAILoading] = useState(false);
   const [nftStats, setNftStats] = useState(null);
   const [accountInfo, setAccountInfo] = useState(null);
+  const [isBlackholed, setIsBlackholed] = useState(false);
   const [nftCollections, setNftCollections] = useState([]);
   const [nftCollectionsLoading, setNftCollectionsLoading] = useState(false);
   const [selectedNftCollection, setSelectedNftCollection] = useState(null);
@@ -176,7 +177,7 @@ const OverView = ({ account }) => {
     const fetchData = async () => {
       try {
         // Fetch profile data, holdings, and NFT stats
-        const [profileRes, holdingsRes, nftRes, balanceRes] = await Promise.all([
+        const [profileRes, holdingsRes, nftRes, balanceRes, liveRes] = await Promise.all([
           axios.get(`https://api.xrpl.to/v1/traders/${account}`).catch(() => ({ data: null })),
           axios
             .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=0&format=full`)
@@ -186,7 +187,10 @@ const OverView = ({ account }) => {
             .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`)
             .catch(() => ({ data: null })),
           axios
-            .get(`https://api.xrpl.to/v1/account/balance/${account}`)
+            .get(`https://api.xrpl.to/v1/account/balance/${account}?rank=true`)
+            .catch(() => ({ data: null })),
+          axios
+            .get(`https://api.xrpl.to/v1/account/info/live/${account}`)
             .catch(() => ({ data: null }))
         ]);
 
@@ -196,6 +200,16 @@ const OverView = ({ account }) => {
         setHoldings(holdingsRes.data);
         setNftStats(nftRes.data);
         setAccountInfo(balanceRes.data);
+
+        // Check if account is blackholed
+        const liveData = liveRes?.data?.account_data;
+        if (liveData || balanceRes.data) {
+          const lsfDisableMaster = 0x00100000;
+          const flags = balanceRes.data?.flags || liveData?.Flags || 0;
+          const masterDisabled = (flags & lsfDisableMaster) !== 0;
+          const regularKeyBlackholed = !liveData?.RegularKey || BLACKHOLE_ACCOUNTS.includes(liveData?.RegularKey);
+          setIsBlackholed(BLACKHOLE_ACCOUNTS.includes(account) || (masterDisabled && regularKeyBlackholed));
+        }
       } catch (err) {
         console.error('Failed to fetch profile:', err);
       } finally {
@@ -595,7 +609,7 @@ const OverView = ({ account }) => {
                   <h2
                     className={cn(
                       'text-xl md:text-2xl font-mono',
-                      isDark ? 'text-white' : 'text-gray-900'
+                      isBlackholed ? 'text-red-400' : isDark ? 'text-white' : 'text-gray-900'
                     )}
                   >
                     <span className="md:hidden">
@@ -649,6 +663,36 @@ const OverView = ({ account }) => {
                     <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
                       AMM
                     </span>
+                  )}
+                  {isBlackholed && (
+                    <div className="relative group/blackhole">
+                      <span className="text-[11px] h-5 px-2 rounded bg-red-500/10 text-red-400 font-normal flex items-center cursor-help">
+                        Blackholed
+                      </span>
+                      <div className={cn(
+                        'pointer-events-none absolute left-0 top-full mt-1.5 p-2.5 rounded-lg text-[11px] w-52 opacity-0 invisible group-hover/blackhole:opacity-100 group-hover/blackhole:visible transition-all duration-150 z-50',
+                        isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-gray-200 shadow-lg'
+                      )}>
+                        <div className="font-medium text-red-400 text-[12px] mb-1">Blackholed Account</div>
+                        <div className={cn('leading-snug', isDark ? 'text-white/50' : 'text-gray-500')}>
+                          Master key disabled, no valid regular key.
+                        </div>
+                        {accountInfo && (
+                          <div className={cn('mt-2 pt-2 border-t space-y-1', isDark ? 'border-white/10' : 'border-gray-100')}>
+                            <div className="flex justify-between">
+                              <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Balance</span>
+                              <span className={isDark ? 'text-white/70' : 'text-gray-600'}>{accountInfo.total?.toFixed(2)} XRP</span>
+                            </div>
+                            {accountInfo.rank && (
+                              <div className="flex justify-between">
+                                <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Rank</span>
+                                <span className={isDark ? 'text-white/70' : 'text-gray-600'}>#{accountInfo.rank.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                   {!accountAI && !accountAILoading && (
                     <button
