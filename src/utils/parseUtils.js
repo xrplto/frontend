@@ -27,7 +27,7 @@ const SOURCE_TAGS = {
   111: 'Horizon',
   589123: 'Katz Wallet',
   10011010: 'Magnetic',
-  12345654321: 'XRPL.to',
+  161803: 'XRPL.to',
   11782013: 'Anodos',
   13888813: 'Zerpmon',
   19089388: 'HBot',
@@ -1249,90 +1249,157 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       txType = isIncoming ? 'in' : 'out';
     }
   } else if (type === 'OfferCreate') {
-    // Determine if buy or sell based on which side is XRP
-    // TakerGets = what maker gives, TakerPays = what maker receives
-    // If TakerGets is token and TakerPays is XRP → user sells tokens for XRP (SELL)
-    // If TakerGets is XRP and TakerPays is token → user sells XRP for tokens (BUY)
-    const getsIsXRP = typeof tx.TakerGets === 'string';
-    const paysIsXRP = typeof tx.TakerPays === 'string';
-    const isSell = !getsIsXRP && paysIsXRP; // Selling tokens for XRP
-    const isBuy = getsIsXRP && !paysIsXRP;  // Buying tokens with XRP
+    // Check if this is someone else's OfferCreate that consumed our standing offer
+    const isOwnOrder = tx.Account === userAddress;
 
-    const gets = formatAmt(tx.TakerGets);
-    const pays = formatAmt(tx.TakerPays);
-    const getsToken = getsIsXRP ? 'XRP' : decodeCurrency(tx.TakerGets?.currency);
-    const paysToken = paysIsXRP ? 'XRP' : decodeCurrency(tx.TakerPays?.currency);
+    if (!isOwnOrder && meta?.AffectedNodes) {
+      // Someone else's order consumed our standing offer - find our balance changes
+      let userXrpChange = 0;
+      let userTokenChange = 0;
+      let userTokenCurrency = null;
 
-    // Check metadata for actual filled amount
-    let filledGets = null;
-    let filledPays = null;
-    if (meta?.AffectedNodes && !isFailed) {
-      // For sells: check how much XRP we received (AccountRoot balance increase minus fee)
-      // For buys: check how much token we received (RippleState balance change)
+      // Find user's XRP balance change
       const userAcct = meta.AffectedNodes.find(n =>
         n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
         n.ModifiedNode?.FinalFields?.Account === userAddress
       )?.ModifiedNode;
-
-      if (isSell && userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+      if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
         const prevBal = parseInt(userAcct.PreviousFields.Balance);
         const finalBal = parseInt(userAcct.FinalFields.Balance);
-        const fee = parseInt(tx.Fee || 0);
-        const xrpReceived = (finalBal - prevBal + fee) / 1000000;
-        if (xrpReceived > 0) {
-          filledPays = xrpReceived < 0.01 ? `${xrpReceived.toFixed(6)} XRP` : `${xrpReceived.toFixed(2)} XRP`;
+        userXrpChange = (finalBal - prevBal) / 1000000;
+      }
+
+      // Find user's token balance change
+      for (const node of meta.AffectedNodes) {
+        const mod = node.ModifiedNode;
+        if (mod?.LedgerEntryType === 'RippleState') {
+          const high = mod.FinalFields?.HighLimit;
+          const low = mod.FinalFields?.LowLimit;
+          const isUserLine = high?.issuer === userAddress || low?.issuer === userAddress;
+          if (isUserLine && mod.PreviousFields?.Balance?.value) {
+            const isUserHigh = high?.issuer === userAddress;
+            const prevBal = parseFloat(mod.PreviousFields.Balance.value);
+            const finalBal = parseFloat(mod.FinalFields.Balance.value);
+            // Balance is from low account perspective; if user is high, negate
+            userTokenChange = isUserHigh ? -(finalBal - prevBal) : (finalBal - prevBal);
+            userTokenCurrency = high?.currency || low?.currency;
+            tokenCurrency = userTokenCurrency;
+            tokenIssuer = isUserHigh ? low?.issuer : high?.issuer;
+            break;
+          }
         }
       }
 
-      // Check token balance changes for the sold/bought amount
-      const tokenCurrency = isSell ? tx.TakerGets?.currency : tx.TakerPays?.currency;
-      if (tokenCurrency) {
-        for (const node of meta.AffectedNodes) {
-          const mod = node.ModifiedNode;
-          if (mod?.LedgerEntryType === 'RippleState') {
-            const high = mod.FinalFields?.HighLimit;
-            const low = mod.FinalFields?.LowLimit;
-            const isUserLine = high?.issuer === userAddress || low?.issuer === userAddress;
-            const matchesCurrency = high?.currency === tokenCurrency || low?.currency === tokenCurrency;
-            if (isUserLine && matchesCurrency && mod.PreviousFields?.Balance?.value) {
-              const prevBal = Math.abs(parseFloat(mod.PreviousFields.Balance.value));
-              const finalBal = Math.abs(parseFloat(mod.FinalFields.Balance.value));
-              const tokenDiff = Math.abs(prevBal - finalBal);
-              if (tokenDiff > 0) {
-                const tokenName = decodeCurrency(tokenCurrency);
-                if (isSell) {
-                  filledGets = `${tokenDiff.toFixed(2)} ${tokenName}`;
-                } else {
-                  filledPays = `${tokenDiff.toFixed(2)} ${tokenName}`;
+      // Determine if user sold tokens or XRP based on balance changes
+      if (userXrpChange > 0 && userTokenChange < 0) {
+        // User received XRP, gave tokens = user sold tokens
+        label = 'Order Filled';
+        const soldAmt = Math.abs(userTokenChange).toFixed(2);
+        const receivedAmt = userXrpChange < 0.01 ? userXrpChange.toFixed(6) : userXrpChange.toFixed(2);
+        amount = `${soldAmt} ${decodeCurrency(userTokenCurrency)} → ${receivedAmt} XRP`;
+        counterparty = `${decodeCurrency(userTokenCurrency)}/XRP`;
+        txType = 'in'; // Received XRP
+      } else if (userXrpChange < 0 && userTokenChange > 0) {
+        // User gave XRP, received tokens = user bought tokens
+        label = 'Order Filled';
+        const spentAmt = Math.abs(userXrpChange) < 0.01 ? Math.abs(userXrpChange).toFixed(6) : Math.abs(userXrpChange).toFixed(2);
+        const receivedAmt = userTokenChange.toFixed(2);
+        amount = `${spentAmt} XRP → ${receivedAmt} ${decodeCurrency(userTokenCurrency)}`;
+        counterparty = `XRP/${decodeCurrency(userTokenCurrency)}`;
+        txType = 'in'; // Received tokens
+      } else {
+        // Fallback - show as trade
+        label = 'Order Filled';
+        amount = '';
+        counterparty = tx.Account;
+      }
+    } else {
+      // User's own OfferCreate
+      // Determine if buy or sell based on which side is XRP
+      // TakerGets = what maker gives, TakerPays = what maker receives
+      // If TakerGets is token and TakerPays is XRP → user sells tokens for XRP (SELL)
+      // If TakerGets is XRP and TakerPays is token → user sells XRP for tokens (BUY)
+      const getsIsXRP = typeof tx.TakerGets === 'string';
+      const paysIsXRP = typeof tx.TakerPays === 'string';
+      const isSell = !getsIsXRP && paysIsXRP; // Selling tokens for XRP
+      const isBuy = getsIsXRP && !paysIsXRP;  // Buying tokens with XRP
+
+      const gets = formatAmt(tx.TakerGets);
+      const pays = formatAmt(tx.TakerPays);
+      const getsToken = getsIsXRP ? 'XRP' : decodeCurrency(tx.TakerGets?.currency);
+      const paysToken = paysIsXRP ? 'XRP' : decodeCurrency(tx.TakerPays?.currency);
+
+      // Check metadata for actual filled amount
+      let filledGets = null;
+      let filledPays = null;
+      if (meta?.AffectedNodes && !isFailed) {
+        // For sells: check how much XRP we received (AccountRoot balance increase minus fee)
+        // For buys: check how much token we received (RippleState balance change)
+        const userAcct = meta.AffectedNodes.find(n =>
+          n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
+          n.ModifiedNode?.FinalFields?.Account === userAddress
+        )?.ModifiedNode;
+
+        if (isSell && userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+          const prevBal = parseInt(userAcct.PreviousFields.Balance);
+          const finalBal = parseInt(userAcct.FinalFields.Balance);
+          const fee = parseInt(tx.Fee || 0);
+          const xrpReceived = (finalBal - prevBal + fee) / 1000000;
+          if (xrpReceived > 0) {
+            filledPays = xrpReceived < 0.01 ? `${xrpReceived.toFixed(6)} XRP` : `${xrpReceived.toFixed(2)} XRP`;
+          }
+        }
+
+        // Check token balance changes for the sold/bought amount
+        const tokenCurr = isSell ? tx.TakerGets?.currency : tx.TakerPays?.currency;
+        if (tokenCurr) {
+          for (const node of meta.AffectedNodes) {
+            const mod = node.ModifiedNode;
+            if (mod?.LedgerEntryType === 'RippleState') {
+              const high = mod.FinalFields?.HighLimit;
+              const low = mod.FinalFields?.LowLimit;
+              const isUserLine = high?.issuer === userAddress || low?.issuer === userAddress;
+              const matchesCurrency = high?.currency === tokenCurr || low?.currency === tokenCurr;
+              if (isUserLine && matchesCurrency && mod.PreviousFields?.Balance?.value) {
+                const prevBal = Math.abs(parseFloat(mod.PreviousFields.Balance.value));
+                const finalBal = Math.abs(parseFloat(mod.FinalFields.Balance.value));
+                const tokenDiff = Math.abs(prevBal - finalBal);
+                if (tokenDiff > 0) {
+                  const tokenName = decodeCurrency(tokenCurr);
+                  if (isSell) {
+                    filledGets = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                  } else {
+                    filledPays = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                  }
                 }
+                break;
               }
-              break;
             }
           }
         }
       }
-    }
 
-    if (isFailed) {
-      label = isSell ? 'Sell Failed' : isBuy ? 'Buy Failed' : 'Trade Failed';
-      amount = gets && pays ? `${gets} → ${pays}` : 'Failed';
-      txType = isSell ? 'out' : 'in';
-    } else {
-      label = isSell ? 'Sell' : isBuy ? 'Buy' : 'Trade';
-      // Show actual filled amounts if available, otherwise show offer amounts
-      const showGets = filledGets || gets;
-      const showPays = filledPays || pays;
-      amount = showGets && showPays ? `${showGets} → ${showPays}` : '';
-      txType = isSell ? 'out' : 'in';
-    }
-    counterparty = `${getsToken}/${paysToken}`;
-    // Set token info for the non-XRP side
-    if (!getsIsXRP) {
-      tokenCurrency = tx.TakerGets?.currency;
-      tokenIssuer = tx.TakerGets?.issuer;
-    } else if (!paysIsXRP) {
-      tokenCurrency = tx.TakerPays?.currency;
-      tokenIssuer = tx.TakerPays?.issuer;
+      if (isFailed) {
+        label = isSell ? 'Sell Failed' : isBuy ? 'Buy Failed' : 'Trade Failed';
+        amount = gets && pays ? `${gets} → ${pays}` : 'Failed';
+        txType = isSell ? 'out' : 'in';
+      } else {
+        label = isSell ? 'Sell' : isBuy ? 'Buy' : 'Trade';
+        // Show actual filled amounts if available, otherwise show offer amounts
+        const showGets = filledGets || gets;
+        const showPays = filledPays || pays;
+        amount = showGets && showPays ? `${showGets} → ${showPays}` : '';
+        txType = isSell ? 'out' : 'in';
+      }
+      counterparty = `${getsToken}/${paysToken}`;
+      // Set token info for the non-XRP side
+      if (!getsIsXRP) {
+        tokenCurrency = tx.TakerGets?.currency;
+        tokenIssuer = tx.TakerGets?.issuer;
+      } else if (!paysIsXRP) {
+        tokenCurrency = tx.TakerPays?.currency;
+        tokenIssuer = tx.TakerPays?.issuer;
+      }
     }
   } else if (type === 'OfferCancel') {
     label = 'Cancel Offer';

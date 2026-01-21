@@ -20,6 +20,7 @@ import {
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
+import { toast } from 'sonner';
 import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
@@ -131,7 +132,6 @@ const TokenSummary = memo(({ token }) => {
   const [priceColor, setPriceColor] = useState(null);
   const [isRemove, setIsRemove] = useState(false);
   const [editToken, setEditToken] = useState(null);
-  const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
   const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showApi, setShowApi] = useState(false);
@@ -226,43 +226,62 @@ const TokenSummary = memo(({ token }) => {
     origin,
     creator,
     trustlines,
-    AMM
+    AMM,
+    supply
   } = token;
 
   // Trustline handler
   const handleSetTrust = async () => {
-    const showStatus = (msg, duration = 2500) => {
-      if (!mountedRef.current) return;
-      setTrustStatus(msg);
-      if (statusTimeoutRef.current) {
-        clearTimeout(statusTimeoutRef.current);
-      }
-      statusTimeoutRef.current = setTimeout(() => {
-        if (mountedRef.current) {
-          setTrustStatus(null);
-        }
-      }, duration);
-    };
-
     if (!accountProfile?.account) {
       setOpenWalletModal(true);
       return;
     }
     if (accountProfile.wallet_type !== 'device' && accountProfile.wallet_type !== 'oauth') {
-      showStatus('Unsupported wallet');
+      toast.error('Unsupported wallet type');
       return;
     }
-    setTrustStatus('loading');
+
+    const action = isRemove ? 'Removing' : 'Setting';
+    const toastId = toast.loading(`${action} trustline...`, { description: 'Preparing transaction' });
+
     try {
       const { Wallet } = await import('xrpl');
-      const CryptoJS = (await import('crypto-js')).default;
+      const { EncryptedWalletStorage, deviceFingerprint } = await import(
+        'src/utils/encryptedWalletStorage'
+      );
 
-      const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex}-`;
-      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${accountProfile.deviceKeyId}`, {
-        keySize: 256 / 32,
-        iterations: 100000
-      }).toString();
-      const deviceWallet = new Wallet(seedHash.substring(0, 64));
+      console.log('[TrustSet] accountProfile:', {
+        account: accountProfile.account,
+        wallet_type: accountProfile.wallet_type,
+        deviceKeyId: accountProfile.deviceKeyId,
+        accountIndex: accountProfile.accountIndex
+      });
+
+      // Retrieve actual seed from encrypted storage
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      console.log('[TrustSet] deviceKeyId:', deviceKeyId);
+
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) {
+        toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
+        return;
+      }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      console.log('[TrustSet] walletData found:', !!walletData, 'hasSeed:', !!walletData?.seed);
+
+      if (!walletData?.seed) {
+        toast.error('Seed not found', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        return;
+      }
+
+      // Detect algorithm from seed prefix
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      console.log('[TrustSet] wallet address:', deviceWallet.classicAddress);
+      console.log('[TrustSet] expected:', accountProfile.account);
+      console.log('[TrustSet] MATCH:', deviceWallet.classicAddress === accountProfile.account);
 
       const tx = {
         Account: accountProfile.account,
@@ -270,38 +289,55 @@ const TokenSummary = memo(({ token }) => {
         LimitAmount: {
           issuer,
           currency,
-          value: isRemove ? '0' : '1000000000'
+          value: isRemove ? '0' : new Decimal(supply).toFixed(0)
         },
         Flags: 0x00020000
       };
 
       // REST-based autofill
+      toast.loading(`${action} trustline...`, { id: toastId, description: 'Fetching account info' });
+      console.log('[TrustSet] fetching sequence/fee...');
       const [seqRes, feeRes] = await Promise.all([
         axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
         axios.get('https://api.xrpl.to/v1/submit/fee')
       ]);
+      console.log('[TrustSet] seqRes:', seqRes.data);
+      console.log('[TrustSet] feeRes:', feeRes.data);
+
       const prepared = {
         ...tx,
         Sequence: seqRes.data.sequence,
         Fee: feeRes.data.base_fee,
         LastLedgerSequence: seqRes.data.ledger_index + 20
       };
+      console.log('[TrustSet] prepared tx:', prepared);
 
+      toast.loading(`${action} trustline...`, { id: toastId, description: 'Signing transaction' });
       const signed = deviceWallet.sign(prepared);
+      console.log('[TrustSet] signed hash:', signed.hash);
+
+      toast.loading(`${action} trustline...`, { id: toastId, description: 'Submitting to XRPL' });
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+      console.log('[TrustSet] submit result:', result.data);
 
       if (result.data.engine_result === 'tesSUCCESS') {
         setIsRemove(!isRemove);
-        showStatus(isRemove ? 'Removed!' : 'Trustline set!');
+        toast.success(isRemove ? 'Trustline removed!' : 'Trustline set!', {
+          id: toastId,
+          description: `Transaction: ${signed.hash.slice(0, 8)}...`
+        });
       } else {
-        showStatus('Failed: ' + result.data.engine_result);
+        toast.error('Transaction failed', {
+          id: toastId,
+          description: result.data.engine_result_message || result.data.engine_result
+        });
       }
     } catch (err) {
       console.error('Trustline error:', err);
       if (err.response?.status === 404) {
-        showStatus('Account not activated - need XRP');
+        toast.error('Account not activated', { id: toastId, description: 'Fund your account with XRP first' });
       } else {
-        showStatus(err.message?.slice(0, 30) || 'Error');
+        toast.error('Error', { id: toastId, description: err.message?.slice(0, 50) || 'Unknown error' });
       }
     }
   };
@@ -402,20 +438,29 @@ const TokenSummary = memo(({ token }) => {
     const controller = new AbortController();
 
     axios
-      .get(`${BASE_URL}/account/lines/${accountProfile?.account}`, { signal: controller.signal })
+      .get(`${BASE_URL}/account/trustlines/${accountProfile?.account}?limit=400`, {
+        signal: controller.signal,
+        timeout: 5000
+      })
       .then((res) => {
-        if (res.status === 200 && res.data?.lines && mountedRef.current) {
-          const tl = res.data.lines.find(
-            (t) =>
-              (t.LowLimit.issuer === issuer || t.HighLimit.issuer === issuer) &&
-              t.LowLimit.currency === currency
-          );
+        console.log('[TrustCheck] response:', res.data);
+        console.log('[TrustCheck] looking for issuer:', issuer, 'currency:', currency);
+        if (res.status === 200 && res.data?.result === 'success' && mountedRef.current) {
+          const lines = res.data.lines || [];
+          const tl = lines.find((line) => {
+            const lineIssuers = [line.account, line.issuer, line.Balance?.issuer].filter(Boolean);
+            const lineCurrencies = [line.currency, line._currency, line.Balance?.currency].filter(
+              Boolean
+            );
+            return lineIssuers.includes(issuer) && lineCurrencies.includes(currency);
+          });
+          console.log('[TrustCheck] found trustline:', tl);
           setIsRemove(!!tl);
         }
       })
       .catch((err) => {
         if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          // Silent fail for trustline check
+          console.error('[TrustCheck] error:', err);
         }
       });
 
@@ -763,20 +808,10 @@ const TokenSummary = memo(({ token }) => {
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
-        <div className="flex items-center gap-1.5 relative">
-          {trustStatus && trustStatus !== 'loading' && (
-            <div
-              className={cn(
-                'absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap z-50',
-                isDark ? 'bg-white/10 text-white' : 'bg-gray-800 text-white'
-              )}
-            >
-              {trustStatus}
-            </div>
-          )}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={handleSetTrust}
-            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
+            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
               isRemove
@@ -786,13 +821,10 @@ const TokenSummary = memo(({ token }) => {
                 : isDark
                   ? 'text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
                   : 'text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300',
-              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') &&
-                'opacity-40 cursor-not-allowed'
+              CURRENCY_ISSUERS?.XRP_MD5 === md5 && 'opacity-40 cursor-not-allowed'
             )}
           >
-            {trustStatus === 'loading' ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : isRemove ? (
+            {isRemove ? (
               <Unlink2 size={13} />
             ) : (
               <Link2 size={13} />

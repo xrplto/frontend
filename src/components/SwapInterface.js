@@ -1428,7 +1428,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           TakerPays,
           Flags: 0,
           Fee: '12',
-          SourceTag: 93339333
+          SourceTag: 161803
         };
 
         // Add expiration if set
@@ -1517,7 +1517,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           SendMax,
           Flags,
           Fee: '12',
-          SourceTag: 20221212
+          SourceTag: 161803
         };
       }
 

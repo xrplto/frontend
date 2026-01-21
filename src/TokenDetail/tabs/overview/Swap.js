@@ -53,63 +53,6 @@ import { configureMemos } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
 
-// Lazy load XRPL dependencies for device authentication
-let Wallet, CryptoJS;
-
-const loadXRPLDependencies = async () => {
-  if (!Wallet) {
-    const xrpl = await import('xrpl');
-    Wallet = xrpl.Wallet;
-  }
-  if (!CryptoJS) {
-    CryptoJS = await import('crypto-js');
-  }
-};
-
-// REST-based autofill and submit helpers
-const autofillTransaction = async (tx, address) => {
-  const [seqRes, feeRes] = await Promise.all([
-    axios.get(`https://api.xrpl.to/v1/submit/account/${address}/sequence`),
-    axios.get('https://api.xrpl.to/v1/submit/fee')
-  ]);
-  return {
-    ...tx,
-    Sequence: seqRes.data.sequence,
-    Fee: feeRes.data.base_fee,
-    LastLedgerSequence: seqRes.data.ledger_index + 20
-  };
-};
-
-const submitTransaction = async (tx_blob) => {
-  const res = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob });
-  return res.data;
-};
-
-// Device authentication wallet helpers
-const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
-  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
-  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
-    keySize: 256 / 32,
-    iterations: 100000
-  }).toString();
-  const privateKeyHex = seedHash.substring(0, 64);
-  return new Wallet(privateKeyHex);
-};
-
-const getDeviceWallet = (accountProfile) => {
-  if (
-    accountProfile?.wallet_type === 'device' &&
-    accountProfile?.deviceKeyId &&
-    typeof accountProfile?.accountIndex === 'number'
-  ) {
-    return generateSecureDeterministicWallet(
-      accountProfile.deviceKeyId,
-      accountProfile.accountIndex
-    );
-  }
-  return null;
-};
-
 const alpha = (color, opacity) => {
   if (color.startsWith('#')) {
     const r = parseInt(color.slice(1, 3), 16);
@@ -753,10 +696,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
-  const [trustlines, setTrustlines] = useState([]);
   const [hasTrustline1, setHasTrustline1] = useState(true);
   const [hasTrustline2, setHasTrustline2] = useState(true);
-  const [transactionType, setTransactionType] = useState('Payment');
 
   const [slippage, setSlippage] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -1349,127 +1290,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       const account = accountProfile.account;
 
-      // Fetch balance and trustlines in PARALLEL with timeout
-      const fetchBalance = async () => {
-        try {
-          const balanceRes = await axios.get(
-            `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`,
-            { signal: controller.signal, timeout: 5000 }
-          );
-          if (!mounted) return null;
-          return balanceRes.status === 200 ? balanceRes.data?.pair : null;
-        } catch (err) {
-          return null; // Silently fail - don't block UI
-        }
-      };
-
-      const fetchAllTrustlines = async () => {
-        try {
-          const response = await axios.get(`${BASE_URL}/account/trustlines/${account}?limit=400`, {
-            signal: controller.signal,
-            timeout: 5000
-          });
-          if (!mounted) return [];
-          return response.status === 200 && response.data?.result === 'success'
-            ? response.data.lines || []
-            : [];
-        } catch (error) {
-          return []; // Silently fail - don't block UI
-        }
-      };
-
-      // Run in parallel
-      const [balance, trustlines] = await Promise.all([fetchBalance(), fetchAllTrustlines()]);
-
-      if (!mounted) return;
-      setAccountPairBalance(balance);
-      setTrustlines(trustlines);
-
-      // Process trustlines
-      if (trustlines.length > 0) {
-        const normalizeCurrency = (currency) => {
-          if (!currency) return '';
-          if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
-            return currency.replace(/00+$/, '').toUpperCase();
-          }
-          return currency.toUpperCase();
-        };
-
-        const currenciesMatch = (c1, c2) => {
-          if (!c1 || !c2) return false;
-          if (c1 === c2) return true;
-          const norm1 = normalizeCurrency(c1);
-          const norm2 = normalizeCurrency(c2);
-          if (norm1 === norm2) return true;
-          try {
-            const convertHexToAscii = (hex) => {
-              if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
-                const cleanHex = hex.replace(/00+$/, '');
-                let ascii = '';
-                for (let i = 0; i < cleanHex.length; i += 2) {
-                  const byte = parseInt(cleanHex.substr(i, 2), 16);
-                  if (byte > 0) ascii += String.fromCharCode(byte);
-                }
-                return ascii.toLowerCase();
-              }
-              return hex.toLowerCase();
-            };
-            return convertHexToAscii(c1) === convertHexToAscii(c2);
-          } catch (e) {}
-          return false;
-        };
-
-        const issuersMatch = (line, expectedIssuer) => {
-          const lineIssuers = [
-            line.account,
-            line.issuer,
-            line._token1,
-            line._token2,
-            line.Balance?.issuer,
-            line.HighLimit?.issuer,
-            line.LowLimit?.issuer
-          ].filter(Boolean);
-          return lineIssuers.some((issuer) => issuer === expectedIssuer);
-        };
-
-        const hasCurr1Trustline =
-          curr1.currency === 'XRP' ||
-          trustlines.some((line) => {
-            const lineCurrencies = [
-              line.Balance?.currency,
-              line.currency,
-              line._currency,
-              line.HighLimit?.currency,
-              line.LowLimit?.currency
-            ].filter(Boolean);
-            const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr1.currency));
-            if (!currencyMatch) return false;
-            return (
-              issuersMatch(line, curr1.issuer) ||
-              ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency)
-            );
-          });
-
-        const hasCurr2Trustline =
-          curr2.currency === 'XRP' ||
-          trustlines.some((line) => {
-            const lineCurrencies = [
-              line.Balance?.currency,
-              line.currency,
-              line._currency,
-              line.HighLimit?.currency,
-              line.LowLimit?.currency
-            ].filter(Boolean);
-            const currencyMatch = lineCurrencies.some((lc) => currenciesMatch(lc, curr2.currency));
-            if (!currencyMatch) return false;
-            return (
-              issuersMatch(line, curr2.issuer) ||
-              ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency)
-            );
-          });
-
-        setHasTrustline1(hasCurr1Trustline);
-        setHasTrustline2(hasCurr2Trustline);
+      // Fetch balance (includes hasTrustline)
+      try {
+        const params = new URLSearchParams({ curr1: curr1.currency, curr2: curr2.currency });
+        params.append('issuer1', curr1.currency === 'XRP' ? 'XRPL' : curr1.issuer || '');
+        params.append('issuer2', curr2.currency === 'XRP' ? 'XRPL' : curr2.issuer || '');
+        const res = await axios.get(
+          `https://api.xrpl.to/api/account/balance/pair/${account}?${params}`,
+          { signal: controller.signal, timeout: 5000 }
+        );
+        if (!mounted) return;
+        const pair = res.data?.pair;
+        setAccountPairBalance(pair);
+        setHasTrustline1(curr1.currency === 'XRP' || pair?.curr1?.hasTrustline !== false);
+        setHasTrustline2(curr2.currency === 'XRP' || pair?.curr2?.hasTrustline !== false);
+      } catch (err) {
+        // Silently fail
       }
     }
 
@@ -1628,7 +1464,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     setOpenScanQR(false);
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
       onCreateTrustline(curr1);
       return;
@@ -1640,14 +1476,105 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     const fAmount = Number(amount1);
     const fValue = Number(amount2);
-    if (fAmount > 0 && fValue > 0) {
-      if (orderType === 'limit' && !limitPrice) {
-        openSnackbar('Please enter a limit price!', 'error');
+    if (!(fAmount > 0 && fValue > 0)) {
+      openSnackbar('Invalid values!', 'error');
+      return;
+    }
+    if (orderType === 'limit' && !limitPrice) {
+      openSnackbar('Please enter a limit price!', 'error');
+      return;
+    }
+
+    if (!accountProfile?.account) {
+      openSnackbar('Please connect wallet', 'error');
+      return;
+    }
+
+    // Confirmation for large XRP amounts
+    const xrpAmount = curr1.currency === 'XRP' ? fAmount : (curr2.currency === 'XRP' ? fValue : 0);
+    if (xrpAmount > 1 && !window.confirm(`Confirm swap: ${fAmount} ${curr1.name || curr1.currency} → ${fValue} ${curr2.name || curr2.currency}?`)) {
+      return;
+    }
+
+    dispatch(updateProcess(1));
+    try {
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+      if (!storedPassword) {
+        openSnackbar('Wallet locked - please unlock first', 'error');
+        dispatch(updateProcess(0));
         return;
       }
-      openSnackbar('Device authentication required', 'info');
-    } else {
-      openSnackbar('Invalid values!', 'error');
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        openSnackbar('Could not retrieve wallet credentials', 'error');
+        dispatch(updateProcess(0));
+        return;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+
+      // Build OfferCreate transaction
+      const takerGets = curr1.currency === 'XRP'
+        ? String(Math.floor(fAmount * 1000000)) // XRP in drops
+        : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount) };
+
+      const takerPays = curr2.currency === 'XRP'
+        ? String(Math.floor(fValue * 1000000))
+        : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue) };
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'OfferCreate',
+        TakerGets: takerGets,
+        TakerPays: takerPays,
+        Flags: orderType === 'market' ? 0x00080000 : 0, // tfImmediateOrCancel for market orders
+        SourceTag: 161803
+      };
+
+      // Autofill
+      const [seqRes, feeRes] = await Promise.all([
+        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+        axios.get('https://api.xrpl.to/v1/submit/fee')
+      ]);
+
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: txFee || feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
+
+      const signed = deviceWallet.sign(prepared);
+      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
+        dispatch(updateProcess(2));
+        dispatch(updateTxHash(result.data.hash || signed.hash));
+        openSnackbar('Order placed successfully!', 'success');
+        setAmount1('');
+        setAmount2('');
+        // Refresh balances after tx confirms
+        setTimeout(() => {
+          setSync((s) => s + 1);
+          setIsSwapped((v) => !v);
+          dispatch(updateProcess(0));
+        }, 2000);
+      } else {
+        openSnackbar(`Transaction failed: ${result.data.engine_result}`, 'error');
+        dispatch(updateProcess(0));
+      }
+    } catch (err) {
+      console.error('Swap error:', err);
+      openSnackbar(err.message?.slice(0, 50) || 'Swap failed', 'error');
+      dispatch(updateProcess(0));
     }
   };
 
@@ -1763,73 +1690,78 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onCreateTrustline = async (currency) => {
-    if (!accountProfile || !accountProfile.account) return;
+    if (!accountProfile?.account) return;
 
+    dispatch(updateProcess(1));
     try {
-      const Account = accountProfile.account;
-      const user_token = accountProfile.user_token;
-      const wallet_type = accountProfile.wallet_type;
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
-      const Flags = 0x00020000;
-      let LimitAmount = {};
-      LimitAmount.issuer = currency.issuer;
-      LimitAmount.currency = currency.currency;
-      LimitAmount.value = '1000000000';
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
 
-      if (wallet_type === 'device') {
-        try {
-          await loadXRPLDependencies();
-          const deviceWallet = getDeviceWallet(accountProfile);
+      if (!storedPassword) {
+        openSnackbar('Wallet locked - please unlock first', 'error');
+        dispatch(updateProcess(0));
+        return;
+      }
 
-          if (!deviceWallet) {
-            openSnackbar('Device wallet not available', 'error');
-            return;
-          }
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        openSnackbar('Could not retrieve wallet credentials', 'error');
+        dispatch(updateProcess(0));
+        return;
+      }
 
-          dispatch(updateProcess(1));
-          setTransactionType('TrustSet');
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
-          const trustSetTransaction = {
-            Account: accountProfile.account,
-            TransactionType: 'TrustSet',
-            LimitAmount,
-            Flags
-          };
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'TrustSet',
+        LimitAmount: {
+          issuer: currency.issuer,
+          currency: currency.currency,
+          value: '1000000000'
+        },
+        Flags: 0x00020000,
+        SourceTag: 161803
+      };
 
-          const preparedTx = await autofillTransaction(trustSetTransaction, accountProfile.account);
-          const signedTx = deviceWallet.sign(preparedTx);
-          const result = await submitTransaction(signedTx.tx_blob);
+      const [seqRes, feeRes] = await Promise.all([
+        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+        axios.get('https://api.xrpl.to/v1/submit/fee')
+      ]);
 
-          if (result.engine_result === 'tesSUCCESS') {
-            dispatch(updateProcess(2));
-            dispatch(updateTxHash(result.hash));
-            setTimeout(() => {
-              setSync(sync + 1);
-              dispatch(updateProcess(0));
-            }, 1500);
-            openSnackbar('Trustline created successfully!', 'success');
-          } else {
-            openSnackbar('Transaction failed: ' + result.engine_result, 'error');
-            dispatch(updateProcess(0));
-          }
-        } catch (error) {
-          console.error('Device wallet trustline error:', error);
-          openSnackbar('Failed to create trustline: ' + error.message, 'error');
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
+
+      const signed = deviceWallet.sign(prepared);
+      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
+        dispatch(updateProcess(2));
+        dispatch(updateTxHash(result.data.hash || signed.hash));
+        openSnackbar('Trustline created successfully!', 'success');
+        setTimeout(() => {
+          setSync((s) => s + 1);
+          setIsSwapped((v) => !v);
           dispatch(updateProcess(0));
-        }
+        }, 2000);
       } else {
-        openSnackbar('Device authentication required', 'error');
+        openSnackbar('Transaction failed: ' + result.data.engine_result, 'error');
+        dispatch(updateProcess(0));
       }
     } catch (err) {
+      console.error('Trustline error:', err);
+      openSnackbar(err.message?.slice(0, 50) || 'Failed to create trustline', 'error');
       dispatch(updateProcess(0));
-      openSnackbar(
-        `Failed to create trustline: ${
-          err.response?.data?.message || err.message || 'Unknown error'
-        }`,
-        'error'
-      );
     }
-    setLoading(false);
   };
 
   return (
@@ -2459,8 +2391,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       );
                     })()}
                   </Stack>
-                  {/* Trustline Warning */}
-                  {quoteRequiresTrustline && (
+                  {/* Trustline Warning - only show if we don't have trustline */}
+                  {quoteRequiresTrustline && !hasTrustline2 && (
                     <Typography
                       variant="caption"
                       isDark={isDark}

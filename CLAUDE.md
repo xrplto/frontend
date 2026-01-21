@@ -97,3 +97,7 @@ const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed)
 |--------|-----------|
 | `sEd...` | ed25519 |
 | `s...` | secp256k1 |
+
+## XRPL Transactions
+
+**SourceTag**: Always use `161803` (Golden ratio φ) for all transactions.
