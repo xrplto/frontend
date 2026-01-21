@@ -32,7 +32,8 @@ import {
   ChevronDown,
   Filter,
   GitBranch,
-  Code2
+  Code2,
+  Sparkles
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
@@ -699,16 +700,26 @@ const OverView = ({ account }) => {
                   {!accountAI && !accountAILoading && (
                     <button
                       onClick={handleAccountAI}
-                      className="group flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
+                      className={cn(
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                        isDark
+                          ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe]'
+                          : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9]'
+                      )}
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor" /><path d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z" fill="currentColor" /></svg>
-                      <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">
-                        Explain with AI
-                      </span>
+                      <Sparkles size={12} />
+                      Explain with AI
                     </button>
                   )}
                   {accountAILoading && (
-                    <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#8b5cf6]/25 bg-[#8b5cf6]/10 text-[12px] text-[#c4b5fd]">
+                    <span
+                      className={cn(
+                        'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[12px]',
+                        isDark
+                          ? 'border-[#8b5cf6]/25 bg-[#8b5cf6]/10 text-[#c4b5fd]'
+                          : 'border-[#8b5cf6]/30 bg-[#8b5cf6]/10 text-[#7c3aed]'
+                      )}
+                    >
                       <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                       Analyzing...
                     </span>

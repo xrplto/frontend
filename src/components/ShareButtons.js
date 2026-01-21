@@ -10,12 +10,99 @@ import {
   Linkedin,
   Share as ShareIcon,
   X,
-  Copy
+  Copy,
+  Link2,
+  Check,
+  Share2
 } from 'lucide-react';
+
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';
+
+// X (Twitter) Social Media Icon
+const XSocialIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
+
+// Reusable Share Dropdown Component
+export function ShareDropdown({ url, title, buttonLabel = 'Share' }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [open, setOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const options = [
+    {
+      name: 'Share on X',
+      icon: <XSocialIcon size={14} />,
+      url: `https://x.com/intent/tweet?text=${encodeURIComponent(`${title}: ${url}`)}`
+    },
+    {
+      name: 'Share on Telegram',
+      icon: <Telegram className="w-3.5 h-3.5" />,
+      url: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+    },
+    {
+      name: linkCopied ? 'Copied!' : 'Copy link',
+      icon: linkCopied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Link2 className="w-3.5 h-3.5" />,
+      action: () => {
+        navigator.clipboard.writeText(url);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    }
+  ];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200',
+          isDark
+            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+        )}
+      >
+        <Share2 size={12} />
+        {buttonLabel}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className={cn(
+              'absolute top-full right-0 mt-2 rounded-lg border z-50 p-1.5 min-w-[160px]',
+              isDark ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200 shadow-lg'
+            )}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.name}
+                onClick={() => {
+                  if (opt.url) window.open(opt.url, '_blank');
+                  else opt.action();
+                  if (!opt.action) setOpen(false);
+                }}
+                className={cn(
+                  'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[12px] text-left transition-colors',
+                  isDark ? 'hover:bg-white/10 text-white/80' : 'hover:bg-gray-100 text-gray-700'
+                )}
+              >
+                {opt.icon}
+                {opt.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // Share URL generators
 const getShareUrls = (url, title) => ({
@@ -33,7 +120,7 @@ const getIcon = (platform, size = 20) => {
   const props = { size };
   switch (platform) {
     case 'twitter':
-      return <Twitter {...props} />;
+      return <XSocialIcon {...props} />;
     case 'facebook':
       return <Facebook {...props} />;
     case 'telegram':
@@ -51,10 +138,10 @@ const getIcon = (platform, size = 20) => {
   }
 };
 
-const getIconColor = (platform) => {
+const getIconColor = (platform, isDark = false) => {
   switch (platform) {
     case 'twitter':
-      return '#000000';
+      return isDark ? '#FFFFFF' : '#000000';
     case 'facebook':
       return '#1877F2';
     case 'telegram':
@@ -93,7 +180,7 @@ export const ShareButton = ({
     }
   };
 
-  const iconColor = getIconColor(platform);
+  const iconColor = getIconColor(platform, isDark);
   const bgColor = getBgColor(isDark);
 
   if (round) {
@@ -349,10 +436,10 @@ export function TokenShareModal({ token }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1 px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-colors ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
           isDark
-            ? 'border-gray-600/40 text-white/50 hover:border-gray-500 hover:text-white/70'
-            : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700'
+            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
         }`}
       >
         <ShareIcon size={12} />
@@ -410,29 +497,17 @@ export function TokenShareModal({ token }) {
               </div>
 
               <div className="w-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}
-                  >
-                    Share on
-                  </span>
-                  <div
-                    className="flex-1 h-[14px]"
-                    style={{
-                      backgroundImage:
-                        'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                      backgroundSize: '8px 5px'
-                    }}
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2.5 justify-center">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Share on
+                </p>
+                <div className="grid grid-cols-7 gap-2">
                   {socialPlatforms.map(({ Component, Icon, props }, i) => (
                     <div
                       key={i}
-                      className="rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
+                      className="flex justify-center rounded-lg overflow-hidden hover:scale-105 transition-transform"
                     >
                       <Component {...props}>
-                        <Icon size={36} round isDark={isDark} />
+                        <Icon size={40} round isDark={isDark} />
                       </Component>
                     </div>
                   ))}
@@ -440,24 +515,12 @@ export function TokenShareModal({ token }) {
               </div>
 
               <div className="w-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap ${isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'}`}
-                  >
-                    Copy Link
-                  </span>
-                  <div
-                    className="flex-1 h-[14px]"
-                    style={{
-                      backgroundImage:
-                        'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                      backgroundSize: '8px 5px'
-                    }}
-                  />
-                </div>
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Copy Link
+                </p>
                 <div
-                  className={`flex items-center gap-2 p-2.5 rounded-lg border-[1.5px] ${
-                    isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
+                  className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
+                    isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <span
@@ -467,7 +530,242 @@ export function TokenShareModal({ token }) {
                   </span>
                   <button
                     onClick={handleCopy}
-                    className="p-1.5 rounded-lg border-[1.5px] border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    className={`p-2 rounded-lg transition-colors ${
+                      isDark
+                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// NFT Collection Share Modal
+export function NFTShareModal({ name, imageUrl, url }) {
+  const { openSnackbar, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [open, setOpen] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      openSnackbar('Link copied!', 'success');
+    });
+  };
+
+  const socialPlatforms = [
+    { Component: TwitterShareButton, Icon: TwitterIcon, props: { title: `Check out ${name} NFTs on XRPL`, url } },
+    { Component: FacebookShareButton, Icon: FacebookIcon, props: { url } },
+    { Component: LinkedinShareButton, Icon: LinkedinIcon, props: { url, title: `${name} NFTs` } },
+    { Component: WhatsappShareButton, Icon: WhatsappIcon, props: { url, title: `Check out ${name} NFTs on XRPL` } },
+    { Component: TelegramShareButton, Icon: TelegramIcon, props: { url, title: `Check out ${name} NFTs on XRPL` } },
+    { Component: RedditShareButton, Icon: RedditIcon, props: { url, title: `${name} NFTs on XRPL` } },
+    { Component: EmailShareButton, Icon: EmailIcon, props: { subject: `${name} NFTs`, body: `Check out: ${url}` } }
+  ];
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
+          isDark
+            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <ShareIcon size={12} />
+        Share
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            }`}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Share {name}
+              </span>
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+              </button>
+            </div>
+
+            <div className="px-4 pb-4 flex flex-col items-center gap-4">
+              <img
+                src={imageUrl}
+                alt={name}
+                className={`w-16 h-16 rounded-xl border-2 object-cover ${isDark ? 'border-gray-600/40' : 'border-gray-200'}`}
+              />
+              <span className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {name}
+              </span>
+
+              <div className="w-full">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Share on
+                </p>
+                <div className="grid grid-cols-7 gap-2">
+                  {socialPlatforms.map(({ Component, Icon, props }, i) => (
+                    <div key={i} className="flex justify-center rounded-lg overflow-hidden hover:scale-105 transition-transform">
+                      <Component {...props}>
+                        <Icon size={40} round isDark={isDark} />
+                      </Component>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="w-full">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Copy Link
+                </p>
+                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
+                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                    {url}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isDark
+                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Transaction Share Modal
+export function TxShareModal({ hash, type }) {
+  const { openSnackbar, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [open, setOpen] = useState(false);
+
+  const url = `https://xrpl.to/tx/${hash}`;
+  const title = `Check out this ${type || 'transaction'} on XRPL`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      openSnackbar('Link copied!', 'success');
+    });
+  };
+
+  const socialPlatforms = [
+    { Component: TwitterShareButton, Icon: TwitterIcon, props: { title, url } },
+    { Component: FacebookShareButton, Icon: FacebookIcon, props: { url } },
+    { Component: LinkedinShareButton, Icon: LinkedinIcon, props: { url, title } },
+    { Component: WhatsappShareButton, Icon: WhatsappIcon, props: { url, title } },
+    { Component: TelegramShareButton, Icon: TelegramIcon, props: { url, title } },
+    { Component: RedditShareButton, Icon: RedditIcon, props: { url, title } },
+    { Component: EmailShareButton, Icon: EmailIcon, props: { subject: 'XRPL Transaction', body: `${title}: ${url}` } }
+  ];
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
+          isDark
+            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <ShareIcon size={12} />
+        Share
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
+              isDark
+                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+            }`}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Share Transaction
+              </span>
+              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+              </button>
+            </div>
+
+            <div className="px-4 pb-4 flex flex-col items-center gap-4">
+              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
+                isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+              }`}>
+                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+                  Transaction Hash
+                </p>
+                <p className={`font-mono text-[12px] truncate ${isDark ? 'text-white/70' : 'text-gray-700'}`}>
+                  {hash}
+                </p>
+              </div>
+
+              <div className="w-full">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Share on
+                </p>
+                <div className="grid grid-cols-7 gap-2">
+                  {socialPlatforms.map(({ Component, Icon, props }, i) => (
+                    <div key={i} className="flex justify-center rounded-lg overflow-hidden hover:scale-105 transition-transform">
+                      <Component {...props}>
+                        <Icon size={40} round isDark={isDark} />
+                      </Component>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="w-full">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
+                  Copy Link
+                </p>
+                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
+                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
+                    {url}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isDark
+                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                    }`}
                   >
                     <Copy size={14} />
                   </button>

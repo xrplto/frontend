@@ -2091,22 +2091,19 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
             <button
               onClick={explainWithAI}
               disabled={aiLoading || aiExplanation}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '11px',
-                fontWeight: 500,
-                color: '#fff',
-                background: aiExplanation ? (isDark ? '#4b5563' : '#9ca3af') : '#a78bfa',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                cursor: aiLoading || aiExplanation ? 'default' : 'pointer'
-              }}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                aiLoading || aiExplanation
+                  ? isDark
+                    ? 'border-white/10 bg-white/5 text-white/50 cursor-default'
+                    : 'border-gray-200 bg-gray-100 text-gray-400 cursor-default'
+                  : isDark
+                    ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe] cursor-pointer'
+                    : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9] cursor-pointer'
+              )}
             >
               {aiLoading ? (
-                <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={12} className="animate-spin" />
               ) : (
                 <Sparkles size={12} />
               )}

@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy } from 'lucide-react';
+import { Copy, Sparkles } from 'lucide-react';
+import { TxShareModal } from 'src/components/ShareButtons';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
@@ -1853,30 +1854,6 @@ const TransactionSummaryCard = ({
   const isDark = themeName === 'XrplToDarkTheme';
   const { hash, TransactionType, Account, meta, date, ledger_index, Fee, Flags } = txData;
   const [copied, setCopied] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-
-  const txUrl = `https://xrpl.to/tx/${hash}`;
-  const shareText = `Check out this transaction on XRPL: ${txUrl}`;
-
-  const shareOptions = [
-    {
-      name: 'Share on X',
-      url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`
-    },
-    {
-      name: 'Share on Telegram',
-      url: `https://t.me/share/url?url=${encodeURIComponent(txUrl)}&text=${encodeURIComponent('Check out this transaction on XRPL')}`
-    },
-    {
-      name: linkCopied ? 'Copied!' : 'Copy link',
-      action: () => {
-        navigator.clipboard.writeText(txUrl);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
-      }
-    }
-  ];
 
   const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
   const description = getTransactionDescription(txData);
@@ -1966,49 +1943,7 @@ const TransactionSummaryCard = ({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <button
-              onClick={() => setShareOpen(!shareOpen)}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
-                isDark
-                  ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-                  : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-              )}
-            >
-              Share
-            </button>
-            {shareOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
-                <div
-                  className={cn(
-                    'absolute right-0 top-11 z-50 rounded-lg border p-1.5 min-w-[140px]',
-                    isDark ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200 shadow-lg'
-                  )}
-                >
-                  {shareOptions.map((opt) => (
-                    <button
-                      key={opt.name}
-                      onClick={() => {
-                        if (opt.url) window.open(opt.url, '_blank');
-                        else opt.action();
-                        if (!opt.action) setShareOpen(false);
-                      }}
-                      className={cn(
-                        'w-full px-3 py-2 rounded text-[12px] text-left transition-colors',
-                        isDark
-                          ? 'hover:bg-white/10 text-white/80'
-                          : 'hover:bg-gray-100 text-gray-700'
-                      )}
-                    >
-                      {opt.name}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          <TxShareModal hash={hash} type={TransactionType} />
           {aiExplanation || aiLoading ? (
             <button
               onClick={onCloseAI}
@@ -2024,8 +1959,14 @@ const TransactionSummaryCard = ({
           ) : (
             <button
               onClick={onExplainWithAI}
-              className="px-3 py-1.5 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[12px] font-medium text-[#c4b5fd] hover:text-[#ddd6fe] transition-all duration-200"
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                isDark
+                  ? 'border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[#c4b5fd] hover:text-[#ddd6fe]'
+                  : 'border-[#8b5cf6]/30 hover:border-[#8b5cf6]/50 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#7c3aed] hover:text-[#6d28d9]'
+              )}
             >
+              <Sparkles size={12} />
               Explain with AI
             </button>
           )}

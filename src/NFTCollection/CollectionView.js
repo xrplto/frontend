@@ -20,7 +20,6 @@ import {
   X,
   Send,
   BarChart3,
-  Share2,
   Pencil,
   BadgeCheck,
   TrendingUp,
@@ -44,7 +43,8 @@ import {
   LayoutGrid,
   Code2,
   Copy,
-  Check
+  Check,
+  Link2
 } from 'lucide-react';
 
 // Simple Pagination Component
@@ -84,12 +84,7 @@ import { AppContext } from 'src/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  FacebookIcon,
-  TwitterIcon
-} from '../components/ShareButtons';
+import { NFTShareModal } from '../components/ShareButtons';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
@@ -3095,14 +3090,12 @@ export { AttributeFilter, CollectionCard, NFTCard };
 // Main Collection View Component
 export default function CollectionView({ collection }) {
   const anchorRef = useRef(null);
-  const shareDropdownRef = useRef(null);
   const { themeName, accountProfile, deletingNfts } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const isAdmin = accountProfile?.admin;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
 
-  const [openShare, setOpenShare] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
   const [openFees, setOpenFees] = useState(false);
   const [value, setValue] = useState('tab-nfts');
@@ -3230,17 +3223,11 @@ export default function CollectionView({ collection }) {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target)) {
-        setOpenShare(false);
-      }
       if (infoDropdownRef.current && !infoDropdownRef.current.contains(e.target)) {
         setOpenInfo(false);
       }
       if (feesDropdownRef.current && !feesDropdownRef.current.contains(e.target)) {
         setOpenFees(false);
-      }
-      if (apiDropdownRef.current && !apiDropdownRef.current.contains(e.target)) {
-        setOpenApi(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -3672,36 +3659,7 @@ export default function CollectionView({ collection }) {
               )}
             </div>
             {/* Share */}
-            <div className="relative" ref={shareDropdownRef}>
-              <button
-                onClick={() => setOpenShare(!openShare)}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors',
-                  isDark
-                    ? 'bg-white/5 text-white/70 hover:bg-white/10'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                )}
-              >
-                Share
-              </button>
-              {openShare && (
-                <div
-                  className={cn(
-                    'absolute top-full right-0 mt-2 p-2 rounded-2xl border z-50 flex gap-2',
-                    isDark
-                      ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                      : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-                  )}
-                >
-                  <FacebookShareButton url={shareUrl} quote={shareTitle}>
-                    <FacebookIcon size={24} round />
-                  </FacebookShareButton>
-                  <TwitterShareButton title={`Check out ${shareTitle} on XRPNFT`} url={shareUrl}>
-                    <TwitterIcon size={24} round />
-                  </TwitterShareButton>
-                </div>
-              )}
-            </div>
+            <NFTShareModal name={shareTitle} imageUrl={`https://s1.xrpl.to/nft-collection/${logoImage}`} url={shareUrl} />
             {accountLogin === collection.account && (
               <Link
                 href={`/nfts/${slug}/edit`}
