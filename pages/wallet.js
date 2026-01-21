@@ -747,7 +747,9 @@ export default function WalletPage() {
 
   // Account info & trading stats
   const [accountInfo, setAccountInfo] = useState(null);
+  const [nftStats, setNftStats] = useState(null);
   const [showPLCard, setShowPLCard] = useState(false);
+  const [plType, setPlType] = useState('combined'); // 'token' | 'nft' | 'combined'
   const plCardRef = useRef(null);
 
   // Activity/History state
@@ -971,8 +973,9 @@ export default function WalletPage() {
     console.time('[Wallet] fetchAccountInfo');
     Promise.all([
       fetch(`${BASE_URL}/v1/account/balance/${address}?rank=true`).then(res => res.json()).catch(() => null),
-      fetch(`${BASE_URL}/v1/traders/${address}`).then(res => res.json()).catch(() => null)
-    ]).then(([balanceData, traderData]) => {
+      fetch(`${BASE_URL}/v1/traders/${address}`).then(res => res.json()).catch(() => null),
+      fetch(`${BASE_URL}/v1/nft/analytics/trader/${address}`).then(res => res.json()).catch(() => null)
+    ]).then(([balanceData, traderData, nftData]) => {
       console.timeEnd('[Wallet] fetchAccountInfo');
       const merged = { ...balanceData };
       if (traderData && !traderData.error) {
@@ -990,6 +993,9 @@ export default function WalletPage() {
         merged.sellVolume = traderData.sellVolume;
       }
       setAccountInfo(merged);
+      if (nftData && !nftData.error) {
+        setNftStats(nftData);
+      }
     }).catch(() => console.timeEnd('[Wallet] fetchAccountInfo'));
   }, [address]);
 
@@ -2099,7 +2105,7 @@ export default function WalletPage() {
                               {accountInfo.roi >= 0 ? '+' : ''}{accountInfo.roi.toFixed(1)}%
                             </span></span>
                           )}
-                          {accountInfo.totalTrades > 0 && (
+                          {(accountInfo.totalTrades > 0 || nftStats?.totalTrades > 0) && (
                             <button
                               onClick={() => setShowPLCard(true)}
                               className={cn(
@@ -4748,9 +4754,34 @@ export default function WalletPage() {
       )}
 
       {/* P/L Card Modal */}
-      {showPLCard && accountInfo && (
+      {showPLCard && (accountInfo || nftStats) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setShowPLCard(false)}>
           <div onClick={e => e.stopPropagation()} className="relative">
+            {/* Type Toggle */}
+            <div className="flex items-center justify-center gap-1 mb-3 w-[400px]">
+              {[
+                { id: 'token', label: 'Token', icon: Coins, disabled: !accountInfo?.totalTrades },
+                { id: 'nft', label: 'NFT', icon: Image, disabled: !nftStats?.totalTrades },
+                { id: 'combined', label: 'Combined', icon: Layers, disabled: !accountInfo?.totalTrades && !nftStats?.totalTrades }
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => !opt.disabled && setPlType(opt.id)}
+                  disabled={opt.disabled}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all",
+                    plType === opt.id
+                      ? isDark ? "bg-white/15 text-white" : "bg-gray-200 text-gray-900"
+                      : isDark ? "bg-white/5 text-white/50 hover:bg-white/10" : "bg-gray-100 text-gray-500 hover:bg-gray-150",
+                    opt.disabled && "opacity-30 cursor-not-allowed"
+                  )}
+                >
+                  <opt.icon size={12} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
             {/* Card for display and capture */}
             <div
               ref={plCardRef}
@@ -4758,8 +4789,10 @@ export default function WalletPage() {
             >
               {/* Header with logo */}
               <div className="flex items-center justify-between mb-6">
-                <img src="/logo/xrpl-to-logo-black.svg" alt="XRPL.to" className={cn("h-6", isDark && "invert")} />
-                <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>DEX Trading Stats</span>
+                <img src={isDark ? "/logo/xrpl-to-logo-white.svg" : "/logo/xrpl-to-logo-black.svg"} alt="XRPL.to" className="h-6" />
+                <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>
+                  {plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats'}
+                </span>
               </div>
 
               {/* Address */}
@@ -4768,50 +4801,91 @@ export default function WalletPage() {
                 <div className={cn("text-xs font-mono", isDark ? "text-white/70" : "text-gray-600")}>{address?.slice(0, 12)}...{address?.slice(-8)}</div>
               </div>
 
-              {/* Main P/L */}
-              <div className="mb-6">
-                <div className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total P/L</div>
-                <div className={cn('text-3xl font-bold', (accountInfo.pnl || 0) >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
-                  {(accountInfo.pnl || 0) >= 0 ? '+' : ''}{(accountInfo.pnl || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
-                </div>
-                <div className={cn('text-sm', (accountInfo.roi || 0) >= 0 ? 'text-[#08AA09]/70' : 'text-red-400/70')}>
-                  {(accountInfo.roi || 0) >= 0 ? '+' : ''}{(accountInfo.roi || 0).toFixed(1)}% ROI
-                </div>
-              </div>
+              {/* Main P/L - Dynamic based on plType */}
+              {(() => {
+                const tokenPnl = accountInfo?.pnl || 0;
+                const tokenRoi = accountInfo?.roi || 0;
+                const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                const nftRoi = nftStats?.roi || 0;
+                const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                return (
+                  <div className="mb-6">
+                    <div className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total P/L</div>
+                    <div className={cn('text-3xl font-bold', pnl >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
+                      {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                    </div>
+                    <div className={cn('text-sm', roi >= 0 ? 'text-[#08AA09]/70' : 'text-red-400/70')}>
+                      {roi >= 0 ? '+' : ''}{roi.toFixed(1)}% ROI
+                    </div>
+                  </div>
+                );
+              })()}
 
-              {/* Stats Grid */}
+              {/* Stats Grid - Dynamic based on plType */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div>
                   <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Trades</div>
-                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{accountInfo.totalTrades || 0}</div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>
+                    {plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0))}
+                  </div>
                 </div>
                 <div>
                   <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Win Rate</div>
-                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{(accountInfo.winRate || 0).toFixed(0)}%</div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>
+                    {plType === 'token' ? (accountInfo?.winRate || 0).toFixed(0) : plType === 'nft' ? (nftStats?.winRate || 0).toFixed(0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1)).toFixed(0)}%
+                  </div>
                 </div>
                 <div>
-                  <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Tokens</div>
-                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{accountInfo.totalTokensTraded || 0}</div>
+                  <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
+                    {plType === 'nft' ? 'NFTs' : plType === 'token' ? 'Tokens' : 'Assets'}
+                  </div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>
+                    {plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0))}
+                  </div>
                 </div>
               </div>
 
-              {/* Win/Loss */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
-                  <div className="text-[#08AA09]/60 text-[10px] uppercase tracking-wider">Best Trade</div>
-                  <div className="text-[#08AA09] font-semibold">+{(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+              {/* Win/Loss or NFT-specific stats */}
+              {plType === 'nft' ? (
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Realized</div>
+                    <div className={cn("font-semibold", (nftStats?.profit || 0) >= 0 ? "text-[#08AA09]" : "text-red-400")}>
+                      {(nftStats?.profit || 0) >= 0 ? '+' : ''}{(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                    </div>
+                  </div>
+                  <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Unrealized</div>
+                    <div className={cn("font-semibold", (nftStats?.unrealizedProfit || 0) >= 0 ? "text-[#08AA09]" : "text-amber-400")}>
+                      {(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}{(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                    </div>
+                  </div>
                 </div>
-                <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
-                  <div className="text-red-400/60 text-[10px] uppercase tracking-wider">Worst Trade</div>
-                  <div className="text-red-400 font-semibold">{(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+              ) : (
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <div className="text-[#08AA09]/60 text-[10px] uppercase tracking-wider">Best Trade</div>
+                    <div className="text-[#08AA09] font-semibold">+{(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                  </div>
+                  <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
+                    <div className="text-red-400/60 text-[10px] uppercase tracking-wider">Worst Trade</div>
+                    <div className="text-red-400 font-semibold">{(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Ranking */}
-              {accountInfo.tradingRank && (
+              {accountInfo?.tradingRank && plType !== 'nft' && (
                 <div className="flex items-center gap-2 text-[#F6AF01]/80">
                   <Trophy size={14} />
                   <span className="text-sm">Trading Rank #{accountInfo.tradingRank.toLocaleString()}</span>
+                </div>
+              )}
+              {plType === 'nft' && nftStats?.flips > 0 && (
+                <div className={cn("flex items-center gap-4 text-xs", isDark ? "text-white/50" : "text-gray-500")}>
+                  <span>{nftStats.flips} flips</span>
+                  <span>{(nftStats.avgHoldingDays || 0).toFixed(0)}d avg hold</span>
                 </div>
               )}
             </div>
@@ -4820,9 +4894,16 @@ export default function WalletPage() {
             <div className="flex gap-2 mt-4 w-[400px]">
               <button
                 onClick={async () => {
-                  const pnl = accountInfo.pnl || 0;
-                  const roi = accountInfo.roi || 0;
-                  const text = `My XRPL DEX Trading Stats\n\n${pnl >= 0 ? '📈' : '📉'} P/L: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP (${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%)\n🎯 ${accountInfo.totalTrades || 0} trades | ${(accountInfo.winRate || 0).toFixed(0)}% win rate\n\nTrack your trading at @xrplto\nhttps://xrpl.to/address/${address}`;
+                  const tokenPnl = accountInfo?.pnl || 0;
+                  const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                  const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                  const tokenRoi = accountInfo?.roi || 0;
+                  const nftRoi = nftStats?.roi || 0;
+                  const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                  const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
+                  const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
+                  const typeLabel = plType === 'token' ? 'Token' : plType === 'nft' ? 'NFT' : 'XRPL';
+                  const text = `My ${typeLabel} Trading Stats\n\n${pnl >= 0 ? '📈' : '📉'} P/L: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP (${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%)\n🎯 ${trades} trades | ${winRate.toFixed(0)}% win rate\n\nTrack your trading at @xrplto\nhttps://xrpl.to/address/${address}`;
 
                   // Generate PNG for sharing
                   const canvas = document.createElement('canvas');
@@ -4847,8 +4928,12 @@ export default function WalletPage() {
                     ctx.fillText(t, x * scale, y * scale);
                   };
 
+                  const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
+                  const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
+                  const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
+
                   drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
-                  drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                  drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
                   drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
                   drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: addressColor });
                   drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
@@ -4856,21 +4941,28 @@ export default function WalletPage() {
                   drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
                   const statsY = 210;
                   drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(accountInfo.totalTrades || 0), 24, statsY + 24, { size: 18, weight: '600' });
+                  drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
                   drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${(accountInfo.winRate || 0).toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
-                  drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
+                  drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                  drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
                   const boxY = 260;
                   ctx.fillStyle = boxBgColor;
                   ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
                   ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
-                  drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                  drawText(`+${(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
-                  drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
-                  drawText(`${(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                  if (plType === 'nft') {
+                    drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                    drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
+                    drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
+                    drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
+                  } else {
+                    drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                    drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                    drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                    drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                  }
 
                   // Try Web Share API with image
                   try {
@@ -4890,6 +4982,15 @@ export default function WalletPage() {
               </button>
               <button
                 onClick={() => {
+                  const tokenPnl = accountInfo?.pnl || 0;
+                  const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                  const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                  const tokenRoi = accountInfo?.roi || 0;
+                  const nftRoi = nftStats?.roi || 0;
+                  const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                  const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
+                  const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
+
                   const canvas = document.createElement('canvas');
                   const scale = 2;
                   canvas.width = 400 * scale;
@@ -4900,8 +5001,6 @@ export default function WalletPage() {
                   const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
                   const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
                   const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-                  const pnl = accountInfo.pnl || 0;
-                  const roi = accountInfo.roi || 0;
                   const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
 
                   ctx.fillStyle = bgColor;
@@ -4914,8 +5013,12 @@ export default function WalletPage() {
                     ctx.fillText(t, x * scale, y * scale);
                   };
 
+                  const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
+                  const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
+                  const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
+
                   drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
-                  drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                  drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
                   drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
                   drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: addressColor });
                   drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
@@ -4923,24 +5026,32 @@ export default function WalletPage() {
                   drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
                   const statsY = 210;
                   drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(accountInfo.totalTrades || 0), 24, statsY + 24, { size: 18, weight: '600' });
+                  drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
                   drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${(accountInfo.winRate || 0).toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
-                  drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
+                  drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                  drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                  drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
                   const boxY = 260;
                   ctx.fillStyle = boxBgColor;
                   ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
                   ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
-                  drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                  drawText(`+${(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
-                  drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
-                  drawText(`${(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                  if (plType === 'nft') {
+                    drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                    drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
+                    drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
+                    drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
+                  } else {
+                    drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                    drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                    drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                    drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                  }
 
                   const link = document.createElement('a');
-                  link.download = `xrpl-to-pl-${address?.slice(0, 8)}.png`;
+                  const typeLabel = plType === 'token' ? 'token' : plType === 'nft' ? 'nft' : 'combined';
+                  link.download = `xrpl-to-${typeLabel}-pl-${address?.slice(0, 8)}.png`;
                   link.href = canvas.toDataURL('image/png');
                   link.click();
                 }}
