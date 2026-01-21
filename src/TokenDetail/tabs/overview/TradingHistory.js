@@ -151,7 +151,7 @@ const decodeCurrency = (currency) => {
 };
 
 // Sea creature SVG icons for wallet tiers (complete originals with preserveAspectRatio)
-const ShrimpIcon = ({ color = '#0b77b0' }) => (
+const ShrimpIcon = ({ color = '#f97316' }) => (
   <svg
     viewBox="0 0 824 796"
     width="24"
@@ -212,7 +212,7 @@ const ShrimpIcon = ({ color = '#0b77b0' }) => (
   </svg>
 );
 
-const FishIcon = ({ color = '#05a0f3' }) => (
+const FishIcon = ({ color = '#3b82f6' }) => (
   <svg
     viewBox="0 0 1000 735"
     width="24"
@@ -281,7 +281,7 @@ const FishIcon = ({ color = '#05a0f3' }) => (
   </svg>
 );
 
-const SwordfishIcon = ({ color = '#04d1f3' }) => (
+const SwordfishIcon = ({ color = '#a855f7' }) => (
   <svg
     viewBox="0 0 1323 488"
     width="24"
@@ -339,7 +339,7 @@ const SwordfishIcon = ({ color = '#04d1f3' }) => (
   </svg>
 );
 
-const SharkIcon = ({ color = '#0dfbf6' }) => (
+const SharkIcon = ({ color = '#64748b' }) => (
   <svg
     viewBox="0 0 1485 621"
     width="24"
@@ -405,7 +405,7 @@ const SharkIcon = ({ color = '#0dfbf6' }) => (
   </svg>
 );
 
-const OrcaIcon = ({ color = '#0dfac5' }) => (
+const OrcaIcon = ({ color = '#06b6d4' }) => (
   <svg
     viewBox="0 0 1186 606"
     width="24"
@@ -471,7 +471,7 @@ const OrcaIcon = ({ color = '#0dfac5' }) => (
   </svg>
 );
 
-const WhaleIcon = ({ color = '#00c382' }) => (
+const WhaleIcon = ({ color = '#22c55e' }) => (
   <svg
     viewBox="0 0 1330 628"
     width="24"
@@ -530,12 +530,12 @@ const WhaleIcon = ({ color = '#00c382' }) => (
 
 // Sea creature tier config
 const TIER_CONFIG = [
-  { max: 100, Icon: ShrimpIcon, color: '#0b77b0', name: 'Shrimp' },
-  { max: 500, Icon: FishIcon, color: '#05a0f3', name: 'Fish' },
-  { max: 2000, Icon: SwordfishIcon, color: '#04d1f3', name: 'Swordfish' },
-  { max: 5000, Icon: SharkIcon, color: '#0dfbf6', name: 'Shark' },
-  { max: 20000, Icon: OrcaIcon, color: '#0dfac5', name: 'Orca' },
-  { max: Infinity, Icon: WhaleIcon, color: '#00c382', name: 'Whale' }
+  { max: 100, Icon: ShrimpIcon, color: '#f97316', name: 'Shrimp' },
+  { max: 500, Icon: FishIcon, color: '#3b82f6', name: 'Fish' },
+  { max: 2000, Icon: SwordfishIcon, color: '#a855f7', name: 'Swordfish' },
+  { max: 5000, Icon: SharkIcon, color: '#64748b', name: 'Shark' },
+  { max: 20000, Icon: OrcaIcon, color: '#06b6d4', name: 'Orca' },
+  { max: Infinity, Icon: WhaleIcon, color: '#22c55e', name: 'Whale' }
 ];
 
 const TierIcon = ({ xrpValue, isDark }) => {

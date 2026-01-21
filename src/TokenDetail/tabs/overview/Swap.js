@@ -3124,23 +3124,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </div>
           )}
 
-          {/* Trustline warning */}
-          {accountProfile?.account && accountPairBalance && (
-            (!hasTrustline1 && curr1.currency !== 'XRP') ||
-            (!hasTrustline2 && curr2.currency !== 'XRP')
-          ) && (
-            <Alert severity="warning" isDark={isDark} sx={{ mt: 1, py: 0.5 }}>
-              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                {!hasTrustline1 && curr1.currency !== 'XRP' && !hasTrustline2 && curr2.currency !== 'XRP'
-                  ? `Trustlines needed for ${curr1.name || curr1.currency} & ${curr2.name || curr2.currency} (~0.4 XRP reserve)`
-                  : !hasTrustline1 && curr1.currency !== 'XRP'
-                    ? `Trustline needed for ${curr1.name || curr1.currency} (~0.2 XRP reserve)`
-                    : `Trustline needed for ${curr2.name || curr2.currency} (~0.2 XRP reserve)`
-                }
-              </Typography>
-            </Alert>
-          )}
-
           {/* Exchange/Trustline Button - inside the swap card when connected */}
           {accountProfile?.account && (
             <Box sx={{ mt: 1 }}>
