@@ -21,7 +21,7 @@ const fetchInFlight = new Map();
 
 const Container = styled.div`
   border-radius: 12px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb')};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb')};
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -41,10 +41,10 @@ const Header = styled.div`
 const Title = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 10px;
   font-weight: 500;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36')};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : '#212B36')};
 `;
 
 const Content = styled.div`
@@ -157,6 +157,8 @@ const OrderBook = ({ token, onPriceClick }) => {
   const [rlusdToken, setRlusdToken] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [viewMode, setViewMode] = useState('both'); // 'both', 'buy', 'sell'
+  const [precision, setPrecision] = useState(6);
+  const [hoveredRow, setHoveredRow] = useState(null);
   const wsRef = useRef(null);
 
   // XRP is native asset - show RLUSD/XRP orderbook instead
@@ -510,20 +512,30 @@ const OrderBook = ({ token, onPriceClick }) => {
               </button>
             ))}
           </div>
-          <div
+          <select
+            value={precision}
+            onChange={(e) => setPrecision(Number(e.target.value))}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '2px 6px',
+              padding: '3px 6px',
               borderRadius: '4px',
-              background: wsConnected ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
-              color: wsConnected ? '#22c55e' : isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-              fontSize: '9px'
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              fontSize: '9px',
+              background: isDark ? '#1a1f2e' : '#f5f5f5',
+              color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+              cursor: 'pointer',
+              outline: 'none',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%23ffffff60' : '%2300000060'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 4px center',
+              paddingRight: '18px'
             }}
           >
-            {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
-          </div>
+            <option value={4} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.0001</option>
+            <option value={6} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.000001</option>
+            <option value={8} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.00000001</option>
+          </select>
         </div>
       </Header>
 
@@ -536,12 +548,21 @@ const OrderBook = ({ token, onPriceClick }) => {
               <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
               <span>By</span>
             </ColumnHeader>
-            {[...asks].reverse().map((ask, idx) => {
+            {[...asks].reverse().map((ask, idx, arr) => {
               const acc = ask.account || ask.Account;
+              const cumSum = arr.slice(0, idx + 1).reduce((s, a) => s + a.amount, 0);
+              const avgPrice = arr.slice(0, idx + 1).reduce((s, a) => s + a.price * a.amount, 0) / cumSum;
+              const rowKey = `ask-${idx}`;
               return (
-                <Row key={idx} type="ask" onClick={() => onPriceClick?.(ask.price)}>
+                <Row
+                  key={idx}
+                  type="ask"
+                  onClick={() => onPriceClick?.(ask.price)}
+                  onMouseEnter={() => setHoveredRow(rowKey)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                >
                   <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-                  <Price type="ask">{formatPrice(ask.price)}</Price>
+                  <Price type="ask">{ask.price.toFixed(precision)}</Price>
                   <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
                   <Maker
                     isDark={isDark}
@@ -553,6 +574,28 @@ const OrderBook = ({ token, onPriceClick }) => {
                   >
                     {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                   </Maker>
+                  {hoveredRow === rowKey && (
+                    <div style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '-28px',
+                      transform: 'translateX(-50%)',
+                      background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '9px',
+                      whiteSpace: 'nowrap',
+                      zIndex: 10,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                    }}>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
+                      <span style={{ color: '#ef4444' }}>{fNumber(cumSum)}</span>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                      <span>{avgPrice.toFixed(precision)}</span>
+                    </div>
+                  )}
                 </Row>
               );
             })}
@@ -591,10 +634,19 @@ const OrderBook = ({ token, onPriceClick }) => {
             </ColumnHeader>
             {bids.map((bid, idx) => {
               const acc = bid.account || bid.Account;
+              const cumSum = bids.slice(0, idx + 1).reduce((s, b) => s + b.amount, 0);
+              const avgPrice = bids.slice(0, idx + 1).reduce((s, b) => s + b.price * b.amount, 0) / cumSum;
+              const rowKey = `bid-${idx}`;
               return (
-                <Row key={idx} type="bid" onClick={() => onPriceClick?.(bid.price)}>
+                <Row
+                  key={idx}
+                  type="bid"
+                  onClick={() => onPriceClick?.(bid.price)}
+                  onMouseEnter={() => setHoveredRow(rowKey)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                >
                   <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-                  <Price type="bid">{formatPrice(bid.price)}</Price>
+                  <Price type="bid">{bid.price.toFixed(precision)}</Price>
                   <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
                   <Maker
                     isDark={isDark}
@@ -606,6 +658,28 @@ const OrderBook = ({ token, onPriceClick }) => {
                   >
                     {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
                   </Maker>
+                  {hoveredRow === rowKey && (
+                    <div style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '-28px',
+                      transform: 'translateX(-50%)',
+                      background: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '9px',
+                      whiteSpace: 'nowrap',
+                      zIndex: 10,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                    }}>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Σ </span>
+                      <span style={{ color: '#22c55e' }}>{fNumber(cumSum)}</span>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
+                      <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
+                      <span>{avgPrice.toFixed(precision)}</span>
+                    </div>
+                  )}
                 </Row>
               );
             })}
