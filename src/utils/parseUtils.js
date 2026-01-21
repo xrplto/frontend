@@ -1043,7 +1043,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
   const fee = tx.Fee ? (parseInt(tx.Fee) / 1000000) : 0;
   const feeStr = fee > 0 ? (fee < 0.001 ? `${fee.toFixed(6)} XRP` : `${fee.toFixed(4)} XRP`) : null;
 
-  // Helper to format amounts
+  // Helper to format amounts (handles scientific notation)
   const formatAmt = (amt) => {
     if (!amt) return null;
     if (typeof amt === 'string') {
@@ -1051,8 +1051,20 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       return xrp >= 1 ? `${xrp.toFixed(2)} XRP` : `${xrp.toFixed(6)} XRP`;
     }
     if (amt?.value) {
-      const val = parseFloat(amt.value);
-      return `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(amt.currency)}`;
+      try {
+        const dec = new Decimal(amt.value);
+        const val = dec.toNumber();
+        if (val === 0 || !isFinite(val)) return `0 ${decodeCurrency(amt.currency)}`;
+        // Show appropriate precision based on magnitude
+        let formatted;
+        if (val >= 1) formatted = dec.toFixed(2);
+        else if (val >= 0.01) formatted = dec.toFixed(4);
+        else if (val >= 1e-8) formatted = dec.toFixed(8);
+        else formatted = dec.toSignificantDigits(4).toFixed(); // Very small: show 4 sig figs
+        return `${formatted} ${decodeCurrency(amt.currency)}`;
+      } catch {
+        return `${amt.value} ${decodeCurrency(amt.currency)}`;
+      }
     }
     return null;
   };

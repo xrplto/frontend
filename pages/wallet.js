@@ -2329,13 +2329,38 @@ export default function WalletPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {recentView === 'onchain' && (
-                        <select
-                          value={txTypeFilter}
-                          onChange={(e) => setTxTypeFilter(e.target.value)}
-                          className={cn("text-[10px] font-medium px-2 py-1 rounded-md border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
-                        >
-                          {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
-                        </select>
+                        <div className="flex items-center gap-1">
+                          {['all', 'Payment', 'OfferCreate', 'TrustSet'].map(t => (
+                            <button
+                              key={t}
+                              onClick={() => setTxTypeFilter(t)}
+                              className={cn(
+                                'px-2 py-1 rounded-md text-[9px] font-medium transition-colors',
+                                txTypeFilter === t
+                                  ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                                  : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
+                              )}
+                            >
+                              {t === 'all' ? 'All' : t === 'OfferCreate' ? 'Trade' : t}
+                            </button>
+                          ))}
+                          <select
+                            value={['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter) ? '' : txTypeFilter}
+                            onChange={(e) => e.target.value && setTxTypeFilter(e.target.value)}
+                            className={cn(
+                              'px-1.5 py-1 rounded-md text-[9px] font-medium outline-none cursor-pointer transition-colors',
+                              !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter)
+                                ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                                : (isDark ? 'bg-transparent text-white/40 hover:text-white/70' : 'bg-transparent text-gray-400 hover:text-gray-600'),
+                              isDark ? '[&>option]:bg-[#1a1a1a] [&>option]:text-white' : ''
+                            )}
+                          >
+                            <option value="" disabled>More</option>
+                            {txTypes.filter(t => !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(t)).map(t => (
+                              <option key={t} value={t}>{t.replace('NFToken', 'NFT ').replace('AMM', 'AMM ')}</option>
+                            ))}
+                          </select>
+                        </div>
                       )}
                       <button
                         onClick={() => handleTabChange('trades')}
@@ -2404,23 +2429,34 @@ export default function WalletPage() {
                               <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <div className="flex items-center justify-end">
+                              <div className="flex items-center justify-end gap-2">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg", isDark ? "bg-white/5" : "bg-gray-100")}>
+                                  <div className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg", isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
                                     <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
-                                    <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>→</span>
+                                    <span className={cn("text-[9px]", isDark ? "text-white/25" : "text-gray-400")}>→</span>
                                     <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
                                   </div>
                                 ) : tx.amount ? (
-                                  <span className={cn(
-                                    "text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md",
-                                    tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                    tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
-                                  )}>
-                                    {tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`}
-                                  </span>
+                                  tx.amount.includes('→') ? (
+                                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg", tx.type === 'failed' ? "bg-amber-500/10" : isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
+                                      {tx.amount.split('→').map((part, i) => (
+                                        <span key={i} className={cn("text-[11px] font-semibold tabular-nums", i === 0 ? "text-red-400" : "text-[#08AA09]")}>
+                                          {i > 0 && <span className={cn("text-[9px] mr-1.5", isDark ? "text-white/25" : "text-gray-400")}>→</span>}
+                                          {part.trim()}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className={cn(
+                                      "text-[11px] font-semibold tabular-nums px-2.5 py-1.5 rounded-lg",
+                                      tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                      tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                    )}>
+                                      {tx.type !== 'failed' && (tx.type === 'in' ? '+' : '-')}{tx.amount}
+                                    </span>
+                                  )
                                 ) : (
-                                  <span className={cn("text-[11px] px-2 py-0.5 rounded-md", isDark ? "text-white/20 bg-white/5" : "text-gray-400 bg-gray-100")}>—</span>
+                                  <span className={cn("text-[10px] px-2 py-1 rounded-lg", isDark ? "text-white/20 bg-white/[0.04]" : "text-gray-400 bg-gray-100")}>—</span>
                                 )}
                               </div>
                               <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-400")}>
@@ -3418,13 +3454,36 @@ export default function WalletPage() {
                 {historyView === 'onchain' && (
                   <>
                     {/* Type Filter */}
-                    <div className={cn('flex items-center justify-between px-4 py-2 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                    <div className={cn('flex items-center gap-1 px-4 py-2.5 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                      {['all', 'Payment', 'OfferCreate', 'TrustSet'].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setTxTypeFilter(t)}
+                          className={cn(
+                            'px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors',
+                            txTypeFilter === t
+                              ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                              : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
+                          )}
+                        >
+                          {t === 'all' ? 'All' : t === 'OfferCreate' ? 'Trade' : t}
+                        </button>
+                      ))}
                       <select
-                        value={txTypeFilter}
-                        onChange={(e) => setTxTypeFilter(e.target.value)}
-                        className={cn("text-[10px] font-medium px-2 py-1 rounded-md border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
+                        value={['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter) ? '' : txTypeFilter}
+                        onChange={(e) => e.target.value && setTxTypeFilter(e.target.value)}
+                        className={cn(
+                          'px-2 py-1 rounded-md text-[10px] font-medium outline-none cursor-pointer transition-colors',
+                          !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter)
+                            ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                            : (isDark ? 'bg-transparent text-white/40 hover:text-white/70' : 'bg-transparent text-gray-400 hover:text-gray-600'),
+                          isDark ? '[&>option]:bg-[#1a1a1a] [&>option]:text-white' : ''
+                        )}
                       >
-                        {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
+                        <option value="" disabled>More ▾</option>
+                        {txTypes.filter(t => !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(t)).map(t => (
+                          <option key={t} value={t}>{t.replace('NFToken', 'NFT ').replace('AMM', 'AMM ')}</option>
+                        ))}
                       </select>
                     </div>
                     {txLoading ? (
@@ -3460,23 +3519,34 @@ export default function WalletPage() {
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <div className="flex items-center justify-end">
+                              <div className="flex items-center justify-end gap-2">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                  <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
                                     <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
-                                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>→</span>
+                                    <span className={cn('text-[9px]', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>
                                     <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
                                   </div>
                                 ) : tx.amount ? (
-                                  <span className={cn(
-                                    'text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md',
-                                    tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                    tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
-                                  )}>
-                                    {tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`}
-                                  </span>
+                                  tx.amount.includes('→') ? (
+                                    <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', tx.type === 'failed' ? 'bg-amber-500/10' : isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
+                                      {tx.amount.split('→').map((part, i) => (
+                                        <span key={i} className={cn('text-[11px] font-semibold tabular-nums', i === 0 ? 'text-red-400' : 'text-[#08AA09]')}>
+                                          {i > 0 && <span className={cn('text-[9px] mr-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>}
+                                          {part.trim()}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className={cn(
+                                      'text-[11px] font-semibold tabular-nums px-2.5 py-1.5 rounded-lg',
+                                      tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                      tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                    )}>
+                                      {tx.type !== 'failed' && (tx.type === 'in' ? '+' : '-')}{tx.amount}
+                                    </span>
+                                  )
                                 ) : (
-                                  <span className={cn('text-[11px] px-2 py-0.5 rounded-md', isDark ? 'text-white/20 bg-white/5' : 'text-gray-400 bg-gray-100')}>—</span>
+                                  <span className={cn('text-[10px] px-2 py-1 rounded-lg', isDark ? 'text-white/20 bg-white/[0.04]' : 'text-gray-400 bg-gray-100')}>—</span>
                                 )}
                               </div>
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>

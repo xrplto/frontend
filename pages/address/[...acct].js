@@ -2687,15 +2687,40 @@ const OverView = ({ account }) => {
                           isDark ? 'text-white' : 'text-gray-900'
                         )}
                       >
-                        Onchain transactions
+                        Transactions
                       </span>
-                      <select
-                        value={txTypeFilter}
-                        onChange={(e) => { console.log('Filter changed:', e.target.value); setTxTypeFilter(e.target.value); }}
-                        className={cn("text-[11px] font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
-                      >
-                        {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
-                      </select>
+                      <div className="flex items-center gap-1">
+                        {['all', 'Payment', 'OfferCreate', 'TrustSet'].map(t => (
+                          <button
+                            key={t}
+                            onClick={() => setTxTypeFilter(t)}
+                            className={cn(
+                              'px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors',
+                              txTypeFilter === t
+                                ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                                : (isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')
+                            )}
+                          >
+                            {t === 'all' ? 'All' : t === 'OfferCreate' ? 'Trade' : t}
+                          </button>
+                        ))}
+                        <select
+                          value={['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter) ? '' : txTypeFilter}
+                          onChange={(e) => e.target.value && setTxTypeFilter(e.target.value)}
+                          className={cn(
+                            'px-2 py-1 rounded-md text-[10px] font-medium outline-none cursor-pointer transition-colors',
+                            !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(txTypeFilter)
+                              ? (isDark ? 'bg-white/15 text-white' : 'bg-gray-200 text-gray-900')
+                              : (isDark ? 'bg-transparent text-white/40 hover:text-white/70' : 'bg-transparent text-gray-400 hover:text-gray-600'),
+                            isDark ? '[&>option]:bg-[#1a1a1a] [&>option]:text-white' : ''
+                          )}
+                        >
+                          <option value="" disabled>More ▾</option>
+                          {txTypes.filter(t => !['all', 'Payment', 'OfferCreate', 'TrustSet'].includes(t)).map(t => (
+                            <option key={t} value={t}>{t.replace('NFToken', 'NFT ').replace('AMM', 'AMM ')}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     {txHistory.length === 0 ? (
@@ -2733,23 +2758,34 @@ const OverView = ({ account }) => {
                                 <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                   {parsed.counterparty ? (parsed.counterparty.startsWith('r') ? <Link href={`/address/${parsed.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{parsed.counterparty.slice(0, 10)}...{parsed.counterparty.slice(-6)}</Link> : parsed.counterparty) : parsed.fromAmount ? 'DEX Swap' : '—'}
                                 </p>
-                                <div className="flex items-center justify-end">
+                                <div className="flex items-center justify-end gap-2">
                                   {parsed.fromAmount && parsed.toAmount ? (
-                                    <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                    <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
                                       <span className="text-[11px] font-semibold tabular-nums text-red-400">{parsed.fromAmount}</span>
-                                      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>→</span>
+                                      <span className={cn('text-[9px]', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>
                                       <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{parsed.toAmount}</span>
                                     </div>
                                   ) : parsed.amount ? (
-                                    <span className={cn(
-                                      'text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md',
-                                      parsed.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                      parsed.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
-                                    )}>
-                                      {parsed.type === 'failed' ? '—' : `${parsed.type === 'in' ? '+' : '-'}${parsed.amount}`}
-                                    </span>
+                                    parsed.amount.includes('→') ? (
+                                      <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', parsed.type === 'failed' ? 'bg-amber-500/10' : isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
+                                        {parsed.amount.split('→').map((part, i) => (
+                                          <span key={i} className={cn('text-[11px] font-semibold tabular-nums', i === 0 ? 'text-red-400' : 'text-[#08AA09]')}>
+                                            {i > 0 && <span className={cn('text-[9px] mr-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>}
+                                            {part.trim()}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className={cn(
+                                        'text-[11px] font-semibold tabular-nums px-2.5 py-1.5 rounded-lg',
+                                        parsed.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                        parsed.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                      )}>
+                                        {parsed.type !== 'failed' && (parsed.type === 'in' ? '+' : '-')}{parsed.amount}
+                                      </span>
+                                    )
                                   ) : (
-                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-md', isDark ? 'text-white/20 bg-white/5' : 'text-gray-400 bg-gray-100')}>—</span>
+                                    <span className={cn('text-[10px] px-2 py-1 rounded-lg', isDark ? 'text-white/20 bg-white/[0.04]' : 'text-gray-400 bg-gray-100')}>—</span>
                                   )}
                                 </div>
                                 <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
