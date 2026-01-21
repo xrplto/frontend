@@ -1557,13 +1557,40 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
-        toast.success('Swap complete!', { id: toastId, description: `TX: ${signed.hash.slice(0, 8)}...` });
+        toast.loading('Swap submitted', { id: toastId, description: 'Waiting for validation...' });
+
+        // Poll for transaction validation instead of fixed delay
+        const txHash = signed.hash;
+        let validated = false;
+        let attempts = 0;
+        const maxAttempts = 15; // 15 attempts * 500ms = 7.5s max wait
+
+        while (!validated && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 500)); // 500ms between polls
+
+          try {
+            const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
+              validated = true;
+              break;
+            }
+          } catch (e) {
+            // Transaction not found yet, continue polling
+          }
+        }
+
+        if (validated) {
+          toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+        } else {
+          // Transaction accepted but validation not confirmed in time - still likely to succeed
+          toast.success('Swap submitted!', { id: toastId, description: 'Validation pending...' });
+        }
+
         setAmount1('');
         setAmount2('');
-        setTimeout(() => {
-          setSync((s) => s + 1);
-          setIsSwapped((v) => !v);
-        }, 2000);
+        setSync((s) => s + 1);
+        setIsSwapped((v) => !v);
       } else {
         toast.error('Transaction failed', { id: toastId, description: result.data.engine_result });
       }
@@ -1730,12 +1757,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
 
       if (result.data.engine_result === 'tesSUCCESS') {
+        // Poll for transaction validation
+        const txHash = signed.hash;
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        while (attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 400));
+          try {
+            const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
+              break;
+            }
+          } catch (e) {
+            // Continue polling
+          }
+        }
+
         if (!silent) {
-          toast.success('Trustline set!', { description: `TX: ${signed.hash.slice(0, 8)}...` });
-          setTimeout(() => {
-            setSync((s) => s + 1);
-            setIsSwapped((v) => !v);
-          }, 2000);
+          toast.success('Trustline set!', { description: `TX: ${txHash.slice(0, 8)}...` });
+          setSync((s) => s + 1);
+          setIsSwapped((v) => !v);
         }
         return true;
       } else {
