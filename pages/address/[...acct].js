@@ -648,7 +648,7 @@ const OverView = ({ account }) => {
                   {typeof data?.washTradingScore === 'number' && (
                     <div
                       className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium border',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border',
                         data.washTradingScore > 50
                           ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                           : isDark
@@ -657,7 +657,7 @@ const OverView = ({ account }) => {
                       )}
                       title="Wash Trading Score"
                     >
-                      {data.washTradingScore > 50 && <AlertTriangle size={10} />}
+                      {data.washTradingScore > 50 && <AlertTriangle size={13} />}
                       <span>Wash {data.washTradingScore}</span>
                     </div>
                   )}

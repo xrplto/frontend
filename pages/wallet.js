@@ -4754,23 +4754,23 @@ export default function WalletPage() {
             {/* Card for display and capture */}
             <div
               ref={plCardRef}
-              className="w-[400px] p-6 rounded-2xl bg-black"
+              className={cn("w-[400px] p-6 rounded-2xl", isDark ? "bg-black" : "bg-white")}
             >
               {/* Header with logo */}
               <div className="flex items-center justify-between mb-6">
-                <img src="/logo/xrpl-to-logo-white.svg" alt="XRPL.to" className="h-6" />
-                <span className="text-white/40 text-xs">DEX Trading Stats</span>
+                <img src="/logo/xrpl-to-logo-black.svg" alt="XRPL.to" className={cn("h-6", isDark && "invert")} />
+                <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>DEX Trading Stats</span>
               </div>
 
               {/* Address */}
               <div className="mb-4">
-                <div className="text-[10px] uppercase tracking-wider mb-1 text-white/40">Wallet</div>
-                <div className="text-xs font-mono text-white/70">{address?.slice(0, 12)}...{address?.slice(-8)}</div>
+                <div className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Wallet</div>
+                <div className={cn("text-xs font-mono", isDark ? "text-white/70" : "text-gray-600")}>{address?.slice(0, 12)}...{address?.slice(-8)}</div>
               </div>
 
               {/* Main P/L */}
               <div className="mb-6">
-                <div className="text-[10px] uppercase tracking-wider mb-1 text-white/40">Total P/L</div>
+                <div className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total P/L</div>
                 <div className={cn('text-3xl font-bold', (accountInfo.pnl || 0) >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
                   {(accountInfo.pnl || 0) >= 0 ? '+' : ''}{(accountInfo.pnl || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
                 </div>
@@ -4782,26 +4782,26 @@ export default function WalletPage() {
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-white/40">Trades</div>
-                  <div className="text-lg font-semibold text-white">{accountInfo.totalTrades || 0}</div>
+                  <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Trades</div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{accountInfo.totalTrades || 0}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-white/40">Win Rate</div>
-                  <div className="text-lg font-semibold text-white">{(accountInfo.winRate || 0).toFixed(0)}%</div>
+                  <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Win Rate</div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{(accountInfo.winRate || 0).toFixed(0)}%</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-white/40">Tokens</div>
-                  <div className="text-lg font-semibold text-white">{accountInfo.totalTokensTraded || 0}</div>
+                  <div className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Tokens</div>
+                  <div className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>{accountInfo.totalTokensTraded || 0}</div>
                 </div>
               </div>
 
               {/* Win/Loss */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 rounded-lg p-3 bg-white/5">
+                <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
                   <div className="text-[#08AA09]/60 text-[10px] uppercase tracking-wider">Best Trade</div>
                   <div className="text-[#08AA09] font-semibold">+{(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
                 </div>
-                <div className="flex-1 rounded-lg p-3 bg-white/5">
+                <div className={cn("flex-1 rounded-lg p-3", isDark ? "bg-white/5" : "bg-gray-50")}>
                   <div className="text-red-400/60 text-[10px] uppercase tracking-wider">Worst Trade</div>
                   <div className="text-red-400 font-semibold">{(accountInfo.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
                 </div>
@@ -4817,7 +4817,7 @@ export default function WalletPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-4 w-[400px]">
               <button
                 onClick={async () => {
                   const pnl = accountInfo.pnl || 0;
@@ -4830,9 +4830,11 @@ export default function WalletPage() {
                   canvas.width = 400 * scale;
                   canvas.height = 340 * scale;
                   const ctx = canvas.getContext('2d');
-                  const bgColor = '#000';
-                  const textColor = '#fff';
-                  const mutedColor = 'rgba(255,255,255,0.4)';
+                  const bgColor = isDark ? '#000' : '#fff';
+                  const textColor = isDark ? '#fff' : '#111';
+                  const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                  const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+                  const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
                   const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
 
                   ctx.fillStyle = bgColor;
@@ -4848,7 +4850,7 @@ export default function WalletPage() {
                   drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
                   drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
                   drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: 'rgba(255,255,255,0.7)' });
+                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: addressColor });
                   drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
                   drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 158, { size: 28, weight: '700', color: pnlColor });
                   drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
@@ -4860,7 +4862,7 @@ export default function WalletPage() {
                   drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
                   drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
                   const boxY = 260;
-                  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                  ctx.fillStyle = boxBgColor;
                   ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
                   ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
@@ -4881,10 +4883,10 @@ export default function WalletPage() {
                   } catch {}
                   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
                 }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-black hover:bg-neutral-900 text-white rounded-xl font-medium transition-colors"
+                className={cn("flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800")}
               >
                 <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                Share
+                Post
               </button>
               <button
                 onClick={() => {
@@ -4893,9 +4895,11 @@ export default function WalletPage() {
                   canvas.width = 400 * scale;
                   canvas.height = 340 * scale;
                   const ctx = canvas.getContext('2d');
-                  const bgColor = '#000';
-                  const textColor = '#fff';
-                  const mutedColor = 'rgba(255,255,255,0.4)';
+                  const bgColor = isDark ? '#000' : '#fff';
+                  const textColor = isDark ? '#fff' : '#111';
+                  const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                  const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+                  const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
                   const pnl = accountInfo.pnl || 0;
                   const roi = accountInfo.roi || 0;
                   const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
@@ -4913,7 +4917,7 @@ export default function WalletPage() {
                   drawText('XRPL.to', 24, 36, { size: 18, weight: '700' });
                   drawText('DEX Trading Stats', 376, 36, { size: 11, color: mutedColor, align: 'right' });
                   drawText('WALLET', 24, 72, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: 'rgba(255,255,255,0.7)' });
+                  drawText(`${address?.slice(0, 12)}...${address?.slice(-8)}`, 24, 90, { size: 11, color: addressColor });
                   drawText('TOTAL P/L', 24, 124, { size: 9, color: mutedColor, weight: '500' });
                   drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 158, { size: 28, weight: '700', color: pnlColor });
                   drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 180, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
@@ -4925,7 +4929,7 @@ export default function WalletPage() {
                   drawText('TOKENS', 276, statsY, { size: 9, color: mutedColor, weight: '500' });
                   drawText(String(accountInfo.totalTokensTraded || 0), 276, statsY + 24, { size: 18, weight: '600' });
                   const boxY = 260;
-                  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                  ctx.fillStyle = boxBgColor;
                   ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
                   ctx.fill();
                   ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
@@ -4940,16 +4944,16 @@ export default function WalletPage() {
                   link.href = canvas.toDataURL('image/png');
                   link.click();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#137DFE] hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#137DFE] hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
               >
                 <Download size={16} />
-                Download PNG
+                Save
               </button>
               <button
                 onClick={() => setShowPLCard(false)}
-                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
+                className={cn("p-3 rounded-xl transition-colors", isDark ? "bg-white/10 hover:bg-white/20 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-600")}
               >
-                Close
+                <X size={18} />
               </button>
             </div>
           </div>
