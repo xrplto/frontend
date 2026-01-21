@@ -1011,6 +1011,510 @@ export function parseOfferChanges(paramTx, close_time) {
   return changes;
 }
 
+// ==== TRANSACTION PARSING FOR WALLET/ADDRESS PAGES ====
+
+/**
+ * Parse a transaction for display in wallet history / address page
+ * @param {Object} rawTx - Raw transaction object from XRPL
+ * @param {string} userAddress - The user's address to determine in/out direction
+ * @param {Function} decodeCurrency - Function to decode currency codes (normalizeCurrencyCode)
+ * @returns {Object} Parsed transaction for UI display
+ */
+export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeCurrencyCode) {
+  const tx = rawTx.tx_json || rawTx.tx || rawTx;
+  const meta = rawTx.meta || tx.meta;
+  const hash = rawTx.hash || tx.hash;
+  const type = tx.TransactionType;
+  const txResult = meta?.TransactionResult || 'tesSUCCESS';
+  const isFailed = txResult !== 'tesSUCCESS';
+
+  const isOutgoing = type === 'Payment'
+    ? tx.Account === userAddress && tx.Destination !== userAddress
+    : tx.Account === userAddress;
+  const isIncoming = type === 'Payment' && tx.Destination === userAddress;
+
+  let label = type;
+  let amount = '';
+  let isDust = false;
+  let counterparty = null;
+  let txType = isOutgoing ? 'out' : 'in';
+
+  // Format fee in XRP
+  const fee = tx.Fee ? (parseInt(tx.Fee) / 1000000) : 0;
+  const feeStr = fee > 0 ? (fee < 0.001 ? `${fee.toFixed(6)} XRP` : `${fee.toFixed(4)} XRP`) : null;
+
+  // Helper to format amounts
+  const formatAmt = (amt) => {
+    if (!amt) return null;
+    if (typeof amt === 'string') {
+      const xrp = parseInt(amt) / 1000000;
+      return xrp >= 1 ? `${xrp.toFixed(2)} XRP` : `${xrp.toFixed(6)} XRP`;
+    }
+    if (amt?.value) {
+      const val = parseFloat(amt.value);
+      return `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(amt.currency)}`;
+    }
+    return null;
+  };
+
+  // Helper to get AMM pool pair string
+  const getAmmPair = () => {
+    const asset1 = tx.Asset?.currency === 'XRP' ? 'XRP' : decodeCurrency(tx.Asset?.currency);
+    const asset2 = tx.Asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(tx.Asset2?.currency);
+    if (asset1 && asset2) return `${asset1}/${asset2}`;
+    return null;
+  };
+
+  // Helper to find deleted/modified RippleState balance from metadata
+  const getDeletedTrustlineBalance = (currency, issuer) => {
+    if (!meta?.AffectedNodes) return null;
+    for (const node of meta.AffectedNodes) {
+      const deleted = node.DeletedNode;
+      if (deleted?.LedgerEntryType === 'RippleState') {
+        const finalFields = deleted.FinalFields;
+        const high = finalFields?.HighLimit;
+        const low = finalFields?.LowLimit;
+        const matchesCurrency = high?.currency === currency || low?.currency === currency;
+        const matchesUser = high?.issuer === userAddress || low?.issuer === userAddress;
+        if (matchesCurrency && matchesUser && finalFields?.Balance?.value) {
+          return Math.abs(parseFloat(finalFields.Balance.value));
+        }
+      }
+    }
+    return null;
+  };
+
+  // Handle by transaction type
+  if (type === 'Payment') {
+    const delivered = meta?.delivered_amount || tx.DeliverMax || tx.Amount;
+    const isSwap = tx.Account === tx.Destination && tx.SendMax;
+
+    if (isFailed) {
+      label = isOutgoing ? 'Send Failed' : 'Receive Failed';
+      const amt = tx.DeliverMax || tx.Amount;
+      amount = formatAmt(amt) || 'Failed';
+      counterparty = isOutgoing ? tx.Destination : tx.Account;
+    } else if (isSwap) {
+      // DEX Swap: Account === Destination with SendMax
+      const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
+      label = isBuy ? 'Buy' : 'Sell';
+      txType = isBuy ? 'in' : 'out';
+
+      // Calculate actual spent from metadata
+      let actualSpent = null;
+      if (meta?.AffectedNodes) {
+        if (isBuy) {
+          // For BUY: spent XRP, calculate from AccountRoot balance change
+          const userAcct = meta.AffectedNodes.find(n =>
+            n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
+            n.ModifiedNode?.FinalFields?.Account === userAddress
+          )?.ModifiedNode;
+          if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+            const prevBal = parseInt(userAcct.PreviousFields.Balance);
+            const finalBal = parseInt(userAcct.FinalFields.Balance);
+            const fee = parseInt(tx.Fee || 0);
+            const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
+            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
+          }
+        } else {
+          // For SELL: spent tokens, calculate from RippleState balance change
+          const sendMaxCurrency = tx.SendMax?.currency;
+          const sendMaxIssuer = tx.SendMax?.issuer;
+          if (sendMaxCurrency && sendMaxIssuer) {
+            const userTrustline = meta.AffectedNodes.find(n => {
+              const node = n.ModifiedNode;
+              if (node?.LedgerEntryType !== 'RippleState') return false;
+              const high = node.FinalFields?.HighLimit;
+              const low = node.FinalFields?.LowLimit;
+              const isUserHigh = high?.issuer === userAddress && high?.currency === sendMaxCurrency;
+              const isUserLow = low?.issuer === userAddress && low?.currency === sendMaxCurrency;
+              const isIssuerHigh = high?.issuer === sendMaxIssuer;
+              const isIssuerLow = low?.issuer === sendMaxIssuer;
+              return (isUserHigh && isIssuerLow) || (isUserLow && isIssuerHigh);
+            })?.ModifiedNode;
+            if (userTrustline?.PreviousFields?.Balance?.value && userTrustline?.FinalFields?.Balance?.value) {
+              const prevBal = parseFloat(userTrustline.PreviousFields.Balance.value);
+              const finalBal = parseFloat(userTrustline.FinalFields.Balance.value);
+              const tokenDiff = Math.abs(Math.abs(prevBal) - Math.abs(finalBal));
+              actualSpent = `${tokenDiff.toFixed(2)} ${decodeCurrency(sendMaxCurrency)}`;
+            }
+          }
+        }
+      }
+
+      const received = formatAmt(delivered);
+      const spent = actualSpent || formatAmt(tx.SendMax);
+      // Show full swap format: "from → to"
+      amount = spent && received ? `${spent} → ${received}` : received;
+      const sendToken = tx.SendMax?.currency ? decodeCurrency(tx.SendMax.currency) : 'XRP';
+      const receiveToken = typeof delivered === 'string' ? 'XRP' : decodeCurrency(delivered?.currency);
+
+      return {
+        id: hash || tx.ctid,
+        type: txType,
+        txType: type,
+        label,
+        amount,
+        fromAmount: spent,
+        toAmount: received,
+        isDust: false,
+        time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
+        hash,
+        counterparty: `${sendToken}/${receiveToken}`,
+        sourceTag: tx.SourceTag,
+        fee: feeStr
+      };
+    } else {
+      // Regular payment
+      if (typeof delivered === 'string') {
+        const xrpAmt = parseInt(delivered) / 1000000;
+        amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
+        isDust = isIncoming && xrpAmt < 0.001;
+      } else if (delivered?.value) {
+        const val = parseFloat(delivered.value);
+        amount = `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(delivered.currency)}`;
+      }
+      label = isIncoming ? 'Received' : 'Sent';
+      if (isDust) label = 'Dust';
+      counterparty = isIncoming ? tx.Account : tx.Destination;
+      txType = isIncoming ? 'in' : 'out';
+    }
+  } else if (type === 'OfferCreate') {
+    // Determine if buy or sell based on which side is XRP
+    // TakerGets = what maker gives, TakerPays = what maker receives
+    // If TakerGets is token and TakerPays is XRP → user sells tokens for XRP (SELL)
+    // If TakerGets is XRP and TakerPays is token → user sells XRP for tokens (BUY)
+    const getsIsXRP = typeof tx.TakerGets === 'string';
+    const paysIsXRP = typeof tx.TakerPays === 'string';
+    const isSell = !getsIsXRP && paysIsXRP; // Selling tokens for XRP
+    const isBuy = getsIsXRP && !paysIsXRP;  // Buying tokens with XRP
+
+    const gets = formatAmt(tx.TakerGets);
+    const pays = formatAmt(tx.TakerPays);
+    const getsToken = getsIsXRP ? 'XRP' : decodeCurrency(tx.TakerGets?.currency);
+    const paysToken = paysIsXRP ? 'XRP' : decodeCurrency(tx.TakerPays?.currency);
+
+    // Check metadata for actual filled amount
+    let filledGets = null;
+    let filledPays = null;
+    if (meta?.AffectedNodes && !isFailed) {
+      // For sells: check how much XRP we received (AccountRoot balance increase minus fee)
+      // For buys: check how much token we received (RippleState balance change)
+      const userAcct = meta.AffectedNodes.find(n =>
+        n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
+        n.ModifiedNode?.FinalFields?.Account === userAddress
+      )?.ModifiedNode;
+
+      if (isSell && userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
+        const prevBal = parseInt(userAcct.PreviousFields.Balance);
+        const finalBal = parseInt(userAcct.FinalFields.Balance);
+        const fee = parseInt(tx.Fee || 0);
+        const xrpReceived = (finalBal - prevBal + fee) / 1000000;
+        if (xrpReceived > 0) {
+          filledPays = xrpReceived < 0.01 ? `${xrpReceived.toFixed(6)} XRP` : `${xrpReceived.toFixed(2)} XRP`;
+        }
+      }
+
+      // Check token balance changes for the sold/bought amount
+      const tokenCurrency = isSell ? tx.TakerGets?.currency : tx.TakerPays?.currency;
+      if (tokenCurrency) {
+        for (const node of meta.AffectedNodes) {
+          const mod = node.ModifiedNode;
+          if (mod?.LedgerEntryType === 'RippleState') {
+            const high = mod.FinalFields?.HighLimit;
+            const low = mod.FinalFields?.LowLimit;
+            const isUserLine = high?.issuer === userAddress || low?.issuer === userAddress;
+            const matchesCurrency = high?.currency === tokenCurrency || low?.currency === tokenCurrency;
+            if (isUserLine && matchesCurrency && mod.PreviousFields?.Balance?.value) {
+              const prevBal = Math.abs(parseFloat(mod.PreviousFields.Balance.value));
+              const finalBal = Math.abs(parseFloat(mod.FinalFields.Balance.value));
+              const tokenDiff = Math.abs(prevBal - finalBal);
+              if (tokenDiff > 0) {
+                const tokenName = decodeCurrency(tokenCurrency);
+                if (isSell) {
+                  filledGets = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                } else {
+                  filledPays = `${tokenDiff.toFixed(2)} ${tokenName}`;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (isFailed) {
+      label = isSell ? 'Sell Failed' : isBuy ? 'Buy Failed' : 'Trade Failed';
+      amount = gets && pays ? `${gets} → ${pays}` : 'Failed';
+      txType = isSell ? 'out' : 'in';
+    } else {
+      label = isSell ? 'Sell' : isBuy ? 'Buy' : 'Trade';
+      // Show actual filled amounts if available, otherwise show offer amounts
+      const showGets = filledGets || gets;
+      const showPays = filledPays || pays;
+      amount = showGets && showPays ? `${showGets} → ${showPays}` : '';
+      txType = isSell ? 'out' : 'in';
+    }
+    counterparty = `${getsToken}/${paysToken}`;
+  } else if (type === 'OfferCancel') {
+    label = 'Cancel Offer';
+    const deletedOffer = meta?.AffectedNodes?.find(n => n.DeletedNode?.LedgerEntryType === 'Offer')?.DeletedNode?.FinalFields;
+    if (deletedOffer) {
+      const gets = formatAmt(deletedOffer.TakerGets);
+      const pays = formatAmt(deletedOffer.TakerPays);
+      amount = gets && pays ? `${gets} → ${pays}` : '';
+      const getsToken = typeof deletedOffer.TakerGets === 'string' ? 'XRP' : decodeCurrency(deletedOffer.TakerGets?.currency);
+      const paysToken = typeof deletedOffer.TakerPays === 'string' ? 'XRP' : decodeCurrency(deletedOffer.TakerPays?.currency);
+      counterparty = `${getsToken}/${paysToken}`;
+    } else {
+      // No deleted offer in metadata, use OfferSequence
+      amount = tx.OfferSequence ? `Offer #${tx.OfferSequence}` : '';
+      counterparty = tx.Account;
+    }
+  } else if (type === 'TrustSet') {
+    const limit = tx.LimitAmount;
+    const isRemoval = limit?.value === '0';
+    const currency = decodeCurrency(limit?.currency);
+    label = isRemoval ? 'Remove Trustline' : 'Add Trustline';
+
+    // For removals, try to find the balance that was removed from DeletedNode
+    if (isRemoval && !isFailed) {
+      const removedBalance = getDeletedTrustlineBalance(limit?.currency, limit?.issuer);
+      if (removedBalance && removedBalance > 0) {
+        amount = `${removedBalance.toFixed(removedBalance >= 1 ? 2 : 4)} ${currency}`;
+      } else {
+        amount = currency || '';
+      }
+    } else if (!isRemoval) {
+      // For adding trustline, show the limit amount if set
+      const limitVal = parseFloat(limit?.value || 0);
+      if (limitVal > 0) {
+        amount = `${currency} (Limit: ${limitVal >= 1e9 ? '∞' : limitVal.toLocaleString()})`;
+      } else {
+        amount = currency || '';
+      }
+    } else {
+      amount = currency || '';
+    }
+
+    // Show issuer address for better details
+    counterparty = limit?.issuer || currency;
+    txType = isRemoval ? 'out' : 'in';
+
+    if (isFailed) {
+      label = isRemoval ? 'Remove Failed' : 'Trustline Failed';
+    }
+  } else if (type === 'AMMDeposit' || type === 'AMMWithdraw') {
+    const isDeposit = type === 'AMMDeposit';
+    label = isDeposit ? 'AMM Deposit' : 'AMM Withdraw';
+    txType = isDeposit ? 'out' : 'in';
+
+    // Get pool pair for counterparty
+    counterparty = getAmmPair();
+
+    if (isFailed) {
+      label = isDeposit ? 'Deposit Failed' : 'Withdraw Failed';
+      // Still show attempted amounts
+      const amounts = [formatAmt(tx.Amount), formatAmt(tx.Amount2)].filter(Boolean);
+      amount = amounts.length ? amounts.join(' + ') : 'Failed';
+    } else {
+      const amounts = [];
+      // For AMMWithdraw, check metadata for actual withdrawn amounts
+      if (!isDeposit && meta?.AffectedNodes) {
+        const balanceChanges = [];
+        meta.AffectedNodes.forEach((node) => {
+          const modified = node.ModifiedNode;
+          if (modified?.LedgerEntryType === 'AccountRoot' && modified.FinalFields?.Account === userAddress) {
+            const prev = parseInt(modified.PreviousFields?.Balance || 0);
+            const final = parseInt(modified.FinalFields?.Balance || 0);
+            const diff = final - prev;
+            if (diff > 0) balanceChanges.push(formatAmt(String(diff)));
+          }
+          if (modified?.LedgerEntryType === 'RippleState') {
+            const prevBal = parseFloat(modified.PreviousFields?.Balance?.value || 0);
+            const finalBal = parseFloat(modified.FinalFields?.Balance?.value || 0);
+            const diff = Math.abs(finalBal - prevBal);
+            if (diff > 0) {
+              const curr = modified.FinalFields?.Balance?.currency;
+              balanceChanges.push(`${diff.toFixed(2)} ${decodeCurrency(curr)}`);
+            }
+          }
+        });
+        if (balanceChanges.length > 0) amounts.push(...balanceChanges);
+      }
+      // Fallback to tx fields
+      if (amounts.length === 0) {
+        const amt1 = formatAmt(tx.Amount);
+        const amt2 = formatAmt(tx.Amount2);
+        const lpToken = formatAmt(tx.LPTokenOut || tx.LPTokenIn);
+        if (amt1) amounts.push(amt1);
+        if (amt2) amounts.push(amt2);
+        if (lpToken && amounts.length === 0) amounts.push(lpToken);
+      }
+      amount = amounts.join(' + ') || '';
+    }
+  } else if (type === 'NFTokenAcceptOffer') {
+    const offerNode = meta?.AffectedNodes?.find(
+      (n) => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer'
+    );
+    const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
+    const offerAmt = offer?.Amount;
+    const isZeroAmount = !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
+
+    if (isFailed) {
+      label = 'NFT Trade Failed';
+      amount = formatAmt(offerAmt) || 'Failed';
+      counterparty = offer?.Owner || tx.NFTokenSellOffer || tx.NFTokenBuyOffer;
+    } else if (isZeroAmount) {
+      const isSender = offer?.Owner === userAddress;
+      label = isSender ? 'Sent NFT' : 'Received NFT';
+      amount = 'FREE';
+      counterparty = isSender ? tx.Account : offer?.Owner;
+      txType = isSender ? 'out' : 'in';
+    } else {
+      amount = formatAmt(offerAmt) || '';
+      const isSeller = offer?.Owner === userAddress;
+      label = isSeller ? 'Sold NFT' : 'Bought NFT';
+      counterparty = isSeller ? tx.Account : offer?.Owner;
+      txType = isSeller ? 'in' : 'out';
+    }
+  } else if (type === 'NFTokenMint') {
+    label = isFailed ? 'Mint Failed' : 'Mint NFT';
+    // Extract taxon or NFTokenID from metadata
+    const createdToken = meta?.AffectedNodes?.find(n =>
+      n.CreatedNode?.LedgerEntryType === 'NFTokenPage' || n.ModifiedNode?.LedgerEntryType === 'NFTokenPage'
+    );
+    amount = tx.NFTokenTaxon !== undefined ? `Taxon: ${tx.NFTokenTaxon}` : '';
+    counterparty = tx.Issuer || tx.Account;
+  } else if (type === 'NFTokenCreateOffer') {
+    label = isFailed ? 'Offer Failed' : 'NFT Offer';
+    amount = formatAmt(tx.Amount) || '';
+    // Show if it's a buy or sell offer
+    const isSellOffer = (tx.Flags & 1) !== 0;
+    if (isSellOffer) {
+      label = isFailed ? 'Sell Offer Failed' : 'NFT Sell Offer';
+      counterparty = tx.Destination || 'Open';
+    } else {
+      label = isFailed ? 'Buy Offer Failed' : 'NFT Buy Offer';
+      counterparty = tx.Owner || tx.Account;
+    }
+  } else if (type === 'NFTokenCancelOffer') {
+    label = isFailed ? 'Cancel Failed' : 'Cancel NFT Offer';
+    const offerCount = tx.NFTokenOffers?.length || 0;
+    amount = offerCount > 1 ? `${offerCount} offers` : '1 offer';
+    counterparty = tx.Account;
+  } else if (type === 'NFTokenBurn') {
+    label = isFailed ? 'Burn Failed' : 'Burn NFT';
+    amount = tx.NFTokenID ? `${tx.NFTokenID.slice(0, 8)}...` : '';
+    counterparty = tx.Owner || tx.Account;
+  } else if (type === 'CheckCreate') {
+    label = isFailed ? 'Check Failed' : 'Create Check';
+    amount = formatAmt(tx.SendMax) || '';
+    counterparty = tx.Destination;
+    txType = 'out';
+  } else if (type === 'CheckCash') {
+    label = isFailed ? 'Cash Failed' : 'Cash Check';
+    amount = formatAmt(tx.Amount || tx.DeliverMin) || '';
+    counterparty = tx.Account;
+    txType = 'in';
+  } else if (type === 'CheckCancel') {
+    label = isFailed ? 'Cancel Failed' : 'Cancel Check';
+    amount = tx.CheckID ? `${tx.CheckID.slice(0, 8)}...` : '';
+    counterparty = tx.Account;
+  } else if (type === 'EscrowCreate') {
+    label = isFailed ? 'Escrow Failed' : 'Create Escrow';
+    amount = formatAmt(tx.Amount) || '';
+    counterparty = tx.Destination;
+    txType = 'out';
+  } else if (type === 'EscrowFinish') {
+    label = isFailed ? 'Finish Failed' : 'Finish Escrow';
+    amount = tx.OfferSequence ? `Escrow #${tx.OfferSequence}` : '';
+    counterparty = tx.Owner || tx.Account;
+    txType = 'in';
+  } else if (type === 'EscrowCancel') {
+    label = isFailed ? 'Cancel Failed' : 'Cancel Escrow';
+    amount = tx.OfferSequence ? `Escrow #${tx.OfferSequence}` : '';
+    counterparty = tx.Owner || tx.Account;
+  } else if (type === 'PaymentChannelCreate') {
+    label = isFailed ? 'Channel Failed' : 'Create Channel';
+    amount = formatAmt(tx.Amount) || '';
+    counterparty = tx.Destination;
+    txType = 'out';
+  } else if (type === 'PaymentChannelFund') {
+    label = isFailed ? 'Fund Failed' : 'Fund Channel';
+    amount = formatAmt(tx.Amount) || '';
+    counterparty = tx.Channel ? `${tx.Channel.slice(0, 8)}...` : tx.Account;
+  } else if (type === 'PaymentChannelClaim') {
+    label = isFailed ? 'Claim Failed' : 'Claim Channel';
+    amount = formatAmt(tx.Balance) || '';
+    counterparty = tx.Channel ? `${tx.Channel.slice(0, 8)}...` : tx.Account;
+  } else if (type === 'AccountSet') {
+    label = isFailed ? 'Settings Failed' : 'Account Settings';
+    // Describe what was set
+    if (tx.Domain) {
+      amount = 'Set Domain';
+    } else if (tx.EmailHash) {
+      amount = 'Set Email';
+    } else if (tx.MessageKey) {
+      amount = 'Set Message Key';
+    } else if (tx.SetFlag !== undefined) {
+      amount = `Set Flag ${tx.SetFlag}`;
+    } else if (tx.ClearFlag !== undefined) {
+      amount = `Clear Flag ${tx.ClearFlag}`;
+    } else {
+      amount = 'Update Settings';
+    }
+    counterparty = tx.Account;
+  } else if (type === 'AccountDelete') {
+    label = isFailed ? 'Delete Failed' : 'Delete Account';
+    amount = formatAmt(meta?.delivered_amount) || '';
+    counterparty = tx.Destination;
+    txType = 'out';
+  } else if (type === 'SetRegularKey') {
+    label = isFailed ? 'Key Failed' : 'Set Regular Key';
+    amount = tx.RegularKey ? `${tx.RegularKey.slice(0, 8)}...` : 'Remove Key';
+    counterparty = tx.Account;
+  } else if (type === 'SignerListSet') {
+    label = isFailed ? 'Signers Failed' : 'Set Signer List';
+    const signerCount = tx.SignerEntries?.length || 0;
+    amount = signerCount ? `${signerCount} signers` : 'Remove Signers';
+    counterparty = tx.Account;
+  } else if (type === 'TicketCreate') {
+    label = isFailed ? 'Ticket Failed' : 'Create Tickets';
+    amount = tx.TicketCount ? `${tx.TicketCount} tickets` : '';
+    counterparty = tx.Account;
+  } else if (type === 'DepositPreauth') {
+    const isRemoval = tx.UnauthorizeCredentials || tx.Unauthorize;
+    label = isFailed ? 'Preauth Failed' : (isRemoval ? 'Remove Preauth' : 'Deposit Preauth');
+    amount = isRemoval ? 'Removed' : 'Authorized';
+    counterparty = tx.Authorize || tx.Unauthorize || tx.Account;
+  } else if (type === 'Clawback') {
+    label = isFailed ? 'Clawback Failed' : 'Clawback';
+    amount = formatAmt(tx.Amount) || '';
+    counterparty = tx.Amount?.issuer || tx.Account;
+    txType = 'in';
+  } else {
+    // Unknown transaction type - try to extract useful info
+    label = isFailed ? `${type} Failed` : type;
+    counterparty = tx.Destination || tx.Account;
+  }
+
+  return {
+    id: hash || tx.ctid,
+    type: isFailed ? 'failed' : txType,
+    txType: type,
+    label,
+    amount,
+    isDust,
+    time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
+    hash,
+    counterparty,
+    sourceTag: tx.SourceTag,
+    fee: feeStr
+  };
+}
+
 export {
   parseQuality,
   hexToString,

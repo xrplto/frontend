@@ -11,7 +11,7 @@ import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
-import { getNftCoverUrl } from 'src/utils/parseUtils';
+import { getNftCoverUrl, parseTransaction } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import {
@@ -99,6 +99,8 @@ const OverView = ({ account }) => {
   const [txMarker, setTxMarker] = useState(null);
   const [txHasMore, setTxHasMore] = useState(false);
   const [txLoading, setTxLoading] = useState(false);
+  const [txTypeFilter, setTxTypeFilter] = useState('all');
+  const txTypes = ['all', 'Payment', 'OfferCreate', 'OfferCancel', 'TrustSet', 'AMMDeposit', 'AMMWithdraw', 'NFTokenMint', 'NFTokenAcceptOffer', 'NFTokenCreateOffer', 'NFTokenBurn', 'CheckCreate', 'CheckCash', 'EscrowCreate', 'EscrowFinish', 'AccountSet'];
   const [holdings, setHoldings] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
   const [txPage, setTxPage] = useState(0);
@@ -463,210 +465,8 @@ const OverView = ({ account }) => {
     }
   };
 
-  // Parse transaction for simple list display (wallet.js style)
-  const parseTx = (tx) => {
-    const txData = tx.tx_json || tx.tx || tx;
-    const meta = tx.meta;
-    const hash = tx.hash || txData.hash;
-    const type = txData.TransactionType;
-    const txResult = meta?.TransactionResult || 'tesSUCCESS';
-    const isFailed = txResult !== 'tesSUCCESS';
-    const isOutgoing = txData.Account === account;
-    const isIncoming = type === 'Payment' && txData.Destination === account;
-    let label = type;
-    let amount = isFailed ? 'Failed' : '';
-    let isDust = false;
-    let txType = isOutgoing ? 'out' : 'in';
-
-    let counterparty = null;
-    if (isFailed) {
-      // Set label and details for failed txs
-      if (type === 'AMMDeposit') label = 'AMM Deposit';
-      else if (type === 'AMMWithdraw') label = 'AMM Withdraw';
-      else if (type === 'TrustSet') label = 'Add Trustline';
-      // Extract asset info for details
-      const asset = txData.Asset || txData.Asset2;
-      const limit = txData.LimitAmount;
-      counterparty = asset?.currency ? decodeCurrency(asset.currency) : limit?.currency ? decodeCurrency(limit.currency) : null;
-    } else if (type === 'Payment') {
-      const delivered = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
-      const isSwap = txData.Account === txData.Destination && txData.SendMax;
-      const formatAmt = (amt) => {
-        if (!amt) return null;
-        if (typeof amt === 'string') {
-          const xrpAmt = parseInt(amt) / 1000000;
-          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        } else if (amt?.value) {
-          const val = parseFloat(amt.value);
-          return `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(amt.currency)}`;
-        }
-        return null;
-      };
-      if (isSwap) {
-        // Received XRP = Sell, Received tokens = Buy
-        const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
-        label = isBuy ? 'Buy' : 'Sell';
-        txType = isBuy ? 'in' : 'out';
-        amount = formatAmt(delivered) || '';
-        // Calculate actual spent from metadata
-        let actualSpent = null;
-        if (meta?.AffectedNodes) {
-          const userAcct = meta.AffectedNodes.find(n =>
-            n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
-            n.ModifiedNode?.FinalFields?.Account === account
-          )?.ModifiedNode;
-          if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
-            const prevBal = parseInt(userAcct.PreviousFields.Balance);
-            const finalBal = parseInt(userAcct.FinalFields.Balance);
-            const fee = parseInt(txData.Fee || 0);
-            const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
-            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
-          }
-        }
-        return {
-          id: hash || txData.ctid,
-          type: isFailed ? 'failed' : txType,
-          label,
-          amount,
-          fromAmount: actualSpent || formatAmt(txData.SendMax),
-          toAmount: amount,
-          isDust: false,
-          time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
-          hash
-        };
-      } else {
-        if (typeof delivered === 'string') {
-          const xrpAmt = parseInt(delivered) / 1000000;
-          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-          isDust = isIncoming && xrpAmt < 0.001;
-        } else if (delivered?.value) {
-          const val = parseFloat(delivered.value);
-          amount = `${val >= 1 ? val.toFixed(2) : val >= 0.01 ? val.toFixed(4) : String(val)} ${decodeCurrency(delivered.currency)}`;
-        }
-        label = isOutgoing ? 'Sent' : 'Received';
-      }
-    } else if (type === 'OfferCreate') {
-      // Parse trade amounts from TakerGets/TakerPays
-      const takerGets = txData.TakerGets;
-      const takerPays = txData.TakerPays;
-
-      // Format amount helper
-      const formatAmt = (amt) => {
-        if (!amt) return null;
-        if (typeof amt === 'string') {
-          const xrpAmt = parseInt(amt) / 1000000;
-          return { value: xrpAmt, currency: 'XRP' };
-        }
-        return { value: parseFloat(amt.value), currency: decodeCurrency(amt.currency) };
-      };
-
-      const gets = formatAmt(takerGets);
-      const pays = formatAmt(takerPays);
-
-      if (gets && pays) {
-        // Show what they're trading: selling gets for pays
-        const fmtVal = (v) => (v >= 1 ? v.toFixed(2) : v >= 0.01 ? v.toFixed(4) : String(v));
-        label = `Trade`;
-        amount = `${fmtVal(gets.value)} ${gets.currency} → ${fmtVal(pays.value)} ${pays.currency}`;
-      } else {
-        label = 'Trade';
-      }
-    } else if (type === 'NFTokenAcceptOffer') {
-      const offerNode = meta?.AffectedNodes?.find(
-        (n) => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer'
-      );
-      const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
-      const offerAmt = offer?.Amount;
-      const isZeroAmount =
-        !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
-      if (isZeroAmount) {
-        const isSender = offer?.Owner === account;
-        label = isSender ? 'Sent NFT' : 'Received NFT';
-        amount = 'FREE';
-      } else {
-        const fmtVal = (v) => (v >= 1 ? v.toFixed(2) : v >= 0.01 ? v.toFixed(4) : String(v));
-        if (typeof offerAmt === 'string') {
-          const xrpAmt = parseInt(offerAmt) / 1000000;
-          amount = `${fmtVal(xrpAmt)} XRP`;
-        } else if (offerAmt?.value) {
-          amount = `${fmtVal(parseFloat(offerAmt.value))} ${decodeCurrency(offerAmt.currency)}`;
-        }
-        const isSeller = offer?.Owner === account;
-        label = isSeller ? 'Sold NFT' : 'Bought NFT';
-      }
-    } else if (type === 'TrustSet') {
-      const limit = txData.LimitAmount;
-      if (limit) {
-        const isRemoval = limit.value === '0';
-        const currency = decodeCurrency(limit.currency);
-        label = isRemoval ? 'Remove Trustline' : 'Add Trustline';
-        amount = currency;
-        txType = isRemoval ? 'out' : 'in';
-      } else {
-        label = 'Trustline';
-      }
-    } else if (type === 'AMMDeposit' || type === 'AMMWithdraw') {
-      label = type === 'AMMDeposit' ? 'AMM Deposit' : 'AMM Withdraw';
-      txType = type === 'AMMDeposit' ? 'out' : 'in';
-      const formatAmt = (amt) => {
-        if (!amt) return null;
-        if (typeof amt === 'string') {
-          const xrpAmt = parseInt(amt) / 1000000;
-          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        } else if (amt?.value) {
-          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
-        }
-        return null;
-      };
-      const amounts = [];
-      const amt1 = formatAmt(txData.Amount);
-      const amt2 = formatAmt(txData.Amount2);
-      if (amt1) amounts.push(amt1);
-      if (amt2) amounts.push(amt2);
-      amount = amounts.join(' + ') || '';
-    } else if (type === 'CheckCreate') {
-      label = 'Create Check';
-      const sendMax = txData.SendMax;
-      if (typeof sendMax === 'string') {
-        const xrpAmt = parseInt(sendMax) / 1000000;
-        amount = `${xrpAmt >= 1 ? xrpAmt.toFixed(2) : xrpAmt.toFixed(6)} XRP`;
-      } else if (sendMax?.value) {
-        const val = parseFloat(sendMax.value);
-        amount = `${val >= 1 ? val.toFixed(2) : val.toFixed(4)} ${decodeCurrency(sendMax.currency)}`;
-      }
-    } else if (type === 'CheckCash') {
-      label = 'Cash Check';
-      const cashAmount = txData.Amount || txData.DeliverMin;
-      if (typeof cashAmount === 'string') {
-        const xrpAmt = parseInt(cashAmount) / 1000000;
-        amount = `${xrpAmt >= 1 ? xrpAmt.toFixed(2) : xrpAmt.toFixed(6)} XRP`;
-      } else if (cashAmount?.value) {
-        const val = parseFloat(cashAmount.value);
-        amount = `${val >= 1 ? val.toFixed(2) : val.toFixed(4)} ${decodeCurrency(cashAmount.currency)}`;
-      }
-    } else if (type === 'CheckCancel') {
-      label = 'Cancel Check';
-    } else if (type === 'NFTokenMint') {
-      label = 'Mint NFT';
-    } else if (type === 'NFTokenCreateOffer') {
-      label = 'NFT Offer';
-    } else if (type === 'NFTokenCancelOffer') {
-      label = 'Cancel Offer';
-    } else if (type === 'NFTokenBurn') {
-      label = 'Burn NFT';
-    }
-
-    return {
-      id: hash || txData.ctid,
-      type: isFailed ? 'failed' : txType,
-      label,
-      amount,
-      isDust,
-      time: txData.date ? new Date((txData.date + 946684800) * 1000).toISOString() : '',
-      hash,
-      counterparty
-    };
-  };
+  // Use shared parseTransaction from parseUtils.js
+  const parseTx = (tx) => parseTransaction(tx, account, decodeCurrency);
 
   const handleAccountAI = async () => {
     if (accountAILoading || accountAI) return;
@@ -2889,17 +2689,13 @@ const OverView = ({ account }) => {
                       >
                         Onchain transactions
                       </span>
-                      <button
-                        className={cn(
-                          'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] transition-colors',
-                          isDark
-                            ? 'text-white/60 hover:bg-white/5'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        )}
+                      <select
+                        value={txTypeFilter}
+                        onChange={(e) => { console.log('Filter changed:', e.target.value); setTxTypeFilter(e.target.value); }}
+                        className={cn("text-[11px] font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
                       >
-                        <span>Filters</span>
-                        <Filter size={14} />
-                      </button>
+                        {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
+                      </select>
                     </div>
 
                     {txHistory.length === 0 ? (
@@ -2917,34 +2713,45 @@ const OverView = ({ account }) => {
                           <span></span>
                         </div>
                         <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
-                          {txHistory.map((tx) => {
+                          {txHistory.filter(tx => txTypeFilter === 'all' || (tx.tx_json || tx.tx || tx).TransactionType === txTypeFilter).map((tx) => {
                             const parsed = parseTx(tx);
                             return (
                               <div
                                 key={parsed.id}
-                                className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                                className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                                 onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
                               >
                                 <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500/10' : parsed.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {parsed.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                  {parsed.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
                                 </div>
                                 <div className="min-w-0 flex items-center gap-2">
                                   <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</p>
-                                  {parsed.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600')}>Failed</span>}
-                                  {parsed.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                  {parsed.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
+                                  {parsed.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                  {parsed.sourceTag && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>Tag: {parsed.sourceTag}</span>}
                                 </div>
                                 <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                  {parsed.counterparty ? (parsed.counterparty.startsWith('r') ? <Link href={`/address/${parsed.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{parsed.counterparty.slice(0, 10)}...{parsed.counterparty.slice(-6)}</Link> : parsed.counterparty) : parsed.fromAmount ? 'DEX Swap' : '—'}
+                                  {parsed.counterparty ? (parsed.counterparty.startsWith('r') ? <Link href={`/address/${parsed.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{parsed.counterparty.slice(0, 10)}...{parsed.counterparty.slice(-6)}</Link> : parsed.counterparty) : parsed.fromAmount ? 'DEX Swap' : '—'}
                                 </p>
-                                <p className={cn('text-[12px] font-semibold tabular-nums text-right', parsed.type === 'failed' ? 'text-amber-500' : parsed.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                                <div className="flex items-center justify-end">
                                   {parsed.fromAmount && parsed.toAmount ? (
-                                    <span className="flex items-center justify-end gap-1">
-                                      <span className="text-red-400">-{parsed.fromAmount}</span>
-                                      <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
-                                      <span className="text-emerald-400">+{parsed.toAmount}</span>
+                                    <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                      <span className="text-[11px] font-semibold tabular-nums text-red-400">{parsed.fromAmount}</span>
+                                      <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>→</span>
+                                      <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{parsed.toAmount}</span>
+                                    </div>
+                                  ) : parsed.amount ? (
+                                    <span className={cn(
+                                      'text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md',
+                                      parsed.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                      parsed.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                    )}>
+                                      {parsed.type === 'failed' ? '—' : `${parsed.type === 'in' ? '+' : '-'}${parsed.amount}`}
                                     </span>
-                                  ) : parsed.amount ? (parsed.type === 'failed' ? '—' : `${parsed.type === 'in' ? '+' : '-'}${parsed.amount}`) : '—'}
-                                </p>
+                                  ) : (
+                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-md', isDark ? 'text-white/20 bg-white/5' : 'text-gray-400 bg-gray-100')}>—</span>
+                                  )}
+                                </div>
                                 <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                   {parsed.time ? new Date(parsed.time).toLocaleDateString() : '—'}
                                 </p>

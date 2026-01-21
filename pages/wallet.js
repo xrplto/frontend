@@ -12,7 +12,7 @@ import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { withdrawalStorage } from 'src/utils/withdrawalStorage';
-import { getNftCoverUrl } from 'src/utils/parseUtils';
+import { getNftCoverUrl, parseTransaction, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import {
   Send,
   ArrowDownLeft,
@@ -171,6 +171,7 @@ export default function WalletPage() {
       const tx = {
         TransactionType: 'TrustSet',
         Account: address,
+        SourceTag: 12345654321,
         LimitAmount: {
           currency: token.currency,
           issuer: token.issuer,
@@ -344,6 +345,7 @@ export default function WalletPage() {
       const tx = {
         TransactionType: 'Payment',
         Account: address,
+        SourceTag: 12345654321,
         Destination: token.issuer,
         Amount: {
           currency: token.currency,
@@ -451,6 +453,7 @@ export default function WalletPage() {
         tx = {
           TransactionType: 'Payment',
           Account: address,
+          SourceTag: 12345654321,
           Destination: address,
           Amount: String(targetXrpDrops),
           DeliverMin: String(minXrpDrops),
@@ -465,6 +468,7 @@ export default function WalletPage() {
         tx = {
           TransactionType: 'Payment',
           Account: address,
+          SourceTag: 12345654321,
           Destination: address,
           Amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: formatTokenValue(expectedTokens) },
           DeliverMin: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: formatTokenValue(expectedTokens * (1 - slippage)) },
@@ -556,6 +560,7 @@ export default function WalletPage() {
         const offerTx = {
           TransactionType: 'OfferCreate',
           Account: address,
+          SourceTag: 12345654321,
           TakerGets: {
             currency: token.currency,
             issuer: token.issuer,
@@ -605,6 +610,7 @@ export default function WalletPage() {
         const trustSetTx = {
           TransactionType: 'TrustSet',
           Account: address,
+          SourceTag: 12345654321,
           LimitAmount: {
             currency: token.currency,
             issuer: token.issuer,
@@ -650,6 +656,7 @@ export default function WalletPage() {
       const tx = {
         TransactionType: 'Payment',
         Account: address,
+        SourceTag: 12345654321,
         Destination: token.issuer,
         Amount: {
           currency: token.currency,
@@ -714,7 +721,9 @@ export default function WalletPage() {
   const [txLoading, setTxLoading] = useState(false);
   const [txMarker, setTxMarker] = useState(null);
   const [txHasMore, setTxHasMore] = useState(false);
+  const [txTypeFilter, setTxTypeFilter] = useState('all');
   const txLimit = 20;
+  const txTypes = ['all', 'Payment', 'OfferCreate', 'OfferCancel', 'TrustSet', 'AMMDeposit', 'AMMWithdraw', 'NFTokenMint', 'NFTokenAcceptOffer', 'NFTokenCreateOffer', 'NFTokenBurn', 'CheckCreate', 'CheckCash', 'EscrowCreate', 'EscrowFinish', 'AccountSet'];
 
   // Offers state
   const [tokenOffers, setTokenOffers] = useState([]);
@@ -898,192 +907,8 @@ export default function WalletPage() {
     return currency;
   };
 
-  const parseTx = (rawTx) => {
-    const tx = rawTx.tx_json || rawTx.tx || rawTx;
-    const meta = rawTx.meta || tx.meta;
-    const hash = rawTx.hash || tx.hash;
-    const type = tx.TransactionType;
-    const txResult = meta?.TransactionResult || 'tesSUCCESS';
-    const isFailed = txResult !== 'tesSUCCESS';
-    // For Payment, check if user is sender (Account) or receiver (Destination)
-    const isOutgoing = type === 'Payment'
-      ? tx.Account === address && tx.Destination !== address
-      : tx.Account === address;
-    const isIncoming = type === 'Payment' && tx.Destination === address;
-    let label = type;
-    let amount = isFailed ? 'Failed' : '';
-    let isDust = false;
-    let counterparty = null;
-    if (isFailed) {
-      // Set label and details for failed txs
-      if (type === 'AMMDeposit') label = 'AMM Deposit';
-      else if (type === 'AMMWithdraw') label = 'AMM Withdraw';
-      else if (type === 'TrustSet') label = 'Add Trustline';
-      // Extract asset info for details
-      const asset = tx.Asset || tx.Asset2;
-      const limit = tx.LimitAmount;
-      counterparty = asset?.currency ? decodeCurrency(asset.currency) : limit?.currency ? decodeCurrency(limit.currency) : (tx.Account === address ? tx.Destination : tx.Account);
-    } else if (type === 'Payment') {
-      const delivered = meta?.delivered_amount || tx.DeliverMax || tx.Amount;
-      const isSwap = tx.Account === tx.Destination && tx.SendMax;
-      const formatAmt = (amt) => {
-        if (!amt) return null;
-        if (typeof amt === 'string') {
-          const xrpAmt = parseInt(amt) / 1000000;
-          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        } else if (amt?.value) {
-          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
-        }
-        return null;
-      };
-      if (isSwap) {
-        // Received XRP = Sell, Received tokens = Buy
-        const isBuy = typeof delivered !== 'string' && delivered?.currency !== 'XRP';
-        label = isBuy ? 'Buy' : 'Sell';
-        // Calculate actual spent from metadata
-        let actualSpent = null;
-        if (meta?.AffectedNodes) {
-          const userAcct = meta.AffectedNodes.find(n =>
-            n.ModifiedNode?.LedgerEntryType === 'AccountRoot' &&
-            n.ModifiedNode?.FinalFields?.Account === address
-          )?.ModifiedNode;
-          if (userAcct?.PreviousFields?.Balance && userAcct?.FinalFields?.Balance) {
-            const prevBal = parseInt(userAcct.PreviousFields.Balance);
-            const finalBal = parseInt(userAcct.FinalFields.Balance);
-            const fee = parseInt(tx.Fee || 0);
-            const xrpDiff = Math.abs(prevBal - finalBal - fee) / 1000000;
-            actualSpent = xrpDiff < 0.01 ? `${xrpDiff.toFixed(6)} XRP` : `${xrpDiff.toFixed(2)} XRP`;
-          }
-        }
-        const received = formatAmt(delivered);
-        amount = received;
-        // Return early with swap-specific data
-        return {
-          id: hash || tx.ctid,
-          type: isBuy ? 'in' : 'out',
-          label,
-          amount,
-          fromAmount: actualSpent || formatAmt(tx.SendMax),
-          toAmount: received,
-          isDust: false,
-          time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
-          hash,
-          counterparty: null
-        };
-      } else {
-        if (typeof delivered === 'string') {
-          const xrpAmt = parseInt(delivered) / 1000000;
-          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-          isDust = isIncoming && xrpAmt < 0.001;
-        } else if (delivered?.value) {
-          amount = `${parseFloat(delivered.value).toFixed(2)} ${decodeCurrency(delivered.currency)}`;
-        }
-        label = isIncoming ? 'Received' : 'Sent';
-      }
-      counterparty = isSwap ? null : (isIncoming ? tx.Account : tx.Destination);
-    } else if (type === 'OfferCreate') {
-      label = 'Trade';
-      counterparty = tx.Account === address ? null : tx.Account;
-    } else if (type === 'NFTokenAcceptOffer') {
-      const offerNode = meta?.AffectedNodes?.find(
-        (n) => (n.DeletedNode || n.ModifiedNode)?.LedgerEntryType === 'NFTokenOffer'
-      );
-      const offer = offerNode?.DeletedNode?.FinalFields || offerNode?.ModifiedNode?.FinalFields;
-      const offerAmt = offer?.Amount;
-      const isZeroAmount =
-        !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
-      if (isZeroAmount) {
-        const isSender = offer?.Owner === address;
-        label = isSender ? 'Sent NFT' : 'Received NFT';
-        amount = 'FREE';
-      } else {
-        if (typeof offerAmt === 'string') {
-          const xrpAmt = parseInt(offerAmt) / 1000000;
-          amount = xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        } else if (offerAmt?.value) {
-          amount = `${parseFloat(offerAmt.value).toFixed(2)} ${decodeCurrency(offerAmt.currency)}`;
-        }
-        const isSeller = offer?.Owner === address;
-        label = isSeller ? 'Sold NFT' : 'Bought NFT';
-      }
-      counterparty = offer?.Owner === address ? tx.Account : offer?.Owner;
-    } else if (type === 'TrustSet') {
-      const limit = tx.LimitAmount;
-      const isRemoval = limit?.value === '0';
-      label = isRemoval ? 'Remove Trustline' : 'Add Trustline';
-      amount = decodeCurrency(limit?.currency);
-      counterparty = limit?.issuer;
-      // Override type for correct icon
-      return {
-        id: hash || tx.ctid,
-        type: isRemoval ? 'out' : 'in',
-        label,
-        amount,
-        isDust: false,
-        time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
-        hash,
-        counterparty
-      };
-    } else if (type === 'AMMDeposit' || type === 'AMMWithdraw') {
-      label = type === 'AMMDeposit' ? 'AMM Deposit' : 'AMM Withdraw';
-      const formatAmt = (amt) => {
-        if (!amt) return null;
-        if (typeof amt === 'string') {
-          const xrpAmt = parseInt(amt) / 1000000;
-          return xrpAmt < 0.01 ? `${xrpAmt.toFixed(6)} XRP` : `${xrpAmt.toFixed(2)} XRP`;
-        } else if (amt?.value) {
-          return `${parseFloat(amt.value).toFixed(2)} ${decodeCurrency(amt.currency)}`;
-        }
-        return null;
-      };
-      const amounts = [];
-      // For AMMWithdraw, check metadata for actual withdrawn amounts
-      if (type === 'AMMWithdraw' && meta?.AffectedNodes) {
-        const balanceChanges = [];
-        meta.AffectedNodes.forEach((node) => {
-          const modified = node.ModifiedNode;
-          if (modified?.LedgerEntryType === 'AccountRoot' && modified.FinalFields?.Account === address) {
-            const prev = parseInt(modified.PreviousFields?.Balance || 0);
-            const final = parseInt(modified.FinalFields?.Balance || 0);
-            const diff = final - prev;
-            if (diff > 0) balanceChanges.push(formatAmt(String(diff)));
-          }
-          if (modified?.LedgerEntryType === 'RippleState') {
-            const prevBal = parseFloat(modified.PreviousFields?.Balance?.value || 0);
-            const finalBal = parseFloat(modified.FinalFields?.Balance?.value || 0);
-            const diff = Math.abs(finalBal - prevBal);
-            if (diff > 0) {
-              const curr = modified.FinalFields?.Balance?.currency;
-              balanceChanges.push(`${diff.toFixed(2)} ${decodeCurrency(curr)}`);
-            }
-          }
-        });
-        if (balanceChanges.length > 0) amounts.push(...balanceChanges);
-      }
-      // Fallback to tx fields
-      if (amounts.length === 0) {
-        const amt1 = formatAmt(tx.Amount);
-        const amt2 = formatAmt(tx.Amount2);
-        const lpToken = formatAmt(tx.LPTokenOut || tx.LPTokenIn);
-        if (amt1) amounts.push(amt1);
-        if (amt2) amounts.push(amt2);
-        if (lpToken && amounts.length === 0) amounts.push(lpToken);
-      }
-      amount = amounts.join(' + ') || '';
-    } else {
-      counterparty = tx.Account === address ? tx.Destination : tx.Account;
-    }
-    return {
-      id: hash || tx.ctid,
-      type: isFailed ? 'failed' : (isIncoming ? 'in' : 'out'),
-      label,
-      amount,
-      isDust,
-      time: tx.date ? new Date((tx.date + 946684800) * 1000).toISOString() : '',
-      hash,
-      counterparty
-    };
-  };
+  // Use shared parseTransaction from parseUtils.js
+  const parseTx = (rawTx) => parseTransaction(rawTx, address, decodeCurrency);
 
   // Load tokens from API
   useEffect(() => {
@@ -2502,15 +2327,26 @@ export default function WalletPage() {
                         </button>
                       ))}
                     </div>
-                    <button
-                      onClick={() => handleTabChange('trades')}
-                      className={cn(
-                        'text-[10px] font-medium uppercase tracking-wide transition-colors',
-                        isDark ? 'text-[#137DFE] hover:text-blue-300' : 'text-[#137DFE] hover:text-blue-600'
+                    <div className="flex items-center gap-2">
+                      {recentView === 'onchain' && (
+                        <select
+                          value={txTypeFilter}
+                          onChange={(e) => setTxTypeFilter(e.target.value)}
+                          className={cn("text-[10px] font-medium px-2 py-1 rounded-md border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
+                        >
+                          {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
+                        </select>
                       )}
-                    >
-                      View All
-                    </button>
+                      <button
+                        onClick={() => handleTabChange('trades')}
+                        className={cn(
+                          'text-[10px] font-medium uppercase tracking-wide transition-colors',
+                          isDark ? 'text-[#137DFE] hover:text-blue-300' : 'text-[#137DFE] hover:text-blue-600'
+                        )}
+                      >
+                        View All
+                      </button>
+                    </div>
                   </div>
 
                   {/* On-chain Content */}
@@ -2544,7 +2380,7 @@ export default function WalletPage() {
                           <span></span>
                         </div>
                         <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
-                          {transactions.slice(0, 20).map((tx) => (
+                          {transactions.filter(tx => txTypeFilter === 'all' || tx.txType === txTypeFilter).slice(0, 20).map((tx) => (
                             <div
                               key={tx.id}
                               className={cn(
@@ -2563,19 +2399,30 @@ export default function WalletPage() {
                                 <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{tx.label}</p>
                                 {tx.type === 'failed' && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/15 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Failed</span>}
                                 {tx.isDust && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/10 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                                {tx.sourceTag && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-[#137DFE]/15 text-[#137DFE]" : "bg-blue-100 text-blue-600")}>Tag: {tx.sourceTag}</span>}
                               </div>
                               <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn("text-[12px] font-semibold tabular-nums text-right", tx.type === 'failed' ? 'text-[#F6AF01]' : tx.type === 'in' ? 'text-[#08AA09]' : 'text-red-400')}>
+                              <div className="flex items-center justify-end">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <span className="flex items-center justify-end gap-1">
-                                    <span className="text-red-400">-{tx.fromAmount}</span>
-                                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
-                                    <span className="text-[#08AA09]">+{tx.toAmount}</span>
+                                  <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg", isDark ? "bg-white/5" : "bg-gray-100")}>
+                                    <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
+                                    <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>→</span>
+                                    <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
+                                  </div>
+                                ) : tx.amount ? (
+                                  <span className={cn(
+                                    "text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md",
+                                    tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                    tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                  )}>
+                                    {tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`}
                                   </span>
-                                ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
-                              </p>
+                                ) : (
+                                  <span className={cn("text-[11px] px-2 py-0.5 rounded-md", isDark ? "text-white/20 bg-white/5" : "text-gray-400 bg-gray-100")}>—</span>
+                                )}
+                              </div>
                               <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-400")}>
                                 {tx.time ? formatDistanceToNow(new Date(tx.time), { addSuffix: false }) : '—'}
                               </p>
@@ -3570,6 +3417,16 @@ export default function WalletPage() {
                 {/* On-chain View */}
                 {historyView === 'onchain' && (
                   <>
+                    {/* Type Filter */}
+                    <div className={cn('flex items-center justify-between px-4 py-2 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                      <select
+                        value={txTypeFilter}
+                        onChange={(e) => setTxTypeFilter(e.target.value)}
+                        className={cn("text-[10px] font-medium px-2 py-1 rounded-md border outline-none cursor-pointer appearance-none pr-6", isDark ? "bg-white/10 text-white border-white/10 [&>option]:bg-[#1a1a1a] [&>option]:text-white" : "bg-gray-100 text-gray-700 border-gray-200")}
+                      >
+                        {txTypes.map(t => <option key={t} value={t}>{t === 'all' ? 'All Types' : t}</option>)}
+                      </select>
+                    </div>
                     {txLoading ? (
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
                     ) : transactions.length === 0 ? (
@@ -3585,7 +3442,7 @@ export default function WalletPage() {
                           <span></span>
                         </div>
                         <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
-                          {transactions.map((tx) => (
+                          {transactions.filter(tx => txTypeFilter === 'all' || tx.txType === txTypeFilter).map((tx) => (
                             <div
                               key={tx.id}
                               className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
@@ -3598,19 +3455,30 @@ export default function WalletPage() {
                                 <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{tx.label}</p>
                                 {tx.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
                                 {tx.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                {tx.sourceTag && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>Tag: {tx.sourceTag}</span>}
                               </div>
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn('text-[12px] font-semibold tabular-nums text-right', tx.type === 'failed' ? 'text-[#F6AF01]' : tx.type === 'in' ? 'text-[#08AA09]' : 'text-red-400')}>
+                              <div className="flex items-center justify-end">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <span className="flex items-center justify-end gap-1">
-                                    <span className="text-red-400">-{tx.fromAmount}</span>
-                                    <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
-                                    <span className="text-[#08AA09]">+{tx.toAmount}</span>
+                                  <div className={cn('flex items-center gap-1.5 px-2 py-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                    <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
+                                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>→</span>
+                                    <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
+                                  </div>
+                                ) : tx.amount ? (
+                                  <span className={cn(
+                                    'text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md',
+                                    tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                    tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                  )}>
+                                    {tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`}
                                   </span>
-                                ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
-                              </p>
+                                ) : (
+                                  <span className={cn('text-[11px] px-2 py-0.5 rounded-md', isDark ? 'text-white/20 bg-white/5' : 'text-gray-400 bg-gray-100')}>—</span>
+                                )}
+                              </div>
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                 {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
                               </p>
