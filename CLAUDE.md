@@ -57,7 +57,13 @@ const isDark = themeName === 'XrplToDarkTheme';
 
 **Layout**: Always fill containers symmetrically. Tables must use flexible `fr` units to distribute columns evenly across full width. Never bunch content to one side.
 
-**Colors**: Primary `#4285f4`, Success `emerald-400`, Error `red-400`, Warning `amber-400`
+**Colors**:
+- Primary: `#137DFE` (blue)
+- Secondary: `gray-500` / `white/50` (grey)
+- Success: `#08AA09` (green)
+- Warning: `#F6AF01` (amber)
+- Accent: `#650CD4` (purple)
+- Background: `black` / `white`
 
 ## Wallet System
 

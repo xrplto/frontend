@@ -33,6 +33,8 @@ import {
   EyeOff,
   Plus,
   Trash2,
+  Sparkles,
+  Flame,
   X,
   Star,
   Coins,
@@ -43,7 +45,8 @@ import {
   Gem,
   Download,
   Share2,
-  Trophy
+  Trophy,
+  Info
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -98,6 +101,7 @@ export default function WalletPage() {
   const [sendAmount, setSendAmount] = useState('');
   const [sendTo, setSendTo] = useState('');
   const [sendTag, setSendTag] = useState('');
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [selectedToken, setSelectedToken] = useState('XRP');
   const [showPanel, setShowPanel] = useState(null); // 'send' | 'receive' | null
   const [selectedCollection, setSelectedCollection] = useState(null);
@@ -154,6 +158,16 @@ export default function WalletPage() {
       const client = new Client('wss://xrplcluster.com');
       await client.connect();
 
+      // Check account's defaultRipple flag to determine correct TrustSet flags
+      const accountInfo = await client.request({ command: 'account_info', account: address });
+      const accountFlags = accountInfo.result.account_data.Flags || 0;
+      const hasDefaultRipple = (accountFlags & 0x00800000) !== 0; // lsfDefaultRipple
+
+      // tfSetNoRipple = 131072, tfClearNoRipple = 262144
+      // If account has NO defaultRipple, set NoRipple to match default state
+      // If account HAS defaultRipple, clear NoRipple to match default state
+      const trustSetFlag = hasDefaultRipple ? 262144 : 131072;
+
       const tx = {
         TransactionType: 'TrustSet',
         Account: address,
@@ -162,7 +176,7 @@ export default function WalletPage() {
           issuer: token.issuer,
           value: '0'
         },
-        Flags: 2147483648
+        Flags: trustSetFlag
       };
 
       toast.loading(`Removing ${token.symbol}...`, { id: toastId, description: 'Submitting to XRPL' });
@@ -177,7 +191,7 @@ export default function WalletPage() {
         toast.success(`${token.symbol} trustline removed`, {
           id: toastId,
           duration: 6000,
-          description: <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">View transaction <ExternalLink size={10} /></a>
+          description: <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline flex items-center gap-1">View transaction <ExternalLink size={10} /></a>
         });
       } else {
         toast.error('Transaction failed', { id: toastId, description: result.result.meta.TransactionResult });
@@ -187,6 +201,492 @@ export default function WalletPage() {
       toast.error('Failed to remove trustline', { id: toastId, description: err.message });
     } finally {
       setRemovingTrustline(null);
+    }
+  };
+
+  const [sendingDust, setSendingDust] = useState(null);
+  const [dustConfirm, setDustConfirm] = useState(null); // token to confirm
+  const [burnModal, setBurnModal] = useState(null); // token to burn
+  const [tradeModal, setTradeModal] = useState(null); // token to trade
+  const [tradeAmount, setTradeAmount] = useState('');
+  const [tradeDirection, setTradeDirection] = useState('sell'); // 'sell' = token->XRP, 'buy' = XRP->token
+  const [trading, setTrading] = useState(false);
+  const [tradeQuote, setTradeQuote] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [tradeSlippage, setTradeSlippage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tradeSlippage');
+      return saved ? parseFloat(saved) : 0.5;
+    }
+    return 0.5;
+  });
+  const [burnAmount, setBurnAmount] = useState('');
+  const [burning, setBurning] = useState(null);
+
+  // Persist slippage to localStorage
+  useEffect(() => {
+    localStorage.setItem('tradeSlippage', String(tradeSlippage));
+  }, [tradeSlippage]);
+
+  // Fetch quote when trade amount changes
+  useEffect(() => {
+    if (!tradeModal || !tradeAmount || parseFloat(tradeAmount) <= 0 || !tradeModal.currency || !tradeModal.issuer) {
+      setTradeQuote(null);
+      return;
+    }
+    const price = tradeModal.price || tradeModal.exch || 0;
+    if (price <= 0) {
+      setTradeQuote({ error: 'No price data' });
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      setQuoteLoading(true);
+      try {
+        const amt = parseFloat(tradeAmount);
+        const body = tradeDirection === 'sell'
+          ? {
+              source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+              destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt) },
+              source_currencies: [{ currency: 'XRP' }],
+              slippage: tradeSlippage / 100
+            }
+          : {
+              source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+              destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt / price) },
+              source_currencies: [{ currency: 'XRP' }],
+              slippage: tradeSlippage / 100
+            };
+        const res = await axios.post('https://api.xrpl.to/api/dex/quote', body);
+        if (res.data?.status === 'success' && res.data.quote) {
+          setTradeQuote(res.data.quote);
+        } else {
+          // Fallback: use price estimate
+          const estXrp = amt * price; // XRP value of tokens
+          const estToken = amt / price; // Tokens for XRP amount
+          setTradeQuote({
+            source_amount: tradeDirection === 'sell'
+              ? { currency: 'XRP', value: String(estXrp * 0.995) }
+              : { currency: 'XRP', value: String(amt) },
+            destination_amount: tradeDirection === 'sell'
+              ? { currency: tradeModal.currency, value: String(amt) }
+              : { currency: tradeModal.currency, value: String(estToken * 0.995) },
+            minimum_received: String((tradeDirection === 'sell' ? estXrp : estToken) * 0.995),
+            fallback: true
+          });
+        }
+      } catch (err) {
+        // Fallback on error
+        const amt = parseFloat(tradeAmount);
+        const estXrp = amt * price;
+        const estToken = amt / price;
+        setTradeQuote({
+          source_amount: tradeDirection === 'sell'
+            ? { currency: 'XRP', value: String(estXrp * 0.995) }
+            : { currency: 'XRP', value: String(amt) },
+          destination_amount: tradeDirection === 'sell'
+            ? { currency: tradeModal.currency, value: String(amt) }
+            : { currency: tradeModal.currency, value: String(estToken * 0.995) },
+          minimum_received: String((tradeDirection === 'sell' ? estXrp : estToken) * 0.995),
+          fallback: true
+        });
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [tradeModal, tradeAmount, tradeDirection, address]);
+
+  const handleBurnTokens = async (token, amount) => {
+    if (!token.currency || !token.issuer || !amount || parseFloat(amount) <= 0) return;
+    setBurning(token.currency + token.issuer);
+    setBurnModal(null);
+    const toastId = toast.loading(`Burning ${token.symbol}...`, { description: 'Connecting to XRPL' });
+
+    try {
+      let seed = null;
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        setBurning(null);
+        return;
+      }
+
+      toast.loading(`Burning ${token.symbol}...`, { id: toastId, description: 'Sending to issuer...' });
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      // Check issuer flags
+      const issuerInfo = await client.request({ command: 'account_info', account: token.issuer });
+      const issuerFlags = issuerInfo.result.account_flags || {};
+
+      const tx = {
+        TransactionType: 'Payment',
+        Account: address,
+        Destination: token.issuer,
+        Amount: {
+          currency: token.currency,
+          issuer: token.issuer,
+          value: amount
+        }
+      };
+      if (issuerFlags.requireDestinationTag) tx.DestinationTag = 0;
+
+      const prepared = await client.autofill(tx);
+      const signed = wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      await client.disconnect();
+
+      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+        const txHash = result.result.hash;
+        const newBalance = token.rawAmount - parseFloat(amount);
+        setTokens(prev => prev.map(t =>
+          t.currency === token.currency && t.issuer === token.issuer
+            ? { ...t, rawAmount: newBalance, amount: newBalance > 0 ? newBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : '0' }
+            : t
+        ));
+        const tweetText = encodeURIComponent(`I just burned ${amount} $${token.symbol} 🔥\n\nhttps://xrpl.to/tx/${txHash}\n\n@xrplto`);
+        toast.success(`${amount} ${token.symbol} burned`, {
+          id: toastId,
+          duration: 15000,
+          closeButton: true,
+          description: <span className="flex items-center gap-2">
+            <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a>
+            <span className="text-white/30">•</span>
+            <a href={`https://twitter.com/intent/tweet?text=${tweetText}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">Tweet</a>
+          </span>
+        });
+      } else {
+        toast.error('Burn failed', { id: toastId, description: result.result.meta.TransactionResult });
+      }
+    } catch (err) {
+      console.error('Burn error:', err);
+      toast.error('Burn failed', { id: toastId, description: err.message });
+    } finally {
+      setBurning(null);
+      setBurnAmount('');
+    }
+  };
+
+  const handleTrade = async () => {
+    if (!tradeModal || !tradeAmount || parseFloat(tradeAmount) <= 0 || !tradeQuote || tradeQuote.error) return;
+    setTrading(true);
+    const toastId = toast.loading(`Trading ${tradeModal.symbol}...`, { description: 'Connecting to XRPL' });
+
+    try {
+      let seed = null;
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        setTrading(false);
+        return;
+      }
+
+      toast.loading(`Trading ${tradeModal.symbol}...`, { id: toastId, description: 'Executing swap...' });
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      // Use Payment for AMM swap with slippage protection
+      // SendMax = what we're willing to pay, Amount = what we want, DeliverMin = minimum acceptable
+      const slippage = tradeSlippage / 100;
+      let tx;
+
+      // Helper to format token value with safe precision (max 15 significant digits)
+      const formatTokenValue = (val) => {
+        const n = parseFloat(val);
+        if (n >= 1) return n.toPrecision(15).replace(/\.?0+$/, '');
+        return n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
+      };
+
+      if (tradeDirection === 'sell') {
+        // Sell tokens for XRP
+        const tokenAmount = parseFloat(tradeAmount);
+        const expectedXrp = parseFloat(tradeQuote.source_amount?.value || (tokenAmount * (tradeModal.price || 0)));
+        const minXrpDrops = Math.max(Math.floor(expectedXrp * (1 - slippage) * 1000000), 1);
+        const targetXrpDrops = Math.floor(expectedXrp * 1000000);
+
+        tx = {
+          TransactionType: 'Payment',
+          Account: address,
+          Destination: address,
+          Amount: String(targetXrpDrops),
+          DeliverMin: String(minXrpDrops),
+          SendMax: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: formatTokenValue(tokenAmount * 1.005) },
+          Flags: 131072
+        };
+      } else {
+        // Buy tokens with XRP
+        const xrpAmount = parseFloat(tradeAmount);
+        const expectedTokens = parseFloat(tradeQuote.destination_amount?.value || (xrpAmount / (tradeModal.price || 1)));
+
+        tx = {
+          TransactionType: 'Payment',
+          Account: address,
+          Destination: address,
+          Amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: formatTokenValue(expectedTokens) },
+          DeliverMin: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: formatTokenValue(expectedTokens * (1 - slippage)) },
+          SendMax: String(Math.floor(xrpAmount * 1.005 * 1000000)),
+          Flags: 131072
+        };
+      }
+
+      const prepared = await client.autofill(tx);
+      const signed = wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      await client.disconnect();
+
+      const txResult = result.result.meta.TransactionResult;
+      const txHash = result.result.hash;
+      const txLink = <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a>;
+
+      if (txResult === 'tesSUCCESS') {
+        toast.success('Trade executed', { id: toastId, description: txLink });
+        setTradeModal(null);
+        setTradeAmount('');
+        setTradeQuote(null);
+      } else if (txResult === 'tecKILLED') {
+        toast.error('No liquidity at this price', { id: toastId, description: <span>Offer couldn't be filled. {txLink}</span> });
+      } else {
+        toast.error('Trade failed', { id: toastId, description: <span>{txResult} {txLink}</span> });
+      }
+    } catch (err) {
+      console.error('Trade error:', err);
+      toast.error('Trade failed', { id: toastId, description: err.message });
+    } finally {
+      setTrading(false);
+    }
+  };
+
+  const handleSendDustToIssuer = async (token) => {
+    if (!token.currency || !token.issuer || token.rawAmount === 0) return;
+    setSendingDust(token.currency + token.issuer);
+    setDustConfirm(null);
+    const toastId = toast.loading(`Clearing ${token.symbol} dust...`, { description: 'Connecting to XRPL' });
+
+    try {
+      let seed = null;
+
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          seed = walletData?.seed;
+        }
+      } else if (accountProfile.wallet_type === 'device') {
+        const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
+        const deviceKeyId = await deviceFingerprint.getDeviceId();
+        if (deviceKeyId) {
+          const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed;
+          }
+        }
+      }
+
+      if (!seed) {
+        toast.error('Authentication failed', { id: toastId, description: 'Could not retrieve wallet credentials' });
+        return;
+      }
+
+      toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Checking issuer...' });
+      const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      // Check if issuer has depositAuth (requires preauthorization)
+      const issuerInfo = await client.request({ command: 'account_info', account: token.issuer });
+      const issuerFlags = issuerInfo.result.account_flags || {};
+      console.log('[Dust] Issuer flags:', issuerFlags);
+
+      // If issuer has depositAuth, try DEX sell then direct trustline removal
+      if (issuerFlags.depositAuth) {
+        console.log('[Dust] Issuer has depositAuth - trying DEX/TrustSet');
+        toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Trying DEX...' });
+
+        // tfImmediateOrCancel (131072) + tfSell (524288) = 655360
+        // Use a very low price to maximize fill chance
+        const offerTx = {
+          TransactionType: 'OfferCreate',
+          Account: address,
+          TakerGets: {
+            currency: token.currency,
+            issuer: token.issuer,
+            value: String(token.rawAmount)
+          },
+          TakerPays: '1', // Accept any amount (1 drop minimum)
+          Flags: 655360
+        };
+
+        console.log('[Dust] DEX OfferCreate:', offerTx);
+        const preparedOffer = await client.autofill(offerTx);
+        const signedOffer = wallet.sign(preparedOffer);
+        const offerResult = await client.submitAndWait(signedOffer.tx_blob);
+        const offerStatus = offerResult.result.meta.TransactionResult;
+        console.log('[Dust] DEX Result:', offerStatus);
+
+        await client.disconnect();
+
+        if (offerStatus === 'tesSUCCESS') {
+          const txHash = offerResult.result.hash;
+          setTokens(prev => prev.map(t =>
+            t.currency === token.currency && t.issuer === token.issuer
+              ? { ...t, rawAmount: 0, amount: '0' }
+              : t
+          ));
+          toast.success(`${token.symbol} dust sold on DEX`, {
+            id: toastId,
+            duration: 6000,
+            description: <span>Balance cleared. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
+          });
+          setSendingDust(null);
+          return;
+        }
+
+        // Last resort: try to remove trustline directly (tiny balance might be treated as 0)
+        console.log('[Dust] DEX failed, trying direct trustline removal');
+        toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Removing trustline...' });
+
+        const client2 = new Client('wss://xrplcluster.com');
+        await client2.connect();
+
+        // Check account's defaultRipple flag to determine correct NoRipple flag
+        const acctInfo = await client2.request({ command: 'account_info', account: address });
+        const acctFlags = acctInfo.result.account_flags || {};
+        const useSetNoRipple = !acctFlags.defaultRipple;
+
+        const trustSetTx = {
+          TransactionType: 'TrustSet',
+          Account: address,
+          LimitAmount: {
+            currency: token.currency,
+            issuer: token.issuer,
+            value: '0'
+          },
+          Flags: useSetNoRipple ? 131072 : 262144 // tfSetNoRipple or tfClearNoRipple
+        };
+
+        console.log('[Dust] TrustSet removal:', trustSetTx);
+        const preparedTrust = await client2.autofill(trustSetTx);
+        const signedTrust = wallet.sign(preparedTrust);
+        const trustResult = await client2.submitAndWait(signedTrust.tx_blob);
+        const trustStatus = trustResult.result.meta.TransactionResult;
+        console.log('[Dust] TrustSet Result:', trustStatus);
+
+        await client2.disconnect();
+
+        if (trustStatus === 'tesSUCCESS') {
+          const txHash = trustResult.result.hash;
+          setTokens(prev => prev.filter(t => !(t.currency === token.currency && t.issuer === token.issuer)));
+          toast.success(`${token.symbol} trustline removed`, {
+            id: toastId,
+            duration: 6000,
+            description: <span>Dust cleared. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
+          });
+        } else {
+          const tokenPath = token.slug || token.md5;
+          toast.error('Could not clear dust', {
+            id: toastId,
+            description: 'Balance too small to trade or remove.',
+            duration: 8000,
+            action: tokenPath ? { label: 'Trade', onClick: () => router.push(`/token/${tokenPath}`) } : undefined
+          });
+        }
+        setSendingDust(null);
+        return;
+      }
+
+      const needsTag = issuerFlags.requireDestinationTag;
+      console.log('[Dust] Destination:', token.issuer, 'needsTag:', needsTag);
+      toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Sending to issuer' });
+
+      const tx = {
+        TransactionType: 'Payment',
+        Account: address,
+        Destination: token.issuer,
+        Amount: {
+          currency: token.currency,
+          issuer: token.issuer,
+          value: String(token.rawAmount)
+        }
+      };
+      if (needsTag) tx.DestinationTag = 0;
+
+      console.log('[Dust] Transaction:', tx);
+      const prepared = await client.autofill(tx);
+      const signed = wallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      console.log('[Dust] Result:', result.result.meta.TransactionResult);
+      await client.disconnect();
+
+      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+        const txHash = result.result.hash;
+        // Update token balance to 0
+        setTokens(prev => prev.map(t =>
+          t.currency === token.currency && t.issuer === token.issuer
+            ? { ...t, rawAmount: 0, amount: '0' }
+            : t
+        ));
+        toast.success(`${token.symbol} dust cleared`, {
+          id: toastId,
+          duration: 6000,
+          description: <span>Balance is now 0. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
+        });
+      } else {
+        toast.error('Transaction failed', { id: toastId, description: result.result.meta.TransactionResult });
+      }
+    } catch (err) {
+      console.error('Send dust error:', err);
+      toast.error('Failed to clear dust', { id: toastId, description: err.message });
+    } finally {
+      setSendingDust(null);
     }
   };
 
@@ -346,10 +846,9 @@ export default function WalletPage() {
     return {
       symbol: displayName,
       name: t.user || displayName,
-      amount: balance.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 6
-      }),
+      amount: balance === 0 ? '0' : balance >= 0.01
+        ? balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+        : balance < 1e-12 ? balance.toExponential(2) : balance.toFixed(12).replace(/\.?0+$/, ''),
       rawAmount: balance,
       value: line.value
         ? `${line.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XRP`
@@ -1073,10 +1572,10 @@ export default function WalletPage() {
             <div
               className={cn(
                 'w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6',
-                isDark ? 'bg-blue-500/10' : 'bg-blue-50'
+                isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50'
               )}
             >
-              <Wallet size={36} className="text-blue-500" />
+              <Wallet size={36} className="text-[#137DFE]" />
             </div>
             <h2
               className={cn('text-xl font-medium mb-3', isDark ? 'text-white/90' : 'text-gray-900')}
@@ -1093,7 +1592,7 @@ export default function WalletPage() {
             </p>
             <button
               onClick={() => setOpenWalletModal(true)}
-              className="w-full py-4 rounded-lg text-[13px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+              className="w-full py-4 rounded-lg text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors"
             >
               Connect Wallet
             </button>
@@ -1123,7 +1622,7 @@ export default function WalletPage() {
               <div className="flex items-center gap-2">
                 {isInactive && (
                   <span
-                    className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400"
+                    className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-[#F6AF01]"
                     title="Fund with 1 XRP to activate"
                   >
                     Inactive
@@ -1134,16 +1633,16 @@ export default function WalletPage() {
                   className={cn(
                     'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-colors duration-150',
                     copied
-                      ? 'bg-emerald-500/10 text-emerald-500'
+                      ? 'bg-emerald-500/10 text-[#08AA09]'
                       : isDark
-                        ? 'bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400'
+                        ? 'bg-white/[0.04] text-white/50 hover:bg-[#137DFE]/5 hover:text-[#137DFE]'
                         : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                   )}
                 >
                   <div
                     className={cn(
                       'w-1.5 h-1.5 rounded-full',
-                      isInactive ? 'bg-amber-400/60' : 'bg-emerald-400'
+                      isInactive ? 'bg-[#F6AF01]/60' : 'bg-[#08AA09]'
                     )}
                   />
                   {address?.slice(0, 8)}...{address?.slice(-6)}
@@ -1211,7 +1710,7 @@ export default function WalletPage() {
                         className={cn(
                           'flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200',
                           showPanel === 'send'
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-[#137DFE] text-white'
                             : isDark
                               ? 'text-white/50 hover:text-white/80'
                               : 'text-gray-500 hover:text-gray-700'
@@ -1352,7 +1851,7 @@ export default function WalletPage() {
                                   'w-full px-4 py-2.5 flex items-center gap-3 text-left transition-colors',
                                   selectedToken === t.symbol
                                     ? isDark
-                                      ? 'bg-blue-500/10'
+                                      ? 'bg-[#137DFE]/10'
                                       : 'bg-blue-50'
                                     : '',
                                   isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100/50'
@@ -1389,7 +1888,7 @@ export default function WalletPage() {
                                   {t.amount}
                                 </span>
                                 {selectedToken === t.symbol && (
-                                  <Check size={16} className="text-blue-500" />
+                                  <Check size={16} className="text-[#137DFE]" />
                                 )}
                               </button>
                             ))}
@@ -1482,6 +1981,8 @@ export default function WalletPage() {
                             type="text"
                             value={sendTo}
                             onChange={(e) => setSendTo(e.target.value)}
+                            onFocus={() => setShowAddressSuggestions(true)}
+                            onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 150)}
                             placeholder="rAddress..."
                             className={cn(
                               'w-full pl-3 pr-9 py-2.5 rounded-xl text-sm font-mono outline-none transition-all duration-150',
@@ -1497,17 +1998,46 @@ export default function WalletPage() {
                                     ? 'border-amber-500/50'
                                     : 'border-amber-400'
                                   : isDark
-                                    ? 'border-white/[0.15] focus:border-blue-500/50'
-                                    : 'border-gray-200 focus:border-blue-400'
+                                    ? 'border-white/[0.15] focus:border-[#137DFE]/50'
+                                    : 'border-gray-200 focus:border-[#137DFE]'
                             )}
                           />
                           {sendTo && (
                             <div className="absolute right-3 top-1/2 -translate-y-1/2">
                               {sendTo.startsWith('r') && sendTo.length >= 25 ? (
-                                <Check size={14} className="text-emerald-500" />
+                                <Check size={14} className="text-[#08AA09]" />
                               ) : (
-                                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#F6AF01]" />
                               )}
+                            </div>
+                          )}
+                          {/* Address Suggestions Dropdown */}
+                          {showAddressSuggestions && withdrawals.length > 0 && (
+                            <div className={cn(
+                              "absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-10 max-h-[160px] overflow-y-auto",
+                              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200 shadow-lg"
+                            )}>
+                              {withdrawals.filter(w => !sendTo || w.address.toLowerCase().includes(sendTo.toLowerCase()) || w.name.toLowerCase().includes(sendTo.toLowerCase())).slice(0, 5).map((w) => (
+                                <button
+                                  key={w.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSendTo(w.address);
+                                    if (w.tag) setSendTag(w.tag);
+                                    setShowAddressSuggestions(false);
+                                  }}
+                                  className={cn(
+                                    "w-full px-3 py-2 text-left transition-colors flex items-center justify-between",
+                                    isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                                  )}
+                                >
+                                  <div>
+                                    <p className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{w.name}</p>
+                                    <p className={cn("text-[10px] font-mono", isDark ? "text-white/40" : "text-gray-400")}>{w.address.slice(0, 8)}...{w.address.slice(-6)}</p>
+                                  </div>
+                                  {w.tag && <span className={cn("text-[9px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10 text-white/50" : "bg-gray-100 text-gray-500")}>Tag: {w.tag}</span>}
+                                </button>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -1534,8 +2064,8 @@ export default function WalletPage() {
                           className={cn(
                             'w-full px-3 py-2.5 rounded-xl text-sm font-mono outline-none transition-colors duration-150',
                             isDark
-                              ? 'bg-white/[0.03] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-blue-500/50'
-                              : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                              ? 'bg-white/[0.03] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/50'
+                              : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                           )}
                         />
                       </div>
@@ -1559,7 +2089,7 @@ export default function WalletPage() {
                         className={cn(
                           'w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200',
                           sendTo && sendAmount && sendTo.startsWith('r') && sendTo.length >= 25
-                            ? 'bg-blue-500 text-white hover:bg-blue-600 active:scale-[0.98]'
+                            ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90 active:scale-[0.98]'
                             : isDark
                               ? 'bg-white/5 text-white/30 cursor-not-allowed'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -1600,8 +2130,8 @@ export default function WalletPage() {
                             className={cn(
                               'flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200',
                               copied
-                                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                ? 'bg-emerald-500/10 text-[#08AA09] border border-emerald-500/20'
+                                : 'bg-[#08AA09] text-white hover:bg-[#08AA09]/90'
                             )}
                           >
                             {copied ? <Check size={15} /> : <Copy size={15} />}{' '}
@@ -1632,10 +2162,10 @@ export default function WalletPage() {
                   {/* Debug Info */}
                   {debugInfo && (
                     <div className={cn('px-4 py-3 border-t text-[10px] font-mono', isDark ? 'border-white/[0.08] text-white/40' : 'border-gray-100 text-gray-400')}>
-                      <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+                      <div>wallet_type: <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span></div>
                       <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-                      <div>walletKeyId: <span className={debugInfo.walletKeyId ? 'text-emerald-400' : 'text-red-400'}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-                      <div>seed: <span className="text-emerald-400 break-all">{debugInfo.seed}</span></div>
+                      <div>walletKeyId: <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+                      <div>seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span></div>
                     </div>
                   )}
                 </div>
@@ -1706,8 +2236,8 @@ export default function WalletPage() {
 
                         {/* Actions - pushed right */}
                         <div className="flex items-center gap-2 ml-auto">
-                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-semibold">Inactive</span>}
-                          <button onClick={() => setShowPanel('send')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                          {isInactive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-[#F6AF01] font-semibold">Inactive</span>}
+                          <button onClick={() => setShowPanel('send')} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors">
                             <ArrowUpRight size={14} /> Send
                           </button>
                           <button onClick={() => setShowPanel('receive')} className={cn('flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}>
@@ -1734,12 +2264,12 @@ export default function WalletPage() {
                             <span>Trading Rank <span className={isDark ? 'text-white/70' : 'text-gray-700'}>#{accountInfo.tradingRank.toLocaleString()}</span></span>
                           )}
                           {(accountInfo.pnl !== undefined || accountInfo.dex_profit !== undefined) && (
-                            <span>P&L <span className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-emerald-500' : 'text-red-500'}>
+                            <span>P&L <span className={((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0) ? 'text-[#08AA09]' : 'text-red-500'}>
                               {((accountInfo.pnl || accountInfo.dex_profit || 0) >= 0 ? '+' : '')}{(accountInfo.pnl || accountInfo.dex_profit || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} XRP
                             </span></span>
                           )}
                           {accountInfo.roi !== undefined && (
-                            <span>ROI <span className={(accountInfo.roi >= 0) ? 'text-emerald-500' : 'text-red-500'}>
+                            <span>ROI <span className={(accountInfo.roi >= 0) ? 'text-[#08AA09]' : 'text-red-500'}>
                               {accountInfo.roi >= 0 ? '+' : ''}{accountInfo.roi.toFixed(1)}%
                             </span></span>
                           )}
@@ -1748,7 +2278,7 @@ export default function WalletPage() {
                               onClick={() => setShowPLCard(true)}
                               className={cn(
                                 'ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
-                                isDark ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                isDark ? 'bg-[#137DFE]/20 text-[#137DFE] hover:bg-[#137DFE]/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
                               )}
                             >
                               <Share2 size={10} />
@@ -1787,7 +2317,7 @@ export default function WalletPage() {
                           <span
                             className={cn(
                               'text-[9px] px-1.5 py-0.5 rounded font-semibold',
-                              isDark ? 'bg-blue-500/10 text-blue-400/70' : 'bg-blue-50 text-blue-500'
+                              isDark ? 'bg-[#137DFE]/10 text-[#137DFE]/70' : 'bg-blue-50 text-[#137DFE]'
                             )}
                           >
                             {allTokens.length}
@@ -1798,8 +2328,8 @@ export default function WalletPage() {
                           className={cn(
                             'text-[10px] font-medium uppercase tracking-wide transition-colors',
                             isDark
-                              ? 'text-blue-400 hover:text-blue-300'
-                              : 'text-blue-500 hover:text-blue-600'
+                              ? 'text-[#137DFE] hover:text-blue-300'
+                              : 'text-[#137DFE] hover:text-blue-600'
                           )}
                         >
                           View All
@@ -1810,11 +2340,11 @@ export default function WalletPage() {
                       ) : allTokens.length === 0 ? (
                         <div className={cn('p-8 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
                           <div className={cn("w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.04] border border-white/[0.08]" : "bg-gray-50 border border-gray-100")}>
-                            <Coins size={20} className={cn(isDark ? "text-blue-400/50" : "text-blue-400")} />
+                            <Coins size={20} className={cn(isDark ? "text-[#137DFE]/50" : "text-[#137DFE]")} />
                           </div>
                           <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
                           <p className={cn('text-[10px] mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Start building your portfolio</p>
-                          <a href="/" className={cn("inline-flex items-center gap-1.5 text-[10px] font-medium px-3 py-1.5 rounded-lg transition-colors", isDark ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20" : "text-blue-500 bg-blue-50 hover:bg-blue-100")}>Browse tokens</a>
+                          <a href="/" className={cn("inline-flex items-center gap-1.5 text-[10px] font-medium px-3 py-1.5 rounded-lg transition-colors", isDark ? "text-[#137DFE] bg-[#137DFE]/10 hover:bg-[#137DFE]/20" : "text-[#137DFE] bg-blue-50 hover:bg-blue-100")}>Browse tokens</a>
                         </div>
                       ) : (
                         <>
@@ -1844,9 +2374,9 @@ export default function WalletPage() {
                                 {/* Value */}
                                 <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}</p>
                                 {/* 24h Change */}
-                                <p className={cn("text-[10px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                                <p className={cn("text-[10px] tabular-nums text-right font-medium", token.positive ? "text-[#08AA09]" : "text-red-400")}>{token.change}</p>
                                 {/* Send */}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center w-7 h-7 rounded-md transition-all justify-self-end", isDark ? "text-blue-400 hover:bg-blue-500/15" : "text-blue-500 hover:bg-blue-50")}>
+                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center w-7 h-7 rounded-md transition-all justify-self-end", isDark ? "text-[#137DFE] hover:bg-[#137DFE]/10" : "text-[#137DFE] hover:bg-blue-50")}>
                                   <Send size={12} />
                                 </button>
                               </div>
@@ -1881,7 +2411,7 @@ export default function WalletPage() {
                           <span
                             className={cn(
                               'text-[9px] px-1.5 py-0.5 rounded font-semibold',
-                              isDark ? 'bg-blue-500/10 text-blue-400/70' : 'bg-blue-50 text-blue-500'
+                              isDark ? 'bg-[#137DFE]/10 text-[#137DFE]/70' : 'bg-blue-50 text-[#137DFE]'
                             )}
                           >
                             {collections.length}
@@ -1892,8 +2422,8 @@ export default function WalletPage() {
                           className={cn(
                             'text-[10px] font-medium uppercase tracking-wide transition-colors',
                             isDark
-                              ? 'text-blue-400 hover:text-blue-300'
-                              : 'text-blue-500 hover:text-blue-600'
+                              ? 'text-[#137DFE] hover:text-blue-300'
+                              : 'text-[#137DFE] hover:text-blue-600'
                           )}
                         >
                           View All
@@ -1906,7 +2436,7 @@ export default function WalletPage() {
                           <Image size={28} strokeWidth={1.5} className={cn("mb-3", isDark ? "text-white/20" : "text-gray-300")} />
                           <p className={cn('text-xs font-medium mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs found</p>
                           <p className={cn('text-[11px] mb-4', isDark ? 'text-white/30' : 'text-gray-400')}>Explore XRPL marketplaces</p>
-                          <a href="/nfts" className={cn("text-[11px] font-medium transition-colors", isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600")}>Browse NFTs</a>
+                          <a href="/nfts" className={cn("text-[11px] font-medium transition-colors", isDark ? "text-[#137DFE] hover:text-blue-300" : "text-[#137DFE] hover:text-blue-600")}>Browse NFTs</a>
                         </div>
                       ) : (
                         <>
@@ -1976,7 +2506,7 @@ export default function WalletPage() {
                       onClick={() => handleTabChange('trades')}
                       className={cn(
                         'text-[10px] font-medium uppercase tracking-wide transition-colors',
-                        isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-500 hover:text-blue-600'
+                        isDark ? 'text-[#137DFE] hover:text-blue-300' : 'text-[#137DFE] hover:text-blue-600'
                       )}
                     >
                       View All
@@ -2027,22 +2557,22 @@ export default function WalletPage() {
                                 "w-9 h-9 rounded-full flex items-center justify-center",
                                 tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10'
                               )}>
-                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
                               </div>
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{tx.label}</p>
-                                {tx.type === 'failed' && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/15 text-amber-400" : "bg-amber-100 text-amber-600")}>Failed</span>}
-                                {tx.isDust && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-100 text-amber-600")}>Dust</span>}
+                                {tx.type === 'failed' && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/15 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Failed</span>}
+                                {tx.isDust && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/10 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Dust</span>}
                               </div>
                               <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
-                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
+                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn("text-[12px] font-semibold tabular-nums text-right", tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                              <p className={cn("text-[12px] font-semibold tabular-nums text-right", tx.type === 'failed' ? 'text-[#F6AF01]' : tx.type === 'in' ? 'text-[#08AA09]' : 'text-red-400')}>
                                 {tx.fromAmount && tx.toAmount ? (
                                   <span className="flex items-center justify-end gap-1">
                                     <span className="text-red-400">-{tx.fromAmount}</span>
                                     <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
-                                    <span className="text-emerald-400">+{tx.toAmount}</span>
+                                    <span className="text-[#08AA09]">+{tx.toAmount}</span>
                                   </span>
                                 ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
                               </p>
@@ -2097,11 +2627,11 @@ export default function WalletPage() {
                                 onClick={() => window.open(`/tx/${h.hash}`, '_blank')}
                               >
                                 <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {isBuy ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                  {isBuy ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
                                 </div>
                                 <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{isBuy ? 'Buy' : 'Sell'}</p>
                                 <p className={cn("text-[11px] truncate", isDark ? "text-white/50" : "text-gray-500")}>{gotCurrency}/{paidCurrency}</p>
-                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isBuy ? 'text-emerald-500' : 'text-red-400')}>
+                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isBuy ? 'text-[#08AA09]' : 'text-red-400')}>
                                   {h.got?.value ? `${parseFloat(h.got.value).toFixed(2)} ${gotCurrency}` : '—'}
                                 </p>
                                 <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>
@@ -2154,11 +2684,11 @@ export default function WalletPage() {
                                 onClick={() => window.open(`/tx/${t.hash}`, '_blank')}
                               >
                                 <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isSeller ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {isSeller ? <ArrowUpRight size={16} className="text-emerald-500" /> : <ArrowDownLeft size={16} className="text-red-400" />}
+                                  {isSeller ? <ArrowUpRight size={16} className="text-[#08AA09]" /> : <ArrowDownLeft size={16} className="text-red-400" />}
                                 </div>
                                 <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{isSeller ? 'Sold' : 'Bought'}</p>
                                 <p className={cn("text-[11px] truncate", isDark ? "text-white/50" : "text-gray-500")}>{t.name || t.NFTokenID?.slice(0, 12) + '...'}</p>
-                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isSeller ? 'text-emerald-500' : 'text-red-400')}>
+                                <p className={cn("text-[12px] font-medium tabular-nums text-right truncate", isSeller ? 'text-[#08AA09]' : 'text-red-400')}>
                                   {t.price ? `${parseFloat(t.price).toFixed(2)} XRP` : '—'}
                                 </p>
                                 <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>
@@ -2214,7 +2744,7 @@ export default function WalletPage() {
                             size={16}
                             className={cn(
                               'absolute left-3 top-1/2 -translate-y-1/2',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           />
                           <input
@@ -2225,8 +2755,8 @@ export default function WalletPage() {
                             className={cn(
                               'w-full pl-10 pr-4 py-2.5 rounded-lg text-[13px] outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
-                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
+                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                             )}
                           />
                         </div>
@@ -2251,9 +2781,9 @@ export default function WalletPage() {
                             className={cn(
                               'p-2.5 rounded-lg transition-colors duration-150',
                               hideZeroBalance
-                                ? 'bg-blue-500 text-white'
+                                ? 'bg-[#137DFE] text-white'
                                 : isDark
-                                  ? 'bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400'
+                                  ? 'bg-white/[0.04] text-white/50 hover:bg-[#137DFE]/5 hover:text-[#137DFE]'
                                   : 'bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600'
                             )}
                             title={hideZeroBalance ? 'Show zero balances' : 'Hide zero balances'}
@@ -2276,8 +2806,8 @@ export default function WalletPage() {
                             className={cn(
                               'text-[11px] transition-colors',
                               isDark
-                                ? 'text-blue-400 hover:text-blue-300'
-                                : 'text-blue-500 hover:text-blue-600'
+                                ? 'text-[#137DFE] hover:text-blue-300'
+                                : 'text-[#137DFE] hover:text-blue-600'
                             )}
                           >
                             Clear search
@@ -2349,14 +2879,14 @@ export default function WalletPage() {
                           >
                             NO TOKENS FOUND
                           </p>
-                          <a href="/" className="text-[9px] text-blue-400 hover:underline">
+                          <a href="/" className="text-[9px] text-[#137DFE] hover:underline">
                             Browse tokens
                           </a>
                         </div>
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
                           {filteredTokens.slice((tokenPage - 1) * tokensPerPage, tokenPage * tokensPerPage).map((token) => (
-                            <div key={token.symbol} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_90px_80px_140px] gap-4 px-5 py-3 items-center transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                            <div key={token.symbol} onClick={() => token.slug && router.push(`/token/${token.slug}`)} className={cn("grid grid-cols-[2fr_1fr_1fr_1fr_80px_90px_80px_140px] gap-4 px-5 py-3 items-center transition-colors", token.slug && "cursor-pointer", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
                               {/* Asset */}
                               <div className="flex items-center gap-2.5 min-w-0">
                                 {token.md5 ? (
@@ -2372,7 +2902,7 @@ export default function WalletPage() {
                                         className={cn(
                                           'px-1 py-0.5 rounded text-[8px] font-medium flex-shrink-0',
                                           isDark
-                                            ? 'bg-emerald-500/10 text-emerald-400'
+                                            ? 'bg-emerald-500/10 text-[#08AA09]'
                                             : 'bg-emerald-50 text-emerald-600'
                                         )}
                                       >
@@ -2393,20 +2923,36 @@ export default function WalletPage() {
                               {/* Value */}
                               <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{activeFiatCurrency}</span></>}</p>
                               {/* 24h */}
-                              <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-emerald-500" : "text-red-400")}>{token.change}</p>
+                              <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-[#08AA09]" : "text-red-400")}>{token.change}</p>
                               {/* Vol 24h */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? (activeFiatCurrency === 'XRP' ? <>{token.vol24h >= 1000000 ? `${(token.vol24h/1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h/1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{(() => { const v = token.vol24h * xrpUsdPrice; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(0); })()} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : '—'}</p>
                               {/* Holders */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
                               {/* Actions */}
-                              <div className="flex items-center justify-end gap-1">
-                                {token.slug && <Link href={`/token/${token.slug}`} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50")} title="Trade"><ArrowRightLeft size={12} /></Link>}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all", isDark ? "text-blue-400 hover:bg-blue-500/15" : "text-blue-500 hover:bg-blue-50")} title="Send"><Send size={11} /> Send</button>
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                {token.rawAmount >= 0.000001 && token.currency && token.issuer && (
+                                  <button onClick={() => { setBurnModal(token); setBurnAmount(''); }} disabled={burning === token.currency + token.issuer} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-orange-400 hover:bg-orange-400/10" : "text-gray-400 hover:text-orange-500 hover:bg-orange-50")} title="Burn">
+                                    <Flame size={12} />
+                                  </button>
+                                )}
+                                {token.currency && token.issuer && <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-400 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade"><ArrowRightLeft size={12} /></button>}
+                                {token.rawAmount > 0 && token.rawAmount < 0.000001 && token.currency && token.issuer ? (
+                                  <button
+                                    onClick={() => setDustConfirm(token)}
+                                    disabled={sendingDust === token.currency + token.issuer}
+                                    className={cn("flex items-center justify-center gap-1 w-[52px] py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-[#F6AF01] hover:bg-[#F6AF01]/10" : "text-amber-600 hover:bg-amber-50")}
+                                    title="Clear dust"
+                                  >
+                                    <Sparkles size={11} /> {sendingDust === token.currency + token.issuer ? '...' : 'Clear'}
+                                  </button>
+                                ) : (
+                                  <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center gap-1 w-[52px] py-1 rounded-md text-[10px] font-medium transition-all", isDark ? "text-[#137DFE] hover:bg-[#137DFE]/10" : "text-[#137DFE] hover:bg-blue-50")} title="Send"><Send size={11} /> Send</button>
+                                )}
                                 {token.rawAmount === 0 && token.currency && token.issuer && (
                                   <button
                                     onClick={() => handleRemoveTrustline(token)}
                                     disabled={removingTrustline === token.currency + token.issuer}
-                                    className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-red-400 hover:bg-red-500/15" : "text-red-500 hover:bg-red-50")}
+                                    className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-red-400 hover:bg-red-400/10" : "text-red-500 hover:bg-red-50")}
                                     title="Remove trustline"
                                   >
                                     <Trash2 size={11} /> {removingTrustline === token.currency + token.issuer ? '...' : 'Remove'}
@@ -2461,7 +3007,7 @@ export default function WalletPage() {
                                 className={cn(
                                   'w-8 h-8 rounded-lg text-[11px] font-medium transition-colors',
                                   p === tokenPage
-                                    ? 'bg-blue-500 text-white'
+                                    ? 'bg-[#137DFE] text-white'
                                     : isDark
                                       ? 'bg-white/[0.04] text-white/70 hover:bg-white/[0.08]'
                                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -2601,7 +3147,7 @@ export default function WalletPage() {
                                 )}
                               >
                                 {offer.type === 'buy' ? (
-                                  <ArrowDownLeft size={16} className="text-emerald-500" />
+                                  <ArrowDownLeft size={16} className="text-[#08AA09]" />
                                 ) : (
                                   <ArrowUpRight size={16} className="text-red-400" />
                                 )}
@@ -2621,7 +3167,7 @@ export default function WalletPage() {
                                       className={cn(
                                         'text-[9px] px-1 py-0.5 rounded font-medium',
                                         isDark
-                                          ? 'bg-amber-500/10 text-amber-400'
+                                          ? 'bg-amber-500/10 text-[#F6AF01]'
                                           : 'bg-amber-100 text-amber-600'
                                       )}
                                     >
@@ -2815,7 +3361,7 @@ export default function WalletPage() {
                                   <p
                                     className={cn(
                                       'text-[13px] font-medium tabular-nums',
-                                      offer.floorDiffPct >= 0 ? 'text-emerald-500' : 'text-red-400'
+                                      offer.floorDiffPct >= 0 ? 'text-[#08AA09]' : 'text-red-400'
                                     )}
                                   >
                                     {offer.floor > 0
@@ -2837,7 +3383,7 @@ export default function WalletPage() {
                                       'text-[11px] px-2 py-0.5 rounded font-medium',
                                       offer.type === 'sell'
                                         ? 'bg-red-500/10 text-red-400'
-                                        : 'bg-emerald-500/10 text-emerald-500'
+                                        : 'bg-emerald-500/10 text-[#08AA09]'
                                     )}
                                   >
                                     {offer.type === 'sell' ? 'Sell' : 'Buy'}
@@ -2894,9 +3440,9 @@ export default function WalletPage() {
                           className={cn(
                             'px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors',
                             tokenHistoryType === type
-                              ? type === 'buy' ? 'bg-emerald-500/10 text-emerald-500'
+                              ? type === 'buy' ? 'bg-emerald-500/10 text-[#08AA09]'
                                 : type === 'sell' ? 'bg-red-500/10 text-red-400'
-                                : isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-500'
+                                : isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-[#137DFE]'
                               : isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600'
                           )}
                         >
@@ -2930,12 +3476,12 @@ export default function WalletPage() {
                             return (
                               <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
                                 <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {isBuy ? <ArrowDownLeft size={14} className="text-emerald-500" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                  {isBuy ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
                                 </div>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{tokenName}</span>
                                 </div>
-                                <p className={cn('text-[11px] tabular-nums text-right', isBuy ? 'text-emerald-500' : 'text-red-400')}>
+                                <p className={cn('text-[11px] tabular-nums text-right', isBuy ? 'text-[#08AA09]' : 'text-red-400')}>
                                   {isBuy ? '+' : '-'}{tokenAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}
                                 </p>
                                 <p className={cn('text-[11px] tabular-nums text-right', isDark ? 'text-white/60' : 'text-gray-600')}>
@@ -2944,7 +3490,7 @@ export default function WalletPage() {
                                 <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                   {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
                                 </p>
-                                <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
+                                <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-[#137DFE]' : 'text-gray-400 hover:text-[#137DFE]')}>
                                   <ExternalLink size={12} />
                                 </a>
                               </div>
@@ -3010,7 +3556,7 @@ export default function WalletPage() {
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
                                 {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
                               </p>
-                              <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-blue-400' : 'text-gray-400 hover:text-blue-500')}>
+                              <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-[#137DFE]' : 'text-gray-400 hover:text-[#137DFE]')}>
                                 <ExternalLink size={12} />
                               </a>
                             </div>
@@ -3046,22 +3592,22 @@ export default function WalletPage() {
                               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                             >
                               <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-amber-500" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-emerald-500" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
                               </div>
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{tx.label}</p>
-                                {tx.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600')}>Failed</span>}
-                                {tx.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                {tx.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
+                                {tx.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
                               </div>
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-blue-400 hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
+                                {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn('text-[12px] font-semibold tabular-nums text-right', tx.type === 'failed' ? 'text-amber-500' : tx.type === 'in' ? 'text-emerald-400' : 'text-red-400')}>
+                              <p className={cn('text-[12px] font-semibold tabular-nums text-right', tx.type === 'failed' ? 'text-[#F6AF01]' : tx.type === 'in' ? 'text-[#08AA09]' : 'text-red-400')}>
                                 {tx.fromAmount && tx.toAmount ? (
                                   <span className="flex items-center justify-end gap-1">
                                     <span className="text-red-400">-{tx.fromAmount}</span>
                                     <span className={isDark ? 'text-white/20' : 'text-gray-300'}>→</span>
-                                    <span className="text-emerald-400">+{tx.toAmount}</span>
+                                    <span className="text-[#08AA09]">+{tx.toAmount}</span>
                                   </span>
                                 ) : tx.amount ? (tx.type === 'failed' ? '—' : `${tx.type === 'in' ? '+' : '-'}${tx.amount}`) : '—'}
                               </p>
@@ -3212,7 +3758,7 @@ export default function WalletPage() {
                           className={cn(
                             'p-2 rounded-lg transition-colors duration-150',
                             isDark
-                              ? 'hover:bg-blue-500/5 text-white/40 hover:text-blue-400'
+                              ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                               : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
                           )}
                         >
@@ -3224,7 +3770,7 @@ export default function WalletPage() {
                           <label
                             className={cn(
                               'text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           >
                             Name
@@ -3239,8 +3785,8 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
-                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
+                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                             )}
                           />
                         </div>
@@ -3248,7 +3794,7 @@ export default function WalletPage() {
                           <label
                             className={cn(
                               'text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           >
                             XRPL Address
@@ -3263,8 +3809,8 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
-                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
+                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                             )}
                           />
                         </div>
@@ -3272,7 +3818,7 @@ export default function WalletPage() {
                           <label
                             className={cn(
                               'text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           >
                             Destination Tag (optional)
@@ -3290,8 +3836,8 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
-                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
+                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                             )}
                           />
                         </div>
@@ -3301,7 +3847,7 @@ export default function WalletPage() {
                         <button
                           onClick={handleAddWithdrawal}
                           disabled={withdrawalLoading}
-                          className="w-full py-4 rounded-lg text-[13px] font-medium disabled:opacity-50 flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                          className="w-full py-4 rounded-lg text-[13px] font-medium disabled:opacity-50 flex items-center justify-center gap-2 bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors"
                         >
                           {withdrawalLoading ? (
                             'Saving...'
@@ -3350,8 +3896,8 @@ export default function WalletPage() {
                       className={cn(
                         'text-[11px] font-medium uppercase tracking-wide flex items-center gap-1 transition-colors',
                         isDark
-                          ? 'text-blue-400/80 hover:text-blue-300'
-                          : 'text-blue-500 hover:text-blue-600'
+                          ? 'text-[#137DFE]/80 hover:text-blue-300'
+                          : 'text-[#137DFE] hover:text-blue-600'
                       )}
                     >
                       <Plus size={12} /> Add New
@@ -3417,12 +3963,12 @@ export default function WalletPage() {
                           <div
                             className={cn(
                               'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-                              isDark ? 'bg-blue-500/10' : 'bg-blue-50'
+                              isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50'
                             )}
                           >
                             <Building2
                               size={16}
-                              className={isDark ? 'text-blue-400' : 'text-blue-500'}
+                              className={isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -3459,7 +4005,7 @@ export default function WalletPage() {
                               className={cn(
                                 'p-2 rounded-lg transition-colors duration-150',
                                 isDark
-                                  ? 'hover:bg-blue-500/5 text-white/40 hover:text-blue-400'
+                                  ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                                   : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
                               )}
                             >
@@ -3476,7 +4022,7 @@ export default function WalletPage() {
                               className={cn(
                                 'p-2 rounded-lg transition-colors duration-150',
                                 isDark
-                                  ? 'hover:bg-blue-500/5 text-white/40 hover:text-blue-400'
+                                  ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                                   : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
                               )}
                             >
@@ -3534,7 +4080,7 @@ export default function WalletPage() {
                           className={cn(
                             'p-2 rounded-lg transition-colors duration-150',
                             isDark
-                              ? 'hover:bg-blue-500/5 text-white/40 hover:text-blue-400'
+                              ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                               : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
                           )}
                         >
@@ -3578,7 +4124,7 @@ export default function WalletPage() {
                           <label
                             className={cn(
                               'text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           >
                             Recipient Address
@@ -3591,8 +4137,8 @@ export default function WalletPage() {
                             className={cn(
                               'w-full px-4 py-3 rounded-lg text-[13px] font-mono outline-none transition-colors duration-150',
                               isDark
-                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-blue-500/40'
-                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-blue-400'
+                                ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/30 focus:border-[#137DFE]/40'
+                                : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]'
                             )}
                           />
                         </div>
@@ -3606,7 +4152,7 @@ export default function WalletPage() {
                         >
                           This will transfer ownership. This action cannot be undone.
                         </div>
-                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors">
                           <Send size={16} /> Transfer NFT
                         </button>
                       </div>
@@ -3643,7 +4189,7 @@ export default function WalletPage() {
                           className={cn(
                             'p-2 rounded-lg transition-colors duration-150',
                             isDark
-                              ? 'hover:bg-blue-500/5 text-white/40 hover:text-blue-400'
+                              ? 'hover:bg-[#137DFE]/5 text-white/40 hover:text-[#137DFE]'
                               : 'hover:bg-blue-50 text-gray-400 hover:text-blue-600'
                           )}
                         >
@@ -3705,7 +4251,7 @@ export default function WalletPage() {
                           <label
                             className={cn(
                               'text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block',
-                              isDark ? 'text-blue-400' : 'text-blue-500'
+                              isDark ? 'text-[#137DFE]' : 'text-[#137DFE]'
                             )}
                           >
                             Sale Price
@@ -3787,7 +4333,7 @@ export default function WalletPage() {
                             XRP
                           </span>
                         </div>
-                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                        <button className="w-full py-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors">
                           <ArrowUpRight size={16} /> List for Sale
                         </button>
                       </div>
@@ -3803,7 +4349,7 @@ export default function WalletPage() {
                         className={cn(
                           'text-[11px] transition-colors',
                           isDark
-                            ? 'text-white/35 hover:text-blue-400'
+                            ? 'text-white/35 hover:text-[#137DFE]'
                             : 'text-gray-400 hover:text-blue-600'
                         )}
                       >
@@ -3823,7 +4369,7 @@ export default function WalletPage() {
                         className={cn(
                           'ml-auto text-[11px] px-2 py-1 rounded-lg transition-colors duration-150',
                           isDark
-                            ? 'bg-white/[0.04] text-white/50 hover:bg-blue-500/5 hover:text-blue-400'
+                            ? 'bg-white/[0.04] text-white/50 hover:bg-[#137DFE]/5 hover:text-[#137DFE]'
                             : 'bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600'
                         )}
                       >
@@ -3864,13 +4410,13 @@ export default function WalletPage() {
                           <div
                             className={cn(
                               'absolute top-0.5 left-2 w-2.5 h-2.5 rounded-full',
-                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
+                              isDark ? 'bg-[#3b78e7]' : 'bg-[#137DFE]/70'
                             )}
                           />
                           <div
                             className={cn(
                               'absolute top-0.5 right-2 w-2.5 h-2.5 rounded-full',
-                              isDark ? 'bg-[#3b78e7]' : 'bg-blue-500/70'
+                              isDark ? 'bg-[#3b78e7]' : 'bg-[#137DFE]/70'
                             )}
                           />
                           <div
@@ -3920,7 +4466,7 @@ export default function WalletPage() {
                           href="/nfts"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[10px] text-blue-400 hover:underline"
+                          className="text-[10px] text-[#137DFE] hover:underline"
                         >
                           Browse collections
                         </a>
@@ -3974,7 +4520,7 @@ export default function WalletPage() {
                                 </button>
                                 <button
                                   onClick={() => setNftToSell(nft)}
-                                  className="p-2 rounded-lg text-[11px] font-medium flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                  className="p-2 rounded-lg text-[11px] font-medium flex items-center gap-1 bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors"
                                 >
                                   <ArrowUpRight size={12} /> Sell
                                 </button>
@@ -4061,7 +4607,7 @@ export default function WalletPage() {
                       href="/nfts"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[9px] text-blue-400 hover:underline mt-2 inline-block"
+                      className="text-[9px] text-[#137DFE] hover:underline mt-2 inline-block"
                     >
                       Browse collections
                     </a>
@@ -4138,19 +4684,19 @@ export default function WalletPage() {
         >
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
             wallet_type:{' '}
-            <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span>
+            <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span>
           </div>
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
             account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
           </div>
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
             walletKeyId:{' '}
-            <span className={debugInfo.walletKeyId ? 'text-emerald-400' : 'text-red-400'}>
+            <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>
               {debugInfo.walletKeyId || 'undefined'}
             </span>
           </div>
           <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-            seed: <span className="text-emerald-400 break-all">{debugInfo.seed}</span>
+            seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span>
           </div>
         </div>
       )}
@@ -4179,10 +4725,10 @@ export default function WalletPage() {
               {/* Main P/L */}
               <div className="mb-6">
                 <div className="text-[10px] uppercase tracking-wider mb-1 text-white/40">Total P/L</div>
-                <div className={cn('text-3xl font-bold', (accountInfo.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                <div className={cn('text-3xl font-bold', (accountInfo.pnl || 0) >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
                   {(accountInfo.pnl || 0) >= 0 ? '+' : ''}{(accountInfo.pnl || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
                 </div>
-                <div className={cn('text-sm', (accountInfo.roi || 0) >= 0 ? 'text-emerald-400/70' : 'text-red-400/70')}>
+                <div className={cn('text-sm', (accountInfo.roi || 0) >= 0 ? 'text-[#08AA09]/70' : 'text-red-400/70')}>
                   {(accountInfo.roi || 0) >= 0 ? '+' : ''}{(accountInfo.roi || 0).toFixed(1)}% ROI
                 </div>
               </div>
@@ -4206,8 +4752,8 @@ export default function WalletPage() {
               {/* Win/Loss */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex-1 rounded-lg p-3 bg-white/5">
-                  <div className="text-emerald-400/60 text-[10px] uppercase tracking-wider">Best Trade</div>
-                  <div className="text-emerald-400 font-semibold">+{(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                  <div className="text-[#08AA09]/60 text-[10px] uppercase tracking-wider">Best Trade</div>
+                  <div className="text-[#08AA09] font-semibold">+{(accountInfo.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
                 </div>
                 <div className="flex-1 rounded-lg p-3 bg-white/5">
                   <div className="text-red-400/60 text-[10px] uppercase tracking-wider">Worst Trade</div>
@@ -4217,7 +4763,7 @@ export default function WalletPage() {
 
               {/* Ranking */}
               {accountInfo.tradingRank && (
-                <div className="flex items-center gap-2 text-amber-400/80">
+                <div className="flex items-center gap-2 text-[#F6AF01]/80">
                   <Trophy size={14} />
                   <span className="text-sm">Trading Rank #{accountInfo.tradingRank.toLocaleString()}</span>
                 </div>
@@ -4348,7 +4894,7 @@ export default function WalletPage() {
                   link.href = canvas.toDataURL('image/png');
                   link.click();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#137DFE] hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
               >
                 <Download size={16} />
                 Download PNG
@@ -4359,6 +4905,297 @@ export default function WalletPage() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Burn Modal */}
+      {burnModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBurnModal(null)} />
+          <div className={cn(
+            "relative w-full max-w-sm rounded-2xl border p-6",
+            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+          )}>
+            <div className="flex flex-col items-center text-center">
+              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 relative", isDark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200")}>
+                {burnModal.md5 ? (
+                  <img src={`https://s1.xrpl.to/token/${burnModal.md5}`} alt="" className="w-8 h-8 rounded-full" />
+                ) : (
+                  <Flame size={26} className="text-orange-500" />
+                )}
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+                  <Flame size={10} className="text-white" />
+                </div>
+              </div>
+              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>Burn {burnModal.symbol}</h3>
+              <p className={cn("text-[12px] mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+                Permanently destroy tokens
+              </p>
+              <div className={cn("w-full mb-3", isDark ? "text-white/50" : "text-gray-500")}>
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-[10px]">Amount to burn</p>
+                  <p className="text-[10px]">Balance: <span className={isDark ? "text-white/70" : "text-gray-700"}>{burnModal.amount}</span></p>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={burnAmount}
+                    onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                    placeholder="0.00"
+                    className={cn(
+                      "w-full px-3 py-2.5 rounded-xl text-[14px] font-mono outline-none border transition-colors",
+                      parseFloat(burnAmount) > burnModal.rawAmount
+                        ? "border-red-500 focus:border-red-500"
+                        : isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orange-500/50" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500"
+                    )}
+                  />
+                  <button onClick={() => setBurnAmount(String(burnModal.rawAmount))} className={cn("absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-medium px-2 py-1 rounded-md", isDark ? "text-orange-400 hover:bg-orange-400/10" : "text-orange-600 hover:bg-orange-50")}>
+                    MAX
+                  </button>
+                </div>
+                {parseFloat(burnAmount) > burnModal.rawAmount && (
+                  <p className="text-[10px] mt-1.5 text-right text-red-400">Exceeds balance</p>
+                )}
+                {burnAmount && parseFloat(burnAmount) > 0 && parseFloat(burnAmount) <= burnModal.rawAmount && (
+                  <div className="flex justify-between mt-1.5">
+                    {burnModal.price > 0 && (
+                      <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
+                        ≈ {(parseFloat(burnAmount) * burnModal.price).toFixed(2)} XRP
+                      </p>
+                    )}
+                    {burnModal.percentOwned > 0 && (
+                      <p className={cn("text-[10px]", isDark ? "text-orange-400/70" : "text-orange-600")}>
+                        {(() => {
+                          const pct = (parseFloat(burnAmount) / burnModal.rawAmount) * burnModal.percentOwned;
+                          return pct >= 0.01 ? pct.toFixed(2) : pct >= 0.0001 ? pct.toFixed(4) : pct.toExponential(2);
+                        })()}% of supply
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
+                <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
+                <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone. Tokens sent to issuer are permanently destroyed.</p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setBurnModal(null)}
+                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleBurnTokens(burnModal, burnAmount)}
+                  disabled={!burnAmount || parseFloat(burnAmount) <= 0 || parseFloat(burnAmount) > burnModal.rawAmount}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Burn
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Trade Modal */}
+      {tradeModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTradeModal(null)} />
+          <div className={cn(
+            "relative w-full max-w-[340px] rounded-2xl border p-5",
+            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+          )}>
+            <div className="flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  {tradeModal.md5 ? (
+                    <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-9 h-9 rounded-full" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-[#137DFE]/20 flex items-center justify-center text-[#137DFE] text-sm font-bold">{tradeModal.symbol?.[0]}</div>
+                  )}
+                  <div>
+                    <h3 className={cn("text-[14px] font-semibold leading-tight", isDark ? "text-white" : "text-gray-900")}>{tradeModal.symbol}</h3>
+                    <p className={cn("text-[11px] font-mono", isDark ? "text-white/40" : "text-gray-400")}>
+                      {(() => { const p = tradeModal.price || 0; return p >= 1 ? p.toFixed(4) : p >= 0.0001 ? p.toFixed(6) : p >= 0.00000001 ? p.toFixed(10) : p.toFixed(15); })()} XRP
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setTradeModal(null)} className={cn("p-1.5 rounded-lg -mr-1", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                  <X size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+                </button>
+              </div>
+
+              {/* Direction Toggle */}
+              <div className={cn("flex rounded-lg p-0.5 mb-4", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                <button onClick={() => setTradeDirection('sell')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'sell' ? "bg-red-500/15 text-red-400" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
+                  Sell
+                </button>
+                <button onClick={() => setTradeDirection('buy')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'buy' ? "bg-[#08AA09]/15 text-[#08AA09]" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
+                  Buy
+                </button>
+              </div>
+
+              {/* Amount Input */}
+              <div className="mb-3">
+                <div className={cn("flex justify-between items-center mb-1.5 text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
+                  <span>{tradeDirection === 'sell' ? 'You sell' : 'You pay'}</span>
+                  {tradeDirection === 'sell' && (
+                    <button onClick={() => setTradeAmount(String(tradeModal.rawAmount))} className="hover:underline">
+                      Bal: <span className={isDark ? "text-white/60" : "text-gray-600"}>{tradeModal.rawAmount >= 1000000 ? `${(tradeModal.rawAmount/1000000).toFixed(2)}M` : tradeModal.rawAmount >= 1000 ? `${(tradeModal.rawAmount/1000).toFixed(2)}K` : tradeModal.rawAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                    </button>
+                  )}
+                </div>
+                <div className={cn("flex items-center rounded-xl border transition-colors", isDark ? "bg-white/[0.03] border-white/10 focus-within:border-[#137DFE]/40" : "bg-gray-50 border-gray-200 focus-within:border-[#137DFE]")}>
+                  <input
+                    type="text"
+                    value={tradeAmount}
+                    onChange={(e) => setTradeAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                    placeholder="0"
+                    className={cn(
+                      "flex-1 px-3 py-2.5 bg-transparent text-[16px] font-mono outline-none",
+                      isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300"
+                    )}
+                  />
+                  <div className={cn("flex items-center gap-1.5 pr-3", isDark ? "text-white/50" : "text-gray-500")}>
+                    {tradeDirection === 'sell' && tradeModal.md5 && <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-4 h-4 rounded-full" />}
+                    <span className="text-[11px] font-medium">{tradeDirection === 'sell' ? tradeModal.symbol : 'XRP'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quote Results */}
+              {tradeAmount && parseFloat(tradeAmount) > 0 && (
+                <div className={cn("rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                  {quoteLoading ? (
+                    <div className={cn("text-[11px] animate-pulse", isDark ? "text-white/40" : "text-gray-400")}>Getting quote...</div>
+                  ) : tradeQuote?.error ? (
+                    <div className="text-[11px] text-red-400">{tradeQuote.error}</div>
+                  ) : tradeQuote ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You receive</span>
+                        <span className={cn("text-[13px] font-mono font-medium", isDark ? "text-[#08AA09]" : "text-green-600")}>
+                          {(() => {
+                            const val = parseFloat(tradeDirection === 'sell' ? tradeQuote.source_amount?.value : tradeQuote.destination_amount?.value) || 0;
+                            const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
+                            return `${val.toFixed(decimals)} ${tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}`;
+                          })()}
+                        </span>
+                      </div>
+                      <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                        <span>Min received ({tradeSlippage}% slip)</span>
+                        <span className="font-mono">{(() => {
+                          const val = parseFloat(tradeQuote.minimum_received) || 0;
+                          const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
+                          return val.toFixed(decimals);
+                        })()} {tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}</span>
+                      </div>
+                      {tradeQuote.price_impact && (
+                        <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                          <span>Price impact</span>
+                          <span className={parseFloat(tradeQuote.price_impact.percent) > 1 ? 'text-red-400' : 'font-mono'}>{tradeQuote.price_impact.percent}</span>
+                        </div>
+                      )}
+                      {tradeQuote.fallback && <div className="text-[9px] text-amber-400/80">⚡ Estimate via DEX orderbook</div>}
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              {/* Slippage */}
+              <div className="mb-4">
+                <div className={cn("flex items-center justify-between mb-2", isDark ? "text-white/40" : "text-gray-400")}>
+                  <span className="text-[10px]">Slippage tolerance</span>
+                  <span className={cn("text-[10px] font-mono", isDark ? "text-white/60" : "text-gray-500")}>{tradeSlippage}%</span>
+                </div>
+                <div className={cn("flex rounded-lg p-0.5", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                  {[0.5, 1, 2, 'custom'].map(v => (
+                    <button
+                      key={v}
+                      onClick={() => v !== 'custom' && setTradeSlippage(v)}
+                      className={cn(
+                        "flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all",
+                        (v === 'custom' ? ![0.5, 1, 2].includes(tradeSlippage) : tradeSlippage === v)
+                          ? (isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm")
+                          : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
+                      )}
+                    >
+                      {v === 'custom' ? (
+                        <input
+                          type="text"
+                          value={![0.5, 1, 2].includes(tradeSlippage) ? tradeSlippage : ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            if (val === '') return;
+                            setTradeSlippage(Math.max(0.1, Math.min(50, parseFloat(val) || 0.5)));
+                          }}
+                          placeholder="Custom"
+                          className={cn("w-full text-center bg-transparent outline-none text-[10px] font-medium", isDark ? "placeholder:text-white/30" : "placeholder:text-gray-400")}
+                        />
+                      ) : `${v}%`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleTrade}
+                disabled={trading || !tradeQuote || tradeQuote.error || quoteLoading || (tradeDirection === 'sell' && parseFloat(tradeAmount) > tradeModal.rawAmount)}
+                className="w-full py-2.5 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {trading ? 'Trading...' : quoteLoading ? 'Getting quote...' : tradeDirection === 'sell' ? `Sell ${tradeModal.symbol}` : `Buy ${tradeModal.symbol}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dust Confirmation Modal */}
+      {dustConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDustConfirm(null)} />
+          <div className={cn(
+            "relative w-full max-w-sm rounded-2xl border p-6",
+            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+          )}>
+            <div className="flex flex-col items-center text-center">
+              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4", isDark ? "bg-[#F6AF01]/10 border border-[#F6AF01]/20" : "bg-amber-50 border border-amber-200")}>
+                <Sparkles size={26} className="text-[#F6AF01]" />
+              </div>
+              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>Clear Dust Balance</h3>
+              <p className={cn("text-[12px] mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+                Clear tiny balance to free up trustline
+              </p>
+              <div className={cn("w-full rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                <p className={cn("font-mono text-[15px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{dustConfirm.amount} {dustConfirm.symbol}</p>
+                <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/30" : "text-gray-400")}>Value: &lt; 0.01 XRP</p>
+              </div>
+              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-2 text-left", isDark ? "bg-[#137DFE]/10 border border-[#137DFE]/20" : "bg-blue-50 border border-blue-100")}>
+                <AlertTriangle size={13} className="text-[#137DFE] mt-0.5 shrink-0" />
+                <p className={cn("text-[10px] leading-relaxed", isDark ? "text-[#137DFE]/80" : "text-blue-600")}>Regulated tokens (e.g. RLUSD) have authorized trustlines that cannot be removed even after clearing. ~0.2 XRP reserve may stay locked.</p>
+              </div>
+              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
+                <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
+                <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone.</p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setDustConfirm(null)}
+                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleSendDustToIssuer(dustConfirm)}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90 transition-colors"
+                >
+                  Clear Dust
+                </button>
+              </div>
             </div>
           </div>
         </div>
