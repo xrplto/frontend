@@ -2260,10 +2260,34 @@ export default function WalletPage() {
                         <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
                       ) : collections.length === 0 ? (
                         <div className={cn('flex-1 flex flex-col items-center justify-center py-10')}>
-                          <Image size={28} strokeWidth={1.5} className={cn("mb-3", isDark ? "text-white/20" : "text-gray-300")} />
-                          <p className={cn('text-xs font-medium mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs found</p>
-                          <p className={cn('text-[11px] mb-4', isDark ? 'text-white/30' : 'text-gray-400')}>Explore XRPL marketplaces</p>
-                          <a href="/nfts" className={cn("text-[11px] font-medium transition-colors", isDark ? "text-[#137DFE] hover:text-blue-300" : "text-[#137DFE] hover:text-blue-600")}>Browse NFTs</a>
+                          <div className="relative w-12 h-12 mb-2">
+                            <div className="absolute -top-0.5 left-0 w-4 h-4 rounded-full bg-white/15">
+                              <div className="absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full bg-white/10" />
+                            </div>
+                            <div className="absolute -top-0.5 right-0 w-4 h-4 rounded-full bg-white/15">
+                              <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white/10" />
+                            </div>
+                            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full bg-white/15">
+                              <div className="absolute inset-0 rounded-full overflow-hidden">
+                                {[...Array(4)].map((_, i) => (
+                                  <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                                ))}
+                              </div>
+                              <div className="absolute top-2.5 left-1.5 w-2.5 h-2.5 flex items-center justify-center">
+                                <div className="absolute w-2 h-[1.5px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2 h-[1.5px] bg-white/40 -rotate-45" />
+                              </div>
+                              <div className="absolute top-2.5 right-1.5 w-2.5 h-2.5 flex items-center justify-center">
+                                <div className="absolute w-2 h-[1.5px] bg-white/40 rotate-45" />
+                                <div className="absolute w-2 h-[1.5px] bg-white/40 -rotate-45" />
+                              </div>
+                              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-5 h-3 rounded-full bg-white/10">
+                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full bg-white/25" />
+                              </div>
+                            </div>
+                          </div>
+                          <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>NO NFTS FOUND</p>
+                          <a href="/nfts" className="text-[9px] text-[#137DFE] hover:underline">Browse NFTs</a>
                         </div>
                       ) : (
                         <>

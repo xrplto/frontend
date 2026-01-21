@@ -1019,9 +1019,13 @@ const OverView = ({ account }) => {
                   isDark={isDark}
                   title="XRP Balance"
                   value={
-                    (accountInfo?.total ?? (holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—')) + ' XRP'
+                    fCurrency5(holdings?.accountData?.total || holdings?.xrp?.value || 0) + ' XRP'
                   }
-                  subValue={accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : ''}
+                  subValue={
+                    holdings?.accountData?.reserve > 0
+                      ? `${fCurrency5(holdings.xrp?.value || 0)} Avail | ${holdings.accountData.reserve} Reserve`
+                      : accountInfo?.rank ? `#${accountInfo.rank.toLocaleString()} Rank` : ''
+                  }
                 />
                 <StatCard
                   isDark={isDark}
@@ -1311,27 +1315,34 @@ const OverView = ({ account }) => {
                     </>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full min-h-[140px]">
-                      <div
-                        className={cn(
-                          'w-9 h-9 mb-2 rounded-xl flex items-center justify-center',
-                          isDark ? 'bg-violet-500/10' : 'bg-violet-50'
-                        )}
-                      >
-                        <Image
-                          size={16}
-                          className={isDark ? 'text-violet-500/50' : 'text-violet-400'}
-                        />
+                      <div className="relative w-12 h-12 mb-2">
+                        <div className={cn('absolute -top-0.5 left-0 w-4 h-4 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                          <div className={cn('absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                        </div>
+                        <div className={cn('absolute -top-0.5 right-0 w-4 h-4 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                          <div className={cn('absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
+                        </div>
+                        <div className={cn('absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
+                          <div className="absolute inset-0 rounded-full overflow-hidden">
+                            {[...Array(4)].map((_, i) => (
+                              <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+                            ))}
+                          </div>
+                          <div className="absolute top-2.5 left-1.5 w-2.5 h-2.5 flex items-center justify-center">
+                            <div className={cn('absolute w-2 h-[1.5px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                            <div className={cn('absolute w-2 h-[1.5px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                          </div>
+                          <div className="absolute top-2.5 right-1.5 w-2.5 h-2.5 flex items-center justify-center">
+                            <div className={cn('absolute w-2 h-[1.5px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                            <div className={cn('absolute w-2 h-[1.5px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
+                          </div>
+                          <div className={cn('absolute bottom-1 left-1/2 -translate-x-1/2 w-5 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
+                            <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
+                          </div>
+                        </div>
                       </div>
-                      <p
-                        className={cn(
-                          'text-[11px] font-semibold tracking-wide mb-0.5',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        No NFT Trades
-                      </p>
-                      <p className={cn('text-[10px]', isDark ? 'text-white/25' : 'text-gray-400')}>
-                        Activity will appear here
+                      <p className={cn('text-[10px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>
+                        NO NFT TRADES
                       </p>
                     </div>
                   )}
@@ -1342,7 +1353,7 @@ const OverView = ({ account }) => {
             {/* Tabs */}
             <div className="flex items-center gap-1.5 mb-4">
               {[
-                { id: 'tokens', label: 'TOKENS', icon: Coins, count: holdings?.total || 0 },
+                { id: 'tokens', label: 'TOKENS', icon: Coins, count: (holdings?.lines?.length || 0) + ((holdings?.accountData?.total > 0 || holdings?.xrp?.value > 0) ? 1 : 0) },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: nftStats?.holdingsCount || 0 },
                 { id: 'activity', label: 'HISTORY', icon: Clock },
                 { id: 'ancestry', label: 'ANCESTRY', icon: GitBranch, count: ancestry?.stats?.ancestorDepth || '' }
@@ -1421,7 +1432,7 @@ const OverView = ({ account }) => {
                                   isDark ? 'text-white/30' : 'text-gray-400'
                                 )}
                               >
-                                {holdings.total}
+                                {(holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)}
                               </span>
                             </span>
                             {zeroCount > 0 && (
@@ -1440,7 +1451,7 @@ const OverView = ({ account }) => {
                               </button>
                             )}
                           </div>
-                          {filteredLines.length > 0 && (
+                          {(filteredLines.length > 0 || holdings.accountData?.total > 0 || holdings.xrp?.value > 0) && (
                             <div className="flex items-baseline gap-1">
                               <span
                                 className={cn(
@@ -1449,7 +1460,7 @@ const OverView = ({ account }) => {
                                 )}
                               >
                                 {fCurrency5(
-                                  totalValue + (holdings.accountData?.balanceDrops || 0) / 1000000
+                                  totalValue + (holdings.accountData?.total || holdings.xrp?.value || 0)
                                 )}
                               </span>
                               <span
@@ -1464,7 +1475,7 @@ const OverView = ({ account }) => {
                           )}
                         </div>
                         <div className="px-3 py-3">
-                          {filteredLines.length > 0 ? (
+                          {(filteredLines.length > 0 || holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? (
                             <div className="space-y-0">
                               {/* Table Header */}
                               <div
@@ -1513,7 +1524,7 @@ const OverView = ({ account }) => {
                                 </span>
                               </div>
                               {/* XRP Row */}
-                              {holdings.accountData?.balanceDrops > 0 && (
+                              {(holdings.accountData?.total > 0 || holdings.xrp?.value > 0) && (
                                 <Link
                                   href="/token/xrpl-xrp"
                                   className={cn(
@@ -1548,14 +1559,26 @@ const OverView = ({ account }) => {
                                       XRP
                                     </span>
                                   </div>
-                                  <span
-                                    className={cn(
-                                      'text-[12px] text-right tabular-nums',
-                                      isDark ? 'text-white/50' : 'text-gray-500'
+                                  <div className="text-right">
+                                    <span
+                                      className={cn(
+                                        'text-[12px] tabular-nums block',
+                                        isDark ? 'text-white/50' : 'text-gray-500'
+                                      )}
+                                    >
+                                      {fCurrency5(holdings.accountData?.total || holdings.xrp.value)}
+                                    </span>
+                                    {holdings.accountData?.reserve > 0 && (
+                                      <span
+                                        className={cn(
+                                          'text-[9px] tabular-nums',
+                                          isDark ? 'text-white/25' : 'text-gray-400'
+                                        )}
+                                      >
+                                        {fCurrency5(holdings.xrp.value)} avail
+                                      </span>
                                     )}
-                                  >
-                                    {fCurrency5(holdings.accountData.balanceDrops / 1000000)}
-                                  </span>
+                                  </div>
                                   <span
                                     className={cn(
                                       'text-[12px] text-right tabular-nums font-semibold',
@@ -1563,8 +1586,8 @@ const OverView = ({ account }) => {
                                     )}
                                   >
                                     {xrpPrice
-                                      ? `$${fCurrency5((holdings.accountData.balanceDrops / 1000000) * xrpPrice)}`
-                                      : `${fCurrency5(holdings.accountData.balanceDrops / 1000000)} XRP`}
+                                      ? `$${fCurrency5((holdings.accountData?.total || holdings.xrp.value) * xrpPrice)}`
+                                      : `${fCurrency5(holdings.accountData?.total || holdings.xrp.value)} XRP`}
                                   </span>
                                   <span
                                     className={cn(
@@ -1734,10 +1757,10 @@ const OverView = ({ account }) => {
                                 </span>
                                 <button
                                   onClick={() => setHoldingsPage(holdingsPage + 1)}
-                                  disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1}
+                                  disabled={holdingsPage >= Math.ceil(((holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 20) - 1}
                                   className={cn(
                                     'w-7 h-7 rounded-lg flex items-center justify-center text-[13px] transition-all duration-200',
-                                    holdingsPage >= Math.ceil(holdings.total / 20) - 1
+                                    holdingsPage >= Math.ceil(((holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 20) - 1
                                       ? isDark
                                         ? 'text-white/10'
                                         : 'text-gray-200'
@@ -2208,9 +2231,16 @@ const OverView = ({ account }) => {
 
             {/* NFTs Tab */}
             {activeTab === 'nfts' && (
-              <div>
+              <div
+                className={cn(
+                  'rounded-xl border-[1.5px] overflow-hidden',
+                  isDark
+                    ? 'border-white/10 bg-white/[0.02] backdrop-blur-xl'
+                    : 'border-gray-200 bg-white/80 backdrop-blur-xl'
+                )}
+              >
                 {selectedNftCollection ? (
-                  <>
+                  <div className="p-4">
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 mb-4">
                       <button
@@ -2338,7 +2368,7 @@ const OverView = ({ account }) => {
                         ))}
                       </div>
                     )}
-                  </>
+                  </div>
                 ) : nftCollectionsLoading ? (
                   <div
                     className={cn(
@@ -2349,7 +2379,7 @@ const OverView = ({ account }) => {
                     Loading collections...
                   </div>
                 ) : nftCollections.length === 0 ? (
-                  <div className={cn('rounded-xl py-12 px-8 text-center', isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50')}>
+                  <div className="py-12 px-8 text-center">
                     <div className="relative w-14 h-14 mx-auto mb-4">
                       <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
                         <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
@@ -2384,60 +2414,86 @@ const OverView = ({ account }) => {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {nftCollections.map((col) => (
-                      <button
-                        key={col.id}
-                        onClick={() => setSelectedNftCollection(col)}
+                  <>
+                    {/* Header */}
+                    <div
+                      className={cn(
+                        'flex items-center justify-between px-4 py-3',
+                        isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
+                      )}
+                    >
+                      <span
                         className={cn(
-                          'rounded-xl border overflow-hidden text-left group transition-colors',
-                          isDark
-                            ? 'border-white/[0.06] bg-white/[0.015] hover:border-white/15'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
+                          'text-[12px] font-medium',
+                          isDark ? 'text-white' : 'text-gray-900'
                         )}
                       >
-                        <div className="relative">
-                          {col.logo ? (
-                            <img
-                              src={col.logo}
-                              alt={col.name}
-                              className="w-full aspect-square object-cover"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div
+                        Collections{' '}
+                        <span
+                          className={cn(
+                            'font-normal ml-1',
+                            isDark ? 'text-white/30' : 'text-gray-400'
+                          )}
+                        >
+                          {nftCollections.length}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="p-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {nftCollections.map((col) => (
+                        <button
+                          key={col.id}
+                          onClick={() => setSelectedNftCollection(col)}
+                          className={cn(
+                            'rounded-xl border overflow-hidden text-left group transition-colors',
+                            isDark
+                              ? 'border-white/[0.06] bg-white/[0.015] hover:border-white/15'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          )}
+                        >
+                          <div className="relative">
+                            {col.logo ? (
+                              <img
+                                src={col.logo}
+                                alt={col.name}
+                                className="w-full aspect-square object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className={cn(
+                                  'w-full aspect-square flex items-center justify-center text-[10px]',
+                                  isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400'
+                                )}
+                              >
+                                No image
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <p
                               className={cn(
-                                'w-full aspect-square flex items-center justify-center text-[10px]',
-                                isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400'
+                                'text-[12px] font-medium truncate',
+                                isDark ? 'text-white/90' : 'text-gray-900'
                               )}
                             >
-                              No image
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-3">
-                          <p
-                            className={cn(
-                              'text-[12px] font-medium truncate',
-                              isDark ? 'text-white/90' : 'text-gray-900'
-                            )}
-                          >
-                            {col.name}
-                          </p>
-                          <p
-                            className={cn(
-                              'text-[10px]',
-                              isDark ? 'text-white/40' : 'text-gray-500'
-                            )}
-                          >
-                            {col.count} item{col.count !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+                              {col.name}
+                            </p>
+                            <p
+                              className={cn(
+                                'text-[10px]',
+                                isDark ? 'text-white/40' : 'text-gray-500'
+                              )}
+                            >
+                              {col.count} item{col.count !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 {/* NFT Trading History Chart */}
