@@ -7,6 +7,7 @@ import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { Client } from 'xrpl';
 import { ConnectWallet } from 'src/components/Wallet';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -1523,76 +1524,197 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
 
-      // Build OfferCreate transaction
-      const takerGets = curr1.currency === 'XRP'
-        ? String(Math.floor(fAmount * 1000000))
-        : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount) };
-
-      const takerPays = curr2.currency === 'XRP'
-        ? String(Math.floor(fValue * 1000000))
-        : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue) };
-
-      const tx = {
-        Account: accountProfile.account,
-        TransactionType: 'OfferCreate',
-        TakerGets: takerGets,
-        TakerPays: takerPays,
-        Flags: orderType === 'market' ? 0x00080000 : 0,
-        SourceTag: 161803
+      // Helper to format token value with safe precision (max 15 significant digits)
+      const formatTokenValue = (val) => {
+        const n = parseFloat(val);
+        if (n >= 1) return n.toPrecision(15).replace(/\.?0+$/, '');
+        return n.toFixed(Math.min(15, Math.max(6, -Math.floor(Math.log10(n)) + 6)));
       };
 
-      const [seqRes, feeRes] = await Promise.all([
-        axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
-        axios.get('https://api.xrpl.to/v1/submit/fee')
-      ]);
+      if (orderType === 'market') {
+        // Use Payment with xrpl client for AMM swap (handles path finding)
+        const slippageFactor = slippage / 100;
+        let tx;
 
-      const prepared = {
-        ...tx,
-        Sequence: seqRes.data.sequence,
-        Fee: txFee || feeRes.data.base_fee,
-        LastLedgerSequence: seqRes.data.ledger_index + 20
-      };
-
-      const signed = deviceWallet.sign(prepared);
-      const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
-
-      if (result.data.engine_result === 'tesSUCCESS') {
-        toast.loading('Swap submitted', { id: toastId, description: 'Waiting for validation...' });
-
-        // Poll for transaction validation instead of fixed delay
-        const txHash = signed.hash;
-        let validated = false;
-        let attempts = 0;
-        const maxAttempts = 15; // 15 attempts * 500ms = 7.5s max wait
-
-        while (!validated && attempts < maxAttempts) {
-          attempts++;
-          await new Promise(r => setTimeout(r, 500)); // 500ms between polls
-
-          try {
-            const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
-            if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
-              validated = true;
-              break;
-            }
-          } catch (e) {
-            // Transaction not found yet, continue polling
-          }
-        }
-
-        if (validated) {
-          toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+        if (curr1.currency === 'XRP') {
+          // Paying XRP to receive tokens
+          const maxXrpDrops = Math.floor(fAmount * (1 + 0.005) * 1000000);
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue * (1 - slippageFactor)) },
+            SendMax: String(maxXrpDrops),
+            Flags: 131072 // tfPartialPayment
+          };
+        } else if (curr2.currency === 'XRP') {
+          // Paying tokens to receive XRP
+          const targetXrpDrops = Math.floor(fValue * 1000000);
+          const minXrpDrops = Math.max(Math.floor(fValue * (1 - slippageFactor) * 1000000), 1);
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: String(targetXrpDrops),
+            DeliverMin: String(minXrpDrops),
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount * 1.005) },
+            Flags: 131072 // tfPartialPayment
+          };
         } else {
-          // Transaction accepted but validation not confirmed in time - still likely to succeed
-          toast.success('Swap submitted!', { id: toastId, description: 'Validation pending...' });
+          // Token to token swap
+          tx = {
+            TransactionType: 'Payment',
+            Account: accountProfile.account,
+            SourceTag: 161803,
+            Destination: accountProfile.account,
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue * (1 - slippageFactor)) },
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount * 1.005) },
+            Flags: 131072 // tfPartialPayment
+          };
         }
 
-        setAmount1('');
-        setAmount2('');
-        setSync((s) => s + 1);
-        setIsSwapped((v) => !v);
+        console.log('[Swap] Market order tx:', tx);
+
+        // Use xrpl client
+        const client = new Client('wss://xrplcluster.com');
+        await client.connect();
+
+        try {
+          // Check trustline limit for receiving token
+          if (curr2.currency !== 'XRP') {
+            const linesRes = await client.request({
+              command: 'account_lines',
+              account: accountProfile.account,
+              peer: curr2.issuer
+            });
+            const line = linesRes.result.lines?.find(l => l.currency === curr2.currency);
+            console.log('[Swap] Trustline check:', line);
+
+            const currentBalance = parseFloat(line?.balance) || 0;
+            const currentLimit = parseFloat(line?.limit) || 0;
+            const needed = currentBalance + fValue;
+
+            if (!line || currentLimit < needed) {
+              console.log('[Swap] Trustline insufficient:', { currentLimit, currentBalance, receiving: fValue, needed });
+              toast.loading('Processing swap...', { id: toastId, description: 'Setting trustline...' });
+              await client.disconnect();
+
+              const success = await onCreateTrustline(curr2, true);
+              if (!success) {
+                toast.error('Trustline failed', { id: toastId, description: 'Could not set trustline' });
+                return;
+              }
+
+              // Reconnect and continue
+              await client.connect();
+            }
+          }
+
+          const prepared = await client.autofill(tx);
+          console.log('[Swap] Transaction after autofill:', prepared);
+
+          const signed = deviceWallet.sign(prepared);
+          const result = await client.submitAndWait(signed.tx_blob);
+          await client.disconnect();
+
+          const txResult = result.result.meta.TransactionResult;
+          const txHash = result.result.hash;
+
+          console.log('[Swap] Submit result:', { txResult, txHash });
+
+          if (txResult === 'tesSUCCESS') {
+            toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+            setAmount1('');
+            setAmount2('');
+            setSync((s) => s + 1);
+            setIsSwapped((v) => !v);
+          } else if (txResult === 'tecKILLED') {
+            toast.error('No liquidity', { id: toastId, description: 'Order couldn\'t be filled at this price' });
+          } else {
+            toast.error('Swap failed', { id: toastId, description: txResult });
+          }
+        } catch (clientErr) {
+          await client.disconnect().catch(() => {});
+          throw clientErr;
+        }
       } else {
-        toast.error('Transaction failed', { id: toastId, description: result.data.engine_result });
+        // Use OfferCreate for limit orders (manual submission)
+        const takerGets = curr1.currency === 'XRP'
+          ? String(Math.floor(fAmount * 1000000))
+          : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount) };
+
+        const takerPays = curr2.currency === 'XRP'
+          ? String(Math.floor(fValue * 1000000))
+          : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue) };
+
+        const tx = {
+          Account: accountProfile.account,
+          TransactionType: 'OfferCreate',
+          TakerGets: takerGets,
+          TakerPays: takerPays,
+          Flags: 0,
+          SourceTag: 161803
+        };
+
+        const [seqRes, feeRes] = await Promise.all([
+          axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
+          axios.get('https://api.xrpl.to/v1/submit/fee')
+        ]);
+
+        const prepared = {
+          ...tx,
+          Sequence: seqRes.data.sequence,
+          Fee: txFee || feeRes.data.base_fee,
+          LastLedgerSequence: seqRes.data.ledger_index + 20
+        };
+
+        console.log('[Swap] Limit order tx:', prepared);
+
+        const signed = deviceWallet.sign(prepared);
+        const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
+
+        console.log('[Swap] Submit result:', result.data);
+
+        if (result.data.engine_result === 'tesSUCCESS') {
+          toast.loading('Order submitted', { id: toastId, description: 'Waiting for validation...' });
+
+          const txHash = signed.hash;
+          let validated = false;
+          let attempts = 0;
+          const maxAttempts = 15;
+
+          while (!validated && attempts < maxAttempts) {
+            attempts++;
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+              const txRes = await axios.get(`https://api.xrpl.to/v1/tx/${txHash}`);
+              if (txRes.data?.validated === true || txRes.data?.meta?.TransactionResult === 'tesSUCCESS') {
+                validated = true;
+                break;
+              }
+            } catch (e) {
+              // Continue polling
+            }
+          }
+
+          if (validated) {
+            toast.success('Order placed!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+          } else {
+            toast.success('Order submitted!', { id: toastId, description: 'Validation pending...' });
+          }
+
+          setAmount1('');
+          setAmount2('');
+          setSync((s) => s + 1);
+          setIsSwapped((v) => !v);
+        } else {
+          toast.error('Order failed', { id: toastId, description: result.data.engine_result });
+        }
       }
     } catch (err) {
       console.error('Swap error:', err);
