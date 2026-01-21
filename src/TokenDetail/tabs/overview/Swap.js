@@ -1668,7 +1668,30 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           console.log('[Swap] Submit result:', { txResult, txHash });
 
           if (txResult === 'tesSUCCESS') {
-            toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+            // Check if user sold all tokens (token → XRP swap)
+            const soldAllTokens = curr1.currency !== 'XRP' &&
+              accountPairBalance?.curr1?.value &&
+              Math.abs(parseFloat(accountPairBalance.curr1.value) - fAmount1Final) < 0.000001;
+
+            if (soldAllTokens) {
+              // Capture token data for closure
+              const tokenData = { issuer: curr1.issuer, currency: curr1.currency, name: curr1.name };
+              console.log('[Swap] Sold all tokens, will prompt to remove trustline:', tokenData);
+              toast.success('Swap complete!', {
+                id: toastId,
+                description: 'Remove trustline to free 0.2 XRP?',
+                action: {
+                  label: 'Remove',
+                  onClick: () => {
+                    console.log('[Swap] Remove button clicked, tokenData:', tokenData);
+                    onRemoveTrustline(tokenData);
+                  }
+                },
+                duration: 10000
+              });
+            } else {
+              toast.success('Swap complete!', { id: toastId, description: `TX: ${txHash.slice(0, 8)}...` });
+            }
             setAmount1('');
             setAmount2('');
             setSync((s) => s + 1);
@@ -1956,6 +1979,78 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       console.error('Trustline error:', err);
       if (!silent) toast.error('Trustline failed', { description: err.message?.slice(0, 50) });
       return false;
+    }
+  };
+
+  const onRemoveTrustline = async (tokenToRemove) => {
+    console.log('[Swap] onRemoveTrustline called:', tokenToRemove);
+    if (!accountProfile?.account) return;
+    if (!tokenToRemove?.issuer || !tokenToRemove?.currency) {
+      toast.error('Invalid token data');
+      return;
+    }
+
+    const toastId = toast.loading('Removing trustline...');
+    try {
+      const { Wallet } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+      if (!storedPassword) {
+        toast.error('Wallet locked', { id: toastId });
+        return;
+      }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        toast.error('Wallet error', { id: toastId });
+        return;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'TrustSet',
+        LimitAmount: {
+          issuer: tokenToRemove.issuer,
+          currency: tokenToRemove.currency,
+          value: '0'
+        },
+        Flags: 0x00020000,
+        SourceTag: 161803
+      };
+
+      console.log('[Swap] Remove trustline tx:', tx);
+
+      const [seqRes, feeRes] = await Promise.all([
+        axios.get(`${BASE_URL}/submit/account/${accountProfile.account}/sequence`),
+        axios.get(`${BASE_URL}/submit/fee`)
+      ]);
+
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
+
+      const signed = deviceWallet.sign(prepared);
+      const result = await axios.post(`${BASE_URL}/submit`, { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
+        toast.success('Trustline removed!', { id: toastId, description: '0.2 XRP freed' });
+        setSync((s) => s + 1);
+      } else {
+        toast.error('Remove failed', { id: toastId, description: result.data.engine_result });
+      }
+    } catch (err) {
+      console.error('Remove trustline error:', err);
+      toast.error('Remove failed', { id: toastId, description: err.message?.slice(0, 50) });
     }
   };
 
