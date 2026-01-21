@@ -1078,20 +1078,25 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     if (!amt) return null;
     if (typeof amt === 'string') {
       const xrp = parseInt(amt) / 1000000;
-      return xrp >= 1 ? `${xrp.toFixed(2)} XRP` : `${xrp.toFixed(6)} XRP`;
+      if (xrp === 0) return '0 XRP';
+      if (xrp >= 1) return `${xrp.toFixed(2)} XRP`;
+      if (xrp >= 0.0001) return `${xrp.toFixed(6)} XRP`;
+      return `${xrp.toExponential(2)} XRP`;
     }
     if (amt?.value) {
       try {
         const dec = new Decimal(amt.value);
-        const val = dec.toNumber();
-        if (val === 0 || !isFinite(val)) return `0 ${decodeCurrency(amt.currency)}`;
+        const val = Math.abs(dec.toNumber());
+        const currency = decodeCurrency(amt.currency);
+        if (val === 0 || !isFinite(val)) return `0 ${currency}`;
         // Show appropriate precision based on magnitude
         let formatted;
-        if (val >= 1) formatted = dec.toFixed(2);
-        else if (val >= 0.01) formatted = dec.toFixed(4);
-        else if (val >= 1e-8) formatted = dec.toFixed(8);
-        else formatted = dec.toSignificantDigits(4).toFixed(); // Very small: show 4 sig figs
-        return `${formatted} ${decodeCurrency(amt.currency)}`;
+        if (val >= 1000) formatted = val.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        else if (val >= 1) formatted = val.toFixed(2);
+        else if (val >= 0.01) formatted = val.toFixed(4);
+        else if (val >= 0.0001) formatted = val.toFixed(6);
+        else formatted = val.toExponential(2); // Very small: use scientific notation
+        return `${formatted} ${currency}`;
       } catch {
         return `${amt.value} ${decodeCurrency(amt.currency)}`;
       }

@@ -1475,7 +1475,7 @@ const OverView = ({ account }) => {
                                   className={cn(
                                     'grid px-2 py-2.5 items-center rounded-lg transition-all duration-200 group border-b',
                                     isDark
-                                      ? 'hover:bg-white/[0.03] border-white/[0.04]'
+                                      ? 'hover:bg-white/[0.03] border-white/[0.08]'
                                       : 'hover:bg-gray-50 border-gray-100'
                                   )}
                                   style={{ gridTemplateColumns: '2fr 1.1fr 1.1fr 1.1fr 0.7fr' }}
@@ -1557,7 +1557,7 @@ const OverView = ({ account }) => {
                                       isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-50',
                                       idx < filteredLines.length - 1 &&
                                         (isDark
-                                          ? 'border-b border-white/[0.04]'
+                                          ? 'border-b border-white/[0.08]'
                                           : 'border-b border-gray-100')
                                     )}
                                     style={{ gridTemplateColumns: '2fr 1.1fr 1.1fr 1.1fr 0.7fr' }}
@@ -1659,7 +1659,7 @@ const OverView = ({ account }) => {
                               <div
                                 className={cn(
                                   'flex items-center justify-end gap-1 mt-3 pt-3 border-t',
-                                  isDark ? 'border-white/[0.04]' : 'border-gray-100'
+                                  isDark ? 'border-white/[0.08]' : 'border-gray-100'
                                 )}
                               >
                                 <button
@@ -1942,7 +1942,7 @@ const OverView = ({ account }) => {
                                     className={cn(
                                       'group transition-all duration-200 border-b',
                                       isDark
-                                        ? 'hover:bg-white/[0.02] border-white/[0.04] last:border-transparent'
+                                        ? 'hover:bg-white/[0.02] border-white/[0.08] last:border-transparent'
                                         : 'hover:bg-gray-50 border-gray-100 last:border-transparent'
                                     )}
                                   >
@@ -2096,7 +2096,7 @@ const OverView = ({ account }) => {
                             className={cn(
                               'w-full text-center py-2.5 text-[11px] font-medium border-t transition-all duration-200',
                               isDark
-                                ? 'border-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
+                                ? 'border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
                                 : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                             )}
                           >
@@ -2737,7 +2737,7 @@ const OverView = ({ account }) => {
                           <span className="text-right">Date</span>
                           <span></span>
                         </div>
-                        <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                        <div className={cn('divide-y', isDark ? 'divide-white/[0.08]' : 'divide-gray-50')}>
                           {txHistory.filter(tx => txTypeFilter === 'all' || (tx.tx_json || tx.tx || tx).TransactionType === txTypeFilter).map((tx) => {
                             const parsed = parseTx(tx);
                             return (
@@ -2746,8 +2746,26 @@ const OverView = ({ account }) => {
                                 className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                                 onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
                               >
-                                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500/10' : parsed.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {parsed.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : parsed.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                <div className="relative">
+                                  {parsed.tokenCurrency ? (
+                                    <img
+                                      src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : CryptoJS.MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
+                                      alt=""
+                                      className="w-7 h-7 rounded-full object-cover bg-white/10"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                    />
+                                  ) : (
+                                    <div className={cn('w-7 h-7 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500/10' : parsed.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                      {parsed.type === 'failed' ? <AlertTriangle size={14} className="text-[#F6AF01]" /> : parsed.type === 'in' ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                    </div>
+                                  )}
+                                  <div className={cn(
+                                    'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]',
+                                    isDark ? 'border-[#070b12]' : 'border-white',
+                                    parsed.type === 'failed' ? 'bg-amber-500' : parsed.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
+                                  )}>
+                                    {parsed.type === 'failed' ? <AlertTriangle size={7} className="text-white" /> : parsed.type === 'in' ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
+                                  </div>
                                 </div>
                                 <div className="min-w-0 flex items-center gap-2">
                                   <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</p>
@@ -2805,7 +2823,7 @@ const OverView = ({ account }) => {
                         className={cn(
                           'w-full text-center py-3.5 text-[12px] font-medium border-t transition-all duration-200',
                           isDark
-                            ? 'border-white/[0.04] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
+                            ? 'border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
                             : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                         )}
                       >

@@ -4,25 +4,7 @@ import { useState, useMemo, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import {
-  Copy,
-  ArrowLeftRight,
-  Wallet,
-  TrendingUp,
-  AlertCircle,
-  Home,
-  Search,
-  Share2,
-  Send,
-  Link as LinkIcon,
-  FileText,
-  Scale,
-  Settings,
-  Code,
-  ChevronRight,
-  Check,
-  X
-} from 'lucide-react';
+import { Copy } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
@@ -30,7 +12,8 @@ import {
   rippleTimeToISO8601,
   dropsToXrp,
   normalizeCurrencyCode,
-  getNftCoverUrl
+  getNftCoverUrl,
+  BLACKHOLE_ACCOUNTS
 } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
@@ -361,6 +344,7 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
   const isDark = isDarkProp ?? themeName === 'XrplToDarkTheme';
   const [copied, setCopied] = useState(false);
   const jsonString = JSON.stringify(data, null, 2);
+  const lines = jsonString.split('\n');
 
   const copyJson = () => {
     navigator.clipboard.writeText(jsonString);
@@ -368,8 +352,8 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const highlightJson = (json) => {
-    return json
+  const highlightLine = (line) => {
+    return line
       .replace(/(".*?"):/g, '<span style="color: #4285f4;">$1</span>:')
       .replace(/: (".*?")/g, ': <span style="color: #10b981;">$1</span>')
       .replace(/: (true|false)/g, ': <span style="color: #f59e0b;">$1</span>')
@@ -381,21 +365,48 @@ const JsonViewer = ({ data, isDark: isDarkProp }) => {
     <div className="relative">
       <button
         onClick={copyJson}
-        title={copied ? 'Copied!' : 'Copy JSON'}
         className={cn(
-          'absolute top-2 right-2 z-10 p-2 rounded-full transition-colors',
-          isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'
+          'absolute top-2 right-2 z-10 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
+          copied
+            ? 'text-emerald-400'
+            : isDark
+              ? 'bg-white/10 hover:bg-white/15 text-white/60'
+              : 'bg-black/5 hover:bg-black/10 text-gray-500'
         )}
       >
-        <Copy size={14} />
+        {copied ? 'Copied' : 'Copy'}
       </button>
-      <pre
+      <div
         className={cn(
-          'font-mono text-xs leading-relaxed p-4 rounded-md whitespace-pre-wrap break-words',
-          isDark ? 'bg-white/[0.02] text-white/90' : 'bg-gray-100 text-gray-800'
+          'rounded-lg overflow-hidden border',
+          isDark ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-200'
         )}
-        dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
-      />
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <tbody className="font-mono text-[12px] leading-[1.6]">
+              {lines.map((line, i) => (
+                <tr key={i} className={cn(isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-100')}>
+                  <td
+                    className={cn(
+                      'px-3 py-0.5 text-right select-none w-[1%] whitespace-nowrap',
+                      isDark ? 'text-white/20 border-r border-white/5' : 'text-gray-300 border-r border-gray-200'
+                    )}
+                  >
+                    {i + 1}
+                  </td>
+                  <td className="px-3 py-0.5">
+                    <pre
+                      className={cn('whitespace-pre', isDark ? 'text-white/80' : 'text-gray-700')}
+                      dangerouslySetInnerHTML={{ __html: highlightLine(line) }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
@@ -948,13 +959,12 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
 
   if (typeof amount === 'string') {
     const xrpElement = (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Typography variant={variant}>{dropsToXrp(amount)}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Avatar
           src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
-          sx={{ width: 20, height: 20, mx: 0.5 }}
+          sx={{ width: 20, height: 20 }}
         />
-        <Typography variant={variant}>XRP</Typography>
+        <Typography variant={variant}>{dropsToXrp(amount)} XRP</Typography>
       </Box>
     );
 
@@ -992,13 +1002,12 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
     if (amount.currency === 'XRP' && !amount.issuer) {
       const xrpValue = dropsToXrp(String(amount.value));
       const xrpElement = (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant={variant}>{xrpValue}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Avatar
             src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
-            sx={{ width: 20, height: 20, mx: 0.5 }}
+            sx={{ width: 20, height: 20 }}
           />
-          <Typography variant={variant}>XRP</Typography>
+          <Typography variant={variant}>{xrpValue} XRP</Typography>
         </Box>
       );
       return (
@@ -1030,23 +1039,29 @@ const AmountDisplay = ({ amount, variant = 'body1' }) => {
       );
     }
     const slug = amount.issuer ? `${amount.issuer}-${amount.currency}` : null;
+    const stringToHash = slug ? slug.replace('-', '_') : null;
+    const md5 = stringToHash ? CryptoJS.MD5(stringToHash).toString() : null;
+    const imageUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : null;
+
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        {imageUrl && <Avatar src={imageUrl} sx={{ width: 20, height: 20 }} />}
         <Typography variant={variant} component="span">
-          {formatDecimal(new Decimal(amount.value))}{' '}
+          {formatDecimal(new Decimal(amount.value))}
         </Typography>
         {slug ? (
-          <TokenDisplay
+          <TokenLinkWithTooltip
             slug={slug}
             currency={currency}
             rawCurrency={amount.currency}
+            md5={md5}
             variant={variant}
           />
         ) : (
           <Typography
             variant={variant}
             component="span"
-            sx={{ color: theme.palette.primary.main, ml: 0.5 }}
+            sx={{ color: theme.palette.primary.main }}
           >
             {currency}
           </Typography>
@@ -1830,7 +1845,8 @@ const TransactionSummaryCard = ({
   aiLoading,
   onExplainWithAI,
   onCloseAI,
-  swapInfo
+  swapInfo,
+  isBurn
 }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -1842,47 +1858,19 @@ const TransactionSummaryCard = ({
   const txUrl = `https://xrpl.to/tx/${hash}`;
   const shareText = `Check out this transaction on XRPL: ${txUrl}`;
 
-  const XIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
-  const TelegramIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-    </svg>
-  );
-  const DiscordIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-    </svg>
-  );
-
   const shareOptions = [
     {
-      name: 'X',
-      icon: <XIcon />,
+      name: 'Share on X',
       url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`
     },
     {
-      name: 'Telegram',
-      icon: <TelegramIcon />,
+      name: 'Share on Telegram',
       url: `https://t.me/share/url?url=${encodeURIComponent(txUrl)}&text=${encodeURIComponent('Check out this transaction on XRPL')}`
     },
     {
-      name: 'Discord',
-      icon: <DiscordIcon />,
+      name: linkCopied ? 'Copied!' : 'Copy link',
       action: () => {
-        navigator.clipboard.writeText(shareText);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
-      }
-    },
-    {
-      name: 'Copy',
-      icon: <LinkIcon size={14} />,
-      action: () => {
-        navigator.clipboard.writeText(shareText);
+        navigator.clipboard.writeText(txUrl);
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
       }
@@ -1914,10 +1902,10 @@ const TransactionSummaryCard = ({
   };
 
   const tabs = [
-    { id: 'summary', label: 'SUMMARY', icon: <FileText size={12} /> },
-    { id: 'balances', label: 'BALANCES', icon: <Scale size={12} /> },
-    { id: 'technical', label: 'TECHNICAL', icon: <Settings size={12} /> },
-    { id: 'raw', label: 'RAW', icon: <Code size={12} /> }
+    { id: 'summary', label: 'Summary' },
+    { id: 'balances', label: 'Balances' },
+    { id: 'technical', label: 'Technical' },
+    { id: 'raw', label: 'Raw' }
   ];
 
   const isSwap = swapInfo && swapInfo.paid && swapInfo.got;
@@ -1939,47 +1927,39 @@ const TransactionSummaryCard = ({
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              'w-7 h-7 rounded-md flex items-center justify-center',
-              isSuccess ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'
+              'px-2.5 py-1 rounded-md text-[11px] font-medium',
+              isSuccess
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                : 'bg-red-500/15 text-red-400 border border-red-500/20'
             )}
           >
-            {isSuccess ? <Check size={16} strokeWidth={2.5} /> : <X size={16} strokeWidth={2.5} />}
+            {isSuccess ? 'Success' : 'Failed'}
           </span>
           <span
             className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium uppercase tracking-wide',
-              isDark
-                ? 'bg-white/5 text-white/80 border border-white/10'
-                : 'bg-gray-50 text-gray-600 border border-gray-200'
+              'px-2.5 py-1 rounded-md text-[11px] font-medium',
+              isBurn
+                ? 'bg-orange-500/15 text-orange-400 border border-orange-500/20'
+                : isDark
+                  ? 'bg-white/5 text-white/80 border border-white/10'
+                  : 'bg-gray-50 text-gray-600 border border-gray-200'
             )}
           >
-            <ArrowLeftRight size={12} />
-            {isSwap ? 'Swap' : 'Transaction'}
+            {isBurn ? 'Burn' : isSwap ? 'Swap' : TransactionType}
           </span>
           {/* Swap Summary Inline */}
           {isSwap && isSuccess && (
-            <div className="flex items-center gap-1.5 ml-1">
-              <span
-                className={cn(
-                  'text-[13px] font-mono px-1.5 py-0.5 rounded',
-                  isDark ? 'text-white/60 bg-white/5' : 'text-gray-600 bg-gray-100'
-                )}
-              >
-                {Account.slice(0, 4)}..{Account.slice(-3)}
-              </span>
-              <ChevronRight size={14} className={isDark ? 'text-white/25' : 'text-gray-300'} />
+            <div className="flex items-center gap-2 ml-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/15">
-                <span className="text-red-400 text-[13px] font-medium font-mono">
-                  -{formatDecimal(new Decimal(swapInfo.paid.value))}
+                <span className="text-red-400 text-[12px] font-medium font-mono">
+                  -{formatDecimal(new Decimal(swapInfo.paid.value))} {swapInfo.paid.currency}
                 </span>
-                <span className="text-red-400/70 text-[12px]">{swapInfo.paid.currency}</span>
               </span>
-              <ChevronRight size={14} className={isDark ? 'text-white/25' : 'text-gray-300'} />
+              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>to</span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/15">
-                <span className="text-emerald-400 text-[13px] font-medium font-mono">
-                  +{formatDecimal(new Decimal(swapInfo.got.value))}
+                <span className="text-emerald-400 text-[12px] font-medium font-mono">
+                  +{formatDecimal(new Decimal(swapInfo.got.value))} {swapInfo.got.currency}
                 </span>
-                <span className="text-emerald-400/70 text-[12px]">{swapInfo.got.currency}</span>
               </span>
             </div>
           )}
@@ -1988,15 +1968,14 @@ const TransactionSummaryCard = ({
           <div className="relative">
             <button
               onClick={() => setShareOpen(!shareOpen)}
-              title="Share"
               className={cn(
-                'w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
                 isDark
-                  ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06]'
-                  : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100'
+                  ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+                  : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
               )}
             >
-              <Share2 size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+              Share
             </button>
             {shareOpen && (
               <>
@@ -2013,17 +1992,16 @@ const TransactionSummaryCard = ({
                       onClick={() => {
                         if (opt.url) window.open(opt.url, '_blank');
                         else opt.action();
-                        setShareOpen(false);
+                        if (!opt.action) setShareOpen(false);
                       }}
                       className={cn(
-                        'w-full flex items-center gap-2 px-3 py-2 rounded text-[13px] text-left',
+                        'w-full px-3 py-2 rounded text-[12px] text-left transition-colors',
                         isDark
                           ? 'hover:bg-white/10 text-white/80'
                           : 'hover:bg-gray-100 text-gray-700'
                       )}
                     >
-                      {opt.icon}
-                      <span>{opt.name === 'Copy' && linkCopied ? 'Copied!' : opt.name}</span>
+                      {opt.name}
                     </button>
                   ))}
                 </div>
@@ -2033,44 +2011,21 @@ const TransactionSummaryCard = ({
           {aiExplanation || aiLoading ? (
             <button
               onClick={onCloseAI}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200"
+              className={cn(
+                'px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all duration-200',
+                isDark
+                  ? 'border-white/10 hover:border-white/20 text-white/50 hover:text-white/70'
+                  : 'border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700'
+              )}
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-white/40"
-              >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              Close AI
             </button>
           ) : (
             <button
               onClick={onExplainWithAI}
-              className="group flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 transition-all duration-200"
+              className="px-3 py-1.5 rounded-lg border border-[#8b5cf6]/25 hover:border-[#8b5cf6]/40 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/15 text-[12px] font-medium text-[#c4b5fd] hover:text-[#ddd6fe] transition-all duration-200"
             >
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-[#a78bfa] group-hover:text-[#c4b5fd] transition-colors"
-              >
-                <path
-                  d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M19 16L19.5 18.5L22 19L19.5 19.5L19 22L18.5 19.5L16 19L18.5 18.5L19 16Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span className="text-[12px] text-[#c4b5fd] group-hover:text-[#ddd6fe] transition-colors">
-                Explain with AI
-              </span>
+              Explain with AI
             </button>
           )}
         </div>
@@ -2295,7 +2250,7 @@ const TransactionSummaryCard = ({
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              'flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border',
+              'px-4 py-2 rounded-lg text-[12px] font-medium transition-colors border',
               activeTab === tab.id
                 ? isDark
                   ? 'bg-white/10 text-white/90 border-white/15'
@@ -2305,7 +2260,6 @@ const TransactionSummaryCard = ({
                   : 'text-gray-500 border-gray-200 hover:bg-black/[0.04] hover:text-gray-700'
             )}
           >
-            {tab.icon}
             {tab.label}
           </button>
         ))}
@@ -2336,11 +2290,15 @@ const TransactionSummaryCard = ({
             <button
               onClick={copyHash}
               className={cn(
-                'p-0.5 rounded transition-colors',
-                isDark ? 'text-white/40 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                'px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors',
+                copied
+                  ? 'text-emerald-400'
+                  : isDark
+                    ? 'text-white/40 hover:text-primary'
+                    : 'text-gray-400 hover:text-primary'
               )}
             >
-              <Copy size={12} />
+              {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
         </div>
@@ -3025,6 +2983,13 @@ const TransactionDetails = ({ txData }) => {
   const isDark = themeName === 'XrplToDarkTheme';
   const [activeTab, setActiveTab] = useState('summary');
 
+  // Check if this is a burn transaction
+  const isBurn = TransactionType === 'Payment' && Destination && (
+    BLACKHOLE_ACCOUNTS.includes(Destination) ||
+    (typeof Amount === 'object' && Amount?.issuer === Destination) ||
+    (typeof deliveredAmount === 'object' && deliveredAmount?.issuer === Destination)
+  );
+
   return (
     <div>
       <TransactionSummaryCard
@@ -3036,6 +3001,7 @@ const TransactionDetails = ({ txData }) => {
         onExplainWithAI={explainWithAI}
         onCloseAI={closeAI}
         swapInfo={displayExchange}
+        isBurn={isBurn}
       />
 
       {/* SUMMARY Tab */}
@@ -3148,6 +3114,13 @@ const TransactionDetails = ({ txData }) => {
                             {Destination}
                           </Typography>
                         </Link>
+                        {(BLACKHOLE_ACCOUNTS.includes(Destination) ||
+                          (typeof Amount === 'object' && Amount?.issuer === Destination) ||
+                          (typeof deliveredAmount === 'object' && deliveredAmount?.issuer === Destination)) && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/15 text-orange-400 border border-orange-500/20">
+                            Burn
+                          </span>
+                        )}
                       </Box>
                     </DetailRow>
                   </>
@@ -4321,11 +4294,15 @@ const TransactionDetails = ({ txData }) => {
               <button
                 onClick={copyUrlToClipboard}
                 className={cn(
-                  'p-1 rounded hover:bg-white/10 shrink-0',
-                  isDark ? 'text-white/50 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                  'px-2 py-0.5 rounded text-[11px] font-medium shrink-0 transition-colors',
+                  urlCopied
+                    ? 'text-emerald-400'
+                    : isDark
+                      ? 'text-white/40 hover:text-primary'
+                      : 'text-gray-400 hover:text-primary'
                 )}
               >
-                <Copy size={14} />
+                {urlCopied ? 'Copied' : 'Copy'}
               </button>
             </div>
           </div>

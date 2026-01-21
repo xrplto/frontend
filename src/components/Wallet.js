@@ -1562,7 +1562,7 @@ const WalletContent = ({
           <div
             className={cn(
               'border-t max-h-[180px] overflow-y-auto',
-              isDark ? 'border-white/[0.04]' : 'border-gray-100'
+              isDark ? 'border-white/[0.08]' : 'border-gray-100'
             )}
           >
             {(() => {
@@ -1640,7 +1640,7 @@ const WalletContent = ({
           <div
             className={cn(
               'px-3 py-2 flex items-center justify-between border-b',
-              isDark ? 'border-white/[0.04]' : 'border-gray-100'
+              isDark ? 'border-white/[0.08]' : 'border-gray-100'
             )}
           >
             <span
@@ -1668,7 +1668,7 @@ const WalletContent = ({
                   className={cn(
                     'px-3 py-2 flex items-center gap-2',
                     isDark
-                      ? 'border-b border-white/[0.04] last:border-0'
+                      ? 'border-b border-white/[0.08] last:border-0'
                       : 'border-b border-gray-100 last:border-0'
                   )}
                 >
@@ -1758,7 +1758,7 @@ const WalletContent = ({
             className={cn(
               'w-full px-3 py-2.5 flex items-center justify-center gap-2 text-[11px] font-medium border-t transition-colors',
               isDark
-                ? 'border-white/[0.04] text-amber-500 hover:bg-amber-500/10'
+                ? 'border-white/[0.08] text-amber-500 hover:bg-amber-500/10'
                 : 'border-gray-100 text-amber-600 hover:bg-amber-50'
             )}
           >
@@ -3406,7 +3406,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <div
                   className={cn(
                     'px-5 py-4 flex items-center justify-between',
-                    isDark ? 'border-b border-white/[0.04]' : 'border-b border-gray-100'
+                    isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100'
                   )}
                 >
                   <h2 className="text-[15px] font-medium tracking-tight">Wallet Created</h2>
@@ -4623,7 +4623,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <div
                   className={cn(
                     'px-5 py-4 flex items-center justify-between',
-                    isDark ? 'border-b border-white/[0.04]' : 'border-b border-gray-100'
+                    isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100'
                   )}
                 >
                   <h2 className="text-[15px] font-medium tracking-tight">Connect Wallet</h2>
@@ -4921,7 +4921,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   <div
                     className={cn(
                       'mt-5 pt-4 text-center border-t',
-                      isDark ? 'border-white/[0.04]' : 'border-gray-100'
+                      isDark ? 'border-white/[0.08]' : 'border-gray-100'
                     )}
                   >
                     <div className="flex items-center justify-center gap-1.5">

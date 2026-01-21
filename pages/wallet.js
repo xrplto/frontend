@@ -69,6 +69,7 @@ export default function WalletPage() {
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [copied, setCopied] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // Sync tab with URL query parameter
@@ -2304,7 +2305,7 @@ export default function WalletPage() {
                 {/* Recent Activity - Full Width */}
                 <div
                   className={cn(
-                    'rounded-xl mt-4 overflow-hidden',
+                    'w-full rounded-xl mt-4 overflow-hidden',
                     isDark
                       ? 'bg-black/50 backdrop-blur-sm border border-white/[0.12]'
                       : 'bg-white border border-gray-200'
@@ -2395,83 +2396,89 @@ export default function WalletPage() {
                     ) : (
                       <>
                         <div className={cn(
-                          "grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider",
+                          "w-full grid grid-cols-[40px_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] gap-4 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-wider",
                           isDark ? "text-white/30 border-b border-white/[0.06]" : "text-gray-400 border-b border-gray-100"
                         )}>
                           <span></span>
                           <span>Type</span>
                           <span>Details</span>
-                          <span>Signature</span>
+                          <span>Time</span>
                           <span className="text-right">Amount</span>
-                          <span className="text-right">Time</span>
-                          <span></span>
+                          <span className="text-right">Signature</span>
                         </div>
-                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.08]" : "divide-gray-50")}>
                           {transactions.filter(tx => txTypeFilter === 'all' || tx.txType === txTypeFilter).slice(0, 20).map((tx) => (
                             <div
                               key={tx.id}
                               className={cn(
-                                "grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 items-center px-4 py-3 transition-colors cursor-pointer group",
+                                "w-full grid grid-cols-[40px_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] gap-4 items-center px-4 py-2 transition-colors cursor-pointer group",
                                 isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50"
                               )}
                               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                             >
+                              {/* Icon */}
                               <div className="relative">
                                 {tx.tokenCurrency ? (
                                   <img
                                     src={`https://s1.xrpl.to/token/${tx.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${tx.tokenIssuer}_${tx.tokenCurrency}`).toString()}`}
                                     alt=""
-                                    className="w-9 h-9 rounded-full object-cover bg-white/10"
+                                    className="w-7 h-7 rounded-full object-cover bg-white/10"
                                     onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                                   />
                                 ) : (
                                   <div className={cn(
-                                    "w-9 h-9 rounded-full flex items-center justify-center",
+                                    "w-7 h-7 rounded-full flex items-center justify-center",
                                     tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10'
                                   )}>
-                                    {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                    {tx.type === 'failed' ? <AlertTriangle size={14} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
                                   </div>
                                 )}
                                 <div className={cn(
-                                  "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2",
+                                  "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]",
                                   isDark ? "border-[#070b12]" : "border-white",
                                   tx.type === 'failed' ? 'bg-amber-500' : tx.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
                                 )}>
-                                  {tx.type === 'failed' ? <AlertTriangle size={8} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={8} className="text-white" /> : <ArrowUpRight size={8} className="text-white" />}
+                                  {tx.type === 'failed' ? <AlertTriangle size={7} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
                                 </div>
                               </div>
+                              {/* Type */}
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn("text-[13px] font-medium truncate", isDark ? "text-white" : "text-gray-900")}>{tx.label}</p>
                                 {tx.type === 'failed' && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/15 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Failed</span>}
                                 {tx.isDust && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-amber-500/10 text-[#F6AF01]" : "bg-amber-100 text-amber-600")}>Dust</span>}
                                 {tx.sourceTag && <span className={cn("text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0", isDark ? "bg-[#137DFE]/15 text-[#137DFE]" : "bg-blue-100 text-blue-600")}>{tx.sourceTagName || `Tag: ${tx.sourceTag}`}</span>}
                               </div>
+                              {/* Details */}
                               <p className={cn("text-[11px] font-mono truncate", isDark ? "text-white/50" : "text-gray-500")}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn("text-[10px] font-mono truncate", isDark ? "text-white/40" : "text-gray-500")}>
-                                {tx.hash ? `${tx.hash.slice(0, 8)}...${tx.hash.slice(-6)}` : '—'}
+                              {/* Time */}
+                              <p className={cn("text-[10px] tabular-nums", isDark ? "text-white/40" : "text-gray-400")}>
+                                {tx.time ? formatDistanceToNow(new Date(tx.time), { addSuffix: false }) : '—'}
                               </p>
-                              <div className="flex items-center justify-end gap-2">
+                              {/* Amount */}
+                              <div className="flex items-center justify-end gap-1.5">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <div className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg", isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
-                                    <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
-                                    <span className={cn("text-[9px]", isDark ? "text-white/25" : "text-gray-400")}>→</span>
-                                    <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
-                                  </div>
+                                  <>
+                                    <span className="text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md text-red-400 bg-red-500/10">-{tx.fromAmount}</span>
+                                    <span className="text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md text-[#08AA09] bg-emerald-500/10">+{tx.toAmount}</span>
+                                  </>
                                 ) : tx.amount ? (
                                   tx.amount.includes('→') ? (
-                                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg", tx.type === 'failed' ? "bg-amber-500/10" : isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
+                                    <>
                                       {tx.amount.split('→').map((part, i) => (
-                                        <span key={i} className={cn("text-[11px] font-semibold tabular-nums", i === 0 ? "text-red-400" : "text-[#08AA09]")}>
-                                          {i > 0 && <span className={cn("text-[9px] mr-1.5", isDark ? "text-white/25" : "text-gray-400")}>→</span>}
-                                          {part.trim()}
+                                        <span key={i} className={cn(
+                                          "text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md",
+                                          tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                          i === 0 ? "text-red-400 bg-red-500/10" : "text-[#08AA09] bg-emerald-500/10"
+                                        )}>
+                                          {tx.type !== 'failed' && (i === 0 ? '-' : '+')}{part.trim()}
                                         </span>
                                       ))}
-                                    </div>
+                                    </>
                                   ) : (
                                     <span className={cn(
-                                      "text-[11px] font-semibold tabular-nums px-2.5 py-1.5 rounded-lg",
+                                      "text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md",
                                       tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
                                       tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
                                     )}>
@@ -2479,13 +2486,29 @@ export default function WalletPage() {
                                     </span>
                                   )
                                 ) : (
-                                  <span className={cn("text-[10px] px-2 py-1 rounded-lg", isDark ? "text-white/20 bg-white/[0.04]" : "text-gray-400 bg-gray-100")}>—</span>
+                                  <span className={cn("text-[10px] px-2 py-1 rounded-md", isDark ? "text-white/20 bg-white/[0.04]" : "text-gray-400 bg-gray-100")}>—</span>
                                 )}
                               </div>
-                              <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-400")}>
-                                {tx.time ? formatDistanceToNow(new Date(tx.time), { addSuffix: false }) : '—'}
-                              </p>
-                              <ExternalLink size={12} className={cn("justify-self-end opacity-0 group-hover:opacity-100 transition-opacity", isDark ? "text-white/40" : "text-gray-400")} />
+                              {/* Signature */}
+                              <div className="flex items-center gap-1 justify-end">
+                                <span className={cn("text-[10px] font-mono", isDark ? "text-white/40" : "text-gray-500")}>
+                                  {tx.hash ? `${tx.hash.slice(0, 12)}...` : '—'}
+                                </span>
+                                {tx.hash && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(tx.hash);
+                                      setCopiedHash(tx.hash);
+                                      setTimeout(() => setCopiedHash(null), 2000);
+                                    }}
+                                    className={cn("p-1 rounded transition-colors", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}
+                                  >
+                                    {copiedHash === tx.hash ? <Check size={12} className="text-[#08AA09]" /> : <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -2521,8 +2544,8 @@ export default function WalletPage() {
                           <span className="text-right">Time</span>
                           <span></span>
                         </div>
-                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
-                          {tokenHistory.slice(0, 5).map((h) => {
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.08]" : "divide-gray-50")}>
+                          {tokenHistory.slice(0, 20).map((h) => {
                             const isBuy = h.got?.currency !== 'XRP';
                             const gotCurrency = decodeCurrency(h.got?.currency);
                             const paidCurrency = decodeCurrency(h.paid?.currency);
@@ -2532,8 +2555,20 @@ export default function WalletPage() {
                                 className={cn("grid grid-cols-[44px_1.5fr_2fr_1.5fr_1fr_32px] gap-2 items-center px-4 py-3 transition-colors cursor-pointer", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}
                                 onClick={() => window.open(`/tx/${h.hash}`, '_blank')}
                               >
-                                <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {isBuy ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                <div className="relative">
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${isBuy ? (h.got?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${h.got?.issuer}_${h.got?.currency}`).toString()) : (h.paid?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${h.paid?.issuer}_${h.paid?.currency}`).toString())}`}
+                                    alt=""
+                                    className="w-7 h-7 rounded-full object-cover bg-white/10"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                  <div className={cn(
+                                    "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]",
+                                    isDark ? "border-[#070b12]" : "border-white",
+                                    isBuy ? 'bg-emerald-500' : 'bg-red-500'
+                                  )}>
+                                    {isBuy ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
+                                  </div>
                                 </div>
                                 <p className={cn("text-[12px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{isBuy ? 'Buy' : 'Sell'}</p>
                                 <p className={cn("text-[11px] truncate", isDark ? "text-white/50" : "text-gray-500")}>{gotCurrency}/{paidCurrency}</p>
@@ -2580,7 +2615,7 @@ export default function WalletPage() {
                           <span className="text-right">Time</span>
                           <span></span>
                         </div>
-                        <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                        <div className={cn("divide-y", isDark ? "divide-white/[0.08]" : "divide-gray-50")}>
                           {nftTrades.slice(0, 5).map((t) => {
                             const isSeller = t.seller === address;
                             return (
@@ -3382,8 +3417,20 @@ export default function WalletPage() {
                             const tokenName = decodeCurrency(tokenData?.currency) || 'Unknown';
                             return (
                               <div key={trade.hash || i} className={cn('grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_40px] gap-3 px-4 py-2.5 items-center', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}>
-                                <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isBuy ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                  {isBuy ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
+                                <div className="relative">
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${tokenData?.currency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${tokenData?.issuer}_${tokenData?.currency}`).toString()}`}
+                                    alt=""
+                                    className="w-7 h-7 rounded-full object-cover bg-white/10"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                  <div className={cn(
+                                    "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]",
+                                    isDark ? "border-[#070b12]" : "border-white",
+                                    isBuy ? 'bg-emerald-500' : 'bg-red-500'
+                                  )}>
+                                    {isBuy ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
+                                  </div>
                                 </div>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{tokenName}</span>
@@ -3516,75 +3563,81 @@ export default function WalletPage() {
                       <div className={cn('p-8 text-center text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No transactions</div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[40px_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
                           <span></span>
                           <span>Type</span>
                           <span>Details</span>
-                          <span>Signature</span>
+                          <span>Date</span>
                           <span className="text-right">Amount</span>
-                          <span className="text-right">Date</span>
-                          <span></span>
+                          <span className="text-right">Signature</span>
                         </div>
-                        <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+                        <div className={cn('divide-y', isDark ? 'divide-white/[0.08]' : 'divide-gray-50')}>
                           {transactions.filter(tx => txTypeFilter === 'all' || tx.txType === txTypeFilter).map((tx) => (
                             <div
                               key={tx.id}
-                              className={cn('grid grid-cols-[40px_1fr_1.2fr_1fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                              className={cn('grid grid-cols-[40px_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                               onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
                             >
+                              {/* Icon */}
                               <div className="relative">
                                 {tx.tokenCurrency ? (
                                   <img
                                     src={`https://s1.xrpl.to/token/${tx.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : MD5(`${tx.tokenIssuer}_${tx.tokenCurrency}`).toString()}`}
                                     alt=""
-                                    className="w-9 h-9 rounded-full object-cover bg-white/10"
+                                    className="w-7 h-7 rounded-full object-cover bg-white/10"
                                     onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                                   />
                                 ) : (
-                                  <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                    {tx.type === 'failed' ? <AlertTriangle size={16} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={16} className="text-[#08AA09]" /> : <ArrowUpRight size={16} className="text-red-400" />}
+                                  <div className={cn('w-7 h-7 rounded-full flex items-center justify-center', tx.type === 'failed' ? 'bg-amber-500/10' : tx.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
+                                    {tx.type === 'failed' ? <AlertTriangle size={14} className="text-[#F6AF01]" /> : tx.type === 'in' ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
                                   </div>
                                 )}
                                 <div className={cn(
-                                  'absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2',
+                                  'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]',
                                   isDark ? 'border-[#070b12]' : 'border-white',
                                   tx.type === 'failed' ? 'bg-amber-500' : tx.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
                                 )}>
-                                  {tx.type === 'failed' ? <AlertTriangle size={8} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={8} className="text-white" /> : <ArrowUpRight size={8} className="text-white" />}
+                                  {tx.type === 'failed' ? <AlertTriangle size={7} className="text-white" /> : tx.type === 'in' ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
                                 </div>
                               </div>
+                              {/* Type */}
                               <div className="min-w-0 flex items-center gap-2">
                                 <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{tx.label}</p>
                                 {tx.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
                                 {tx.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
                                 {tx.sourceTag && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>{tx.sourceTagName || `Tag: ${tx.sourceTag}`}</span>}
                               </div>
+                              {/* Details */}
                               <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                 {tx.counterparty ? (tx.counterparty.startsWith('r') ? <Link href={`/address/${tx.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{tx.counterparty.slice(0, 10)}...{tx.counterparty.slice(-6)}</Link> : tx.counterparty) : tx.fromAmount ? 'DEX Swap' : '—'}
                               </p>
-                              <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/40' : 'text-gray-500')}>
-                                {tx.hash ? `${tx.hash.slice(0, 8)}...${tx.hash.slice(-6)}` : '—'}
+                              {/* Date */}
+                              <p className={cn('text-[10px] tabular-nums', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
                               </p>
-                              <div className="flex items-center justify-end gap-2">
+                              {/* Amount */}
+                              <div className="flex items-center justify-end gap-1.5">
                                 {tx.fromAmount && tx.toAmount ? (
-                                  <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
-                                    <span className="text-[11px] font-semibold tabular-nums text-red-400">{tx.fromAmount}</span>
-                                    <span className={cn('text-[9px]', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>
-                                    <span className="text-[11px] font-semibold tabular-nums text-[#08AA09]">{tx.toAmount}</span>
-                                  </div>
+                                  <>
+                                    <span className="text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md text-red-400 bg-red-500/10">-{tx.fromAmount}</span>
+                                    <span className="text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md text-[#08AA09] bg-emerald-500/10">+{tx.toAmount}</span>
+                                  </>
                                 ) : tx.amount ? (
                                   tx.amount.includes('→') ? (
-                                    <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg', tx.type === 'failed' ? 'bg-amber-500/10' : isDark ? 'bg-white/[0.06]' : 'bg-gray-100')}>
+                                    <>
                                       {tx.amount.split('→').map((part, i) => (
-                                        <span key={i} className={cn('text-[11px] font-semibold tabular-nums', i === 0 ? 'text-red-400' : 'text-[#08AA09]')}>
-                                          {i > 0 && <span className={cn('text-[9px] mr-1.5', isDark ? 'text-white/25' : 'text-gray-400')}>→</span>}
-                                          {part.trim()}
+                                        <span key={i} className={cn(
+                                          'text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md',
+                                          tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
+                                          i === 0 ? 'text-red-400 bg-red-500/10' : 'text-[#08AA09] bg-emerald-500/10'
+                                        )}>
+                                          {tx.type !== 'failed' && (i === 0 ? '-' : '+')}{part.trim()}
                                         </span>
                                       ))}
-                                    </div>
+                                    </>
                                   ) : (
                                     <span className={cn(
-                                      'text-[11px] font-semibold tabular-nums px-2.5 py-1.5 rounded-lg',
+                                      'text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md',
                                       tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
                                       tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
                                     )}>
@@ -3592,13 +3645,29 @@ export default function WalletPage() {
                                     </span>
                                   )
                                 ) : (
-                                  <span className={cn('text-[10px] px-2 py-1 rounded-lg', isDark ? 'text-white/20 bg-white/[0.04]' : 'text-gray-400 bg-gray-100')}>—</span>
+                                  <span className={cn('text-[10px] px-2 py-1 rounded-md', isDark ? 'text-white/20 bg-white/[0.04]' : 'text-gray-400 bg-gray-100')}>—</span>
                                 )}
                               </div>
-                              <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
-                                {tx.time ? new Date(tx.time).toLocaleDateString() : '—'}
-                              </p>
-                              <ExternalLink size={12} className={cn('justify-self-end opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'text-white/40' : 'text-gray-400')} />
+                              {/* Signature */}
+                              <div className="flex items-center gap-1 justify-end">
+                                <span className={cn('text-[10px] font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                  {tx.hash ? `${tx.hash.slice(0, 12)}...` : '—'}
+                                </span>
+                                {tx.hash && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(tx.hash);
+                                      setCopiedHash(tx.hash);
+                                      setTimeout(() => setCopiedHash(null), 2000);
+                                    }}
+                                    className={cn('p-1 rounded transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}
+                                  >
+                                    {copiedHash === tx.hash ? <Check size={12} className="text-[#08AA09]" /> : <Copy size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
