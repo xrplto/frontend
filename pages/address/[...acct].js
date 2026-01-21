@@ -43,6 +43,8 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 `;
 
 const AccountInfoDetails = ({ accountInfo, isDark }) => {
@@ -313,7 +315,7 @@ const OverView = ({ account }) => {
     if (activeTab !== 'ancestry' || !account || ancestry) return;
     setAncestryLoading(true);
     axios
-      .get(`https://api.xrpl.to/api/account/ancestry/${account}`)
+      .get(`https://api.xrpl.to/api/account/ancestry/${account}?include_tokens=true&token_limit=50`)
       .then((res) => setAncestry(res.data))
       .catch((err) => {
         console.error('Failed to fetch ancestry:', err);
@@ -501,7 +503,7 @@ const OverView = ({ account }) => {
         <div className="h-0" id="back-to-top-anchor" />
         <Header />
         {!isMobile && <TokenTabs currentMd5={account} />}
-        <div className="mx-auto max-w-[1920px] px-4 mt-4">
+        <div className="mx-auto max-w-[1920px] w-full px-4 mt-4 flex-1">
           <div className="flex flex-col gap-4">
             {/* Header skeleton */}
             <div className="flex items-center gap-3">
@@ -599,7 +601,7 @@ const OverView = ({ account }) => {
         {account} Profile on XRPL
       </h1>
 
-      <div className="mx-auto max-w-[1920px] px-4 mt-4">
+      <div className="mx-auto max-w-[1920px] w-full px-4 mt-4 flex-1">
         <div className="flex flex-col">
           <div className="w-full">
             {/* Account Header */}
@@ -3749,28 +3751,51 @@ const OverView = ({ account }) => {
                 ) : (
                   <>
                     {/* Stats Header */}
-                    <div className={cn('px-4 py-3 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-gray-100')}>
-                      <div className="flex items-center gap-2">
-                        <GitBranch size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
-                        <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Account Ancestry</span>
+                    <div className={cn('px-4 py-3', isDark ? 'border-b border-white/10' : 'border-b border-gray-100')}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <GitBranch size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Account Ancestry</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {ancestry.stats?.ancestorDepth > 0 && (
+                            <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              <span className="font-medium">{ancestry.stats.ancestorDepth}</span> generations
+                            </span>
+                          )}
+                          {ancestry.stats?.childrenCount > 0 && (
+                            <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              <span className="font-medium">{ancestry.stats.childrenCount}</span> children
+                            </span>
+                          )}
+                          {ancestry.stats?.tokensCreated > 0 && (
+                            <span className={cn('text-[11px]', isDark ? 'text-emerald-400/70' : 'text-emerald-600')}>
+                              <span className="font-medium">{ancestry.stats.tokensCreated}</span> tokens created
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        {ancestry.stats?.ancestorDepth > 0 && (
-                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            <span className="font-medium">{ancestry.stats.ancestorDepth}</span> generations
-                          </span>
-                        )}
-                        {ancestry.stats?.childrenCount > 0 && (
-                          <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            <span className="font-medium">{ancestry.stats.childrenCount}</span> children
-                          </span>
-                        )}
-                        {ancestry.stats?.tokensCreated > 0 && (
-                          <span className={cn('text-[11px]', isDark ? 'text-emerald-400/70' : 'text-emerald-600')}>
-                            <span className="font-medium">{ancestry.stats.tokensCreated}</span> tokens created
-                          </span>
-                        )}
-                      </div>
+                      {ancestry.tokens?.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {ancestry.tokens.map((token) => (
+                            <Link
+                              key={token.md5}
+                              href={`/token/${token.md5}`}
+                              className={cn(
+                                'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
+                                isDark ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
+                              )}
+                            >
+                              <span className="font-medium">{token.name || token.currency}</span>
+                              {token.marketcap > 0 && (
+                                <span className={cn(isDark ? 'text-emerald-400/50' : 'text-emerald-500')}>
+                                  ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
+                                </span>
+                              )}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Ancestors Section */}
@@ -3779,44 +3804,67 @@ const OverView = ({ account }) => {
                         <div className="flex items-center gap-2 mb-3">
                           <ArrowUpRight size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
                           <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            Ancestors (who activated this account)
+                            Activation Chain
                           </span>
                         </div>
-                        <div className="space-y-2">
-                          {ancestry.ancestors.map((ancestor, idx) => (
-                            <div key={ancestor.address || idx} className={cn('flex items-center justify-between py-2 px-3 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                              <div className="flex items-center gap-3">
-                                <span className={cn('text-[10px] w-6 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>{idx + 1}</span>
-                                <div>
-                                  <Link href={`/address/${ancestor.address}`} className={cn('text-[13px] font-mono hover:underline', isDark ? 'text-[#4285f4]' : 'text-blue-600')}>
-                                    {ancestor.name || `${ancestor.address?.slice(0, 8)}...${ancestor.address?.slice(-6)}`}
-                                  </Link>
-                                  {ancestor.name && (
-                                    <p className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                      {ancestor.address?.slice(0, 8)}...{ancestor.address?.slice(-6)}
-                                    </p>
+                        <div className="relative">
+                          {/* Vertical connecting line */}
+                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                          <div className="space-y-1">
+                            {ancestry.ancestors.map((ancestor, idx) => (
+                              <div key={ancestor.address || idx} className="relative pl-10">
+                                {/* Node dot */}
+                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', isDark ? 'bg-black border-white/30' : 'bg-white border-gray-300')} />
+                                <div className={cn('rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                                  <div className="flex items-center justify-between py-2 px-3">
+                                    <div className="flex items-center gap-2">
+                                      <Link href={`/address/${ancestor.address}`} className={cn('text-[13px] font-medium hover:underline', isDark ? 'text-white' : 'text-gray-900')}>
+                                        {ancestor.name || `${ancestor.address?.slice(0, 8)}...${ancestor.address?.slice(-6)}`}
+                                      </Link>
+                                      {ancestor.name && (
+                                        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                          {ancestor.address?.slice(0, 6)}...
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      {ancestor.tokensCreated > 0 && (
+                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                                          {ancestor.tokensCreated} tokens
+                                        </span>
+                                      )}
+                                      {ancestor.inception && (
+                                        <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                          {new Date(ancestor.inception).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {ancestor.tokens?.length > 0 && (
+                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', isDark ? 'border-t border-white/5' : 'border-t border-gray-100')}>
+                                      {ancestor.tokens.map((token) => (
+                                        <Link
+                                          key={token.md5}
+                                          href={`/token/${token.md5}`}
+                                          className={cn(
+                                            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
+                                            isDark ? 'bg-white/5 hover:bg-white/10 text-white/60' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                                          )}
+                                        >
+                                          <span className="font-medium">{token.name || token.currency}</span>
+                                          {token.marketcap > 0 && (
+                                            <span className={cn(isDark ? 'text-white/30' : 'text-gray-400')}>
+                                              ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
+                                            </span>
+                                          )}
+                                        </Link>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-4">
-                                {ancestor.tokensCreated > 0 && (
-                                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600')}>
-                                    {ancestor.tokensCreated} tokens
-                                  </span>
-                                )}
-                                {ancestor.inception && (
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                    {new Date(ancestor.inception).toLocaleDateString()}
-                                  </span>
-                                )}
-                                {ancestor.tx && (
-                                  <Link href={`/tx/${ancestor.tx}`} target="_blank" className={cn('text-[10px] font-mono hover:underline', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>
-                                    {ancestor.tx.slice(0, 4)}...{ancestor.tx.slice(-4)}
-                                  </Link>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -3827,49 +3875,70 @@ const OverView = ({ account }) => {
                         <div className="flex items-center gap-2 mb-3">
                           <ArrowDownLeft size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
                           <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
-                            Children (accounts activated by this account)
+                            Activated Accounts
                           </span>
-                          {ancestry.stats?.childrenCount > ancestry.children.length && (
+                          {ancestry.stats?.childrenCount > 0 && (
                             <span className={cn('text-[10px]', isDark ? 'text-white/20' : 'text-gray-400')}>
-                              (showing {ancestry.children.length} of {ancestry.stats.childrenCount})
+                              ({ancestry.stats.childrenCount})
                             </span>
                           )}
                         </div>
-                        <div className="space-y-2">
-                          {ancestry.children.map((child, idx) => (
-                            <div key={child.address || idx} className={cn('flex items-center justify-between py-2 px-3 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
-                              <div className="flex items-center gap-3">
-                                <span className={cn('text-[10px] w-6 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>{idx + 1}</span>
-                                <div>
-                                  <Link href={`/address/${child.address}`} className={cn('text-[13px] font-mono hover:underline', isDark ? 'text-[#4285f4]' : 'text-blue-600')}>
-                                    {child.name || `${child.address?.slice(0, 8)}...${child.address?.slice(-6)}`}
-                                  </Link>
-                                  {child.name && (
-                                    <p className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                      {child.address?.slice(0, 8)}...{child.address?.slice(-6)}
-                                    </p>
+                        <div className="relative">
+                          <div className={cn('absolute left-[18px] top-4 bottom-4 w-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                          <div className="space-y-1">
+                            {ancestry.children.map((child, idx) => (
+                              <div key={child.address || idx} className="relative pl-10">
+                                <div className={cn('absolute left-[15px] top-3 w-[7px] h-[7px] rounded-full border-2', isDark ? 'bg-black border-white/30' : 'bg-white border-gray-300')} />
+                                <div className={cn('rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                                  <div className="flex items-center justify-between py-2 px-3">
+                                    <div className="flex items-center gap-2">
+                                      <Link href={`/address/${child.address}`} className={cn('text-[13px] font-medium hover:underline', isDark ? 'text-white' : 'text-gray-900')}>
+                                        {child.name || `${child.address?.slice(0, 8)}...${child.address?.slice(-6)}`}
+                                      </Link>
+                                      {child.name && (
+                                        <span className={cn('text-[10px] font-mono', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                          {child.address?.slice(0, 6)}...
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      {child.tokensCreated > 0 && (
+                                        <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                                          {child.tokensCreated} tokens
+                                        </span>
+                                      )}
+                                      {child.inception && (
+                                        <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                          {new Date(child.inception).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {child.tokens?.length > 0 && (
+                                    <div className={cn('px-3 pb-2 flex flex-wrap gap-1', isDark ? 'border-t border-white/5' : 'border-t border-gray-100')}>
+                                      {child.tokens.map((token) => (
+                                        <Link
+                                          key={token.md5}
+                                          href={`/token/${token.md5}`}
+                                          className={cn(
+                                            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors',
+                                            isDark ? 'bg-white/5 hover:bg-white/10 text-white/60' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                                          )}
+                                        >
+                                          <span className="font-medium">{token.name || token.currency}</span>
+                                          {token.marketcap > 0 && (
+                                            <span className={cn(isDark ? 'text-white/30' : 'text-gray-400')}>
+                                              ${token.marketcap >= 1000000 ? `${(token.marketcap / 1000000).toFixed(1)}M` : token.marketcap >= 1000 ? `${(token.marketcap / 1000).toFixed(0)}k` : token.marketcap.toFixed(0)}
+                                            </span>
+                                          )}
+                                        </Link>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-4">
-                                {child.tokensCreated > 0 && (
-                                  <span className={cn('text-[10px] px-2 py-0.5 rounded-full', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600')}>
-                                    {child.tokensCreated} tokens
-                                  </span>
-                                )}
-                                {child.inception && (
-                                  <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                    {new Date(child.inception).toLocaleDateString()}
-                                  </span>
-                                )}
-                                {child.tx && (
-                                  <Link href={`/tx/${child.tx}`} target="_blank" className={cn('text-[10px] font-mono hover:underline', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>
-                                    {child.tx.slice(0, 4)}...{child.tx.slice(-4)}
-                                  </Link>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
