@@ -1472,12 +1472,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       return;
     }
 
-    // Confirmation for large XRP amounts
-    const xrpAmount = curr1.currency === 'XRP' ? fAmount : (curr2.currency === 'XRP' ? fValue : 0);
-    if (xrpAmount > 1 && !window.confirm(`Confirm swap: ${fAmount} ${curr1.name || curr1.currency} → ${fValue} ${curr2.name || curr2.currency}?`)) {
-      return;
-    }
-
     const toastId = toast.loading('Processing swap...', { description: 'Preparing transaction' });
 
     try {
@@ -1502,8 +1496,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
       const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
+      // Track if we need to create trustlines (before we create them)
+      const needsTrustline1 = !hasTrustline1 && curr1.currency !== 'XRP';
+      const needsTrustline2 = !hasTrustline2 && curr2.currency !== 'XRP';
+
       // Auto-create trustlines if needed
-      if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      if (needsTrustline1) {
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr1.name}` });
         const success = await onCreateTrustline(curr1, true);
         if (!success) {
@@ -1512,7 +1510,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         }
         setHasTrustline1(true);
       }
-      if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      if (needsTrustline2) {
         toast.loading('Processing swap...', { id: toastId, description: `Setting trustline for ${curr2.name}` });
         const success = await onCreateTrustline(curr2, true);
         if (!success) {
@@ -1521,6 +1519,49 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         }
         setHasTrustline2(true);
       }
+
+      // Check if we created any trustline (which reserves XRP)
+      const createdTrustline = needsTrustline1 || needsTrustline2;
+
+      // Recalculate amounts if we created a trustline and are paying XRP
+      // Trustline creation reserves ~0.2 XRP, so available balance is now lower
+      let adjustedAmount1 = fAmount;
+      let adjustedAmount2 = fValue;
+
+      if (curr1.currency === 'XRP' && createdTrustline) {
+        try {
+          // Use xrpl.to API to get fresh balance
+          const balRes = await axios.get(`${BASE_URL}/account/balance/${accountProfile.account}`);
+          let newXrpAvailable = parseFloat(balRes.data?.spendableDrops || 0) / 1000000;
+
+          // API may be stale - subtract 0.2 XRP per trustline we just created
+          const trustlinesCreated = (needsTrustline1 ? 1 : 0) + (needsTrustline2 ? 1 : 0);
+          newXrpAvailable = Math.max(0, newXrpAvailable - (trustlinesCreated * 0.2));
+
+          console.log('[Swap] Balance after trustline:', balRes.data, 'adjusted available:', newXrpAvailable, 'trustlines created:', trustlinesCreated);
+
+          if (newXrpAvailable < fAmount) {
+            // Recalculate based on new available balance
+            adjustedAmount1 = Math.max(0, newXrpAvailable - 0.000015); // Leave tiny buffer for tx fee (~12 drops)
+
+            if (adjustedAmount1 <= 0) {
+              toast.error('Insufficient balance', { id: toastId, description: 'Not enough XRP after trustline reserve' });
+              return;
+            }
+
+            // Recalculate output amount proportionally
+            const ratio = adjustedAmount1 / fAmount;
+            adjustedAmount2 = fValue * ratio;
+
+            toast.loading('Processing swap...', { id: toastId, description: `Adjusted to ${adjustedAmount1.toFixed(4)} XRP` });
+          }
+        } catch (e) {
+          console.warn('[Swap] Could not refetch balance after trustline:', e);
+        }
+      }
+
+      const fAmount1Final = adjustedAmount1;
+      const fValue1Final = adjustedAmount2;
 
       toast.loading('Processing swap...', { id: toastId, description: 'Submitting to XRPL' });
 
@@ -1538,21 +1579,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         if (curr1.currency === 'XRP') {
           // Paying XRP to receive tokens
-          const maxXrpDrops = Math.floor(fAmount * (1 + 0.005) * 1000000);
+          const maxXrpDrops = Math.floor(fAmount1Final * (1 + 0.005) * 1000000);
           tx = {
             TransactionType: 'Payment',
             Account: accountProfile.account,
             SourceTag: 161803,
             Destination: accountProfile.account,
-            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue) },
-            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue * (1 - slippageFactor)) },
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final * (1 - slippageFactor)) },
             SendMax: String(maxXrpDrops),
             Flags: 131072 // tfPartialPayment
           };
         } else if (curr2.currency === 'XRP') {
           // Paying tokens to receive XRP
-          const targetXrpDrops = Math.floor(fValue * 1000000);
-          const minXrpDrops = Math.max(Math.floor(fValue * (1 - slippageFactor) * 1000000), 1);
+          const targetXrpDrops = Math.floor(fValue1Final * 1000000);
+          const minXrpDrops = Math.max(Math.floor(fValue1Final * (1 - slippageFactor) * 1000000), 1);
           tx = {
             TransactionType: 'Payment',
             Account: accountProfile.account,
@@ -1560,7 +1601,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             Destination: accountProfile.account,
             Amount: String(targetXrpDrops),
             DeliverMin: String(minXrpDrops),
-            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount * 1.005) },
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount1Final * 1.005) },
             Flags: 131072 // tfPartialPayment
           };
         } else {
@@ -1570,9 +1611,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             Account: accountProfile.account,
             SourceTag: 161803,
             Destination: accountProfile.account,
-            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue) },
-            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue * (1 - slippageFactor)) },
-            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount * 1.005) },
+            Amount: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final) },
+            DeliverMin: { currency: curr2.currency, issuer: curr2.issuer, value: formatTokenValue(fValue1Final * (1 - slippageFactor)) },
+            SendMax: { currency: curr1.currency, issuer: curr1.issuer, value: formatTokenValue(fAmount1Final * 1.005) },
             Flags: 131072 // tfPartialPayment
           };
         }
@@ -1634,6 +1675,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             setIsSwapped((v) => !v);
           } else if (txResult === 'tecKILLED') {
             toast.error('No liquidity', { id: toastId, description: 'Order couldn\'t be filled at this price' });
+          } else if (txResult === 'tecPATH_PARTIAL' || txResult === 'tecPATH_DRY') {
+            toast.error('No liquidity path', { id: toastId, description: 'Try a smaller amount or increase slippage' });
+          } else if (txResult === 'tecUNFUNDED_PAYMENT') {
+            toast.error('Insufficient funds', { id: toastId, description: 'Not enough balance for this swap' });
           } else {
             toast.error('Swap failed', { id: toastId, description: txResult });
           }
@@ -1644,12 +1689,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       } else {
         // Use OfferCreate for limit orders (manual submission)
         const takerGets = curr1.currency === 'XRP'
-          ? String(Math.floor(fAmount * 1000000))
-          : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount) };
+          ? String(Math.floor(fAmount1Final * 1000000))
+          : { currency: curr1.currency, issuer: curr1.issuer, value: String(fAmount1Final) };
 
         const takerPays = curr2.currency === 'XRP'
-          ? String(Math.floor(fValue * 1000000))
-          : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue) };
+          ? String(Math.floor(fValue1Final * 1000000))
+          : { currency: curr2.currency, issuer: curr2.issuer, value: String(fValue1Final) };
 
         const tx = {
           Account: accountProfile.account,
@@ -2982,6 +3027,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span>
               </div>
             </div>
+          )}
+
+          {/* Trustline warning */}
+          {accountProfile?.account && accountPairBalance && (
+            (!hasTrustline1 && curr1.currency !== 'XRP') ||
+            (!hasTrustline2 && curr2.currency !== 'XRP')
+          ) && (
+            <Alert severity="warning" isDark={isDark} sx={{ mt: 1, py: 0.5 }}>
+              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
+                {!hasTrustline1 && curr1.currency !== 'XRP' && !hasTrustline2 && curr2.currency !== 'XRP'
+                  ? `Trustlines needed for ${curr1.name || curr1.currency} & ${curr2.name || curr2.currency} (~0.4 XRP reserve)`
+                  : !hasTrustline1 && curr1.currency !== 'XRP'
+                    ? `Trustline needed for ${curr1.name || curr1.currency} (~0.2 XRP reserve)`
+                    : `Trustline needed for ${curr2.name || curr2.currency} (~0.2 XRP reserve)`
+                }
+              </Typography>
+            </Alert>
           )}
 
           {/* Exchange/Trustline Button - inside the swap card when connected */}
