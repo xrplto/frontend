@@ -1272,42 +1272,60 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     return removeShift;
   }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook]);
 
+  // WebSocket-based real-time pair balance updates
   useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-
-    async function getAccountInfo() {
-      if (!accountProfile || !accountProfile.account) return;
-      if (!curr1 || !curr2) return;
-
-      const account = accountProfile.account;
-
-      // Fetch balance (includes hasTrustline)
-      try {
-        const params = new URLSearchParams({ curr1: curr1.currency, curr2: curr2.currency });
-        params.append('issuer1', curr1.currency === 'XRP' ? 'XRPL' : curr1.issuer || '');
-        params.append('issuer2', curr2.currency === 'XRP' ? 'XRPL' : curr2.issuer || '');
-        const res = await axios.get(
-          `https://api.xrpl.to/api/account/balance/pair/${account}?${params}`,
-          { signal: controller.signal, timeout: 5000 }
-        );
-        if (!mounted) return;
-        const pair = res.data?.pair;
-        setAccountPairBalance(pair);
-        setHasTrustline1(curr1.currency === 'XRP' || pair?.curr1?.hasTrustline !== false);
-        setHasTrustline2(curr2.currency === 'XRP' || pair?.curr2?.hasTrustline !== false);
-      } catch (err) {
-        // Silently fail
-      }
+    if (!accountProfile?.account || !curr1?.currency || !curr2?.currency) {
+      setAccountPairBalance(null);
+      return;
     }
+    // Ensure non-XRP tokens have issuers
+    if (curr1.currency !== 'XRP' && !curr1.issuer) return;
+    if (curr2.currency !== 'XRP' && !curr2.issuer) return;
 
-    getAccountInfo();
+    const account = accountProfile.account;
+    const params = new URLSearchParams({
+      curr1: curr1.currency,
+      issuer1: curr1.currency === 'XRP' ? 'XRPL' : curr1.issuer,
+      curr2: curr2.currency,
+      issuer2: curr2.currency === 'XRP' ? 'XRPL' : curr2.issuer
+    });
+    const wsUrl = `wss://api.xrpl.to/ws/account/balance/pair/${account}?${params}`;
+
+    let ws = null;
+    let reconnectTimeout = null;
+
+    const connect = () => {
+      ws = new WebSocket(wsUrl);
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'initial' || data.e === 'pair') {
+            const pair = data.pair;
+            setAccountPairBalance(pair);
+            setHasTrustline1(curr1.currency === 'XRP' || pair?.curr1?.hasTrustline !== false);
+            setHasTrustline2(curr2.currency === 'XRP' || pair?.curr2?.hasTrustline !== false);
+          }
+        } catch (err) {
+          console.error('[Pair WS] Parse error:', err);
+        }
+      };
+
+      ws.onclose = () => {
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
 
     return () => {
-      mounted = false;
-      controller.abort();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
     };
-  }, [accountProfile, curr1, curr2, sync, isSwapped]);
+  }, [accountProfile?.account, curr1?.currency, curr1?.issuer, curr2?.currency, curr2?.issuer, sync, isSwapped]);
 
   useEffect(() => {
     if (!token1Md5 || !token2Md5) return;

@@ -351,45 +351,63 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     // No reload needed - state is already cleared
   };
 
+  // WebSocket-based real-time balance updates
   useEffect(() => {
-    async function getAccountInfo() {
-      if (!accountProfile || !accountProfile.account) {
-        return;
-      }
-
-      const account = accountProfile.account;
-
-      try {
-        const res = await axios.get(`${BASE_URL}/account/balance/${account}`);
-        if (res.status === 200 && res.data) {
-          setAccountBalance({
-            curr1: { value: res.data.balance ?? '0' },
-            curr2: { value: res.data.reserve ?? '0' }
-          });
-          if (accountProfile && accountProfile.xrp !== res.data.total) {
-            setAccountProfile({
-              ...accountProfile,
-              xrp: res.data.total
-            });
-          }
-        }
-      } catch (err) {
-        if (err.response?.status === 404 || err.response?.status === 500) {
-          setAccountBalance({
-            curr1: { value: '0' },
-            curr2: { value: '0' }
-          });
-          if (accountProfile && accountProfile.xrp !== '0') {
-            setAccountProfile({
-              ...accountProfile,
-              xrp: '0'
-            });
-          }
-        }
-      }
+    if (!accountProfile || !accountProfile.account) {
+      setAccountBalance(null);
+      return;
     }
-    getAccountInfo();
-  }, [accountProfile, sync]);
+
+    const account = accountProfile.account;
+    const wsUrl = `wss://api.xrpl.to/ws/account/balance/${account}`;
+    let ws = null;
+    let reconnectTimeout = null;
+
+    const connect = () => {
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('[Balance WS] Connected');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          // Handle both initial and update events
+          if (data.type === 'initial' || data.e === 'balance') {
+            setAccountBalance({
+              curr1: { value: data.balance ?? '0' },
+              curr2: { value: data.reserve ?? '0' }
+            });
+            if (accountProfile && accountProfile.xrp !== data.total) {
+              setAccountProfile((prev) => prev ? { ...prev, xrp: data.total } : prev);
+            }
+          }
+        } catch (err) {
+          console.error('[Balance WS] Parse error:', err);
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error('[Balance WS] Error:', err);
+      };
+
+      ws.onclose = () => {
+        console.log('[Balance WS] Closed, reconnecting...');
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.onclose = null; // Prevent reconnect on intentional close
+        ws.close();
+      }
+    };
+  }, [accountProfile?.account, sync]);
 
   // Fetch watchlist
   useEffect(() => {
