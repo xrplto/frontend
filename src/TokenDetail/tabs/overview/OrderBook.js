@@ -135,14 +135,15 @@ const Maker = styled.span`
 
 const SpreadBar = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 8px 12px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)')};
-  border-top: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  gap: 8px;
+  padding: 4px 10px;
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)')};
+  border-top: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
-  font-size: 11px;
+    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+  font-size: 10px;
   font-family: var(--font-mono);
   flex-shrink: 0;
 `;
@@ -605,22 +606,11 @@ const OrderBook = ({ token, onPriceClick }) => {
         {/* Spread indicator */}
         {viewMode === 'both' && (
           <SpreadBar isDark={isDark}>
-            <span style={{ color: '#22c55e' }}>
-              ▲ ✕{bestBid != null ? formatPrice(bestBid) : '—'}
-            </span>
-            <span
-              style={{
-                padding: '2px 8px',
-                borderRadius: '8px',
-                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                fontWeight: 500
-              }}
-            >
+            <span style={{ color: '#22c55e', fontSize: '9px' }}>{bestBid != null ? bestBid.toFixed(precision) : '—'}</span>
+            <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '9px' }}>
               {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
             </span>
-            <span style={{ color: '#ef4444' }}>
-              ✕{bestAsk != null ? formatPrice(bestAsk) : '—'} ▼
-            </span>
+            <span style={{ color: '#ef4444', fontSize: '9px' }}>{bestAsk != null ? bestAsk.toFixed(precision) : '—'}</span>
           </SpreadBar>
         )}
 
