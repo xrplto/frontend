@@ -131,7 +131,9 @@ const TokenSummary = memo(({ token }) => {
   const [prevPrice, setPrevPrice] = useState(null);
   const [priceColor, setPriceColor] = useState(null);
   const [isRemove, setIsRemove] = useState(false);
+  const [trustlineBalance, setTrustlineBalance] = useState(0);
   const [editToken, setEditToken] = useState(null);
+  const [dustConfirm, setDustConfirm] = useState(null); // 'dex' | 'issuer' | null
   const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showApi, setShowApi] = useState(false);
@@ -241,27 +243,32 @@ const TokenSummary = memo(({ token }) => {
       return;
     }
 
+    // If removing with significant balance, block it
+    if (isRemove && trustlineBalance >= 0.000001) {
+      toast.error('Cannot remove trustline', { description: 'Sell or transfer your balance first' });
+      return;
+    }
+
+    // If removing with dust, prompt for confirmation first
+    if (isRemove && trustlineBalance > 0 && trustlineBalance < 0.000001) {
+      setDustConfirm('dex');
+      return;
+    }
+
+    // Standard trustline set/remove (no dust)
+    await executeTrustSet();
+  };
+
+  const executeTrustSet = async () => {
     const action = isRemove ? 'Removing' : 'Setting';
     const toastId = toast.loading(`${action} trustline...`, { description: 'Preparing transaction' });
 
     try {
       const { Wallet } = await import('xrpl');
-      const { EncryptedWalletStorage, deviceFingerprint } = await import(
-        'src/utils/encryptedWalletStorage'
-      );
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
 
-      console.log('[TrustSet] accountProfile:', {
-        account: accountProfile.account,
-        wallet_type: accountProfile.wallet_type,
-        deviceKeyId: accountProfile.deviceKeyId,
-        accountIndex: accountProfile.accountIndex
-      });
-
-      // Retrieve actual seed from encrypted storage
       const walletStorage = new EncryptedWalletStorage();
       const deviceKeyId = await deviceFingerprint.getDeviceId();
-      console.log('[TrustSet] deviceKeyId:', deviceKeyId);
-
       const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
       if (!storedPassword) {
         toast.error('Wallet locked', { id: toastId, description: 'Please unlock your wallet first' });
@@ -269,40 +276,27 @@ const TokenSummary = memo(({ token }) => {
       }
 
       const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-      console.log('[TrustSet] walletData found:', !!walletData, 'hasSeed:', !!walletData?.seed);
-
       if (!walletData?.seed) {
         toast.error('Seed not found', { id: toastId, description: 'Could not retrieve wallet credentials' });
         return;
       }
 
-      // Detect algorithm from seed prefix
       const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
-      const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
-      console.log('[TrustSet] wallet address:', deviceWallet.classicAddress);
-      console.log('[TrustSet] expected:', accountProfile.account);
-      console.log('[TrustSet] MATCH:', deviceWallet.classicAddress === accountProfile.account);
+      const wallet = Wallet.fromSeed(walletData.seed, { algorithm });
 
       const tx = {
         Account: accountProfile.account,
         TransactionType: 'TrustSet',
-        LimitAmount: {
-          issuer,
-          currency,
-          value: isRemove ? '0' : new Decimal(supply).toFixed(0)
-        },
+        SourceTag: 161803,
+        LimitAmount: { issuer, currency, value: isRemove ? '0' : new Decimal(supply).toFixed(0) },
         Flags: 0x00020000
       };
 
-      // REST-based autofill
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Fetching account info' });
-      console.log('[TrustSet] fetching sequence/fee...');
       const [seqRes, feeRes] = await Promise.all([
         axios.get(`https://api.xrpl.to/v1/submit/account/${accountProfile.account}/sequence`),
         axios.get('https://api.xrpl.to/v1/submit/fee')
       ]);
-      console.log('[TrustSet] seqRes:', seqRes.data);
-      console.log('[TrustSet] feeRes:', feeRes.data);
 
       const prepared = {
         ...tx,
@@ -310,35 +304,106 @@ const TokenSummary = memo(({ token }) => {
         Fee: feeRes.data.base_fee,
         LastLedgerSequence: seqRes.data.ledger_index + 20
       };
-      console.log('[TrustSet] prepared tx:', prepared);
 
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Signing transaction' });
-      const signed = deviceWallet.sign(prepared);
-      console.log('[TrustSet] signed hash:', signed.hash);
+      const signed = wallet.sign(prepared);
 
       toast.loading(`${action} trustline...`, { id: toastId, description: 'Submitting to XRPL' });
       const result = await axios.post('https://api.xrpl.to/v1/submit', { tx_blob: signed.tx_blob });
-      console.log('[TrustSet] submit result:', result.data);
 
       if (result.data.engine_result === 'tesSUCCESS') {
         setIsRemove(!isRemove);
+        if (isRemove) setTrustlineBalance(0);
         toast.success(isRemove ? 'Trustline removed!' : 'Trustline set!', {
           id: toastId,
-          description: `Transaction: ${signed.hash.slice(0, 8)}...`
+          description: `Tx: ${signed.hash.slice(0, 8)}...`
         });
       } else {
-        toast.error('Transaction failed', {
-          id: toastId,
-          description: result.data.engine_result_message || result.data.engine_result
-        });
+        toast.error('Transaction failed', { id: toastId, description: result.data.engine_result_message || result.data.engine_result });
       }
     } catch (err) {
       console.error('Trustline error:', err);
-      if (err.response?.status === 404) {
-        toast.error('Account not activated', { id: toastId, description: 'Fund your account with XRP first' });
-      } else {
-        toast.error('Error', { id: toastId, description: err.message?.slice(0, 50) || 'Unknown error' });
+      toast.error('Error', { description: err.message?.slice(0, 50) || 'Unknown error' });
+    }
+  };
+
+  const executeDustClear = async (method) => {
+    setDustConfirm(null);
+    const toastId = toast.loading('Clearing dust...', { description: method === 'dex' ? 'Selling on DEX' : 'Sending to issuer' });
+
+    try {
+      const { Wallet, Client } = await import('xrpl');
+      const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+      const walletStorage = new EncryptedWalletStorage();
+      const deviceKeyId = await deviceFingerprint.getDeviceId();
+      const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+      if (!storedPassword) {
+        toast.error('Wallet locked', { id: toastId });
+        return;
       }
+
+      const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+      if (!walletData?.seed) {
+        toast.error('Seed not found', { id: toastId });
+        return;
+      }
+
+      const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      const wallet = Wallet.fromSeed(walletData.seed, { algorithm });
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      if (method === 'dex') {
+        const offerTx = {
+          TransactionType: 'OfferCreate',
+          Account: accountProfile.account,
+          SourceTag: 161803,
+          TakerGets: '1',
+          TakerPays: { currency, issuer, value: new Decimal(trustlineBalance).toFixed(15) },
+          Flags: 655360
+        };
+        const preparedOffer = await client.autofill(offerTx);
+        const signedOffer = wallet.sign(preparedOffer);
+        const offerResult = await client.submitAndWait(signedOffer.tx_blob);
+        await client.disconnect();
+
+        if (offerResult.result.meta.TransactionResult === 'tesSUCCESS') {
+          setIsRemove(false);
+          setTrustlineBalance(0);
+          toast.success('Dust sold on DEX!', { id: toastId, description: `Tx: ${offerResult.result.hash.slice(0, 8)}...` });
+        } else {
+          toast.error('DEX sell failed', { id: toastId, description: offerResult.result.meta.TransactionResult });
+          setDustConfirm('issuer'); // Prompt for issuer burn
+        }
+      } else {
+        const issuerInfo = await client.request({ command: 'account_info', account: issuer });
+        const needsTag = issuerInfo.result.account_flags?.requireDestinationTag;
+        const tx = {
+          TransactionType: 'Payment',
+          Account: accountProfile.account,
+          Destination: issuer,
+          SourceTag: 161803,
+          Amount: { currency, issuer, value: new Decimal(trustlineBalance).toFixed(15) },
+          Flags: 131072
+        };
+        if (needsTag) tx.DestinationTag = 0;
+        const prepared = await client.autofill(tx);
+        const signed = wallet.sign(prepared);
+        const result = await client.submitAndWait(signed.tx_blob);
+        await client.disconnect();
+
+        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+          setIsRemove(false);
+          setTrustlineBalance(0);
+          toast.success('Dust burned!', { id: toastId, description: `Tx: ${result.result.hash.slice(0, 8)}...` });
+        } else {
+          toast.error('Burn failed', { id: toastId, description: result.result.meta.TransactionResult });
+        }
+      }
+    } catch (err) {
+      console.error('Dust clear error:', err);
+      toast.error('Error', { description: err.message?.slice(0, 50) || 'Unknown error' });
     }
   };
 
@@ -456,6 +521,7 @@ const TokenSummary = memo(({ token }) => {
           });
           console.log('[TrustCheck] found trustline:', tl);
           setIsRemove(!!tl);
+          setTrustlineBalance(tl ? Math.abs(parseFloat(tl.balance || tl.Balance?.value || 0)) : 0);
         }
       })
       .catch((err) => {
@@ -1156,6 +1222,61 @@ const TokenSummary = memo(({ token }) => {
               >
                 Full API Documentation
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dust Confirmation Modal */}
+      {dustConfirm && (
+        <div
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+            isDark ? 'bg-black/70' : 'bg-white/60'
+          )}
+          onClick={() => setDustConfirm(null)}
+        >
+          <div
+            className={cn(
+              'w-full max-w-sm rounded-2xl border-[1.5px] p-5',
+              isDark ? 'bg-black/90 border-white/10' : 'bg-white border-gray-200'
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={cn('text-[15px] font-semibold mb-2', isDark ? 'text-white' : 'text-gray-900')}>
+              {dustConfirm === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
+            </div>
+            <p className={cn('text-[12px] mb-4', isDark ? 'text-white/50' : 'text-gray-500')}>
+              {dustConfirm === 'dex'
+                ? 'This will create a sell order on the DEX to clear your tiny balance.'
+                : 'DEX sell failed. Send tokens back to issuer to burn them?'}
+            </p>
+            <div className={cn('rounded-lg p-2.5 mb-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+              <span className={cn('font-mono text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                {new Decimal(trustlineBalance).toFixed(15).replace(/0+$/, '').replace(/\.$/, '')} {name}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDustConfirm(null)}
+                className={cn(
+                  'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                  isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeDustClear(dustConfirm)}
+                className={cn(
+                  'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                  dustConfirm === 'dex'
+                    ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90'
+                    : 'bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90'
+                )}
+              >
+                {dustConfirm === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
+              </button>
             </div>
           </div>
         </div>

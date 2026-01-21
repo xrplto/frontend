@@ -207,7 +207,7 @@ export default function WalletPage() {
   };
 
   const [sendingDust, setSendingDust] = useState(null);
-  const [dustConfirm, setDustConfirm] = useState(null); // token to confirm
+  const [dustConfirm, setDustConfirm] = useState(null); // { token, step: 'dex' | 'issuer' }
   const [burnModal, setBurnModal] = useState(null); // token to burn
   const [tradeModal, setTradeModal] = useState(null); // token to trade
   const [tradeAmount, setTradeAmount] = useState('');
@@ -505,11 +505,11 @@ export default function WalletPage() {
     }
   };
 
-  const handleSendDustToIssuer = async (token) => {
-    if (!token.currency || !token.issuer || token.rawAmount === 0) return;
+  const executeDustClear = async (token, method) => {
+    if (!token?.currency || !token?.issuer || token.rawAmount === 0) return;
     setSendingDust(token.currency + token.issuer);
     setDustConfirm(null);
-    const toastId = toast.loading(`Clearing ${token.symbol} dust...`, { description: 'Connecting to XRPL' });
+    const toastId = toast.loading(`Clearing ${token.symbol} dust...`, { description: method === 'dex' ? 'Selling on DEX' : 'Sending to issuer' });
 
     try {
       let seed = null;
@@ -541,157 +541,71 @@ export default function WalletPage() {
         return;
       }
 
-      toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Checking issuer...' });
       const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
       const client = new Client('wss://xrplcluster.com');
       await client.connect();
 
-      // Check if issuer has depositAuth (requires preauthorization)
-      const issuerInfo = await client.request({ command: 'account_info', account: token.issuer });
-      const issuerFlags = issuerInfo.result.account_flags || {};
-      console.log('[Dust] Issuer flags:', issuerFlags);
-
-      // If issuer has depositAuth, try DEX sell then direct trustline removal
-      if (issuerFlags.depositAuth) {
-        console.log('[Dust] Issuer has depositAuth - trying DEX/TrustSet');
-        toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Trying DEX...' });
-
-        // tfImmediateOrCancel (131072) + tfSell (524288) = 655360
-        // Use a very low price to maximize fill chance
+      if (method === 'dex') {
         const offerTx = {
           TransactionType: 'OfferCreate',
           Account: address,
           SourceTag: 161803,
-          TakerGets: {
-            currency: token.currency,
-            issuer: token.issuer,
-            value: String(token.rawAmount)
-          },
-          TakerPays: '1', // Accept any amount (1 drop minimum)
+          TakerGets: '1',
+          TakerPays: { currency: token.currency, issuer: token.issuer, value: String(token.rawAmount) },
           Flags: 655360
         };
-
-        console.log('[Dust] DEX OfferCreate:', offerTx);
         const preparedOffer = await client.autofill(offerTx);
         const signedOffer = wallet.sign(preparedOffer);
         const offerResult = await client.submitAndWait(signedOffer.tx_blob);
-        const offerStatus = offerResult.result.meta.TransactionResult;
-        console.log('[Dust] DEX Result:', offerStatus);
-
         await client.disconnect();
 
-        if (offerStatus === 'tesSUCCESS') {
+        if (offerResult.result.meta.TransactionResult === 'tesSUCCESS') {
           const txHash = offerResult.result.hash;
           setTokens(prev => prev.map(t =>
-            t.currency === token.currency && t.issuer === token.issuer
-              ? { ...t, rawAmount: 0, amount: '0' }
-              : t
+            t.currency === token.currency && t.issuer === token.issuer ? { ...t, rawAmount: 0, amount: '0' } : t
           ));
           toast.success(`${token.symbol} dust sold on DEX`, {
             id: toastId,
             duration: 6000,
             description: <span>Balance cleared. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
           });
-          setSendingDust(null);
-          return;
+        } else {
+          toast.error('DEX sell failed', { id: toastId, description: offerResult.result.meta.TransactionResult });
+          setDustConfirm({ token, step: 'issuer' }); // Prompt for issuer burn
         }
-
-        // Last resort: try to remove trustline directly (tiny balance might be treated as 0)
-        console.log('[Dust] DEX failed, trying direct trustline removal');
-        toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Removing trustline...' });
-
-        const client2 = new Client('wss://xrplcluster.com');
-        await client2.connect();
-
-        // Check account's defaultRipple flag to determine correct NoRipple flag
-        const acctInfo = await client2.request({ command: 'account_info', account: address });
-        const acctFlags = acctInfo.result.account_flags || {};
-        const useSetNoRipple = !acctFlags.defaultRipple;
-
-        const trustSetTx = {
-          TransactionType: 'TrustSet',
+      } else {
+        const issuerInfo = await client.request({ command: 'account_info', account: token.issuer });
+        const needsTag = issuerInfo.result.account_flags?.requireDestinationTag;
+        const tx = {
+          TransactionType: 'Payment',
           Account: address,
           SourceTag: 161803,
-          LimitAmount: {
-            currency: token.currency,
-            issuer: token.issuer,
-            value: '0'
-          },
-          Flags: useSetNoRipple ? 131072 : 262144 // tfSetNoRipple or tfClearNoRipple
+          Destination: token.issuer,
+          Amount: { currency: token.currency, issuer: token.issuer, value: String(token.rawAmount) }
         };
+        if (needsTag) tx.DestinationTag = 0;
 
-        console.log('[Dust] TrustSet removal:', trustSetTx);
-        const preparedTrust = await client2.autofill(trustSetTx);
-        const signedTrust = wallet.sign(preparedTrust);
-        const trustResult = await client2.submitAndWait(signedTrust.tx_blob);
-        const trustStatus = trustResult.result.meta.TransactionResult;
-        console.log('[Dust] TrustSet Result:', trustStatus);
+        const prepared = await client.autofill(tx);
+        const signed = wallet.sign(prepared);
+        const result = await client.submitAndWait(signed.tx_blob);
+        await client.disconnect();
 
-        await client2.disconnect();
-
-        if (trustStatus === 'tesSUCCESS') {
-          const txHash = trustResult.result.hash;
-          setTokens(prev => prev.filter(t => !(t.currency === token.currency && t.issuer === token.issuer)));
-          toast.success(`${token.symbol} trustline removed`, {
+        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+          const txHash = result.result.hash;
+          setTokens(prev => prev.map(t =>
+            t.currency === token.currency && t.issuer === token.issuer ? { ...t, rawAmount: 0, amount: '0' } : t
+          ));
+          toast.success(`${token.symbol} dust burned`, {
             id: toastId,
             duration: 6000,
-            description: <span>Dust cleared. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
+            description: <span>Balance cleared. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
           });
         } else {
-          const tokenPath = token.slug || token.md5;
-          toast.error('Could not clear dust', {
-            id: toastId,
-            description: 'Balance too small to trade or remove.',
-            duration: 8000,
-            action: tokenPath ? { label: 'Trade', onClick: () => router.push(`/token/${tokenPath}`) } : undefined
-          });
+          toast.error('Burn failed', { id: toastId, description: result.result.meta.TransactionResult });
         }
-        setSendingDust(null);
-        return;
-      }
-
-      const needsTag = issuerFlags.requireDestinationTag;
-      console.log('[Dust] Destination:', token.issuer, 'needsTag:', needsTag);
-      toast.loading(`Clearing ${token.symbol} dust...`, { id: toastId, description: 'Sending to issuer' });
-
-      const tx = {
-        TransactionType: 'Payment',
-        Account: address,
-        SourceTag: 161803,
-        Destination: token.issuer,
-        Amount: {
-          currency: token.currency,
-          issuer: token.issuer,
-          value: String(token.rawAmount)
-        }
-      };
-      if (needsTag) tx.DestinationTag = 0;
-
-      console.log('[Dust] Transaction:', tx);
-      const prepared = await client.autofill(tx);
-      const signed = wallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
-      console.log('[Dust] Result:', result.result.meta.TransactionResult);
-      await client.disconnect();
-
-      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-        const txHash = result.result.hash;
-        // Update token balance to 0
-        setTokens(prev => prev.map(t =>
-          t.currency === token.currency && t.issuer === token.issuer
-            ? { ...t, rawAmount: 0, amount: '0' }
-            : t
-        ));
-        toast.success(`${token.symbol} dust cleared`, {
-          id: toastId,
-          duration: 6000,
-          description: <span>Balance is now 0. <a href={`/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-[#137DFE] hover:underline">View tx</a></span>
-        });
-      } else {
-        toast.error('Transaction failed', { id: toastId, description: result.result.meta.TransactionResult });
       }
     } catch (err) {
-      console.error('Send dust error:', err);
+      console.error('Dust clear error:', err);
       toast.error('Failed to clear dust', { id: toastId, description: err.message });
     } finally {
       setSendingDust(null);
@@ -2910,7 +2824,7 @@ export default function WalletPage() {
                                 {token.currency && token.issuer && <button onClick={() => { setTradeModal(token); setTradeAmount(''); setTradeDirection('sell'); }} className={cn("p-1.5 rounded-md transition-colors", isDark ? "text-white/30 hover:text-[#137DFE] hover:bg-[#137DFE]/10" : "text-gray-400 hover:text-[#137DFE] hover:bg-blue-50")} title="Trade"><ArrowRightLeft size={12} /></button>}
                                 {token.rawAmount > 0 && token.rawAmount < 0.000001 && token.currency && token.issuer ? (
                                   <button
-                                    onClick={() => setDustConfirm(token)}
+                                    onClick={() => setDustConfirm({ token, step: 'dex' })}
                                     disabled={sendingDust === token.currency + token.issuer}
                                     className={cn("flex items-center justify-center gap-1 w-[52px] py-1 rounded-md text-[10px] font-medium transition-all disabled:opacity-50", isDark ? "text-[#F6AF01] hover:bg-[#F6AF01]/10" : "text-amber-600 hover:bg-amber-50")}
                                     title="Clear dust"
@@ -5344,20 +5258,18 @@ export default function WalletPage() {
             isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
           )}>
             <div className="flex flex-col items-center text-center">
-              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4", isDark ? "bg-[#F6AF01]/10 border border-[#F6AF01]/20" : "bg-amber-50 border border-amber-200")}>
-                <Sparkles size={26} className="text-[#F6AF01]" />
+              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4", dustConfirm.step === 'dex' ? (isDark ? "bg-[#137DFE]/10 border border-[#137DFE]/20" : "bg-blue-50 border border-blue-200") : (isDark ? "bg-[#F6AF01]/10 border border-[#F6AF01]/20" : "bg-amber-50 border border-amber-200"))}>
+                {dustConfirm.step === 'dex' ? <ArrowRightLeft size={26} className="text-[#137DFE]" /> : <Sparkles size={26} className="text-[#F6AF01]" />}
               </div>
-              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>Clear Dust Balance</h3>
+              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>
+                {dustConfirm.step === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
+              </h3>
               <p className={cn("text-[12px] mb-3", isDark ? "text-white/40" : "text-gray-500")}>
-                Clear tiny balance to free up trustline
+                {dustConfirm.step === 'dex' ? 'Create a sell order to clear your tiny balance' : 'DEX sell failed. Send tokens back to issuer?'}
               </p>
               <div className={cn("w-full rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-                <p className={cn("font-mono text-[15px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{dustConfirm.amount} {dustConfirm.symbol}</p>
+                <p className={cn("font-mono text-[15px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{dustConfirm.token.amount} {dustConfirm.token.symbol}</p>
                 <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/30" : "text-gray-400")}>Value: &lt; 0.01 XRP</p>
-              </div>
-              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-2 text-left", isDark ? "bg-[#137DFE]/10 border border-[#137DFE]/20" : "bg-blue-50 border border-blue-100")}>
-                <AlertTriangle size={13} className="text-[#137DFE] mt-0.5 shrink-0" />
-                <p className={cn("text-[10px] leading-relaxed", isDark ? "text-[#137DFE]/80" : "text-blue-600")}>Regulated tokens (e.g. RLUSD) have authorized trustlines that cannot be removed even after clearing. ~0.2 XRP reserve may stay locked.</p>
               </div>
               <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
                 <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
@@ -5371,10 +5283,10 @@ export default function WalletPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleSendDustToIssuer(dustConfirm)}
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90 transition-colors"
+                  onClick={() => executeDustClear(dustConfirm.token, dustConfirm.step)}
+                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", dustConfirm.step === 'dex' ? "bg-[#137DFE] text-white hover:bg-[#137DFE]/90" : "bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90")}
                 >
-                  Clear Dust
+                  {dustConfirm.step === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
                 </button>
               </div>
             </div>

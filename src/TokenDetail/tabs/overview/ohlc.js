@@ -832,6 +832,25 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     });
 
+    const customPriceFormat = {
+      type: 'custom',
+      formatter: (price) => {
+        const s = SYMBOLS[refs.current.currency] || '';
+        if (price < 0.00000001) {
+          const str = price.toFixed(20);
+          const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+          const sub = '₀₁₂₃₄₅₆₇₈₉';
+          const sig = str.replace(/^0\.0+/, '').slice(0, 4);
+          return s + '0.0' + String(zeros).split('').map((d) => sub[+d]).join('') + sig;
+        }
+        if (price < 0.01) return s + price.toFixed(8);
+        if (price < 1) return s + price.toFixed(4);
+        if (price < 100) return s + price.toFixed(2);
+        return s + Math.round(price).toLocaleString();
+      },
+      minMove: 1e-12
+    };
+
     if (chartType === 'candles') {
       seriesRefs.current.candle = chart.addSeries(CandlestickSeries, {
         upColor: '#22c55e',
@@ -840,7 +859,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderDownColor: '#ef4444',
         wickUpColor: '#22c55e',
         wickDownColor: '#ef4444',
-        priceFormat: { type: 'price', minMove: 0.00000001, precision: 8 }
+        priceFormat: customPriceFormat
       });
     } else if (chartType === 'line') {
       seriesRefs.current.line = chart.addSeries(AreaSeries, {
@@ -850,7 +869,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         lineWidth: 2,
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
-        priceFormat: { type: 'price', minMove: 0.00000001, precision: 8 }
+        priceFormat: customPriceFormat
       });
     } else if (chartType === 'holders') {
       seriesRefs.current.line = chart.addSeries(AreaSeries, {
