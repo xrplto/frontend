@@ -19,6 +19,36 @@ const FILTER_TYPES = [
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
   const { openSnackbar, themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+
+  const BearIcon = () => (
+    <div className="relative w-14 h-14 mx-auto mb-4">
+      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      </div>
+      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      </div>
+      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className="absolute inset-0 rounded-full overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-200')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+          ))}
+        </div>
+        <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+        </div>
+        <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+        </div>
+        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
+        </div>
+      </div>
+    </div>
+  );
+
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,44 +180,9 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
               </p>
             </div>
           ) : transactions.length === 0 ? (
-            <div
-              className={cn(
-                'rounded-xl border-[1.5px] py-12 px-8 text-center',
-                isDark ? 'bg-black/20 border-white/[0.08]' : 'bg-white border-gray-200'
-              )}
-            >
-              <div className="relative w-14 h-14 mx-auto mb-4">
-                <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                  <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                </div>
-                <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                  <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                </div>
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                  <div className="absolute inset-0 rounded-full overflow-hidden">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                    ))}
-                  </div>
-                  <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                    <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                    <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                  </div>
-                  <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                    <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                    <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                  </div>
-                  <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                    <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                  </div>
-                </div>
-              </div>
-              <p
-                className={cn(
-                  'text-xs font-medium tracking-widest mb-1',
-                  isDark ? 'text-white/80' : 'text-gray-600'
-                )}
-              >
+            <div className={cn('rounded-xl border-[1.5px] py-12 px-8 text-center', isDark ? 'bg-black/20 border-white/[0.08]' : 'bg-white border-gray-200')}>
+              <BearIcon />
+              <p className={cn('text-xs font-medium tracking-widest mb-1', isDark ? 'text-white/80' : 'text-gray-600')}>
                 NO ACTIVITY
               </p>
               <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>

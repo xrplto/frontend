@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
 import {
@@ -37,7 +37,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { API_REFERENCE, getTotalEndpointCount, ApiButton } from 'src/components/ApiEndpointsModal';
 
-const ApiDocsPage = () => {
+const ApiDocsPage = ({ apiDocs, ogp }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [currentSection, setCurrentSection] = useState('overview');
@@ -57,6 +57,43 @@ const ApiDocsPage = () => {
     Advanced: true,
     Authentication: true
   });
+
+  // Dynamic data from API with fallbacks
+  const docs = {
+    version: apiDocs?.version || '1.0',
+    baseUrl: apiDocs?.baseUrl || 'https://api.xrpl.to/v1',
+    rateLimits: apiDocs?.keys?.rateLimits || [
+      { tier: 'No Key', rpm: '10', rpd: '500' },
+      { tier: 'Free', rpm: '10', rpd: '2,000' },
+      { tier: 'Basic', rpm: '100', rpd: '30,000' },
+      { tier: 'Pro', rpm: '400', rpd: '120,000' },
+      { tier: 'Enterprise', rpm: '1,000', rpd: '300,000' }
+    ],
+    tiers: apiDocs?.tiers || [
+      { tier: 'Free', monthly: '$0', yearly: '$0', credits: '1M', rps: '10' },
+      { tier: 'Developer', monthly: '$49', yearly: '$490', credits: '10M', rps: '50' },
+      { tier: 'Business', monthly: '$499', yearly: '$4,990', credits: '100M', rps: '200' },
+      { tier: 'Professional', monthly: '$999', yearly: '$9,990', credits: '200M', rps: '500' }
+    ],
+    creditPacks: apiDocs?.keys?.creditPacks || [
+      { pack: 'starter', price: '$5', credits: '1M' },
+      { pack: 'standard', price: '$20', credits: '5M' },
+      { pack: 'bulk', price: '$75', credits: '25M' },
+      { pack: 'mega', price: '$250', credits: '100M' }
+    ],
+    caching: apiDocs?.reference?.caching || {
+      default: '5 seconds',
+      platformStatus: '30 seconds',
+      news: '5 minutes',
+      cumulativeStats: '10 minutes'
+    },
+    patterns: apiDocs?.reference?.patterns || {
+      account: '^r[1-9A-HJ-NP-Za-km-z]{24,34}$',
+      nftokenId: '^[A-Fa-f0-9]{64}$',
+      txHash: '^[A-Fa-f0-9]{64}$',
+      md5: '^[a-f0-9]{32}$'
+    }
+  };
 
   const sidebarGroups = [
     {
@@ -101,8 +138,6 @@ const ApiDocsPage = () => {
       ]
     }
   ];
-
-  const sections = sidebarGroups.flatMap((g) => g.items);
 
   const toggleGroup = (name) => {
     setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -525,7 +560,12 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
             {/* Hero */}
             <div>
               <p className="text-primary text-[13px] font-medium mb-2">Get Started</p>
-              <h1 className="text-3xl font-normal mb-3">Welcome to XRPL.to API</h1>
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-3xl font-normal">Welcome to XRPL.to API</h1>
+                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-primary/10 text-primary">
+                  v{docs.version}
+                </span>
+              </div>
               <p
                 className={cn(
                   'text-[15px] leading-relaxed',
@@ -557,7 +597,7 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                     : 'bg-[rgba(59,130,246,0.02)] border border-[rgba(59,130,246,0.15)]'
                 )}
               >
-                https://api.xrpl.to
+                {docs.baseUrl}
               </div>
             </div>
 
@@ -2534,30 +2574,12 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 Regex Patterns
               </div>
               <div className="space-y-2 text-[12px] font-mono">
-                <div>
-                  <span className="text-primary">Account:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    ^r[1-9A-HJ-NP-Za-km-z]{'{24,34}'}$
-                  </span>
-                </div>
-                <div>
-                  <span className="text-primary">NFTokenID:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    ^[A-Fa-f0-9]{'{64}'}$
-                  </span>
-                </div>
-                <div>
-                  <span className="text-primary">txHash:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    ^[A-Fa-f0-9]{'{64}'}$
-                  </span>
-                </div>
-                <div>
-                  <span className="text-primary">md5:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    ^[a-f0-9]{'{32}'}$
-                  </span>
-                </div>
+                {Object.entries(docs.patterns).map(([key, pattern]) => (
+                  <div key={key}>
+                    <span className="text-primary">{key}:</span>{' '}
+                    <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{pattern}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -2578,28 +2600,12 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 Caching
               </div>
               <div className="space-y-2 text-[12px]">
-                <div>
-                  <span className="text-primary font-medium">Default:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    Live (5 seconds)
-                  </span>
-                </div>
-                <div>
-                  <span className="text-primary font-medium">platformStatus:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>30 seconds</span>
-                </div>
-                <div>
-                  <span className="text-primary font-medium">news:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    Live (5 minutes)
-                  </span>
-                </div>
-                <div>
-                  <span className="text-primary font-medium">cumulativeStats:</span>{' '}
-                  <span className={isDark ? 'text-white/60' : 'text-gray-600'}>
-                    Live (10 minutes)
-                  </span>
-                </div>
+                {Object.entries(docs.caching).map(([key, value]) => (
+                  <div key={key}>
+                    <span className="text-primary font-medium">{key}:</span>{' '}
+                    <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -2827,13 +2833,7 @@ const { apiKey, keyPrefix } = await response.json();
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { tier: 'No Key', rpm: '10', rpd: '500' },
-                      { tier: 'Free', rpm: '10', rpd: '2,000' },
-                      { tier: 'Basic', rpm: '100', rpd: '30,000' },
-                      { tier: 'Pro', rpm: '400', rpd: '120,000' },
-                      { tier: 'Enterprise', rpm: '1,000', rpd: '300,000' }
-                    ].map((row) => (
+                    {docs.rateLimits.map((row) => (
                       <tr
                         key={row.tier}
                         className={
@@ -2944,30 +2944,7 @@ const { apiKey, keyPrefix } = await response.json();
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { tier: 'Free', monthly: '$0', yearly: '$0', credits: '1M', rps: '10' },
-                      {
-                        tier: 'Developer',
-                        monthly: '$49',
-                        yearly: '$490',
-                        credits: '10M',
-                        rps: '50'
-                      },
-                      {
-                        tier: 'Business',
-                        monthly: '$499',
-                        yearly: '$4,990',
-                        credits: '100M',
-                        rps: '200'
-                      },
-                      {
-                        tier: 'Professional',
-                        monthly: '$999',
-                        yearly: '$9,990',
-                        credits: '200M',
-                        rps: '500'
-                      }
-                    ].map((row) => (
+                    {docs.tiers.map((row) => (
                       <tr
                         key={row.tier}
                         className={
@@ -3043,12 +3020,7 @@ const { apiKey, keyPrefix } = await response.json();
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { pack: 'starter', price: '$5', credits: '1M' },
-                      { pack: 'standard', price: '$20', credits: '5M' },
-                      { pack: 'bulk', price: '$75', credits: '25M' },
-                      { pack: 'mega', price: '$250', credits: '100M' }
-                    ].map((row) => (
+                    {docs.creditPacks.map((row) => (
                       <tr
                         key={row.pack}
                         className={
@@ -3459,11 +3431,19 @@ GET /v1/keys/:wallet/subscription
   return (
     <div className="flex-1">
       <Head>
-        <title>XRPL.to API Documentation</title>
+        <title>{ogp?.title || 'XRPL.to API Documentation'}</title>
         <meta
           name="description"
-          content="Complete API documentation for XRPL.to - XRP Ledger token data and analytics"
+          content={ogp?.desc || 'Complete API documentation for XRPL.to - XRP Ledger token data and analytics'}
         />
+        {ogp?.canonical && <link rel="canonical" href={ogp.canonical} />}
+        <meta property="og:title" content={ogp?.title || 'XRPL.to API Documentation'} />
+        <meta property="og:description" content={ogp?.desc || 'Complete API documentation for XRPL.to - XRP Ledger token data and analytics'} />
+        <meta property="og:url" content={ogp?.url || 'https://xrpl.to/docs'} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={ogp?.title || 'XRPL.to API Documentation'} />
+        <meta name="twitter:description" content={ogp?.desc || 'Complete API documentation for XRPL.to - XRP Ledger token data and analytics'} />
       </Head>
 
       <Header />
@@ -3857,3 +3837,30 @@ GET /v1/keys/:wallet/subscription
 };
 
 export default ApiDocsPage;
+
+export async function getStaticProps() {
+  const BASE_URL = 'https://api.xrpl.to/v1';
+  let apiDocs = null;
+
+  try {
+    const res = await axios.get(`${BASE_URL}/docs`);
+    apiDocs = res.data;
+  } catch (e) {
+    console.error('Failed to fetch API docs:', e.message);
+  }
+
+  const ogp = {
+    canonical: 'https://xrpl.to/docs',
+    title: 'API Documentation - XRPL.to',
+    desc: 'Complete API reference for XRPL.to - Access XRP Ledger token data, trading, NFT, and analytics endpoints.',
+    url: 'https://xrpl.to/docs'
+  };
+
+  return {
+    props: {
+      apiDocs,
+      ogp
+    },
+    revalidate: 300
+  };
+}

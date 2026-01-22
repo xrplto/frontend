@@ -60,6 +60,36 @@ export default function WalletPage() {
   const { themeName, accountProfile, setOpenWalletModal, activeFiatCurrency } =
     useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+
+  const BearIcon = () => (
+    <div className="relative w-14 h-14 mx-auto mb-3">
+      <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      </div>
+      <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+      </div>
+      <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-300')}>
+        <div className="absolute inset-0 rounded-full overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-200')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
+          ))}
+        </div>
+        <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+        </div>
+        <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
+          <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+          <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-500')} />
+        </div>
+        <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+          <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-400')} />
+        </div>
+      </div>
+    </div>
+  );
+
   const metrics = useSelector(selectMetrics);
   const metricsRate =
     metrics?.[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics?.CNY : null) || 1;
@@ -2724,49 +2754,12 @@ export default function WalletPage() {
 
                       {/* Token Rows */}
                       {filteredTokens.length === 0 ? (
-                        <div
-                          className={cn(
-                            'p-6 text-center',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          <div className="relative w-14 h-14 mx-auto mb-3">
-                            <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                              <div className="absolute inset-0 rounded-full overflow-hidden">
-                                {[...Array(5)].map((_, i) => (
-                                  <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                                ))}
-                              </div>
-                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                              </div>
-                            </div>
-                          </div>
-                          <p
-                            className={cn(
-                              'text-[10px] font-medium tracking-wider mb-1',
-                              isDark ? 'text-white/60' : 'text-gray-500'
-                            )}
-                          >
+                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <BearIcon />
+                          <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                             NO TOKENS FOUND
                           </p>
-                          <a href="/" className="text-[9px] text-[#137DFE] hover:underline">
-                            Browse tokens
-                          </a>
+                          <a href="/" className="text-[9px] text-[#137DFE] hover:underline">Browse tokens</a>
                         </div>
                       ) : (
                         <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
@@ -2975,44 +2968,9 @@ export default function WalletPage() {
                         </span>
                       </div>
                       {tokenOffers.length === 0 ? (
-                        <div
-                          className={cn(
-                            'p-6 text-center',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          <div className="relative w-14 h-14 mx-auto mb-3">
-                            <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                              <div className="absolute inset-0 rounded-full overflow-hidden">
-                                {[...Array(5)].map((_, i) => (
-                                  <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                                ))}
-                              </div>
-                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                              </div>
-                            </div>
-                          </div>
-                          <p
-                            className={cn(
-                              'text-[10px] font-medium tracking-wider',
-                              isDark ? 'text-white/60' : 'text-gray-500'
-                            )}
-                          >
+                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <BearIcon />
+                          <p className={cn('text-[10px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>
                             NO OPEN DEX OFFERS
                           </p>
                         </div>
@@ -3107,44 +3065,9 @@ export default function WalletPage() {
                         </span>
                       </div>
                       {nftOffers.length === 0 ? (
-                        <div
-                          className={cn(
-                            'p-6 text-center',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          <div className="relative w-14 h-14 mx-auto mb-3">
-                            <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                              <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                              <div className="absolute inset-0 rounded-full overflow-hidden">
-                                {[...Array(5)].map((_, i) => (
-                                  <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                                ))}
-                              </div>
-                              <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                              </div>
-                            </div>
-                          </div>
-                          <p
-                            className={cn(
-                              'text-[10px] font-medium tracking-wider',
-                              isDark ? 'text-white/60' : 'text-gray-500'
-                            )}
-                          >
+                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <BearIcon />
+                          <p className={cn('text-[10px] font-medium tracking-wider', isDark ? 'text-white/60' : 'text-gray-500')}>
                             NO NFT OFFERS
                           </p>
                         </div>
@@ -3904,46 +3827,9 @@ export default function WalletPage() {
                     </button>
                   </div>
                   {withdrawals.length === 0 ? (
-                    <div
-                      className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}
-                    >
-                      <div className="relative w-14 h-14 mx-auto mb-3">
-                        {/* Ears */}
-                        <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                          <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                        </div>
-                        <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                          <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                        </div>
-                        {/* Face */}
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                          {/* Glitch lines */}
-                          <div className="absolute inset-0 rounded-full overflow-hidden">
-                            {[...Array(5)].map((_, i) => (
-                              <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                            ))}
-                          </div>
-                          {/* X Eyes */}
-                          <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                            <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                            <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                          </div>
-                          <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                            <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                            <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                          </div>
-                          {/* Muzzle */}
-                          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                            <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                          </div>
-                        </div>
-                      </div>
-                      <p
-                        className={cn(
-                          'text-[10px] font-medium tracking-wider mb-1',
-                          isDark ? 'text-white/60' : 'text-gray-500'
-                        )}
-                      >
+                    <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                      <BearIcon />
+                      <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                         NO SAVED ADDRESSES
                       </p>
                       <p className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
@@ -4386,54 +4272,12 @@ export default function WalletPage() {
                         Loading NFTs...
                       </div>
                     ) : collectionNfts.length === 0 ? (
-                      <div
-                        className={cn(
-                          'rounded-xl py-12 px-8 text-center',
-                          isDark
-                            ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                            : 'bg-white border border-gray-200'
-                        )}
-                      >
-                        <div className="relative w-14 h-14 mx-auto mb-3">
-                          <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                            <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                          </div>
-                          <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                          </div>
-                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                            <div className="absolute inset-0 rounded-full overflow-hidden">
-                              {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                              ))}
-                            </div>
-                            <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                              <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                              <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                            </div>
-                            <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                              <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                              <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                            </div>
-                            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                              <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                            </div>
-                          </div>
-                        </div>
-                        <p
-                          className={cn(
-                            'text-xs font-medium tracking-widest mb-1',
-                            isDark ? 'text-white/60' : 'text-gray-500'
-                          )}
-                        >
+                      <div className={cn('rounded-xl py-12 px-8 text-center', isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <BearIcon />
+                        <p className={cn('text-xs font-medium tracking-widest mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                           NO NFTS FOUND
                         </p>
-                        <a
-                          href="/nfts"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-[#137DFE] hover:underline"
-                        >
+                        <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#137DFE] hover:underline">
                           Browse collections
                         </a>
                       </div>
@@ -4524,57 +4368,15 @@ export default function WalletPage() {
                     Loading collections...
                   </div>
                 ) : collections.length === 0 ? (
-                  <div
-                    className={cn(
-                      'rounded-xl p-12 text-center',
-                      isDark
-                        ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                        : 'bg-white border border-gray-200'
-                    )}
-                  >
-                    <div className="relative w-14 h-14 mx-auto mb-3">
-                      <div className="absolute -top-1 left-0 w-5 h-5 rounded-full bg-white/15">
-                        <div className="absolute top-1 left-1 w-3 h-3 rounded-full bg-white/10" />
-                      </div>
-                      <div className="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white/15">
-                        <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-white/10" />
-                      </div>
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full bg-white/15">
-                        <div className="absolute inset-0 rounded-full overflow-hidden">
-                          {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                          ))}
-                        </div>
-                        <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                          <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                          <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                        </div>
-                        <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                          <div className="absolute w-2.5 h-[2px] bg-white/40 rotate-45" />
-                          <div className="absolute w-2.5 h-[2px] bg-white/40 -rotate-45" />
-                        </div>
-                        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full bg-white/10">
-                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full bg-white/25" />
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      className={cn(
-                        'text-[10px] font-medium tracking-wider mb-1',
-                        isDark ? 'text-white/60' : 'text-gray-500'
-                      )}
-                    >
+                  <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <BearIcon />
+                    <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>
                       NO NFTS FOUND
                     </p>
                     <p className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-400')}>
                       NFTs you own will appear here
                     </p>
-                    <a
-                      href="/nfts"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[9px] text-[#137DFE] hover:underline mt-2 inline-block"
-                    >
+                    <a href="/nfts" target="_blank" rel="noopener noreferrer" className="text-[9px] text-[#137DFE] hover:underline mt-2 inline-block">
                       Browse collections
                     </a>
                   </div>
