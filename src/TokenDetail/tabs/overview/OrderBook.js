@@ -20,8 +20,6 @@ const BASE_URL = 'https://api.xrpl.to/v1';
 const fetchInFlight = new Map();
 
 const Container = styled.div`
-  border-radius: 12px;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb')};
   overflow: hidden;
   height: 100%;
   display: flex;

@@ -2250,7 +2250,7 @@ const TradingHistory = ({
   const previousTradesRef = useRef(new Set());
   const wsRef = useRef(null);
   const wsPingRef = useRef(null);
-  const limit = isMobile ? 10 : 20;
+  const limit = isMobile ? 10 : 33;
 
   // Cursor-based pagination state
   const [cursor, setCursor] = useState(null);

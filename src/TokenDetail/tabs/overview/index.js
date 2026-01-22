@@ -46,6 +46,7 @@ const Overview = memo(
 
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
+    const [sidePanel, setSidePanel] = useState('orderbook'); // 'orderbook' | 'trending'
     const [pairs, setPairs] = useState([]);
 
     // Markdown parser removed for build simplicity
@@ -189,9 +190,25 @@ const Overview = memo(
                 <h2 className="sr-only">Price Chart</h2>
                 <PriceChart token={token} />
               </section>
-              <section aria-label="Order Book" className="w-[280px] flex-shrink-0 hidden lg:block h-[640px]">
-                <h2 className="sr-only">Order Book</h2>
-                <OrderBook token={token} />
+              <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[640px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
+                <div className={`flex ${isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]'}`}>
+                  {['orderbook', 'trending'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSidePanel(tab)}
+                      className={`flex-1 py-2.5 text-[11px] font-medium transition-colors ${
+                        sidePanel === tab
+                          ? `text-[#137DFE] ${isDark ? 'bg-white/[0.04]' : 'bg-black/[0.04]'}`
+                          : isDark ? 'text-white/50 hover:text-white/70' : 'text-black/50 hover:text-black/70'
+                      }`}
+                    >
+                      {tab === 'orderbook' ? 'Order Book' : 'Trending'}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  {sidePanel === 'orderbook' ? <OrderBook token={token} /> : <TrendingTokens token={token} />}
+                </div>
               </section>
             </div>
             <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
@@ -252,9 +269,6 @@ const Overview = memo(
             />
           </aside>
         </div>
-
-        {/* Full-width trending section */}
-        <TrendingTokens token={token} />
       </div>
     );
   }
