@@ -146,6 +146,38 @@ const SpreadBar = styled.div`
   flex-shrink: 0;
 `;
 
+const BearEmptyState = ({ isDark, message }) => (
+  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', margin: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
+        <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+          <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+        </div>
+        <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+          <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+        </div>
+        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+          {[0,1,2,3,4].map(i => (
+            <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+          ))}
+          <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          </div>
+          <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          </div>
+          <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+            <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+          </div>
+        </div>
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', textAlign: 'center' }}>{message}</span>
+    </div>
+  </div>
+);
+
 const OrderBook = ({ token, onPriceClick }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -243,7 +275,7 @@ const OrderBook = ({ token, onPriceClick }) => {
 
   // WebSocket for real-time orderbook updates
   useEffect(() => {
-    if (!effectiveToken?.issuer || !effectiveToken?.currency) {
+    if (!effectiveToken?.issuer || !effectiveToken?.currency || effectiveToken?.tokenType === 'mpt') {
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
@@ -290,7 +322,7 @@ const OrderBook = ({ token, onPriceClick }) => {
   useEffect(() => {
     mountedRef.current = true;
     // Don't fetch if no token or WebSocket is connected
-    if (!tokenMd5 || !effectiveToken?.issuer || wsConnected) return;
+    if (!tokenMd5 || !effectiveToken?.issuer || !effectiveToken?.currency || effectiveToken?.tokenType === 'mpt' || wsConnected) return;
 
     const pairKey = `ob2-${tokenMd5}`;
 
@@ -455,8 +487,14 @@ const OrderBook = ({ token, onPriceClick }) => {
     }
   }, [asks]);
 
+  const isMPT = token?.tokenType === 'mpt';
+
+  if (isMPT) {
+    return <BearEmptyState isDark={isDark} message="MPT tokens don't support orderbook yet" />;
+  }
+
   if (!bids.length && !asks.length) {
-    return null;
+    return <BearEmptyState isDark={isDark} message="No orderbook data" />;
   }
 
   const displayToken = effectiveToken || token;

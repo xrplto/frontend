@@ -28,7 +28,10 @@ import {
   Wrench,
   Key,
   CreditCard,
-  List
+  List,
+  TrendingUp,
+  ArrowLeftRight,
+  BadgeCheck
 } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
@@ -60,20 +63,13 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 
   // Dynamic data from API with fallbacks
   const docs = {
-    version: apiDocs?.version || '1.0',
+    version: apiDocs?.version || '2.0',
     baseUrl: apiDocs?.baseUrl || 'https://api.xrpl.to/v1',
-    rateLimits: apiDocs?.keys?.rateLimits || [
-      { tier: 'No Key', rpm: '10', rpd: '500' },
-      { tier: 'Free', rpm: '10', rpd: '2,000' },
-      { tier: 'Basic', rpm: '100', rpd: '30,000' },
-      { tier: 'Pro', rpm: '400', rpd: '120,000' },
-      { tier: 'Enterprise', rpm: '1,000', rpd: '300,000' }
-    ],
     tiers: apiDocs?.tiers || [
-      { tier: 'Free', monthly: '$0', yearly: '$0', credits: '1M', rps: '10' },
-      { tier: 'Developer', monthly: '$49', yearly: '$490', credits: '10M', rps: '50' },
-      { tier: 'Business', monthly: '$499', yearly: '$4,990', credits: '100M', rps: '200' },
-      { tier: 'Professional', monthly: '$999', yearly: '$9,990', credits: '200M', rps: '500' }
+      { name: 'Free', price: '$0/mo', credits: '1M', rate: '10 req/sec' },
+      { name: 'Developer', price: '$49/mo', credits: '10M', rate: '50 req/sec' },
+      { name: 'Business', price: '$499/mo', credits: '100M', rate: '200 req/sec' },
+      { name: 'Professional', price: '$999/mo', credits: '200M', rate: '500 req/sec' }
     ],
     creditPacks: apiDocs?.keys?.creditPacks || [
       { pack: 'starter', price: '$5', credits: '1M' },
@@ -92,7 +88,26 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       nftokenId: '^[A-Fa-f0-9]{64}$',
       txHash: '^[A-Fa-f0-9]{64}$',
       md5: '^[a-f0-9]{32}$'
-    }
+    },
+    verify: apiDocs?.verify || [
+      { method: 'GET', path: '/verify/pricing', desc: 'Get verification tier pricing' },
+      { method: 'POST', path: '/verify/request', desc: 'Submit verification request' },
+      { method: 'POST', path: '/verify/confirm', desc: 'Confirm payment via tx hash' }
+    ],
+    boost: apiDocs?.boost || [
+      { method: 'GET', path: '/boost/quote/{md5}', desc: 'Get quote for token ranking boost' },
+      { method: 'POST', path: '/boost/purchase', desc: 'Create payment request for boost' },
+      { method: 'GET', path: '/boost/verify/{invoiceId}', desc: 'Verify payment and activate boost' },
+      { method: 'GET', path: '/boost/active', desc: 'List currently boosted tokens' }
+    ],
+    bridge: apiDocs?.bridge || [
+      { method: 'GET', path: '/bridge/currencies', desc: 'List supported exchange currencies' },
+      { method: 'GET', path: '/bridge/estimate', desc: 'Calculate exchange rate' },
+      { method: 'GET', path: '/bridge/min-amount', desc: 'Get minimum exchange amount' },
+      { method: 'POST', path: '/bridge/create', desc: 'Initiate exchange transaction' },
+      { method: 'GET', path: '/bridge/status', desc: 'Query exchange status' },
+      { method: 'GET', path: '/bridge/validate-address', desc: 'Verify destination address' }
+    ]
   };
 
   const sidebarGroups = [
@@ -134,6 +149,9 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
         { id: 'xrpl', title: 'XRPL Node', icon: Server },
         { id: 'analytics', title: 'Analytics', icon: Database },
         { id: 'launch', title: 'Token Launch', icon: Rocket },
+        { id: 'bridge', title: 'Bridge', icon: ArrowLeftRight },
+        { id: 'verify', title: 'Verification', icon: BadgeCheck },
+        { id: 'boost', title: 'Boost', icon: TrendingUp },
         { id: 'tools', title: 'Tools', icon: Wrench }
       ]
     }
@@ -159,8 +177,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     ],
     'api-keys': [
       { id: 'create-key', label: 'Create API Key' },
-      { id: 'use-key', label: 'Using API Keys' },
-      { id: 'rate-limits-keys', label: 'Rate Limits' }
+      { id: 'use-key', label: 'Using API Keys' }
     ],
     subscriptions: [
       { id: 'pricing', label: 'Pricing' },
@@ -2446,6 +2463,105 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
           </div>
         );
 
+      case 'bridge':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">Bridge</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Cross-chain currency exchange endpoints for converting between XRP and other currencies.
+            </p>
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div className="space-y-2 text-[13px]">
+                {docs.bridge.map((ep) => (
+                  <div key={ep.path} className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        ep.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {ep.method}
+                    </span>
+                    <code className="font-mono text-[12px]">/v1{ep.path}</code>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'verify':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">Verification</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Request and manage verification badges for tokens and NFT collections.
+            </p>
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div className="space-y-2 text-[13px]">
+                {docs.verify.map((ep) => (
+                  <div key={ep.path} className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        ep.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {ep.method}
+                    </span>
+                    <code className="font-mono text-[12px]">/v1{ep.path}</code>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'boost':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-normal text-primary">Boost</h2>
+            <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+              Boost token visibility and ranking with promotional placements.
+            </p>
+            <div
+              className={cn(
+                'rounded-xl border-[1.5px] p-5',
+                isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
+              )}
+            >
+              <div className="space-y-2 text-[13px]">
+                {docs.boost.map((ep) => (
+                  <div key={ep.path} className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-[10px] font-medium rounded',
+                        ep.method === 'GET' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                      )}
+                    >
+                      {ep.method}
+                    </span>
+                    <code className="font-mono text-[12px]">/v1{ep.path}</code>
+                    <span className={isDark ? 'text-white/40' : 'text-gray-500'}>- {ep.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
       case 'reference':
         return (
           <div className="space-y-6">
@@ -2793,75 +2909,6 @@ const { apiKey, keyPrefix } = await response.json();
               </div>
             </div>
 
-            <div id="rate-limits-keys" className="space-y-4">
-              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                Rate Limits
-              </h3>
-              <div
-                className={cn(
-                  'rounded-xl border-[1.5px] overflow-hidden',
-                  isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-[rgba(59,130,246,0.15)]'
-                )}
-              >
-                <table className="w-full text-[13px]">
-                  <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
-                    <tr>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Tier
-                      </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Requests/min
-                      </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Requests/day
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {docs.rateLimits.map((row) => (
-                      <tr
-                        key={row.tier}
-                        className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
-                        }
-                      >
-                        <td
-                          className={cn(
-                            'px-4 py-3 font-medium',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
-                          {row.tier}
-                        </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                          {row.rpm}
-                        </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                          {row.rpd}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         );
 
@@ -2901,77 +2948,37 @@ const { apiKey, keyPrefix } = await response.json();
                 <table className="w-full text-[13px]">
                   <thead className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
                     <tr>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
                         Tier
                       </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Monthly
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Price
                       </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Yearly
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Credits
                       </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Credits/mo
-                      </th>
-                      <th
-                        className={cn(
-                          'text-left px-4 py-3 font-medium',
-                          isDark ? 'text-white/60' : 'text-gray-600'
-                        )}
-                      >
-                        Req/sec
+                      <th className={cn('text-left px-4 py-3 font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Rate Limit
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {docs.tiers.map((row) => (
                       <tr
-                        key={row.tier}
-                        className={
-                          isDark
-                            ? 'border-t border-[rgba(59,130,246,0.1)]'
-                            : 'border-t border-[rgba(59,130,246,0.15)]'
-                        }
+                        key={row.name}
+                        className={isDark ? 'border-t border-[rgba(59,130,246,0.1)]' : 'border-t border-[rgba(59,130,246,0.15)]'}
                       >
-                        <td
-                          className={cn(
-                            'px-4 py-3 font-medium',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
-                          {row.tier}
+                        <td className={cn('px-4 py-3 font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                          {row.name}
                         </td>
                         <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                          {row.monthly}
-                        </td>
-                        <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                          {row.yearly}
+                          {row.price}
                         </td>
                         <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
                           {row.credits}
                         </td>
                         <td className={cn('px-4 py-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                          {row.rps}
+                          {row.rate}
                         </td>
                       </tr>
                     ))}
@@ -3516,13 +3523,15 @@ GET /v1/keys/:wallet/subscription
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setCurrentSection('tokens');
+                    setCurrentSection('endpoint-reference');
                   }}
                   className={cn(
                     'flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]',
-                    isDark
-                      ? 'text-white/70 hover:text-white hover:bg-white/5'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    currentSection === 'endpoint-reference'
+                      ? 'text-primary bg-primary/10'
+                      : isDark
+                        ? 'text-white/70 hover:text-white hover:bg-white/5'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
                   <Code size={14} className="opacity-60" />

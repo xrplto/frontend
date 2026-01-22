@@ -5,6 +5,39 @@ import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lu
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
+const BearEmptyState = ({ isDark, title, subtitle }) => (
+  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
+      <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+        ))}
+        <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        </div>
+        <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        </div>
+        <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+        </div>
+      </div>
+    </div>
+      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: 4 }}>{title}</span>
+      <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{subtitle}</span>
+    </div>
+  </div>
+);
+
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
   if (currency === 'XRP') {
@@ -265,23 +298,11 @@ const RichList = ({ token }) => {
             No results for "{searchTerm}"
           </div>
         )}
-        <div
-          className={cn(
-            'rounded-xl border-[1.5px] border-dashed py-12 text-center',
-            isDark ? 'border-white/15 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
-          )}
-        >
-          <h3
-            className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}
-          >
-            {searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
-          </h3>
-          <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>
-            {searchTerm
-              ? 'Try a different address'
-              : 'Rich list data will appear here when available'}
-          </p>
-        </div>
+        <BearEmptyState
+          isDark={isDark}
+          title={searchTerm ? 'No Matching Holders' : 'No Holder Data Available'}
+          subtitle={searchTerm ? 'Try a different address' : 'Rich list data will appear here when available'}
+        />
       </div>
     );
   }

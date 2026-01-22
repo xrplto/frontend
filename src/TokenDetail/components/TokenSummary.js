@@ -228,11 +228,20 @@ const TokenSummary = memo(({ token }) => {
     creator,
     trustlines,
     AMM,
-    supply
+    supply,
+    tokenType,
+    mptIssuanceID,
+    metadata
   } = token;
+
+  const isMPT = tokenType === 'mpt';
 
   // Trustline handler
   const handleSetTrust = async () => {
+    if (isMPT) {
+      toast.info('MPT tokens do not require trustlines');
+      return;
+    }
     if (!accountProfile?.account) {
       setOpenWalletModal(true);
       return;
@@ -876,7 +885,8 @@ const TokenSummary = memo(({ token }) => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={handleSetTrust}
-            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
+            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT}
+            title={isMPT ? 'MPT tokens do not require trustlines' : undefined}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
               isRemove
@@ -886,7 +896,7 @@ const TokenSummary = memo(({ token }) => {
                 : isDark
                   ? 'text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
                   : 'text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300',
-              CURRENCY_ISSUERS?.XRP_MD5 === md5 && 'opacity-40 cursor-not-allowed'
+              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT) && 'opacity-40 cursor-not-allowed'
             )}
           >
             {isRemove ? (
@@ -1019,7 +1029,9 @@ const TokenSummary = memo(({ token }) => {
               <div className="p-3 space-y-1">
                 {[
                   { label: 'Issuer', value: issuer },
-                  { label: 'Currency', value: currency },
+                  ...(isMPT
+                    ? [{ label: 'MPT Issuance ID', value: mptIssuanceID }]
+                    : [{ label: 'Currency', value: currency }]),
                   ...(AMM ? [{ label: 'AMM', value: AMM }] : []),
                   ...(creator ? [{ label: 'Creator', value: creator }] : []),
                   { label: 'MD5', value: md5 }

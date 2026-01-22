@@ -52,6 +52,39 @@ const Spinner = styled(Loader2)`
   }
 `;
 
+const BearEmptyState = ({ isDark, title, subtitle }) => (
+  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
+      <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+        ))}
+        <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        </div>
+        <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        </div>
+        <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+        </div>
+      </div>
+    </div>
+      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: 4 }}>{title}</span>
+      <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{subtitle}</span>
+    </div>
+  </div>
+);
+
 // Mini Sparkline SVG Component for TVL trends
 const MiniSparkline = memo(
   ({ data, width = 60, height = 24, color = '#3b82f6', isDark = false }) => {
@@ -1401,7 +1434,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     }
   `;
 
-  const tokenCurrency = token ? decodeCurrency(token.currency) : 'TOKEN';
+  const tokenCurrency = token ? (token.currency ? decodeCurrency(token.currency) : token.name || 'MPT') : 'TOKEN';
 
   // Empty state when not connected
   const notConnectedState = (
@@ -2285,7 +2318,7 @@ const TradingHistory = ({
 
   const handleTabChange = async (event, newValue) => {
     setTabValue(newValue);
-    if (newValue === 1 && token && ammPools.length === 0) {
+    if (newValue === 1 && token && token.currency && ammPools.length === 0) {
       setAmmLoading(true);
       try {
         const res = await fetch(
@@ -3323,28 +3356,11 @@ const TradingHistory = ({
   }
 
   const emptyState = (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: '24px',
-        backgroundColor: 'transparent',
-        borderRadius: '12px',
-        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`
-      }}
-    >
-      <span style={{ color: 'inherit' }}>
-        {historyType === 'liquidity'
-          ? 'No Liquidity Events'
-          : historyType === 'all'
-            ? 'No Activity'
-            : 'No Recent Trades'}
-      </span>
-      <span style={{ color: 'inherit' }}>
-        {historyType === 'liquidity'
-          ? 'AMM liquidity events will appear here'
-          : 'Trading activity will appear here when available'}
-      </span>
-    </div>
+    <BearEmptyState
+      isDark={isDark}
+      title={historyType === 'liquidity' ? 'No Liquidity Events' : historyType === 'all' ? 'No Activity' : 'No Recent Trades'}
+      subtitle={historyType === 'liquidity' ? 'AMM liquidity events will appear here' : 'Trading activity will appear here when available'}
+    />
   );
 
   return (
@@ -3914,41 +3930,9 @@ const TradingHistory = ({
               <Spinner size={20} />
             </div>
           ) : ammPools.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '20px',
-                border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.1)',
-                borderRadius: '8px'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                }}
-              >
-                No pools found
-              </span>
-            </div>
+            <BearEmptyState isDark={isDark} title="No pools found" subtitle="AMM pools will appear here when available" />
           ) : filteredAndSortedPools.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '20px',
-                border: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.1)',
-                borderRadius: '8px'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                }}
-              >
-                No {poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found
-              </span>
-            </div>
+            <BearEmptyState isDark={isDark} title={`No ${poolTypeFilter === 'xrp' ? 'XRP' : 'token/token'} pools found`} subtitle="Try a different filter" />
           ) : isMobile ? (
             /* Mobile compact pool rows */
             <div style={{ display: 'flex', flexDirection: 'column' }}>

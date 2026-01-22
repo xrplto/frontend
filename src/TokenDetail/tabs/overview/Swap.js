@@ -655,6 +655,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
 
+  // MPT tokens don't support DEX trading yet
+  const isMPT = token?.tokenType === 'mpt';
+
   // Special handling for XRP token page - show RLUSD/XRP orderbook instead
   // Since XRP is the native asset, it can't have an orderbook against itself
   const isXRPTokenPage = token?.currency === 'XRP';
@@ -2071,6 +2074,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.8 }}>
               Showing <span style={{ fontWeight: 500, color: '#4285f4' }}>RLUSD/XRP</span>{' '}
               orderbook. XRP is the native asset and cannot have an orderbook against itself.
+            </Typography>
+          </Box>
+        )}
+        {/* MPT token notice */}
+        {isMPT && (
+          <Box
+            sx={{
+              mb: 1.5,
+              p: 1.5,
+              borderRadius: '8px',
+              background: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.05)',
+              border: `1px solid ${isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.15)'}`
+            }}
+          >
+            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.9 }}>
+              <span style={{ fontWeight: 500, color: '#f59e0b' }}>Multi-Purpose Token (MPT)</span> - DEX trading is not yet available for MPT tokens. MPT is a new token standard on the XRP Ledger.
             </Typography>
           </Box>
         )}

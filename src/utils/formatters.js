@@ -274,7 +274,10 @@ const essentialFields = [
   'tvl',
   'origin',
   'isOMCF',
-  'marketcap'
+  'marketcap',
+  'tokenType',
+  'mptIssuanceID',
+  'metadata'
 ];
 
 export async function getTokens(
@@ -283,12 +286,13 @@ export async function getTokens(
   tags = 'yes',
   showNew = false,
   showSlug = false,
-  limit = 100
+  limit = 100,
+  tokenType = ''
 ) {
   try {
-    const res = await axios.get('https://api.xrpl.to/v1/tokens', {
-      params: { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug }
-    });
+    const params = { start: 0, limit, sortBy, sortType, filter: '', tags, showNew, showSlug };
+    if (tokenType) params.tokenType = tokenType;
+    const res = await axios.get('https://api.xrpl.to/v1/tokens', { params });
 
     return {
       ...res.data,

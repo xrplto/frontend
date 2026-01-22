@@ -480,8 +480,15 @@ const MobileTokenRow = ({
     amount,
     dateon,
     date,
-    isNew
+    isNew,
+    tokenType,
+    mptIssuanceID,
+    metadata
   } = token;
+
+  // MPT token display name fallback
+  const displayName = name || metadata?.name || metadata?.ticker || 'MPT';
+  const displayUser = user || (mptIssuanceID ? truncate(mptIssuanceID, 16) : '');
 
   const [flashColor, setFlashColor] = useState(null);
   const prevBearbullTime = useRef(token.bearbullTime);
@@ -588,10 +595,10 @@ const MobileTokenRow = ({
         </TokenImage>
         <TokenDetails>
           <TokenName isMobile={true} isDark={darkMode}>
-            {name}
+            {displayName}
           </TokenName>
           <UserName isMobile={true} isDark={darkMode}>
-            {user}
+            {displayUser}
           </UserName>
         </TokenDetails>
       </MobileTokenInfo>
@@ -640,8 +647,15 @@ const DesktopTokenRow = ({
     dateon,
     date,
     origin,
-    isNew
+    isNew,
+    tokenType,
+    mptIssuanceID,
+    metadata
   } = token;
+
+  // MPT token display name fallback
+  const displayName = name || metadata?.name || metadata?.ticker || 'MPT';
+  const displayUser = user || (mptIssuanceID ? truncate(mptIssuanceID, 16) : '');
 
   const [flashColor, setFlashColor] = useState(null);
   const prevBearbullTime = useRef(token.bearbullTime);
@@ -692,11 +706,11 @@ const DesktopTokenRow = ({
             />
           </TokenImage>
           <div style={{ minWidth: 0 }}>
-            <TokenName isDark={darkMode} title={name}>
-              {truncate(name, 16)}
+            <TokenName isDark={darkMode} title={displayName}>
+              {truncate(displayName, 16)}
             </TokenName>
-            <UserName isDark={darkMode} title={user}>
-              {truncate(user, 12)}
+            <UserName isDark={darkMode} title={displayUser}>
+              {truncate(displayUser, 12)}
             </UserName>
           </div>
         </div>

@@ -166,7 +166,8 @@ function TokenListComponent({
   setTokens,
   tMap,
   initialOrderBy,
-  autoAddNewTokens = false
+  autoAddNewTokens = false,
+  tokenType = ''
 }) {
   const {
     accountProfile,
@@ -494,7 +495,7 @@ function TokenListComponent({
 
         axios
           .get(
-            `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${limit}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}&skipMetrics=true`
+            `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${limit}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}&skipMetrics=true${tokenType ? `&tokenType=${tokenType}` : ''}`
           )
           .then((res) => {
             if (res.status === 200 && res.data) {
@@ -519,6 +520,7 @@ function TokenListComponent({
       showSlug,
       showWatchList,
       tag,
+      tokenType,
       dispatch,
       setTokens
     ]
