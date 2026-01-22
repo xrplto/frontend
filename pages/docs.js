@@ -68,7 +68,8 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     nftId: '00080BB86C429EE66CE731CAA492445DFF564F9CB8A46A3030EC43B005A84416',
     slug: 'fuzzybears',
     date: '2025-07-07',
-    hash: '88E788684079F52181D18848C3E2EE70C07FD31ED8045A7C03E070F3B69C46C9'
+    hash: '88E788684079F52181D18848C3E2EE70C07FD31ED8045A7C03E070F3B69C46C9',
+    index: '101738551'
   };
 
   const [expandedGroups, setExpandedGroups] = useState({
@@ -265,14 +266,14 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       .replace(/:nftId/g, SAMPLE_DATA.nftId)
       .replace(/:slug/g, SAMPLE_DATA.slug)
       .replace(/:date/g, SAMPLE_DATA.date)
-      .replace(/:hash/g, SAMPLE_DATA.hash);
+      .replace(/:hash/g, SAMPLE_DATA.hash)
+      .replace(/:index/g, SAMPLE_DATA.index);
   };
 
-  // Check if endpoint can be tried (GET only, skip complex endpoints)
+  // Check if endpoint can be tried
   const canTryEndpoint = (ep) => {
+    if (ep.method === 'POST' && ep.path === '/search') return true;
     if (ep.method !== 'GET') return false;
-    const path = ep.path.toLowerCase();
-    if (path.includes(':index')) return false;
     return true;
   };
 
@@ -283,8 +284,15 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     setEndpointResponse(null);
     try {
       const samplePath = buildSampleUrl(ep.path);
-      const res = await axios.get(`https://api.xrpl.to/v1${samplePath}`, { timeout: 10000 });
-      setEndpointResponse({ path: key, data: res.data, url: `https://api.xrpl.to/v1${samplePath}` });
+      const url = `https://api.xrpl.to/v1${samplePath}`;
+      let res;
+      if (ep.method === 'POST') {
+        const body = ep.path === '/search' ? { search: 'fuzzy', limit: 5 } : {};
+        res = await axios.post(url, body, { timeout: 10000 });
+      } else {
+        res = await axios.get(url, { timeout: 10000 });
+      }
+      setEndpointResponse({ path: key, data: res.data, url });
     } catch (e) {
       setEndpointResponse({ path: key, error: e.response?.data || e.message, url: `https://api.xrpl.to/v1${buildSampleUrl(ep.path)}` });
     }
