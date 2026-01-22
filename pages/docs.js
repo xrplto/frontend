@@ -31,7 +31,8 @@ import {
   List,
   TrendingUp,
   ArrowLeftRight,
-  BadgeCheck
+  BadgeCheck,
+  Play
 } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
@@ -52,6 +53,23 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
   const [copySuccess, setCopySuccess] = useState(false);
 
   const [copiedBlock, setCopiedBlock] = useState(null);
+
+  // Try endpoint state
+  const [tryingEndpoint, setTryingEndpoint] = useState(null);
+  const [endpointResponse, setEndpointResponse] = useState(null);
+
+  // Sample data for RLUSD token + NFT
+  const SAMPLE_DATA = {
+    md5: '0dd550278b74cb6690fdae351e8e0df3',
+    issuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
+    currency: '524C555344000000000000000000000000000000',
+    creator: 'rJqiMb94hyz41SBTNr2AyPNW8AzELa8nE',
+    account: 'rJqiMb94hyz41SBTNr2AyPNW8AzELa8nE',
+    nftId: '00080BB86C429EE66CE731CAA492445DFF564F9CB8A46A3030EC43B005A84416',
+    slug: 'fuzzybears',
+    date: '2025-07-07',
+    hash: '88E788684079F52181D18848C3E2EE70C07FD31ED8045A7C03E070F3B69C46C9'
+  };
 
   const [expandedGroups, setExpandedGroups] = useState({
     'Get Started': true,
@@ -234,6 +252,43 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       setCopiedBlock(blockId);
       setTimeout(() => setCopiedBlock(null), 2000);
     });
+  };
+
+  // Build sample URL by replacing path parameters with sample values
+  const buildSampleUrl = (path) => {
+    return path
+      .replace(/:md5/g, SAMPLE_DATA.md5)
+      .replace(/:id/g, SAMPLE_DATA.md5)
+      .replace(/:account/g, SAMPLE_DATA.account)
+      .replace(/:address/g, SAMPLE_DATA.account)
+      .replace(/:issuer/g, SAMPLE_DATA.issuer)
+      .replace(/:nftId/g, SAMPLE_DATA.nftId)
+      .replace(/:slug/g, SAMPLE_DATA.slug)
+      .replace(/:date/g, SAMPLE_DATA.date)
+      .replace(/:hash/g, SAMPLE_DATA.hash);
+  };
+
+  // Check if endpoint can be tried (GET only, skip complex endpoints)
+  const canTryEndpoint = (ep) => {
+    if (ep.method !== 'GET') return false;
+    const path = ep.path.toLowerCase();
+    if (path.includes(':index')) return false;
+    return true;
+  };
+
+  // Try endpoint and show response
+  const tryEndpoint = async (ep) => {
+    const key = ep.path;
+    setTryingEndpoint(key);
+    setEndpointResponse(null);
+    try {
+      const samplePath = buildSampleUrl(ep.path);
+      const res = await axios.get(`https://api.xrpl.to/v1${samplePath}`, { timeout: 10000 });
+      setEndpointResponse({ path: key, data: res.data, url: `https://api.xrpl.to/v1${samplePath}` });
+    } catch (e) {
+      setEndpointResponse({ path: key, error: e.response?.data || e.message, url: `https://api.xrpl.to/v1${buildSampleUrl(ep.path)}` });
+    }
+    setTryingEndpoint(null);
   };
 
   const llmSnippets = {
@@ -537,32 +592,109 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                 >
                   {category.label} ({category.endpoints.length})
                 </div>
-                <div className="space-y-2 text-[13px]">
+                <div className="space-y-3 text-[13px]">
                   {category.endpoints.map((ep) => (
-                    <div key={ep.path} className="flex items-start gap-3">
-                      <span
-                        className={cn(
-                          'px-1.5 py-0.5 text-[10px] font-medium rounded shrink-0 mt-0.5',
-                          ep.method === 'GET'
-                            ? 'bg-emerald-500/10 text-emerald-500'
-                            : 'bg-amber-500/10 text-amber-500'
+                    <div key={ep.path} className={cn(
+                      'rounded-lg p-3',
+                      isDark ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+                    )}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <span
+                            className={cn(
+                              'px-1.5 py-0.5 text-[10px] font-medium rounded shrink-0 mt-0.5',
+                              ep.method === 'GET'
+                                ? 'bg-emerald-500/10 text-emerald-500'
+                                : 'bg-amber-500/10 text-amber-500'
+                            )}
+                          >
+                            {ep.method}
+                          </span>
+                          <div className="min-w-0">
+                            <code
+                              className={cn(
+                                'font-mono text-[12px] break-all',
+                                isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
+                              )}
+                            >
+                              /v1{ep.path}
+                            </code>
+                            <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              {ep.desc}
+                            </p>
+                          </div>
+                        </div>
+                        {canTryEndpoint(ep) && (
+                          <button
+                            onClick={() => tryEndpoint(ep)}
+                            disabled={tryingEndpoint === ep.path}
+                            className={cn(
+                              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium shrink-0 transition-colors',
+                              isDark
+                                ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                                : 'bg-primary/10 text-primary hover:bg-primary/15'
+                            )}
+                          >
+                            {tryingEndpoint === ep.path ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                              <Play size={12} />
+                            )}
+                            Try
+                          </button>
                         )}
-                      >
-                        {ep.method}
-                      </span>
-                      <code
-                        className={cn(
-                          'font-mono text-[12px] shrink-0',
-                          isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
-                        )}
-                      >
-                        /v1{ep.path}
-                      </code>
-                      <span
-                        className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}
-                      >
-                        {ep.desc}
-                      </span>
+                      </div>
+                      {endpointResponse?.path === ep.path && (
+                        <div className={cn(
+                          'mt-3 rounded-lg border overflow-hidden',
+                          isDark ? 'border-white/10' : 'border-gray-200'
+                        )}>
+                          <div className={cn(
+                            'flex items-center justify-between px-3 py-2 text-[10px]',
+                            isDark ? 'bg-white/5' : 'bg-gray-100'
+                          )}>
+                            <code className={cn(
+                              'font-mono truncate',
+                              isDark ? 'text-white/60' : 'text-gray-600'
+                            )}>
+                              {endpointResponse.url}
+                            </code>
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(JSON.stringify(endpointResponse.data || endpointResponse.error, null, 2));
+                                  setCopiedBlock(`resp-${ep.path}`);
+                                  setTimeout(() => setCopiedBlock(null), 2000);
+                                }}
+                                className={cn(
+                                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px]',
+                                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                                )}
+                              >
+                                {copiedBlock === `resp-${ep.path}` ? <CheckCircle size={10} /> : <Copy size={10} />}
+                                {copiedBlock === `resp-${ep.path}` ? 'Copied' : 'Copy'}
+                              </button>
+                              <button
+                                onClick={() => setEndpointResponse(null)}
+                                className={cn(
+                                  'p-1 rounded',
+                                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                                )}
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          </div>
+                          <pre className={cn(
+                            'p-3 text-[10px] leading-relaxed max-h-[200px] overflow-auto font-mono',
+                            endpointResponse.error
+                              ? 'text-red-400'
+                              : isDark ? 'text-white/70' : 'text-gray-700'
+                          )}>
+                            {JSON.stringify(endpointResponse.data || endpointResponse.error, null, 2)}
+                          </pre>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

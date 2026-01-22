@@ -683,9 +683,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const commandPages = [
     { path: '/', name: 'All Tokens', desc: 'Browse all tokens', icon: <Layers size={16} /> },
     { path: '/trending', name: 'Trending', desc: 'Hot tokens right now', icon: <TrendingUp size={16} /> },
+    { path: '/spotlight', name: 'Spotlight', desc: 'Featured tokens', icon: <Sparkles size={16} /> },
     { path: '/new', name: 'New Tokens', desc: 'Recently listed', icon: <Sparkles size={16} /> },
     { path: '/gainers', name: 'Top Gainers', desc: 'Biggest price increases', icon: <TrendingUp size={16} /> },
     { path: '/most-viewed', name: 'Most Viewed', desc: 'Popular tokens', icon: <Eye size={16} /> },
+    { path: '/mpt', name: 'MPT Tokens', desc: 'Multi-Purpose Tokens', icon: <Layers size={16} /> },
     { path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Star size={16} /> },
     { path: '/token-traders', name: 'Top Traders', desc: 'Token leaderboard', icon: <Sparkles size={16} /> },
     { path: '/token-market', name: 'Token Market', desc: 'DEX analytics', icon: <BarChart3 size={16} /> },
