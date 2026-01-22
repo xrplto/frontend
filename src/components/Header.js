@@ -38,7 +38,14 @@ import {
   Layers,
   Rocket,
   Activity,
-  BarChart3
+  BarChart3,
+  Command,
+  TrendingUp,
+  Newspaper,
+  LayoutDashboard,
+  FileText,
+  Info,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/v1';
@@ -283,6 +290,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [walletExpanded, setWalletExpanded] = useState(false);
   const [mobileEmail, setMobileEmail] = useState('');
   const [mobileEmailLoading, setMobileEmailLoading] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [commandQuery, setCommandQuery] = useState('');
 
   // Direct auth handlers for mobile (skip wallet modal)
   const handleDirectTwitterAuth = async () => {
@@ -379,6 +388,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const settingsRef = useRef(null);
+  const commandPaletteRef = useRef(null);
+  const commandInputRef = useRef(null);
   const closeTimeoutRef = useRef(null);
   const nftsCloseTimeoutRef = useRef(null);
   const openTimeoutRef = useRef(null);
@@ -395,16 +406,27 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     return () => window.removeEventListener('resize', checkBreakpoints);
   }, []);
 
-  // Search keyboard shortcut
+  // Search keyboard shortcut (/) and Command palette (Cmd+K)
   useEffect(() => {
     const handleKeyPress = (e) => {
+      // Cmd+K or Ctrl+K opens command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+        setCommandQuery('');
+        setTimeout(() => commandInputRef.current?.focus(), 50);
+        return;
+      }
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setSearchOpen(true);
         setTimeout(() => searchInputRef.current?.focus(), 50);
       }
-      if (e.key === 'Escape') setSearchOpen(false);
+      if (e.key === 'Escape') {
+        setSearchOpen(false);
+        setCommandPaletteOpen(false);
+      }
     };
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
@@ -656,6 +678,38 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
   ];
   const nftMenuItems = nftMenuItemsRight;
+
+  // Command palette pages
+  const commandPages = [
+    { path: '/', name: 'All Tokens', desc: 'Browse all tokens', icon: <Layers size={16} /> },
+    { path: '/trending', name: 'Trending', desc: 'Hot tokens right now', icon: <TrendingUp size={16} /> },
+    { path: '/new', name: 'New Tokens', desc: 'Recently listed', icon: <Sparkles size={16} /> },
+    { path: '/gainers', name: 'Top Gainers', desc: 'Biggest price increases', icon: <TrendingUp size={16} /> },
+    { path: '/most-viewed', name: 'Most Viewed', desc: 'Popular tokens', icon: <Eye size={16} /> },
+    { path: '/watchlist', name: 'Watchlist', desc: 'Your saved tokens', icon: <Star size={16} /> },
+    { path: '/token-traders', name: 'Top Traders', desc: 'Token leaderboard', icon: <Sparkles size={16} /> },
+    { path: '/token-market', name: 'Token Market', desc: 'DEX analytics', icon: <BarChart3 size={16} /> },
+    { path: '/rsi-analysis', name: 'RSI Analysis', desc: 'Technical indicators', icon: <Activity size={16} /> },
+    { path: '/amm-pools', name: 'AMM Pools', desc: 'Liquidity pools', icon: <Waves size={16} /> },
+    { path: '/nfts', name: 'NFT Collections', desc: 'Browse NFTs', icon: <ImageIcon size={16} /> },
+    { path: '/nft-traders', name: 'NFT Traders', desc: 'NFT leaderboard', icon: <Sparkles size={16} /> },
+    { path: '/nft-market', name: 'NFT Market', desc: 'NFT analytics', icon: <Activity size={16} /> },
+    { path: '/swap', name: 'Swap', desc: 'Trade tokens', icon: <ArrowLeftRight size={16} /> },
+    { path: '/news', name: 'News', desc: 'XRPL news & updates', icon: <Newspaper size={16} /> },
+    { path: '/launch', name: 'Launch Token', desc: 'Create your token', icon: <Rocket size={16} /> },
+    { path: '/wallet', name: 'Wallet', desc: 'Manage your wallet', icon: <Wallet size={16} /> },
+    { path: '/dashboard', name: 'Dashboard', desc: 'Your portfolio', icon: <LayoutDashboard size={16} /> },
+    { path: '/docs', name: 'Documentation', desc: 'API & guides', icon: <FileText size={16} /> },
+    { path: '/about', name: 'About', desc: 'About xrpl.to', icon: <Info size={16} /> }
+  ];
+
+  const filteredPages = commandQuery
+    ? commandPages.filter(
+        (p) =>
+          p.name.toLowerCase().includes(commandQuery.toLowerCase()) ||
+          p.desc.toLowerCase().includes(commandQuery.toLowerCase())
+      )
+    : commandPages;
 
   const handleFullSearch = useCallback(() => {
     setFullSearch(true);
@@ -997,14 +1051,30 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </span>
               )}
               {!searchOpen && (
-                <kbd
-                  className={cn(
-                    'px-2 py-0.5 rounded text-[11px] font-sans',
-                    isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
-                  )}
-                >
-                  /
-                </kbd>
+                <div className="flex items-center gap-1.5">
+                  <kbd
+                    className={cn(
+                      'px-2 py-0.5 rounded text-[11px] font-sans',
+                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
+                    )}
+                  >
+                    /
+                  </kbd>
+                  <kbd
+                    className={cn(
+                      'px-1.5 py-0.5 rounded text-[10px] font-sans cursor-pointer hover:opacity-80',
+                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCommandPaletteOpen(true);
+                      setCommandQuery('');
+                      setTimeout(() => commandInputRef.current?.focus(), 50);
+                    }}
+                  >
+                    {navigator?.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+                  </kbd>
+                </div>
               )}
             </div>
 
@@ -3735,6 +3805,146 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     Dark
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Command Palette (Cmd+K) */}
+      {commandPaletteOpen && (
+        <>
+          <div
+            className={cn(
+              'fixed inset-0 z-[2147483646] backdrop-blur-sm',
+              isDark ? 'bg-black/60' : 'bg-black/20'
+            )}
+            onClick={() => setCommandPaletteOpen(false)}
+          />
+          <div
+            ref={commandPaletteRef}
+            className={cn(
+              'fixed left-1/2 top-[15%] z-[2147483647] w-full max-w-[520px] -translate-x-1/2 rounded-xl border overflow-hidden animate-in fade-in zoom-in-95 duration-150',
+              isDark
+                ? 'bg-[#0a0a12] border-white/10 shadow-2xl shadow-black/50'
+                : 'bg-white border-gray-200 shadow-2xl'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center gap-3 px-4 h-12 border-b',
+                isDark ? 'border-white/10' : 'border-gray-200'
+              )}
+            >
+              <Command size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+              <input
+                ref={commandInputRef}
+                value={commandQuery}
+                onChange={(e) => setCommandQuery(e.target.value)}
+                placeholder="Go to page..."
+                className={cn(
+                  'flex-1 bg-transparent text-[14px] outline-none',
+                  isDark
+                    ? 'text-white placeholder:text-white/40'
+                    : 'text-gray-900 placeholder:text-gray-400'
+                )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && filteredPages.length > 0) {
+                    window.location.href = filteredPages[0].path;
+                    setCommandPaletteOpen(false);
+                  }
+                }}
+              />
+              <kbd
+                className={cn(
+                  'px-1.5 py-0.5 rounded text-[10px] font-mono',
+                  isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-400'
+                )}
+              >
+                esc
+              </kbd>
+            </div>
+            <div className="max-h-[400px] overflow-y-auto p-2">
+              {filteredPages.length > 0 ? (
+                filteredPages.map((page) => (
+                  <a
+                    key={page.path}
+                    href={page.path}
+                    onClick={() => setCommandPaletteOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                      isActive(page.path)
+                        ? isDark
+                          ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe]'
+                          : 'bg-blue-50 text-blue-600'
+                        : isDark
+                          ? 'text-white/70 hover:bg-white/5 hover:text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex h-8 w-8 items-center justify-center rounded-lg',
+                        isDark ? 'bg-white/5' : 'bg-gray-100'
+                      )}
+                    >
+                      {page.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className={cn(
+                          'text-[13px] font-medium block',
+                          isDark ? 'text-white/90' : 'text-gray-900'
+                        )}
+                      >
+                        {page.name}
+                      </span>
+                      <span
+                        className={cn(
+                          'text-[11px] block',
+                          isDark ? 'text-white/40' : 'text-gray-500'
+                        )}
+                      >
+                        {page.desc}
+                      </span>
+                    </div>
+                    {isActive(page.path) && (
+                      <div
+                        className={cn(
+                          'w-1.5 h-1.5 rounded-full',
+                          isDark ? 'bg-[#3f96fe]' : 'bg-blue-500'
+                        )}
+                      />
+                    )}
+                  </a>
+                ))
+              ) : (
+                <div className="py-8 text-center">
+                  <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    No pages found
+                  </p>
+                </div>
+              )}
+            </div>
+            <div
+              className={cn(
+                'flex items-center justify-between px-4 py-2 border-t text-[10px]',
+                isDark ? 'border-white/10 text-white/30' : 'border-gray-200 text-gray-400'
+              )}
+            >
+              <span>Navigate to any page</span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
+                  <kbd
+                    className={cn(
+                      'px-1 py-0.5 rounded font-mono',
+                      isDark ? 'bg-white/10' : 'bg-gray-100'
+                    )}
+                  >
+                    /
+                  </kbd>
+                  <span>search data</span>
+                </span>
               </div>
             </div>
           </div>
