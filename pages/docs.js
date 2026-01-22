@@ -272,7 +272,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 
   // Check if endpoint can be tried
   const canTryEndpoint = (ep) => {
-    if (ep.method === 'POST' && ep.path === '/search') return true;
+    if (ep.method === 'POST' && ['/search', '/dex/quote'].includes(ep.path)) return true;
     if (ep.method !== 'GET') return false;
     return true;
   };
@@ -287,8 +287,20 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
       const url = `https://api.xrpl.to/v1${samplePath}`;
       let res;
       if (ep.method === 'POST') {
-        const body = ep.path === '/search' ? { search: 'fuzzy', limit: 5 } : {};
-        res = await axios.post(url, body, { timeout: 10000 });
+        const bodies = {
+          '/search': { search: 'fuzzy', limit: 5 },
+          '/dex/quote': {
+            source_account: 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+            destination_amount: {
+              currency: SAMPLE_DATA.currency,
+              issuer: SAMPLE_DATA.issuer,
+              value: '100'
+            },
+            source_currencies: [{ currency: 'XRP' }],
+            slippage: 0.02
+          }
+        };
+        res = await axios.post(url, bodies[ep.path] || {}, { timeout: 10000 });
       } else {
         res = await axios.get(url, { timeout: 10000 });
       }
