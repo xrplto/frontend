@@ -61,8 +61,10 @@ const TrendingTokens = ({ token = null }) => {
   const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : 1) || 1;
 
   const [tokens, setTokens] = useState([]);
+  const [newTokens, setNewTokens] = useState([]);
   const [error, setError] = useState(null);
   const [watchList, setWatchList] = useState([]);
+  const [activeTab, setActiveTab] = useState('trending');
   const fetchedRef = useRef(false);
 
   // Fetch watchlist
@@ -89,16 +91,22 @@ const TrendingTokens = ({ token = null }) => {
     fetchedRef.current = true;
 
     const ctrl = new AbortController();
-    axios
-      .get(
-        `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc&skipMetrics=true`,
-        { signal: ctrl.signal }
-      )
+
+    // Fetch trending
+    axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
         const list = res.data?.tokens || [];
         setTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
       })
       .catch((err) => !axios.isCancel(err) && setError('Failed to load'));
+
+    // Fetch new
+    axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
+      .then((res) => {
+        const list = res.data?.tokens || [];
+        setNewTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
+      })
+      .catch(() => {});
 
     return () => ctrl.abort();
   }, [token?.md5]);
@@ -111,24 +119,49 @@ const TrendingTokens = ({ token = null }) => {
     );
   }
 
-  if (!tokens.length) {
+  if (!tokens.length && !newTokens.length) {
     return (
       <Container isDark={darkMode}>
-        <div style={{ padding: '24px', textAlign: 'center', fontSize: '12px', opacity: 0.6 }}>No trending tokens</div>
+        <div style={{ padding: '24px', textAlign: 'center', fontSize: '12px', opacity: 0.6 }}>No tokens</div>
       </Container>
     );
   }
 
   return (
     <Container isDark={darkMode}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 10px' }}>
-        <a href="/trending" style={{ fontSize: '10px', color: '#137DFE', textDecoration: 'none', fontWeight: 500 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {['trending', 'new'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '4px 10px',
+                fontSize: '10px',
+                fontWeight: 500,
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                background: activeTab === tab ? (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent',
+                color: activeTab === tab ? (darkMode ? '#fff' : '#000') : (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')
+              }}
+            >
+              {tab === 'trending' ? 'Trending' : 'New'}
+            </button>
+          ))}
+        </div>
+        <a href={activeTab === 'trending' ? '/trending' : '/new'} style={{ fontSize: '10px', color: '#137DFE', textDecoration: 'none', fontWeight: 500 }}>
           View All
         </a>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '6px' }}>
-        {[...tokens].sort((a, b) => (watchList.includes(b.md5) ? 1 : 0) - (watchList.includes(a.md5) ? 1 : 0)).map((t, i) => {
+        {(() => {
+          const baseList = activeTab === 'trending' ? tokens : newTokens;
+          const otherList = activeTab === 'trending' ? newTokens : tokens;
+          const watchedFromOther = otherList.filter(t => watchList.includes(t.md5) && !baseList.some(b => b.md5 === t.md5));
+          return [...watchedFromOther, ...baseList].sort((a, b) => (watchList.includes(b.md5) ? 1 : 0) - (watchList.includes(a.md5) ? 1 : 0));
+        })().map((t, i) => {
           const change = t.pro24h || 0;
           const isUp = change >= 0;
 
@@ -136,7 +169,7 @@ const TrendingTokens = ({ token = null }) => {
           const volStr = vol >= 1e6 ? `${(vol/1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol/1e3).toFixed(0)}K` : vol.toFixed(0);
 
           return (
-            <TokenCard key={t.md5 || i} href={`/token/${t.slug}`} isDark={darkMode}>
+            <TokenCard key={t.md5 || i} href={`/token/${t.slug}`} isDark={darkMode} style={watchList.includes(t.md5) ? { background: darkMode ? 'rgba(246,184,126,0.06)' : 'rgba(246,184,126,0.1)' } : undefined}>
               <Star
                 size={12}
                 onClick={(e) => toggleWatch(e, t.md5)}

@@ -202,7 +202,7 @@ const Overview = memo(
                           : isDark ? 'text-white/50 hover:text-white/70' : 'text-black/50 hover:text-black/70'
                       }`}
                     >
-                      {tab === 'orderbook' ? 'Order Book' : 'Trending'}
+                      {tab === 'orderbook' ? 'Order Book' : 'Discover'}
                     </button>
                   ))}
                 </div>
