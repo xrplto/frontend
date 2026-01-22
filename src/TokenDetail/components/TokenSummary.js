@@ -14,8 +14,7 @@ import {
   Loader2,
   X,
   Link2,
-  Unlink2,
-  Code2
+  Unlink2
 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
@@ -24,6 +23,7 @@ import { toast } from 'sonner';
 import { TokenShareModal as Share } from 'src/components/ShareButtons';
 import Watch from './Watch';
 import EditTokenDialog from 'src/components/EditTokenDialog';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 // Constants
 const currencySymbols = {
@@ -136,7 +136,6 @@ const TokenSummary = memo(({ token }) => {
   const [dustConfirm, setDustConfirm] = useState(null); // 'dex' | 'issuer' | null
   const [debugInfo, setDebugInfo] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
-  const [showApi, setShowApi] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
 
   // Debug info loader
@@ -897,18 +896,7 @@ const TokenSummary = memo(({ token }) => {
             )}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
-          <button
-            onClick={() => setShowInfo(true)}
-            className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
-              isDark
-                ? 'text-[#3f96fe] border-[#3f96fe]/20 hover:bg-[#3f96fe]/10 hover:border-[#3f96fe]/30'
-                : 'text-cyan-600 border-cyan-200 hover:bg-cyan-50 hover:border-cyan-300'
-            )}
-          >
-            <Code2 size={13} />
-            API
-          </button>
+          <ApiButton />
         </div>
         <div className="flex items-center gap-1">
           <Watch token={token} />
@@ -1079,149 +1067,6 @@ const TokenSummary = memo(({ token }) => {
                   </button>
                 ))}
               </div>
-
-              {/* API Endpoints */}
-              <div className={cn('border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
-                <button
-                  onClick={() => setShowApi(!showApi)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-4 py-2.5',
-                    isDark
-                      ? 'text-white/50 hover:text-white/70'
-                      : 'text-gray-500 hover:text-gray-700'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'text-[10px] font-semibold uppercase tracking-widest',
-                      isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
-                    )}
-                  >
-                    API Endpoints
-                  </span>
-                  <div
-                    className="flex-1 h-[14px]"
-                    style={{
-                      backgroundImage: isDark
-                        ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                        : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                      backgroundSize: '8px 5px',
-                      WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                      maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                    }}
-                  />
-                  <span className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                    {showApi ? '▲' : '▼'}
-                  </span>
-                </button>
-                {showApi && (
-                  <div className="px-3 pb-3 space-y-0.5">
-                    {[
-                      { label: 'Token', url: `https://api.xrpl.to/v1/token/${md5}` },
-                      { label: 'Holders', url: `https://api.xrpl.to/v1/holders/list/${md5}` },
-                      {
-                        label: 'Order Book',
-                        url: `https://api.xrpl.to/v1/orderbook?base_currency=${currency}&base_issuer=${issuer}&quote_currency=XRP`
-                      },
-                      { label: 'History', url: `https://api.xrpl.to/v1/history?token=${md5}` },
-                      { label: 'OHLC', url: `https://api.xrpl.to/v1/ohlc/${md5}` },
-                      {
-                        label: 'Traders',
-                        url: `https://api.xrpl.to/v1/traders/token-traders/${md5}`
-                      },
-                      {
-                        label: 'AMM',
-                        url: `https://api.xrpl.to/v1/amm?issuer=${issuer}&currency=${currency}`
-                      },
-                      { label: 'AI Summary', url: `https://api.xrpl.to/v1/ai/token/${md5}` },
-                      { label: 'Quote', url: `https://api.xrpl.to/v1/dex/quote`, method: 'POST' },
-                      {
-                        label: 'Rates',
-                        url: `https://api.xrpl.to/v1/rates?md51=${md5}&md52=84e5efeb89c4eae8f68188982dc290d8`
-                      },
-                      ...(creator
-                        ? [{ label: 'Creator', url: `https://api.xrpl.to/v1/creators/${creator}` }]
-                        : [])
-                    ].map((ep) => (
-                      <button
-                        key={ep.label}
-                        onClick={() => {
-                          navigator.clipboard.writeText(ep.url);
-                          setCopiedField(ep.label);
-                          setTimeout(() => setCopiedField(null), 1200);
-                        }}
-                        className={cn(
-                          'group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left',
-                          isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'text-[9px] w-14 flex-shrink-0 flex items-center gap-1',
-                            isDark ? 'text-white/35' : 'text-gray-400'
-                          )}
-                        >
-                          {ep.label}
-                          {ep.method && (
-                            <span
-                              className={cn(
-                                'text-[7px] px-1 rounded',
-                                isDark
-                                  ? 'bg-amber-500/20 text-amber-400'
-                                  : 'bg-amber-100 text-amber-600'
-                              )}
-                            >
-                              {ep.method}
-                            </span>
-                          )}
-                        </span>
-                        <span
-                          className={cn(
-                            'font-mono text-[9px] truncate flex-1',
-                            isDark ? 'text-blue-400/60' : 'text-blue-600/70'
-                          )}
-                        >
-                          {ep.url.replace('https://api.xrpl.to', '')}
-                        </span>
-                        <span
-                          className={cn(
-                            'flex-shrink-0',
-                            copiedField === ep.label
-                              ? 'text-green-500'
-                              : isDark
-                                ? 'text-white/15 group-hover:text-white/30'
-                                : 'text-gray-200 group-hover:text-gray-400'
-                          )}
-                        >
-                          {copiedField === ep.label ? <Check size={10} /> : <Copy size={10} />}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div
-              className={cn(
-                'px-4 py-2.5 border-t',
-                isDark ? 'border-white/[0.06]' : 'border-gray-100'
-              )}
-            >
-              <a
-                href="/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'block text-center text-[10px] py-1.5 rounded-md',
-                  isDark
-                    ? 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                )}
-              >
-                Full API Documentation
-              </a>
             </div>
           </div>
         </div>

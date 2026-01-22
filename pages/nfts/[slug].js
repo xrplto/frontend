@@ -11,6 +11,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Collection from 'src/NFTCollection/CollectionView';
 import ScrollToTop from 'src/components/ScrollToTop';
+import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 const OverviewWrapper = styled.div`
   min-height: 100vh;
@@ -33,6 +34,9 @@ export default function Overview({ collection }) {
   return (
     <OverviewWrapper>
       <Header />
+      <div className="absolute top-20 right-4 z-10">
+        <ApiButton />
+      </div>
       <h1
         style={{
           position: 'absolute',

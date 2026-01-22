@@ -3,11 +3,20 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import AllCollections from 'src/NFTCollection/AllCollections';
 import ScrollToTop from 'src/components/ScrollToTop';
+import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
+import { useEffect } from 'react';
 
 export default function Overview({ collections, total, globalMetrics, tags, collectionCreation }) {
+  useEffect(() => {
+    registerApiCalls(['https://api.xrpl.to/v1/nft/collections']);
+  }, []);
+
   return (
     <div className="min-h-screen overflow-hidden">
       <Header />
+      <div className="absolute top-20 right-4 z-10">
+        <ApiButton />
+      </div>
       <h1
         style={{
           position: 'absolute',

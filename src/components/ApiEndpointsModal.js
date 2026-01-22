@@ -1,5 +1,6 @@
-import { memo, useState, useContext, useEffect } from 'react';
+import { memo, useState, useContext, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/router';
 import {
   Code2,
   Copy,
@@ -100,7 +101,8 @@ export const API_REFERENCE = {
         desc: 'Token details by md5, slug (issuer-currency), or issuer_currency'
       },
       { method: 'POST', path: '/search', desc: 'Search tokens, NFTs, collections, accounts' },
-      { method: 'GET', path: '/tags', desc: 'List all token tags' }
+      { method: 'GET', path: '/tags', desc: 'List all token tags' },
+      { method: 'GET', path: '/creators/:address', desc: 'Token creator profile and tokens' }
     ]
   },
   charts: {
@@ -190,7 +192,8 @@ export const API_REFERENCE = {
       { method: 'GET', path: '/account/info/live/:account', desc: 'Live account info from XRPL' },
       { method: 'GET', path: '/account/deposit-authorized', desc: 'Check deposit authorization' },
       { method: 'POST', path: '/account/path-find', desc: 'Find payment paths' },
-      { method: 'GET', path: '/trustlines/:account', desc: 'Trustlines with token values' }
+      { method: 'GET', path: '/trustlines/:account', desc: 'Trustlines with token values' },
+      { method: 'GET', path: '/watchlist', desc: 'User watchlist tokens' }
     ]
   },
   ledger: {
@@ -299,6 +302,11 @@ export const API_REFERENCE = {
       },
       { method: 'GET', path: '/nft/collections/:slug/floor/history', desc: 'Floor price history' },
       { method: 'GET', path: '/nft/collections/:slug/ohlc', desc: 'Collection OHLC chart data' },
+      { method: 'GET', path: '/nft/collections/:slug/ohlc/:date/sales', desc: 'Collection sales for specific date' },
+      { method: 'GET', path: '/nft/holders/:slug', desc: 'Collection holder list with pagination' },
+      { method: 'GET', path: '/nft/holders/:slug/distribution', desc: 'Collection holder distribution stats' },
+      { method: 'GET', path: '/nft/holders/address/:address', desc: 'NFT holdings for specific address' },
+      { method: 'GET', path: '/nft/analytics/collection/:slug/traders', desc: 'Collection top traders analytics' },
       {
         method: 'GET',
         path: '/nft/collections/:slug/sparkline',
@@ -376,9 +384,28 @@ export const getTotalEndpointCount = () => {
   return Object.values(API_REFERENCE).reduce((sum, cat) => sum + cat.endpoints.length, 0);
 };
 
+// Page-based endpoint mapping for reliable "This Page" display
+export const PAGE_ENDPOINTS = {
+  '/': ['/tokens', '/sparkline/:md5', '/tags', '/stats'],
+  '/new': ['/tokens', '/sparkline/:md5', '/tags'],
+  '/trending': ['/tokens', '/sparkline/:md5', '/tags'],
+  '/gainers': ['/tokens', '/sparkline/:md5', '/tags'],
+  '/spotlight': ['/tokens', '/sparkline/:md5', '/tags'],
+  '/watchlist': ['/tokens', '/watchlist', '/sparkline/:md5'],
+  '/token/[slug]': ['/token/:id', '/ohlc/:md5', '/sparkline/:md5', '/holders/info/:md5', '/holders/graph/:md5', '/holders/list/:md5', '/history', '/pairs/:md5', '/orderbook', '/traders/token-traders/:md5', '/amm', '/ai/token/:md5', '/dex/quote', '/stats/rates'],
+  '/amm': ['/amm', '/amm/info', '/amm/liquidity-chart'],
+  '/nfts': ['/nft/collections', '/nft/stats/global'],
+  '/nfts/[slug]': ['/nft/collections/:slug', '/nft/collections/:slug/nfts', '/nft/collections/:slug/traits', '/nft/collections/:slug/ohlc', '/nft/collections/:slug/ohlc/:date/sales', '/nft/holders/:slug', '/nft/holders/:slug/distribution', '/nft/analytics/collection/:slug/traders'],
+  '/address/[...acct]': ['/account/balance/:account', '/account/info/live/:account', '/trustlines/:account', '/traders/:address', '/history', '/nft/account/:address/nfts', '/nft/analytics/trader/:address', '/nft/analytics/trader/:address/collections', '/nft/analytics/trader/:address/history', '/nft/analytics/trader/:address/trades', '/account-tx-explain/:account'],
+  '/traders': ['/token/analytics/traders', '/token/analytics/market'],
+  '/trader/[address]': ['/traders/:address', '/token/analytics/trader/:address', '/token/analytics/trader/:address/tokens', '/token/analytics/trader/:address/history'],
+  '/news': ['/news', '/news/search', '/news/sentiment-chart']
+};
+
 const ApiEndpointsModal = memo(({ open, onClose }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const router = useRouter();
   const [copiedPath, setCopiedPath] = useState(null);
   const [detectedEndpoints, setDetectedEndpoints] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -387,6 +414,35 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
   const [loadingPath, setLoadingPath] = useState(null);
   const [copiedResponse, setCopiedResponse] = useState(null);
   const [responsePreview, setResponsePreview] = useState(null);
+
+  // Get page-specific endpoints based on current route
+  const pageEndpoints = useMemo(() => {
+    const pathname = router.pathname;
+    // Direct match
+    if (PAGE_ENDPOINTS[pathname]) return PAGE_ENDPOINTS[pathname];
+    // Pattern match for dynamic routes
+    const patterns = Object.keys(PAGE_ENDPOINTS);
+    for (const pattern of patterns) {
+      const regex = new RegExp('^' + pattern.replace(/\[.*?\]/g, '[^/]+') + '$');
+      if (regex.test(pathname)) return PAGE_ENDPOINTS[pattern];
+    }
+    return PAGE_ENDPOINTS['/'] || [];
+  }, [router.pathname]);
+
+  // Get endpoint details from API_REFERENCE
+  const pageEndpointDetails = useMemo(() => {
+    const details = [];
+    for (const path of pageEndpoints) {
+      for (const cat of Object.values(API_REFERENCE)) {
+        const ep = cat.endpoints.find((e) => e.path === path);
+        if (ep) {
+          details.push(ep);
+          break;
+        }
+      }
+    }
+    return details;
+  }, [pageEndpoints]);
 
   useEffect(() => {
     if (!open) return;
@@ -502,7 +558,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
               )}
             >
               <Zap size={11} />
-              This Page ({detectedEndpoints.length})
+              This Page ({pageEndpointDetails.length})
             </button>
             <button
               onClick={() => setView('all')}
@@ -542,78 +598,59 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
         <div className="flex-1 overflow-y-auto">
           {view === 'detected' ? (
             <div className="p-3 space-y-2">
-              {detectedEndpoints.length === 0 ? (
+              {pageEndpointDetails.length === 0 ? (
                 <div className={cn('text-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                   <Code2 size={24} className="mx-auto mb-2 opacity-50" />
-                  <div className="text-[12px]">No API calls detected yet</div>
-                  <div className="text-[10px] mt-1 opacity-70">
-                    Interact with the page to see endpoints
-                  </div>
+                  <div className="text-[12px]">No endpoints mapped for this page</div>
                 </div>
               ) : (
-                detectedEndpoints.map((url) => (
+                pageEndpointDetails.map((ep) => (
                   <div
-                    key={url}
+                    key={ep.path}
                     className={cn('rounded-lg group', isDark ? 'bg-white/5' : 'bg-gray-50')}
                   >
                     <div className="p-2.5">
                       <div className="flex justify-between items-center mb-1">
                         <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-emerald-500/15 text-emerald-500">
-                            GET
-                          </span>
                           <span
                             className={cn(
-                              'text-[11px] font-medium',
-                              isDark ? 'text-white' : 'text-gray-900'
+                              'px-1.5 py-0.5 text-[9px] font-medium rounded',
+                              ep.method === 'GET'
+                                ? 'bg-emerald-500/15 text-emerald-500'
+                                : 'bg-amber-500/15 text-amber-500'
                             )}
                           >
-                            {getDetectedLabel(url)}
+                            {ep.method}
                           </span>
                         </div>
                         <div className="flex items-center gap-0.5">
+                          {ep.method === 'GET' && !ep.path.includes(':') && (
+                            <button
+                              onClick={() => tryAndCopy(ep)}
+                              className={cn(
+                                'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+                                copiedResponse === ep.path
+                                  ? 'text-emerald-500 opacity-100'
+                                  : isDark
+                                    ? 'text-white/40'
+                                    : 'text-gray-400'
+                              )}
+                              title="Try & copy response"
+                            >
+                              {loadingPath === ep.path ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : copiedResponse === ep.path ? (
+                                <Check size={12} />
+                              ) : (
+                                <Play size={12} />
+                              )}
+                            </button>
+                          )}
                           <button
-                            onClick={async () => {
-                              setLoadingPath(url);
-                              try {
-                                const res = await axios.get(url);
-                                const json = JSON.stringify(res.data, null, 2);
-                                await navigator.clipboard.writeText(json);
-                                setCopiedResponse(url);
-                                setResponsePreview({ url, data: res.data });
-                                setTimeout(() => setCopiedResponse(null), 3000);
-                              } catch (e) {
-                                console.error(e);
-                              }
-                              setLoadingPath(null);
-                            }}
+                            onClick={() => handleCopy(ep.path)}
                             className={cn(
                               'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
-                              copiedResponse === url
-                                ? 'text-emerald-500 opacity-100'
-                                : isDark
-                                  ? 'text-white/40'
-                                  : 'text-gray-400'
-                            )}
-                            title="Try & copy response"
-                          >
-                            {loadingPath === url ? (
-                              <Loader2 size={12} className="animate-spin" />
-                            ) : copiedResponse === url ? (
-                              <Check size={12} />
-                            ) : (
-                              <Play size={12} />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(url);
-                              setCopiedPath(url);
-                              setTimeout(() => setCopiedPath(null), 1500);
-                            }}
-                            className={cn(
-                              'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
-                              copiedPath === url
+                              copiedPath === ep.path
                                 ? 'text-emerald-500 opacity-100'
                                 : isDark
                                   ? 'text-white/40 hover:text-white/60'
@@ -621,7 +658,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                             )}
                             title="Copy URL"
                           >
-                            {copiedPath === url ? <Check size={12} /> : <Copy size={12} />}
+                            {copiedPath === ep.path ? <Check size={12} /> : <Copy size={12} />}
                           </button>
                         </div>
                       </div>
@@ -631,10 +668,18 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                           isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
                         )}
                       >
-                        {url.replace('https://api.xrpl.to/v1', '')}
+                        {ep.path}
                       </code>
+                      <div
+                        className={cn(
+                          'text-[10px] mt-1',
+                          isDark ? 'text-white/40' : 'text-gray-500'
+                        )}
+                      >
+                        {ep.desc}
+                      </div>
                     </div>
-                    {responsePreview?.url === url && (
+                    {responsePreview?.url === ep.path && (
                       <div
                         className={cn('border-t', isDark ? 'border-white/10' : 'border-gray-200')}
                       >
