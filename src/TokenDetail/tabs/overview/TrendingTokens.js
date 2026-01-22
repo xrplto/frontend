@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -63,9 +63,9 @@ const TrendingTokens = ({ token = null }) => {
   const [tokens, setTokens] = useState([]);
   const [newTokens, setNewTokens] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [watchList, setWatchList] = useState([]);
   const [activeTab, setActiveTab] = useState('trending');
-  const fetchedRef = useRef(false);
 
   // Fetch watchlist
   useEffect(() => {
@@ -86,30 +86,31 @@ const TrendingTokens = ({ token = null }) => {
     } catch {}
   };
 
+  // Fetch trending on mount
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
-
     const ctrl = new AbortController();
-
-    // Fetch trending
     axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
         const list = res.data?.tokens || [];
         setTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
+        setLoading(false);
       })
-      .catch((err) => !axios.isCancel(err) && setError('Failed to load'));
+      .catch((err) => { !axios.isCancel(err) && setError('Failed to load'); setLoading(false); });
+    return () => ctrl.abort();
+  }, [token?.md5]);
 
-    // Fetch new
+  // Fetch new only when tab switches to new
+  useEffect(() => {
+    if (activeTab !== 'new' || newTokens.length > 0) return;
+    const ctrl = new AbortController();
     axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=dateon&sortType=desc&skipMetrics=true`, { signal: ctrl.signal })
       .then((res) => {
         const list = res.data?.tokens || [];
         setNewTokens(token?.md5 ? list.filter((t) => t.md5 !== token.md5) : list);
       })
       .catch(() => {});
-
     return () => ctrl.abort();
-  }, [token?.md5]);
+  }, [activeTab, token?.md5]);
 
   if (error) {
     return (
@@ -119,10 +120,20 @@ const TrendingTokens = ({ token = null }) => {
     );
   }
 
-  if (!tokens.length && !newTokens.length) {
+  if (loading) {
     return (
       <Container isDark={darkMode}>
-        <div style={{ padding: '24px', textAlign: 'center', fontSize: '12px', opacity: 0.6 }}>No tokens</div>
+        <div style={{ padding: '6px' }}>
+          {[...Array(8)].map((_, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '14px 24px 1fr 60px 44px', gap: '6px', padding: '7px 10px', alignItems: 'center' }}>
+              <div style={{ width: 12, height: 12, borderRadius: '2px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+              <div style={{ width: 24, height: 24, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+              <div style={{ height: 12, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', width: '70%' }} />
+              <div style={{ height: 10, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+              <div style={{ height: 10, borderRadius: '4px', background: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+            </div>
+          ))}
+        </div>
       </Container>
     );
   }
