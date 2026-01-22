@@ -733,9 +733,16 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             <StyledCell align="right" isDark={darkMode}>
+              <PercentText color={getPercentColor(pro5m)}>
+                {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
+                  ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
+                  : '0.00%'}
+              </PercentText>
+            </StyledCell>
+            <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
-                  ? `${pro1h.toFixed(2)}%`
+                  ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
@@ -749,24 +756,20 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro7d)}>
                 {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
-                  ? `${pro7d.toFixed(2)}%`
+                  ? `${pro7d > 0 ? '+' : ''}${pro7d.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro24h * 30)}>
                 {pro24h !== undefined && pro24h !== null && !isNaN(pro24h)
-                  ? `${(pro24h * 30).toFixed(0)}%`
+                  ? `${pro24h * 30 > 0 ? '+' : ''}${(pro24h * 30).toFixed(0)}%`
                   : '0%'}
               </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
-            </StyledCell>
-            <StyledCell align="right" isDark={darkMode}>
-              {currencySymbols[activeFiatCurrency]}
-              {formatValue(convertedValues.volume * 7)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
@@ -821,14 +824,14 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro5m)}>
                 {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
-                  ? `${pro5m.toFixed(2)}%`
+                  ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro1h)}>
                 {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
-                  ? `${pro1h.toFixed(2)}%`
+                  ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
@@ -842,13 +845,19 @@ const DesktopTokenRow = ({
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro7d)}>
                 {pro7d !== undefined && pro7d !== null && !isNaN(pro7d)
-                  ? `${pro7d.toFixed(2)}%`
+                  ? `${pro7d > 0 ? '+' : ''}${pro7d.toFixed(2)}%`
                   : '0.00%'}
               </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {currencySymbols[activeFiatCurrency]}
               {formatValue(convertedValues.volume)}
+            </StyledCell>
+            <StyledCell align="right" isDark={darkMode}>
+              <span style={{ fontWeight: '400', color: getMarketCapColor() }}>
+                {currencySymbols[activeFiatCurrency]}
+                {formatValue(convertedValues.marketCap)}
+              </span>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (
@@ -868,11 +877,18 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             <StyledCell align="right" isDark={darkMode}>
-              {formatValue(vol24htx, 'int')}
+              <PercentText color={getPercentColor(pro5m)}>
+                {pro5m !== undefined && pro5m !== null && !isNaN(pro5m)
+                  ? `${pro5m > 0 ? '+' : ''}${pro5m.toFixed(2)}%`
+                  : '0.00%'}
+              </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              {currencySymbols[activeFiatCurrency]}
-              {formatValue(convertedValues.volume)}
+              <PercentText color={getPercentColor(pro1h)}>
+                {pro1h !== undefined && pro1h !== null && !isNaN(pro1h)
+                  ? `${pro1h > 0 ? '+' : ''}${pro1h.toFixed(2)}%`
+                  : '0.00%'}
+              </PercentText>
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               <PercentText color={getPercentColor(pro24h)}>
@@ -883,17 +899,14 @@ const DesktopTokenRow = ({
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {currencySymbols[activeFiatCurrency]}
-              {formatValue(convertedValues.tvl)}
+              {formatValue(convertedValues.volume)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'
-                }}
-              >
-                {formatTimeAgo(dateon, date)}
-              </span>
+              {formatValue(vol24htx, 'int')}
+            </StyledCell>
+            <StyledCell align="right" isDark={darkMode}>
+              {currencySymbols[activeFiatCurrency]}
+              {formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" isDark={darkMode}>
               {sparklineUrl ? (

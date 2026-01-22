@@ -109,51 +109,53 @@ const RowContent = styled.div`
 `;
 
 const RowsSelector = styled.select`
-  padding: 0 24px 0 10px;
-  border: none;
-  border-radius: 6px;
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)')};
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')};
-  font-size: 0.72rem;
-  font-weight: 400;
+  padding: 0 28px 0 12px;
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)')};
+  border-radius: 8px;
+  background: ${(props) => (props.darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.7)')};
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  height: 30px;
-  min-width: 60px;
+  height: 32px;
+  min-width: 70px;
   margin-left: ${(props) => (props.noMargin ? '0' : 'auto')};
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   background-image: ${(props) =>
     props.darkMode
-      ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
-      : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
+      ? `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`
+      : `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
   background-repeat: no-repeat;
-  background-position: right 8px center;
+  background-position: right 10px center;
   background-size: 12px;
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)'};
+    border-color: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(59, 130, 246, 0.4)')};
+    background-color: ${(props) => (props.darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)')};
   }
 
   &:focus {
     outline: none;
+    border-color: #3b82f6;
   }
 
   option {
-    background: ${(props) => (props.darkMode ? '#1a1a1a' : '#ffffff')};
-    color: ${(props) => (props.darkMode ? '#fff' : '#333')};
-    padding: 8px;
+    background: ${(props) => (props.darkMode ? '#0a0a0a' : '#ffffff')};
+    color: ${(props) => (props.darkMode ? '#e5e5e5' : '#1a1a1a')};
+    padding: 12px 16px;
+    font-size: 13px;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 28px;
-    min-width: 50px;
-    padding: 0 20px 0 8px;
+    font-size: 0.7rem;
+    height: 30px;
+    min-width: 55px;
+    padding: 0 24px 0 10px;
     background-size: 10px;
-    background-position: right 6px center;
+    background-position: right 8px center;
   }
 `;
 
@@ -975,67 +977,31 @@ const SearchToolbar = memo(function SearchToolbar({
             )}
           </RowContent>
 
-          {/* View mode and rows selectors on the right */}
+          {/* Sort and rows selectors on the right */}
           <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
-            {/* View Mode Selector */}
-            {setViewMode && (
-              <ButtonGroup darkMode={darkMode}>
-                <button
-                  className={viewMode === 'classic' ? 'selected' : ''}
-                  onClick={() => setViewMode('classic')}
-                  title="Classic View"
-                >
-                  Classic
-                </button>
-                <button
-                  className={viewMode === 'priceChange' ? 'selected' : ''}
-                  onClick={() => setViewMode('priceChange')}
-                  title="Price Change View"
-                >
-                  Price
-                </button>
-                <button
-                  className={viewMode === 'marketData' ? 'selected' : ''}
-                  onClick={() => setViewMode('marketData')}
-                  title="Market Data View"
-                >
-                  Market
-                </button>
-                <button
-                  className={viewMode === 'topGainers' ? 'selected' : ''}
-                  onClick={() => setViewMode('topGainers')}
-                  title="Top Gainers View"
-                >
-                  Gainers
-                </button>
-                <button
-                  className={viewMode === 'trader' ? 'selected' : ''}
-                  onClick={() => setViewMode('trader')}
-                  title="Trader View"
-                >
-                  Trader
-                </button>
-                <button
-                  className={viewMode === 'custom' ? 'selected' : ''}
-                  onClick={() => setViewMode('custom')}
-                  title="Custom View"
-                >
-                  Custom
-                </button>
-              </ButtonGroup>
-            )}
-
-            {/* Custom columns settings button */}
-            {viewMode === 'custom' && (
-              <StyledIconButton
-                onClick={() => setCustomSettingsOpen(true)}
-                darkMode={darkMode}
-                title="Configure columns"
-                aria-label="Configure custom columns"
-              >
-                ⚙️
-              </StyledIconButton>
-            )}
+            {/* Sort By Selector */}
+            <RowsSelector
+              darkMode={darkMode}
+              value={currentOrderBy}
+              onChange={(e) => {
+                setOrderBy(e.target.value);
+                localStorage.setItem('tokenListSortBy', e.target.value);
+                setSync((prev) => prev + 1);
+              }}
+              noMargin
+              aria-label="Sort by"
+            >
+              <option value="vol24hxrp">Volume 24H</option>
+              <option value="marketcap">Market Cap</option>
+              <option value="pro5m">Change 5M</option>
+              <option value="pro1h">Change 1H</option>
+              <option value="pro24h">Change 24H</option>
+              <option value="pro7d">Change 7D</option>
+              <option value="tvl">Liquidity</option>
+              <option value="holders">Holders</option>
+              <option value="vol24htx">Trades</option>
+              <option value="dateon">Newest</option>
+            </RowsSelector>
 
             {/* Rows selector */}
             <>

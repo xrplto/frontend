@@ -200,7 +200,13 @@ function TokenListComponent({
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState(initialOrderBy || 'vol24hxrp');
+  const [orderBy, setOrderBy] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tokenListSortBy');
+      if (saved) return saved;
+    }
+    return initialOrderBy || 'vol24hxrp';
+  });
   const [sync, setSync] = useState(tokens?.length > 0 ? 0 : 1);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
@@ -289,10 +295,10 @@ function TokenListComponent({
     // Update customColumns for mobile based on view mode
     const mobileColumnPresets = {
       classic: ['price', 'pro24h'],
-      priceChange: ['price', 'pro1h'],
+      priceChange: ['pro5m', 'pro24h'],
       marketData: ['marketCap', 'volume24h'],
       topGainers: ['price', 'pro5m'],
-      trader: ['volume24h', 'pro24h']
+      trader: ['pro5m', 'pro1h']
     };
     const preset = mobileColumnPresets[newMode];
     if (preset) {
