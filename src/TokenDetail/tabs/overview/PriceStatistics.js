@@ -2017,7 +2017,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
           {/* Token Flow Modal */}
           {flowModalOpen && tokenFlow && (
             <Dialog open onClick={() => setFlowModalOpen(false)}>
-              <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '95%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+              <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px', width: '95%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
                 {/* Modal Header */}
                 <Box style={{ padding: '14px 16px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
@@ -2089,11 +2089,12 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   {tokenFlow.recipients?.length > 0 && (
                     <>
                       {/* Table Header */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 55px 70px 90px 70px', padding: '8px 16px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, position: 'sticky', top: 0 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 80px 80px 80px', padding: '8px 16px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, position: 'sticky', top: 0 }}>
                         <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase' }}>Address</span>
                         <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'center' }}>Source</span>
                         <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Received</span>
-                        <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Buy / Sell</span>
+                        <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Buy</span>
+                        <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Sell</span>
                         <span style={{ fontSize: '9px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', textAlign: 'right' }}>Net</span>
                       </div>
                       {/* Table Rows */}
@@ -2117,7 +2118,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               key={r.address}
                               style={{
                                 display: 'grid',
-                                gridTemplateColumns: '1fr 55px 70px 90px 70px',
+                                gridTemplateColumns: '1fr 60px 80px 80px 80px 80px',
                                 padding: '10px 16px',
                                 alignItems: 'center',
                                 background: isIndirect ? (isDark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.02)') : 'transparent',
@@ -2145,18 +2146,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               <span style={{ fontSize: '9px', textAlign: 'center', fontWeight: 500, color: isDirect ? '#8b5cf6' : '#f59e0b' }}>
                                 {isDirect ? 'Creator' : fromAddr ? fromAddr.slice(0, 6) : '—'}
                               </span>
-                              <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 500, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{fNumber(r.received)}</span>
-                              <span style={{ fontSize: '9px', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                                {(r.boughtXrp > 0 || r.soldXrp > 0) ? (
-                                  <>
-                                    <span style={{ color: '#22c55e' }}>{r.boughtXrp > 0 ? fNumber(r.boughtXrp) : '0'}</span>
-                                    <span style={{ color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)' }}>/</span>
-                                    <span style={{ color: '#ef4444' }}>{r.soldXrp > 0 ? fNumber(r.soldXrp) : '0'}</span>
-                                  </>
-                                ) : <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>}
+                              <span style={{ fontSize: '10px', color: '#8b5cf6', fontWeight: 500, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{fNumber(r.received)} <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '8px' }}>{name}</span></span>
+                              <span style={{ fontSize: '10px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#22c55e' }}>
+                                {r.boughtXrp > 0 ? `${fNumber(r.boughtXrp)}` : <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>}
                               </span>
-                              <span style={{ fontSize: '10px', color: netPnl > 0 ? '#ef4444' : netPnl < 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'), fontWeight: netPnl !== 0 ? 500 : 400, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                                {netPnl !== 0 ? `${netPnl > 0 ? '+' : ''}${Math.round(netPnl).toLocaleString()}` : '—'}
+                              <span style={{ fontSize: '10px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: '#ef4444' }}>
+                                {r.soldXrp > 0 ? `${fNumber(r.soldXrp)}` : <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>}
+                              </span>
+                              <span style={{ fontSize: '10px', color: netPnl > 0 ? '#22c55e' : netPnl < 0 ? '#ef4444' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'), fontWeight: netPnl !== 0 ? 500 : 400, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                                {netPnl !== 0 ? `${netPnl > 0 ? '+' : ''}${Math.round(netPnl).toLocaleString()} XRP` : '—'}
                               </span>
                             </div>
                           );
