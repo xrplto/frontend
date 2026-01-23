@@ -357,6 +357,10 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [aiExpanded, setAiExpanded] = useState(false);
   const aiAbortRef = useRef(null);
 
+  // Token flow state
+  const [tokenFlow, setTokenFlow] = useState(null);
+  const flowAbortRef = useRef(null);
+
   // Fetch AI review immediately
   useEffect(() => {
     if (!token.md5) return;
@@ -379,6 +383,42 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
 
     return () => aiAbortRef.current?.abort();
   }, [token.md5]);
+
+  // Fetch token flow data
+  useEffect(() => {
+    if (!token.md5 || !creator) return;
+
+    if (flowAbortRef.current) flowAbortRef.current.abort();
+    flowAbortRef.current = new AbortController();
+
+    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}/flow`, { signal: flowAbortRef.current.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.summary) {
+          const edges = data.graph?.edges || [];
+          const edgeMap = new Map(edges.map((e) => [e.to, e]));
+          const recipients = (data.graph?.nodes || [])
+            .filter((n) => n.type !== 'creator' && n.type !== 'issuer')
+            .map((n) => {
+              const edge = edgeMap.get(n.id);
+              return {
+                address: n.id,
+                label: n.label,
+                received: n.received,
+                soldXrp: n.soldXrp || 0,
+                boughtXrp: n.boughtXrp || 0,
+                sells: n.sells || 0,
+                buys: n.buys || 0,
+                hash: edge?.hashes?.[0]
+              };
+            });
+          setTokenFlow({ ...data.summary, recipients });
+        }
+      })
+      .catch(() => {});
+
+    return () => flowAbortRef.current?.abort();
+  }, [token.md5, creator]);
 
   // Ref for activity fetch abort controller
   const activityAbortRef = useRef(null);
@@ -1713,6 +1753,67 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       )}
                     </Stack>
                   </Stack>
+                </Box>
+              </ModernTableCell>
+            </TableRowStyled>
+          )}
+
+          {/* Creator Token Flow */}
+          {creator && tokenFlow && (tokenFlow.totalTransferred || tokenFlow.totalSoldXrp > 0) && (
+            <TableRowStyled isDark={isDark}>
+              <ModernTableCell colSpan={2} style={{ padding: '6px 12px 10px' }}>
+                <Box
+                  style={{
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    background: isDark ? 'rgba(139,92,246,0.04)' : 'rgba(139,92,246,0.03)',
+                    border: '1px solid rgba(139,92,246,0.12)'
+                  }}
+                >
+                  {/* Header */}
+                  <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Creator Token Flow
+                  </Typography>
+                  {/* Recipients */}
+                  {tokenFlow.recipients?.length > 0 && (
+                    <Stack style={{ gap: '6px' }}>
+                      {tokenFlow.recipients.slice(0, 5).map((r) => (
+                        <Stack key={r.address} direction="row" alignItems="center" style={{ gap: '10px', fontSize: '11px', flexWrap: 'wrap' }}>
+                          <Link
+                            href={`/address/${r.address}`}
+                            style={{ fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', textDecoration: 'none' }}
+                          >
+                            {r.address.slice(0, 10)}...
+                          </Link>
+                          <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)', fontSize: '10px' }}>received</span>
+                          <span style={{ color: '#8b5cf6', fontWeight: 500 }}>{fNumber(r.received)}</span>
+                          <span style={{ flex: 1 }} />
+                          {r.buys > 0 && (
+                            <span style={{ fontSize: '10px' }}>
+                              <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)' }}>bought </span>
+                              <span style={{ color: '#22c55e' }}>{fNumber(r.boughtXrp)} XRP</span>
+                            </span>
+                          )}
+                          {r.sells > 0 && (
+                            <span style={{ fontSize: '10px' }}>
+                              <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)' }}>sold </span>
+                              <span style={{ color: '#ef4444' }}>{fNumber(r.soldXrp)} XRP</span>
+                            </span>
+                          )}
+                          {r.hash && (
+                            <Link href={`/tx/${r.hash}`} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)', textDecoration: 'none' }}>
+                              tx:{r.hash.slice(0, 6)}
+                            </Link>
+                          )}
+                        </Stack>
+                      ))}
+                      {tokenFlow.recipients.length > 5 && (
+                        <Typography style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
+                          +{tokenFlow.recipients.length - 5} more
+                        </Typography>
+                      )}
+                    </Stack>
+                  )}
                 </Box>
               </ModernTableCell>
             </TableRowStyled>
