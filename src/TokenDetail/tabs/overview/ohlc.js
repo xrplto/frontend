@@ -53,7 +53,8 @@ const processOhlc = (ohlc) => {
       creatorWithdraw: c[8] || 0,
       creatorDeposit: c[9] || 0,
       creatorCheckCash: c[10] || 0,
-      creatorCheckCreate: c[11] || 0
+      creatorCheckCreate: c[11] || 0,
+      creatorTransferOut: c[12] || 0
     }))
     .sort((a, b) => a.time - b.time);
 };
@@ -244,12 +245,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     refs.current.isLoadingMore = true;
     setIsLoadingMore(true);
 
+    // Must match the resolution used in initial fetch (presets)
     const resMap = {
-      '1d': '15',
-      '5d': '15',
-      '1m': '60',
-      '3m': '240',
-      '1y': 'D',
+      '1d': '1',
+      '5d': '5',
+      '1m': '30',
+      '3m': '120',
+      '1y': 'W',
       '5y': 'W',
       all: 'D'
     };
@@ -338,26 +340,46 @@ const PriceChartAdvanced = memo(({ token }) => {
       ws.onmessage = (e) => {
         if (!mounted) return;
         const msg = JSON.parse(e.data);
+        // IGNORE any WS message with ohlc array - use HTTP data only
+        if (msg.ohlc) return;
+
         if (msg.e === 'kline' && msg.k && !refs.current.isZoomed) {
           const k = msg.k;
-          const candle = {
-            time: Math.floor(k.t / 1000),
-            open: +k.o,
-            high: +k.h,
-            low: +k.l,
-            close: +k.c,
-            volume: +k.v || 0,
-            creatorSold: +k.cSold || 0,
-            creatorBought: +k.cBought || 0,
-            creatorWithdraw: +k.cWithdraw || 0,
-            creatorDeposit: +k.cDeposit || 0,
-            creatorCheckCash: +k.cCheckCash || 0,
-            creatorCheckCreate: +k.cCheckCreate || 0
-          };
+          const candleTime = Math.floor(k.t / 1000);
           setData((prev) => {
             if (!prev?.length) return prev;
             const arr = [...prev];
             const last = arr[arr.length - 1];
+
+            // Preserve existing creator events from HTTP, only update price/volume from WS
+            const existingCreator = last.time === candleTime ? {
+              creatorSold: last.creatorSold,
+              creatorBought: last.creatorBought,
+              creatorWithdraw: last.creatorWithdraw,
+              creatorDeposit: last.creatorDeposit,
+              creatorCheckCash: last.creatorCheckCash,
+              creatorCheckCreate: last.creatorCheckCreate,
+              creatorTransferOut: last.creatorTransferOut
+            } : {
+              creatorSold: 0,
+              creatorBought: 0,
+              creatorWithdraw: 0,
+              creatorDeposit: 0,
+              creatorCheckCash: 0,
+              creatorCheckCreate: 0,
+              creatorTransferOut: 0
+            };
+
+            const candle = {
+              time: candleTime,
+              open: +k.o,
+              high: +k.h,
+              low: +k.l,
+              close: +k.c,
+              volume: +k.v || 0,
+              ...existingCreator
+            };
+
             if (last.time === candle.time) arr[arr.length - 1] = candle;
             else if (candle.time > last.time) arr.push(candle);
             else return prev;
@@ -491,6 +513,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         candle: null,
         line: null,
         volume: null,
+        markers: null,
         xrpLine: null,
         tokenLine: null
       };
@@ -792,21 +815,24 @@ const PriceChartAdvanced = memo(({ token }) => {
             candle.creatorWithdraw > 0 ||
             candle.creatorDeposit > 0 ||
             candle.creatorCheckCash > 0 ||
-            candle.creatorCheckCreate > 0;
+            candle.creatorCheckCreate > 0 ||
+            candle.creatorTransferOut > 0;
           if (hasCreatorActivity) {
             html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
             if (candle.creatorSold > 0)
-              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
+              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ff6b6b');
             if (candle.creatorBought > 0)
-              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
+              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#06b6d4');
             if (candle.creatorWithdraw > 0)
-              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
+              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#fbbf24');
             if (candle.creatorDeposit > 0)
-              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#818cf8');
             if (candle.creatorCheckCreate > 0)
-              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#a855f7');
+              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#f472b6');
             if (candle.creatorCheckCash > 0)
-              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#8b5cf6');
+              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#f472b6');
+            if (candle.creatorTransferOut > 0)
+              html += row('Transfer Out', formatMcap(candle.creatorTransferOut), '#f97316');
           }
         } else if (ct === 'line') {
           html +=
@@ -819,21 +845,24 @@ const PriceChartAdvanced = memo(({ token }) => {
             candle.creatorWithdraw > 0 ||
             candle.creatorDeposit > 0 ||
             candle.creatorCheckCash > 0 ||
-            candle.creatorCheckCreate > 0;
+            candle.creatorCheckCreate > 0 ||
+            candle.creatorTransferOut > 0;
           if (hasCreatorActivity) {
             html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
             if (candle.creatorSold > 0)
-              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ef4444');
+              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ff6b6b');
             if (candle.creatorBought > 0)
-              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#22c55e');
+              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#06b6d4');
             if (candle.creatorWithdraw > 0)
-              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#f59e0b');
+              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#fbbf24');
             if (candle.creatorDeposit > 0)
-              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#3b82f6');
+              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#818cf8');
             if (candle.creatorCheckCreate > 0)
-              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#a855f7');
+              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#f472b6');
             if (candle.creatorCheckCash > 0)
-              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#8b5cf6');
+              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#f472b6');
+            if (candle.creatorTransferOut > 0)
+              html += row('Transfer Out', formatMcap(candle.creatorTransferOut), '#f97316');
           }
         } else if (ct === 'holders') {
           html += row('Holders', (candle.holders || candle.value).toLocaleString());
@@ -1064,7 +1093,8 @@ const PriceChartAdvanced = memo(({ token }) => {
             d.creatorWithdraw > 0 ||
             d.creatorDeposit > 0 ||
             d.creatorCheckCash > 0 ||
-            d.creatorCheckCreate > 0
+            d.creatorCheckCreate > 0 ||
+            d.creatorTransferOut > 0
         )
         .flatMap((d) => {
           const arr = [];
@@ -1072,59 +1102,70 @@ const PriceChartAdvanced = memo(({ token }) => {
             arr.push({
               time: d.time,
               position: 'aboveBar',
-              color: '#ef4444',
+              color: '#ff6b6b',
               shape: 'arrowDown',
-              text: 'S'
+              text: 'SELL',
+              size: 2
             });
           }
           if (d.creatorWithdraw > 0) {
             arr.push({
               time: d.time,
               position: 'aboveBar',
-              color: '#f59e0b',
+              color: '#fbbf24',
               shape: 'circle',
-              text: 'W'
+              text: 'W',
+              size: 2
             });
           }
           if (d.creatorBought > 0) {
             arr.push({
               time: d.time,
               position: 'belowBar',
-              color: '#22c55e',
+              color: '#06b6d4',
               shape: 'arrowUp',
-              text: 'B'
+              text: 'BUY',
+              size: 2
             });
           }
           if (d.creatorDeposit > 0) {
             arr.push({
               time: d.time,
               position: 'belowBar',
-              color: '#3b82f6',
+              color: '#818cf8',
               shape: 'circle',
-              text: 'D'
+              text: 'D',
+              size: 2
             });
           }
           if (d.creatorCheckCash > 0 || d.creatorCheckCreate > 0) {
             arr.push({
               time: d.time,
               position: 'aboveBar',
-              color: '#a855f7',
+              color: '#f472b6',
               shape: 'square',
-              text: '✓'
+              text: '✓',
+              size: 2
+            });
+          }
+          if (d.creatorTransferOut > 0) {
+            arr.push({
+              time: d.time,
+              position: 'aboveBar',
+              color: '#f97316',
+              shape: 'arrowDown',
+              text: 'OUT',
+              size: 2
             });
           }
           return arr;
         })
         .sort((a, b) => a.time - b.time);
 
-      // Always recreate markers to avoid stale state
+      // Update markers on existing object, or create new
       if (seriesRefs.current.markers) {
-        try {
-          seriesRefs.current.markers.setMarkers([]);
-        } catch {}
-        seriesRefs.current.markers = null;
-      }
-      if (markers.length > 0) {
+        seriesRefs.current.markers.setMarkers(markers);
+      } else if (markers.length > 0) {
         seriesRefs.current.markers = createSeriesMarkers(priceSeries, markers);
       }
     }

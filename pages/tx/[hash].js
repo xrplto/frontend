@@ -2533,6 +2533,123 @@ const TransactionDetails = ({ txData }) => {
     return { balanceChanges: finalChanges, exchanges };
   };
 
+  // Extract AMM withdrawal/deposit details from metadata
+  const getAMMChanges = () => {
+    if (!meta || !meta.AffectedNodes) return null;
+    if (TransactionType !== 'AMMWithdraw' && TransactionType !== 'AMMDeposit') return null;
+
+    const isWithdraw = TransactionType === 'AMMWithdraw';
+    let lpTokenChange = null;
+    let assetsReceived = [];
+    let assetsDeposited = [];
+
+    // Find LP token change from RippleState (LP tokens have currency starting with '03')
+    // And find XRP/token changes for the initiating account
+    for (const affectedNode of meta.AffectedNodes) {
+      const node = affectedNode.ModifiedNode || affectedNode.DeletedNode;
+      if (!node || !node.LedgerEntryType) continue;
+
+      const finalFields = node.FinalFields || {};
+      const previousFields = node.PreviousFields || {};
+
+      // Check for LP token changes (RippleState with LP token currency)
+      if (node.LedgerEntryType === 'RippleState') {
+        const currency = finalFields.Balance?.currency || previousFields.Balance?.currency;
+        const isLpToken = currency && currency.startsWith('03');
+
+        if (isLpToken) {
+          const prevBalance = previousFields.Balance?.value ? new Decimal(previousFields.Balance.value) : new Decimal(0);
+          const finalBalance = finalFields.Balance?.value ? new Decimal(finalFields.Balance.value) : new Decimal(0);
+          const change = finalBalance.minus(prevBalance);
+
+          // For user's LP token change (not the AMM's)
+          const lowAccount = finalFields.LowLimit?.issuer;
+          const highAccount = finalFields.HighLimit?.issuer;
+          const ammIssuer = highAccount; // AMM account is typically the high limit issuer for LP tokens
+
+          // User is the low account for LP token trustlines
+          if (lowAccount === Account) {
+            lpTokenChange = {
+              value: change.abs().toString(),
+              currency: normalizeCurrencyCode(currency),
+              rawCurrency: currency,
+              issuer: ammIssuer,
+              direction: change.isNegative() ? 'burned' : 'received'
+            };
+          }
+        }
+      }
+
+      // Check for XRP changes for the initiating account
+      if (node.LedgerEntryType === 'AccountRoot' && finalFields.Account === Account) {
+        if (previousFields.Balance) {
+          const change = new Decimal(finalFields.Balance).minus(previousFields.Balance);
+          // Add fee back for withdraw to get actual received amount
+          const feeDrops = new Decimal(Fee || 0);
+          const actualChange = isWithdraw ? change.plus(feeDrops) : change;
+
+          if (!actualChange.isZero()) {
+            const xrpAmount = {
+              value: dropsToXrp(actualChange.abs().toString()),
+              currency: 'XRP',
+              direction: actualChange.isPositive() ? 'received' : 'deposited'
+            };
+            if (isWithdraw && actualChange.isPositive()) {
+              assetsReceived.push(xrpAmount);
+            } else if (!isWithdraw && actualChange.isNegative()) {
+              assetsDeposited.push(xrpAmount);
+            }
+          }
+        }
+      }
+
+      // Check for token changes for the initiating account (non-LP tokens)
+      if (node.LedgerEntryType === 'RippleState') {
+        const currency = finalFields.Balance?.currency || previousFields.Balance?.currency;
+        const isLpToken = currency && currency.startsWith('03');
+
+        if (!isLpToken && previousFields.Balance?.value) {
+          const lowAccount = finalFields.LowLimit?.issuer;
+          const highAccount = finalFields.HighLimit?.issuer;
+
+          if (lowAccount === Account || highAccount === Account) {
+            const prevBalance = new Decimal(previousFields.Balance.value);
+            const finalBalance = new Decimal(finalFields.Balance?.value || 0);
+            let change = finalBalance.minus(prevBalance);
+
+            // Adjust for perspective (balance is from low account's view)
+            if (highAccount === Account) {
+              change = change.negated();
+            }
+
+            if (!change.isZero()) {
+              const tokenAmount = {
+                value: change.abs().toString(),
+                currency: normalizeCurrencyCode(currency),
+                rawCurrency: currency,
+                issuer: lowAccount === Account ? highAccount : lowAccount,
+                direction: change.isPositive() ? 'received' : 'deposited'
+              };
+              if (isWithdraw && change.isPositive()) {
+                assetsReceived.push(tokenAmount);
+              } else if (!isWithdraw && change.isNegative()) {
+                assetsDeposited.push(tokenAmount);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      lpTokenChange,
+      assetsReceived,
+      assetsDeposited
+    };
+  };
+
+  const ammChanges = (TransactionType === 'AMMWithdraw' || TransactionType === 'AMMDeposit') ? getAMMChanges() : null;
+
   const getCancelledOfferDetails = () => {
     if (TransactionType !== 'OfferCancel' || !meta || !meta.AffectedNodes) {
       return null;
@@ -3351,38 +3468,83 @@ const TransactionDetails = ({ txData }) => {
 
             {TransactionType === 'AMMDeposit' && (
               <>
-                {(Amount || Amount2) && (
-                  <DetailRow label="Deposited Assets">
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        gap: '8px'
-                      }}
-                    >
-                      {Amount && (
-                        <div
-                          style={{
-                            border: '1px solid #666',
-                            borderRadius: '6px',
-                            padding: '6px 10px'
-                          }}
-                        >
-                          <AmountDisplay amount={Amount} />
-                        </div>
+                {/* Show assets deposited from metadata or transaction fields */}
+                {(ammChanges?.assetsDeposited?.length > 0 || Amount || Amount2) && (
+                  <DetailRow label="Assets Deposited">
+                    <div className="flex flex-wrap gap-2">
+                      {ammChanges?.assetsDeposited?.length > 0 ? (
+                        ammChanges.assetsDeposited.map((asset, idx) => (
+                          <span
+                            key={`${asset.currency}-${idx}`}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                            style={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.2)',
+                              color: '#ef4444'
+                            }}
+                          >
+                            -{formatDecimal(new Decimal(asset.value))}
+                            {asset.currency === 'XRP' ? (
+                              <XrpDisplay variant="body2" showText={true} />
+                            ) : (
+                              <TokenDisplay
+                                slug={`${asset.issuer}-${asset.rawCurrency}`}
+                                currency={asset.currency}
+                                rawCurrency={asset.rawCurrency}
+                                variant="body2"
+                              />
+                            )}
+                          </span>
+                        ))
+                      ) : (
+                        <>
+                          {Amount && (
+                            <div
+                              style={{
+                                border: '1px solid #666',
+                                borderRadius: '6px',
+                                padding: '6px 10px'
+                              }}
+                            >
+                              <AmountDisplay amount={Amount} />
+                            </div>
+                          )}
+                          {Amount2 && (
+                            <div
+                              style={{
+                                border: '1px solid #666',
+                                borderRadius: '6px',
+                                padding: '6px 10px'
+                              }}
+                            >
+                              <AmountDisplay amount={Amount2} />
+                            </div>
+                          )}
+                        </>
                       )}
-                      {Amount2 && (
-                        <div
-                          style={{
-                            border: '1px solid #666',
-                            borderRadius: '6px',
-                            padding: '6px 10px'
-                          }}
-                        >
-                          <AmountDisplay amount={Amount2} />
-                        </div>
-                      )}
+                    </div>
+                  </DetailRow>
+                )}
+                {/* Show LP tokens received from metadata */}
+                {ammChanges?.lpTokenChange && ammChanges.lpTokenChange.direction === 'received' && (
+                  <DetailRow label="LP Tokens Received">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                        style={{
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          border: '1px solid rgba(16, 185, 129, 0.2)',
+                          color: '#10b981'
+                        }}
+                      >
+                        +{formatDecimal(new Decimal(ammChanges.lpTokenChange.value))}
+                        <TokenDisplay
+                          slug={`${ammChanges.lpTokenChange.issuer}-${ammChanges.lpTokenChange.rawCurrency}`}
+                          currency={ammChanges.lpTokenChange.currency}
+                          rawCurrency={ammChanges.lpTokenChange.rawCurrency}
+                          variant="body2"
+                        />
+                      </span>
                     </div>
                   </DetailRow>
                 )}
@@ -3911,9 +4073,61 @@ const TransactionDetails = ({ txData }) => {
 
             {TransactionType === 'AMMWithdraw' && (
               <>
-                {LPTokenIn && (
-                  <DetailRow label="LP Tokens Withdrawn">
-                    <AmountDisplay amount={LPTokenIn} />
+                {/* Show LP tokens burned from metadata or transaction field */}
+                {(ammChanges?.lpTokenChange || LPTokenIn) && (
+                  <DetailRow label="LP Tokens Burned">
+                    {ammChanges?.lpTokenChange ? (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                          style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            color: '#ef4444'
+                          }}
+                        >
+                          -{formatDecimal(new Decimal(ammChanges.lpTokenChange.value))}
+                          <TokenDisplay
+                            slug={`${ammChanges.lpTokenChange.issuer}-${ammChanges.lpTokenChange.rawCurrency}`}
+                            currency={ammChanges.lpTokenChange.currency}
+                            rawCurrency={ammChanges.lpTokenChange.rawCurrency}
+                            variant="body2"
+                          />
+                        </span>
+                      </div>
+                    ) : (
+                      <AmountDisplay amount={LPTokenIn} />
+                    )}
+                  </DetailRow>
+                )}
+                {/* Show assets received from metadata */}
+                {ammChanges?.assetsReceived?.length > 0 && (
+                  <DetailRow label="Assets Received">
+                    <div className="flex flex-wrap gap-2">
+                      {ammChanges.assetsReceived.map((asset, idx) => (
+                        <span
+                          key={`${asset.currency}-${idx}`}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                          style={{
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                            color: '#10b981'
+                          }}
+                        >
+                          +{formatDecimal(new Decimal(asset.value))}
+                          {asset.currency === 'XRP' ? (
+                            <XrpDisplay variant="body2" showText={true} />
+                          ) : (
+                            <TokenDisplay
+                              slug={`${asset.issuer}-${asset.rawCurrency}`}
+                              currency={asset.currency}
+                              rawCurrency={asset.rawCurrency}
+                              variant="body2"
+                            />
+                          )}
+                        </span>
+                      ))}
+                    </div>
                   </DetailRow>
                 )}
                 {Flags > 0 && getAMMWithdrawFlagExplanation(Flags) && (

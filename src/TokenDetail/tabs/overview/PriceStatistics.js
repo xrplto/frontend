@@ -1553,17 +1553,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         >
                           {creatorLastAction.side || creatorLastAction.type}
                         </Typography>
-                        {creatorLastAction.xrp > 0 && (
-                          <Typography
-                            variant="caption"
-                            style={{
-                              color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
-                              fontSize: '11px'
-                            }}
-                          >
-                            {fNumber(creatorLastAction.xrp)} XRP
-                          </Typography>
-                        )}
+                        {creatorLastAction.xrp >= 0.001 && (
+                            <Typography
+                              variant="caption"
+                              style={{
+                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+                                fontSize: '11px'
+                              }}
+                            >
+                              {fNumber(creatorLastAction.xrp)} XRP
+                            </Typography>
+                          )}
                         <Typography
                           variant="caption"
                           style={{
@@ -1596,7 +1596,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
                       <Typography style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
                         Creator sold{' '}
-                        {creatorLastAction.xrp > 0
+                        {creatorLastAction.xrp >= 0.001
                           ? `${fNumber(creatorLastAction.xrp)} XRP`
                           : 'tokens'}{' '}
                         {formatLastActionTime(creatorLastAction.time)}

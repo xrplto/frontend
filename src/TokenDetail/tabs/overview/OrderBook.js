@@ -5,14 +5,51 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import { Wifi, WifiOff } from 'lucide-react';
 
-// Format price with enough decimals for small values (no scientific notation)
+// Format price with compact notation for small values (matches TokenSummary)
 const formatPrice = (price) => {
-  if (!price || isNaN(price)) return '0';
-  const absPrice = Math.abs(price);
-  if (absPrice >= 1) return price.toFixed(4);
-  if (absPrice >= 0.001) return price.toFixed(6);
-  if (absPrice >= 0.000001) return price.toFixed(10);
-  return price.toFixed(14);
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice) || numPrice === 0) return '0';
+
+  if (numPrice < 0.01) {
+    const str = numPrice.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return { compact: true, zeros, significant: significant.slice(0, 4) };
+    }
+    return numPrice.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 1) {
+    return numPrice.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  } else if (numPrice < 100) {
+    return numPrice.toFixed(2);
+  } else if (numPrice >= 1e6) {
+    return `${(numPrice / 1e6).toFixed(1)}M`;
+  } else if (numPrice >= 1e3) {
+    return `${(numPrice / 1e3).toFixed(1)}K`;
+  }
+  return Math.round(numPrice).toString();
+};
+
+// Render price with compact subscript notation
+const PriceDisplay = ({ price, type }) => {
+  const formatted = formatPrice(price);
+  if (formatted?.compact) {
+    return (
+      <Price type={type}>
+        0.0<sub style={{ fontSize: '0.7em' }}>{formatted.zeros}</sub>{formatted.significant}
+      </Price>
+    );
+  }
+  return <Price type={type}>{formatted}</Price>;
+};
+
+// Inline price renderer for tooltips/spread
+const renderInlinePrice = (price) => {
+  const formatted = formatPrice(price);
+  if (formatted?.compact) {
+    return <>0.0<sub style={{ fontSize: '0.7em' }}>{formatted.zeros}</sub>{formatted.significant}</>;
+  }
+  return formatted;
 };
 import { BookOpen } from 'lucide-react';
 
@@ -599,7 +636,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-                  <Price type="ask">{ask.price.toFixed(precision)}</Price>
+                  <PriceDisplay price={ask.price} type="ask" />
                   <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
                   <Maker
                     isDark={isDark}
@@ -630,7 +667,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                       <span style={{ color: '#ef4444' }}>{fNumber(cumSum)}</span>
                       <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
                       <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
-                      <span>{avgPrice.toFixed(precision)}</span>
+                      <span>{renderInlinePrice(avgPrice)}</span>
                     </div>
                   )}
                 </Row>
@@ -642,11 +679,11 @@ const OrderBook = ({ token, onPriceClick }) => {
         {/* Spread indicator */}
         {viewMode === 'both' && (
           <SpreadBar isDark={isDark}>
-            <span style={{ color: '#22c55e', fontSize: '9px' }}>{bestBid != null ? bestBid.toFixed(precision) : '—'}</span>
+            <span style={{ color: '#22c55e', fontSize: '9px' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
             <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '9px' }}>
               {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
             </span>
-            <span style={{ color: '#ef4444', fontSize: '9px' }}>{bestAsk != null ? bestAsk.toFixed(precision) : '—'}</span>
+            <span style={{ color: '#ef4444', fontSize: '9px' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
           </SpreadBar>
         )}
 
@@ -672,7 +709,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-                  <Price type="bid">{bid.price.toFixed(precision)}</Price>
+                  <PriceDisplay price={bid.price} type="bid" />
                   <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
                   <Maker
                     isDark={isDark}
@@ -703,7 +740,7 @@ const OrderBook = ({ token, onPriceClick }) => {
                       <span style={{ color: '#22c55e' }}>{fNumber(cumSum)}</span>
                       <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}> · </span>
                       <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Avg </span>
-                      <span>{avgPrice.toFixed(precision)}</span>
+                      <span>{renderInlinePrice(avgPrice)}</span>
                     </div>
                   )}
                 </Row>
