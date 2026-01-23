@@ -2667,35 +2667,59 @@ const TransactionDetails = ({ txData }) => {
     if (TransactionType !== 'NFTokenAcceptOffer' || !meta || !meta.AffectedNodes) {
       return null;
     }
-    const offerNode = meta.AffectedNodes.find(
+
+    // Find all deleted NFTokenOffer nodes
+    const offerNodes = meta.AffectedNodes.filter(
       (node) => node.DeletedNode && node.DeletedNode.LedgerEntryType === 'NFTokenOffer'
     );
-    if (offerNode) {
-      const { NFTokenID, Owner, Destination } = offerNode.DeletedNode.FinalFields;
-      let uri = null;
 
-      for (const affectedNode of meta.AffectedNodes) {
-        const node = affectedNode.ModifiedNode || affectedNode.DeletedNode;
-        if (node?.LedgerEntryType === 'NFTokenPage') {
-          const nftList = node.PreviousFields?.NFTokens || node.FinalFields?.NFTokens;
-          if (nftList) {
-            const nft = nftList.find((item) => item.NFToken.NFTokenID === NFTokenID);
-            if (nft?.NFToken.URI) {
-              uri = nft.NFToken.URI;
-              break;
-            }
+    if (offerNodes.length === 0) return null;
+
+    // Check if this is a brokered sale (both buy and sell offers)
+    const sellOfferNode = offerNodes.find(n => (n.DeletedNode.FinalFields.Flags & 1) !== 0);
+    const buyOfferNode = offerNodes.find(n => (n.DeletedNode.FinalFields.Flags & 1) === 0);
+    const isBrokered = sellOfferNode && buyOfferNode;
+
+    // Use the first offer found for NFT details
+    const primaryOffer = offerNodes[0].DeletedNode.FinalFields;
+    const { NFTokenID } = primaryOffer;
+
+    let uri = null;
+    for (const affectedNode of meta.AffectedNodes) {
+      const node = affectedNode.ModifiedNode || affectedNode.DeletedNode;
+      if (node?.LedgerEntryType === 'NFTokenPage') {
+        const nftList = node.PreviousFields?.NFTokens || node.FinalFields?.NFTokens;
+        if (nftList) {
+          const nft = nftList.find((item) => item.NFToken.NFTokenID === NFTokenID);
+          if (nft?.NFToken.URI) {
+            uri = nft.NFToken.URI;
+            break;
           }
         }
       }
+    }
 
+    if (isBrokered) {
+      // Brokered sale: seller is sell offer owner, buyer is buy offer owner
       return {
         nftokenID: NFTokenID,
-        seller: Owner,
-        buyer: Destination || Account,
+        seller: sellOfferNode.DeletedNode.FinalFields.Owner,
+        buyer: buyOfferNode.DeletedNode.FinalFields.Owner,
+        amount: buyOfferNode.DeletedNode.FinalFields.Amount, // What buyer paid
+        uri
+      };
+    } else {
+      // Single offer accepted
+      const { Owner, Destination, Amount, Flags } = primaryOffer;
+      const isSellOffer = (Flags & 1) !== 0;
+      return {
+        nftokenID: NFTokenID,
+        seller: isSellOffer ? Owner : (Destination || Account),
+        buyer: isSellOffer ? (Destination || Account) : Owner,
+        amount: Amount,
         uri
       };
     }
-    return null;
   }, [TransactionType, meta, Account]);
 
   const cancelledNftOffers = useMemo(() => {
@@ -3670,165 +3694,118 @@ const TransactionDetails = ({ txData }) => {
 
             {TransactionType === 'NFTokenAcceptOffer' && acceptedOfferDetails && (
               <>
-                {NFTokenSellOffer && (
-                  <DetailRow label="Sell Offer">
+                {(NFTokenSellOffer || NFTokenBuyOffer) && (
+                  <DetailRow label={NFTokenSellOffer ? 'Sell Offer' : 'Buy Offer'}>
                     <span
                       className={cn(
-                        'text-[13px] font-mono truncate max-w-[300px]',
+                        'text-[13px] font-mono',
                         isDark ? 'text-white/70' : 'text-gray-700'
                       )}
-                      title={NFTokenSellOffer}
+                      title={NFTokenSellOffer || NFTokenBuyOffer}
                     >
-                      {NFTokenSellOffer}
+                      {(NFTokenSellOffer || NFTokenBuyOffer).slice(0, 16)}...{(NFTokenSellOffer || NFTokenBuyOffer).slice(-12)}
                     </span>
                   </DetailRow>
                 )}
-                {NFTokenBuyOffer && (
+                {NFTokenSellOffer && NFTokenBuyOffer && (
                   <DetailRow label="Buy Offer">
                     <span
                       className={cn(
-                        'text-[13px] font-mono truncate max-w-[300px]',
+                        'text-[13px] font-mono',
                         isDark ? 'text-white/70' : 'text-gray-700'
                       )}
                       title={NFTokenBuyOffer}
                     >
-                      {NFTokenBuyOffer}
+                      {NFTokenBuyOffer.slice(0, 16)}...{NFTokenBuyOffer.slice(-12)}
                     </span>
                   </DetailRow>
                 )}
                 <DetailRow label="From">
-                  <div className="flex items-center gap-2">
-                    <Link href={`/address/${acceptedOfferDetails.seller}`}>
-                      <span className="text-primary text-[13px] hover:underline">
-                        {acceptedOfferDetails.seller}
-                      </span>
-                    </Link>
-                  </div>
+                  <Link href={`/address/${acceptedOfferDetails.seller}`}>
+                    <span className="text-primary text-[13px] font-mono hover:underline">
+                      {acceptedOfferDetails.seller}
+                    </span>
+                  </Link>
                 </DetailRow>
                 <DetailRow label="To">
-                  <div className="flex items-center gap-2">
-                    <Link href={`/address/${acceptedOfferDetails.buyer}`}>
-                      <span className="text-primary text-[13px] hover:underline">
-                        {acceptedOfferDetails.buyer}
-                      </span>
-                    </Link>
-                  </div>
+                  <Link href={`/address/${acceptedOfferDetails.buyer}`}>
+                    <span className="text-primary text-[13px] font-mono hover:underline">
+                      {acceptedOfferDetails.buyer}
+                    </span>
+                  </Link>
                 </DetailRow>
-                {/* NFT Card */}
-                {nftInfoLoading ? (
-                  <DetailRow label="NFT">
-                    <Typography>Loading NFT data...</Typography>
+                {acceptedOfferDetails.amount && (
+                  <DetailRow label="Sale Price">
+                    <AmountDisplay amount={acceptedOfferDetails.amount} />
                   </DetailRow>
+                )}
+                {/* NFT Card - Structured Layout */}
+                {nftInfoLoading ? (
+                  <div className={cn('mx-4 my-3 p-4 rounded-xl', isDark ? 'bg-white/[0.02]' : 'bg-gray-50')}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-28 h-28 rounded-lg bg-white/5 animate-pulse" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
+                        <div className="h-3 w-24 bg-white/5 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
                 ) : acceptedNftInfo ? (
                   <div
                     className={cn(
                       'mx-4 my-3 rounded-xl overflow-hidden',
-                      isDark
-                        ? 'bg-white/[0.02] border border-white/10'
-                        : 'bg-gray-50 border border-gray-200'
+                      isDark ? 'bg-white/[0.02] border border-white/10' : 'bg-gray-50 border border-gray-200'
                     )}
                   >
-                    <div className="flex flex-col sm:flex-row">
-                      {/* NFT Image */}
+                    <div className="flex">
+                      {/* NFT Image - Fixed square */}
                       {getNftImage(acceptedNftInfo) && (
-                        <div className="sm:w-48 flex-shrink-0">
-                          <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                            <img
-                              src={getNftImage(acceptedNftInfo)}
-                              alt={acceptedNftInfo.meta?.name || 'NFT'}
-                              className="w-full sm:w-48 h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                            />
-                          </Link>
-                        </div>
+                        <Link href={`/nft/${acceptedNftInfo.NFTokenID}`} className="flex-shrink-0">
+                          <img
+                            src={getNftImage(acceptedNftInfo)}
+                            alt={acceptedNftInfo.meta?.name || 'NFT'}
+                            className="w-28 h-28 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          />
+                        </Link>
                       )}
-                      {/* NFT Details */}
-                      <div className="flex-1 p-4">
-                        <div className="flex items-start justify-between mb-2">
+                      {/* NFT Info - Grid Layout */}
+                      <div className="flex-1 p-3 flex flex-col justify-between">
+                        <div className="flex items-start justify-between">
                           <div>
                             <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                              <h3
-                                className={cn(
-                                  'text-[15px] font-medium hover:text-[#4285f4] cursor-pointer',
-                                  isDark ? 'text-white' : 'text-gray-900'
-                                )}
-                              >
+                              <h3 className={cn('text-[14px] font-medium hover:text-primary cursor-pointer', isDark ? 'text-white' : 'text-gray-900')}>
                                 {acceptedNftInfo.meta?.name || 'Unnamed NFT'}
                               </h3>
                             </Link>
                             {acceptedNftInfo.collection && (
-                              <Link
-                                href={`/nfts/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}
-                              >
-                                <span className="text-[12px] text-[#4285f4] hover:underline cursor-pointer">
-                                  {acceptedNftInfo.collection}
-                                </span>
+                              <Link href={`/nfts/${acceptedNftInfo.cslug || acceptedNftInfo.collection}`}>
+                                <span className="text-[11px] text-primary hover:underline">{acceptedNftInfo.collection}</span>
                               </Link>
                             )}
                           </div>
-                          {typeof acceptedNftInfo.royalty !== 'undefined' &&
-                            acceptedNftInfo.royalty > 0 && (
-                              <span
-                                className={cn(
-                                  'text-[11px] px-2 py-0.5 rounded',
-                                  isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600'
-                                )}
-                              >
-                                {acceptedNftInfo.royalty / 1000}% royalty
-                              </span>
-                            )}
+                          {typeof acceptedNftInfo.royalty !== 'undefined' && acceptedNftInfo.royalty > 0 && (
+                            <span className={cn('text-[10px] px-1.5 py-0.5 rounded', isDark ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500')}>
+                              {acceptedNftInfo.royalty / 1000}% royalty
+                            </span>
+                          )}
                         </div>
-                        <div className="space-y-2 mt-3">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                'text-[11px] uppercase w-16',
-                                isDark ? 'text-white/40' : 'text-gray-400'
-                              )}
-                            >
-                              Issuer
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <Link href={`/address/${acceptedNftInfo.issuer}`}>
-                                <span className="text-[12px] text-[#4285f4] hover:underline font-mono">
-                                  {acceptedNftInfo.issuer.slice(0, 8)}...
-                                  {acceptedNftInfo.issuer.slice(-4)}
-                                </span>
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                'text-[11px] uppercase w-16',
-                                isDark ? 'text-white/40' : 'text-gray-400'
-                              )}
-                            >
-                              ID
-                            </span>
-                            <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
-                              <span className="text-[11px] text-[#4285f4] hover:underline font-mono">
-                                {acceptedNftInfo.NFTokenID.slice(0, 12)}...
-                                {acceptedNftInfo.NFTokenID.slice(-8)}
-                              </span>
+                        {/* Structured NFT Details Grid */}
+                        <div className="grid grid-cols-3 gap-x-4 gap-y-1 mt-2">
+                          <div>
+                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>Issuer</span>
+                            <Link href={`/address/${acceptedNftInfo.issuer}`}>
+                              <span className="text-[11px] text-primary hover:underline font-mono">{acceptedNftInfo.issuer.slice(0, 8)}...{acceptedNftInfo.issuer.slice(-4)}</span>
                             </Link>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                'text-[11px] uppercase w-16',
-                                isDark ? 'text-white/40' : 'text-gray-400'
-                              )}
-                            >
-                              Taxon
-                            </span>
-                            <span
-                              className={cn(
-                                'text-[12px]',
-                                isDark ? 'text-white/70' : 'text-gray-600'
-                              )}
-                            >
-                              {acceptedNftInfo.taxon}
-                            </span>
+                          <div>
+                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>ID</span>
+                            <Link href={`/nft/${acceptedNftInfo.NFTokenID}`}>
+                              <span className="text-[11px] text-primary hover:underline font-mono">{acceptedNftInfo.NFTokenID.slice(0, 8)}...{acceptedNftInfo.NFTokenID.slice(-8)}</span>
+                            </Link>
+                          </div>
+                          <div>
+                            <span className={cn('text-[10px] uppercase block', isDark ? 'text-white/30' : 'text-gray-400')}>Taxon</span>
+                            <span className={cn('text-[11px]', isDark ? 'text-white/70' : 'text-gray-600')}>{acceptedNftInfo.taxon}</span>
                           </div>
                         </div>
                       </div>
@@ -3837,8 +3814,8 @@ const TransactionDetails = ({ txData }) => {
                 ) : (
                   <DetailRow label="NFT">
                     <Link href={`/nft/${acceptedOfferDetails.nftokenID}`}>
-                      <span className="text-[#4285f4] hover:underline break-all text-[13px] font-mono">
-                        {acceptedOfferDetails.nftokenID}
+                      <span className="text-primary hover:underline text-[13px] font-mono">
+                        {acceptedOfferDetails.nftokenID.slice(0, 16)}...{acceptedOfferDetails.nftokenID.slice(-12)}
                       </span>
                     </Link>
                   </DetailRow>
