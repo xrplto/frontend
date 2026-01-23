@@ -906,7 +906,7 @@ const TokenSummary = memo(({ token }) => {
             )}
             {isRemove ? 'Untrust' : 'Trust'}
           </button>
-          <ApiButton />
+          <ApiButton token={token} />
         </div>
         <div className="flex items-center gap-1">
           <Watch token={token} />

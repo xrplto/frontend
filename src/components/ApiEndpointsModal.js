@@ -402,7 +402,7 @@ export const PAGE_ENDPOINTS = {
   '/news': ['/news', '/news/search', '/news/sentiment-chart']
 };
 
-const ApiEndpointsModal = memo(({ open, onClose }) => {
+const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const router = useRouter();
@@ -414,6 +414,13 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
   const [loadingPath, setLoadingPath] = useState(null);
   const [copiedResponse, setCopiedResponse] = useState(null);
   const [responsePreview, setResponsePreview] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
+
+  const copyField = (value, field) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1200);
+  };
 
   // Get page-specific endpoints based on current route
   const pageEndpoints = useMemo(() => {
@@ -460,10 +467,23 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
   };
 
   const tryAndCopy = async (ep) => {
-    if (ep.method !== 'GET' || ep.path.includes(':')) return;
+    if (ep.method !== 'GET') return;
+    // Build URL, replacing params with token data
+    let url = ep.path;
+    if (ep.path.includes(':') && token) {
+      url = url
+        .replace(':md5', token.md5 || '')
+        .replace(':id', token.md5 || '')
+        .replace(':address', token.issuer || '')
+        .replace(':account', token.issuer || '')
+        .replace(':slug', token.slug || token.md5 || '');
+      if (url.includes(':')) return; // Still has unresolved params
+    } else if (ep.path.includes(':')) {
+      return; // No token data for params
+    }
     setLoadingPath(ep.path);
     try {
-      const res = await axios.get(`https://api.xrpl.to/v1${ep.path}`);
+      const res = await axios.get(`https://api.xrpl.to/v1${url}`);
       await navigator.clipboard.writeText(JSON.stringify(res.data, null, 2));
       setCopiedResponse(ep.path);
       setResponsePreview({ url: ep.path, data: res.data });
@@ -472,6 +492,19 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
       console.error(e);
     }
     setLoadingPath(null);
+  };
+
+  const canTry = (ep) => {
+    if (ep.method !== 'GET') return false;
+    if (!ep.path.includes(':')) return true;
+    if (!token) return false;
+    const resolved = ep.path
+      .replace(':md5', token.md5 || '')
+      .replace(':id', token.md5 || '')
+      .replace(':address', token.issuer || '')
+      .replace(':account', token.issuer || '')
+      .replace(':slug', token.slug || token.md5 || '');
+    return !resolved.includes(':');
   };
 
   const toggleCategory = (key) => {
@@ -594,6 +627,46 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
           )}
         </div>
 
+        {/* Token Info Section */}
+        {token && (
+          <div className={cn('px-3 py-2 border-b', isDark ? 'border-white/10' : 'border-gray-100')}>
+            <div className={cn('text-[9px] uppercase tracking-wider mb-1.5', isDark ? 'text-white/40' : 'text-gray-400')}>
+              Token Data
+            </div>
+            <div className="space-y-1">
+              {[
+                { label: 'md5', value: token.md5 },
+                { label: 'issuer', value: token.issuer },
+                { label: 'currency', value: token.currency },
+                ...(token.creator ? [{ label: 'creator', value: token.creator }] : []),
+                ...(token.AMM ? [{ label: 'amm', value: token.AMM }] : [])
+              ].filter(item => item.value).map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => copyField(item.value, item.label)}
+                  className={cn(
+                    'group w-full flex items-center gap-2 px-2 py-1 rounded text-left',
+                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                  )}
+                >
+                  <span className={cn('text-[9px] w-12 flex-shrink-0', isDark ? 'text-white/40' : 'text-gray-400')}>
+                    {item.label}
+                  </span>
+                  <span className={cn('font-mono text-[10px] truncate flex-1', isDark ? 'text-white/70' : 'text-gray-600')}>
+                    {item.value}
+                  </span>
+                  <span className={cn(
+                    'flex-shrink-0',
+                    copiedField === item.label ? 'text-green-500' : isDark ? 'text-white/20 group-hover:text-white/40' : 'text-gray-300 group-hover:text-gray-400'
+                  )}>
+                    {copiedField === item.label ? <Check size={10} /> : <Copy size={10} />}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {view === 'detected' ? (
@@ -624,7 +697,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                           </span>
                         </div>
                         <div className="flex items-center gap-0.5">
-                          {ep.method === 'GET' && !ep.path.includes(':') && (
+                          {canTry(ep) && (
                             <button
                               onClick={() => tryAndCopy(ep)}
                               className={cn(
@@ -804,7 +877,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-0.5 shrink-0">
-                                  {ep.method === 'GET' && !ep.path.includes(':') && (
+                                  {canTry(ep) && (
                                     <button
                                       onClick={() => tryAndCopy(ep)}
                                       className={cn(
@@ -939,7 +1012,7 @@ const ApiEndpointsModal = memo(({ open, onClose }) => {
 });
 
 // Standalone button + modal combo
-export const ApiButton = memo(({ className = '' }) => {
+export const ApiButton = memo(({ className = '', token = null }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [open, setOpen] = useState(false);
@@ -965,7 +1038,7 @@ export const ApiButton = memo(({ className = '' }) => {
         <Code2 size={12} className="relative z-10" />
         <span className="relative z-10">API</span>
       </button>
-      <ApiEndpointsModal open={open} onClose={() => setOpen(false)} />
+      <ApiEndpointsModal open={open} onClose={() => setOpen(false)} token={token} />
     </>
   );
 });
