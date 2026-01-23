@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';

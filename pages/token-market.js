@@ -1,7 +1,7 @@
 import { useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import styled from '@emotion/styled';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';

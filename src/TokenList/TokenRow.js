@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 import Image from 'next/image';
 import axios from 'axios';
 
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 // Constants

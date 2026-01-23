@@ -23,7 +23,7 @@ const currencySymbols = {
 };
 
 // Components
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 // Removed ECharts dependency
 import { format } from 'date-fns';
 import Link from 'next/link';

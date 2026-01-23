@@ -1,7 +1,7 @@
 import { memo, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { X, Plus, Search, Trash2, ChevronLeft } from 'lucide-react';
 import axios from 'axios';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useTokenTabs, addTokenToTabs } from 'src/hooks/useTokenTabs';
 import { cn } from 'src/utils/cn';
 import { getHashIcon } from 'src/utils/formatters';

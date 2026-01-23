@@ -16,7 +16,7 @@ import {
   Share2
 } from 'lucide-react';
 
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';

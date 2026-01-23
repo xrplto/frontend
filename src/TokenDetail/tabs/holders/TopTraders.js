@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
 

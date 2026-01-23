@@ -4,8 +4,8 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import CollectionList from './CollectionList';
-import { fVolume, fIntNumber } from 'src/utils/formatters';
-import { AppContext } from 'src/AppContext';
+import { fVolume, fIntNumber, normalizeTag } from 'src/utils/formatters';
+import { AppContext } from 'src/context/AppContext';
 import { X, Search } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 
@@ -781,6 +781,7 @@ const TagChip = styled.button`
 const AllTagsButton = styled.button`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 0 12px;
   border: 1px solid ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(191, 219, 254, 1)')};
@@ -792,8 +793,11 @@ const AllTagsButton = styled.button`
   cursor: pointer;
   white-space: nowrap;
   height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  box-sizing: border-box;
   flex-shrink: 0;
-  margin-left: auto;
+  margin-left: 0;
   transition: all 0.3s ease;
 
   &:hover {
@@ -804,6 +808,8 @@ const AllTagsButton = styled.button`
   @media (max-width: 600px) {
     font-size: 11px;
     height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     padding: 0 10px;
     gap: 4px;
   }
@@ -998,16 +1004,6 @@ const EmptyState = styled.div`
   color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   font-size: 14px;
 `;
-
-const normalizeTag = (tag) => {
-  if (!tag) return '';
-  return tag
-    .split(' ')
-    .join('-')
-    .replace(/&/g, 'and')
-    .toLowerCase()
-    .replace(/[^a-zA-Z0-9-]/g, '');
-};
 
 const formatNumberWithDecimals = (num) => {
   if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;

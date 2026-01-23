@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import { cn } from 'src/utils/cn';
 

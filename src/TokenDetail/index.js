@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useCallback, memo } from 'react';
 
 // Components
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Overview from './tabs/overview';
 import TokenTabs from './components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';

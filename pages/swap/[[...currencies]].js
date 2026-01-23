@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Components
 import Header from 'src/components/Header';

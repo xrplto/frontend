@@ -48,7 +48,7 @@ import {
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Translation removed - not using i18n
 

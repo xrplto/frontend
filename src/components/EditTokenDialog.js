@@ -7,7 +7,7 @@ import { cn } from 'src/utils/cn';
 import { PulseLoader } from './Spinners';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Redux
 import { useSelector } from 'react-redux';

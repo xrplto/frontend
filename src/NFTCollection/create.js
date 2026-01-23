@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';

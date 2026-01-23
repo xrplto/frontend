@@ -11,9 +11,9 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import TokenTabs from 'src/TokenDetail/components/TokenTabs';
 import { addTokenToTabs } from 'src/hooks/useTokenTabs';
-const NFTDetail = lazy(() => import('src/nft'));
+const NFTDetail = lazy(() => import('src/Nft'));
 
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 export default function Overview({ nft }) {
   const { themeName } = useContext(AppContext);

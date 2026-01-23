@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';

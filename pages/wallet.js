@@ -6,7 +6,7 @@ import styled from '@emotion/styled';
 import { MD5 } from 'crypto-js';
 import { Client, Wallet as XRPLWallet } from 'xrpl';
 import { toast } from 'sonner';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';

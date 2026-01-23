@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { useContext, useState, useEffect } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import axios from 'axios';

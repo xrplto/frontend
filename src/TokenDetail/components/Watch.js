@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import styled from '@emotion/styled';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { Bookmark } from 'lucide-react';
 
 const WatchButton = styled.button`

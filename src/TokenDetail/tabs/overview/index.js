@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 
 // Dynamic imports for heavy components (code splitting)

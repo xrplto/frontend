@@ -2,7 +2,7 @@ import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns
 import axios from 'axios';
 import hashicon from 'hashicon';
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // ==== THEME COMPATIBILITY ====
 
@@ -184,6 +184,37 @@ export function formatMonthYearDate(time) {
   } catch (e) {
     return '';
   }
+}
+
+// ==== DECIMAL HELPERS ====
+
+// Convert Decimal.js amount to number (used in mint dialogs)
+export function getDecimalNum(amount) {
+  try {
+    const Decimal = require('decimal.js-light');
+    const num = new Decimal(amount).toNumber();
+    return num < 0 ? 0 : num;
+  } catch (err) {
+    return 0;
+  }
+}
+
+// Normalize collection name (handles object or string format)
+export function normalizeCollectionName(name) {
+  if (!name) return 'Unnamed Collection';
+  if (typeof name === 'string') return name;
+  return name?.collection_name || 'Unnamed Collection';
+}
+
+// Normalize tag for URL (kebab-case, lowercase)
+export function normalizeTag(tag) {
+  if (!tag) return '';
+  return tag
+    .split(' ')
+    .join('-')
+    .replace(/&/g, 'and')
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9-]/g, '');
 }
 
 // ==== UTILITY FUNCTIONS ====

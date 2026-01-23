@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 const BASE_URL = 'https://api.xrpl.to/v1';

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 function Logo({ asLink = true, style }) {
   const { themeName } = useContext(AppContext);

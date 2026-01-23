@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useState, useRef } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
 import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, Settings } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';

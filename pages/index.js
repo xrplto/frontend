@@ -12,7 +12,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import Logo from 'src/components/Logo';
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const OverviewWrapper = styled.div`
   overflow: hidden;

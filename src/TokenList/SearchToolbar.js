@@ -2,10 +2,11 @@ import React, { useState, useMemo, memo, useRef, useEffect, Fragment } from 'rea
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Link from 'next/link';
 import { Search, X, Newspaper, Flame, TrendingUp, Sparkles } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
+import { normalizeTag } from 'src/utils/formatters';
 
 // Styled Components
 const Container = styled.div`
@@ -592,17 +593,6 @@ const EmptyState = styled.div`
   color: ${(props) => (props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(33, 43, 54, 0.5)')};
   font-size: 14px;
 `;
-
-// Normalize tag function (shared)
-const normalizeTag = (tag) => {
-  if (!tag) return '';
-  return tag
-    .split(' ')
-    .join('-')
-    .replace(/&/g, 'and')
-    .toLowerCase()
-    .replace(/[^a-zA-Z0-9-]/g, '');
-};
 
 // Categories Drawer Content Component
 const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, darkMode }) {

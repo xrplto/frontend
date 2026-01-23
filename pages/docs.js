@@ -34,7 +34,7 @@ import {
   BadgeCheck,
   Play
 } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';

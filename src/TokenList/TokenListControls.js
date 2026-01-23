@@ -1,6 +1,6 @@
 import React, { useContext, memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import {
   ChevronsLeft,
   ChevronsRight,

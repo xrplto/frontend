@@ -10,7 +10,7 @@ import {
 } from 'react';
 import styled from '@emotion/styled';
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
 import { TokenListHead } from './TokenListControls';

@@ -25,7 +25,7 @@ const useWindowSize = () => {
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Icons
 import { Edit, CheckCircle2 } from 'lucide-react';
@@ -33,6 +33,7 @@ import { Edit, CheckCircle2 } from 'lucide-react';
 // Utils
 import { cn } from 'src/utils/cn';
 import { getNftCoverUrl } from 'src/utils/parseUtils';
+import { normalizeCollectionName } from 'src/utils/formatters';
 
 // Components
 import BuyMintDialog from './BuyMintDialog';
@@ -108,9 +109,7 @@ export default function SpinNFT({ collection, setView }) {
     extra
   } = collection;
 
-  // Normalize name/description: API may return object {collection_name, collection_description} or string
-  const name =
-    typeof rawName === 'object' && rawName !== null ? rawName.collection_name || '' : rawName || '';
+  const name = normalizeCollectionName(rawName);
   const description =
     typeof rawDescription === 'object' && rawDescription !== null
       ? rawDescription.collection_description || ''

@@ -1,9 +1,8 @@
 import axios from 'axios';
 import React, { useState, useEffect, useContext, useCallback, memo, useRef } from 'react';
 import styled from '@emotion/styled';
-import { AppContext } from 'src/AppContext';
-import { formatMonthYearDate } from 'src/utils/formatters';
-import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
+import { AppContext } from 'src/context/AppContext';
+import { formatMonthYearDate, fNumber, fIntNumber, fVolume, normalizeCollectionName } from 'src/utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, List } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import NFTSparklineChart from './NFTSparklineChart';
@@ -737,10 +736,7 @@ OptimizedImage.displayName = 'OptimizedImage';
 const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
-  // Handle name being an object {collection_name, collection_description} or string
-  const collectionName =
-    typeof name === 'string' ? name : name?.collection_name || 'Unnamed Collection';
-
+  const collectionName = normalizeCollectionName(name);
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor || 0;
   const floorChangePercent = floor1dPercent || 0;
@@ -814,10 +810,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     origin
   } = collection;
 
-  // Handle name being an object {collection_name, collection_description} or string
-  const collectionName =
-    typeof name === 'string' ? name : name?.collection_name || 'Unnamed Collection';
-
+  const collectionName = normalizeCollectionName(name);
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor || 0;
   const floorChangePercent = floor1dPercent || 0;

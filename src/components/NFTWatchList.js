@@ -3,7 +3,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import { ChevronDown, Trash2, ExternalLink, Loader2, X } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const BASE_URL = 'https://api.xrpl.to';
 

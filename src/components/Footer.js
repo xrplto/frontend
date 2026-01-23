@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import styled from '@emotion/styled';
 import { Twitter, Send, MessageCircle } from 'lucide-react';
 import Logo from 'src/components/Logo';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Helper function
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);

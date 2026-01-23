@@ -15,7 +15,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { selectMetrics } from 'src/redux/statusSlice';
 import {
   ExternalLink,

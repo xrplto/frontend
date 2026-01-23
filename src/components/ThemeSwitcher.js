@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Palette, Sun, Moon } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const themes = [
   {

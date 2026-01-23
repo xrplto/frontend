@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Loader
 import { ClipLoader } from 'src/components/Spinners';

@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styled from '@emotion/styled';
 import { Edit, X } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 

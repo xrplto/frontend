@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useMemo, useRef } from 'react';
 import styled from '@emotion/styled';
 import axios from 'axios';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import { Wifi, WifiOff } from 'lucide-react';
 

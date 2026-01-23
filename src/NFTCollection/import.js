@@ -46,7 +46,7 @@ import { ClipLoader } from '../components/Spinners';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';

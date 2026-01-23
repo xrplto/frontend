@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';

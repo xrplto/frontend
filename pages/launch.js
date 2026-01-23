@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import axios from 'axios';
 import * as xrpl from 'xrpl';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';

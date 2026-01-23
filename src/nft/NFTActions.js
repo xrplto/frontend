@@ -24,7 +24,7 @@ import { ApiButton } from 'src/components/ApiEndpointsModal';
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { normalizeAmount } from 'src/utils/parseUtils';
 import { fNumber, fIntNumber, getHashIcon } from 'src/utils/formatters';
 

@@ -80,7 +80,7 @@ const Pagination = ({
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';

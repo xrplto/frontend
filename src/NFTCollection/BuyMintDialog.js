@@ -1,20 +1,10 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-import Decimal from 'decimal.js-light';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { X, ShoppingCart } from 'lucide-react';
 import { PulseLoader } from '../components/Spinners';
-import { fNumber } from 'src/utils/formatters';
-
-function GetNum(amount) {
-  let num = 0;
-  try {
-    num = new Decimal(amount).toNumber();
-    if (num < 0) num = 0;
-  } catch (err) {}
-  return num;
-}
+import { fNumber, getDecimalNum as GetNum } from 'src/utils/formatters';
 
 export default function BuyMintDialog({
   open,

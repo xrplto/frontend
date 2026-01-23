@@ -1,7 +1,7 @@
 import React, { useContext, memo, useState, useCallback, useMemo } from 'react';
 import styled from '@emotion/styled';
 import axios from 'axios';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap } from 'lucide-react';

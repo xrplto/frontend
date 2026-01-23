@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
 import {

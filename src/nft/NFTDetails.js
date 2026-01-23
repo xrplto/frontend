@@ -27,7 +27,7 @@ import {
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Utils
 import { cn } from 'src/utils/cn';

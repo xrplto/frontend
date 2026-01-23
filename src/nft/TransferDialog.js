@@ -4,7 +4,7 @@ import Decimal from 'decimal.js-light';
 import { X, Send } from 'lucide-react';
 
 // Context
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';

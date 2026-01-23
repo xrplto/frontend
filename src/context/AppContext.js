@@ -7,7 +7,7 @@ import { Provider, useDispatch } from 'react-redux';
 import { configureRedux } from 'src/redux/store';
 
 // Loader
-import { PuffLoader } from './components/Spinners';
+import { PuffLoader } from 'src/components/Spinners';
 
 // Encrypted storage for sensitive data
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';

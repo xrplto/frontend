@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useState, useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from 'src/components/Header';

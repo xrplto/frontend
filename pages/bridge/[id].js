@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Check, Copy, RefreshCw, ExternalLink } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { trackExchange } from 'src/components/BridgeTracker';

@@ -34,7 +34,7 @@ import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // ============================================
 // MUI Replacement Utilities

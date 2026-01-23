@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { fNumber } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const TYPE_CONFIG = {
   SALE: { label: 'Sale', color: '#e5e5e5', Icon: DollarSign },

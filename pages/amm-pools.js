@@ -5,7 +5,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styled from '@emotion/styled';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatters';

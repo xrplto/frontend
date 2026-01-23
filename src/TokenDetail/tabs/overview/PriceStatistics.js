@@ -32,7 +32,7 @@ import {
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 // Helper
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);

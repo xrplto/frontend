@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { CheckCircle, X, Repeat, Clock } from 'lucide-react';
 import { FadeLoader, PuffLoader, PulseLoader } from '../components/Spinners';

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import React, { useEffect, useState, useContext } from 'react';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { Tag, Store } from 'lucide-react';
 import { PuffLoader, BarLoader } from '../components/Spinners';
+import { normalizeCollectionName } from 'src/utils/formatters';
 
 // Constants
 const NFToken = {
@@ -52,9 +52,7 @@ export default function NFTActionsBulk({ nft }) {
     costs
   } = nft;
 
-  // Normalize name: API may return object {collection_name, collection_description} or string
-  const name =
-    typeof rawName === 'object' && rawName !== null ? rawName.collection_name || '' : rawName || '';
+  const name = normalizeCollectionName(rawName);
 
   useEffect(() => {
     function getMints() {

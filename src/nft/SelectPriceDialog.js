@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useContext } from 'react';
 import Decimal from 'decimal.js-light';
 import { X, CheckCircle, ArrowRight } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { normalizeAmount } from 'src/utils/parseUtils';
 import { formatDateTime, checkExpiration } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';

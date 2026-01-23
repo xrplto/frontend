@@ -13,7 +13,7 @@ import {
   Play,
   Loader2
 } from 'lucide-react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import axios from 'axios';
 

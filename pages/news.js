@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 import { fNumber } from 'src/utils/formatters';
 
 // Filter type labels

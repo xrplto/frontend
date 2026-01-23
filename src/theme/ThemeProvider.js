@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { AppContext } from 'src/AppContext';
+import { AppContext } from 'src/context/AppContext';
 
 const ThemeProviderWrapper = (props) => {
   const [isMounted, setIsMounted] = useState(false);
