@@ -193,7 +193,7 @@ const OverView = ({ account }) => {
             .get(`https://api.xrpl.to/v1/account/balance/${account}?rank=true`)
             .catch(() => ({ data: null })),
           axios
-            .get(`https://api.xrpl.to/v1/account/info/live/${account}`)
+            .get(`https://api.xrpl.to/v1/account/info/${account}`)
             .catch(() => ({ data: null }))
         ]);
 
@@ -272,8 +272,12 @@ const OverView = ({ account }) => {
     if (activeTab !== 'nfts' || !account || nftCollectionStats.length > 0) return;
     setNftCollectionStatsLoading(true);
     axios
-      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/collections`)
-      .then((res) => setNftCollectionStats(res.data?.collections || []))
+      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/collections?limit=100`)
+      .then((res) => {
+        const collections = res.data?.collections || [];
+        collections.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+        setNftCollectionStats(collections);
+      })
       .catch(() => setNftCollectionStats([]))
       .finally(() => setNftCollectionStatsLoading(false));
   }, [activeTab, account]);
@@ -282,7 +286,7 @@ const OverView = ({ account }) => {
   useEffect(() => {
     if (activeTab !== 'nfts' || !account || nftHistory.length > 0) return;
     axios
-      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/history?limit=90`)
+      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/history?limit=365`)
       .then((res) => setNftHistory(res.data?.history || []))
       .catch(() => setNftHistory([]));
   }, [activeTab, account]);
@@ -365,7 +369,7 @@ const OverView = ({ account }) => {
     if (activeTab !== 'activity' || !account || nftTrades.length > 0) return;
     setNftTradesLoading(true);
     axios
-      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/trades?limit=50`)
+      .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}/trades?offset=0&limit=50`)
       .then((res) => setNftTrades(res.data?.trades || []))
       .catch(() => setNftTrades([]))
       .finally(() => setNftTradesLoading(false));

@@ -961,55 +961,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         })
         .catch((err) => {});
 
-      // Check trustlines - implement pagination to fetch all trustlines
-      const fetchAllTrustlines = async () => {
-        try {
-          let allTrustlines = [];
-          let currentPage = 0;
-          let totalTrustlines = 0;
-
-          // First request to get initial data and total count
-          const firstResponse = await axios.get(
-            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`
-          );
-
-          if (firstResponse.status === 200 && firstResponse.data) {
-            allTrustlines = firstResponse.data.lines || [];
-            totalTrustlines = firstResponse.data.total || 0;
-
-            // If total is more than 50, fetch additional pages starting from page 1
-            if (totalTrustlines > 50) {
-              const totalPages = Math.ceil(totalTrustlines / 50);
-              const additionalRequests = [];
-
-              // Create requests for pages 1 through totalPages-1 (since we already have page 0)
-              for (let page = 1; page < totalPages; page++) {
-                additionalRequests.push(
-                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`)
-                );
-              }
-
-              // Execute all additional requests in parallel
-              const additionalResponses = await Promise.all(additionalRequests);
-
-              // Combine all trustlines from additional pages
-              additionalResponses.forEach((response, index) => {
-                if (response.status === 200 && response.data.lines) {
-                  allTrustlines = allTrustlines.concat(response.data.lines);
-                }
-              });
-            }
-
-            return allTrustlines;
-          }
-
-          return [];
-        } catch (error) {
-          return [];
-        }
-      };
-
-      fetchAllTrustlines()
+      // Check trustlines
+      axios
+        .get(`${BASE_URL}/account/lines/${account}`)
+        .then((res) => res.status === 200 ? res.data.lines || [] : [])
+        .catch(() => [])
         .then((allTrustlines) => {
           setTrustlines(allTrustlines);
 

@@ -381,7 +381,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    fetch(`https://api.xrpl.to/v1/ai/token/${token.md5}`, { signal: aiAbortRef.current.signal })
+    fetch(`https://api.xrpl.to/v1/token-review/${token.md5}`, { signal: aiAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
         if (data?.score !== undefined) {
