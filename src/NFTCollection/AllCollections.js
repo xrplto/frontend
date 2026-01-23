@@ -779,32 +779,33 @@ const TagChip = styled.button`
 `;
 
 const AllTagsButton = styled.button`
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 0 12px;
-  border: none;
-  border-radius: 16px;
-  background: ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)')};
-  color: #3b82f6;
-  font-size: 0.7rem;
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(191, 219, 254, 1)')};
+  border-radius: 8px;
+  background: ${(props) => (props.isDark ? '#0d0d1a' : 'linear-gradient(to right, #eff6ff, #ecfeff)')};
+  color: ${(props) => (props.isDark ? '#93c5fd' : '#2563eb')};
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  height: 26px;
+  height: 32px;
   flex-shrink: 0;
   margin-left: auto;
-  transition: all 0.15s ease;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(59, 130, 246, 0.2);
+    border-color: ${(props) => (props.isDark ? 'rgba(96, 165, 250, 0.5)' : 'rgba(147, 197, 253, 1)')};
+    color: ${(props) => (props.isDark ? '#fff' : '#2563eb')};
   }
 
   @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 26px;
+    font-size: 11px;
+    height: 32px;
     padding: 0 10px;
-    gap: 3px;
+    gap: 4px;
   }
 `;
 

@@ -56,7 +56,16 @@ const Overview = memo(
     useEffect(() => {
       localStorage.setItem('overview_sidePanel', sidePanel);
     }, [sidePanel]);
-    const [sidePanelVisible, setSidePanelVisible] = useState(true);
+    const [sidePanelVisible, setSidePanelVisible] = useState(() => {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem('overview_sidePanelVisible') !== 'false';
+      }
+      return true;
+    });
+
+    useEffect(() => {
+      localStorage.setItem('overview_sidePanelVisible', sidePanelVisible);
+    }, [sidePanelVisible]);
     const [pairs, setPairs] = useState([]);
 
     // Markdown parser removed for build simplicity
