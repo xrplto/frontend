@@ -156,21 +156,6 @@ const Overview = memo(
             onOrderBookData={onOrderBookData}
           />
           <PriceChart token={token} />
-          <PriceStatistics
-            token={token}
-            isDark={isDark}
-            linkedCollections={token.linkedCollections}
-          />
-          <TradingHistory
-            tokenId={token.md5}
-            amm={token.AMM}
-            token={token}
-            pairs={pairs}
-            onTransactionClick={onTransactionClick}
-            isDark={isDark}
-            isMobile={true}
-          />
-          <TrendingTokens token={token} />
           <Description
             token={token}
             showEditor={showEditor}
@@ -194,6 +179,21 @@ const Overview = memo(
               ) : null
             }
           />
+          <PriceStatistics
+            token={token}
+            isDark={isDark}
+            linkedCollections={token.linkedCollections}
+          />
+          <TradingHistory
+            tokenId={token.md5}
+            amm={token.AMM}
+            token={token}
+            pairs={pairs}
+            onTransactionClick={onTransactionClick}
+            isDark={isDark}
+            isMobile={true}
+          />
+          <TrendingTokens token={token} />
         </div>
       );
     }
@@ -273,12 +273,6 @@ const Overview = memo(
               orderBookOpen={orderBookOpen}
               onOrderBookData={onOrderBookData}
             />
-            <h2 className="sr-only">Price Statistics</h2>
-            <PriceStatistics
-              token={token}
-              isDark={isDark}
-              linkedCollections={token.linkedCollections}
-            />
             <Description
               token={token}
               showEditor={showEditor}
@@ -301,6 +295,12 @@ const Overview = memo(
                   />
                 ) : null
               }
+            />
+            <h2 className="sr-only">Price Statistics</h2>
+            <PriceStatistics
+              token={token}
+              isDark={isDark}
+              linkedCollections={token.linkedCollections}
             />
           </aside>
         </div>

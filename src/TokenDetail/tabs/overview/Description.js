@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import styled from '@emotion/styled';
 import { Edit, X } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
+import { CompactSocialLinks, CompactTags } from './PriceStatistics';
 
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
@@ -172,7 +173,10 @@ export default function Description({
     setShowEditor(!showEditor);
   };
 
-  if (!description && !showEditor && !isAdmin) return null;
+  const hasSocial = token.social && Object.keys(token.social).some((k) => token.social[k]);
+  const tags = token.tags || [];
+  const hasTags = tags.length > 0;
+  if (!description && !showEditor && !isAdmin && !hasSocial && !hasTags) return null;
 
   const markdownComponents = {
     p: (props) => <MarkdownParagraph {...props} isDark={effectiveIsDark} />,
@@ -215,6 +219,31 @@ export default function Description({
           >
             No description available.
           </Typography>
+        </div>
+      )}
+
+      {(hasSocial || hasTags) && (
+        <div
+          style={{
+            padding: '8px 12px 10px',
+            borderTop: `1px solid ${effectiveIsDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}
+        >
+          {hasSocial && (
+            <CompactSocialLinks social={token.social} isDark={effectiveIsDark} fullWidth />
+          )}
+          {hasSocial && hasTags && (
+            <div
+              style={{
+                height: '1px',
+                background: effectiveIsDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'
+              }}
+            />
+          )}
+          {hasTags && <CompactTags enhancedTags={tags} maxTags={6} isDark={effectiveIsDark} />}
         </div>
       )}
     </Card>
