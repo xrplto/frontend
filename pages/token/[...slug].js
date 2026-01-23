@@ -133,7 +133,7 @@ export async function getStaticProps({ params }) {
     // https://api.xrpl.to/v1/token/bitstamp-usd
     const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`);
 
-    data = res.data;
+    data = res.data.data || res.data;
     if (tab) data.tab = tab;
 
     // SEO: 301 redirect md5 hash to human-readable slug (better for SEO + UX)

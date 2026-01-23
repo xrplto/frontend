@@ -165,7 +165,7 @@ const RichList = ({ token }) => {
 
         const data = await response.json();
 
-        if (data.result === 'success' && mounted) {
+        if (data.success && mounted) {
           // Skip if WebSocket took over (race condition)
           if (page === 1 && !searchTerm && wsRef.current?.readyState === WebSocket.OPEN) return;
           setRichList(data.richList || []);

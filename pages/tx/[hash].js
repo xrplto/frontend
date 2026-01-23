@@ -441,10 +441,10 @@ const DetailRow = ({ label, children, index = 0, alignValue = 'right' }) => {
 const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   if (error) return <Typography sx={{ p: 1 }}>{error}</Typography>;
   if (loading) return <Typography sx={{ p: 1 }}>Loading...</Typography>;
-  if (!tokenInfo || tokenInfo.result !== 'success' || !tokenInfo.token)
+  if (!tokenInfo || !tokenInfo.success || !tokenInfo.data?.token)
     return <Typography sx={{ p: 1 }}>No data available.</Typography>;
 
-  const { token, exch } = tokenInfo;
+  const { token, exch } = tokenInfo.data;
   const imageUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : null;
   const isXRP = token.currency === 'XRP' && token.issuer === 'XRPL';
 
@@ -765,7 +765,8 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const isLpToken = rawCurrency && rawCurrency.length === 40 && /^[A-F0-9]{40}$/i.test(rawCurrency);
+  // LP tokens in XRPL start with '03' byte - other 40-char hex codes are just regular currency codes
+  const isLpToken = rawCurrency && rawCurrency.length === 40 && /^[A-F0-9]{40}$/i.test(rawCurrency) && rawCurrency.startsWith('03');
   const isXRP = currency === 'XRP' && md5 === '84e5efeb89c4eae8f68188982dc290d8';
 
   useEffect(() => {
@@ -773,7 +774,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       if (isLpToken) {
         setLoading(true);
         try {
-          const response = await axios.get(`https://api.xrpl.to/v1/token/${md5}`);
+          const response = await axios.get(`https://api.xrpl.to/v1/token/${slug}`);
           setTokenInfo(response.data);
         } catch (err) {
           console.error('Failed to fetch token info for LP token', err);
@@ -784,7 +785,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       }
     };
     fetchTokenName();
-  }, [isLpToken, md5]);
+  }, [isLpToken, slug]);
 
   const handleFetchTokenInfo = async () => {
     if (tokenInfo || loading) return;
@@ -795,7 +796,7 @@ const TokenLinkWithTooltip = ({ slug, currency, rawCurrency, md5, variant = 'bod
       if (isXRP) {
         response = await axios.get('https://api.xrpl.to/v1/token/xrpl-xrp');
       } else {
-        response = await axios.get(`https://api.xrpl.to/v1/token/${md5}`);
+        response = await axios.get(`https://api.xrpl.to/v1/token/${slug}`);
       }
       setTokenInfo(response.data);
     } catch (err) {

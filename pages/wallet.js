@@ -873,11 +873,11 @@ export default function WalletPage() {
         const data = await res.json();
         console.timeEnd('[Wallet] fetchTokens');
         console.log('[Wallet] fetchTokens: received', data.lines?.length || 0, 'tokens');
-        if (data.result === 'success') {
+        if (data.success) {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
           setIsInactive(false);
-        } else if (data.error || data.result !== 'success') {
+        } else if (data.error || !data.success) {
           // Account not found or other error - treat as inactive
           setIsInactive(true);
           setXrpData(null);
@@ -1149,7 +1149,7 @@ export default function WalletPage() {
         );
         const data = await res.json();
         console.timeEnd('[Wallet] fetchMoreTokens (tab)');
-        if (data.result === 'success') {
+        if (data.success) {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
         }

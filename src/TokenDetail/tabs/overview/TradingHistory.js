@@ -2454,31 +2454,33 @@ const TradingHistory = ({
         const response = await fetch(`https://api.xrpl.to/v1/history?${params}`);
         const data = await response.json();
 
-        if (data.result === 'success') {
+        if (data.success) {
+          const hists = data.data || data.hists || [];
+          const meta = data.meta || data;
           const currentTradeIds = previousTradesRef.current;
-          const newTrades = data.hists.filter((trade) => !currentTradeIds.has(trade._id));
+          const newTrades = hists.filter((trade) => !currentTradeIds.has(trade._id));
 
           if (newTrades.length > 0 && isRefresh) {
             setNewTradeIds(new Set(newTrades.map((trade) => trade._id)));
-            previousTradesRef.current = new Set(data.hists.map((trade) => trade._id));
+            previousTradesRef.current = new Set(hists.map((trade) => trade._id));
             setTimeout(() => {
               setNewTradeIds(new Set());
             }, 1000);
           }
 
-          setTrades(data.hists.slice(0, 50));
-          setNextCursor(data.nextCursor || null);
-          setTotalRecords(data.totalRecords || 0);
+          setTrades(hists.slice(0, 50));
+          setNextCursor(meta.nextCursor || null);
+          setTotalRecords(meta.totalRecords || 0);
 
           // Determine if we've reached the end of records in the current direction
-          const recordsReturned = data.recordsReturned || data.hists.length;
+          const recordsReturned = meta.recordsReturned || hists.length;
 
           if (useDirection === 'asc' && !useCursor) {
             // First page of asc = last page of records (oldest), this is the end
             setIsLastPage(true);
           } else {
             // Normal pagination - check if there are more records
-            const hasMoreRecords = recordsReturned >= limit && data.nextCursor;
+            const hasMoreRecords = recordsReturned >= limit && meta.nextCursor;
             setIsLastPage(!hasMoreRecords);
           }
         }
@@ -2795,21 +2797,21 @@ const TradingHistory = ({
         );
         let data = await res.json();
 
-        if (data.result === 'success' && (!data.data || data.data.length < 2)) {
+        if (data.success && (!data.data || data.data.length < 2)) {
           res = await fetch(
             `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1w`
           );
           data = await res.json();
         }
 
-        if (data.result === 'success' && (!data.data || data.data.length < 2)) {
+        if (data.success && (!data.data || data.data.length < 2)) {
           res = await fetch(
             `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=all`
           );
           data = await res.json();
         }
 
-        if (data.result === 'success' && data.data && data.data.length >= 2) {
+        if (data.success && data.data && data.data.length >= 2) {
           setPoolChartData((prev) => ({ ...prev, [poolAccount]: data.data }));
         }
       } catch (error) {

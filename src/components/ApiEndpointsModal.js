@@ -108,7 +108,7 @@ export const API_REFERENCE = {
   charts: {
     label: 'Charts & Analytics',
     endpoints: [
-      { method: 'GET', path: '/ohlc/:md5', desc: 'OHLC candlestick data (DexScreener compatible)' },
+      { method: 'GET', path: '/ohlc/:md5', desc: 'OHLC candlestick data' },
       { method: 'GET', path: '/sparkline/:md5', desc: 'Price sparkline for mini-charts' },
       { method: 'GET', path: '/rsi', desc: 'RSI indicator data for tokens' },
       { method: 'GET', path: '/stats', desc: 'Platform metrics (token count, 24h volume)' },

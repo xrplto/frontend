@@ -69,7 +69,8 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     slug: 'fuzzybears',
     date: '2025-07-07',
     hash: '88E788684079F52181D18848C3E2EE70C07FD31ED8045A7C03E070F3B69C46C9',
-    index: '101738551'
+    index: '101738551',
+    nftAccount: 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm'
   };
 
   const [expandedGroups, setExpandedGroups] = useState({
@@ -255,13 +256,31 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     });
   };
 
+  // JSON syntax highlighter
+  const highlightJson = (data) => {
+    const str = JSON.stringify(data, null, 2);
+    const parts = str.split(/("(?:[^"\\]|\\.)*"|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g);
+    return parts.map((part, i) => {
+      if (!part) return null;
+      if (/^".*"$/.test(part)) {
+        const isKey = parts[i + 1]?.trim().startsWith(':');
+        return <span key={i} style={{ color: isKey ? '#60a5fa' : '#22c55e' }}>{part}</span>;
+      }
+      if (/^(true|false)$/.test(part)) return <span key={i} style={{ color: '#f59e0b' }}>{part}</span>;
+      if (/^null$/.test(part)) return <span key={i} style={{ color: '#ef4444' }}>{part}</span>;
+      if (/^-?\d/.test(part)) return <span key={i} style={{ color: '#a78bfa' }}>{part}</span>;
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   // Build sample URL by replacing path parameters with sample values
   const buildSampleUrl = (path) => {
+    const acct = path.includes('/nft/') || path.includes('/nfts/') ? SAMPLE_DATA.nftAccount : SAMPLE_DATA.account;
     return path
       .replace(/:md5/g, SAMPLE_DATA.md5)
       .replace(/:id/g, SAMPLE_DATA.md5)
-      .replace(/:account/g, SAMPLE_DATA.account)
-      .replace(/:address/g, SAMPLE_DATA.account)
+      .replace(/:account/g, acct)
+      .replace(/:address/g, acct)
       .replace(/:issuer/g, SAMPLE_DATA.issuer)
       .replace(/:nftId/g, SAMPLE_DATA.nftId)
       .replace(/:slug/g, SAMPLE_DATA.slug)
@@ -272,7 +291,7 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
 
   // Check if endpoint can be tried
   const canTryEndpoint = (ep) => {
-    if (ep.method === 'POST' && ['/search', '/dex/quote'].includes(ep.path)) return true;
+    if (ep.method === 'POST' && ['/search', '/dex/quote', '/account/path-find'].includes(ep.path)) return true;
     if (ep.method !== 'GET') return false;
     return true;
   };
@@ -284,7 +303,21 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
     setEndpointResponse(null);
     try {
       const samplePath = buildSampleUrl(ep.path);
-      const url = `https://api.xrpl.to/v1${samplePath}`;
+      let url = `https://api.xrpl.to/v1${samplePath}`;
+
+      // Add query params for endpoints that need them
+      if (ep.path === '/orderbook') {
+        url += `?base=${SAMPLE_DATA.md5}&quote=XRP&limit=5`;
+      } else if (ep.path === '/amm/info') {
+        url += `?asset=${SAMPLE_DATA.md5}&asset2=XRP`;
+      } else if (ep.path === '/amm/liquidity-chart') {
+        url += `?token=${SAMPLE_DATA.md5}`;
+      } else if (ep.path === '/account/deposit-authorized') {
+        url += `?source=${SAMPLE_DATA.nftAccount}&destination=${SAMPLE_DATA.account}`;
+      } else if (ep.path === '/watchlist') {
+        url += `?account=${SAMPLE_DATA.nftAccount}`;
+      }
+
       let res;
       if (ep.method === 'POST') {
         const bodies = {
@@ -298,6 +331,11 @@ const ApiDocsPage = ({ apiDocs, ogp }) => {
             },
             source_currencies: [{ currency: 'XRP' }],
             slippage: 0.02
+          },
+          '/account/path-find': {
+            source: SAMPLE_DATA.nftAccount,
+            destination: SAMPLE_DATA.account,
+            amount: '10000000'
           }
         };
         res = await axios.post(url, bodies[ep.path] || {}, { timeout: 10000 });
@@ -707,11 +745,11 @@ Rate Limits: No Key (10/min, 500/day), Free (10/min, 2K/day), Basic (100/min, 30
                           </div>
                           <pre className={cn(
                             'p-3 text-[10px] leading-relaxed max-h-[200px] overflow-auto font-mono',
-                            endpointResponse.error
-                              ? 'text-red-400'
-                              : isDark ? 'text-white/70' : 'text-gray-700'
+                            endpointResponse.error ? 'text-red-400' : ''
                           )}>
-                            {JSON.stringify(endpointResponse.data || endpointResponse.error, null, 2)}
+                            {endpointResponse.error
+                              ? JSON.stringify(endpointResponse.error, null, 2)
+                              : highlightJson(endpointResponse.data)}
                           </pre>
                         </div>
                       )}
