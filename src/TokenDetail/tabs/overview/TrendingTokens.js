@@ -65,7 +65,16 @@ const TrendingTokens = ({ token = null }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [watchList, setWatchList] = useState([]);
-  const [activeTab, setActiveTab] = useState('trending');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('discover_activeTab') || 'trending';
+    }
+    return 'trending';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('discover_activeTab', activeTab);
+  }, [activeTab]);
 
   // Fetch watchlist
   useEffect(() => {

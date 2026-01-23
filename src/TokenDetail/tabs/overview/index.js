@@ -46,7 +46,16 @@ const Overview = memo(
 
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
-    const [sidePanel, setSidePanel] = useState('orderbook'); // 'orderbook' | 'trending'
+    const [sidePanel, setSidePanel] = useState(() => {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem('overview_sidePanel') || 'orderbook';
+      }
+      return 'orderbook';
+    });
+
+    useEffect(() => {
+      localStorage.setItem('overview_sidePanel', sidePanel);
+    }, [sidePanel]);
     const [sidePanelVisible, setSidePanelVisible] = useState(true);
     const [pairs, setPairs] = useState([]);
 

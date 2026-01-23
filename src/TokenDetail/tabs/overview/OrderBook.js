@@ -224,7 +224,17 @@ const OrderBook = ({ token, onPriceClick }) => {
   const asksSideRef = useRef(null);
   const [rlusdToken, setRlusdToken] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
-  const [viewMode, setViewMode] = useState('both'); // 'both', 'buy', 'sell'
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('orderbook_viewMode') || 'both';
+    }
+    return 'both';
+  });
+
+  // Persist viewMode to localStorage
+  useEffect(() => {
+    localStorage.setItem('orderbook_viewMode', viewMode);
+  }, [viewMode]);
   const [precision, setPrecision] = useState(6);
   const [hoveredRow, setHoveredRow] = useState(null);
   const wsRef = useRef(null);
