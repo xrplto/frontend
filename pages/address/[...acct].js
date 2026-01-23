@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import styled from '@emotion/styled';
 import { Client } from 'xrpl';
@@ -89,6 +90,116 @@ const TradingStat = ({ label, value, color, isDark }) => (
     </p>
   </div>
 );
+
+// NFT Image component with lazy loading and tooltip
+const NftImage = ({ nftTokenId, className, fallback }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [nftData, setNftData] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const ref = useState(null);
+
+  useEffect(() => {
+    if (!nftTokenId) {
+      setLoading(false);
+      setError(true);
+      return;
+    }
+    let cancelled = false;
+    axios
+      .get(`https://api.xrpl.to/v1/nft/${nftTokenId}`)
+      .then((res) => {
+        if (cancelled) return;
+        const nft = res.data;
+        setNftData(nft);
+        const coverUrl = getNftCoverUrl(nft, 'small', 'image');
+        if (coverUrl) {
+          setImageUrl(coverUrl);
+        } else if (nft.meta?.image) {
+          const metaImage = nft.meta.image;
+          if (metaImage.startsWith('ipfs://')) {
+            setImageUrl(`https://ipfs.io/ipfs/${metaImage.replace('ipfs://', '')}`);
+          } else {
+            setImageUrl(metaImage);
+          }
+        } else {
+          setError(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [nftTokenId]);
+
+  const handleMouseEnter = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipPos({ top: rect.top - 8, left: rect.left + rect.width / 2 });
+    setShowTooltip(true);
+  };
+
+  if (loading) {
+    return <div className={cn(className, 'bg-white/10 animate-pulse')} />;
+  }
+  if (error || !imageUrl) {
+    return fallback || null;
+  }
+
+  const largeImageUrl = nftData ? (getNftCoverUrl(nftData, 'medium', 'image') || imageUrl) : imageUrl;
+
+  return (
+    <>
+      <img
+        src={imageUrl}
+        alt=""
+        className={className}
+        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setShowTooltip(false)}
+      />
+      {showTooltip && nftData && typeof window !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: tooltipPos.top,
+            left: tooltipPos.left,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 99999
+          }}
+          className={cn(
+            'rounded-xl p-3 min-w-[200px] max-w-[280px] shadow-xl border backdrop-blur-xl',
+            isDark ? 'bg-black/90 border-white/10' : 'bg-white/95 border-gray-200'
+          )}
+        >
+          <div className="flex gap-3">
+            <img src={largeImageUrl} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                {nftData.name || nftData.meta?.name || 'Unnamed'}
+              </p>
+              {nftData.collection && (
+                <p className={cn('text-[11px] truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
+                  {nftData.collection}
+                </p>
+              )}
+              {nftData.rarity_rank > 0 && (
+                <p className="text-[10px] text-purple-400 mt-1">Rank #{nftData.rarity_rank}</p>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
 
 const OverView = ({ account }) => {
   const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
@@ -183,8 +294,8 @@ const OverView = ({ account }) => {
         const [profileRes, holdingsRes, nftRes, balanceRes, liveRes] = await Promise.all([
           axios.get(`https://api.xrpl.to/v1/traders/${account}`).catch(() => ({ data: null })),
           axios
-            .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=0&format=full`)
-            .catch(() => axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=0`))
+            .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0&format=full`)
+            .catch(() => axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0`))
             .catch(() => ({ data: null })),
           axios
             .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`)
@@ -239,7 +350,7 @@ const OverView = ({ account }) => {
     if (isInitialLoad) return;
 
     axios
-      .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&page=${holdingsPage}&format=full`)
+      .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=${holdingsPage * 20}&format=full`)
       .then((res) => setHoldings(res.data))
       .catch((err) => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
@@ -1370,7 +1481,7 @@ const OverView = ({ account }) => {
             {/* Tabs */}
             <div className="flex items-center gap-1.5 mb-4">
               {[
-                { id: 'tokens', label: 'TOKENS', icon: Coins, count: (holdings?.lines?.length || 0) + ((holdings?.accountData?.total > 0 || holdings?.xrp?.value > 0) ? 1 : 0) },
+                { id: 'tokens', label: 'TOKENS', icon: Coins, count: (holdings?.total || holdings?.lines?.length || 0) + ((holdings?.accountData?.total > 0 || holdings?.xrp?.value > 0) ? 1 : 0) },
                 { id: 'nfts', label: 'NFTS', icon: Image, count: nftStats?.holdingsCount || 0 },
                 { id: 'activity', label: 'HISTORY', icon: Clock },
                 { id: 'ancestry', label: 'ANCESTRY', icon: GitBranch, count: ancestry?.stats?.ancestorDepth || '' }
@@ -1449,7 +1560,7 @@ const OverView = ({ account }) => {
                                   isDark ? 'text-white/30' : 'text-gray-400'
                                 )}
                               >
-                                {(holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)}
+                                {(holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)}
                               </span>
                             </span>
                             {zeroCount > 0 && (
@@ -2847,9 +2958,11 @@ const OverView = ({ account }) => {
                       </div>
                     ) : (
                       <>
-                        <div className={cn('grid grid-cols-[40px_1fr_1.5fr_1.5fr_80px_32px] gap-4 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
+                        <div className={cn('grid grid-cols-[24px_40px_minmax(120px,1fr)_70px_minmax(140px,1fr)_minmax(160px,1.2fr)_90px_32px] gap-3 px-4 py-2.5 text-[9px] uppercase tracking-wider font-semibold border-b', isDark ? 'text-white/30 border-white/[0.06]' : 'text-gray-400 border-gray-100')}>
                           <span></span>
+                          <span>Asset</span>
                           <span>Type</span>
+                          <span>Tag</span>
                           <span>Details</span>
                           <span className="text-right">Amount</span>
                           <span className="text-right">Date</span>
@@ -2861,11 +2974,24 @@ const OverView = ({ account }) => {
                             return (
                               <div
                                 key={parsed.id}
-                                className={cn('grid grid-cols-[40px_1fr_1.2fr_2fr_1fr_32px] gap-4 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                                className={cn('grid grid-cols-[24px_40px_minmax(120px,1fr)_70px_minmax(140px,1fr)_minmax(160px,1.2fr)_90px_32px] gap-3 px-4 py-3 items-center cursor-pointer group', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
                                 onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
                               >
-                                <div className="relative">
-                                  {parsed.tokenCurrency ? (
+                                <div className={cn('w-5 h-5 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500' : parsed.type === 'in' ? 'bg-emerald-500' : 'bg-red-500')}>
+                                  {parsed.type === 'failed' ? <AlertTriangle size={10} className="text-white" /> : parsed.type === 'in' ? <ArrowDownLeft size={10} className="text-white" /> : <ArrowUpRight size={10} className="text-white" />}
+                                </div>
+                                <div>
+                                  {parsed.nftTokenId ? (
+                                    <NftImage
+                                      nftTokenId={parsed.nftTokenId}
+                                      className="w-7 h-7 rounded-lg object-cover bg-white/10"
+                                      fallback={
+                                        <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center', isDark ? 'bg-purple-500/10' : 'bg-purple-100')}>
+                                          <Image size={14} className="text-purple-400" />
+                                        </div>
+                                      }
+                                    />
+                                  ) : parsed.tokenCurrency ? (
                                     <img
                                       src={`https://s1.xrpl.to/token/${parsed.tokenCurrency === 'XRP' ? '84e5efeb89c4eae8f68188982dc290d8' : CryptoJS.MD5(`${parsed.tokenIssuer}_${parsed.tokenCurrency}`).toString()}`}
                                       alt=""
@@ -2873,23 +2999,16 @@ const OverView = ({ account }) => {
                                       onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
                                     />
                                   ) : (
-                                    <div className={cn('w-7 h-7 rounded-full flex items-center justify-center', parsed.type === 'failed' ? 'bg-amber-500/10' : parsed.type === 'in' ? 'bg-emerald-500/10' : 'bg-red-500/10')}>
-                                      {parsed.type === 'failed' ? <AlertTriangle size={14} className="text-[#F6AF01]" /> : parsed.type === 'in' ? <ArrowDownLeft size={14} className="text-[#08AA09]" /> : <ArrowUpRight size={14} className="text-red-400" />}
-                                    </div>
+                                    <div className={cn('w-7 h-7 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
                                   )}
-                                  <div className={cn(
-                                    'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-[1.5px]',
-                                    isDark ? 'border-[#070b12]' : 'border-white',
-                                    parsed.type === 'failed' ? 'bg-amber-500' : parsed.type === 'in' ? 'bg-emerald-500' : 'bg-red-500'
-                                  )}>
-                                    {parsed.type === 'failed' ? <AlertTriangle size={7} className="text-white" /> : parsed.type === 'in' ? <ArrowDownLeft size={7} className="text-white" /> : <ArrowUpRight size={7} className="text-white" />}
-                                  </div>
                                 </div>
-                                <div className="min-w-0 flex items-center gap-2">
+                                <div className="min-w-0">
                                   <p className={cn('text-[13px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</p>
-                                  {parsed.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
-                                  {parsed.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
-                                  {parsed.sourceTag && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>{parsed.sourceTagName || `Tag: ${parsed.sourceTag}`}</span>}
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {parsed.type === 'failed' && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium', isDark ? 'bg-amber-500/15 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Failed</span>}
+                                  {parsed.isDust && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium', isDark ? 'bg-amber-500/10 text-[#F6AF01]' : 'bg-amber-100 text-amber-600')}>Dust</span>}
+                                  {parsed.sourceTag && <span className={cn('text-[8px] px-1.5 py-0.5 rounded font-medium', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>{parsed.sourceTagName || `${parsed.sourceTag}`}</span>}
                                 </div>
                                 <p className={cn('text-[11px] font-mono truncate', isDark ? 'text-white/50' : 'text-gray-500')}>
                                   {parsed.counterparty ? (parsed.counterparty.startsWith('r') ? <Link href={`/address/${parsed.counterparty}`} onClick={(e) => e.stopPropagation()} className="hover:text-[#137DFE] hover:underline">{parsed.counterparty.slice(0, 10)}...{parsed.counterparty.slice(-6)}</Link> : parsed.counterparty) : parsed.fromAmount ? 'DEX Swap' : '—'}
@@ -3815,7 +3934,9 @@ const OverView = ({ account }) => {
 
                     {/* Ancestors Section */}
                     {ancestry.ancestors?.length > 0 && (
-                      <div className={cn('px-4 py-3', isDark ? 'border-b border-white/10' : 'border-b border-gray-100')}>
+                      <>
+                      <div className={cn('h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+                      <div className="px-4 py-3">
                         <div className="flex items-center gap-2 mb-3">
                           <ArrowUpRight size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
                           <span className={cn('text-[11px] uppercase tracking-wider font-medium', isDark ? 'text-white/40' : 'text-gray-500')}>
@@ -3882,10 +4003,13 @@ const OverView = ({ account }) => {
                           </div>
                         </div>
                       </div>
+                      </>
                     )}
 
                     {/* Children Section */}
                     {ancestry.children?.length > 0 && (
+                      <>
+                      <div className={cn('h-px', isDark ? 'bg-white/10' : 'bg-gray-200')} />
                       <div className="px-4 py-3">
                         <div className="flex items-center gap-2 mb-3">
                           <ArrowDownLeft size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
@@ -3956,6 +4080,7 @@ const OverView = ({ account }) => {
                           </div>
                         </div>
                       </div>
+                      </>
                     )}
 
                     {/* Empty state */}

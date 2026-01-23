@@ -1068,6 +1068,7 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
   let txType = isOutgoing ? 'out' : 'in';
   let tokenCurrency = null;
   let tokenIssuer = null;
+  let nftTokenId = null;
 
   // Format fee in XRP
   const fee = tx.Fee ? (parseInt(tx.Fee) / 1000000) : 0;
@@ -1408,9 +1409,19 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       const gets = formatAmt(deletedOffer.TakerGets);
       const pays = formatAmt(deletedOffer.TakerPays);
       amount = gets && pays ? `${gets} → ${pays}` : '';
-      const getsToken = typeof deletedOffer.TakerGets === 'string' ? 'XRP' : decodeCurrency(deletedOffer.TakerGets?.currency);
-      const paysToken = typeof deletedOffer.TakerPays === 'string' ? 'XRP' : decodeCurrency(deletedOffer.TakerPays?.currency);
+      const getsIsXRP = typeof deletedOffer.TakerGets === 'string';
+      const paysIsXRP = typeof deletedOffer.TakerPays === 'string';
+      const getsToken = getsIsXRP ? 'XRP' : decodeCurrency(deletedOffer.TakerGets?.currency);
+      const paysToken = paysIsXRP ? 'XRP' : decodeCurrency(deletedOffer.TakerPays?.currency);
       counterparty = `${getsToken}/${paysToken}`;
+      // Set token info for non-XRP side
+      if (!getsIsXRP) {
+        tokenCurrency = deletedOffer.TakerGets?.currency;
+        tokenIssuer = deletedOffer.TakerGets?.issuer;
+      } else if (!paysIsXRP) {
+        tokenCurrency = deletedOffer.TakerPays?.currency;
+        tokenIssuer = deletedOffer.TakerPays?.issuer;
+      }
     } else {
       // No deleted offer in metadata, use OfferSequence
       amount = tx.OfferSequence ? `Offer #${tx.OfferSequence}` : '';
@@ -1519,14 +1530,17 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     const offerAmt = offer?.Amount;
     const isZeroAmount = !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
 
+    // Extract NFTokenID from offer or meta.nftoken_id
+    nftTokenId = offer?.NFTokenID || meta?.nftoken_id || null;
+
     if (isFailed) {
       label = 'NFT Trade Failed';
       amount = formatAmt(offerAmt) || 'Failed';
       counterparty = offer?.Owner || tx.NFTokenSellOffer || tx.NFTokenBuyOffer;
     } else if (isZeroAmount) {
       const isSender = offer?.Owner === userAddress;
-      label = isSender ? 'Sent NFT' : 'Received NFT';
-      amount = 'FREE';
+      label = 'NFT Transfer';
+      amount = isSender ? 'Sent' : 'Received';
       counterparty = isSender ? tx.Account : offer?.Owner;
       txType = isSender ? 'out' : 'in';
     } else {
@@ -1534,26 +1548,35 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
       const isSeller = offer?.Owner === userAddress;
       label = isSeller ? 'Sold NFT' : 'Bought NFT';
       counterparty = isSeller ? tx.Account : offer?.Owner;
-      txType = isSeller ? 'in' : 'out';
+      // Buy = green (NFT coming in), Sell = red (NFT going out)
+      txType = isSeller ? 'out' : 'in';
     }
   } else if (type === 'NFTokenMint') {
     label = isFailed ? 'Mint Failed' : 'Mint NFT';
-    // Extract taxon or NFTokenID from metadata
-    const createdToken = meta?.AffectedNodes?.find(n =>
-      n.CreatedNode?.LedgerEntryType === 'NFTokenPage' || n.ModifiedNode?.LedgerEntryType === 'NFTokenPage'
-    );
+    // Extract NFTokenID from metadata
+    nftTokenId = meta?.nftoken_id || null;
     amount = tx.NFTokenTaxon !== undefined ? `Taxon: ${tx.NFTokenTaxon}` : '';
     counterparty = tx.Issuer || tx.Account;
   } else if (type === 'NFTokenCreateOffer') {
-    label = isFailed ? 'Offer Failed' : 'NFT Offer';
-    amount = formatAmt(tx.Amount) || '';
-    // Show if it's a buy or sell offer
+    // Extract NFTokenID from transaction
+    nftTokenId = tx.NFTokenID || null;
     const isSellOffer = (tx.Flags & 1) !== 0;
-    if (isSellOffer) {
+    const offerAmt = tx.Amount;
+    const isZeroAmt = !offerAmt || offerAmt === '0' || (typeof offerAmt === 'string' && parseInt(offerAmt) === 0);
+
+    // Zero amount sell offer with destination = transfer offer
+    if (isSellOffer && isZeroAmt && tx.Destination) {
+      label = isFailed ? 'Transfer Failed' : 'NFT Transfer Offer';
+      amount = 'Free';
+      counterparty = tx.Destination;
+      txType = 'out';
+    } else if (isSellOffer) {
       label = isFailed ? 'Sell Offer Failed' : 'NFT Sell Offer';
+      amount = formatAmt(offerAmt) || '';
       counterparty = tx.Destination || 'Open';
     } else {
       label = isFailed ? 'Buy Offer Failed' : 'NFT Buy Offer';
+      amount = formatAmt(offerAmt) || '';
       counterparty = tx.Owner || tx.Account;
     }
   } else if (type === 'NFTokenCancelOffer') {
@@ -1561,8 +1584,15 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     const offerCount = tx.NFTokenOffers?.length || 0;
     amount = offerCount > 1 ? `${offerCount} offers` : '1 offer';
     counterparty = tx.Account;
+    // Extract NFTokenID from first cancelled offer in metadata
+    const cancelledOffer = meta?.AffectedNodes?.find(
+      (n) => n.DeletedNode?.LedgerEntryType === 'NFTokenOffer'
+    );
+    nftTokenId = cancelledOffer?.DeletedNode?.FinalFields?.NFTokenID || null;
   } else if (type === 'NFTokenBurn') {
     label = isFailed ? 'Burn Failed' : 'Burn NFT';
+    // Extract NFTokenID from transaction
+    nftTokenId = tx.NFTokenID || null;
     amount = tx.NFTokenID ? `${tx.NFTokenID.slice(0, 8)}...` : '';
     counterparty = tx.Owner || tx.Account;
   } else if (type === 'CheckCreate') {
@@ -1671,7 +1701,8 @@ export function parseTransaction(rawTx, userAddress, decodeCurrency = normalizeC
     sourceTagName: getSourceTagName(tx.SourceTag),
     fee: feeStr,
     tokenCurrency,
-    tokenIssuer
+    tokenIssuer,
+    nftTokenId
   };
 }
 
