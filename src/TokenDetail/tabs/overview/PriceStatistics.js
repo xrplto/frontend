@@ -415,7 +415,9 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                 from: n.from,
                 type: n.type,
                 action: n.action,
-                transfersOut: n.transfersOut || 0
+                transfersOut: n.transfersOut || 0,
+                exchangeDeposits: n.exchangeDeposits || 0,
+                exchangeCount: n.exchangeCount || 0
               };
             });
           setTokenFlow({ ...data.summary, recipients });
@@ -1777,44 +1779,42 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                   }}
                 >
                   {/* Header + Summary */}
-                  {(() => {
-                    const totalBought = tokenFlow.totalBoughtXrp || tokenFlow.recipients?.reduce((sum, r) => sum + (r.boughtXrp || 0), 0) || 0;
-                    const totalSold = tokenFlow.totalSoldXrp || 0;
-                    const netFlow = totalSold - totalBought;
-                    return (
-                      <Stack direction="row" alignItems="center" style={{ marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
-                        <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Creator Token Flow
-                        </Typography>
-                        <span style={{ flex: 1 }} />
-                        {tokenFlow.recipientCount > 0 && (
-                          <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)', color: '#8b5cf6', fontWeight: 500 }}>
-                            {tokenFlow.recipientCount}
-                          </span>
-                        )}
-                        {tokenFlow.holdingCount > 0 && (
-                          <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
-                            {tokenFlow.holdingCount} hodl
-                          </span>
-                        )}
-                        {totalBought > 0 && (
-                          <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
-                            +{fNumber(totalBought)}
-                          </span>
-                        )}
-                        {totalSold > 0 && (
-                          <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 500 }}>
-                            -{fNumber(totalSold)}
-                          </span>
-                        )}
-                        {netFlow !== 0 && (
-                          <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: netFlow > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)', color: netFlow > 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-                            net {netFlow > 0 ? '-' : '+'}{fNumber(Math.abs(netFlow))}
-                          </span>
-                        )}
-                      </Stack>
-                    );
-                  })()}
+                  <Stack direction="row" alignItems="center" style={{ marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+                    <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Creator Token Flow
+                    </Typography>
+                    <span style={{ flex: 1 }} />
+                    {tokenFlow.recipientCount > 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)', color: '#8b5cf6', fontWeight: 500 }}>
+                        {tokenFlow.recipientCount}
+                      </span>
+                    )}
+                    {tokenFlow.holdingCount > 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
+                        {tokenFlow.holdingCount} hodl
+                      </span>
+                    )}
+                    {tokenFlow.totalBoughtXrp > 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 500 }}>
+                        +{fNumber(tokenFlow.totalBoughtXrp)}
+                      </span>
+                    )}
+                    {tokenFlow.totalSoldXrp > 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 500 }}>
+                        -{fNumber(tokenFlow.totalSoldXrp)}
+                      </span>
+                    )}
+                    {tokenFlow.netFlowXrp != null && tokenFlow.netFlowXrp !== 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: tokenFlow.netFlowXrp > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)', color: tokenFlow.netFlowXrp > 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
+                        net {tokenFlow.netFlowXrp > 0 ? '-' : '+'}{fNumber(Math.abs(tokenFlow.netFlowXrp))}
+                      </span>
+                    )}
+                    {tokenFlow.totalToExchanges > 0 && (
+                      <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)', color: '#f59e0b', fontWeight: 500 }}>
+                        {fNumber(tokenFlow.totalToExchanges)} CEX
+                      </span>
+                    )}
+                  </Stack>
                   {/* Legend */}
                   <Stack direction="row" alignItems="center" style={{ gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
                     <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
@@ -1891,10 +1891,15 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                                 <span style={{ fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}>—</span>
                               )}
                             </Stack>
-                            {/* Net P&L */}
-                            <span style={{ fontSize: '10px', color: netPnl > 0 ? '#ef4444' : netPnl < 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'), fontWeight: netPnl !== 0 ? 500 : 400, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
-                              {netPnl !== 0 ? `${netPnl > 0 ? '+' : ''}${fNumber(netPnl)}` : '—'}
-                            </span>
+                            {/* Net P&L + CEX */}
+                            <Stack direction="row" alignItems="center" style={{ justifyContent: 'flex-end', gap: '4px' }}>
+                              <span style={{ fontSize: '10px', color: netPnl > 0 ? '#ef4444' : netPnl < 0 ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'), fontWeight: netPnl !== 0 ? 500 : 400, fontFamily: 'var(--font-mono)' }}>
+                                {netPnl !== 0 ? `${netPnl > 0 ? '+' : ''}${fNumber(netPnl)}` : '—'}
+                              </span>
+                              {r.exchangeDeposits > 0 && (
+                                <span style={{ fontSize: '7px', padding: '1px 3px', borderRadius: '2px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 600 }}>CEX</span>
+                              )}
+                            </Stack>
                             {/* Tx */}
                             {r.hash ? (
                               <Link href={`/tx/${r.hash}`} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)', textDecoration: 'none', textAlign: 'right' }}>
