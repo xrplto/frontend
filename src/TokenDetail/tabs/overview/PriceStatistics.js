@@ -2280,81 +2280,99 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
             </Typography>
           </Stack>
         </Box>
-        <Stack style={{ gap: '6px', padding: '10px' }}>
-          {linkedCollections.map((col) => (
-            <Link
-              key={col.id}
-              href={`/nfts/${col.slug}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 12px',
-                borderRadius: '10px',
-                background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#3b82f6';
-                e.currentTarget.style.background = isDark
-                  ? 'rgba(59,130,246,0.05)'
-                  : 'rgba(59,130,246,0.03)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = isDark
-                  ? 'rgba(255,255,255,0.06)'
-                  : 'rgba(0,0,0,0.06)';
-                e.currentTarget.style.background = isDark
-                  ? 'rgba(255,255,255,0.025)'
-                  : 'rgba(0,0,0,0.025)';
-              }}
-            >
-              <img
-                src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
-                alt={typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  objectFit: 'cover',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
-                }}
-                onError={(e) => (e.target.src = '/static/alt.webp')}
-              />
-              <Stack style={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: isDark ? '#fff' : '#1a1a1a',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
-                </Typography>
-                <Stack direction="row" style={{ gap: '10px', marginTop: '2px' }}>
-                  <Typography
-                    style={{
-                      fontSize: '11px',
-                      color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'
-                    }}
-                  >
-                    {fNumber(col.items)} items
+        <StyledTable size="small">
+          <TableBody>
+            {linkedCollections.map((col) => (
+              <TableRowStyled
+                key={col.id}
+                isDark={isDark}
+                as={Link}
+                href={`/nfts/${col.slug}`}
+                style={{ display: 'table-row', textDecoration: 'none', cursor: 'pointer' }}
+              >
+                <ModernTableCell style={{ width: '40%', padding: '6px 8px' }}>
+                  <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>
+                    <img
+                      src={`https://s1.xrpl.to/nft-collection/${col.logoImage || col.id}`}
+                      alt=""
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 4,
+                        objectFit: 'cover',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
+                      }}
+                      onError={(e) => (e.target.src = '/static/alt.webp')}
+                    />
+                    <Stack style={{ minWidth: 0, flex: 1 }}>
+                      <Stack direction="row" alignItems="center" style={{ gap: '4px' }}>
+                        <Typography
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: isDark ? '#fff' : '#1a1a1a',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {typeof col.name === 'object' ? col.name?.collection_name || '' : col.name || ''}
+                        </Typography>
+                        {(col.verified === true || col.verified >= 1 || col.verified === 'yes') && (
+                          <span
+                            style={{
+                              padding: '1px 5px',
+                              borderRadius: '3px',
+                              fontSize: '8px',
+                              fontWeight: 500,
+                              background: isDark ? 'rgba(34,197,94,0.1)' : 'rgba(240,253,244,1)',
+                              color: isDark ? '#4ade80' : '#16a34a',
+                              flexShrink: 0
+                            }}
+                          >
+                            Verified
+                          </span>
+                        )}
+                      </Stack>
+                      <Typography
+                        style={{
+                          fontSize: '9px',
+                          color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'
+                        }}
+                      >
+                        {fNumber(col.items || 0)} items
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </ModernTableCell>
+                <ModernTableCell style={{ width: '20%', padding: '6px 4px', textAlign: 'center' }}>
+                  <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
+                    Floor
                   </Typography>
-                  {col.floor?.amount > 0 && (
-                    <Typography style={{ fontSize: '11px', color: '#22c55e', fontWeight: 500 }}>
-                      ✕{fNumber(col.floor.amount)}
-                    </Typography>
-                  )}
-                </Stack>
-              </Stack>
-            </Link>
-          ))}
-        </Stack>
+                  <Typography style={{ fontSize: '10px', fontWeight: 600, color: '#22c55e', whiteSpace: 'nowrap' }}>
+                    ✕{fNumber(col.floor?.amount || col.floor || 0)}
+                  </Typography>
+                </ModernTableCell>
+                <ModernTableCell style={{ width: '20%', padding: '6px 4px', textAlign: 'center' }}>
+                  <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
+                    Total Vol
+                  </Typography>
+                  <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', whiteSpace: 'nowrap' }}>
+                    ✕{fNumber(col.volume || col.totalVol24h || 0)}
+                  </Typography>
+                </ModernTableCell>
+                <ModernTableCell style={{ width: '20%', padding: '6px 8px 6px 4px', textAlign: 'right' }}>
+                  <Typography style={{ fontSize: '8px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', textTransform: 'uppercase' }}>
+                    MCap
+                  </Typography>
+                  <Typography style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)', whiteSpace: 'nowrap' }}>
+                    ✕{fNumber(col.marketcap || 0)}
+                  </Typography>
+                </ModernTableCell>
+              </TableRowStyled>
+            ))}
+          </TableBody>
+        </StyledTable>
       </Box>
     )}
   </>
