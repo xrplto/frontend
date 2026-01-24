@@ -502,9 +502,9 @@ const OverView = ({ account }) => {
     axios
       .get(buildTokenHistoryUrl())
       .then((res) => {
-        setTokenHistory(res.data?.hists || []);
-        setTokenHistoryCursor(res.data?.nextCursor || null);
-        setTokenHistoryHasMore(!!res.data?.nextCursor);
+        setTokenHistory(res.data?.data || []);
+        setTokenHistoryCursor(res.data?.meta?.nextCursor || null);
+        setTokenHistoryHasMore(!!res.data?.meta?.nextCursor);
       })
       .catch((err) => console.error('Failed to fetch token history:', err))
       .finally(() => setTokenHistoryLoading(false));
@@ -516,9 +516,9 @@ const OverView = ({ account }) => {
     axios
       .get(buildTokenHistoryUrl(tokenHistoryCursor))
       .then((res) => {
-        setTokenHistory((prev) => [...prev, ...(res.data?.hists || [])]);
-        setTokenHistoryCursor(res.data?.nextCursor || null);
-        setTokenHistoryHasMore(!!res.data?.nextCursor);
+        setTokenHistory((prev) => [...prev, ...(res.data?.data || [])]);
+        setTokenHistoryCursor(res.data?.meta?.nextCursor || null);
+        setTokenHistoryHasMore(!!res.data?.meta?.nextCursor);
       })
       .catch((err) => console.error('Failed to fetch more token history:', err))
       .finally(() => setTokenHistoryLoading(false));
