@@ -218,28 +218,27 @@ const PriceChartAdvanced = memo(({ token }) => {
     return { percentDown: pct, athMcap: token.athMarketcap };
   }, [token?.athMarketcap, token?.marketcap]);
 
-  // Creator events from data
-  const creatorEvents = useMemo(() => {
-    if (!data?.length) return [];
-    const events = [];
-    for (const d of data) {
-      if (d.creatorSold > 0) events.push({ time: d.time, type: 'SELL', value: d.creatorSold, color: '#ef4444' });
-      if (d.creatorBought > 0) events.push({ time: d.time, type: 'BUY', value: d.creatorBought, color: '#22c55e' });
-      if (d.creatorWithdraw > 0) events.push({ time: d.time, type: 'WITHDRAW', value: d.creatorWithdraw, color: '#f59e0b' });
-      if (d.creatorDeposit > 0) events.push({ time: d.time, type: 'DEPOSIT', value: d.creatorDeposit, color: '#8b5cf6' });
-      if (d.creatorCheckCash > 0) events.push({ time: d.time, type: 'CHECK CASH', value: d.creatorCheckCash, color: '#ec4899' });
-      if (d.creatorCheckCreate > 0) events.push({ time: d.time, type: 'CHECK CREATE', value: d.creatorCheckCreate, color: '#ec4899' });
-      if (d.creatorTransferOut > 0) events.push({ time: d.time, type: 'TRANSFER OUT', value: d.creatorTransferOut, color: '#f97316' });
-      if (d.creatorReceive > 0) events.push({ time: d.time, type: 'RECEIVE', value: d.creatorReceive, color: '#06b6d4' });
-      if (d.creatorOtherBuy > 0) events.push({ time: d.time, type: 'OTHER BUY', value: d.creatorOtherBuy, color: '#10b981' });
-      if (d.creatorOtherSell > 0) events.push({ time: d.time, type: 'OTHER SELL', value: d.creatorOtherSell, color: '#f43f5e' });
-      if (d.creatorOtherDeposit > 0) events.push({ time: d.time, type: 'OTHER DEPOSIT', value: d.creatorOtherDeposit, color: '#a855f7' });
-      if (d.creatorOtherWithdraw > 0) events.push({ time: d.time, type: 'OTHER WITHDRAW', value: d.creatorOtherWithdraw, color: '#eab308' });
-      if (d.creatorOtherSend > 0) events.push({ time: d.time, type: 'OTHER SEND', value: d.creatorOtherSend, color: '#ef4444' });
-      if (d.creatorOtherReceive > 0) events.push({ time: d.time, type: 'OTHER RECEIVE', value: d.creatorOtherReceive, color: '#06b6d4' });
-    }
-    return events.sort((a, b) => a.time - b.time);
-  }, [data]);
+  // Creator events from API
+  const [creatorEvents, setCreatorEvents] = useState([]);
+  useEffect(() => {
+    if (!token?.creator || !token?.md5) return;
+    const ctrl = new AbortController();
+    axios.get(`${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=20&md5=${token.md5}`, { signal: ctrl.signal })
+      .then(res => {
+        if (!res.data?.events?.length) return setCreatorEvents([]);
+        const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', receive: '#06b6d4' };
+        setCreatorEvents(res.data.events.map(e => ({
+          time: e.time,
+          type: (e.side || '').toUpperCase().replace('_', ' '),
+          tokenAmount: e.tokenAmount || 0,
+          xrpAmount: e.xrpAmount || 0,
+          hash: e.hash,
+          color: colors[e.side] || '#9ca3af'
+        })).sort((a, b) => a.time - b.time));
+      })
+      .catch(() => setCreatorEvents([]));
+    return () => ctrl.abort();
+  }, [token?.creator, token?.md5]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -1442,23 +1441,24 @@ const PriceChartAdvanced = memo(({ token }) => {
       </div>
 
       {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
-        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', fontSize: '10px' }}>
-          <span style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginRight: '2px' }}>Creator:</span>
-          {creatorEvents.slice(0, 8).map((e, i) => (
-            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ padding: '1px 4px', borderRadius: '3px', background: e.color, color: '#fff', fontSize: '8px', fontWeight: 600 }}>
-                {e.type.replace('CHECK ', '✓').replace('OTHER ', '')}
-              </span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                {e.value >= 1000 ? (e.value / 1000).toFixed(0) + 'K' : e.value < 10 ? e.value.toFixed(1) : Math.round(e.value)} {e.type.includes('CHECK') ? (token?.name || '').slice(0, 8) : 'XRP'}
-              </span>
-              <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
-                {(() => { const d = Math.floor((Date.now() - e.time * 1000) / 1000); return d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : new Date(e.time * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); })()}
-              </span>
-              {i < Math.min(creatorEvents.length, 8) - 1 && <span style={{ color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }}>→</span>}
-            </span>
-          ))}
-          {creatorEvents.length > 8 && <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>+{creatorEvents.length - 8}</span>}
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '11px' }}>
+          <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Creator</span>
+          {creatorEvents.slice(0, 12).map((e, i) => {
+            const f = (n) => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
+            const t = e.time > 1e12 ? e.time : e.time * 1000;
+            const d = Math.floor((Date.now() - t) / 1000);
+            const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
+            const isXrpType = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
+            const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) : '';
+            return (
+              <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}>
+                <span style={{ color: e.color, fontWeight: 600, fontSize: '10px' }}>{e.type.replace('CHECK ','✓').replace('OTHER ','')}</span>
+                {val && <span style={{ fontFamily: 'var(--font-mono)' }}>{val}</span>}
+                <span style={{ opacity: 0.4 }}>{ago}</span>
+              </a>
+            );
+          })}
+          {creatorEvents.length > 12 && <span style={{ opacity: 0.4 }}>+{creatorEvents.length - 12}</span>}
         </div>
       )}
 
