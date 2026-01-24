@@ -59,6 +59,7 @@ const fetchInFlight = new Map();
 const Container = styled.div`
   overflow: hidden;
   height: 100%;
+  min-height: 520px;
   display: flex;
   flex-direction: column;
 `;

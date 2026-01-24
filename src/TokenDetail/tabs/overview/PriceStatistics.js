@@ -403,7 +403,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (flowAbortRef.current) flowAbortRef.current.abort();
     flowAbortRef.current = new AbortController();
 
-    fetch(`https://api.xrpl.to/api/ai/token/${token.md5}/flow`, { signal: flowAbortRef.current.signal })
+    fetch(`https://api.xrpl.to/v1/token_flow/${token.md5}`, { signal: flowAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
         if (data?.success && data?.summary) {

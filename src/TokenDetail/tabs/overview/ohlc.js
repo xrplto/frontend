@@ -29,6 +29,7 @@ const processOhlc = (ohlc) => {
   const MAX = 90071992547409;
   return ohlc
     .filter((c) => c[1] < MAX && c[2] < MAX && c[3] < MAX && c[4] < MAX)
+    .filter((c) => c[1] > 0 && c[4] > 0) // Filter out zero-value candles (incomplete/no trades)
     .map((c) => ({
       time: Math.floor(c[0] / 1000),
       open: c[1] || 0,
@@ -353,27 +354,43 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         if (msg.e === 'kline' && msg.k && !refs.current.isZoomed) {
           const k = msg.k;
+          // Skip zero-value candles (incomplete/no trades yet)
+          if (+k.o === 0 || +k.c === 0) return;
+
           const candleTime = Math.floor(k.t / 1000);
-          setData((prev) => {
-            if (!prev?.length) return prev;
-            const arr = [...prev];
-            const last = arr[arr.length - 1];
+          const candle = {
+            time: candleTime,
+            open: +k.o,
+            high: +k.h,
+            low: +k.l,
+            close: +k.c,
+            volume: +k.v || 0
+          };
 
-            const candle = {
-              time: candleTime,
-              open: +k.o,
-              high: +k.h,
-              low: +k.l,
-              close: +k.c,
-              volume: +k.v || 0
-            };
+          // Update series directly to avoid layout shift from full setData
+          const series = seriesRefs.current;
+          if (series.candle && refs.current.chartType === 'candles') {
+            series.candle.update(candle);
+          } else if (series.line && refs.current.chartType === 'line') {
+            series.line.update({ time: candle.time, value: candle.close });
+          }
+          if (series.volume) {
+            series.volume.update({
+              time: candle.time,
+              value: candle.volume,
+              color: candle.close >= candle.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
+            });
+          }
 
-            if (last.time === candle.time) arr[arr.length - 1] = candle;
-            else if (candle.time > last.time) arr.push(candle);
-            else return prev;
-            dataRef.current = arr;
-            return arr;
-          });
+          // Update ref without triggering state re-render
+          if (dataRef.current?.length) {
+            const last = dataRef.current[dataRef.current.length - 1];
+            if (last.time === candle.time) {
+              dataRef.current[dataRef.current.length - 1] = candle;
+            } else if (candle.time > last.time) {
+              dataRef.current.push(candle);
+            }
+          }
           setLastUpdate(new Date());
         }
       };
@@ -1023,9 +1040,15 @@ const PriceChartAdvanced = memo(({ token }) => {
         all: len
       };
       const vis = Math.min(visMap[timeRange] || 192, len);
-      chartRef.current
-        .timeScale()
-        .setVisibleLogicalRange({ from: Math.max(0, len - vis), to: len + 5 });
+      // Use requestAnimationFrame to set range after render to prevent layout shift
+      requestAnimationFrame(() => {
+        if (chartRef.current) {
+          chartRef.current.timeScale().setVisibleLogicalRange({
+            from: Math.max(0, len - vis),
+            to: len + 5
+          });
+        }
+      });
       lastKeyRef.current = key;
     }
   }, [data, holderData, liquidityData, chartType, timeRange, activeFiatCurrency, isMobile]);

@@ -131,10 +131,15 @@ export async function getStaticProps({ params }) {
     const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     // https://api.xrpl.to/v1/token/bitstamp-usd
-    const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`);
+    const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`, {
+      timeout: 10000,
+      validateStatus: (status) => status === 200
+    });
 
-    data = res.data.data || res.data;
-    if (tab) data.tab = tab;
+    if (res.data && typeof res.data === 'object') {
+      data = res.data.data || res.data;
+      if (tab && data) data.tab = tab;
+    }
 
     // SEO: 301 redirect md5 hash to human-readable slug (better for SEO + UX)
     if (data && data.token && data.token.slug && slug !== data.token.slug) {

@@ -210,7 +210,7 @@ const Overview = memo(
                 <PriceChart token={token} />
               </section>
               {sidePanelVisible ? (
-                <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[640px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
+                <section aria-label="Side Panel" className={`w-[300px] flex-shrink-0 hidden lg:flex lg:flex-col h-[720px] rounded-xl border ${isDark ? 'border-white/[0.08]' : 'border-black/[0.08]'} overflow-hidden`}>
                   <div className={`flex ${isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]'}`}>
                     {['orderbook', 'trending'].map((tab) => (
                       <button
@@ -239,7 +239,7 @@ const Overview = memo(
               ) : (
                 <button
                   onClick={() => setSidePanelVisible(true)}
-                  className={`hidden lg:flex items-center justify-center w-8 h-[640px] rounded-xl border ${isDark ? 'border-white/[0.08] hover:bg-white/[0.04]' : 'border-black/[0.08] hover:bg-black/[0.02]'}`}
+                  className={`hidden lg:flex items-center justify-center w-8 h-[720px] rounded-xl border ${isDark ? 'border-white/[0.08] hover:bg-white/[0.04]' : 'border-black/[0.08] hover:bg-black/[0.02]'}`}
                   title="Show panel"
                 >
                   <span className={`text-[10px] ${isDark ? 'text-white/40' : 'text-black/40'}`} style={{ writingMode: 'vertical-rl' }}>Show Panel</span>
