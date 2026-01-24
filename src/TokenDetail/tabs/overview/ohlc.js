@@ -14,8 +14,7 @@ import {
   createChart,
   CandlestickSeries,
   HistogramSeries,
-  AreaSeries,
-  createSeriesMarkers
+  AreaSeries
 } from 'lightweight-charts';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -27,35 +26,34 @@ const BASE_URL = 'https://api.xrpl.to/v1';
 const WS_URL = 'wss://api.xrpl.to/ws/ohlc';
 
 const processOhlc = (ohlc) => {
-  const MAX = 90071992547409,
-    MIN = 1e-12;
+  const MAX = 90071992547409;
   return ohlc
-    .filter(
-      (c) =>
-        c[1] > MIN &&
-        c[1] < MAX &&
-        c[2] > MIN &&
-        c[2] < MAX &&
-        c[3] > MIN &&
-        c[3] < MAX &&
-        c[4] > MIN &&
-        c[4] < MAX
-    )
-    .map((c) => ({
-      time: Math.floor(c[0] / 1000),
-      open: c[1],
-      high: c[2],
-      low: c[3],
-      close: c[4],
-      volume: c[5] || 0,
-      creatorSold: c[6] || 0,
-      creatorBought: c[7] || 0,
-      creatorWithdraw: c[8] || 0,
-      creatorDeposit: c[9] || 0,
-      creatorCheckCash: c[10] || 0,
-      creatorCheckCreate: c[11] || 0,
-      creatorTransferOut: c[12] || 0
-    }))
+    .filter((c) => c[1] < MAX && c[2] < MAX && c[3] < MAX && c[4] < MAX)
+    .map((c) => {
+      const len = c.length;
+      return {
+        time: Math.floor(c[0] / 1000),
+        open: c[1] || 0,
+        high: c[2] || 0,
+        low: c[3] || 0,
+        close: c[4] || 0,
+        volume: c[5] || 0,
+        creatorSold: len > 6 ? (c[6] || 0) : 0,
+        creatorBought: len > 7 ? (c[7] || 0) : 0,
+        creatorWithdraw: len > 8 ? (c[8] || 0) : 0,
+        creatorDeposit: len > 9 ? (c[9] || 0) : 0,
+        creatorCheckCash: len > 10 ? (c[10] || 0) : 0,
+        creatorCheckCreate: len > 11 ? (c[11] || 0) : 0,
+        creatorTransferOut: len > 12 ? (c[12] || 0) : 0,
+        creatorReceive: len > 13 ? (c[13] || 0) : 0,
+        creatorOtherBuy: len > 14 ? (c[14] || 0) : 0,
+        creatorOtherSell: len > 15 ? (c[15] || 0) : 0,
+        creatorOtherDeposit: len > 16 ? (c[16] || 0) : 0,
+        creatorOtherWithdraw: len > 17 ? (c[17] || 0) : 0,
+        creatorOtherSend: len > 18 ? (c[18] || 0) : 0,
+        creatorOtherReceive: len > 19 ? (c[19] || 0) : 0
+      };
+    })
     .sort((a, b) => a.time - b.time);
 };
 
@@ -170,7 +168,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     candle: null,
     line: null,
     volume: null,
-    markers: null,
     xrpLine: null,
     tokenLine: null
   });
@@ -179,6 +176,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const wsRef = useRef(null);
   const toolTipRef = useRef(null);
   const lastKeyRef = useRef(null);
+  const lastChartTypeRef = useRef(null);
   const refs = useRef({
     currency: activeFiatCurrency,
     chartType: 'candles',
@@ -219,6 +217,29 @@ const PriceChartAdvanced = memo(({ token }) => {
         : 0;
     return { percentDown: pct, athMcap: token.athMarketcap };
   }, [token?.athMarketcap, token?.marketcap]);
+
+  // Creator events from data
+  const creatorEvents = useMemo(() => {
+    if (!data?.length) return [];
+    const events = [];
+    for (const d of data) {
+      if (d.creatorSold > 0) events.push({ time: d.time, type: 'SELL', value: d.creatorSold, color: '#ef4444' });
+      if (d.creatorBought > 0) events.push({ time: d.time, type: 'BUY', value: d.creatorBought, color: '#22c55e' });
+      if (d.creatorWithdraw > 0) events.push({ time: d.time, type: 'WITHDRAW', value: d.creatorWithdraw, color: '#f59e0b' });
+      if (d.creatorDeposit > 0) events.push({ time: d.time, type: 'DEPOSIT', value: d.creatorDeposit, color: '#8b5cf6' });
+      if (d.creatorCheckCash > 0) events.push({ time: d.time, type: 'CHECK CASH', value: d.creatorCheckCash, color: '#ec4899' });
+      if (d.creatorCheckCreate > 0) events.push({ time: d.time, type: 'CHECK CREATE', value: d.creatorCheckCreate, color: '#ec4899' });
+      if (d.creatorTransferOut > 0) events.push({ time: d.time, type: 'TRANSFER OUT', value: d.creatorTransferOut, color: '#f97316' });
+      if (d.creatorReceive > 0) events.push({ time: d.time, type: 'RECEIVE', value: d.creatorReceive, color: '#06b6d4' });
+      if (d.creatorOtherBuy > 0) events.push({ time: d.time, type: 'OTHER BUY', value: d.creatorOtherBuy, color: '#10b981' });
+      if (d.creatorOtherSell > 0) events.push({ time: d.time, type: 'OTHER SELL', value: d.creatorOtherSell, color: '#f43f5e' });
+      if (d.creatorOtherDeposit > 0) events.push({ time: d.time, type: 'OTHER DEPOSIT', value: d.creatorOtherDeposit, color: '#a855f7' });
+      if (d.creatorOtherWithdraw > 0) events.push({ time: d.time, type: 'OTHER WITHDRAW', value: d.creatorOtherWithdraw, color: '#eab308' });
+      if (d.creatorOtherSend > 0) events.push({ time: d.time, type: 'OTHER SEND', value: d.creatorOtherSend, color: '#ef4444' });
+      if (d.creatorOtherReceive > 0) events.push({ time: d.time, type: 'OTHER RECEIVE', value: d.creatorOtherReceive, color: '#06b6d4' });
+    }
+    return events.sort((a, b) => a.time - b.time);
+  }, [data]);
 
   // Keep refs in sync
   useEffect(() => {
@@ -502,7 +523,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   // Create chart
   useEffect(() => {
     if (!chartContainerRef.current || !hasData) return;
-    if (lastKeyRef.current === chartType && chartRef.current) return;
+    if (lastChartTypeRef.current === chartType && chartRef.current) return;
 
     if (chartRef.current) {
       try {
@@ -513,13 +534,12 @@ const PriceChartAdvanced = memo(({ token }) => {
         candle: null,
         line: null,
         volume: null,
-        markers: null,
         xrpLine: null,
         tokenLine: null
       };
     }
 
-    lastKeyRef.current = chartType;
+    lastChartTypeRef.current = chartType;
 
     const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 570);
     const containerWidth = chartContainerRef.current.clientWidth || 600;
@@ -1018,7 +1038,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         candle: null,
         line: null,
         volume: null,
-        markers: null,
         xrpLine: null,
         tokenLine: null
       };
@@ -1045,7 +1064,9 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Update data on chart
   useEffect(() => {
-    if (!chartRef.current) return;
+    const chart = chartRef.current;
+    const series = seriesRefs.current;
+    if (!chart) return;
     const chartData =
       chartType === 'holders' ? holderData : chartType === 'liquidity' ? liquidityData : data;
     if (!chartData?.length) return;
@@ -1053,27 +1074,19 @@ const PriceChartAdvanced = memo(({ token }) => {
     const key = `${chartType}-${timeRange}-${activeFiatCurrency}`;
     const isNew = lastKeyRef.current !== key;
 
-    if (chartType === 'candles' && seriesRefs.current.candle) {
-      seriesRefs.current.candle.setData(chartData);
-    } else if (chartType === 'line' && seriesRefs.current.line) {
-      seriesRefs.current.line.setData(chartData.map((d) => ({ time: d.time, value: d.close })));
-    } else if (chartType === 'holders' && seriesRefs.current.line) {
-      seriesRefs.current.line.setData(chartData.map((d) => ({ time: d.time, value: d.holders })));
-    } else if (
-      chartType === 'liquidity' &&
-      seriesRefs.current.xrpLine &&
-      seriesRefs.current.tokenLine
-    ) {
-      seriesRefs.current.xrpLine.setData(
-        chartData.map((d) => ({ time: d.time, value: d.xrpLiquidity }))
-      );
-      seriesRefs.current.tokenLine.setData(
-        chartData.map((d) => ({ time: d.time, value: d.tokenLiquidity }))
-      );
+    if (chartType === 'candles' && series.candle) {
+      series.candle.setData(chartData);
+    } else if (chartType === 'line' && series.line) {
+      series.line.setData(chartData.map((d) => ({ time: d.time, value: d.close })));
+    } else if (chartType === 'holders' && series.line) {
+      series.line.setData(chartData.map((d) => ({ time: d.time, value: d.holders })));
+    } else if (chartType === 'liquidity' && series.xrpLine && series.tokenLine) {
+      series.xrpLine.setData(chartData.map((d) => ({ time: d.time, value: d.xrpLiquidity })));
+      series.tokenLine.setData(chartData.map((d) => ({ time: d.time, value: d.tokenLiquidity })));
     }
 
-    if (chartType !== 'holders' && chartType !== 'liquidity' && seriesRefs.current.volume && data) {
-      seriesRefs.current.volume.setData(
+    if (chartType !== 'holders' && chartType !== 'liquidity' && series.volume && data) {
+      series.volume.setData(
         data.map((d) => ({
           time: d.time,
           value: d.volume || 0,
@@ -1082,93 +1095,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       );
     }
 
-    // Creator activity markers
-    const priceSeries = seriesRefs.current.candle || seriesRefs.current.line;
-    if (chartType !== 'holders' && chartType !== 'liquidity' && priceSeries && data) {
-      const markers = data
-        .filter(
-          (d) =>
-            d.creatorSold > 0 ||
-            d.creatorBought > 0 ||
-            d.creatorWithdraw > 0 ||
-            d.creatorDeposit > 0 ||
-            d.creatorCheckCash > 0 ||
-            d.creatorCheckCreate > 0 ||
-            d.creatorTransferOut > 0
-        )
-        .flatMap((d) => {
-          const arr = [];
-          if (d.creatorSold > 0) {
-            arr.push({
-              time: d.time,
-              position: 'aboveBar',
-              color: '#ff6b6b',
-              shape: 'arrowDown',
-              text: 'SELL',
-              size: 2
-            });
-          }
-          if (d.creatorWithdraw > 0) {
-            arr.push({
-              time: d.time,
-              position: 'aboveBar',
-              color: '#fbbf24',
-              shape: 'circle',
-              text: 'W',
-              size: 2
-            });
-          }
-          if (d.creatorBought > 0) {
-            arr.push({
-              time: d.time,
-              position: 'belowBar',
-              color: '#06b6d4',
-              shape: 'arrowUp',
-              text: 'BUY',
-              size: 2
-            });
-          }
-          if (d.creatorDeposit > 0) {
-            arr.push({
-              time: d.time,
-              position: 'belowBar',
-              color: '#818cf8',
-              shape: 'circle',
-              text: 'D',
-              size: 2
-            });
-          }
-          if (d.creatorCheckCash > 0 || d.creatorCheckCreate > 0) {
-            arr.push({
-              time: d.time,
-              position: 'aboveBar',
-              color: '#f472b6',
-              shape: 'square',
-              text: '✓',
-              size: 2
-            });
-          }
-          if (d.creatorTransferOut > 0) {
-            arr.push({
-              time: d.time,
-              position: 'aboveBar',
-              color: '#f97316',
-              shape: 'arrowDown',
-              text: 'OUT',
-              size: 2
-            });
-          }
-          return arr;
-        })
-        .sort((a, b) => a.time - b.time);
-
-      // Update markers on existing object, or create new
-      if (seriesRefs.current.markers) {
-        seriesRefs.current.markers.setMarkers(markers);
-      } else if (markers.length > 0) {
-        seriesRefs.current.markers = createSeriesMarkers(priceSeries, markers);
-      }
-    }
 
     if (isNew) {
       const len = chartData.length;
@@ -1514,6 +1440,27 @@ const PriceChartAdvanced = memo(({ token }) => {
             </div>
           )}
       </div>
+
+      {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
+        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', fontSize: '10px' }}>
+          <span style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', marginRight: '2px' }}>Creator:</span>
+          {creatorEvents.slice(0, 8).map((e, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+              <span style={{ padding: '1px 4px', borderRadius: '3px', background: e.color, color: '#fff', fontSize: '8px', fontWeight: 600 }}>
+                {e.type.replace('CHECK ', '✓').replace('OTHER ', '')}
+              </span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                {e.value >= 1000 ? (e.value / 1000).toFixed(0) + 'K' : e.value < 10 ? e.value.toFixed(1) : Math.round(e.value)} {e.type.includes('CHECK') ? (token?.name || '').slice(0, 8) : 'XRP'}
+              </span>
+              <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
+                {(() => { const d = Math.floor((Date.now() - e.time * 1000) / 1000); return d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : new Date(e.time * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); })()}
+              </span>
+              {i < Math.min(creatorEvents.length, 8) - 1 && <span style={{ color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }}>→</span>}
+            </span>
+          ))}
+          {creatorEvents.length > 8 && <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>+{creatorEvents.length - 8}</span>}
+        </div>
+      )}
 
       {isFullscreen &&
         typeof document !== 'undefined' &&
