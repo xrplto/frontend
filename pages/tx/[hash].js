@@ -2984,10 +2984,20 @@ const TransactionDetails = ({ txData }) => {
   };
 
   const getAMMWithdrawFlagExplanation = (flags) => {
-    if (flags & 0x00010000) return 'Withdraw all tokens';
-    if (flags & 0x00100000) return 'Withdraw single asset by LP amount';
-    if (flags & 0x00040000) return 'Withdraw single asset by asset amount';
-    if (flags & 0x00200000) return 'Withdraw up to LP amount';
+    // tfLPToken: Double-asset withdrawal proportional to LP tokens
+    if (flags & 0x00010000) return 'Proportional withdrawal (LP Token amount)';
+    // tfWithdrawAll: Withdraw all LP tokens for both assets
+    if (flags & 0x00020000) return 'Withdraw all LP tokens';
+    // tfOneAssetWithdrawAll: Withdraw all LP tokens for single asset
+    if (flags & 0x00040000) return 'Withdraw all LP tokens for single asset';
+    // tfSingleAsset: Single asset withdrawal proportional to LP amount
+    if (flags & 0x00080000) return 'Single asset withdrawal';
+    // tfTwoAsset: Double-asset withdrawal
+    if (flags & 0x00100000) return 'Two-asset withdrawal';
+    // tfOneAssetLPToken: Single asset by LP token amount
+    if (flags & 0x00200000) return 'Single asset by LP amount';
+    // tfLimitLPToken: Limit by max LP token
+    if (flags & 0x00400000) return 'Limited by LP token amount';
     return null;
   };
 

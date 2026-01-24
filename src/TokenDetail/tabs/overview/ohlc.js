@@ -29,31 +29,14 @@ const processOhlc = (ohlc) => {
   const MAX = 90071992547409;
   return ohlc
     .filter((c) => c[1] < MAX && c[2] < MAX && c[3] < MAX && c[4] < MAX)
-    .map((c) => {
-      const len = c.length;
-      return {
-        time: Math.floor(c[0] / 1000),
-        open: c[1] || 0,
-        high: c[2] || 0,
-        low: c[3] || 0,
-        close: c[4] || 0,
-        volume: c[5] || 0,
-        creatorSold: len > 6 ? (c[6] || 0) : 0,
-        creatorBought: len > 7 ? (c[7] || 0) : 0,
-        creatorWithdraw: len > 8 ? (c[8] || 0) : 0,
-        creatorDeposit: len > 9 ? (c[9] || 0) : 0,
-        creatorCheckCash: len > 10 ? (c[10] || 0) : 0,
-        creatorCheckCreate: len > 11 ? (c[11] || 0) : 0,
-        creatorTransferOut: len > 12 ? (c[12] || 0) : 0,
-        creatorReceive: len > 13 ? (c[13] || 0) : 0,
-        creatorOtherBuy: len > 14 ? (c[14] || 0) : 0,
-        creatorOtherSell: len > 15 ? (c[15] || 0) : 0,
-        creatorOtherDeposit: len > 16 ? (c[16] || 0) : 0,
-        creatorOtherWithdraw: len > 17 ? (c[17] || 0) : 0,
-        creatorOtherSend: len > 18 ? (c[18] || 0) : 0,
-        creatorOtherReceive: len > 19 ? (c[19] || 0) : 0
-      };
-    })
+    .map((c) => ({
+      time: Math.floor(c[0] / 1000),
+      open: c[1] || 0,
+      high: c[2] || 0,
+      low: c[3] || 0,
+      close: c[4] || 0,
+      volume: c[5] || 0
+    }))
     .sort((a, b) => a.time - b.time);
 };
 
@@ -223,18 +206,23 @@ const PriceChartAdvanced = memo(({ token }) => {
   useEffect(() => {
     if (!token?.creator || !token?.md5) return;
     const ctrl = new AbortController();
-    axios.get(`${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=20&md5=${token.md5}`, { signal: ctrl.signal })
+    axios.get(`${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=100&md5=${token.md5}`, { signal: ctrl.signal })
       .then(res => {
         if (!res.data?.events?.length) return setCreatorEvents([]);
-        const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', receive: '#06b6d4' };
-        setCreatorEvents(res.data.events.map(e => ({
-          time: e.time,
-          type: (e.side || '').toUpperCase().replace('_', ' '),
-          tokenAmount: e.tokenAmount || 0,
-          xrpAmount: e.xrpAmount || 0,
-          hash: e.hash,
-          color: colors[e.side] || '#9ca3af'
-        })).sort((a, b) => a.time - b.time));
+        const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
+        const priority = { sell: 1, buy: 1, transfer_out: 2, other_send: 2, check_create: 3, check_cash: 3, check_receive: 3, withdraw: 4, deposit: 4, receive: 5, other_receive: 5 };
+        setCreatorEvents(res.data.events
+          .filter(e => !((e.side === 'receive' || e.side === 'other_receive') && e.xrpAmount < 5 && e.tokenAmount < 10000))
+          .sort((a, b) => (priority[a.side] || 9) - (priority[b.side] || 9) || b.time - a.time)
+          .slice(0, 20)
+          .map(e => ({
+            time: e.time,
+            type: (e.side || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
+            tokenAmount: e.tokenAmount || 0,
+            xrpAmount: e.xrpAmount || 0,
+            hash: e.hash,
+            color: colors[e.side] || '#9ca3af'
+          })).sort((a, b) => a.time - b.time));
       })
       .catch(() => setCreatorEvents([]));
     return () => ctrl.abort();
@@ -371,33 +359,13 @@ const PriceChartAdvanced = memo(({ token }) => {
             const arr = [...prev];
             const last = arr[arr.length - 1];
 
-            // Preserve existing creator events from HTTP, only update price/volume from WS
-            const existingCreator = last.time === candleTime ? {
-              creatorSold: last.creatorSold,
-              creatorBought: last.creatorBought,
-              creatorWithdraw: last.creatorWithdraw,
-              creatorDeposit: last.creatorDeposit,
-              creatorCheckCash: last.creatorCheckCash,
-              creatorCheckCreate: last.creatorCheckCreate,
-              creatorTransferOut: last.creatorTransferOut
-            } : {
-              creatorSold: 0,
-              creatorBought: 0,
-              creatorWithdraw: 0,
-              creatorDeposit: 0,
-              creatorCheckCash: 0,
-              creatorCheckCreate: 0,
-              creatorTransferOut: 0
-            };
-
             const candle = {
               time: candleTime,
               open: +k.o,
               high: +k.h,
               low: +k.l,
               close: +k.c,
-              volume: +k.v || 0,
-              ...existingCreator
+              volume: +k.v || 0
             };
 
             if (last.time === candle.time) arr[arr.length - 1] = candle;
@@ -827,62 +795,10 @@ const PriceChartAdvanced = memo(({ token }) => {
             sep +
             row('Vol', candle.volume.toLocaleString()) +
             row('Chg', chg + '%', col);
-          // Creator activity
-          const hasCreatorActivity =
-            candle.creatorSold > 0 ||
-            candle.creatorBought > 0 ||
-            candle.creatorWithdraw > 0 ||
-            candle.creatorDeposit > 0 ||
-            candle.creatorCheckCash > 0 ||
-            candle.creatorCheckCreate > 0 ||
-            candle.creatorTransferOut > 0;
-          if (hasCreatorActivity) {
-            html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
-            if (candle.creatorSold > 0)
-              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ff6b6b');
-            if (candle.creatorBought > 0)
-              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#06b6d4');
-            if (candle.creatorWithdraw > 0)
-              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#fbbf24');
-            if (candle.creatorDeposit > 0)
-              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#818cf8');
-            if (candle.creatorCheckCreate > 0)
-              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#f472b6');
-            if (candle.creatorCheckCash > 0)
-              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#f472b6');
-            if (candle.creatorTransferOut > 0)
-              html += row('Transfer Out', formatMcap(candle.creatorTransferOut), '#f97316');
-          }
         } else if (ct === 'line') {
           html +=
             row('Price', sym + fp(candle.close || candle.value)) +
             row('Vol', (candle.volume || 0).toLocaleString());
-          // Creator activity for line chart
-          const hasCreatorActivity =
-            candle.creatorSold > 0 ||
-            candle.creatorBought > 0 ||
-            candle.creatorWithdraw > 0 ||
-            candle.creatorDeposit > 0 ||
-            candle.creatorCheckCash > 0 ||
-            candle.creatorCheckCreate > 0 ||
-            candle.creatorTransferOut > 0;
-          if (hasCreatorActivity) {
-            html += sep + `<div style="font-size:8px;opacity:0.5;margin-bottom:2px">CREATOR</div>`;
-            if (candle.creatorSold > 0)
-              html += row('Sold', candle.creatorSold.toFixed(2) + ' XRP', '#ff6b6b');
-            if (candle.creatorBought > 0)
-              html += row('Bought', candle.creatorBought.toFixed(2) + ' XRP', '#06b6d4');
-            if (candle.creatorWithdraw > 0)
-              html += row('Withdraw', candle.creatorWithdraw.toFixed(2) + ' XRP', '#fbbf24');
-            if (candle.creatorDeposit > 0)
-              html += row('Deposit', candle.creatorDeposit.toFixed(2) + ' XRP', '#818cf8');
-            if (candle.creatorCheckCreate > 0)
-              html += row('Chk Create', formatMcap(candle.creatorCheckCreate), '#f472b6');
-            if (candle.creatorCheckCash > 0)
-              html += row('Chk Cash', formatMcap(candle.creatorCheckCash), '#f472b6');
-            if (candle.creatorTransferOut > 0)
-              html += row('Transfer Out', formatMcap(candle.creatorTransferOut), '#f97316');
-          }
         } else if (ct === 'holders') {
           html += row('Holders', (candle.holders || candle.value).toLocaleString());
           if (candle.top10 !== undefined)
