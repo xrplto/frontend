@@ -424,7 +424,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       axios
         .get(`https://api.xrpl.to/v1/watchlist/nft?account=${accountLogin}`)
         .then((res) => {
-          if (res.data?.result === 'success' && res.data.watchlist) {
+          if (res.data?.success && res.data.watchlist) {
             const allItems = Object.values(res.data.watchlist).flatMap((col) => col.items || []);
             setIsSaved(allItems.some((item) => item.nftokenId === nft.NFTokenID));
           }
@@ -447,7 +447,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         nftokenId: nft?.NFTokenID,
         action
       });
-      if (res.data?.result === 'success') {
+      if (res.data?.success) {
         setIsSaved(!isSaved);
         openSnackbar(isSaved ? 'Removed from watchlist' : 'Added to watchlist', 'success');
       } else {

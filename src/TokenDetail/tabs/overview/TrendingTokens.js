@@ -80,7 +80,7 @@ const TrendingTokens = ({ token = null }) => {
   useEffect(() => {
     if (!accountProfile?.account) { setWatchList([]); return; }
     axios.get(`${BASE_URL}/watchlist?account=${accountProfile.account}`)
-      .then((res) => res.data.result === 'success' && setWatchList(res.data.watchlist || []))
+      .then((res) => res.data.success && setWatchList(res.data.watchlist || []))
       .catch(() => {});
   }, [accountProfile]);
 
@@ -91,7 +91,7 @@ const TrendingTokens = ({ token = null }) => {
     const action = watchList.includes(md5) ? 'remove' : 'add';
     try {
       const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account: accountProfile.account, action });
-      if (res.data.result === 'success') setWatchList(res.data.watchlist || []);
+      if (res.data.success) setWatchList(res.data.watchlist || []);
     } catch {}
   };
 

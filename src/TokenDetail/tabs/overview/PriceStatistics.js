@@ -486,7 +486,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         setHasWarning(data.signals?.length > 0 || data.warning || false);
         setSignals(data.signals || []);
         setCreatorStats(data.stats || null);
-      } else if (filter === 'all' && txData?.result === 'success' && txData?.transactions) {
+      } else if (filter === 'all' && txData?.success && txData?.transactions) {
         // Use pre-fetched tx fallback
         setNoTokenActivity(true);
         const mapped = txData.transactions.map((t) => {

@@ -426,7 +426,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       axios
         .get(`${BASE_URL}/watchlist?account=${account}`)
         .then((res) => {
-          if (res.status === 200 && res.data.result === 'success') {
+          if (res.status === 200 && res.data.success) {
             setWatchList(res.data.watchlist || []);
           }
         })
@@ -455,7 +455,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
       const res = await axios.post(`${BASE_URL}/watchlist`, body);
 
-      if (res.status === 200 && res.data.result === 'success') {
+      if (res.status === 200 && res.data.success) {
         setWatchList(res.data.watchlist || []);
         openSnackbar('Watchlist updated!', 'success');
         return true;

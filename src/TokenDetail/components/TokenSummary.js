@@ -516,7 +516,7 @@ const TokenSummary = memo(({ token }) => {
         timeout: 5000
       })
       .then((res) => {
-        if (res.status === 200 && res.data?.result === 'success' && mountedRef.current) {
+        if (res.status === 200 && res.data?.success && mountedRef.current) {
           const lines = res.data.lines || [];
           const tl = lines.find((line) => {
             const lineIssuers = [line.account, line.issuer, line.Balance?.issuer].filter(Boolean);

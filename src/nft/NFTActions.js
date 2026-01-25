@@ -274,16 +274,19 @@ export default function NFTActions({ nft }) {
       axios
         .get(`${BASE_URL}/nft/${NFTokenID}/offers`)
         .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret && ret.result === 'success') {
-            const offers = ret.sellOffers;
+          const ret = res.status === 200 ? res.data : undefined;
+          if (ret && (ret.sellOffers || ret.buyOffers)) {
+            const sellOffersData = ret.sellOffers || [];
+            const buyOffersData = ret.buyOffers || [];
             const nftOwner = nft.account;
-            setCost(getCostFromOffers(nftOwner, offers, true));
-            setSellOffers(getValidOffers(ret.sellOffers, true));
-            setBuyOffers(getValidOffers(ret.buyOffers, false));
+            setCost(getCostFromOffers(nftOwner, sellOffersData, true));
+            setSellOffers(getValidOffers(sellOffersData, true));
+            setBuyOffers(getValidOffers(buyOffersData, false));
           }
         })
-        .catch((err) => {})
+        .catch((err) => {
+          console.error('[NFTActions] Failed to fetch offers:', err);
+        })
         .finally(() => setLoading(false));
     }
     getOffers();

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Activity, Search, X, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
@@ -33,8 +33,9 @@ const SORT_OPTIONS = [
 
 export default function TopTraders({ token }) {
   const BASE_URL = 'https://api.xrpl.to/v1';
-  const { themeName } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const accountLogin = accountProfile?.account;
 
   const BearIcon = () => (
     <div className="relative w-14 h-14 mx-auto mb-4">
@@ -453,16 +454,27 @@ export default function TopTraders({ token }) {
                         </span>
                       </td>
                       <td className="py-2.5 px-2">
-                        <Link
-                          href={`/address/${trader.address}`}
-                          target="_blank"
-                          className={cn(
-                            'text-[12px] font-mono hover:text-primary transition-colors',
-                            isDark ? 'text-white/80' : 'text-gray-700'
+                        <div className="flex items-center gap-1">
+                          <Link
+                            href={`/address/${trader.address}`}
+                            target="_blank"
+                            className={cn(
+                              'text-[12px] font-mono hover:text-primary transition-colors',
+                              isDark ? 'text-white/80' : 'text-gray-700'
+                            )}
+                          >
+                            {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
+                          </Link>
+                          {trader.address !== accountLogin && (
+                            <button
+                              onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: trader.address } }))}
+                              className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                              title="Message"
+                            >
+                              <MessageCircle size={12} />
+                            </button>
                           )}
-                        >
-                          {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
-                        </Link>
+                        </div>
                       </td>
                       {!isMobile && (
                         <>

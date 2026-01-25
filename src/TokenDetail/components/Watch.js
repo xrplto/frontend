@@ -53,7 +53,7 @@ export default function Watch({ token }) {
     axios
       .get(`${BASE_URL}/watchlist?account=${account}`)
       .then((res) => {
-        if (res.status === 200 && res.data.result === 'success') {
+        if (res.status === 200 && res.data.success) {
           setWatchList(res.data.watchlist || []);
         }
       })
@@ -73,7 +73,7 @@ export default function Watch({ token }) {
       const action = isActive ? 'remove' : 'add';
       const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account, action });
 
-      if (res.status === 200 && res.data.result === 'success') {
+      if (res.status === 200 && res.data.success) {
         setWatchList(res.data.watchlist || []);
         openSnackbar('Watchlist updated!', 'success');
       } else {

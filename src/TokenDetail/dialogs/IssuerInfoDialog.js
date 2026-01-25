@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js-light';
 import { useContext } from 'react';
-import { X, Copy } from 'lucide-react';
+import { X, Copy, MessageCircle } from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/context/AppContext';
@@ -99,6 +99,16 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 title="Copy address"
               >
                 <Copy size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
+                className={cn(
+                  'flex-shrink-0 p-1 rounded transition-colors',
+                  isDark ? 'hover:bg-white/10 text-white/60 hover:text-[#650CD4]' : 'hover:bg-gray-200 text-gray-500 hover:text-[#650CD4]'
+                )}
+                title="Message issuer"
+              >
+                <MessageCircle size={14} />
               </button>
             </div>
           </div>

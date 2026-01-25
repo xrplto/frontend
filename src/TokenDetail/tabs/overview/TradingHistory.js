@@ -1265,7 +1265,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       const offersUrl = `https://api.xrpl.to/api/account/offers/${account}?${params}`;
       console.log('[TradingHistory] Fetching offers:', offersUrl);
       const res = await axios.get(offersUrl);
-      if (res.data?.result === 'success') {
+      if (res.data?.success) {
         setOpenOffers(res.data.offers || []);
         setOffersTotal(res.data.total || 0);
       }
@@ -2368,7 +2368,7 @@ const TradingHistory = ({
 
               // If no data for 1m, try 1w
               if (
-                chartData.result === 'success' &&
+                chartData.success &&
                 (!chartData.data || chartData.data.length < 2)
               ) {
                 chartRes = await fetch(
@@ -2379,7 +2379,7 @@ const TradingHistory = ({
 
               // If still no data, try all time
               if (
-                chartData.result === 'success' &&
+                chartData.success &&
                 (!chartData.data || chartData.data.length < 2)
               ) {
                 chartRes = await fetch(
@@ -2388,7 +2388,7 @@ const TradingHistory = ({
                 chartData = await chartRes.json();
               }
 
-              if (chartData.result === 'success' && chartData.data && chartData.data.length >= 2) {
+              if (chartData.success && chartData.data && chartData.data.length >= 2) {
                 setPoolChartData((prev) => ({ ...prev, [poolAccount]: chartData.data }));
               }
             } catch (err) {

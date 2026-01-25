@@ -1079,7 +1079,7 @@ export default function WalletPage() {
         const [dexData, nftData] = await Promise.all([dexRes.json(), nftRes.json()]);
         console.timeEnd('[Wallet] fetchOffers (DEX+NFT)');
         console.log('[Wallet] fetchOffers: DEX', dexData.offers?.length || 0, ', NFT', (nftData.offers?.length || 0) + (nftData.incomingOffers?.length || 0));
-        if (dexData.result === 'success' && dexData.offers) {
+        if (dexData.success && dexData.offers) {
           setTokenOffers(
             dexData.offers.map((offer) => {
               const gets = offer.gets || offer.taker_gets || offer.TakerGets;

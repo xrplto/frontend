@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
-import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -67,7 +67,8 @@ const formatNumber = (num) => {
 };
 
 const RichList = ({ token }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
+  const accountLogin = accountProfile?.account;
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [mobileChecked, setMobileChecked] = useState(false);
@@ -479,6 +480,15 @@ const RichList = ({ token }) => {
                           ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}`
                           : 'Unknown'}
                       </Link>
+                      {holder.account && holder.account !== accountLogin && (
+                        <button
+                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: holder.account } }))}
+                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                          title="Message"
+                        >
+                          <MessageCircle size={12} />
+                        </button>
+                      )}
                       {(isAMM || isCreator || isFrozen || holder.source) && (
                         <div className="flex items-center gap-1 flex-wrap">
                           {isAMM && (

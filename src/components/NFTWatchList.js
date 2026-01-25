@@ -185,7 +185,7 @@ export default function NFTWatchList({ account }) {
     setLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/api/watchlist/nft?account=${account}`);
-      if (res.data?.result === 'success') {
+      if (res.data?.success) {
         setWatchlist(res.data.watchlist || {});
         const count = Object.values(res.data.watchlist || {}).reduce(
           (acc, col) => acc + (col.items?.length || 0),

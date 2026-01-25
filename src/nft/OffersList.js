@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
-import { CheckCircle, X, Repeat, Clock } from 'lucide-react';
+import { CheckCircle, X, Repeat, Clock, MessageCircle } from 'lucide-react';
 import { FadeLoader, PuffLoader, PulseLoader } from '../components/Spinners';
 import Decimal from 'decimal.js-light';
 
@@ -68,16 +68,27 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
                     <div className="text-[15px] font-normal text-primary">
                       {priceAmount} {price.name}
                     </div>
-                    <a
-                      href={`https://xrpl.to/address/${offer.owner}`}
-                      rel="noreferrer noopener nofollow"
-                      className={cn(
-                        'break-all text-[11px] font-normal hover:underline',
-                        isDark ? 'text-white/60' : 'text-gray-600'
+                    <div className="flex items-center gap-1">
+                      <a
+                        href={`https://xrpl.to/address/${offer.owner}`}
+                        rel="noreferrer noopener nofollow"
+                        className={cn(
+                          'break-all text-[11px] font-normal hover:underline',
+                          isDark ? 'text-white/60' : 'text-gray-600'
+                        )}
+                      >
+                        {offer.owner.slice(0,6)}...{offer.owner.slice(-4)}
+                      </a>
+                      {offer.owner !== accountLogin && (
+                        <button
+                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: offer.owner } }))}
+                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/40 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]')}
+                          title="Message"
+                        >
+                          <MessageCircle size={10} />
+                        </button>
                       )}
-                    >
-                      {offer.owner}
-                    </a>
+                    </div>
                   </div>
                 </div>
 

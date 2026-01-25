@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/context/AppContext';
 import { fNumber } from 'src/utils/formatters';
@@ -17,8 +17,9 @@ const FILTER_TYPES = [
 
 // Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
-  const { openSnackbar, themeName } = useContext(AppContext);
+  const { openSnackbar, themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const accountLogin = accountProfile?.account;
 
   const BearIcon = () => (
     <div className="relative w-14 h-14 mx-auto mb-4">
@@ -369,26 +370,48 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         </td>
                         <td className="px-4 py-3">
                           {item.seller || item.account ? (
-                            <a
-                              href={`/address/${item.seller || item.account}`}
-                              className="text-[11px] text-gray-500 hover:text-primary"
-                            >
-                              {(item.seller || item.account).slice(0, 6)}...
-                              {(item.seller || item.account).slice(-4)}
-                            </a>
+                            <div className="flex items-center gap-1">
+                              <a
+                                href={`/address/${item.seller || item.account}`}
+                                className="text-[11px] text-gray-500 hover:text-primary"
+                              >
+                                {(item.seller || item.account).slice(0, 6)}...
+                                {(item.seller || item.account).slice(-4)}
+                              </a>
+                              {(item.seller || item.account) !== accountLogin && (
+                                <button
+                                  onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: item.seller || item.account } }))}
+                                  className="p-0.5 rounded hover:bg-white/10 text-gray-400 hover:text-[#650CD4]"
+                                  title="Message"
+                                >
+                                  <MessageCircle size={10} />
+                                </button>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-[11px] text-gray-500">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           {item.buyer || item.destination ? (
-                            <a
-                              href={`/address/${item.buyer || item.destination}`}
-                              className="text-[11px] text-gray-500 hover:text-primary"
-                            >
-                              {(item.buyer || item.destination).slice(0, 6)}...
-                              {(item.buyer || item.destination).slice(-4)}
-                            </a>
+                            <div className="flex items-center gap-1">
+                              <a
+                                href={`/address/${item.buyer || item.destination}`}
+                                className="text-[11px] text-gray-500 hover:text-primary"
+                              >
+                                {(item.buyer || item.destination).slice(0, 6)}...
+                                {(item.buyer || item.destination).slice(-4)}
+                              </a>
+                              {(item.buyer || item.destination) !== accountLogin && (
+                                <button
+                                  onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: item.buyer || item.destination } }))}
+                                  className="p-0.5 rounded hover:bg-white/10 text-gray-400 hover:text-[#650CD4]"
+                                  title="Message"
+                                >
+                                  <MessageCircle size={10} />
+                                </button>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-[11px] text-gray-500">-</span>
                           )}

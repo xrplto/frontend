@@ -66,14 +66,21 @@ export default function HistoryList({ nft }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
-    if (!nft?.NFTokenID) return;
+    if (!nft?.NFTokenID) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     axios
       .get(`https://api.xrpl.to/v1/nft/history?NFTokenID=${nft.NFTokenID}&limit=200`)
       .then((res) => {
-        if (res.data?.result === 'success') setHistory(res.data.histories || []);
+        if (res.data?.histories) {
+          setHistory(res.data.histories);
+        }
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error('[HistoryList] Failed to fetch history:', err);
+      })
       .finally(() => setLoading(false));
   }, [nft?.NFTokenID]);
 
