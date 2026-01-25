@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
+import { MessageCircle, X, Send, Inbox } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 const TokenPreview = ({ match }) => {
@@ -102,6 +102,18 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const [showInbox, setShowInbox] = useState(false);
+
+  const conversations = useMemo(() => {
+    const convos = {};
+    messages.filter(m => m.isPrivate || m.type === 'private').forEach(m => {
+      const other = m.username === accountProfile?.account ? m.recipient : m.username;
+      if (other && (!convos[other] || m.timestamp > convos[other].timestamp)) {
+        convos[other] = { ...m, unread: !convos[other]?.read && m.username !== accountProfile?.account };
+      }
+    });
+    return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
+  }, [messages, accountProfile?.account]);
 
   const connect = useCallback(() => {
     const ws = new WebSocket(wsUrl);
@@ -196,6 +208,13 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    if (!showInbox) return;
+    const close = (e) => { if (!e.target.closest('.inbox-dropdown')) setShowInbox(false); };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showInbox]);
+
   const openDmTab = (user) => {
     if (user && user !== accountProfile?.account && !dmTabs.includes(user)) {
       const newTabs = [...dmTabs, user];
@@ -247,10 +266,16 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] border-[1.5px] border-white/10 hover:border-white/20"
+          className="relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] border-[1.5px] border-white/10 hover:border-white/20"
         >
           <span className="text-white font-medium">Shoutbox</span>
           <span className="text-[#08AA09] text-sm">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
+          {conversations.length > 0 && (
+            <span className="flex items-center gap-1 text-[#650CD4] text-sm">
+              <Inbox size={14} />
+              {conversations.length}
+            </span>
+          )}
           <span className="px-3 py-1 rounded-lg border-[1.5px] border-white/20 text-white text-sm">Send</span>
         </button>
       ) : (
@@ -265,9 +290,43 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                 </span>
               )}
             </div>
-            <button onClick={() => setIsOpen(false)} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              <div className="relative inbox-dropdown">
+                <button onClick={() => setShowInbox(!showInbox)} className={`p-1.5 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
+                  <Inbox size={18} />
+                  {conversations.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[10px] flex items-center justify-center">{conversations.length}</span>
+                  )}
+                </button>
+                {showInbox && (
+                  <div className={`absolute right-0 top-10 w-72 rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
+                    <div className="px-3 py-2 border-b border-inherit text-xs font-medium opacity-50">Messages</div>
+                    {conversations.length === 0 ? (
+                      <div className="px-3 py-6 text-center text-sm opacity-40">No messages yet</div>
+                    ) : (
+                      <div className="max-h-64 overflow-y-auto">
+                        {conversations.map(([user, msg]) => (
+                          <button
+                            key={user}
+                            onClick={() => { openDmTab(user); setShowInbox(false); }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-white/5 border-b border-inherit last:border-b-0 transition-colors"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-sm text-[#650CD4]">{user.slice(0,6)}...{user.slice(-4)}</span>
+                              <span className="text-[10px] opacity-40">{new Date(msg.timestamp).toLocaleDateString()}</span>
+                            </div>
+                            <div className="text-xs opacity-50 truncate mt-0.5">{msg.message}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {!accountProfile?.account ? (
