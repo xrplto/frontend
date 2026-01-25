@@ -237,6 +237,19 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
     return () => document.removeEventListener('click', close);
   }, [showInbox]);
 
+  // Listen for external DM requests
+  useEffect(() => {
+    const handleOpenDm = (e) => {
+      const user = e.detail?.user;
+      if (user && user !== accountProfile?.account) {
+        setIsOpen(true);
+        setTimeout(() => openDmTab(user), 100);
+      }
+    };
+    window.addEventListener('openDm', handleOpenDm);
+    return () => window.removeEventListener('openDm', handleOpenDm);
+  }, [accountProfile?.account]);
+
   const openDmTab = (user) => {
     if (user && user !== accountProfile?.account && !dmTabs.includes(user)) {
       const newTabs = [...dmTabs, user];

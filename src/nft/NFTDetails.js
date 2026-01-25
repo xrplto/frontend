@@ -22,7 +22,8 @@ import {
   Trophy,
   Link2,
   TrendingUp,
-  Check
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 
@@ -846,6 +847,18 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 >
                   <Copy size={10} />
                 </button>
+                {account !== accountLogin && (
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
+                    className={cn(
+                      'p-0.5 rounded hover:bg-white/10 transition-colors',
+                      isDark ? 'text-gray-500 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]'
+                    )}
+                    title="Message owner"
+                  >
+                    <MessageCircle size={10} />
+                  </button>
+                )}
               </div>
               <Link
                 href={`/address/${account}`}
