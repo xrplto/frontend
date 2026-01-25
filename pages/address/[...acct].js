@@ -35,7 +35,9 @@ import {
   Filter,
   GitBranch,
   Code2,
-  Sparkles
+  Sparkles,
+  Tag,
+  Trash2
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
@@ -261,6 +263,9 @@ const OverView = ({ account }) => {
 
   // Wallet label from logged-in user
   const [walletLabel, setWalletLabel] = useState(null);
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [labelInput, setLabelInput] = useState('');
+  const [labelSaving, setLabelSaving] = useState(false);
 
   // Set XRP price from holdings data
   useEffect(() => {
@@ -363,6 +368,36 @@ const OverView = ({ account }) => {
     };
     fetchLabel();
   }, [account, accountProfile?.account, isOwnAccount]);
+
+  const handleSaveLabel = async () => {
+    if (!accountProfile?.account || !labelInput.trim()) return;
+    setLabelSaving(true);
+    try {
+      if (walletLabel) {
+        // Delete old then add new
+        await axios.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
+      }
+      const res = await axios.post(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`, {
+        wallet: account,
+        label: labelInput.trim()
+      });
+      setWalletLabel(res.data?.label || labelInput.trim());
+      setEditingLabel(false);
+    } catch (e) {}
+    setLabelSaving(false);
+  };
+
+  const handleDeleteLabel = async () => {
+    if (!accountProfile?.account || !walletLabel) return;
+    setLabelSaving(true);
+    try {
+      await axios.delete(`https://api.xrpl.to/api/user/${accountProfile.account}/labels/${account}`);
+      setWalletLabel(null);
+      setEditingLabel(false);
+      setLabelInput('');
+    } catch (e) {}
+    setLabelSaving(false);
+  };
 
   useEffect(() => {
     if (!account) return;
@@ -755,10 +790,30 @@ const OverView = ({ account }) => {
                     </span>
                     <span className="hidden md:inline">{account}</span>
                   </h2>
-                  {walletLabel && (
-                    <span className={cn('text-[12px] px-2 py-0.5 rounded-md', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>
-                      {walletLabel}
-                    </span>
+                  {!isOwnAccount && accountProfile?.account && (
+                    editingLabel ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={labelInput}
+                          onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
+                          placeholder="Label"
+                          autoFocus
+                          className={cn('w-24 px-2 py-0.5 rounded-md text-[12px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-gray-100 text-gray-900 border border-gray-300')}
+                        />
+                        <button onClick={handleSaveLabel} disabled={labelSaving || !labelInput.trim()} className="px-2 py-0.5 rounded-md text-[11px] bg-[#137DFE] text-white disabled:opacity-50">Save</button>
+                        {walletLabel && <button onClick={handleDeleteLabel} disabled={labelSaving} className={cn('p-1 rounded', isDark ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50')}><Trash2 size={12} /></button>}
+                        <button onClick={() => setEditingLabel(false)} className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
+                      </div>
+                    ) : walletLabel ? (
+                      <button onClick={() => { setLabelInput(walletLabel); setEditingLabel(true); }} className={cn('text-[12px] px-2 py-0.5 rounded-md flex items-center gap-1 hover:opacity-80', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>
+                        {walletLabel}
+                      </button>
+                    ) : (
+                      <button onClick={() => { setLabelInput(''); setEditingLabel(true); }} className={cn('p-1 rounded-md transition-colors', isDark ? 'text-white/30 hover:text-white/50 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')} title="Add label">
+                        <Tag size={14} />
+                      </button>
+                    )
                   )}
                   <div className="flex items-center gap-1">
                     <button
