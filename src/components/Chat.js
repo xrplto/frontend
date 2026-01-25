@@ -129,7 +129,12 @@ const renderMessage = (text) => {
 const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('chat_open') === 'true';
+    } catch { return false; }
+  });
   const [registered, setRegistered] = useState(false);
   const [messages, setMessages] = useState([]);
   const [onlineCount, setOnlineCount] = useState(0);
@@ -153,6 +158,8 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const [showInbox, setShowInbox] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef(null);
 
   const conversations = useMemo(() => {
     const convos = {};
@@ -281,6 +288,25 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   }, [messages]);
 
   useEffect(() => {
+    try { localStorage.setItem('chat_open', isOpen); } catch {}
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+    const container = containerRef.current;
+    const handleFocusIn = () => setIsFocused(true);
+    const handleFocusOut = (e) => {
+      if (!container.contains(e.relatedTarget)) setIsFocused(false);
+    };
+    container.addEventListener('focusin', handleFocusIn);
+    container.addEventListener('focusout', handleFocusOut);
+    return () => {
+      container.removeEventListener('focusin', handleFocusIn);
+      container.removeEventListener('focusout', handleFocusOut);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!showInbox) return;
     const close = (e) => { if (!e.target.closest('.inbox-dropdown')) setShowInbox(false); };
     document.addEventListener('click', close);
@@ -381,7 +407,11 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
           <span className="px-3 py-1 rounded-lg border-[1.5px] border-white/20 text-white text-sm">Send</span>
         </button>
       ) : (
-        <div className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}>
+        <div
+          ref={containerRef}
+          onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
+          className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl transition-opacity duration-200 ${isFocused ? 'opacity-100' : 'opacity-80 hover:opacity-95'}`}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-inherit">
             <div className="flex items-center gap-3">
               <span className="font-semibold">Shoutbox</span>
