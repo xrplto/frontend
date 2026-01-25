@@ -18,7 +18,8 @@ import {
   RefreshCw,
   ExternalLink,
   Hand,
-  Tag
+  Tag,
+  MessageCircle
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 

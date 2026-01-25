@@ -27,8 +27,11 @@ import {
   Link2,
   Settings,
   FileText,
-  ChevronDown
+  ChevronDown,
+  Tag,
+  Trash2
 } from 'lucide-react';
+import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -291,7 +294,8 @@ const PriceDisplay = ({ price, symbol = '' }) => {
 
 export default function PriceStatistics({ token, isDark = false, linkedCollections = [] }) {
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
+  const { activeFiatCurrency, openSnackbar, accountProfile } = useContext(AppContext);
+  const accountLogin = accountProfile?.account;
   const isMobile = useIsMobile();
   const [openScamWarning, setOpenScamWarning] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
@@ -372,6 +376,62 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
   const [flowExpanded, setFlowExpanded] = useState(false);
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const flowAbortRef = useRef(null);
+
+  // Creator label state
+  const [creatorLabel, setCreatorLabel] = useState(null);
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [labelInput, setLabelInput] = useState('');
+  const [labelSaving, setLabelSaving] = useState(false);
+
+  // Fetch creator label from logged-in user's labels
+  useEffect(() => {
+    if (!accountLogin || !creator) {
+      setCreatorLabel(null);
+      return;
+    }
+    axios
+      .get(`https://api.xrpl.to/api/user/${accountLogin}/labels`)
+      .then((res) => {
+        const labels = res.data?.labels || [];
+        const found = labels.find((l) => l.wallet === creator);
+        setCreatorLabel(found?.label || null);
+      })
+      .catch(() => setCreatorLabel(null));
+  }, [accountLogin, creator]);
+
+  const handleSaveCreatorLabel = async () => {
+    if (!accountLogin || !labelInput.trim()) return;
+    setLabelSaving(true);
+    try {
+      if (creatorLabel) {
+        await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+      }
+      const res = await axios.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
+        wallet: creator,
+        label: labelInput.trim()
+      });
+      setCreatorLabel(res.data?.label || labelInput.trim());
+      setEditingLabel(false);
+      setLabelInput('');
+    } catch (e) {
+      console.error('Failed to save label:', e);
+    }
+    setLabelSaving(false);
+  };
+
+  const handleDeleteCreatorLabel = async () => {
+    if (!accountLogin || !creatorLabel) return;
+    setLabelSaving(true);
+    try {
+      await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${creator}`);
+      setCreatorLabel(null);
+      setEditingLabel(false);
+      setLabelInput('');
+    } catch (e) {
+      console.error('Failed to delete label:', e);
+    }
+    setLabelSaving(false);
+  };
 
   // Fetch AI review immediately
   useEffect(() => {
@@ -1467,7 +1527,149 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       />
                     </IconButton>
                   </Tooltip>
+                  {accountLogin && !editingLabel && (
+                    <Tooltip title={creatorLabel ? 'Edit label' : 'Add label'}>
+                      <IconButton
+                        onClick={() => {
+                          setEditingLabel(true);
+                          setLabelInput(creatorLabel || '');
+                        }}
+                        size="small"
+                        style={{
+                          padding: '4px',
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: '6px',
+                          background: creatorLabel ? 'rgba(99,102,241,0.1)' : 'transparent',
+                          border: `1px solid ${creatorLabel ? 'rgba(99,102,241,0.3)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                          flexShrink: 0
+                        }}
+                      >
+                        <Tag size={13} color={creatorLabel ? '#6366f1' : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {editingLabel && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <input
+                        type="text"
+                        value={labelInput}
+                        onChange={(e) => setLabelInput(e.target.value)}
+                        placeholder="Label..."
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          borderRadius: '6px',
+                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`,
+                          background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                          color: isDark ? '#fff' : '#000',
+                          width: '80px',
+                          outline: 'none'
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveCreatorLabel();
+                          if (e.key === 'Escape') {
+                            setEditingLabel(false);
+                            setLabelInput('');
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <IconButton
+                        onClick={handleSaveCreatorLabel}
+                        disabled={labelSaving || !labelInput.trim()}
+                        size="small"
+                        style={{
+                          padding: '4px',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '4px',
+                          background: 'rgba(34,197,94,0.1)',
+                          border: '1px solid rgba(34,197,94,0.3)'
+                        }}
+                      >
+                        <CheckCircle size={12} color="#22c55e" />
+                      </IconButton>
+                      {creatorLabel && (
+                        <IconButton
+                          onClick={handleDeleteCreatorLabel}
+                          disabled={labelSaving}
+                          size="small"
+                          style={{
+                            padding: '4px',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '4px',
+                            background: 'rgba(239,68,68,0.1)',
+                            border: '1px solid rgba(239,68,68,0.3)'
+                          }}
+                        >
+                          <Trash2 size={12} color="#ef4444" />
+                        </IconButton>
+                      )}
+                      <IconButton
+                        onClick={() => {
+                          setEditingLabel(false);
+                          setLabelInput('');
+                        }}
+                        size="small"
+                        style={{
+                          padding: '4px',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '4px',
+                          background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`
+                        }}
+                      >
+                        <X size={12} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'} />
+                      </IconButton>
+                    </div>
+                  )}
                 </Stack>
+              </ModernTableCell>
+            </TableRowStyled>
+          )}
+
+          {/* Creator Label Row */}
+          {creator && creatorLabel && !editingLabel && (
+            <TableRowStyled isDark={isDark}>
+              <ModernTableCell>
+                <Typography
+                  style={{
+                    fontWeight: 400,
+                    color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)',
+                    fontSize: '13px'
+                  }}
+                  noWrap
+                >
+                  Your Label
+                </Typography>
+              </ModernTableCell>
+              <ModernTableCell>
+                <Chip
+                  size="small"
+                  style={{
+                    paddingLeft: '10px',
+                    paddingRight: '10px',
+                    borderRadius: '8px',
+                    height: '26px',
+                    background: 'rgba(99,102,241,0.1)',
+                    border: '1px solid rgba(99,102,241,0.2)'
+                  }}
+                >
+                  <Tag size={11} color="#6366f1" style={{ marginRight: '6px' }} />
+                  <Typography
+                    variant="caption"
+                    style={{
+                      fontWeight: 500,
+                      fontSize: '11px',
+                      color: '#6366f1'
+                    }}
+                  >
+                    {creatorLabel}
+                  </Typography>
+                </Chip>
               </ModernTableCell>
             </TableRowStyled>
           )}
