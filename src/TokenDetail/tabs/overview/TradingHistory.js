@@ -1884,7 +1884,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 };
 
 // Inline Expandable Trade Details Component
-const TradeDetails = ({ trade, account, isDark, onClose }) => {
+const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
   const [txData, setTxData] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1984,7 +1984,7 @@ const TradeDetails = ({ trade, account, isDark, onClose }) => {
                 }}
                 title={account}
               >
-                {account.slice(0, 6)}...{account.slice(-4)}
+                {walletLabel || `${account.slice(0, 6)}...${account.slice(-4)}`}
               </a>
               {(profileData?.balance ||
                 profileData?.Balance ||
@@ -2269,7 +2269,7 @@ const TradingHistory = ({
   const isMobile = isMobileState || isMobileProp;
 
   // Fiat currency conversion
-  const { activeFiatCurrency } = useContext(AppContext);
+  const { activeFiatCurrency, accountProfile } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate =
     metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -2314,6 +2314,24 @@ const TradingHistory = ({
   const [poolTypeFilter, setPoolTypeFilter] = useState('all'); // 'all', 'xrp', 'token'
   const [poolSortBy, setPoolSortBy] = useState('liquidity'); // 'liquidity', 'apy', 'volume', 'fees'
   const [poolSortDir, setPoolSortDir] = useState('desc'); // 'asc', 'desc'
+
+  // Wallet labels from logged-in user
+  const [walletLabels, setWalletLabels] = useState({});
+
+  // Fetch wallet labels
+  useEffect(() => {
+    const userAddr = accountProfile?.account || accountProfile?.address;
+    if (!userAddr) return;
+    axios.get(`https://api.xrpl.to/api/user/${userAddr}/labels`)
+      .then(res => {
+        if (res.data?.labels) {
+          const map = {};
+          res.data.labels.forEach(l => { map[l.wallet] = l.label; });
+          setWalletLabels(map);
+        }
+      })
+      .catch(() => {});
+  }, [accountProfile?.account, accountProfile?.address]);
 
   const handleTxClick = (hash, tradeAccount) => {
     if (onTransactionClick) {
@@ -3315,7 +3333,9 @@ const TradingHistory = ({
                     }}
                   />
                 )}
-                {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
+                {walletLabels[addressToShow] ? (
+                  <span style={{ color: '#3b82f6' }}>{walletLabels[addressToShow]}</span>
+                ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
               </a>
 
               {/* Source */}
@@ -3344,6 +3364,7 @@ const TradingHistory = ({
               account={addressToShow}
               isDark={isDark}
               onClose={() => setExpandedTradeId(null)}
+              walletLabel={walletLabels[addressToShow]}
             />
           )}
         </Card>
@@ -4888,11 +4909,11 @@ const TradingHistory = ({
         </div>
       )}
 
-      {tabValue === 2 && token && <TopTraders token={token} />}
+      {tabValue === 2 && token && <TopTraders token={token} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />}
 
       {tabValue === 3 && token && (
         <Suspense fallback={<Spinner size={32} />}>
-          <RichList token={token} amm={amm} />
+          <RichList token={token} amm={amm} walletLabels={walletLabels} onLabelsChange={setWalletLabels} />
         </Suspense>
       )}
 

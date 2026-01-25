@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
-import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Search, X, Wifi, WifiOff, MessageCircle, Tag, Trash2 } from 'lucide-react';
+import axios from 'axios';
 import Link from 'next/link';
 import { MD5 } from 'crypto-js';
 
@@ -66,12 +67,56 @@ const formatNumber = (num) => {
   return value.toFixed(2);
 };
 
-const RichList = ({ token }) => {
+const RichList = ({ token, walletLabels: walletLabelsProp = {}, onLabelsChange }) => {
   const { themeName, accountProfile } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [mobileChecked, setMobileChecked] = useState(false);
+
+  // Local wallet labels state (synced from prop)
+  const [walletLabels, setWalletLabels] = useState(walletLabelsProp);
+  const [editingLabel, setEditingLabel] = useState(null); // wallet address being edited
+  const [labelInput, setLabelInput] = useState('');
+  const [labelSaving, setLabelSaving] = useState(false);
+
+  // Sync from prop
+  useEffect(() => { setWalletLabels(walletLabelsProp); }, [walletLabelsProp]);
+
+  const handleSaveLabel = async (wallet) => {
+    if (!accountLogin || !labelInput.trim()) return;
+    setLabelSaving(true);
+    try {
+      if (walletLabels[wallet]) {
+        await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      }
+      const res = await axios.post(`https://api.xrpl.to/api/user/${accountLogin}/labels`, {
+        wallet,
+        label: labelInput.trim()
+      });
+      const newLabels = { ...walletLabels, [wallet]: res.data?.label || labelInput.trim() };
+      setWalletLabels(newLabels);
+      onLabelsChange?.(newLabels);
+      setEditingLabel(null);
+      setLabelInput('');
+    } catch (e) {}
+    setLabelSaving(false);
+  };
+
+  const handleDeleteLabel = async (wallet) => {
+    if (!accountLogin) return;
+    setLabelSaving(true);
+    try {
+      await axios.delete(`https://api.xrpl.to/api/user/${accountLogin}/labels/${wallet}`);
+      const newLabels = { ...walletLabels };
+      delete newLabels[wallet];
+      setWalletLabels(newLabels);
+      onLabelsChange?.(newLabels);
+      setEditingLabel(null);
+      setLabelInput('');
+    } catch (e) {}
+    setLabelSaving(false);
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -469,25 +514,53 @@ const RichList = ({ token }) => {
                   </td>
                   <td className="py-2.5 px-2">
                     <div className="flex items-center gap-2">
-                      <Link
-                        href={`/address/${holder.account}`}
-                        className={cn(
-                          'text-[12px] font-mono hover:text-primary transition-colors min-w-[120px]',
-                          isDark ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        {holder.account
-                          ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}`
-                          : 'Unknown'}
-                      </Link>
-                      {holder.account && holder.account !== accountLogin && (
-                        <button
-                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: holder.account } }))}
-                          className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
-                          title="Message"
-                        >
-                          <MessageCircle size={12} />
-                        </button>
+                      {editingLabel === holder.account ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={labelInput}
+                            onChange={(e) => setLabelInput(e.target.value.slice(0, 30))}
+                            placeholder="Label"
+                            autoFocus
+                            className={cn('w-20 px-1.5 py-0.5 rounded text-[11px] outline-none', isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-gray-100 text-gray-900 border border-gray-300')}
+                          />
+                          <button onClick={() => handleSaveLabel(holder.account)} disabled={labelSaving || !labelInput.trim()} className="px-1.5 py-0.5 rounded text-[10px] bg-primary text-white disabled:opacity-50">Save</button>
+                          {walletLabels[holder.account] && <button onClick={() => handleDeleteLabel(holder.account)} disabled={labelSaving} className="p-0.5 rounded text-red-400 hover:bg-red-500/10"><Trash2 size={10} /></button>}
+                          <button onClick={() => { setEditingLabel(null); setLabelInput(''); }} className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>✕</button>
+                        </div>
+                      ) : (
+                        <>
+                          <Link
+                            href={`/address/${holder.account}`}
+                            className={cn(
+                              'text-[12px] font-mono hover:text-primary transition-colors min-w-[80px]',
+                              walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/80' : 'text-gray-700'
+                            )}
+                            title={holder.account}
+                          >
+                            {walletLabels[holder.account] || (holder.account
+                              ? `${holder.account.slice(0, isMobile ? 4 : 6)}...${holder.account.slice(isMobile ? -4 : -6)}`
+                              : 'Unknown')}
+                          </Link>
+                          {holder.account && holder.account !== accountLogin && accountLogin && (
+                            <button
+                              onClick={() => { setEditingLabel(holder.account); setLabelInput(walletLabels[holder.account] || ''); }}
+                              className={cn('p-0.5 rounded hover:bg-white/10', walletLabels[holder.account] ? 'text-primary' : isDark ? 'text-white/20 hover:text-primary' : 'text-gray-300 hover:text-primary')}
+                              title={walletLabels[holder.account] ? 'Edit label' : 'Add label'}
+                            >
+                              <Tag size={11} />
+                            </button>
+                          )}
+                          {holder.account && holder.account !== accountLogin && (
+                            <button
+                              onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: holder.account } }))}
+                              className={cn('p-0.5 rounded hover:bg-white/10', isDark ? 'text-white/30 hover:text-[#650CD4]' : 'text-gray-300 hover:text-[#650CD4]')}
+                              title="Message"
+                            >
+                              <MessageCircle size={12} />
+                            </button>
+                          )}
+                        </>
                       )}
                       {(isAMM || isCreator || isFrozen || holder.source) && (
                         <div className="flex items-center gap-1 flex-wrap">
