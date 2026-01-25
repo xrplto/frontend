@@ -912,6 +912,18 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               >
                 <Copy size={10} />
               </button>
+              {issuer !== accountLogin && (
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: issuer } }))}
+                  className={cn(
+                    'p-0.5 rounded hover:bg-white/10 transition-colors',
+                    isDark ? 'text-gray-500 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]'
+                  )}
+                  title="Chat with issuer"
+                >
+                  <MessageCircle size={10} />
+                </button>
+              )}
             </div>
             <Link
               href={`/address/${issuer}`}

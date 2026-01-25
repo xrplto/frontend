@@ -101,3 +101,10 @@ const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed)
 ## XRPL Transactions
 
 **SourceTag**: Always use `161803` (Golden ratio φ) for all transactions.
+
+## Direct Messages
+
+To open a DM with an XRP address:
+```javascript
+window.dispatchEvent(new CustomEvent('openDm', { detail: { user: 'rAddress...' } }))
+```
