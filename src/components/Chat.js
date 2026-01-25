@@ -2,6 +2,17 @@ import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } 
 import { MessageCircle, X, Send, Inbox } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
+const timeAgo = (ts) => {
+  if (!ts) return '';
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 60) return 'now';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  if (sec < 2592000) return Math.floor(sec / 86400) + 'd ago';
+  if (sec < 31536000) return Math.floor(sec / 2592000) + 'mo ago';
+  return Math.floor(sec / 31536000) + 'y ago';
+};
+
 const TokenPreview = ({ match }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,16 +44,6 @@ const TokenPreview = ({ match }) => {
     if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
     return num.toFixed(0);
-  };
-
-  const timeAgo = (ts) => {
-    if (!ts) return '';
-    const days = Math.floor((Date.now() - ts) / 86400000);
-    if (days < 1) return 'today';
-    if (days === 1) return '1d ago';
-    if (days < 30) return days + 'd ago';
-    if (days < 365) return Math.floor(days / 30) + 'mo ago';
-    return Math.floor(days / 365) + 'y ago';
   };
 
   if (loading) return <span className="text-[#137DFE]">loading...</span>;
@@ -143,10 +144,31 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
         case 'registered':
           setRegistered(true);
           if (data.users !== undefined) setOnlineCount(data.users);
+          // Fetch inbox conversations
+          ws.send(JSON.stringify({ type: 'inbox' }));
           // Fetch history for saved DM tabs
           dmTabs.forEach(user => {
             ws.send(JSON.stringify({ type: 'history', with: user }));
           });
+          break;
+        case 'inbox':
+          if (data.conversations?.length) {
+            // Add users to DM tabs
+            const newUsers = data.conversations.map(c => c.user).filter(u => !dmTabs.includes(u));
+            if (newUsers.length) {
+              const newTabs = [...dmTabs, ...newUsers];
+              setDmTabs(newTabs);
+              localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+            }
+            // Add last messages to state
+            setMessages(prev => {
+              const ids = new Set(prev.map(m => m._id));
+              const newMsgs = data.conversations
+                .filter(c => c.lastMessage && !ids.has(c.lastMessage._id))
+                .map(c => c.lastMessage);
+              return [...prev, ...newMsgs].sort((a, b) => a.timestamp - b.timestamp);
+            });
+          }
           break;
         case 'message':
           setMessages((prev) => {
@@ -313,7 +335,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium text-sm text-[#650CD4]">{user.slice(0,6)}...{user.slice(-4)}</span>
-                              <span className="text-[10px] opacity-40">{new Date(msg.timestamp).toLocaleDateString()}</span>
+                              <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
                             </div>
                             <div className="text-xs opacity-50 truncate mt-0.5">{msg.message}</div>
                           </button>
@@ -380,8 +402,8 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
 
                         return (
                           <div key={msg._id || i} className="flex items-start py-0.5">
-                            <span className="text-[9px] opacity-40 w-14 shrink-0 font-mono">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <span className="text-[9px] opacity-40 w-12 shrink-0 font-mono">
+                              {timeAgo(msg.timestamp)}
                             </span>
                             <div className="min-w-0">
                               <span className="inline">
