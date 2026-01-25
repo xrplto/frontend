@@ -63,9 +63,15 @@ export function useTokenDetail({
         rafRef.current = requestAnimationFrame(() => processMessage(data));
       } catch {}
     },
-    onClose: (event) => console.log(`[TokenDetail WS] Closed code=${event.code} reason="${event.reason}"`),
+    onClose: (event) => {
+      console.log(`[TokenDetail WS] Closed code=${event.code} reason="${event.reason}"`);
+      if (event.code === 4011) {
+        console.warn('[TokenDetail WS] Connection limit reached - will not reconnect');
+      }
+    },
     onError: (e) => console.error('[TokenDetail WS] Error:', e?.message || e),
-    shouldReconnect: (e) => e.code !== 4020 && e.code !== 4021,
+    // Don't reconnect on: 4011=max connections, 4020/4021=custom auth errors
+    shouldReconnect: (e) => ![4011, 4020, 4021].includes(e.code),
     reconnectAttempts: 10,
     reconnectInterval: (n) => Math.min(3000 * Math.pow(2, n), 60000),
     share: true

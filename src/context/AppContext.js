@@ -364,6 +364,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     let reconnectTimeout = null;
 
     const connect = () => {
+      console.log('[Balance WS] Connecting:', wsUrl);
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -392,9 +393,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         console.error('[Balance WS] Error:', err);
       };
 
-      ws.onclose = () => {
-        console.log('[Balance WS] Closed, reconnecting...');
-        reconnectTimeout = setTimeout(connect, 3000);
+      ws.onclose = (ev) => {
+        console.log(`[Balance WS] Closed code=${ev.code} reason="${ev.reason}"`);
+        if (ev.code !== 4011) {
+          reconnectTimeout = setTimeout(connect, 3000);
+        } else {
+          console.warn('[Balance WS] Connection limit reached - will not reconnect');
+        }
       };
     };
 

@@ -2547,10 +2547,13 @@ const TradingHistory = ({
     if (historyType !== 'all') wsParams.set('type', historyType);
     if (liquidityType) wsParams.set('liquidityType', liquidityType);
 
-    const ws = new WebSocket(`wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`);
+    const historyWsUrl = `wss://api.xrpl.to/ws/history/${tokenId}?${wsParams}`;
+    console.log('[History WS] Connecting:', historyWsUrl);
+    const ws = new WebSocket(historyWsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      console.log('[History WS] Connected');
       wsPingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
@@ -2621,11 +2624,12 @@ const TradingHistory = ({
       }
     };
 
-    ws.onerror = () => {
-      // Silently handle - HTTP fallback already loads data
+    ws.onerror = (e) => {
+      console.error('[History WS] Error:', e);
     };
 
-    ws.onclose = () => {
+    ws.onclose = (ev) => {
+      console.log(`[History WS] Closed code=${ev.code} reason="${ev.reason}"`);
       if (wsPingRef.current) {
         clearInterval(wsPingRef.current);
         wsPingRef.current = null;

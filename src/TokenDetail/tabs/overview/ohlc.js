@@ -347,12 +347,13 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     const connectWs = () => {
       if (!mounted) return;
-      const ws = new WebSocket(
-        `${WS_URL}/${token.md5}?interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`
-      );
+      const wsUrl = `${WS_URL}/${token.md5}?interval=${getWsInterval(timeRange)}&vs_currency=${activeFiatCurrency}`;
+      console.log('[OHLC WS] Connecting:', wsUrl);
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        console.log('[OHLC WS] Connected');
         pingInterval = setInterval(() => ws.readyState === 1 && ws.send('{"type":"ping"}'), 30000);
       };
 
@@ -406,8 +407,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       };
 
       ws.onclose = (ev) => {
+        console.log(`[OHLC WS] Closed code=${ev.code} reason="${ev.reason}"`);
         clearInterval(pingInterval);
-        if (mounted && ev.code !== 1000) setTimeout(connectWs, 3000);
+        if (mounted && ev.code !== 1000 && ev.code !== 4011) setTimeout(connectWs, 3000);
       };
     };
 
