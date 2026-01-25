@@ -161,6 +161,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const toolTipRef = useRef(null);
   const lastKeyRef = useRef(null);
   const lastChartTypeRef = useRef(null);
+  const priceTimeRangeRef = useRef('5d'); // Remember timeRange for candles/line charts
   const refs = useRef({
     currency: activeFiatCurrency,
     chartType: 'candles',
@@ -1270,8 +1271,20 @@ const PriceChartAdvanced = memo(({ token }) => {
               <Btn
                 key={type}
                 onClick={() => {
+                  const wasPrice = chartType === 'candles' || chartType === 'line';
+                  const isPrice = type === 'candles' || type === 'line';
+
+                  // Save current timeRange when leaving price charts
+                  if (wasPrice && !isPrice) {
+                    priceTimeRangeRef.current = timeRange;
+                    setTimeRange('all');
+                  }
+                  // Restore saved timeRange when returning to price charts
+                  else if (!wasPrice && isPrice) {
+                    setTimeRange(priceTimeRangeRef.current);
+                  }
+
                   setChartType(type);
-                  if (type === 'liquidity' || type === 'holders') setTimeRange('all');
                 }}
                 isActive={chartType === type}
                 isMobile={isMobile}
@@ -1293,6 +1306,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                 onClick={() => {
                   setTimeRange(r);
                   setIsUserZoomed(false);
+                  // Save timeRange for price charts so it persists after TVL/Holders
+                  if (chartType === 'candles' || chartType === 'line') {
+                    priceTimeRangeRef.current = r;
+                  }
                 }}
                 isActive={timeRange === r}
                 isMobile={isMobile}
