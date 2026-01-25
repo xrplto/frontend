@@ -1447,6 +1447,26 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="Message creator">
+                    <IconButton
+                      onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: creator, tokenMd5: token.md5 } }))}
+                      size="small"
+                      style={{
+                        padding: '4px',
+                        width: '26px',
+                        height: '26px',
+                        borderRadius: '6px',
+                        background: 'transparent',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                        flexShrink: 0
+                      }}
+                    >
+                      <MessageCircle
+                        size={13}
+                        color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'}
+                      />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
               </ModernTableCell>
             </TableRowStyled>

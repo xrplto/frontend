@@ -16,6 +16,8 @@ const timeAgo = (ts) => {
 const TokenPreview = ({ match }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -26,42 +28,79 @@ const TokenPreview = ({ match }) => {
       .finally(() => setLoading(false));
   }, [match]);
 
+  if (loading) return <span className="text-[#137DFE] text-xs">loading...</span>;
+  if (!token) return <a href={`/token/${match}`} className="text-[#137DFE] hover:underline text-xs">{match.slice(0, 12)}...</a>;
+
+  const imgSrc = token.md5 ? `https://s1.xrpl.to/token/${token.md5}` : null;
+  const change = token.pro24h || 0;
+  const isUp = change >= 0;
   const formatPrice = (n) => {
     if (!n) return '-';
     const num = Number(n);
-    if (num >= 1) return num.toFixed(2);
-    if (num >= 0.001) return num.toFixed(4);
+    if (num >= 1) return '$' + num.toFixed(2);
+    if (num >= 0.01) return '$' + num.toFixed(4);
     const str = num.toFixed(10);
-    const match = str.match(/^0\.(0+)([1-9]\d*)/);
-    if (match) return `0.0(${match[1].length})${match[2].slice(0, 4)}`;
-    return num.toFixed(6);
+    const m = str.match(/^0\.(0+)([1-9]\d*)/);
+    if (m) return `$0.0(${m[1].length})${m[2].slice(0, 4)}`;
+    return '$' + num.toFixed(6);
   };
-
-  const formatCompact = (n) => {
+  const formatMcap = (n) => {
     if (!n) return '-';
-    const num = Number(n);
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num.toFixed(0);
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(2) + 'K';
+    return '$' + n.toFixed(0);
   };
-
-  if (loading) return <span className="text-[#137DFE]">loading...</span>;
-  if (!token) return <a href={`/token/${match}`} className="text-[#137DFE] hover:underline">{match.slice(0, 12)}...</a>;
-
-  const change = token.pro24h || 0;
-  const isUp = change >= 0;
 
   return (
-    <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 py-1 my-1 rounded-lg bg-white/5 border border-white/10 hover:border-[#137DFE]/50 text-sm">
-      {token.icon && <img src={token.icon} alt="" className="w-5 h-5 rounded-full" />}
-      <span className="font-semibold text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
-      <span className="font-mono">${formatPrice(token.exch)}</span>
-      <span className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</span>
-      <span className="opacity-40">·</span>
-      <span className="opacity-50">${formatCompact(token.marketcap)}</span>
-      <span className="opacity-40">·</span>
-      <span className="opacity-50">{timeAgo(token.dateon)}</span>
+    <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
+      <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
+        {imgSrc && !imgError ? (
+          <img src={imgSrc} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
+        ) : (
+          <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+        )}
+        <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
+      </a>
+      {showTooltip && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
+          <div className="px-3 py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[11px] min-w-[180px]">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+              <div><span className="text-white/40">Price</span><div className="font-mono font-medium text-white">{formatPrice(token.exch)}</div></div>
+              <div><span className="text-white/40">24h</span><div className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</div></div>
+              <div><span className="text-white/40">MCap</span><div className="text-white/80">{formatMcap(token.marketcap)}</div></div>
+              <div><span className="text-white/40">Holders</span><div className="text-white/80">{token.holders?.toLocaleString() || '-'}</div></div>
+            </div>
+            <div className="text-white/30 text-[9px] mt-2 pt-1.5 border-t border-white/5">Created {timeAgo(token.dateon)}</div>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45" />
+        </div>
+      )}
+    </span>
+  );
+};
+
+const AttachedTokenPreview = ({ md5 }) => {
+  const [token, setToken] = useState(null);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    fetch(`https://api.xrpl.to/v1/token/${md5}`)
+      .then(r => r.json())
+      .then(d => { if (d.token) setToken(d.token); })
+      .catch(() => {});
+  }, [md5]);
+
+  if (!token) return <span className="text-[#137DFE] text-xs">loading...</span>;
+
+  return (
+    <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
+      {!imgError ? (
+        <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
+      ) : (
+        <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+      )}
+      <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
     </a>
   );
 };
@@ -69,6 +108,7 @@ const TokenPreview = ({ match }) => {
 const NFTPreview = ({ nftId }) => {
   const [nft, setNft] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -79,21 +119,47 @@ const NFTPreview = ({ nftId }) => {
       .finally(() => setLoading(false));
   }, [nftId]);
 
-  if (loading) return <span className="text-[#650CD4]">loading...</span>;
+  if (loading) return <span className="text-[#650CD4] text-xs">loading...</span>;
 
   const cdn = 'https://s1.xrpl.to/nft/';
   const file = nft?.files?.[0] || nft;
   const thumb = file?.thumbnail?.small || file?.thumbnail?.medium || file?.thumbnail?.large;
   const imgSrc = thumb ? cdn + thumb : null;
   const name = nft?.name || nft?.meta?.name;
-  const collection = typeof nft?.collection === 'string' ? nft.collection : nft?.collection?.name;
+  const collection = nft?.collection;
+  const owner = nft?.account;
+  const buyNow = nft?.cost?.amount;
+  const bestOffer = nft?.costb?.amount;
+  const volume = nft?.volume;
+  const rank = nft?.rarity_rank;
+  const total = nft?.total;
+  const created = nft?.created;
+  const formatXrp = (p) => p >= 1e6 ? (p/1e6).toFixed(2)+'M' : p >= 1e3 ? (p/1e3).toFixed(1)+'K' : p?.toLocaleString();
 
   return (
-    <a href={`/nft/${nftId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#650CD4]/10 border border-[#650CD4]/20 hover:border-[#650CD4]/40 transition-colors text-xs">
-      {imgSrc ? <img src={imgSrc} alt="" className="w-4 h-4 rounded object-cover" /> : <span className="w-4 h-4 rounded bg-[#650CD4]/30 flex items-center justify-center text-[8px] text-[#650CD4]">N</span>}
-      <span className="font-medium text-[#650CD4]">{name || `${nftId.slice(0, 6)}...`}</span>
-      {collection && <span className="opacity-40">{collection}</span>}
-    </a>
+    <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
+      <a href={`/nft/${nftId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#650CD4]/10 border border-[#650CD4]/20 hover:border-[#650CD4]/40 transition-colors text-xs">
+        {imgSrc ? <img src={imgSrc} alt="" className="w-4 h-4 rounded object-cover" /> : <span className="w-4 h-4 rounded bg-[#650CD4]/30 flex items-center justify-center text-[8px] text-[#650CD4]">N</span>}
+        <span className="font-medium text-[#650CD4]">{name || `${nftId.slice(0, 6)}...`}</span>
+      </a>
+      {showTooltip && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
+          <div className="px-3 py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[11px] min-w-[180px]">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+              <div><span className="text-white/40">Buy Now</span><div className="font-mono font-medium text-white">{buyNow ? formatXrp(buyNow) + ' XRP' : '-'}</div></div>
+              <div><span className="text-white/40">Best Offer</span><div className="font-mono text-white/80">{bestOffer ? formatXrp(bestOffer) + ' XRP' : '-'}</div></div>
+              <div><span className="text-white/40">Rank</span><div className="text-[#650CD4] font-medium">{rank ? `#${rank.toLocaleString()}` : '-'}</div></div>
+              <div><span className="text-white/40">Supply</span><div className="text-white/80">{total ? total.toLocaleString() : '-'}</div></div>
+            </div>
+            <div className="text-white/30 text-[9px] mt-2 pt-1.5 border-t border-white/5 flex justify-between">
+              <span>{collection}</span>
+              <span>{created ? timeAgo(created) : ''}</span>
+            </div>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45" />
+        </div>
+      )}
+    </span>
   );
 };
 
@@ -140,6 +206,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const [onlineCount, setOnlineCount] = useState(0);
   const [input, setInput] = useState('');
   const [attachedNft, setAttachedNft] = useState(null);
+  const [attachedToken, setAttachedToken] = useState(null);
   const [privateTo, setPrivateTo] = useState('');
   const [activeTab, setActiveTab] = useState('general');
   const [dmTabs, setDmTabs] = useState(() => {
@@ -188,7 +255,6 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
       switch (data.type) {
         case 'init':
           setMessages(data.messages || []);
-          if (data.online !== undefined) setOnlineCount(data.online);
           // Auto-register after init
           if (accountProfile?.account) {
             ws.send(JSON.stringify({ type: 'register', username: accountProfile.account }));
@@ -316,12 +382,13 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   // Listen for external DM requests
   useEffect(() => {
     const handleOpenDm = (e) => {
-      const { user, nftId } = e.detail || {};
+      const { user, nftId, tokenMd5 } = e.detail || {};
       if (user && user !== accountProfile?.account) {
         setIsOpen(true);
         setTimeout(() => {
           openDmTab(user);
           if (nftId) setAttachedNft(nftId);
+          if (tokenMd5) setAttachedToken(tokenMd5);
         }, 100);
       }
     };
@@ -375,9 +442,11 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   }, [accountProfile?.account, registered]);
 
   const sendMessage = () => {
-    if ((!input && !attachedNft) || wsRef.current?.readyState !== WebSocket.OPEN) return;
+    if ((!input && !attachedNft && !attachedToken) || wsRef.current?.readyState !== WebSocket.OPEN) return;
 
-    const msg = attachedNft ? `${attachedNft} ${input}`.trim() : input;
+    const tokenLink = attachedToken ? `/token/${attachedToken}` : '';
+    const nftLink = attachedNft || '';
+    const msg = `${tokenLink} ${nftLink} ${input}`.trim();
     if (privateTo) {
       wsRef.current.send(JSON.stringify({ type: 'private', to: privateTo, message: msg }));
     } else {
@@ -385,6 +454,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
     }
     setInput('');
     setAttachedNft(null);
+    setAttachedToken(null);
   };
 
   const baseClasses = isDark ? 'bg-black text-white border-white/10' : 'bg-white text-black border-black/10';
@@ -539,12 +609,24 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                 );
               })()}
               <div className="p-3 border-t border-inherit">
-                {attachedNft && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <NFTPreview nftId={attachedNft} />
-                    <button onClick={() => setAttachedNft(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
-                      <X size={12} />
-                    </button>
+                {(attachedNft || attachedToken) && (
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {attachedToken && (
+                      <div className="flex items-center gap-1">
+                        <AttachedTokenPreview md5={attachedToken} />
+                        <button onClick={() => setAttachedToken(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                    {attachedNft && (
+                      <>
+                        <NFTPreview nftId={attachedNft} />
+                        <button onClick={() => setAttachedNft(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
+                          <X size={12} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="flex gap-2">
@@ -565,7 +647,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                   </div>
                   <button
                     onClick={sendMessage}
-                    disabled={!input.trim()}
+                    disabled={!input.trim() && !attachedNft && !attachedToken}
                     className="px-4 py-2.5 bg-[#137DFE] text-white rounded-xl hover:bg-[#137DFE]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     <Send size={18} />
