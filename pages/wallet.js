@@ -46,7 +46,8 @@ import {
   Download,
   Share2,
   Trophy,
-  Info
+  Info,
+  User
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -149,6 +150,20 @@ export default function WalletPage() {
   const [referralCopied, setReferralCopied] = useState(false);
   const [editingCode, setEditingCode] = useState(false);
   const [newReferralCode, setNewReferralCode] = useState('');
+
+  // Profile state
+  const [profileUser, setProfileUser] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+
+  // Wallet labels state
+  const [walletLabels, setWalletLabels] = useState([]);
+  const [labelsLoading, setLabelsLoading] = useState(false);
+  const [newLabelWallet, setNewLabelWallet] = useState('');
+  const [newLabelName, setNewLabelName] = useState('');
+  const [deletingLabel, setDeletingLabel] = useState(null);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -1276,6 +1291,119 @@ export default function WalletPage() {
     setReferralLoading(false);
   };
 
+  // Fetch profile data
+  useEffect(() => {
+    if (!address || activeTab !== 'profile') return;
+    const fetchProfile = async () => {
+      setProfileLoading(true);
+      setProfileError('');
+      try {
+        const res = await fetch(`${BASE_URL}/api/user/${address}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) setProfileUser(data.user);
+        } else if (res.status === 404) {
+          setProfileUser(null);
+        }
+      } catch (e) {
+        setProfileError('Failed to load profile');
+      }
+      setProfileLoading(false);
+    };
+    fetchProfile();
+  }, [activeTab, address]);
+
+  const handleCreateProfile = async (username) => {
+    if (!address) return;
+    setProfileError('');
+    setProfileLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/${address}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(username ? { username } : {})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create profile');
+      setProfileUser(data.user);
+      setNewUsername('');
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setProfileLoading(false);
+  };
+
+  const handleUpdateUsername = async () => {
+    if (!address || !newUsername || newUsername.length < 3) return;
+    setProfileError('');
+    setProfileLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/${address}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUsername })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      setProfileUser(u => ({ ...u, username: data.username, updatedAt: data.updatedAt }));
+      setEditingUsername(false);
+      setNewUsername('');
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setProfileLoading(false);
+  };
+
+  // Fetch wallet labels
+  useEffect(() => {
+    if (!address || activeTab !== 'profile' || !profileUser) return;
+    const fetchLabels = async () => {
+      setLabelsLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/user/${address}/labels`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.labels) setWalletLabels(data.labels);
+        }
+      } catch (e) {}
+      setLabelsLoading(false);
+    };
+    fetchLabels();
+  }, [activeTab, address, profileUser]);
+
+  const handleAddLabel = async () => {
+    if (!address || !newLabelWallet || !newLabelName) return;
+    setProfileError('');
+    setLabelsLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/${address}/labels`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet: newLabelWallet, label: newLabelName })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add label');
+      setWalletLabels(prev => [...prev, { wallet: data.wallet, label: data.label }]);
+      setNewLabelWallet('');
+      setNewLabelName('');
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setLabelsLoading(false);
+  };
+
+  const handleDeleteLabel = async (wallet) => {
+    if (!address || !wallet) return;
+    setDeletingLabel(wallet);
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/${address}/labels/${wallet}`, { method: 'DELETE' });
+      if (res.ok) {
+        setWalletLabels(prev => prev.filter(l => l.wallet !== wallet));
+      }
+    } catch (e) {}
+    setDeletingLabel(null);
+  };
+
   // Load NFTs for selected collection (using collection slug endpoint for full data with thumbnails)
   useEffect(() => {
     const fetchCollectionNfts = async () => {
@@ -1397,7 +1525,8 @@ export default function WalletPage() {
     { id: 'offers', label: 'Offers', icon: RotateCcw },
     { id: 'trades', label: 'History', icon: TrendingUp },
     { id: 'withdrawals', label: 'Withdrawals', icon: Building2 },
-    { id: 'referral', label: 'Referral', icon: Share2 }
+    { id: 'referral', label: 'Referral', icon: Share2 },
+    { id: 'profile', label: 'Profile', icon: User }
   ];
 
   return (
@@ -4148,6 +4277,174 @@ export default function WalletPage() {
                         className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {referralLoading ? 'Registering...' : 'Join Program'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="space-y-4">
+                {profileLoading ? (
+                  <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
+                  </div>
+                ) : profileUser ? (
+                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
+                        {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{profileUser.username || 'No username'}</p>
+                        <p className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{address?.slice(0, 10)}...{address?.slice(-8)}</p>
+                      </div>
+                    </div>
+
+                    <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Username</p>
+                        {!editingUsername && (
+                          <button
+                            onClick={() => { setEditingUsername(true); setNewUsername(profileUser.username || ''); }}
+                            className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      {editingUsername ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={newUsername}
+                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 20))}
+                            placeholder="3-20 alphanumeric"
+                            className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                          />
+                          <button onClick={handleUpdateUsername} disabled={profileLoading || newUsername.length < 3} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
+                          <button onClick={() => { setEditingUsername(false); setProfileError(''); }} className={cn('px-2 py-1 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
+                        </div>
+                      ) : (
+                        <p className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>{profileUser.username || <span className={isDark ? 'text-white/30' : 'text-gray-300'}>Not set</span>}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Created</p>
+                        <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>{profileUser.createdAt ? formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true }) : '-'}</p>
+                      </div>
+                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Updated</p>
+                        <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : '-'}</p>
+                      </div>
+                    </div>
+
+                    {profileError && (
+                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px] mt-4', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                        <AlertTriangle size={14} />
+                        {profileError}
+                      </div>
+                    )}
+
+                    {/* Wallet Labels Section */}
+                    <div className={cn('rounded-xl p-4 mt-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                      <p className={cn('text-[10px] uppercase tracking-wider mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
+
+                      {/* Add new label */}
+                      <div className="flex gap-2 mb-3">
+                        <input
+                          type="text"
+                          value={newLabelWallet}
+                          onChange={(e) => {
+                            const val = e.target.value.trim();
+                            if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
+                          }}
+                          placeholder="rAddress..."
+                          className={cn('flex-1 px-2 py-1.5 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                        />
+                        <input
+                          type="text"
+                          value={newLabelName}
+                          onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
+                          placeholder="Label"
+                          className={cn('w-28 px-2 py-1.5 rounded-lg text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                        />
+                        <button
+                          onClick={handleAddLabel}
+                          disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
+                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+
+                      {/* Labels list */}
+                      {labelsLoading && walletLabels.length === 0 ? (
+                        <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>Loading...</p>
+                      ) : walletLabels.length === 0 ? (
+                        <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>No labels yet</p>
+                      ) : (
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                          {walletLabels.map((item) => (
+                            <div key={item.wallet} className={cn('flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-white')}>
+                              <div className="flex-1 min-w-0">
+                                <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{item.label}</p>
+                                <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/30' : 'text-gray-400')}>{item.wallet}</p>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteLabel(item.wallet)}
+                                disabled={deletingLabel === item.wallet}
+                                className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
+                        <User size={18} className="text-[#137DFE]" />
+                      </div>
+                      <div>
+                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Create Profile</h3>
+                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Set up your username</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Username <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
+                        <input
+                          type="text"
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 20))}
+                          placeholder="3-20 alphanumeric characters"
+                          className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
+                        />
+                      </div>
+
+                      {profileError && (
+                        <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                          <AlertTriangle size={14} />
+                          {profileError}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => handleCreateProfile(newUsername.length >= 3 ? newUsername : null)}
+                        disabled={profileLoading}
+                        className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {profileLoading ? 'Creating...' : 'Create Profile'}
                       </button>
                     </div>
                   </div>

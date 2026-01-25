@@ -259,6 +259,9 @@ const OverView = ({ account }) => {
   const [ancestry, setAncestry] = useState(null);
   const [ancestryLoading, setAncestryLoading] = useState(false);
 
+  // Wallet label from logged-in user
+  const [walletLabel, setWalletLabel] = useState(null);
+
   // Set XRP price from holdings data
   useEffect(() => {
     if (holdings?.xrp?.usd) {
@@ -288,6 +291,7 @@ const OverView = ({ account }) => {
     setNftCollectionStats([]);
     setNftHistory([]);
     setAncestry(null);
+    setWalletLabel(null);
 
     const fetchData = async () => {
       try {
@@ -344,6 +348,21 @@ const OverView = ({ account }) => {
       });
     }
   }, [account]);
+
+  // Fetch wallet label from logged-in user's labels
+  useEffect(() => {
+    if (!account || !accountProfile?.account || isOwnAccount) return;
+    const fetchLabel = async () => {
+      try {
+        const res = await axios.get(`https://api.xrpl.to/api/user/${accountProfile.account}/labels`);
+        if (res.data?.labels) {
+          const found = res.data.labels.find(l => l.wallet === account);
+          if (found) setWalletLabel(found.label);
+        }
+      } catch (e) {}
+    };
+    fetchLabel();
+  }, [account, accountProfile?.account, isOwnAccount]);
 
   useEffect(() => {
     if (!account) return;
@@ -736,6 +755,11 @@ const OverView = ({ account }) => {
                     </span>
                     <span className="hidden md:inline">{account}</span>
                   </h2>
+                  {walletLabel && (
+                    <span className={cn('text-[12px] px-2 py-0.5 rounded-md', isDark ? 'bg-[#137DFE]/15 text-[#137DFE]' : 'bg-blue-100 text-blue-600')}>
+                      {walletLabel}
+                    </span>
+                  )}
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => navigator.clipboard.writeText(account)}
