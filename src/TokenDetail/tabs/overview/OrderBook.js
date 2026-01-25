@@ -259,10 +259,10 @@ const OrderBook = ({ token, onPriceClick }) => {
       };
     }
 
+    const rlusdUrl = `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`;
+    console.log('[OrderBook] Fetching RLUSD token:', rlusdUrl);
     const promise = axios
-      .get(
-        `${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`
-      )
+      .get(rlusdUrl)
       .then((res) => res.data?.token);
     fetchInFlight.set(rlusdKey, promise);
 
@@ -339,12 +339,22 @@ const OrderBook = ({ token, onPriceClick }) => {
       limit: '30'
     });
     const wsUrl = `wss://api.xrpl.to/ws/orderbook?${params}`;
+    console.log('[OrderBook] WS connecting:', wsUrl);
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setWsConnected(false);
+    ws.onopen = () => {
+      console.log('[OrderBook] WS connected');
+      setWsConnected(true);
+    };
+    ws.onclose = () => {
+      console.log('[OrderBook] WS closed');
+      setWsConnected(false);
+    };
+    ws.onerror = (e) => {
+      console.error('[OrderBook] WS error:', e);
+      setWsConnected(false);
+    };
 
     ws.onmessage = (event) => {
       try {
@@ -384,6 +394,8 @@ const OrderBook = ({ token, onPriceClick }) => {
       });
       params.append('quote_issuer', effectiveToken.issuer);
       const url = `${BASE_URL}/orderbook?${params}`;
+      const t0 = performance.now();
+      console.log('[OrderBook] HTTP fetch:', url);
 
       // Reuse in-flight request (StrictMode protection) - only for initial load
       if (!isUpdate && fetchInFlight.has(pairKey)) {
@@ -407,6 +419,7 @@ const OrderBook = ({ token, onPriceClick }) => {
 
         if (!mountedRef.current) return;
 
+        console.log(`[OrderBook] HTTP done in ${(performance.now() - t0).toFixed(0)}ms, bids=${res.data?.bids?.length || 0} asks=${res.data?.asks?.length || 0}`);
         if (res.data?.success) {
           processOrderbookData(res.data);
         }
@@ -414,7 +427,7 @@ const OrderBook = ({ token, onPriceClick }) => {
       } catch (err) {
         fetchInFlight.delete(pairKey);
         if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('Orderbook fetch error:', err);
+          console.error('[OrderBook] HTTP error:', err.message);
         }
       }
     }

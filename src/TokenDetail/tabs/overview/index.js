@@ -82,19 +82,23 @@ const Overview = memo(
 
       (async () => {
         try {
-          const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`, {
+          const pairsUrl = `${BASE_URL}/pairs?md5=${token.md5}`;
+          const t0 = performance.now();
+          console.log('[Overview] Fetching pairs:', pairsUrl);
+          const response = await fetch(pairsUrl, {
             signal: controller.signal
           });
 
           if (controller.signal.aborted) return;
 
           const data = await response.json();
+          console.log(`[Overview] Pairs done in ${(performance.now() - t0).toFixed(0)}ms, ${data.pairs?.length || 0} pairs`);
           if (data.pairs) {
             setPairs(data.pairs);
           }
         } catch (error) {
           if (error.name !== 'AbortError') {
-            console.error('Error fetching pairs:', error);
+            console.error('[Overview] Pairs error:', error.message);
           }
         }
       })();

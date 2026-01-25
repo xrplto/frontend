@@ -381,16 +381,23 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     aiAbortRef.current = new AbortController();
 
     setAiLoading(true);
-    fetch(`https://api.xrpl.to/v1/token-review/${token.md5}`, { signal: aiAbortRef.current.signal })
+    const aiUrl = `https://api.xrpl.to/v1/token-review/${token.md5}`;
+    const t0 = performance.now();
+    console.log('[PriceStats] Fetching AI review:', aiUrl);
+    fetch(aiUrl, { signal: aiAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
+        console.log(`[PriceStats] AI review done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (data?.score !== undefined) {
           setAiReview(data);
         }
         setAiLoading(false);
       })
       .catch((e) => {
-        if (e.name !== 'AbortError') setAiLoading(false);
+        if (e.name !== 'AbortError') {
+          console.error('[PriceStats] AI review error:', e.message);
+          setAiLoading(false);
+        }
       });
 
     return () => aiAbortRef.current?.abort();
@@ -403,9 +410,13 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
     if (flowAbortRef.current) flowAbortRef.current.abort();
     flowAbortRef.current = new AbortController();
 
-    fetch(`https://api.xrpl.to/v1/token_flow/${token.md5}`, { signal: flowAbortRef.current.signal })
+    const flowUrl = `https://api.xrpl.to/v1/token_flow/${token.md5}`;
+    const t1 = performance.now();
+    console.log('[PriceStats] Fetching token flow:', flowUrl);
+    fetch(flowUrl, { signal: flowAbortRef.current.signal })
       .then((res) => res.json())
       .then((data) => {
+        console.log(`[PriceStats] Token flow done in ${(performance.now() - t1).toFixed(0)}ms`);
         if (data?.success && data?.summary) {
           const edges = data.graph?.edges || [];
           const edgeMap = new Map(edges.map((e) => [e.to, e]));
@@ -456,6 +467,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
         url += '&side=check_incoming,check_create,check_receive,check_send,check_cancel';
       else if (filter === 'lp') url += '&side=deposit,withdraw,amm_create';
 
+      const t0 = performance.now();
+      console.log('[PriceStats] Fetching creator activity:', url);
       // Parallel fetch for 'all' filter (creators + tx fallback)
       const fetches = [fetch(url, { signal }).then((r) => r.json())];
       if (filter === 'all') {
@@ -465,6 +478,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
       }
 
       const [data, txData] = await Promise.all(fetches);
+      console.log(`[PriceStats] Creator activity done in ${(performance.now() - t0).toFixed(0)}ms`);
       if (signal?.aborted) return;
 
       if (data?.events?.length > 0) {
@@ -2286,9 +2300,8 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
               <TableRowStyled
                 key={col.id}
                 isDark={isDark}
-                as={Link}
-                href={`/nfts/${col.slug}`}
-                style={{ display: 'table-row', textDecoration: 'none', cursor: 'pointer' }}
+                onClick={() => window.location.href = `/nfts/${col.slug}`}
+                style={{ cursor: 'pointer' }}
               >
                 <ModernTableCell style={{ width: '40%', padding: '6px 8px' }}>
                   <Stack direction="row" alignItems="center" style={{ gap: '8px' }}>

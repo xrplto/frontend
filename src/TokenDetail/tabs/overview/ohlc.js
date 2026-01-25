@@ -208,8 +208,12 @@ const PriceChartAdvanced = memo(({ token }) => {
   useEffect(() => {
     if (!token?.creator || !token?.md5) return;
     const ctrl = new AbortController();
-    axios.get(`${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=100&md5=${token.md5}`, { signal: ctrl.signal })
+    const creatorUrl = `${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=100&md5=${token.md5}`;
+    const t0 = performance.now();
+    console.log('[OHLC] Fetching creator events:', creatorUrl);
+    axios.get(creatorUrl, { signal: ctrl.signal })
       .then(res => {
+        console.log(`[OHLC] Creator events done in ${(performance.now() - t0).toFixed(0)}ms, ${res.data?.events?.length || 0} events`);
         if (!res.data?.events?.length) return setCreatorEvents([]);
         const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
         const priority = { sell: 1, buy: 1, transfer_out: 2, other_send: 2, check_create: 3, check_cash: 3, check_receive: 3, withdraw: 4, deposit: 4, receive: 5, other_receive: 5 };
@@ -266,9 +270,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       all: 'D'
     };
     try {
-      const res = await axios.get(
-        `${BASE_URL}/ohlc/${token.md5}?resolution=${resMap[timeRange] || '15'}&cb=200&abn=${dataRef.current[0].time * 1000}&vs_currency=${activeFiatCurrency}`
-      );
+      const loadMoreUrl = `${BASE_URL}/ohlc/${token.md5}?resolution=${resMap[timeRange] || '15'}&cb=200&abn=${dataRef.current[0].time * 1000}&vs_currency=${activeFiatCurrency}`;
+      console.log('[OHLC] Loading more:', loadMoreUrl);
+      const res = await axios.get(loadMoreUrl);
       if (res.data?.ohlc?.length) {
         const older = processOhlc(res.data.ohlc);
         setData((prev) => {
@@ -284,6 +288,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         setHasMore(false);
       }
     } catch (e) {
+      console.error('[OHLC] Load more error:', e.message);
       if (!axios.isCancel(e)) setHasMore(false);
     } finally {
       refs.current.isLoadingMore = false;
@@ -322,9 +327,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (!p) return;
       setLoading(true);
       try {
-        const res = await axios.get(
-          `${BASE_URL}/ohlc/${token.md5}?resolution=${p.res}&cb=${p.cb}&vs_currency=${activeFiatCurrency}`
-        );
+        const ohlcUrl = `${BASE_URL}/ohlc/${token.md5}?resolution=${p.res}&cb=${p.cb}&vs_currency=${activeFiatCurrency}`;
+        const t0 = performance.now();
+        console.log('[OHLC] Fetching:', ohlcUrl);
+        const res = await axios.get(ohlcUrl);
+        console.log(`[OHLC] Done in ${(performance.now() - t0).toFixed(0)}ms, ${res.data?.ohlc?.length || 0} candles`);
         if (mounted && res.data?.ohlc) {
           const processed = processOhlc(res.data.ohlc);
           dataRef.current = processed;
@@ -332,7 +339,9 @@ const PriceChartAdvanced = memo(({ token }) => {
           setLastUpdate(new Date());
           setHasMore(timeRange !== 'all');
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('[OHLC] Fetch error:', e.message);
+      }
       if (mounted) setLoading(false);
     };
 
@@ -419,9 +428,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     const ctrl = new AbortController();
 
     setLoading(true);
+    const holdersUrl = `${BASE_URL}/holders/graph/${token.md5}?range=ALL`;
+    const t0 = performance.now();
+    console.log('[OHLC] Fetching holders:', holdersUrl);
     axios
-      .get(`${BASE_URL}/holders/graph/${token.md5}?range=ALL`, { signal: ctrl.signal })
+      .get(holdersUrl, { signal: ctrl.signal })
       .then((res) => {
+        console.log(`[OHLC] Holders done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (!mounted || !res.data?.history?.length) return;
         const processed = res.data.history
           .map((h) => ({
@@ -437,7 +450,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         holderDataRef.current = processed;
         setHolderData(processed);
       })
-      .catch(() => {})
+      .catch((e) => console.error('[OHLC] Holders error:', e.message))
       .finally(() => mounted && setLoading(false));
 
     return () => {
@@ -462,12 +475,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
 
     setLoading(true);
+    const liquidityUrl = `${BASE_URL}/amm/liquidity-chart?md5=${token.md5}&period=${periodMap[timeRange] || '3m'}`;
+    const t0 = performance.now();
+    console.log('[OHLC] Fetching liquidity:', liquidityUrl);
     axios
-      .get(
-        `${BASE_URL}/amm/liquidity-chart?md5=${token.md5}&period=${periodMap[timeRange] || '3m'}`,
-        { signal: ctrl.signal }
-      )
+      .get(liquidityUrl, { signal: ctrl.signal })
       .then((res) => {
+        console.log(`[OHLC] Liquidity done in ${(performance.now() - t0).toFixed(0)}ms`);
         if (!mounted || !res.data?.data?.length) return;
         const mapped = res.data.data.map((d) => ({
           time: Math.floor(new Date(d.date).getTime() / 1000),
@@ -489,7 +503,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         liquidityDataRef.current = processed;
         setLiquidityData(processed);
       })
-      .catch(() => {})
+      .catch((e) => console.error('[OHLC] Liquidity error:', e.message))
       .finally(() => mounted && setLoading(false));
 
     return () => {

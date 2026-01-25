@@ -16,6 +16,8 @@ export function useTokenDetail({
   enabled = true
 }) {
   const rafRef = useRef(null);
+  const connectTimeRef = useRef(null);
+  const connectCountRef = useRef(0);
 
   const wsUrl =
     enabled && md5 ? `wss://api.xrpl.to/ws/token/${md5}?fields=${fields}&delta=${delta}` : null;
@@ -37,7 +39,21 @@ export function useTokenDetail({
     [onTokenUpdate, onMetricsUpdate]
   );
 
+  // Log connection start
+  useEffect(() => {
+    if (wsUrl) {
+      connectTimeRef.current = performance.now();
+      console.log('[TokenDetail WS] Connecting:', wsUrl);
+    }
+  }, [wsUrl]);
+
   const { sendJsonMessage, readyState } = useWebSocket(wsUrl, {
+    onOpen: () => {
+      connectCountRef.current++;
+      const elapsed = connectTimeRef.current ? (performance.now() - connectTimeRef.current).toFixed(0) : '?';
+      console.log(`[TokenDetail WS] Connected #${connectCountRef.current} in ${elapsed}ms`);
+    },
+    onReconnectStop: () => console.log('[TokenDetail WS] Reconnect stopped (max attempts)'),
     onMessage: (e) => {
       try {
         const data = JSON.parse(e.data);
@@ -47,6 +63,8 @@ export function useTokenDetail({
         rafRef.current = requestAnimationFrame(() => processMessage(data));
       } catch {}
     },
+    onClose: (event) => console.log(`[TokenDetail WS] Closed code=${event.code} reason="${event.reason}"`),
+    onError: (e) => console.error('[TokenDetail WS] Error:', e?.message || e),
     shouldReconnect: (e) => e.code !== 4020 && e.code !== 4021,
     reconnectAttempts: 10,
     reconnectInterval: (n) => Math.min(3000 * Math.pow(2, n), 60000),

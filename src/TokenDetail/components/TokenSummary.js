@@ -516,8 +516,6 @@ const TokenSummary = memo(({ token }) => {
         timeout: 5000
       })
       .then((res) => {
-        console.log('[TrustCheck] response:', res.data);
-        console.log('[TrustCheck] looking for issuer:', issuer, 'currency:', currency);
         if (res.status === 200 && res.data?.result === 'success' && mountedRef.current) {
           const lines = res.data.lines || [];
           const tl = lines.find((line) => {
@@ -527,15 +525,12 @@ const TokenSummary = memo(({ token }) => {
             );
             return lineIssuers.includes(issuer) && lineCurrencies.includes(currency);
           });
-          console.log('[TrustCheck] found trustline:', tl);
           setIsRemove(!!tl);
           setTrustlineBalance(tl ? Math.abs(parseFloat(tl.balance || tl.Balance?.value || 0)) : 0);
         }
       })
-      .catch((err) => {
-        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-          console.error('[TrustCheck] error:', err);
-        }
+      .catch(() => {
+        // Silently handle errors (abort, timeout, network)
       });
 
     return () => controller.abort();

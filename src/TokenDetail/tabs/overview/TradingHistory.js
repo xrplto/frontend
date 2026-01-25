@@ -1262,13 +1262,15 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
         page: offersPage.toString(),
         limit: offersLimit.toString()
       });
-      const res = await axios.get(`https://api.xrpl.to/api/account/offers/${account}?${params}`);
+      const offersUrl = `https://api.xrpl.to/api/account/offers/${account}?${params}`;
+      console.log('[TradingHistory] Fetching offers:', offersUrl);
+      const res = await axios.get(offersUrl);
       if (res.data?.result === 'success') {
         setOpenOffers(res.data.offers || []);
         setOffersTotal(res.data.total || 0);
       }
     } catch (err) {
-      console.error('Failed to fetch offers:', err);
+      console.error('[TradingHistory] Offers error:', err.message);
     } finally {
       setLoading(false);
     }
@@ -1287,7 +1289,9 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
     setAssetsLoading(true);
     try {
-      const res = await axios.get(`https://api.xrpl.to/api/account/token-stats/${account}/${token.md5}`);
+      const statsUrl = `https://api.xrpl.to/api/account/token-stats/${account}/${token.md5}`;
+      console.log('[TradingHistory] Fetching token stats:', statsUrl);
+      const res = await axios.get(statsUrl);
       const stats = res.data;
       if (stats) {
         const balance = Math.abs(stats.balance) || 0;
@@ -1335,6 +1339,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     try {
       let url = `https://api.xrpl.to/api/history?account=${account}&md5=${token.md5}&limit=20`;
       if (loadMore && tradesCursor) url += `&cursor=${tradesCursor}`;
+      console.log('[TradingHistory] Fetching my trades:', url);
       const res = await axios.get(url);
       const trades = res.data?.hists || res.data?.trades || [];
       const nextCursor = res.data?.nextCursor || null;
@@ -1348,7 +1353,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
       setTradesCursor(nextCursor);
       setTradesHasMore(!!nextCursor && trades.length > 0);
     } catch (err) {
-      console.error('Failed to fetch trades:', err);
+      console.error('[TradingHistory] My trades error:', err.message);
     } finally {
       setTradesLoading(false);
     }
@@ -2321,10 +2326,12 @@ const TradingHistory = ({
     if (newValue === 1 && token && token.currency && ammPools.length === 0) {
       setAmmLoading(true);
       try {
-        const res = await fetch(
-          `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
-        );
+        const ammUrl = `https://api.xrpl.to/v1/amm?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`;
+        const t0 = performance.now();
+        console.log('[TradingHistory] Fetching AMM pools:', ammUrl);
+        const res = await fetch(ammUrl);
         const data = await res.json();
+        console.log(`[TradingHistory] AMM pools done in ${(performance.now() - t0).toFixed(0)}ms, ${data.pools?.length || 0} pools`);
         // Sort to ensure main XRP pool appears first
         const pools = data.pools || [];
         pools.sort((a, b) => {
@@ -2354,9 +2361,9 @@ const TradingHistory = ({
           if (poolAccount) {
             try {
               // Try 1m first, fall back to 1w if no data
-              let chartRes = await fetch(
-                `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`
-              );
+              const chartUrl = `https://api.xrpl.to/v1/amm/liquidity-chart?ammAccount=${poolAccount}&period=1m`;
+              console.log('[TradingHistory] Fetching pool chart:', chartUrl);
+              let chartRes = await fetch(chartUrl);
               let chartData = await chartRes.json();
 
               // If no data for 1m, try 1w
@@ -2385,12 +2392,12 @@ const TradingHistory = ({
                 setPoolChartData((prev) => ({ ...prev, [poolAccount]: chartData.data }));
               }
             } catch (err) {
-              console.error('Error fetching pool chart for', poolAccount, err);
+              console.error('[TradingHistory] Pool chart error:', poolAccount, err.message);
             }
           }
         });
       } catch (error) {
-        console.error('Error fetching AMM pools:', error);
+        console.error('[TradingHistory] AMM pools error:', error.message);
       } finally {
         setAmmLoading(false);
       }
@@ -2451,8 +2458,12 @@ const TradingHistory = ({
           }
         }
 
-        const response = await fetch(`https://api.xrpl.to/v1/history?${params}`);
+        const historyUrl = `https://api.xrpl.to/v1/history?${params}`;
+        const t0 = performance.now();
+        console.log('[TradingHistory] Fetching history:', historyUrl);
+        const response = await fetch(historyUrl);
         const data = await response.json();
+        console.log(`[TradingHistory] History done in ${(performance.now() - t0).toFixed(0)}ms, ${data.data?.length || data.hists?.length || 0} trades`);
 
         if (data.success) {
           const hists = data.data || data.hists || [];

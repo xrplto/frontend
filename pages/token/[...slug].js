@@ -15,6 +15,8 @@ import ScrollToTop from 'src/components/ScrollToTop';
 
 import TokenDetail from 'src/TokenDetail';
 
+const PAGE_LOAD_START = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
 function Detail({ data }) {
   const dispatch = useDispatch();
   const [token, setToken] = useState(data.token);
@@ -23,6 +25,21 @@ function Detail({ data }) {
   const [orderBookOpen, setOrderBookOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const tokenName = token.name || 'Token';
+
+  // Page load timing
+  useEffect(() => {
+    console.log(`[TokenPage] Component mounted, token: ${data.token?.name} (${data.token?.md5})`);
+    const mountTime = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - PAGE_LOAD_START;
+    console.log(`[TokenPage] Time to mount: ${mountTime.toFixed(0)}ms`);
+
+    // Log when page is fully interactive
+    if (typeof window !== 'undefined') {
+      requestIdleCallback(() => {
+        const idleTime = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - PAGE_LOAD_START;
+        console.log(`[TokenPage] Fully interactive: ${idleTime.toFixed(0)}ms`);
+      });
+    }
+  }, []);
 
   // WebSocket connection enabled immediately
   const [wsEnabled, setWsEnabled] = useState(true);
@@ -131,10 +148,13 @@ export async function getStaticProps({ params }) {
     const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     // https://api.xrpl.to/v1/token/bitstamp-usd
-    const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`, {
+    const apiUrl = `${BASE_URL}/token/${slug}?desc=yes`;
+    console.log('[getStaticProps] Fetching:', apiUrl);
+    const res = await axios.get(apiUrl, {
       timeout: 10000,
       validateStatus: (status) => status === 200
     });
+    console.log('[getStaticProps] Response status:', res.status, 'has token:', !!res.data?.token);
 
     if (res.data && typeof res.data === 'object') {
       data = res.data.data || res.data;
@@ -165,6 +185,7 @@ export async function getStaticProps({ params }) {
     const dt = (t2 - t1).toFixed(2);
   } catch (e) {
     // Error during getStaticProps
+    console.error('[getStaticProps] Error:', e.message, 'slug:', slug, 'BASE_URL:', BASE_URL);
   }
   let ret = {};
   if (data && data.token) {
