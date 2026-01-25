@@ -44,7 +44,8 @@ import {
   Code2,
   Copy,
   Check,
-  Link2
+  Link2,
+  MessageCircle
 } from 'lucide-react';
 
 // Simple Pagination Component
@@ -3549,9 +3550,18 @@ export default function CollectionView({ collection }) {
                         <span className="font-mono">{taxon}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Issuer</span>
-                      <span className="font-mono truncate max-w-[140px]">{account}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono truncate max-w-[120px]">{account}</span>
+                        <button
+                          onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
+                          className={`p-1 rounded hover:bg-white/10 transition-colors ${isDark ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                          title="Message issuer"
+                        >
+                          <MessageCircle size={14} />
+                        </button>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className={isDark ? 'text-white/40' : 'text-gray-500'}>Created</span>

@@ -18,6 +18,7 @@ import Link from 'next/link';
 import {
   Wallet,
   Copy,
+  MessageCircle,
   ExternalLink,
   Coins,
   Image,
@@ -748,6 +749,20 @@ const OverView = ({ account }) => {
                     >
                       <Copy size={14} />
                     </button>
+                    {!isOwnAccount && (
+                      <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
+                        className={cn(
+                          'p-1.5 rounded-lg transition-colors',
+                          isDark
+                            ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                        )}
+                        title="Message"
+                      >
+                        <MessageCircle size={14} />
+                      </button>
+                    )}
                     <ApiButton />
                   </div>
                   {isOwnAccount && (
