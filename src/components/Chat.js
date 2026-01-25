@@ -2,6 +2,87 @@ import React, { useState, useEffect, useRef, useCallback, useContext } from 'rea
 import { MessageCircle, X, Send } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
+const TokenPreview = ({ match }) => {
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`https://api.xrpl.to/v1/token/${match}`)
+      .then(r => r.json())
+      .then(d => { if (d.token) setToken(d.token); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [match]);
+
+  const formatPrice = (n) => {
+    if (!n) return '-';
+    const num = Number(n);
+    if (num >= 1) return num.toFixed(2);
+    if (num >= 0.001) return num.toFixed(4);
+    const str = num.toFixed(10);
+    const match = str.match(/^0\.(0+)([1-9]\d*)/);
+    if (match) return `0.0(${match[1].length})${match[2].slice(0, 4)}`;
+    return num.toFixed(6);
+  };
+
+  const formatCompact = (n) => {
+    if (!n) return '-';
+    const num = Number(n);
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    return num.toFixed(0);
+  };
+
+  const timeAgo = (ts) => {
+    if (!ts) return '';
+    const days = Math.floor((Date.now() - ts) / 86400000);
+    if (days < 1) return 'today';
+    if (days === 1) return '1d ago';
+    if (days < 30) return days + 'd ago';
+    if (days < 365) return Math.floor(days / 30) + 'mo ago';
+    return Math.floor(days / 365) + 'y ago';
+  };
+
+  if (loading) return <span className="text-[#137DFE]">loading...</span>;
+  if (!token) return <a href={`/token/${match}`} className="text-[#137DFE] hover:underline">{match.slice(0, 12)}...</a>;
+
+  const change = token.pro24h || 0;
+  const isUp = change >= 0;
+
+  return (
+    <a href={`/token/${match}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 py-1 my-1 rounded-lg bg-white/5 border border-white/10 hover:border-[#137DFE]/50 text-sm">
+      {token.icon && <img src={token.icon} alt="" className="w-5 h-5 rounded-full" />}
+      <span className="font-semibold text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
+      <span className="font-mono">${formatPrice(token.exch)}</span>
+      <span className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</span>
+      <span className="opacity-40">·</span>
+      <span className="opacity-50">${formatCompact(token.marketcap)}</span>
+      <span className="opacity-40">·</span>
+      <span className="opacity-50">{timeAgo(token.dateon)}</span>
+    </a>
+  );
+};
+
+const renderMessage = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)/g;
+  const matches = [...text.matchAll(tokenRegex)];
+  if (matches.length === 0) return text;
+
+  const parts = [];
+  let last = 0;
+  for (const m of matches) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const tokenId = m[1] || (m[2] && m[3] ? `${m[2]}-${m[3]}` : `${m[5]}-${m[4]}`);
+    parts.push(<TokenPreview key={m.index} match={tokenId} />);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+};
+
 const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -11,6 +92,13 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const [onlineCount, setOnlineCount] = useState(0);
   const [input, setInput] = useState('');
   const [privateTo, setPrivateTo] = useState('');
+  const [activeTab, setActiveTab] = useState('general');
+  const [dmTabs, setDmTabs] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('chat_dm_tabs') || '[]');
+    } catch { return []; }
+  });
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -43,10 +131,36 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
         case 'registered':
           setRegistered(true);
           if (data.users !== undefined) setOnlineCount(data.users);
+          // Fetch history for saved DM tabs
+          dmTabs.forEach(user => {
+            ws.send(JSON.stringify({ type: 'history', with: user }));
+          });
           break;
         case 'message':
+          setMessages((prev) => {
+            if (data._id && prev.some((m) => m._id === data._id)) return prev;
+            return [...prev, data];
+          });
+          break;
         case 'private':
-          setMessages((prev) => [...prev, data]);
+          setMessages((prev) => {
+            if (data._id && prev.some((m) => m._id === data._id)) return prev;
+            return [...prev, data];
+          });
+          // Auto-open tab for incoming DM
+          const dmUser = data.username === accountProfile?.account ? data.recipient : data.username;
+          if (dmUser && !dmTabs.includes(dmUser)) {
+            const newTabs = [...dmTabs, dmUser];
+            setDmTabs(newTabs);
+            localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+          }
+          break;
+        case 'history':
+          setMessages((prev) => {
+            const ids = new Set(prev.map(m => m._id));
+            const newMsgs = (data.messages || []).filter(m => !ids.has(m._id));
+            return [...newMsgs, ...prev].sort((a, b) => a.timestamp - b.timestamp);
+          });
           break;
         case 'error':
           console.error('Chat error:', data.message);
@@ -81,6 +195,32 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const openDmTab = (user) => {
+    if (user && user !== accountProfile?.account && !dmTabs.includes(user)) {
+      const newTabs = [...dmTabs, user];
+      setDmTabs(newTabs);
+      localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+    }
+    setActiveTab(user);
+    setPrivateTo(user);
+    inputRef.current?.focus();
+    // Request DM history
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'history', with: user }));
+    }
+  };
+
+  const closeDmTab = (user, e) => {
+    e.stopPropagation();
+    const newTabs = dmTabs.filter(t => t !== user);
+    setDmTabs(newTabs);
+    localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+    if (activeTab === user) {
+      setActiveTab('general');
+      setPrivateTo('');
+    }
+  };
 
   // Auto-register when connected and logged in
   useEffect(() => {
@@ -146,62 +286,82 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
             </div>
           ) : (
             <>
-              <div className="h-[400px] overflow-y-auto px-3 py-2 space-y-1 scroll-smooth">
-                {messages.map((msg, i) => {
-                  const isOwn = msg.username === accountProfile?.account;
-                  const isDM = msg.isPrivate || msg.type === 'private';
-                  const shortName = msg.username?.length > 12
-                    ? `${msg.username.slice(0, 6)}...${msg.username.slice(-4)}`
-                    : msg.username;
-                  const shortRecipient = msg.recipient?.length > 12
-                    ? `${msg.recipient.slice(0, 6)}...${msg.recipient.slice(-4)}`
-                    : msg.recipient;
+              {(() => {
+                const filtered = activeTab === 'general'
+                  ? messages.filter(m => !m.isPrivate && m.type !== 'private')
+                  : messages.filter(m => (m.isPrivate || m.type === 'private') &&
+                      (m.username === activeTab || m.recipient === activeTab));
 
-                  return (
-                    <div key={msg._id || i} className="flex items-start gap-2 py-0.5">
-                      <span className="text-[10px] opacity-40 pt-0.5 shrink-0">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <div className="min-w-0">
-                        <span className="inline">
-                          {isDM && <span className="text-[#650CD4] text-xs mr-1">[DM]</span>}
-                          <button
-                            onClick={() => { if (!isOwn) { setPrivateTo(msg.username); inputRef.current?.focus(); }}}
-                            className={`text-sm font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : isDM ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                            title={isOwn ? 'You' : `DM ${msg.username}`}
-                          >
-                            {isOwn ? 'You' : shortName}
-                          </button>
-                          {isDM && isOwn && <span className="text-[#650CD4] text-sm"> → {shortRecipient}</span>}
-                          {isDM && !isOwn && <span className="text-[#650CD4] text-sm"> → you</span>}
-                          <span className="opacity-50">: </span>
-                          <span className="break-words">{msg.message}</span>
-                        </span>
-                      </div>
+                return (
+                  <>
+                    <div className="flex gap-1 px-3 py-2 border-b border-inherit overflow-x-auto">
+                      <button
+                        onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
+                        className={`px-3 py-1 text-xs rounded-lg shrink-0 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'opacity-60 hover:opacity-100'}`}
+                      >
+                        General
+                      </button>
+                      {dmTabs.map(user => (
+                        <button
+                          key={user}
+                          onClick={() => openDmTab(user)}
+                          className={`px-3 py-1 text-xs rounded-lg shrink-0 flex items-center gap-1 ${activeTab === user ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}
+                        >
+                          {user.slice(0, 6)}...{user.slice(-4)}
+                          <span onClick={(e) => closeDmTab(user, e)} className="hover:text-red-400 ml-1">×</span>
+                        </button>
+                      ))}
                     </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-              <div className="p-4 border-t border-inherit">
-                {privateTo && (
-                  <div className="text-xs mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#650CD4]/10 border border-[#650CD4]/20">
-                    <span className="text-[#650CD4]">DM →</span>
-                    <span className="opacity-70">{privateTo.slice(0, 8)}...{privateTo.slice(-4)}</span>
-                    <button onClick={() => setPrivateTo('')} className="ml-auto hover:opacity-70">
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
+                    <div className="h-[340px] overflow-y-auto px-3 py-2 space-y-1 scroll-smooth">
+                      {filtered.map((msg, i) => {
+                        const isOwn = msg.username === accountProfile?.account;
+                        const shortName = msg.username?.length > 12
+                          ? `${msg.username.slice(0, 6)}...${msg.username.slice(-4)}`
+                          : msg.username;
+
+                        return (
+                          <div key={msg._id || i} className="flex items-start py-0.5">
+                            <span className="text-[9px] opacity-40 w-14 shrink-0 font-mono">
+                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <div className="min-w-0">
+                              <span className="inline">
+                                <button
+                                  onClick={() => { if (!isOwn) openDmTab(msg.username); }}
+                                  className={`text-sm font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                  title={isOwn ? 'You' : `DM ${msg.username}`}
+                                >
+                                  {isOwn ? 'You' : shortName}
+                                </button>
+                                <span className="opacity-50">: </span>
+                                <span className="break-words">{renderMessage(msg.message)}</span>
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </>
+                );
+              })()}
+              <div className="p-3 border-t border-inherit">
                 <div className="flex gap-2">
-                  <input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a message..."
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                    className={`flex-1 px-4 py-2.5 rounded-xl border-[1.5px] ${baseClasses} outline-none focus:border-[#137DFE] transition-colors`}
-                  />
+                  <div className="flex-1 relative">
+                    <input
+                      ref={inputRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value.slice(0, 255))}
+                      placeholder={activeTab === 'general' ? 'Message everyone...' : `DM ${activeTab.slice(0, 6)}...`}
+                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                      className={`w-full px-4 py-2.5 pr-12 rounded-xl border-[1.5px] ${baseClasses} outline-none focus:border-[#137DFE] transition-colors`}
+                    />
+                    {input.length > 200 && (
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 255 ? 'text-red-500' : 'opacity-50'}`}>
+                        {255 - input.length}
+                      </span>
+                    )}
+                  </div>
                   <button
                     onClick={sendMessage}
                     disabled={!input.trim()}
