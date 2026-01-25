@@ -59,6 +59,11 @@ const BridgeTracker = dynamic(() => import('src/components/BridgeTracker'), {
   loading: () => null
 });
 
+const Chat = dynamic(() => import('src/components/Chat'), {
+  ssr: false,
+  loading: () => null
+});
+
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
   '@context': 'http://schema.org/',
@@ -348,6 +353,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <TransactionAlert />
             <Wallet />
             <BridgeTracker />
+            <Chat wsUrl="wss://api.xrpl.to/ws/chat" />
           </ThemeProvider>
         </ContextProvider>
       </div>
