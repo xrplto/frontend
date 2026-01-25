@@ -208,26 +208,26 @@ const PriceChartAdvanced = memo(({ token }) => {
   useEffect(() => {
     if (!token?.creator || !token?.md5) return;
     const ctrl = new AbortController();
-    const creatorUrl = `${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=100&md5=${token.md5}`;
+    const creatorUrl = `${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=10&md5=${token.md5}&stream=true`;
     const t0 = performance.now();
     console.log('[OHLC] Fetching creator events:', creatorUrl);
     axios.get(creatorUrl, { signal: ctrl.signal })
       .then(res => {
-        console.log(`[OHLC] Creator events done in ${(performance.now() - t0).toFixed(0)}ms, ${res.data?.events?.length || 0} events`);
-        if (!res.data?.events?.length) return setCreatorEvents([]);
+        const events = res.data?.events || res.data || [];
+        console.log(`[OHLC] Creator events done in ${(performance.now() - t0).toFixed(0)}ms, ${events.length} events`);
+        if (!events.length) return setCreatorEvents([]);
         const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
         const priority = { sell: 1, buy: 1, transfer_out: 2, other_send: 2, check_create: 3, check_cash: 3, check_receive: 3, withdraw: 4, deposit: 4, receive: 5, other_receive: 5 };
-        setCreatorEvents(res.data.events
-          .filter(e => !((e.side === 'receive' || e.side === 'other_receive') && e.xrpAmount < 5 && e.tokenAmount < 10000))
-          .sort((a, b) => (priority[a.side] || 9) - (priority[b.side] || 9) || b.time - a.time)
+        setCreatorEvents(events
+          .sort((a, b) => (priority[a.s] || 9) - (priority[b.s] || 9) || b.t - a.t)
           .slice(0, 20)
           .map(e => ({
-            time: e.time,
-            type: (e.side || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
-            tokenAmount: e.tokenAmount || 0,
-            xrpAmount: e.xrpAmount || 0,
-            hash: e.hash,
-            color: colors[e.side] || '#9ca3af'
+            time: e.t,
+            type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
+            tokenAmount: e.a || 0,
+            xrpAmount: e.x || 0,
+            hash: e.h,
+            color: colors[e.s] || '#9ca3af'
           })).sort((a, b) => a.time - b.time));
       })
       .catch(() => setCreatorEvents([]));
