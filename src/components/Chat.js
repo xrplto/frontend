@@ -66,18 +66,58 @@ const TokenPreview = ({ match }) => {
   );
 };
 
+const NFTPreview = ({ nftId }) => {
+  const [nft, setNft] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`https://api.xrpl.to/v1/nft/${nftId}`)
+      .then(r => r.json())
+      .then(d => { setNft(d.nft || d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [nftId]);
+
+  if (loading) return <span className="text-[#650CD4]">loading...</span>;
+
+  const cdn = 'https://s1.xrpl.to/nft/';
+  const thumb = nft?.thumbnail?.small || nft?.thumbnail?.medium;
+  const name = nft?.name || nft?.meta?.name;
+  const collection = typeof nft?.collection === 'string' ? nft.collection : nft?.collection?.name;
+
+  return (
+    <a href={`/nft/${nftId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 py-1 my-1 rounded-lg bg-white/5 border border-white/10 hover:border-[#650CD4]/50 text-sm">
+      {thumb ? <img src={cdn + thumb} alt="" className="w-5 h-5 rounded object-cover" /> : <span className="w-5 h-5 rounded bg-[#650CD4]/20 flex items-center justify-center text-[10px] text-[#650CD4]">NFT</span>}
+      <span className="font-semibold text-[#650CD4]">{name || `${nftId.slice(0, 8)}...`}</span>
+      {collection && <span className="opacity-50 text-xs">{collection}</span>}
+    </a>
+  );
+};
+
 const renderMessage = (text) => {
   if (!text || typeof text !== 'string') return text;
   const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)/g;
-  const matches = [...text.matchAll(tokenRegex)];
-  if (matches.length === 0) return text;
+  const nftRegex = /(?:https?:\/\/xrpl\.to)?\/nft\/([A-Fa-f0-9]{64})/g;
 
   const parts = [];
   let last = 0;
-  for (const m of matches) {
+
+  // Process NFT and token links
+  const nftMatches = [...text.matchAll(nftRegex)];
+  const tokenMatches = [...text.matchAll(tokenRegex)];
+  const allMatches = [...nftMatches.map(m => ({ ...m, type: 'nft' })), ...tokenMatches.map(m => ({ ...m, type: 'token' }))].sort((a, b) => a.index - b.index);
+
+  if (allMatches.length === 0) return text;
+
+  for (const m of allMatches) {
     if (m.index > last) parts.push(text.slice(last, m.index));
-    const tokenId = m[1] || (m[2] && m[3] ? `${m[2]}-${m[3]}` : `${m[5]}-${m[4]}`);
-    parts.push(<TokenPreview key={m.index} match={tokenId} />);
+    if (m.type === 'nft') {
+      parts.push(<NFTPreview key={`nft-${m.index}`} nftId={m[1]} />);
+    } else {
+      const tokenId = m[1] || (m[2] && m[3] ? `${m[2]}-${m[3]}` : `${m[5]}-${m[4]}`);
+      parts.push(<TokenPreview key={`token-${m.index}`} match={tokenId} />);
+    }
     last = m.index + m[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -240,10 +280,13 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   // Listen for external DM requests
   useEffect(() => {
     const handleOpenDm = (e) => {
-      const user = e.detail?.user;
+      const { user, nftId } = e.detail || {};
       if (user && user !== accountProfile?.account) {
         setIsOpen(true);
-        setTimeout(() => openDmTab(user), 100);
+        setTimeout(() => {
+          openDmTab(user);
+          if (nftId) setInput(`https://xrpl.to/nft/${nftId} `);
+        }, 100);
       }
     };
     window.addEventListener('openDm', handleOpenDm);

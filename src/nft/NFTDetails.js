@@ -849,7 +849,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 </button>
                 {account !== accountLogin && (
                   <button
-                    onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account } }))}
+                    onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: account, nftId: NFTokenID } }))}
                     className={cn(
                       'p-0.5 rounded hover:bg-white/10 transition-colors',
                       isDark ? 'text-gray-500 hover:text-[#650CD4]' : 'text-gray-400 hover:text-[#650CD4]'
