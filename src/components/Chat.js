@@ -271,14 +271,14 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
           </div>
 
           {!accountProfile?.account ? (
-            <div className="h-[380px] flex items-center justify-center">
+            <div className="h-[330px] flex items-center justify-center">
               <div className="text-center opacity-50">
                 <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
                 <p>Connect wallet to chat</p>
               </div>
             </div>
           ) : !registered ? (
-            <div className="h-[380px] flex items-center justify-center">
+            <div className="h-[330px] flex items-center justify-center">
               <div className="text-center opacity-50">
                 <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                 <p>Connecting...</p>
@@ -312,7 +312,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                         </button>
                       ))}
                     </div>
-                    <div className="h-[380px] overflow-y-auto px-3 py-2 space-y-1 scroll-smooth">
+                    <div className="h-[330px] overflow-y-auto px-3 py-2 space-y-1 scroll-smooth">
                       {filtered.map((msg, i) => {
                         const isOwn = msg.username === accountProfile?.account;
                         const shortName = msg.username?.length > 12
@@ -351,14 +351,14 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                     <input
                       ref={inputRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value.slice(0, 255))}
+                      onChange={(e) => setInput(e.target.value.slice(0, 256))}
                       placeholder={activeTab === 'general' ? 'Message everyone...' : `DM ${activeTab.slice(0, 6)}...`}
                       onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                       className={`w-full px-4 py-2.5 pr-12 rounded-xl border-[1.5px] ${baseClasses} outline-none focus:border-[#137DFE] transition-colors`}
                     />
                     {input.length > 200 && (
-                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 255 ? 'text-red-500' : 'opacity-50'}`}>
-                        {255 - input.length}
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 256 ? 'text-red-500' : 'opacity-50'}`}>
+                        {256 - input.length}
                       </span>
                     )}
                   </div>
