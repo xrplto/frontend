@@ -158,6 +158,12 @@ export default function WalletPage() {
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
 
+  // Avatar NFT state
+  const [avatarNfts, setAvatarNfts] = useState([]);
+  const [avatarNftsLoading, setAvatarNftsLoading] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [settingAvatar, setSettingAvatar] = useState(false);
+
   // Wallet labels state
   const [walletLabels, setWalletLabels] = useState([]);
   const [labelsLoading, setLabelsLoading] = useState(false);
@@ -844,7 +850,18 @@ export default function WalletPage() {
       md5: t.md5 || null,
       // Additional fields
       price: price,
-      priceDisplay: price >= 1 ? price.toFixed(4) : price > 0 ? price.toFixed(8).replace(/0+$/, '') : '0',
+      priceDisplay: (() => {
+        if (price >= 1) return price.toFixed(4);
+        if (price < 0.01 && price > 0) {
+          const str = price.toFixed(15);
+          const zeros = (str.match(/0\.0*/)?.[0]?.length || 2) - 2;
+          if (zeros >= 4) {
+            const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '').slice(0, 4);
+            return { compact: true, zeros, significant };
+          }
+        }
+        return price > 0 ? price.toFixed(8).replace(/0+$/, '').replace(/\.$/, '') : '0';
+      })(),
       vol24h: t.vol24hxrp || t.vol24h || 0,
       marketcap: t.marketcap || 0,
       holders: t.holders || 0,
@@ -881,6 +898,12 @@ export default function WalletPage() {
   // Use shared parseTransaction from parseUtils.js
   const parseTx = (rawTx) => parseTransaction(rawTx, address, decodeCurrency);
 
+  // Token pagination state
+  const [tokenTotal, setTokenTotal] = useState(0);
+  const [tokenOffset, setTokenOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const TOKEN_LIMIT = 50;
+
   // Load tokens from API
   useEffect(() => {
     const controller = new AbortController();
@@ -888,27 +911,26 @@ export default function WalletPage() {
       if (!address) return;
       setTokensLoading(true);
       setIsInactive(false);
-      console.time('[Wallet] fetchTokens');
+      setTokens([]);
+      setTokenOffset(0);
       try {
         const res = await fetch(
-          `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&includeZero=true`,
+          `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&includeZero=true&limit=${TOKEN_LIMIT}&offset=0`,
           { signal: controller.signal }
         );
         const data = await res.json();
-        console.timeEnd('[Wallet] fetchTokens');
-        console.log('[Wallet] fetchTokens: received', data.lines?.length || 0, 'tokens');
         if (data.success) {
           setXrpData({ ...data.accountData, xrp: data.xrp });
           setTokens(data.lines?.map(parseTokenLine) || []);
+          setTokenTotal(data.total || 0);
+          setTokenOffset(data.lines?.length || 0);
           setIsInactive(false);
-        } else if (data.error || !data.success) {
-          // Account not found or other error - treat as inactive
+        } else {
           setIsInactive(true);
           setXrpData(null);
           setTokens([]);
         }
       } catch (e) {
-        console.timeEnd('[Wallet] fetchTokens');
         if (e.name !== 'AbortError') console.error('Failed to load tokens:', e);
       } finally {
         if (!controller.signal.aborted) setTokensLoading(false);
@@ -917,6 +939,31 @@ export default function WalletPage() {
     fetchTokens();
     return () => controller.abort();
   }, [address]);
+
+  // Load more tokens when paginating
+  useEffect(() => {
+    const neededTokens = tokenPage * tokensPerPage;
+    if (neededTokens > tokens.length && tokenOffset < tokenTotal && !loadingMore) {
+      const fetchMore = async () => {
+        setLoadingMore(true);
+        try {
+          const res = await fetch(
+            `${BASE_URL}/api/trustlines/${address}?format=full&sortByValue=true&includeZero=true&limit=${TOKEN_LIMIT}&offset=${tokenOffset}`
+          );
+          const data = await res.json();
+          if (data.success && data.lines) {
+            setTokens(prev => [...prev, ...data.lines.map(parseTokenLine)]);
+            setTokenOffset(prev => prev + data.lines.length);
+          }
+        } catch (e) {
+          console.error('Failed to load more tokens:', e);
+        } finally {
+          setLoadingMore(false);
+        }
+      };
+      fetchMore();
+    }
+  }, [tokenPage, tokens.length, tokenOffset, tokenTotal, loadingMore, address]);
 
   // Load withdrawals from IndexedDB
   useEffect(() => {
@@ -1352,6 +1399,46 @@ export default function WalletPage() {
       setProfileError(e.message);
     }
     setProfileLoading(false);
+  };
+
+  // Fetch user NFTs for avatar picker
+  useEffect(() => {
+    if (!address || activeTab !== 'profile' || !showAvatarPicker) return;
+    const fetchAvatarNfts = async () => {
+      setAvatarNftsLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/user/${address}/nfts?limit=50&offset=0`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.nfts) setAvatarNfts(data.nfts);
+        }
+      } catch (e) {
+        console.error('Failed to fetch NFTs for avatar:', e);
+      }
+      setAvatarNftsLoading(false);
+    };
+    fetchAvatarNfts();
+  }, [activeTab, address, showAvatarPicker]);
+
+  const handleSetAvatar = async (nftId) => {
+    if (!address || !nftId) return;
+    setSettingAvatar(true);
+    setProfileError('');
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/${address}/avatar`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nftId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to set avatar');
+      setProfileUser(u => ({ ...u, avatar: data.avatar, avatarNftId: data.avatarNftId }));
+      setShowAvatarPicker(false);
+      toast.success('Avatar updated');
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setSettingAvatar(false);
   };
 
   // Fetch wallet labels
@@ -3005,7 +3092,7 @@ export default function WalletPage() {
                                 {token.percentOwned > 0 && <p className={cn("text-[9px] tabular-nums", isDark ? "text-white/30" : "text-gray-400")}>{token.percentOwned.toFixed(2)}% supply</p>}
                               </div>
                               {/* Price */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
+                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{token.symbol === 'XRP' ? (activeFiatCurrency === 'XRP' ? '--' : <>{currencySymbols[activeFiatCurrency]}{xrpUsdPrice.toFixed(2)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : (activeFiatCurrency === 'XRP' ? <>{typeof token.priceDisplay === 'object' && token.priceDisplay.compact ? <>0.0<sub className="text-[0.7em]">{token.priceDisplay.zeros}</sub>{token.priceDisplay.significant}</> : token.priceDisplay} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{((token.price || 0) * xrpUsdPrice).toFixed((token.price || 0) * xrpUsdPrice >= 1 ? 2 : 6)} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>)}</p>
                               {/* Value */}
                               <p className={cn("text-xs font-semibold tabular-nums text-right tracking-tight", isDark ? "text-white" : "text-gray-900")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>{activeFiatCurrency}</span></>}</p>
                               {/* 24h */}
@@ -3065,8 +3152,8 @@ export default function WalletPage() {
                           className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}
                         >
                           Showing {(tokenPage - 1) * tokensPerPage + 1}-
-                          {Math.min(tokenPage * tokensPerPage, filteredTokens.length)} of{' '}
-                          {filteredTokens.length}
+                          {Math.min(tokenPage * tokensPerPage, filteredTokens.length)} of {tokenTotal || filteredTokens.length}
+                          {loadingMore && <span className="ml-1 animate-pulse">loading...</span>}
                         </span>
                         <div className="flex items-center gap-1">
                           <button
@@ -4294,14 +4381,86 @@ export default function WalletPage() {
                 ) : profileUser ? (
                   <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
                     <div className="flex items-center gap-3 mb-6">
-                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
-                        {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
-                      </div>
+                      <button
+                        onClick={() => setShowAvatarPicker(true)}
+                        className="relative group"
+                        title="Change avatar"
+                      >
+                        {profileUser.avatar ? (
+                          <img
+                            src={profileUser.avatar}
+                            alt="Avatar"
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
+                            {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
+                          </div>
+                        )}
+                        <div className={cn('absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'bg-black/60' : 'bg-white/60')}>
+                          <Image size={16} className={isDark ? 'text-white' : 'text-gray-700'} />
+                        </div>
+                      </button>
                       <div>
                         <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{profileUser.username || 'No username'}</p>
                         <p className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{address?.slice(0, 10)}...{address?.slice(-8)}</p>
                       </div>
                     </div>
+
+                    {/* Avatar Picker Modal */}
+                    {showAvatarPicker && (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAvatarPicker(false)}>
+                        <div
+                          className={cn('w-full max-w-md rounded-xl p-4', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Select NFT Avatar</p>
+                            <button onClick={() => setShowAvatarPicker(false)} className={cn('p-1 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                              <X size={16} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                            </button>
+                          </div>
+                          {avatarNftsLoading ? (
+                            <div className="py-8 text-center">
+                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading NFTs...</p>
+                            </div>
+                          ) : avatarNfts.length === 0 ? (
+                            <div className="py-8 text-center">
+                              <Image size={24} className={cn('mx-auto mb-2', isDark ? 'text-white/20' : 'text-gray-300')} />
+                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No NFTs found</p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+                              {avatarNfts.map((nft) => (
+                                <button
+                                  key={nft.NFTokenID}
+                                  onClick={() => handleSetAvatar(nft.NFTokenID)}
+                                  disabled={settingAvatar || !nft.files?.[0]?.thumbnail?.large}
+                                  className={cn(
+                                    'relative aspect-square rounded-lg overflow-hidden border-2 transition-all',
+                                    profileUser.avatarNftId === nft.NFTokenID
+                                      ? 'border-[#137DFE]'
+                                      : isDark ? 'border-white/10 hover:border-white/30' : 'border-gray-200 hover:border-gray-400',
+                                    (settingAvatar || !nft.files?.[0]?.thumbnail?.large) && 'opacity-50'
+                                  )}
+                                >
+                                  <img
+                                    src={nft.files?.[0]?.thumbnail?.large ? `https://s1.xrpl.to/nft/${nft.files[0].thumbnail.large}` : getNftCoverUrl(nft.meta, nft.url)}
+                                    alt={nft.meta?.name || 'NFT'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  {profileUser.avatarNftId === nft.NFTokenID && (
+                                    <div className="absolute inset-0 bg-[#137DFE]/20 flex items-center justify-center">
+                                      <Check size={16} className="text-[#137DFE]" />
+                                    </div>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
                       <div className="flex items-center justify-between mb-2">
