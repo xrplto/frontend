@@ -89,10 +89,10 @@ const NFTPreview = ({ nftId }) => {
   const collection = typeof nft?.collection === 'string' ? nft.collection : nft?.collection?.name;
 
   return (
-    <a href={`/nft/${nftId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-2 py-1 my-1 rounded-lg bg-white/5 border border-white/10 hover:border-[#650CD4]/50 text-sm">
-      {imgSrc ? <img src={imgSrc} alt="" className="w-5 h-5 rounded object-cover" /> : <span className="w-5 h-5 rounded bg-[#650CD4]/20 flex items-center justify-center text-[10px] text-[#650CD4]">NFT</span>}
-      <span className="font-semibold text-[#650CD4]">{name || `${nftId.slice(0, 8)}...`}</span>
-      {collection && <span className="opacity-50 text-xs">{collection}</span>}
+    <a href={`/nft/${nftId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#650CD4]/10 border border-[#650CD4]/20 hover:border-[#650CD4]/40 transition-colors text-xs">
+      {imgSrc ? <img src={imgSrc} alt="" className="w-4 h-4 rounded object-cover" /> : <span className="w-4 h-4 rounded bg-[#650CD4]/30 flex items-center justify-center text-[8px] text-[#650CD4]">N</span>}
+      <span className="font-medium text-[#650CD4]">{name || `${nftId.slice(0, 6)}...`}</span>
+      {collection && <span className="opacity-40">{collection}</span>}
     </a>
   );
 };
@@ -100,7 +100,7 @@ const NFTPreview = ({ nftId }) => {
 const renderMessage = (text) => {
   if (!text || typeof text !== 'string') return text;
   const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)/g;
-  const nftRegex = /(?:https?:\/\/xrpl\.to)?\/nft\/([A-Fa-f0-9]{64})/g;
+  const nftRegex = /(?:https?:\/\/xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
 
   const parts = [];
   let last = 0;
@@ -134,12 +134,19 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   const [messages, setMessages] = useState([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [input, setInput] = useState('');
+  const [attachedNft, setAttachedNft] = useState(null);
   const [privateTo, setPrivateTo] = useState('');
   const [activeTab, setActiveTab] = useState('general');
   const [dmTabs, setDmTabs] = useState(() => {
     if (typeof window === 'undefined') return [];
     try {
       return JSON.parse(localStorage.getItem('chat_dm_tabs') || '[]');
+    } catch { return []; }
+  });
+  const [closedDms, setClosedDms] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
     } catch { return []; }
   });
   const wsRef = useRef(null);
@@ -195,8 +202,9 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
           break;
         case 'inbox':
           if (data.conversations?.length) {
-            // Add users to DM tabs
-            const newUsers = data.conversations.map(c => c.user).filter(u => !dmTabs.includes(u));
+            // Add users to DM tabs (except closed ones)
+            const closed = JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
+            const newUsers = data.conversations.map(c => c.user).filter(u => !dmTabs.includes(u) && !closed.includes(u));
             if (newUsers.length) {
               const newTabs = [...dmTabs, ...newUsers];
               setDmTabs(newTabs);
@@ -287,7 +295,7 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
         setIsOpen(true);
         setTimeout(() => {
           openDmTab(user);
-          if (nftId) setInput(`https://xrpl.to/nft/${nftId} `);
+          if (nftId) setAttachedNft(nftId);
         }, 100);
       }
     };
@@ -300,6 +308,12 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
       const newTabs = [...dmTabs, user];
       setDmTabs(newTabs);
       localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+    }
+    // Remove from closed list if reopening
+    if (closedDms.includes(user)) {
+      const newClosed = closedDms.filter(u => u !== user);
+      setClosedDms(newClosed);
+      localStorage.setItem('chat_closed_dms', JSON.stringify(newClosed));
     }
     setActiveTab(user);
     setPrivateTo(user);
@@ -315,6 +329,12 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
     const newTabs = dmTabs.filter(t => t !== user);
     setDmTabs(newTabs);
     localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
+    // Track closed DMs so they don't reappear from inbox
+    if (!closedDms.includes(user)) {
+      const newClosed = [...closedDms, user];
+      setClosedDms(newClosed);
+      localStorage.setItem('chat_closed_dms', JSON.stringify(newClosed));
+    }
     if (activeTab === user) {
       setActiveTab('general');
       setPrivateTo('');
@@ -329,14 +349,16 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   }, [accountProfile?.account, registered]);
 
   const sendMessage = () => {
-    if (!input || wsRef.current?.readyState !== WebSocket.OPEN) return;
+    if ((!input && !attachedNft) || wsRef.current?.readyState !== WebSocket.OPEN) return;
 
+    const msg = attachedNft ? `${attachedNft} ${input}`.trim() : input;
     if (privateTo) {
-      wsRef.current.send(JSON.stringify({ type: 'private', to: privateTo, message: input }));
+      wsRef.current.send(JSON.stringify({ type: 'private', to: privateTo, message: msg }));
     } else {
-      wsRef.current.send(JSON.stringify({ type: 'message', message: input }));
+      wsRef.current.send(JSON.stringify({ type: 'message', message: msg }));
     }
     setInput('');
+    setAttachedNft(null);
   };
 
   const baseClasses = isDark ? 'bg-black text-white border-white/10' : 'bg-white text-black border-black/10';
@@ -468,17 +490,15 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                               {timeAgo(msg.timestamp)}
                             </span>
                             <div className="min-w-0">
-                              <span className="inline">
-                                <button
-                                  onClick={() => { if (!isOwn) openDmTab(msg.username); }}
-                                  className={`text-sm font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                                  title={isOwn ? 'You' : `DM ${msg.username}`}
-                                >
-                                  {isOwn ? 'You' : shortName}
-                                </button>
-                                <span className="opacity-50">: </span>
-                                <span className="break-words">{renderMessage(msg.message)}</span>
-                              </span>
+                              <button
+                                onClick={() => { if (!isOwn) openDmTab(msg.username); }}
+                                className={`text-sm font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                title={isOwn ? 'You' : `DM ${msg.username}`}
+                              >
+                                {isOwn ? 'You' : shortName}
+                              </button>
+                              <span className="opacity-50">: </span>
+                              <span className="break-words">{renderMessage(msg.message)}</span>
                             </div>
                           </div>
                         );
@@ -489,6 +509,14 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
                 );
               })()}
               <div className="p-3 border-t border-inherit">
+                {attachedNft && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <NFTPreview nftId={attachedNft} />
+                    <button onClick={() => setAttachedNft(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
                     <input
