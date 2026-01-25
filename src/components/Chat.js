@@ -83,6 +83,7 @@ const TokenPreview = ({ match }) => {
 const AttachedTokenPreview = ({ md5 }) => {
   const [token, setToken] = useState(null);
   const [imgError, setImgError] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     fetch(`https://api.xrpl.to/v1/token/${md5}`)
@@ -93,15 +94,51 @@ const AttachedTokenPreview = ({ md5 }) => {
 
   if (!token) return <span className="text-[#137DFE] text-xs">loading...</span>;
 
+  const change = token.pro24h || 0;
+  const isUp = change >= 0;
+  const formatPrice = (n) => {
+    if (!n) return '-';
+    const num = Number(n);
+    if (num >= 1) return '$' + num.toFixed(2);
+    if (num >= 0.01) return '$' + num.toFixed(4);
+    const str = num.toFixed(10);
+    const m = str.match(/^0\.(0+)([1-9]\d*)/);
+    if (m) return `$0.0(${m[1].length})${m[2].slice(0, 4)}`;
+    return '$' + num.toFixed(6);
+  };
+  const formatMcap = (n) => {
+    if (!n) return '-';
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(2) + 'K';
+    return '$' + n.toFixed(0);
+  };
+
   return (
-    <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
-      {!imgError ? (
-        <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
-      ) : (
-        <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+    <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
+      <a href={`/token/${md5}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-md bg-[#137DFE]/10 border border-[#137DFE]/20 hover:border-[#137DFE]/40 transition-colors text-xs">
+        {!imgError ? (
+          <img src={`https://s1.xrpl.to/token/${md5}`} alt="" className="w-4 h-4 rounded-full object-cover" onError={() => setImgError(true)} />
+        ) : (
+          <span className="w-4 h-4 rounded-full bg-[#137DFE]/30 flex items-center justify-center text-[8px] text-[#137DFE]">T</span>
+        )}
+        <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
+      </a>
+      {showTooltip && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
+          <div className="px-3 py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[11px] min-w-[180px]">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+              <div><span className="text-white/40">Price</span><div className="font-mono font-medium text-white">{formatPrice(token.exch)}</div></div>
+              <div><span className="text-white/40">24h</span><div className={`font-medium ${isUp ? 'text-[#08AA09]' : 'text-red-500'}`}>{isUp ? '+' : ''}{change.toFixed(2)}%</div></div>
+              <div><span className="text-white/40">MCap</span><div className="text-white/80">{formatMcap(token.marketcap)}</div></div>
+              <div><span className="text-white/40">Holders</span><div className="text-white/80">{token.holders?.toLocaleString() || '-'}</div></div>
+            </div>
+            <div className="text-white/30 text-[9px] mt-2 pt-1.5 border-t border-white/5">Created {timeAgo(token.dateon)}</div>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45" />
+        </div>
       )}
-      <span className="font-medium text-[#137DFE]">{token.name || token.currency?.slice(0, 6)}</span>
-    </a>
+    </span>
   );
 };
 
@@ -165,7 +202,7 @@ const NFTPreview = ({ nftId }) => {
 
 const renderMessage = (text) => {
   if (!text || typeof text !== 'string') return text;
-  const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)/g;
+  const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-fA-F0-9]{32}|[a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)|\b([a-fA-F0-9]{32})\b/g;
   const nftRegex = /(?:https?:\/\/xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
 
   const parts = [];
@@ -183,7 +220,7 @@ const renderMessage = (text) => {
     if (m.type === 'nft') {
       parts.push(<NFTPreview key={`nft-${m.index}`} nftId={m[1]} />);
     } else {
-      const tokenId = m[1] || (m[2] && m[3] ? `${m[2]}-${m[3]}` : `${m[5]}-${m[4]}`);
+      const tokenId = m[1] || m[6] || (m[2] && m[3] ? `${m[2]}-${m[3]}` : `${m[5]}-${m[4]}`);
       parts.push(<TokenPreview key={`token-${m.index}`} match={tokenId} />);
     }
     last = m.index + m[0].length;
@@ -446,7 +483,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
   const sendMessage = () => {
     if ((!input && !attachedNft && !attachedToken) || wsRef.current?.readyState !== WebSocket.OPEN) return;
 
-    const tokenLink = attachedToken ? `/token/${attachedToken}` : '';
+    const tokenLink = attachedToken || '';
     const nftLink = attachedNft || '';
     const msg = `${tokenLink} ${nftLink} ${input}`.trim();
     if (privateTo) {

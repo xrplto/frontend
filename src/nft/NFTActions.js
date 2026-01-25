@@ -1212,6 +1212,13 @@ export default function NFTActions({ nft }) {
                             >
                               {truncate(offer.owner, 12)}
                             </Link>
+                            <button
+                              onClick={() => window.dispatchEvent(new CustomEvent('openDm', { detail: { user: offer.owner } }))}
+                              className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-[#650CD4] transition-colors"
+                              title="Message buyer"
+                            >
+                              <MessageCircle size={12} />
+                            </button>
                             {offer.destination && (
                               <>
                                 <span className="text-gray-700">·</span>
