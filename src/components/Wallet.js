@@ -2620,6 +2620,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       localStorage.setItem('profiles', JSON.stringify([profile]));
       doLogIn(profile, [profile]);
 
+      // Auto-register for referral program if referred
+      const storedRef = localStorage.getItem('referral_code');
+      if (storedRef || true) { // Always register, with or without referral
+        fetch('https://api.xrpl.to/api/referral/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: wallet.address, ...(storedRef && { referredBy: storedRef }) })
+        }).catch(() => {});
+        localStorage.removeItem('referral_code');
+      }
+
       // For new wallets, show backup screen. For imports, skip (user already has seed)
       if (createMode === 'new') {
         localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');

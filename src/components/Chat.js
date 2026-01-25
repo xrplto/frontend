@@ -192,7 +192,7 @@ const renderMessage = (text) => {
   return parts;
 };
 
-const Chat = ({ wsUrl = '/ws/chat.js' }) => {
+const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
   const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isOpen, setIsOpen] = useState(() => {
@@ -243,12 +243,6 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      if (accountProfile?.account) {
-        ws.send(JSON.stringify({ type: 'register', username: accountProfile.account }));
-      }
-    };
-
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.users !== undefined) setOnlineCount(data.users);
@@ -257,7 +251,11 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
           setMessages(data.messages || []);
           // Auto-register after init
           if (accountProfile?.account) {
-            ws.send(JSON.stringify({ type: 'register', username: accountProfile.account }));
+            ws.send(JSON.stringify({
+              type: 'register',
+              username: accountProfile.username || accountProfile.account,
+              address: accountProfile.account
+            }));
           }
           break;
         case 'online':
@@ -437,7 +435,11 @@ const Chat = ({ wsUrl = '/ws/chat.js' }) => {
   // Auto-register when connected and logged in
   useEffect(() => {
     if (accountProfile?.account && wsRef.current?.readyState === WebSocket.OPEN && !registered) {
-      wsRef.current.send(JSON.stringify({ type: 'register', username: accountProfile.account }));
+      wsRef.current.send(JSON.stringify({
+        type: 'register',
+        username: accountProfile.account,
+        address: accountProfile.account
+      }));
     }
   }, [accountProfile?.account, registered]);
 

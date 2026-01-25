@@ -141,6 +141,15 @@ export default function WalletPage() {
   const [tokenPage, setTokenPage] = useState(1);
   const tokensPerPage = 20;
 
+  // Referral state
+  const [referralUser, setReferralUser] = useState(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralForm, setReferralForm] = useState({ referralCode: '', referredBy: '' });
+  const [referralError, setReferralError] = useState('');
+  const [referralCopied, setReferralCopied] = useState(false);
+  const [editingCode, setEditingCode] = useState(false);
+  const [newReferralCode, setNewReferralCode] = useState('');
+
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -1199,6 +1208,74 @@ export default function WalletPage() {
     return () => { cancelled = true; };
   }, [activeTab, address]);
 
+  // Fetch referral data
+  useEffect(() => {
+    if (!address || activeTab !== 'referral') return;
+    const refParam = router.query.ref;
+    if (refParam && !referralUser) setReferralForm(f => ({ ...f, referredBy: refParam }));
+    const fetchReferral = async () => {
+      setReferralLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/referral/${address}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.referral) setReferralUser(data.referral);
+        }
+      } catch (e) {}
+      setReferralLoading(false);
+    };
+    fetchReferral();
+  }, [activeTab, address, router.query.ref]);
+
+  const handleReferralRegister = async () => {
+    if (!address) return;
+    setReferralError('');
+    if (referralForm.referralCode && referralForm.referralCode.length < 3) {
+      setReferralError('Referral code must be 3-20 characters');
+      return;
+    }
+    setReferralLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/referral/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address,
+          ...(referralForm.referralCode && { referralCode: referralForm.referralCode }),
+          ...(referralForm.referredBy && { referredBy: referralForm.referredBy })
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      setReferralUser({ _id: address, referralCode: data.referralCode, referrer: data.referrer, referrals: 0 });
+      setReferralForm({ referralCode: '', referredBy: '' });
+    } catch (e) {
+      setReferralError(e.message);
+    }
+    setReferralLoading(false);
+  };
+
+  const handleUpdateReferralCode = async () => {
+    if (!address || !newReferralCode || newReferralCode.length < 3) return;
+    setReferralError('');
+    setReferralLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/referral/${address}/code`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: newReferralCode })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      setReferralUser(u => ({ ...u, referralCode: newReferralCode }));
+      setEditingCode(false);
+      setNewReferralCode('');
+    } catch (e) {
+      setReferralError(e.message);
+    }
+    setReferralLoading(false);
+  };
+
   // Load NFTs for selected collection (using collection slug endpoint for full data with thumbnails)
   useEffect(() => {
     const fetchCollectionNfts = async () => {
@@ -1319,7 +1396,8 @@ export default function WalletPage() {
     { id: 'nfts', label: 'NFTs', icon: Image },
     { id: 'offers', label: 'Offers', icon: RotateCcw },
     { id: 'trades', label: 'History', icon: TrendingUp },
-    { id: 'withdrawals', label: 'Withdrawals', icon: Building2 }
+    { id: 'withdrawals', label: 'Withdrawals', icon: Building2 },
+    { id: 'referral', label: 'Referral', icon: Share2 }
   ];
 
   return (
@@ -3931,6 +4009,149 @@ export default function WalletPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Referral Tab */}
+            {activeTab === 'referral' && (
+              <div className="space-y-4">
+                {referralLoading ? (
+                  <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
+                  </div>
+                ) : referralUser ? (
+                  // Registered user - show stats
+                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
+                        {address?.[1]?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className={cn('text-[11px] font-mono', isDark ? 'text-white/60' : 'text-gray-600')}>{address?.slice(0, 10)}...{address?.slice(-8)}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Total Referrals</p>
+                        <p className={cn('text-2xl font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.referrals || 0}</p>
+                      </div>
+                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Your Code</p>
+                          {!editingCode && (
+                            <button
+                              onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }}
+                              className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+                        {editingCode ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={newReferralCode}
+                              onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20))}
+                              className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15]' : 'bg-white text-gray-900 border border-gray-200')}
+                            />
+                            <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
+                            <button onClick={() => { setEditingCode(false); setReferralError(''); }} className={cn('px-2 py-1 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
+                          </div>
+                        ) : (
+                          <p className={cn('text-lg font-mono font-medium', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralUser.referralCode}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                      <p className={cn('text-[10px] uppercase tracking-wider mb-2', isDark ? 'text-white/30' : 'text-gray-400')}>Share Your Link</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          readOnly
+                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/signup?ref=${referralUser.referralCode}`}
+                          className={cn('flex-1 px-3 py-2 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white/70 border border-white/[0.1]' : 'bg-white text-gray-600 border border-gray-200')}
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`);
+                            setReferralCopied(true);
+                            setTimeout(() => setReferralCopied(false), 2000);
+                          }}
+                          className={cn('px-4 py-2 rounded-lg text-[12px] font-medium transition-colors flex items-center gap-1.5', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90')}
+                        >
+                          {referralCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                        </button>
+                      </div>
+                    </div>
+
+                    {referralError && (
+                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px] mt-4', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                        <AlertTriangle size={14} />
+                        {referralError}
+                      </div>
+                    )}
+
+                    {referralUser.referrer && (
+                      <p className={cn('text-[11px] mt-4', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        Referred by: <span className="font-mono">{referralUser.referrer.slice(0, 8)}...</span>
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  // Not registered - show registration form
+                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
+                        <Share2 size={18} className="text-[#137DFE]" />
+                      </div>
+                      <div>
+                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Join Referral Program</h3>
+                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Earn rewards by inviting friends</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Code <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
+                        <input
+                          type="text"
+                          value={referralForm.referralCode}
+                          onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) }))}
+                          placeholder="Auto-generates if empty"
+                          className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
+                        />
+                      </div>
+                      {referralForm.referredBy && (
+                        <div>
+                          <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referred By</label>
+                          <input
+                            type="text"
+                            value={referralForm.referredBy}
+                            readOnly
+                            className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-100 text-gray-500 border border-gray-200')}
+                          />
+                        </div>
+                      )}
+
+                      {referralError && (
+                        <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                          <AlertTriangle size={14} />
+                          {referralError}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleReferralRegister}
+                        disabled={referralLoading}
+                        className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {referralLoading ? 'Registering...' : 'Join Program'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
