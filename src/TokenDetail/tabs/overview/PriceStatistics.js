@@ -1721,7 +1721,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         >
                           {(creatorLastAction.side || creatorLastAction.type || '').replace(/^other_/, '')}
                         </Typography>
-                        {creatorLastAction.xrp >= 0.001 && (
+                        {creatorLastAction.xrp != null && (
                             <Typography
                               variant="caption"
                               style={{
@@ -1764,7 +1764,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                       <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
                       <Typography style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
                         Creator sold{' '}
-                        {creatorLastAction.xrp >= 0.001
+                        {creatorLastAction.xrp != null
                           ? `${fNumber(creatorLastAction.xrp)} XRP`
                           : 'tokens'}{' '}
                         {formatLastActionTime(creatorLastAction.time)}

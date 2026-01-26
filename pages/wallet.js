@@ -1381,7 +1381,7 @@ export default function WalletPage() {
   };
 
   const handleUpdateUsername = async () => {
-    if (!address || !newUsername || newUsername.length < 3) return;
+    if (!address || !newUsername || newUsername.length < 2) return;
     setProfileError('');
     setProfileLoading(true);
     try {
@@ -1443,7 +1443,7 @@ export default function WalletPage() {
 
   // Fetch wallet labels
   useEffect(() => {
-    if (!address || activeTab !== 'profile' || !profileUser) return;
+    if (!address || activeTab !== 'profile') return;
     const fetchLabels = async () => {
       setLabelsLoading(true);
       try {
@@ -1456,7 +1456,7 @@ export default function WalletPage() {
       setLabelsLoading(false);
     };
     fetchLabels();
-  }, [activeTab, address, profileUser]);
+  }, [activeTab, address]);
 
   const handleAddLabel = async () => {
     if (!address || !newLabelWallet || !newLabelName) return;
@@ -4465,11 +4465,11 @@ export default function WalletPage() {
                           <input
                             type="text"
                             value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 20))}
-                            placeholder="3-20 alphanumeric"
+                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 14))}
+                            placeholder="2-14 characters"
                             className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                           />
-                          <button onClick={handleUpdateUsername} disabled={profileLoading || newUsername.length < 3} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
+                          <button onClick={handleUpdateUsername} disabled={profileLoading || newUsername.length < 2} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
                           <button onClick={() => { setEditingUsername(false); setProfileError(''); }} className={cn('px-2 py-1 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
                         </div>
                       ) : (
@@ -4494,64 +4494,6 @@ export default function WalletPage() {
                         {profileError}
                       </div>
                     )}
-
-                    {/* Wallet Labels Section */}
-                    <div className={cn('rounded-xl p-4 mt-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                      <p className={cn('text-[10px] uppercase tracking-wider mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
-
-                      {/* Add new label */}
-                      <div className="flex gap-2 mb-3">
-                        <input
-                          type="text"
-                          value={newLabelWallet}
-                          onChange={(e) => {
-                            const val = e.target.value.trim();
-                            if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
-                          }}
-                          placeholder="rAddress..."
-                          className={cn('flex-1 px-2 py-1.5 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
-                        />
-                        <input
-                          type="text"
-                          value={newLabelName}
-                          onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
-                          placeholder="Label"
-                          className={cn('w-28 px-2 py-1.5 rounded-lg text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
-                        />
-                        <button
-                          onClick={handleAddLabel}
-                          disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
-                          className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-
-                      {/* Labels list */}
-                      {labelsLoading && walletLabels.length === 0 ? (
-                        <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>Loading...</p>
-                      ) : walletLabels.length === 0 ? (
-                        <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>No labels yet</p>
-                      ) : (
-                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                          {walletLabels.map((item) => (
-                            <div key={item.wallet} className={cn('flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-white')}>
-                              <div className="flex-1 min-w-0">
-                                <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{item.label}</p>
-                                <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/30' : 'text-gray-400')}>{item.wallet}</p>
-                              </div>
-                              <button
-                                onClick={() => handleDeleteLabel(item.wallet)}
-                                disabled={deletingLabel === item.wallet}
-                                className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                   </div>
                 ) : (
                   <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
@@ -4561,7 +4503,7 @@ export default function WalletPage() {
                       </div>
                       <div>
                         <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Create Profile</h3>
-                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Set up your username</p>
+                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Claim a unique username</p>
                       </div>
                     </div>
 
@@ -4571,8 +4513,8 @@ export default function WalletPage() {
                         <input
                           type="text"
                           value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 20))}
-                          placeholder="3-20 alphanumeric characters"
+                          onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 14))}
+                          placeholder="2-14 characters"
                           className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
                         />
                       </div>
@@ -4585,7 +4527,7 @@ export default function WalletPage() {
                       )}
 
                       <button
-                        onClick={() => handleCreateProfile(newUsername.length >= 3 ? newUsername : null)}
+                        onClick={() => handleCreateProfile(newUsername.length >= 2 ? newUsername : null)}
                         disabled={profileLoading}
                         className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -4594,6 +4536,64 @@ export default function WalletPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Wallet Labels Section - Available to all users */}
+                <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                  <p className={cn('text-[10px] uppercase tracking-wider mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
+
+                  {/* Add new label */}
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={newLabelWallet}
+                      onChange={(e) => {
+                        const val = e.target.value.trim();
+                        if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
+                      }}
+                      placeholder="rAddress..."
+                      className={cn('flex-1 px-2 py-1.5 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                    />
+                    <input
+                      type="text"
+                      value={newLabelName}
+                      onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
+                      placeholder="Label"
+                      className={cn('w-28 px-2 py-1.5 rounded-lg text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                    />
+                    <button
+                      onClick={handleAddLabel}
+                      disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
+                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+
+                  {/* Labels list */}
+                  {labelsLoading && walletLabels.length === 0 ? (
+                    <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>Loading...</p>
+                  ) : walletLabels.length === 0 ? (
+                    <p className={cn('text-[11px] text-center py-2', isDark ? 'text-white/30' : 'text-gray-400')}>No labels yet</p>
+                  ) : (
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {walletLabels.map((item) => (
+                        <div key={item.wallet} className={cn('flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg', isDark ? 'bg-white/[0.02]' : 'bg-white')}>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/80' : 'text-gray-700')}>{item.label}</p>
+                            <p className={cn('text-[10px] font-mono truncate', isDark ? 'text-white/30' : 'text-gray-400')}>{item.wallet}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteLabel(item.wallet)}
+                            disabled={deletingLabel === item.wallet}
+                            className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50')}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
