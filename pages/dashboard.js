@@ -23,7 +23,12 @@ import {
   MessageSquare,
   Settings,
   Search,
-  Infinity
+  Infinity,
+  Home,
+  Users,
+  FileText,
+  Mail,
+  ExternalLink
 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -69,6 +74,9 @@ const DashboardPage = () => {
   const [showAdminPlatformKey, setShowAdminPlatformKey] = useState(false);
   const [adminFormData, setAdminFormData] = useState({});
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
+
+  // Sidebar navigation
+  const [activeSection, setActiveSection] = useState('overview');
 
   const router = useRouter();
 
@@ -752,6 +760,20 @@ const DashboardPage = () => {
     return [];
   };
 
+  // Sidebar navigation items
+  const navItems = [
+    { id: 'overview', label: 'Home', icon: Home },
+    { id: 'keys', label: 'API Keys', icon: Key },
+    { id: 'usage', label: 'Usage', icon: BarChart3 },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
+    ...(isAdmin ? [
+      { id: 'admin-users', label: 'All Users', icon: Users },
+      { id: 'admin-credits', label: 'Credits', icon: Coins },
+      { id: 'admin-revenue', label: 'Revenue', icon: DollarSign },
+      { id: 'admin-chat', label: 'Chat Keys', icon: MessageSquare },
+    ] : [])
+  ];
+
   if (!accountProfile?.account) {
     return (
       <div className="flex-1">
@@ -786,7 +808,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 flex flex-col min-h-screen">
       <Head>
         <title>Dashboard - XRPL.to</title>
         <meta name="description" content="Manage your XRPL.to API keys" />
@@ -794,1497 +816,743 @@ const DashboardPage = () => {
 
       <Header />
 
-      <div className={cn('flex-1 py-4 sm:py-6', isDark ? 'bg-black' : 'bg-gray-50')}>
-        <div className="mx-auto max-w-[1920px] px-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
-                API Keys
-              </h1>
-              <p className={cn('text-[14px] mt-1', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Manage your API keys for programmatic access
-              </p>
-            </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium',
-                'bg-primary text-white hover:bg-primary/90 transition-colors'
-              )}
-            >
-              <Plus size={16} />
-              Create Key
-            </button>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="mb-6 p-4 rounded-xl border-[1.5px] border-red-500/30 bg-red-500/10 flex items-center gap-3">
-              <AlertCircle size={18} className="text-red-500" />
-              <span className="text-[13px] text-red-500">{error}</span>
-            </div>
-          )}
-
-          {/* New Key Alert */}
-          {newKey && (
-            <div
-              className={cn(
-                'mb-6 p-4 rounded-xl border-[1.5px]',
-                isDark
-                  ? 'border-emerald-500/30 bg-emerald-500/10'
-                  : 'border-emerald-200 bg-emerald-50'
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
-                <div className="flex-1">
-                  <h3
-                    className={cn(
-                      'text-[14px] font-medium mb-1',
-                      isDark ? 'text-white' : 'text-gray-900'
-                    )}
-                  >
-                    API Key Created
-                  </h3>
-                  <p className={cn('text-[12px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>
-                    Copy this key now. You won't be able to see it again.
-                  </p>
-                  <div
-                    className={cn(
-                      'flex items-center gap-2 p-3 rounded-lg font-mono text-[13px]',
-                      isDark ? 'bg-black/50' : 'bg-white'
-                    )}
-                  >
-                    <code className="flex-1 break-all">{newKey}</code>
-                    <button
-                      onClick={() => copyToClipboard(newKey, 'new')}
-                      className="p-1.5 rounded hover:bg-white/10"
-                    >
-                      {copiedId === 'new' ? (
-                        <CheckCircle size={16} className="text-emerald-500" />
-                      ) : (
-                        <Copy size={16} className="opacity-60" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <button onClick={() => setNewKey(null)} className="opacity-40 hover:opacity-100">
-                  ×
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Stripe Success Alert */}
-          {stripeSuccess && (
-            <div
-              className={cn(
-                'mb-6 p-4 rounded-xl border-[1.5px]',
-                isDark
-                  ? 'border-emerald-500/30 bg-emerald-500/10'
-                  : 'border-emerald-200 bg-emerald-50'
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
-                <div className="flex-1">
-                  <h3
-                    className={cn(
-                      'text-[14px] font-medium mb-1',
-                      isDark ? 'text-white' : 'text-gray-900'
-                    )}
-                  >
-                    Payment Successful!
-                  </h3>
-                  <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                    {stripeSuccess.message ||
-                      (stripeSuccess.credits
-                        ? `${stripeSuccess.credits.toLocaleString()} credits added.`
-                        : `Upgraded to ${stripeSuccess.tier} tier.`)}
-                  </p>
-                </div>
+      <div className={cn('flex-1 flex', isDark ? 'bg-black' : 'bg-gray-50')}>
+        {/* Sidebar */}
+        <div className={cn(
+          'w-52 shrink-0 border-r flex flex-col',
+          isDark ? 'border-white/10 bg-[#0d0d0d]' : 'border-gray-200 bg-white'
+        )}>
+          <div className="p-4 flex-1">
+            <div className="space-y-0.5">
+              {navItems.filter(item => !item.id.startsWith('admin-')).map((item) => (
                 <button
-                  onClick={() => setStripeSuccess(null)}
-                  className="opacity-40 hover:opacity-100"
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors',
+                    activeSection === item.id
+                      ? isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-900'
+                      : isDark ? 'text-white/60 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  )}
                 >
-                  ×
+                  <item.icon size={16} />
+                  {item.label}
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Panel */}
-          {isAdmin && (
-            <div
-              className={cn(
-                'mb-6 rounded-xl border-[1.5px] overflow-hidden',
-                isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
-              )}
-            >
-              {/* Admin Header */}
-              <div
-                className={cn(
-                  'px-5 py-4 border-b flex items-center justify-between',
-                  isDark ? 'border-primary/20' : 'border-primary/10'
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/20">
-                    <Shield size={20} className="text-primary" />
-                  </div>
-                  <div>
-                    <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                      Admin Panel
-                    </h2>
-                    <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                      Manage all API keys, credits, and subscriptions
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowAdminCreateKey(true)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
-                      'bg-primary text-white hover:bg-primary/90'
-                    )}
-                  >
-                    <Key size={14} />
-                    Create Key
-                  </button>
-                  <button
-                    onClick={() => setShowAdminAddCredits(true)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
-                      'bg-emerald-500 text-white hover:bg-emerald-600'
-                    )}
-                  >
-                    <Coins size={14} />
-                    Add Credits
-                  </button>
-                  <button
-                    onClick={() => setShowAdminChatAccess(true)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
-                      isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
-                    )}
-                  >
-                    <MessageSquare size={14} />
-                    Chat Access
-                  </button>
-                  <button
-                    onClick={() => setShowAdminPlatformKey(true)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
-                      isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
-                    )}
-                  >
-                    <Settings size={14} />
-                    Platform Key
-                  </button>
-                </div>
-              </div>
-
-              {/* Admin Tabs */}
-              <div className={cn('flex border-b', isDark ? 'border-primary/20' : 'border-primary/10')}>
-                {[
-                  { id: 'usage', label: 'API Usage', icon: BarChart3 },
-                  { id: 'credits', label: 'All Credits', icon: Coins },
-                  { id: 'revenue', label: 'Revenue', icon: DollarSign },
-                  { id: 'chat', label: 'Chat Keys', icon: MessageSquare }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setAdminTab(tab.id);
-                      fetchAdminData(tab.id);
-                    }}
-                    className={cn(
-                      'flex-1 px-4 py-3 text-[13px] font-medium flex items-center justify-center gap-2 transition-colors',
-                      adminTab === tab.id
-                        ? 'text-primary border-b-2 border-primary'
-                        : isDark
-                          ? 'text-white/60 hover:text-white'
-                          : 'text-gray-600 hover:text-gray-900'
-                    )}
-                  >
-                    <tab.icon size={16} />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Admin Content */}
-              <div className="p-5">
-                {/* Search */}
-                <div className="mb-4">
-                  <div
-                    className={cn(
-                      'flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]',
-                      isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'
-                    )}
-                  >
-                    <Search size={16} className="opacity-40" />
-                    <input
-                      type="text"
-                      placeholder="Search by wallet address..."
-                      value={adminSearchQuery}
-                      onChange={(e) => setAdminSearchQuery(e.target.value)}
-                      className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40"
-                    />
-                  </div>
-                </div>
-
-                {adminLoading ? (
-                  <div className="py-12 text-center">
-                    <Loader2 size={24} className="mx-auto animate-spin opacity-40" />
-                  </div>
-                ) : (
-                  <>
-                    {/* Usage Tab */}
-                    {adminTab === 'usage' && adminUsage && (
-                      <div className="space-y-3">
-                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
-                          Total: {adminUsage.summary?.totalUsers || getDataArray(adminUsage, 'users', 'keys', 'data').length} users
-                        </div>
-                        <div className="max-h-[400px] overflow-y-auto space-y-2">
-                          {getDataArray(adminUsage, 'users', 'keys', 'data')
-                            .filter((k) =>
-                              !adminSearchQuery ||
-                              k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
-                              k.name?.toLowerCase().includes(adminSearchQuery.toLowerCase())
-                            )
-                            .map((key, idx) => (
-                              <div
-                                key={key.id || key._id || idx}
-                                className={cn(
-                                  'p-3 rounded-lg flex items-center justify-between',
-                                  isDark ? 'bg-white/5' : 'bg-gray-50'
-                                )}
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                                      {key.name || 'Unnamed'}
-                                    </span>
-                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                                      {key.tier || 'free'}
-                                    </span>
-                                  </div>
-                                  <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
-                                    {key.wallet}
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
-                                    {key.usage?.today?.toLocaleString() || 0} today
-                                  </div>
-                                  <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                                    {key.usage?.total?.toLocaleString() || 0} total
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Credits Tab */}
-                    {adminTab === 'credits' && adminCredits && (
-                      <div className="space-y-3">
-                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
-                          Total: {adminCredits.summary?.totalAccounts || getDataArray(adminCredits, 'accounts', 'wallets', 'data').length} accounts
-                        </div>
-                        <div className="max-h-[400px] overflow-y-auto space-y-2">
-                          {getDataArray(adminCredits, 'accounts', 'wallets', 'data')
-                            .filter((w) =>
-                              !adminSearchQuery ||
-                              w.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())
-                            )
-                            .map((wallet, idx) => (
-                              <div
-                                key={wallet.wallet || idx}
-                                className={cn(
-                                  'p-3 rounded-lg flex items-center justify-between',
-                                  isDark ? 'bg-white/5' : 'bg-gray-50'
-                                )}
-                              >
-                                <div className="font-mono text-[12px]">{wallet.wallet}</div>
-                                <div className="flex items-center gap-3">
-                                  <div className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                                    {wallet.balance === -1 ? (
-                                      <span className="flex items-center gap-1 text-primary">
-                                        <Infinity size={16} />
-                                        Unlimited
-                                      </span>
-                                    ) : (
-                                      formatCredits(wallet.balance)
-                                    )}
-                                  </div>
-                                  {wallet.tier && (
-                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                                      {wallet.tier}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Revenue Tab */}
-                    {adminTab === 'revenue' && adminRevenue && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
-                              Total Payments
-                            </div>
-                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                              {adminRevenue.totalPayments || 0}
-                            </div>
-                          </div>
-                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
-                              Total XRP
-                            </div>
-                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                              {(adminRevenue.totalXRP || 0).toLocaleString()} XRP
-                            </div>
-                          </div>
-                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
-                              Total USD
-                            </div>
-                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                              ${(adminRevenue.totalUSD || adminRevenue.total?.usd || 0).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                        {adminRevenue.recentPayments?.length > 0 && (
-                          <div>
-                            <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
-                              Recent Payments
-                            </div>
-                            <div className="space-y-2">
-                              {adminRevenue.recentPayments.map((p, idx) => (
-                                <div
-                                  key={p.txHash || idx}
-                                  className={cn('p-3 rounded-lg flex items-center justify-between', isDark ? 'bg-white/5' : 'bg-gray-50')}
-                                >
-                                  <div className="font-mono text-[11px]">{p.wallet?.slice(0, 12)}...</div>
-                                  <div className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                                    {p.amount} {p.currency || 'XRP'}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Chat Keys Tab */}
-                    {adminTab === 'chat' && adminChatKeys && (
-                      <div className="space-y-3">
-                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
-                          Total: {adminChatKeys.count || getDataArray(adminChatKeys, 'keys', 'data').length} chat-enabled keys
-                        </div>
-                        <div className="max-h-[400px] overflow-y-auto space-y-2">
-                          {getDataArray(adminChatKeys, 'keys', 'data', 'chatKeys')
-                            .filter((k) =>
-                              !adminSearchQuery ||
-                              k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
-                              k.platform?.toLowerCase().includes(adminSearchQuery.toLowerCase())
-                            )
-                            .map((key, idx) => (
-                              <div
-                                key={key.id || key._id || idx}
-                                className={cn(
-                                  'p-3 rounded-lg flex items-center justify-between',
-                                  isDark ? 'bg-white/5' : 'bg-gray-50'
-                                )}
-                              >
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <MessageSquare size={14} className="text-primary" />
-                                    <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                                      {key.platform || 'Default'}
-                                    </span>
-                                  </div>
-                                  <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
-                                    {key.wallet}
-                                  </div>
-                                </div>
-                                <div className={cn('text-[11px]', key.chatAccess ? 'text-emerald-500' : 'text-red-500')}>
-                                  {key.chatAccess ? 'Active' : 'Revoked'}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Admin Create Key Modal */}
-          {showAdminCreateKey && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
-                  Create Partner API Key
-                </h3>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Wallet address (rXXX...)"
-                    value={adminFormData.wallet || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Key name"
-                    value={adminFormData.name || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <select
-                    value={adminFormData.tier || 'free'}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  >
-                    <option value="free">Free</option>
-                    <option value="developer">Developer</option>
-                    <option value="business">Business</option>
-                    <option value="professional">Professional</option>
-                  </select>
-                </div>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      setShowAdminCreateKey(false);
-                      setAdminFormData({});
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
-                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
-                    )}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={adminCreateKey}
-                    disabled={adminLoading}
-                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Key'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Add Credits Modal */}
-          {showAdminAddCredits && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
-                  Add Credits to Wallet
-                </h3>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Wallet address (rXXX...)"
-                    value={adminFormData.wallet || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Credits amount (-1 for unlimited)"
-                    value={adminFormData.credits || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                    Use -1 for unlimited credits
-                  </p>
-                </div>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      setShowAdminAddCredits(false);
-                      setAdminFormData({});
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
-                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
-                    )}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={adminAddCredits}
-                    disabled={adminLoading}
-                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
-                  >
-                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Add Credits'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Chat Access Modal */}
-          {showAdminChatAccess && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
-                  Manage Chat Access
-                </h3>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Wallet address (rXXX...)"
-                    value={adminFormData.wallet || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Platform (optional)"
-                    value={adminFormData.platform || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="chatAccess"
-                        checked={adminFormData.chatAccess !== false}
-                        onChange={() => setAdminFormData({ ...adminFormData, chatAccess: true })}
-                        className="accent-primary"
-                      />
-                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Grant Access</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="chatAccess"
-                        checked={adminFormData.chatAccess === false}
-                        onChange={() => setAdminFormData({ ...adminFormData, chatAccess: false })}
-                        className="accent-red-500"
-                      />
-                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Revoke Access</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      setShowAdminChatAccess(false);
-                      setAdminFormData({});
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
-                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
-                    )}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={adminSetChatAccess}
-                    disabled={adminLoading}
-                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Update Access'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Platform Key Modal */}
-          {showAdminPlatformKey && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
-                  Create Platform API Key
-                </h3>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Wallet address (rXXX...)"
-                    value={adminFormData.wallet || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Platform name"
-                    value={adminFormData.platform || ''}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <select
-                    value={adminFormData.tier || 'developer'}
-                    onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
-                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
-                    )}
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="business">Business</option>
-                    <option value="professional">Professional</option>
-                  </select>
-                </div>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      setShowAdminPlatformKey(false);
-                      setAdminFormData({});
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
-                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
-                    )}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={adminCreatePlatformKey}
-                    disabled={adminLoading}
-                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Platform Key'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Credits & Billing */}
-          {credits && (
-            <div
-              className={cn(
-                'mb-6 p-5 rounded-xl border-[1.5px]',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
-              )}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className={cn('p-2 rounded-lg', isDark ? 'bg-primary/10' : 'bg-primary/5')}>
-                    <Coins size={20} className="text-primary" />
-                  </div>
-                  <div>
-                    <div
-                      className={cn(
-                        'text-[12px] uppercase tracking-wide',
-                        isDark ? 'text-white/40' : 'text-gray-500'
-                      )}
-                    >
-                      Credit Balance
-                    </div>
-                    <div
-                      className={cn('text-xl font-medium flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}
-                    >
-                      {credits.balance === -1 ? (
-                        <>
-                          <Infinity size={20} className="text-primary" />
-                          <span>Unlimited</span>
-                        </>
-                      ) : (
-                        formatCredits(credits.balance)
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {(credits.billingCycle || subscription?.subscription?.billingCycle) && (
-                  <div className="flex items-center gap-3">
-                    <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                      <Calendar size={20} className={isDark ? 'text-white/60' : 'text-gray-500'} />
-                    </div>
-                    <div>
-                      <div
-                        className={cn(
-                          'text-[12px] uppercase tracking-wide',
-                          isDark ? 'text-white/40' : 'text-gray-500'
-                        )}
-                      >
-                        {(credits.billingCycle?.billing || subscription?.subscription?.billing) ===
-                        'yearly'
-                          ? 'Yearly'
-                          : 'Monthly'}{' '}
-                        Cycle
-                      </div>
-                      <div className={cn('text-[14px]', isDark ? 'text-white' : 'text-gray-900')}>
-                        {credits.billingCycle?.daysRemaining ||
-                          subscription?.subscription?.billingCycle?.daysRemaining}{' '}
-                        days remaining
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={fetchCredits}
-                  className={cn(
-                    'p-2 rounded-lg',
-                    isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                  )}
-                >
-                  <RefreshCw size={14} className="opacity-40" />
-                </button>
-              </div>
-
-              {credits.billingCycle && (
-                <div className="mt-4 pt-4 border-t border-white/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                      Cycle progress
-                    </span>
-                    <span className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                      {Math.round(credits.billingCycle.cycleProgress || 0)}%
-                    </span>
-                  </div>
-                  <div
-                    className={cn(
-                      'h-1.5 rounded-full overflow-hidden',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
-                    )}
-                  >
-                    <div
-                      className="h-full bg-primary rounded-full transition-all"
-                      style={{ width: `${credits.billingCycle.cycleProgress || 0}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Create Form Modal */}
-          {showCreateForm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <h3
-                  className={cn(
-                    'text-lg font-medium mb-4',
-                    isDark ? 'text-white' : 'text-gray-900'
-                  )}
-                >
-                  Create API Key
-                </h3>
-                <input
-                  type="text"
-                  placeholder="Key name (e.g., Production Bot)"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                  className={cn(
-                    'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4',
-                    isDark
-                      ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30'
-                      : 'bg-gray-50 border-gray-200'
-                  )}
-                  autoFocus
-                />
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setNewKeyName('');
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
-                      isDark
-                        ? 'border-white/10 hover:bg-white/5'
-                        : 'border-gray-200 hover:bg-gray-50'
-                    )}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={createApiKey}
-                    disabled={!newKeyName.trim() || creating}
-                    className={cn(
-                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium',
-                      'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
-                    )}
-                  >
-                    {creating ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* XRP Payment Modal */}
-          {xrpPayment && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div
-                className={cn(
-                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
-                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
-                )}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3
-                    className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}
-                  >
-                    Pay with XRP - {xrpPayment.name}
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setXrpPayment(null);
-                      setTxHash('');
-                    }}
-                    className="opacity-40 hover:opacity-100"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                <div
-                  className={cn(
-                    'p-4 rounded-lg mb-4 space-y-3',
-                    isDark ? 'bg-white/5' : 'bg-gray-50'
-                  )}
-                >
-                  <div>
-                    <div
-                      className={cn(
-                        'text-[11px] uppercase tracking-wide mb-1',
-                        isDark ? 'text-white/40' : 'text-gray-500'
-                      )}
-                    >
-                      Send exactly
-                    </div>
-                    <div
-                      className={cn(
-                        'text-2xl font-medium',
-                        isDark ? 'text-white' : 'text-gray-900'
-                      )}
-                    >
-                      {xrpPayment.amount} XRP
-                      {xrpPayment.price && (
-                        <span
-                          className={cn(
-                            'text-[13px] ml-2',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          (${xrpPayment.price.usd})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      className={cn(
-                        'text-[11px] uppercase tracking-wide mb-1',
-                        isDark ? 'text-white/40' : 'text-gray-500'
-                      )}
-                    >
-                      To address
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <code
-                        className={cn(
-                          'text-[13px] font-mono break-all',
-                          isDark ? 'text-white/80' : 'text-gray-700'
-                        )}
-                      >
-                        {xrpPayment.destination}
-                      </code>
-                      <button
-                        onClick={() => copyToClipboard(xrpPayment.destination, 'dest')}
-                        className="p-1 rounded hover:bg-white/10"
-                      >
-                        {copiedId === 'dest' ? (
-                          <CheckCircle size={14} className="text-emerald-500" />
-                        ) : (
-                          <Copy size={14} className="opacity-60" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      className={cn(
-                        'text-[11px] uppercase tracking-wide mb-1',
-                        isDark ? 'text-white/40' : 'text-gray-500'
-                      )}
-                    >
-                      Destination Tag (required)
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <code
-                        className={cn(
-                          'text-[18px] font-mono font-medium',
-                          isDark ? 'text-primary' : 'text-primary'
-                        )}
-                      >
-                        {xrpPayment.destinationTag}
-                      </code>
-                      <button
-                        onClick={() => copyToClipboard(String(xrpPayment.destinationTag), 'tag')}
-                        className="p-1 rounded hover:bg-white/10"
-                      >
-                        {copiedId === 'tag' ? (
-                          <CheckCircle size={14} className="text-emerald-500" />
-                        ) : (
-                          <Copy size={14} className="opacity-60" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pay Now Button */}
-                <button
-                  onClick={submitXrpPayment}
-                  disabled={paymentStatus}
-                  className={cn(
-                    'w-full py-3 rounded-lg text-[14px] font-medium flex items-center justify-center gap-2 mb-4',
-                    'bg-primary text-white hover:bg-primary/90 disabled:opacity-70'
-                  )}
-                >
-                  {paymentStatus === 'signing' ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Signing...
-                    </>
-                  ) : paymentStatus === 'submitting' ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Submitting...
-                    </>
-                  ) : paymentStatus === 'verifying' ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" /> Verifying...
-                    </>
-                  ) : (
-                    <>Pay {xrpPayment.amount} XRP Now</>
-                  )}
-                </button>
-
-                <div
-                  className={cn(
-                    'text-center text-[12px] mb-3',
-                    isDark ? 'text-white/40' : 'text-gray-500'
-                  )}
-                >
-                  — or pay manually —
-                </div>
-
-                <div
-                  className={cn(
-                    'p-3 rounded-lg mb-3 text-[12px]',
-                    isDark ? 'bg-white/5 text-white/60' : 'bg-gray-50 text-gray-600'
-                  )}
-                >
-                  Send from external wallet. Expires in {xrpPayment.expiresIn || '30 minutes'}.
-                </div>
-
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Paste transaction hash after sending"
-                    value={txHash}
-                    onChange={(e) => setTxHash(e.target.value)}
-                    className={cn(
-                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[13px] font-mono',
-                      isDark
-                        ? 'bg-white/[0.02] border-white/10 placeholder:text-white/30'
-                        : 'bg-gray-50 border-gray-200'
-                    )}
-                  />
-                  <button
-                    onClick={verifyXrpPayment}
-                    disabled={!txHash.trim() || verifyingTx}
-                    className={cn(
-                      'w-full py-2.5 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 border-[1.5px]',
-                      isDark
-                        ? 'border-white/10 hover:bg-white/5 disabled:opacity-50'
-                        : 'border-gray-200 hover:bg-gray-50 disabled:opacity-50'
-                    )}
-                  >
-                    {verifyingTx ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <CheckCircle size={16} />
-                        Verify Payment
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Usage Stats */}
-          {usage?.usage?.[0] && (
-            <div
-              className={cn(
-                'mb-6 p-5 rounded-xl border-[1.5px]',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white'
-              )}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3
-                  className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-                >
-                  Today's Usage
-                </h3>
-                <span
-                  className={cn(
-                    'text-[12px] px-2 py-1 rounded-full',
-                    tiers.find((t) => t.id === (usage.usage[0].tier || 'free'))?.color,
-                    isDark ? 'bg-white/5' : 'bg-gray-100'
-                  )}
-                >
-                  {(usage.usage[0].tier || 'free').toUpperCase()}
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div
-                    className={cn(
-                      'h-2 rounded-full overflow-hidden',
-                      isDark ? 'bg-white/10' : 'bg-gray-200'
-                    )}
-                  >
-                    <div
-                      className="h-full bg-primary rounded-full transition-all"
-                      style={{
-                        width: `${Math.min((usage.usage[0].today?.used / usage.usage[0].today?.limit) * 100, 100)}%`
-                      }}
-                    />
-                  </div>
-                </div>
-                <span
-                  className={cn(
-                    'text-[13px] font-mono',
-                    isDark ? 'text-white/60' : 'text-gray-600'
-                  )}
-                >
-                  {usage.usage[0].today?.used?.toLocaleString()} /{' '}
-                  {usage.usage[0].today?.limit?.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* API Keys List */}
-          <div
-            className={cn(
-              'rounded-xl border-[1.5px] overflow-hidden',
-              isDark ? 'border-white/10' : 'border-gray-200'
-            )}
-          >
-            <div
-              className={cn(
-                'px-5 py-3 border-b',
-                isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    'text-[13px] font-medium',
-                    isDark ? 'text-white/60' : 'text-gray-600'
-                  )}
-                >
-                  Your API Keys
-                </span>
-                <button onClick={fetchApiKeys} className="p-1.5 rounded hover:bg-white/10">
-                  <RefreshCw size={14} className="opacity-40" />
-                </button>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="p-12 text-center">
-                <Loader2 size={24} className="mx-auto animate-spin opacity-40" />
-              </div>
-            ) : apiKeys.length === 0 ? (
-              <div className="p-12 text-center">
-                <Key size={32} className="mx-auto mb-3 opacity-20" />
-                <p className={cn('text-[14px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-                  No API keys yet
-                </p>
-                <p className={cn('text-[12px] mt-1', isDark ? 'text-white/30' : 'text-gray-400')}>
-                  Create one to get started
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-white/10">
-                {apiKeys.map((key) => (
-                  <div
-                    key={key.id || key._id}
-                    className={cn(
-                      'px-5 py-4 flex items-center gap-4',
-                      isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
-                    )}
-                  >
-                    <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                      <Key size={18} className="opacity-60" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
-                          {key.name}
-                        </span>
-                        <span
-                          className={cn(
-                            'text-[11px] px-2 py-0.5 rounded-full',
-                            isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-500'
-                          )}
-                        >
-                          {key.tier || 'free'}
-                        </span>
-                      </div>
-                      <div
-                        className={cn(
-                          'text-[12px] mt-0.5 font-mono',
-                          isDark ? 'text-white/40' : 'text-gray-500'
-                        )}
-                      >
-                        {key.keyPrefix}••••••••
-                      </div>
-                    </div>
-                    <div
-                      className={cn(
-                        'text-[12px] text-right',
-                        isDark ? 'text-white/40' : 'text-gray-500'
-                      )}
-                    >
-                      <div>Created {formatDate(key.createdAt)}</div>
-                      {key.lastUsed && <div>Used {formatDate(key.lastUsed)}</div>}
-                    </div>
-                    <button
-                      onClick={() => copyToClipboard(key.keyPrefix, key.id)}
-                      className={cn(
-                        'p-2 rounded-lg',
-                        isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                      )}
-                      title="Copy prefix"
-                    >
-                      {copiedId === key.id ? (
-                        <CheckCircle size={16} className="text-emerald-500" />
-                      ) : (
-                        <Copy size={16} className="opacity-40" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => deleteApiKey(key.id)}
-                      disabled={deletingId === key.id}
-                      className={cn(
-                        'p-2 rounded-lg text-red-500',
-                        isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'
-                      )}
-                      title="Delete key"
-                    >
-                      {deletingId === key.id ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <Trash2 size={16} />
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Credit Packages */}
-          <div className="mt-8">
-            <h2 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
-              <Zap size={18} className="inline mr-2 text-primary" />
-              Buy Credits
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {packages.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  className={cn(
-                    'p-5 rounded-xl border-[1.5px] transition-colors',
-                    isDark
-                      ? 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  )}
-                >
-                  <div className={cn('text-[13px] font-medium mb-1', pkg.color)}>{pkg.name}</div>
-                  <div
-                    className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}
-                  >
-                    ${pkg.price}
-                  </div>
-                  <div
-                    className={cn(
-                      'text-[12px] mt-1 mb-4',
-                      isDark ? 'text-white/60' : 'text-gray-600'
-                    )}
-                  >
-                    {pkg.credits} credits
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => buyWithXRP('credits', pkg.id)}
-                      disabled={purchasing === `xrp_${pkg.id}`}
-                      className={cn(
-                        'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]',
-                        isDark
-                          ? 'border-white/10 hover:bg-white/5'
-                          : 'border-gray-200 hover:bg-gray-50'
-                      )}
-                    >
-                      {purchasing === `xrp_${pkg.id}` ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <>XRP</>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => buyWithStripe('credits', pkg.id)}
-                      disabled={purchasing === pkg.id}
-                      className={cn(
-                        'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1',
-                        'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
-                      )}
-                    >
-                      {purchasing === pkg.id ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <>
-                          <CreditCard size={12} />
-                          Card
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
               ))}
             </div>
+
+            {/* Admin Section */}
+            {isAdmin && (
+              <div className={cn('mt-6 pt-6 border-t', isDark ? 'border-white/10' : 'border-gray-200')}>
+                <div className={cn('text-[10px] uppercase tracking-wider mb-3 px-3', isDark ? 'text-white/30' : 'text-gray-400')}>Admin</div>
+                <div className="space-y-0.5">
+                  {navItems.filter(item => item.id.startsWith('admin-')).map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => { setActiveSection(item.id); fetchAdminData(item.id.replace('admin-', '')); }}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors',
+                        activeSection === item.id
+                          ? isDark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'
+                          : isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                      )}
+                    >
+                      <item.icon size={16} />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Subscription Tiers */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                Subscription Plans
-              </h2>
-              <div
-                className={cn(
-                  'flex items-center gap-1 p-1 rounded-lg',
-                  isDark ? 'bg-white/5' : 'bg-gray-100'
-                )}
-              >
-                <button
-                  onClick={() => setBillingPeriod('monthly')}
-                  className={cn(
-                    'px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors',
-                    billingPeriod === 'monthly'
-                      ? 'bg-primary text-white'
-                      : isDark
-                        ? 'text-white/60 hover:text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                  )}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setBillingPeriod('yearly')}
-                  className={cn(
-                    'px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors flex items-center gap-1.5',
-                    billingPeriod === 'yearly'
-                      ? 'bg-primary text-white'
-                      : isDark
-                        ? 'text-white/60 hover:text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                  )}
-                >
-                  Yearly
-                  <span
-                    className={cn(
-                      'px-1.5 py-0.5 rounded text-[10px]',
-                      billingPeriod === 'yearly'
-                        ? 'bg-white/20'
-                        : 'bg-emerald-500/20 text-emerald-500'
-                    )}
-                  >
-                    2mo free
-                  </span>
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {tiers.map((tier) => {
-                const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
-                const isCurrentPlan = usage?.usage?.[0]?.tier === tier.id;
+          {/* Support & Docs */}
+          <div className={cn('px-4 py-3 border-t space-y-0.5', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <a href="/docs" className={cn('flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors', isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50')}>
+              <FileText size={16} />Documentation
+            </a>
+            <a href="mailto:hello@xrpl.to" className={cn('flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors', isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50')}>
+              <Mail size={16} />Support
+            </a>
+            <a href="https://x.com/xrplto" target="_blank" rel="noopener noreferrer" className={cn('flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors', isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50')}>
+              <ExternalLink size={16} />@xrplto
+            </a>
+          </div>
 
-                return (
-                  <div
-                    key={tier.id}
-                    className={cn(
-                      'p-5 rounded-xl border-[1.5px] transition-colors',
-                      isCurrentPlan
-                        ? 'border-primary bg-primary/5'
-                        : isDark
-                          ? 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                    )}
-                  >
-                    <div className={cn('text-[13px] font-medium mb-1', tier.color)}>
-                      {tier.name}
-                    </div>
-                    <div
-                      className={cn(
-                        'text-2xl font-normal',
-                        isDark ? 'text-white' : 'text-gray-900'
-                      )}
-                    >
-                      {price === 0 ? 'Free' : `$${price.toLocaleString()}`}
-                      {price > 0 && (
-                        <span
-                          className={cn(
-                            'text-[12px] ml-1',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          /{billingPeriod === 'yearly' ? 'yr' : 'mo'}
-                        </span>
-                      )}
-                    </div>
-                    {billingPeriod === 'yearly' && tier.savings > 0 && (
-                      <div className="text-[11px] text-emerald-500 mt-1">
-                        Save ${tier.savings}/year
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        'text-[12px] space-y-1 mt-2 mb-4',
-                        isDark ? 'text-white/60' : 'text-gray-600'
-                      )}
-                    >
-                      <div>{tier.credits} credits/mo</div>
-                      <div>{tier.rps} req/sec</div>
-                    </div>
-                    {isCurrentPlan ? (
-                      <div className="py-2 text-center text-[12px] text-primary font-medium">
-                        Current Plan
-                      </div>
-                    ) : (
-                      tier.id !== 'free' && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => buyWithXRP('tier', tier.id)}
-                            disabled={purchasing === `xrp_${tier.id}`}
-                            className={cn(
-                              'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1 border-[1.5px]',
-                              isDark
-                                ? 'border-white/10 hover:bg-white/5'
-                                : 'border-gray-200 hover:bg-gray-50'
-                            )}
-                          >
-                            {purchasing === `xrp_${tier.id}` ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <>XRP</>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => buyWithStripe('tier', tier.id)}
-                            disabled={purchasing === tier.id}
-                            className={cn(
-                              'flex-1 py-2 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1',
-                              'bg-primary text-white hover:bg-primary/90 disabled:opacity-50'
-                            )}
-                          >
-                            {purchasing === tier.id ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <>
-                                <CreditCard size={12} />
-                                Card
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      )
-                    )}
-                  </div>
-                );
-              })}
+          {/* Wallet Info */}
+          <div className={cn('p-4 border-t', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <div className={cn('text-[11px] font-mono truncate mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
+              {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+            </div>
+            <div className={cn('text-[13px] font-medium flex items-center gap-1.5', isDark ? 'text-white' : 'text-gray-900')}>
+              {credits?.balance === -1 ? <><Infinity size={14} className="text-primary" />Unlimited</> : <>{formatCredits(credits?.balance)} credits</>}
             </div>
           </div>
         </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-[1400px]">
+            {/* Alerts */}
+            {error && (
+              <div className="mb-6 p-4 rounded-xl border-[1.5px] border-red-500/30 bg-red-500/10 flex items-center gap-3">
+                <AlertCircle size={18} className="text-red-500" />
+                <span className="text-[13px] text-red-500">{error}</span>
+                <button onClick={() => setError(null)} className="ml-auto opacity-60 hover:opacity-100"><X size={16} /></button>
+              </div>
+            )}
+
+            {newKey && (
+              <div className={cn('mb-6 p-4 rounded-xl border-[1.5px]', isDark ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50')}>
+                <div className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className={cn('text-[14px] font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>API Key Created</h3>
+                    <p className={cn('text-[12px] mb-3', isDark ? 'text-white/60' : 'text-gray-600')}>Copy this key now. You won't be able to see it again.</p>
+                    <div className={cn('flex items-center gap-2 p-3 rounded-lg font-mono text-[13px]', isDark ? 'bg-black/50' : 'bg-white')}>
+                      <code className="flex-1 break-all">{newKey}</code>
+                      <button onClick={() => copyToClipboard(newKey, 'new')} className="p-1.5 rounded hover:bg-white/10">
+                        {copiedId === 'new' ? <CheckCircle size={16} className="text-emerald-500" /> : <Copy size={16} className="opacity-60" />}
+                      </button>
+                    </div>
+                  </div>
+                  <button onClick={() => setNewKey(null)} className="opacity-40 hover:opacity-100"><X size={18} /></button>
+                </div>
+              </div>
+            )}
+
+            {stripeSuccess && (
+              <div className={cn('mb-6 p-4 rounded-xl border-[1.5px]', isDark ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50')}>
+                <div className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-emerald-500 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className={cn('text-[14px] font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>Payment Successful!</h3>
+                    <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      {stripeSuccess.message || (stripeSuccess.credits ? `${stripeSuccess.credits.toLocaleString()} credits added.` : `Upgraded to ${stripeSuccess.tier} tier.`)}
+                    </p>
+                  </div>
+                  <button onClick={() => setStripeSuccess(null)} className="opacity-40 hover:opacity-100"><X size={18} /></button>
+                </div>
+              </div>
+            )}
+
+            {/* Overview Section - Helius Style */}
+            {activeSection === 'overview' && (
+              <div className="space-y-8">
+                {/* Header Cards - Two Column Symmetrical */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Current Plan Card */}
+                  <div className={cn('p-6 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className={cn('text-[12px] uppercase tracking-wide mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>Current Plan</div>
+                    <div className={cn('text-3xl font-semibold mb-4 capitalize', isDark ? 'text-white' : 'text-gray-900')}>{credits?.tier || 'Free'}</div>
+                    {(!credits?.tier || credits?.tier === 'free') ? (
+                      <div className={cn('p-3 rounded-lg flex items-center gap-3', isDark ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-amber-50 border border-amber-200')}>
+                        <AlertCircle size={16} className="text-amber-500" />
+                        <span className={cn('text-[12px]', isDark ? 'text-white/80' : 'text-gray-700')}>
+                          The Free Plan provides basic access. <span className="text-primary cursor-pointer hover:underline" onClick={() => setActiveSection('billing')}>Upgrade Now</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <div className={cn('p-3 rounded-lg flex items-center gap-3', isDark ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-emerald-50 border border-emerald-200')}>
+                        <CheckCircle size={16} className="text-emerald-500" />
+                        <span className={cn('text-[12px]', isDark ? 'text-white/80' : 'text-gray-700')}>
+                          You have full access to all features.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Credit Usage Card */}
+                  <div className={cn('p-6 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className={cn('text-[12px] uppercase tracking-wide mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>Credit Usage</div>
+                    <div className={cn('text-3xl font-semibold mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                      {credits?.balance === -1 ? <><Infinity size={28} className="text-primary" />Unlimited</> : (
+                        <>{formatCredits(usage?.usage?.[0]?.today?.used || 0)} <span className={cn('text-lg', isDark ? 'text-white/40' : 'text-gray-400')}>/ {formatCredits(credits?.balance || 0)}</span></>
+                      )}
+                    </div>
+                    <div className={cn('text-[12px] mb-4', isDark ? 'text-white/40' : 'text-gray-500')}>Credits used / Total credits</div>
+                    <button onClick={() => setActiveSection('usage')} className="w-full py-3 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2">
+                      <BarChart3 size={16} />Check Usage
+                    </button>
+                  </div>
+                </div>
+
+                {/* Core Services Section */}
+                <div>
+                  <h2 className={cn('text-xl font-semibold mb-5', isDark ? 'text-white' : 'text-gray-900')}>Core Services</h2>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* API Keys Card */}
+                    <div className={cn('p-6 rounded-xl border-[1.5px] flex flex-col', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Key size={20} className="text-primary" />
+                        <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>API Keys</span>
+                      </div>
+                      <p className={cn('text-[13px] flex-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Create and manage API keys for programmatic access to XRPL.to services. {apiKeys.length} active key{apiKeys.length !== 1 ? 's' : ''}.
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <button onClick={() => setActiveSection('keys')} className="text-[13px] text-primary hover:underline flex items-center gap-1">Learn more →</button>
+                        <button onClick={() => setShowCreateForm(true)} className={cn('px-4 py-2 rounded-lg text-[13px] font-medium', isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200')}>Get Started</button>
+                      </div>
+                    </div>
+
+                    {/* Usage Card */}
+                    <div className={cn('p-6 rounded-xl border-[1.5px] flex flex-col', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Zap size={20} className="text-primary" />
+                        <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Usage Analytics</span>
+                      </div>
+                      <p className={cn('text-[13px] flex-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Monitor your API requests, track usage patterns, and optimize your integration with detailed analytics.
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <button onClick={() => setActiveSection('usage')} className="text-[13px] text-primary hover:underline flex items-center gap-1">Learn more →</button>
+                        <button onClick={() => setActiveSection('usage')} className={cn('px-4 py-2 rounded-lg text-[13px] font-medium', isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200')}>Get Started</button>
+                      </div>
+                    </div>
+
+                    {/* Billing Card */}
+                    <div className={cn('p-6 rounded-xl border-[1.5px] flex flex-col', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <CreditCard size={20} className="text-primary" />
+                        <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Billing & Subscriptions</span>
+                      </div>
+                      <p className={cn('text-[13px] flex-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Upgrade your plan, purchase credit packages, and manage your billing preferences with XRP or card payments.
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <button onClick={() => setActiveSection('billing')} className="text-[13px] text-primary hover:underline flex items-center gap-1">Learn more →</button>
+                        <button onClick={() => setActiveSection('billing')} className={cn('px-4 py-2 rounded-lg text-[13px] font-medium', isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200')}>Get Started</button>
+                      </div>
+                    </div>
+
+                    {/* Credits Card */}
+                    <div className={cn('p-6 rounded-xl border-[1.5px] flex flex-col', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Coins size={20} className="text-primary" />
+                        <span className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Credit Packages</span>
+                      </div>
+                      <p className={cn('text-[13px] flex-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        Purchase additional credits for your API usage. Choose from flexible packages that fit your needs.
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <button onClick={() => setActiveSection('billing')} className="text-[13px] text-primary hover:underline flex items-center gap-1">Learn more →</button>
+                        <button onClick={() => setActiveSection('billing')} className={cn('px-4 py-2 rounded-lg text-[13px] font-medium', isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200')}>Get Started</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* API Keys Section */}
+            {activeSection === 'keys' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className={cn('text-2xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>API Keys</h1>
+                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage your API keys for programmatic access</p>
+                  </div>
+                  <button onClick={() => setShowCreateForm(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90">
+                    <Plus size={16} />Create Key
+                  </button>
+                </div>
+
+                <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {loading ? (
+                    <div className="p-12 text-center"><Loader2 size={24} className="mx-auto animate-spin opacity-40" /></div>
+                  ) : apiKeys.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <Key size={32} className="mx-auto mb-3 opacity-20" />
+                      <p className={cn('text-[14px]', isDark ? 'text-white/40' : 'text-gray-500')}>No API keys yet</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/10">
+                      {apiKeys.map((key) => (
+                        <div key={key.id || key._id} className={cn('px-5 py-4 flex items-center gap-4', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className={cn('p-2 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}><Key size={18} className="opacity-60" /></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{key.name}</span>
+                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10 text-white/40' : 'bg-gray-100 text-gray-500')}>{key.tier || 'free'}</span>
+                            </div>
+                            <div className={cn('text-[12px] mt-0.5 font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{key.keyPrefix}••••••••</div>
+                          </div>
+                          <div className={cn('text-[12px] text-right', isDark ? 'text-white/40' : 'text-gray-500')}>
+                            <div>Created {formatDate(key.createdAt)}</div>
+                          </div>
+                          <button onClick={() => copyToClipboard(key.keyPrefix, key.id)} className={cn('p-2 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                            {copiedId === key.id ? <CheckCircle size={16} className="text-emerald-500" /> : <Copy size={16} className="opacity-40" />}
+                          </button>
+                          <button onClick={() => deleteApiKey(key.id)} disabled={deletingId === key.id} className={cn('p-2 rounded-lg text-red-500', isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50')}>
+                            {deletingId === key.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Usage Section */}
+            {activeSection === 'usage' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className={cn('text-2xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>Usage</h1>
+                  <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Monitor your API usage and limits</p>
+                </div>
+
+                {usage?.usage?.[0] && (
+                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Today's Usage</h3>
+                      <span className={cn('text-[12px] px-2 py-1 rounded-full', tiers.find(t => t.id === (usage.usage[0].tier || 'free'))?.color, isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                        {(usage.usage[0].tier || 'free').toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className={cn('h-3 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min((usage.usage[0].today?.used / usage.usage[0].today?.limit) * 100, 100)}%` }} />
+                        </div>
+                      </div>
+                      <span className={cn('text-[13px] font-mono', isDark ? 'text-white/60' : 'text-gray-600')}>
+                        {usage.usage[0].today?.used?.toLocaleString()} / {usage.usage[0].today?.limit?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {credits?.billingCycle && (
+                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <h3 className={cn('text-[14px] font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Billing Cycle</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Days Remaining</div>
+                        <div className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{credits.billingCycle.daysRemaining}</div>
+                      </div>
+                      <div>
+                        <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Cycle Progress</div>
+                        <div className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{Math.round(credits.billingCycle.cycleProgress || 0)}%</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Billing Section */}
+            {activeSection === 'billing' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className={cn('text-2xl font-medium mb-1', isDark ? 'text-white' : 'text-gray-900')}>Billing</h1>
+                  <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage your subscription and buy credits</p>
+                </div>
+
+                {/* Credit Packages */}
+                <div>
+                  <h2 className={cn('text-lg font-medium mb-4 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                    <Zap size={18} className="text-primary" />Buy Credits
+                  </h2>
+                  <div className="grid grid-cols-4 gap-4">
+                    {packages.map((pkg) => (
+                      <div key={pkg.id} className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300')}>
+                        <div className={cn('text-[13px] font-medium mb-1', pkg.color)}>{pkg.name}</div>
+                        <div className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>${pkg.price}</div>
+                        <div className={cn('text-[12px] mt-1 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>{pkg.credits} credits</div>
+                        <div className="flex gap-2">
+                          <button onClick={() => buyWithXRP('credits', pkg.id)} disabled={purchasing === `xrp_${pkg.id}`} className={cn('flex-1 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
+                            {purchasing === `xrp_${pkg.id}` ? <Loader2 size={14} className="mx-auto animate-spin" /> : 'XRP'}
+                          </button>
+                          <button onClick={() => buyWithStripe('credits', pkg.id)} disabled={purchasing === pkg.id} className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1">
+                            {purchasing === pkg.id ? <Loader2 size={14} className="animate-spin" /> : <><CreditCard size={12} />Card</>}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subscription Plans */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Subscription Plans</h2>
+                    <div className={cn('flex items-center gap-1 p-1 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                      <button onClick={() => setBillingPeriod('monthly')} className={cn('px-3 py-1.5 rounded-md text-[12px] font-medium', billingPeriod === 'monthly' ? 'bg-primary text-white' : isDark ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-gray-900')}>Monthly</button>
+                      <button onClick={() => setBillingPeriod('yearly')} className={cn('px-3 py-1.5 rounded-md text-[12px] font-medium flex items-center gap-1.5', billingPeriod === 'yearly' ? 'bg-primary text-white' : isDark ? 'text-white/60 hover:text-white' : 'text-gray-600 hover:text-gray-900')}>
+                        Yearly<span className={cn('px-1.5 py-0.5 rounded text-[10px]', billingPeriod === 'yearly' ? 'bg-white/20' : 'bg-emerald-500/20 text-emerald-500')}>2mo free</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4">
+                    {tiers.map((tier) => {
+                      const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
+                      const isCurrentPlan = usage?.usage?.[0]?.tier === tier.id;
+                      return (
+                        <div key={tier.id} className={cn('p-5 rounded-xl border-[1.5px]', isCurrentPlan ? 'border-primary bg-primary/5' : isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300')}>
+                          <div className={cn('text-[13px] font-medium mb-1', tier.color)}>{tier.name}</div>
+                          <div className={cn('text-2xl font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                            {price === 0 ? 'Free' : `$${price.toLocaleString()}`}
+                            {price > 0 && <span className={cn('text-[12px] ml-1', isDark ? 'text-white/40' : 'text-gray-500')}>/{billingPeriod === 'yearly' ? 'yr' : 'mo'}</span>}
+                          </div>
+                          <div className={cn('text-[12px] space-y-1 mt-2 mb-4', isDark ? 'text-white/60' : 'text-gray-600')}>
+                            <div>{tier.credits} credits/mo</div>
+                            <div>{tier.rps} req/sec</div>
+                          </div>
+                          {isCurrentPlan ? (
+                            <div className="py-2 text-center text-[12px] text-primary font-medium">Current Plan</div>
+                          ) : tier.id !== 'free' && (
+                            <div className="flex gap-2">
+                              <button onClick={() => buyWithXRP('tier', tier.id)} disabled={purchasing === `xrp_${tier.id}`} className={cn('flex-1 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
+                                {purchasing === `xrp_${tier.id}` ? <Loader2 size={14} className="mx-auto animate-spin" /> : 'XRP'}
+                              </button>
+                              <button onClick={() => buyWithStripe('tier', tier.id)} disabled={purchasing === tier.id} className="flex-1 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1">
+                                {purchasing === tier.id ? <Loader2 size={14} className="animate-spin" /> : <><CreditCard size={12} />Card</>}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Admin: All Users */}
+            {activeSection === 'admin-users' && isAdmin && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className={cn('text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                      <Shield size={24} className="text-primary" />All Users
+                    </h1>
+                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage all API keys across users</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowAdminCreateKey(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium bg-primary text-white hover:bg-primary/90">
+                      <Key size={14} />Create Key
+                    </button>
+                    <button onClick={() => setShowAdminPlatformKey(true)} className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
+                      <Settings size={14} />Platform Key
+                    </button>
+                  </div>
+                </div>
+
+                <div className={cn('flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>
+                  <Search size={16} className="opacity-40" />
+                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40" />
+                </div>
+
+                <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {adminLoading ? (
+                    <div className="p-12 text-center"><Loader2 size={24} className="mx-auto animate-spin opacity-40" /></div>
+                  ) : (
+                    <div className="divide-y divide-white/10">
+                      <div className={cn('px-5 py-3 text-[12px]', isDark ? 'bg-white/[0.02] text-white/40' : 'bg-gray-50 text-gray-500')}>
+                        Total: {adminUsage?.summary?.totalUsers || getDataArray(adminUsage, 'users', 'keys', 'data').length} users
+                      </div>
+                      {getDataArray(adminUsage, 'users', 'keys', 'data').filter(k => !adminSearchQuery || k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())).map((key, idx) => (
+                        <div key={key.id || key._id || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{key.name || 'Unnamed'}</span>
+                              <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>{key.tier || 'free'}</span>
+                            </div>
+                            <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>{key.wallet}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>{key.usage?.today?.toLocaleString() || 0} today</div>
+                            <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>{key.usage?.total?.toLocaleString() || 0} total</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Admin: All Credits */}
+            {activeSection === 'admin-credits' && isAdmin && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className={cn('text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                      <Coins size={24} className="text-primary" />All Credits
+                    </h1>
+                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>View and manage credit balances</p>
+                  </div>
+                  <button onClick={() => setShowAdminAddCredits(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium bg-emerald-500 text-white hover:bg-emerald-600">
+                    <Coins size={14} />Add Credits
+                  </button>
+                </div>
+
+                <div className={cn('flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>
+                  <Search size={16} className="opacity-40" />
+                  <input type="text" placeholder="Search by wallet address..." value={adminSearchQuery} onChange={(e) => setAdminSearchQuery(e.target.value)} className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40" />
+                </div>
+
+                <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {adminLoading ? (
+                    <div className="p-12 text-center"><Loader2 size={24} className="mx-auto animate-spin opacity-40" /></div>
+                  ) : (
+                    <div className="divide-y divide-white/10">
+                      <div className={cn('px-5 py-3 text-[12px]', isDark ? 'bg-white/[0.02] text-white/40' : 'bg-gray-50 text-gray-500')}>
+                        Total: {adminCredits?.summary?.totalAccounts || getDataArray(adminCredits, 'accounts', 'wallets', 'data').length} accounts
+                      </div>
+                      {getDataArray(adminCredits, 'accounts', 'wallets', 'data').filter(w => !adminSearchQuery || w.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())).map((wallet, idx) => (
+                        <div key={wallet.wallet || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className="font-mono text-[12px]">{wallet.wallet}</div>
+                          <div className="flex items-center gap-3">
+                            <div className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                              {wallet.balance === -1 ? <span className="flex items-center gap-1 text-primary"><Infinity size={16} />Unlimited</span> : formatCredits(wallet.balance)}
+                            </div>
+                            {wallet.tier && <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>{wallet.tier}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Admin: Revenue */}
+            {activeSection === 'admin-revenue' && isAdmin && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className={cn('text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                    <DollarSign size={24} className="text-primary" />Revenue
+                  </h1>
+                  <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Payment analytics and revenue tracking</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Total Payments</div>
+                    <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{adminRevenue?.totalPayments || 0}</div>
+                  </div>
+                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Total XRP</div>
+                    <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{(adminRevenue?.totalXRP || 0).toLocaleString()} XRP</div>
+                  </div>
+                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                    <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Total USD</div>
+                    <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>${(adminRevenue?.totalUSD || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+
+                {adminRevenue?.recentPayments?.length > 0 && (
+                  <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                    <div className={cn('px-5 py-3 text-[12px]', isDark ? 'bg-white/[0.02] text-white/40' : 'bg-gray-50 text-gray-500')}>Recent Payments</div>
+                    <div className="divide-y divide-white/10">
+                      {adminRevenue.recentPayments.map((p, idx) => (
+                        <div key={p.txHash || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div className="font-mono text-[11px]">{p.wallet?.slice(0, 12)}...</div>
+                          <div className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{p.amount} {p.currency || 'XRP'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Admin: Chat Keys */}
+            {activeSection === 'admin-chat' && isAdmin && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className={cn('text-2xl font-medium mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
+                      <MessageSquare size={24} className="text-primary" />Chat Keys
+                    </h1>
+                    <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Manage chat access permissions</p>
+                  </div>
+                  <button onClick={() => setShowAdminChatAccess(true)} className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>
+                    <MessageSquare size={14} />Manage Access
+                  </button>
+                </div>
+
+                <div className={cn('rounded-xl border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {adminLoading ? (
+                    <div className="p-12 text-center"><Loader2 size={24} className="mx-auto animate-spin opacity-40" /></div>
+                  ) : (
+                    <div className="divide-y divide-white/10">
+                      <div className={cn('px-5 py-3 text-[12px]', isDark ? 'bg-white/[0.02] text-white/40' : 'bg-gray-50 text-gray-500')}>
+                        Total: {adminChatKeys?.count || getDataArray(adminChatKeys, 'keys', 'data').length} chat-enabled keys
+                      </div>
+                      {getDataArray(adminChatKeys, 'keys', 'data').map((key, idx) => (
+                        <div key={key.id || key._id || idx} className={cn('px-5 py-4 flex items-center justify-between', isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50')}>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <MessageSquare size={14} className="text-primary" />
+                              <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{key.platform || 'Default'}</span>
+                            </div>
+                            <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>{key.wallet}</div>
+                          </div>
+                          <div className={cn('text-[11px]', key.chatAccess ? 'text-emerald-500' : 'text-red-500')}>{key.chatAccess ? 'Active' : 'Revoked'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Modals */}
+      {showCreateForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create API Key</h3>
+            <input type="text" placeholder="Key name (e.g., Production Bot)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] mb-4', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} autoFocus />
+            <div className="flex gap-3">
+              <button onClick={() => { setShowCreateForm(false); setNewKeyName(''); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
+              <button onClick={createApiKey} disabled={!newKeyName.trim() || creating} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {creating ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminCreateKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Partner API Key</h3>
+            <div className="space-y-3">
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Key name" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <select value={adminFormData.tier || 'free'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
+                <option value="free" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Free</option>
+                <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
+                <option value="business" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Business</option>
+                <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
+              </select>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowAdminCreateKey(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
+              <button onClick={adminCreateKey} disabled={adminLoading} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Key'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminAddCredits && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Add Credits to Wallet</h3>
+            <div className="space-y-3">
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="number" placeholder="Credits amount (-1 for unlimited)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Use -1 for unlimited credits</p>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowAdminAddCredits(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
+              <button onClick={adminAddCredits} disabled={adminLoading} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50">
+                {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Add Credits'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminChatAccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Manage Chat Access</h3>
+            <div className="space-y-3">
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Platform (optional)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="chatAccess" checked={adminFormData.chatAccess !== false} onChange={() => setAdminFormData({ ...adminFormData, chatAccess: true })} className="accent-primary" /><span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Grant Access</span></label>
+                <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="chatAccess" checked={adminFormData.chatAccess === false} onChange={() => setAdminFormData({ ...adminFormData, chatAccess: false })} className="accent-red-500" /><span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Revoke Access</span></label>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowAdminChatAccess(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
+              <button onClick={adminSetChatAccess} disabled={adminLoading} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Update Access'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminPlatformKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Platform API Key</h3>
+            <div className="space-y-3">
+              <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Platform name" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <select value={adminFormData.tier || 'developer'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
+                <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
+                <option value="business" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Business</option>
+                <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
+              </select>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowAdminPlatformKey(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
+              <button onClick={adminCreatePlatformKey} disabled={adminLoading} className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Platform Key'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {xrpPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className={cn('w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]', isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200')}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP - {xrpPayment.name}</h3>
+              <button onClick={() => { setXrpPayment(null); setTxHash(''); }} className="opacity-40 hover:opacity-100"><X size={20} /></button>
+            </div>
+            <div className={cn('p-4 rounded-lg mb-4 space-y-3', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+              <div>
+                <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Send exactly</div>
+                <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>{xrpPayment.amount} XRP</div>
+              </div>
+              <div>
+                <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>To address</div>
+                <div className="flex items-center gap-2">
+                  <code className={cn('text-[13px] font-mono break-all', isDark ? 'text-white/80' : 'text-gray-700')}>{xrpPayment.destination}</code>
+                  <button onClick={() => copyToClipboard(xrpPayment.destination, 'dest')} className="p-1 rounded hover:bg-white/10">
+                    {copiedId === 'dest' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-60" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>Destination Tag (required)</div>
+                <div className="flex items-center gap-2">
+                  <code className="text-[18px] font-mono font-medium text-primary">{xrpPayment.destinationTag}</code>
+                  <button onClick={() => copyToClipboard(String(xrpPayment.destinationTag), 'tag')} className="p-1 rounded hover:bg-white/10">
+                    {copiedId === 'tag' ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} className="opacity-60" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button onClick={submitXrpPayment} disabled={paymentStatus} className="w-full py-3 rounded-lg text-[14px] font-medium flex items-center justify-center gap-2 mb-4 bg-primary text-white hover:bg-primary/90 disabled:opacity-70">
+              {paymentStatus === 'signing' ? <><Loader2 size={16} className="animate-spin" /> Signing...</> : paymentStatus === 'submitting' ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : paymentStatus === 'verifying' ? <><Loader2 size={16} className="animate-spin" /> Verifying...</> : <>Pay {xrpPayment.amount} XRP Now</>}
+            </button>
+            <div className={cn('text-center text-[12px] mb-3', isDark ? 'text-white/40' : 'text-gray-500')}>— or pay manually —</div>
+            <div className="space-y-3">
+              <input type="text" placeholder="Paste transaction hash after sending" value={txHash} onChange={(e) => setTxHash(e.target.value)} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[13px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <button onClick={verifyXrpPayment} disabled={!txHash.trim() || verifyingTx} className={cn('w-full py-2.5 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5 disabled:opacity-50' : 'border-gray-200 hover:bg-gray-50 disabled:opacity-50')}>
+                {verifyingTx ? <Loader2 size={16} className="animate-spin" /> : <><CheckCircle size={16} />Verify Payment</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
