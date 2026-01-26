@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox } from 'lucide-react';
+import { X, Inbox, Monitor, Smartphone, Globe } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 const timeAgo = (ts) => {
@@ -229,7 +229,18 @@ const renderMessage = (text) => {
   return parts;
 };
 
-const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta' }) => {
+const Chat = () => {
+  const getLoggedInWallet = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
+      return profile?.account || null;
+    } catch { return null; }
+  };
+  const getWsUrl = () => {
+    const wallet = getLoggedInWallet();
+    return wallet ? `wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta&wallet=${wallet}` : null;
+  };
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isOpen, setIsOpen] = useState(() => {
@@ -239,7 +250,10 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
     } catch { return false; }
   });
   const [registered, setRegistered] = useState(false);
-  const [authUser, setAuthUser] = useState(null);
+  const [authUser, setAuthUser] = useState(() => {
+    const acc = getLoggedInWallet();
+    return acc ? { wallet: acc } : null;
+  });
   const [messages, setMessages] = useState([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [input, setInput] = useState('');
@@ -266,12 +280,42 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
   const authUserRef = useRef(null);
   useEffect(() => { dmTabsRef.current = dmTabs; }, [dmTabs]);
   useEffect(() => { authUserRef.current = authUser; }, [authUser]);
+  // Sync authUser wallet with localStorage and reconnect on change
+  useEffect(() => {
+    const handleStorage = () => {
+      const acc = getLoggedInWallet();
+      if (acc && acc !== authUser?.wallet) {
+        setAuthUser(prev => ({ ...prev, wallet: acc }));
+        // Force reconnect with new wallet
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(handleStorage, 500);
+    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
+  }, [authUser?.wallet]);
   const [showInbox, setShowInbox] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
 
   const getWallet = (m) => m.wallet || m.address || m.username;
   const getRecipient = (m) => m.recipientWallet || m.recipient;
+  const getPlatformIcon = (p) => {
+    if (!p) return null;
+    const pl = p.toLowerCase();
+    const Icon = pl.includes('mobile') || pl.includes('ios') || pl.includes('android') ? Smartphone : pl.includes('xrpl.to') || pl.includes('web') || pl.includes('desktop') ? Monitor : Globe;
+    return <span title={p}><Icon size={10} className="opacity-40 cursor-help" /></span>;
+  };
+  const getTierStyle = (t) => {
+    if (!t) return null;
+    const tier = t.toLowerCase();
+    if (tier === 'god') return 'bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] text-black font-bold';
+    if (tier === 'vip') return 'bg-[#650CD4]/20 text-[#650CD4]';
+    if (tier === 'pro') return 'bg-[#F6AF01]/20 text-[#F6AF01]';
+    return 'bg-white/10 text-white/50';
+  };
 
   const conversations = useMemo(() => {
     const convos = {};
@@ -285,12 +329,20 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
   }, [messages, authUser?.wallet]);
 
   const connect = useCallback(() => {
+    const wsUrl = getWsUrl();
+    console.log('[Chat] connect() - wsUrl:', wsUrl);
+    console.log('[Chat] connect() - wallet:', getLoggedInWallet());
+    if (!wsUrl) {
+      console.log('[Chat] No wallet, skipping connect');
+      return null;
+    }
     const t0 = Date.now();
-    console.log('[Chat] connect() called');
+    console.log('[Chat] Creating WebSocket...');
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
+    console.log('[Chat] WebSocket created, readyState:', ws.readyState);
 
-    ws.onopen = () => console.log('[Chat] ws.onopen', Date.now() - t0, 'ms');
+    ws.onopen = () => console.log('[Chat] ws.onopen', Date.now() - t0, 'ms, readyState:', ws.readyState);
     ws.onerror = (e) => console.log('[Chat] ws.onerror', Date.now() - t0, 'ms', e);
 
     ws.onmessage = (event) => {
@@ -301,7 +353,9 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
         case 'authenticated':
           console.log('[Chat] setRegistered(true)', Date.now() - t0, 'ms');
           setRegistered(true);
-          setAuthUser({ wallet: data.wallet, username: data.username, tier: data.tier });
+          // Use local wallet from localStorage, not server's (server may have stale data)
+          const localWallet = getLoggedInWallet();
+          setAuthUser({ wallet: localWallet || data.wallet, username: data.username, tier: data.tier });
           // Fetch inbox and DM history
           ws.send(JSON.stringify({ type: 'inbox' }));
           dmTabsRef.current.forEach(user => {
@@ -372,27 +426,45 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
     };
 
     ws.onclose = (e) => {
-      console.log('[Chat] ws.onclose', e.code, e.reason);
+      console.log('[Chat] ws.onclose code:', e.code, 'reason:', e.reason, 'wasClean:', e.wasClean);
+      console.log('[Chat] Setting registered=false');
       setRegistered(false);
-      setAuthUser(null);
-      setTimeout(connect, 3000);
     };
 
     return ws;
-  }, [wsUrl]);
+  }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
-    console.log('[Chat] opened, calling connect()');
+    console.log('[Chat] useEffect - isOpen:', isOpen, 'registered:', registered);
+    if (!isOpen) {
+      console.log('[Chat] useEffect - not open, skipping');
+      return;
+    }
+    const wallet = getLoggedInWallet();
+    console.log('[Chat] useEffect - wallet:', wallet);
+    if (!wallet) {
+      console.log('[Chat] useEffect - no wallet, skipping');
+      return;
+    }
+    console.log('[Chat] useEffect - calling connect()');
     const ws = connect();
+    console.log('[Chat] useEffect - connect() returned:', ws ? 'WebSocket' : 'null');
+    if (!ws) return;
+
     const pingInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ping' }));
-      }
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
     }, 30000);
 
+    // Reconnect on unexpected close
+    const handleClose = () => {
+      if (isOpen && getLoggedInWallet()) {
+        setTimeout(() => wsRef.current?.readyState !== WebSocket.OPEN && connect(), 3000);
+      }
+    };
+    ws.addEventListener('close', handleClose);
+
     return () => {
-      console.log('[Chat] cleanup, closing ws');
+      ws.removeEventListener('close', handleClose);
       clearInterval(pingInterval);
       ws.close();
     };
@@ -624,11 +696,14 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
 
                         return (
                           <div key={msg._id || i} className="flex items-baseline gap-1.5 py-0.5 text-[13px] leading-relaxed">
-                            <span className="text-[10px] opacity-30 shrink-0">{timeAgo(msg.timestamp)}</span>
+                            <span className="flex items-center gap-1 text-[10px] opacity-30 shrink-0">
+                              {timeAgo(msg.timestamp)}
+                              {getPlatformIcon(msg.platform)}
+                            </span>
                             <button
                               onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                              className={`font-medium shrink-0 hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                              title={isOwn ? 'You' : `DM ${msgWallet}`}
+                              className={`font-medium shrink-0 hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'vip' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'pro' ? 'text-[#F6AF01]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                              title={isOwn ? 'You' : `DM ${msgWallet}${msg.tier ? ` (${msg.tier})` : ''}`}
                             >
                               {isOwn ? 'You' : shortName}:
                             </button>
