@@ -304,7 +304,7 @@ const DashboardPage = () => {
   const adminCreateKey = async () => {
     if (!isAdmin) return;
 
-    const { wallet, name, tier } = adminFormData;
+    const { wallet, name, tier, credits: creditAmount } = adminFormData;
     if (!wallet || !name) {
       setError('Wallet and name are required');
       return;
@@ -315,11 +315,9 @@ const DashboardPage = () => {
 
     setAdminLoading(true);
     try {
-      const res = await axios.post(`${BASE_URL}/keys/admin/create-key`, {
-        wallet,
-        name,
-        tier: tier || 'free'
-      }, { headers });
+      const payload = { wallet, name, tier: tier || 'free' };
+      if (creditAmount) payload.credits = parseInt(creditAmount, 10);
+      const res = await axios.post(`${BASE_URL}/keys/admin/create-key`, payload, { headers });
 
       setNewKey(res.data.apiKey);
       setShowAdminCreateKey(false);
@@ -399,7 +397,7 @@ const DashboardPage = () => {
   const adminCreatePlatformKey = async () => {
     if (!isAdmin) return;
 
-    const { wallet, platform, tier } = adminFormData;
+    const { wallet, platform, tier, name, credits: creditAmount } = adminFormData;
     if (!wallet || !platform) {
       setError('Wallet and platform are required');
       return;
@@ -410,11 +408,10 @@ const DashboardPage = () => {
 
     setAdminLoading(true);
     try {
-      const res = await axios.post(`${BASE_URL}/keys/admin/platform-key`, {
-        wallet,
-        platform,
-        tier: tier || 'developer'
-      }, { headers });
+      const payload = { wallet, platform, tier: tier || 'developer' };
+      if (name) payload.name = name;
+      if (creditAmount) payload.credits = parseInt(creditAmount, 10);
+      const res = await axios.post(`${BASE_URL}/keys/admin/platform-key`, payload, { headers });
 
       setNewKey(res.data.apiKey);
       setShowAdminPlatformKey(false);
@@ -577,7 +574,8 @@ const DashboardPage = () => {
           Account: walletAddress,
           Destination: xrpPayment.destination,
           DestinationTag: xrpPayment.destinationTag,
-          Amount: xrpl.xrpToDrops(xrpPayment.amount)
+          Amount: xrpl.xrpToDrops(xrpPayment.amount),
+          SourceTag: 161803
         };
 
         const prepared = await client.autofill(payment);
@@ -1431,9 +1429,12 @@ const DashboardPage = () => {
               <select value={adminFormData.tier || 'free'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
                 <option value="free" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Free</option>
                 <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
+                <option value="partner" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Partner</option>
                 <option value="business" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Business</option>
                 <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
+                <option value="god" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>God</option>
               </select>
+              <input type="number" placeholder="Credits (optional, e.g., 10000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowAdminCreateKey(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
@@ -1492,12 +1493,16 @@ const DashboardPage = () => {
             <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>Create Platform API Key</h3>
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <input type="text" placeholder="Platform name" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
-              <select value={adminFormData.tier || 'developer'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
+              <input type="text" placeholder="Platform identifier (e.g., partner_app)" value={adminFormData.platform || ''} onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Key name (optional)" value={adminFormData.name || ''} onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <select value={adminFormData.tier || 'partner'} onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900')}>
                 <option value="developer" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Developer</option>
+                <option value="partner" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Partner</option>
                 <option value="business" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Business</option>
                 <option value="professional" className={isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-gray-900'}>Professional</option>
               </select>
+              <input type="number" placeholder="Credits (e.g., 50000000)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Platform keys have chat access enabled automatically</p>
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowAdminPlatformKey(false); setAdminFormData({}); }} className={cn('flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]', isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50')}>Cancel</button>
