@@ -306,6 +306,7 @@ const Chat = () => {
     if (!t) return null;
     const tier = t.toLowerCase();
     if (tier === 'god') return 'bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] text-black font-bold';
+    if (tier === 'verified') return 'bg-gradient-to-r from-[#10B981] via-[#06B6D4] to-[#8B5CF6] text-white font-medium';
     if (tier === 'developer') return 'bg-[#650CD4]/20 text-[#650CD4]';
     if (tier === 'partner') return 'bg-[#650CD4]/20 text-[#650CD4]';
     if (tier === 'business') return 'bg-[#F6AF01]/20 text-[#F6AF01]';
@@ -700,7 +701,7 @@ const Chat = () => {
                             <span className="relative group shrink-0">
                               <button
                                 onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                                className={`font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'inline-block bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'developer' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'partner' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'business' ? 'text-[#F6AF01]' : msg.tier?.toLowerCase() === 'professional' ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                                className={`font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'inline-block bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'verified' ? 'inline-block bg-gradient-to-r from-[#10B981] via-[#06B6D4] to-[#8B5CF6] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'developer' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'partner' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'business' ? 'text-[#F6AF01]' : msg.tier?.toLowerCase() === 'professional' ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
                               >
                                 {isOwn ? 'You' : shortName}:
                               </button>

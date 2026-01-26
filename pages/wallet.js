@@ -4691,137 +4691,191 @@ export default function WalletPage() {
                 </div>
 
                 {/* Membership Tiers Section */}
-                <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Membership</p>
-                    {userPerks && (
-                      <span className={cn('px-2 py-0.5 rounded text-[10px] font-medium',
-                        userPerks.tier === 'verified' ? 'bg-[#08AA09]/20 text-[#08AA09]' :
-                        userPerks.tier === 'diamond' ? 'bg-[#650CD4]/20 text-[#a855f7]' :
-                        userPerks.tier === 'nova' ? 'bg-[#F6AF01]/20 text-[#F6AF01]' :
-                        userPerks.tier === 'vip' ? 'bg-[#137DFE]/20 text-[#137DFE]' :
-                        isDark ? 'bg-white/10 text-white/50' : 'bg-gray-100 text-gray-500'
-                      )}>
-                        {userPerks.tier?.toUpperCase() || 'MEMBER'}
-                      </span>
-                    )}
+                <div className={cn('rounded-xl overflow-hidden', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                  <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Trophy size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
+                        <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Membership</p>
+                      </div>
+                      {userPerks && (
+                        <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide flex items-center gap-1.5',
+                          userPerks.tier === 'verified' ? 'bg-gradient-to-r from-[#08AA09]/20 to-[#08AA09]/10 text-[#08AA09] border border-[#08AA09]/20' :
+                          userPerks.tier === 'diamond' ? 'bg-gradient-to-r from-[#650CD4]/20 to-[#a855f7]/10 text-[#a855f7] border border-[#650CD4]/20' :
+                          userPerks.tier === 'nova' ? 'bg-gradient-to-r from-[#F6AF01]/20 to-[#F6AF01]/10 text-[#F6AF01] border border-[#F6AF01]/20' :
+                          userPerks.tier === 'vip' ? 'bg-gradient-to-r from-[#137DFE]/20 to-[#137DFE]/10 text-[#137DFE] border border-[#137DFE]/20' :
+                          isDark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                        )}>
+                          {userPerks.tier === 'verified' && <Check size={10} />}
+                          {userPerks.tier === 'diamond' && <Gem size={10} />}
+                          {userPerks.tier === 'nova' && <Star size={10} />}
+                          {userPerks.tier === 'vip' && <Sparkles size={10} />}
+                          {userPerks.tier?.toUpperCase() || 'MEMBER'}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* XRP Invoice Modal */}
                   {xrpInvoice && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setXrpInvoice(null)}>
-                      <div className={cn('w-full max-w-sm rounded-xl p-5', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-4">
-                          <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP</p>
-                          <button onClick={() => setXrpInvoice(null)} className={cn('p-1 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
-                            <X size={16} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setXrpInvoice(null)}>
+                      <div className={cn('w-full max-w-sm rounded-2xl p-6', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-5">
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
+                              <Coins size={16} className="text-[#137DFE]" />
+                            </div>
+                            <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP</p>
+                          </div>
+                          <button onClick={() => setXrpInvoice(null)} className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                            <X size={18} className={isDark ? 'text-white/50' : 'text-gray-500'} />
                           </button>
                         </div>
-                        <div className={cn('rounded-lg p-3 mb-3 text-center', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Amount</p>
-                          <p className={cn('text-2xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.amount} XRP</p>
+                        <div className={cn('rounded-xl p-4 mb-4 text-center', isDark ? 'bg-gradient-to-b from-[#137DFE]/10 to-transparent border border-[#137DFE]/20' : 'bg-gradient-to-b from-blue-50 to-white border border-blue-100')}>
+                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Amount Due</p>
+                          <p className={cn('text-3xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.amount} <span className="text-[#137DFE]">XRP</span></p>
                         </div>
-                        <div className={cn('rounded-lg p-3 mb-3', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Send to</p>
-                          <p className={cn('text-[11px] font-mono break-all', isDark ? 'text-white/70' : 'text-gray-700')}>{xrpInvoice.destination}</p>
+                        <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.02] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                          <p className={cn('text-[10px] uppercase tracking-wider mb-2', isDark ? 'text-white/40' : 'text-gray-400')}>Send to address</p>
+                          <p className={cn('text-[12px] font-mono break-all', isDark ? 'text-white/80' : 'text-gray-700')}>{xrpInvoice.destination}</p>
                           {xrpInvoice.destinationTag && (
-                            <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
-                              Tag: <span className="font-mono font-medium">{xrpInvoice.destinationTag}</span>
-                            </p>
+                            <div className={cn('mt-3 pt-3 border-t', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+                              <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Destination Tag</p>
+                              <p className={cn('text-[14px] font-mono font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.destinationTag}</p>
+                            </div>
                           )}
                         </div>
                         <button
                           onClick={() => handleCopy(`${xrpInvoice.destination}${xrpInvoice.destinationTag ? `:${xrpInvoice.destinationTag}` : ''}`)}
-                          className={cn('w-full py-2 rounded-lg text-[11px] mb-2', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}
+                          className={cn('w-full py-2.5 rounded-xl text-[12px] font-medium mb-2 flex items-center justify-center gap-2 transition-colors', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10 border border-white/[0.08]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200')}
                         >
+                          <Copy size={14} />
                           Copy Address
                         </button>
                         <button
                           onClick={handleVerifyXrpPayment}
                           disabled={verifyingPayment}
-                          className="w-full py-2.5 rounded-lg text-[12px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50"
+                          className="w-full py-3 rounded-xl text-[13px] font-semibold bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50 transition-colors"
                         >
                           {verifyingPayment ? 'Verifying...' : 'I have paid'}
                         </button>
                         {profileError && (
-                          <p className={cn('text-[11px] mt-2 text-center', 'text-red-400')}>{profileError}</p>
+                          <p className={cn('text-[11px] mt-3 text-center', 'text-red-400')}>{profileError}</p>
                         )}
                       </div>
                     </div>
                   )}
 
-                  {tiersLoading ? (
-                    <p className={cn('text-[11px] text-center py-4', isDark ? 'text-white/30' : 'text-gray-400')}>Loading tiers...</p>
-                  ) : Object.keys(tiers).length === 0 ? (
-                    <p className={cn('text-[11px] text-center py-4', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {Object.entries(tiers).filter(([name]) => name !== 'member').map(([name, tier]) => {
-                        const isCurrentTier = userPerks?.tier === name;
-                        const tierColors = {
-                          vip: { bg: 'bg-[#137DFE]/10', border: 'border-[#137DFE]/30', text: 'text-[#137DFE]' },
-                          nova: { bg: 'bg-[#F6AF01]/10', border: 'border-[#F6AF01]/30', text: 'text-[#F6AF01]' },
-                          diamond: { bg: 'bg-[#650CD4]/10', border: 'border-[#650CD4]/30', text: 'text-[#a855f7]' },
-                          verified: { bg: 'bg-[#08AA09]/10', border: 'border-[#08AA09]/30', text: 'text-[#08AA09]' }
-                        };
-                        const colors = tierColors[name] || { bg: 'bg-white/5', border: 'border-white/10', text: 'text-white' };
+                  <div className="p-4">
+                    {tiersLoading ? (
+                      <p className={cn('text-[11px] text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>Loading tiers...</p>
+                    ) : Object.keys(tiers).length === 0 ? (
+                      <p className={cn('text-[11px] text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {Object.entries(tiers).filter(([name]) => name !== 'member').map(([name, tier]) => {
+                          const isCurrentTier = userPerks?.tier === name;
+                          const tierConfig = {
+                            vip: { icon: Sparkles, gradient: 'from-[#137DFE] to-[#0066DD]', bg: 'bg-[#137DFE]/5', border: 'border-[#137DFE]/20', text: 'text-[#137DFE]', glow: 'shadow-[#137DFE]/10' },
+                            nova: { icon: Star, gradient: 'from-[#F6AF01] to-[#E09D00]', bg: 'bg-[#F6AF01]/5', border: 'border-[#F6AF01]/20', text: 'text-[#F6AF01]', glow: 'shadow-[#F6AF01]/10' },
+                            diamond: { icon: Gem, gradient: 'from-[#650CD4] to-[#a855f7]', bg: 'bg-[#650CD4]/5', border: 'border-[#650CD4]/20', text: 'text-[#a855f7]', glow: 'shadow-[#650CD4]/10' },
+                            verified: { icon: Check, gradient: 'from-[#08AA09] to-[#06880A]', bg: 'bg-[#08AA09]/5', border: 'border-[#08AA09]/20', text: 'text-[#08AA09]', glow: 'shadow-[#08AA09]/10' }
+                          };
+                          const config = tierConfig[name] || { icon: Star, gradient: 'from-gray-500 to-gray-600', bg: 'bg-white/5', border: 'border-white/10', text: 'text-white', glow: '' };
+                          const TierIcon = config.icon;
 
-                        return (
-                          <div
-                            key={name}
-                            className={cn(
-                              'rounded-lg p-3 border transition-all',
-                              isCurrentTier ? `${colors.bg} ${colors.border}` : isDark ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/20' : 'bg-gray-50 border-gray-100 hover:border-gray-200'
-                            )}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <span className={cn('text-[13px] font-semibold capitalize', isCurrentTier ? colors.text : isDark ? 'text-white' : 'text-gray-900')}>
-                                  {name}
-                                </span>
-                                {isCurrentTier && (
-                                  <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', colors.bg, colors.text)}>Current</span>
-                                )}
+                          return (
+                            <div
+                              key={name}
+                              className={cn(
+                                'rounded-xl p-4 border transition-all relative overflow-hidden',
+                                isCurrentTier
+                                  ? `${config.bg} ${config.border} shadow-lg ${config.glow}`
+                                  : isDark ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/15 hover:bg-white/[0.03]' : 'bg-gray-50/50 border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                              )}
+                            >
+                              {isCurrentTier && (
+                                <div className={cn('absolute top-0 right-0 px-2 py-0.5 text-[9px] font-semibold rounded-bl-lg bg-gradient-to-r text-white', config.gradient)}>
+                                  ACTIVE
+                                </div>
+                              )}
+
+                              <div className="flex items-start gap-3">
+                                <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCurrentTier ? `bg-gradient-to-br ${config.gradient}` : isDark ? 'bg-white/[0.05]' : 'bg-gray-100')}>
+                                  <TierIcon size={18} className={isCurrentTier ? 'text-white' : config.text} />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className={cn('text-[14px] font-bold capitalize', isCurrentTier ? config.text : isDark ? 'text-white' : 'text-gray-900')}>
+                                      {name}
+                                    </span>
+                                    <div className="text-right">
+                                      <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                                        €{tier.price}
+                                      </span>
+                                      {tier.billing && (
+                                        <span className={cn('text-[10px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                          {tier.billing === 'lifetime' ? 'once' : '/' + tier.billing}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {tier.perks && (
+                                    <div className={cn('text-[11px] space-y-1 mt-2', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                      <div className="flex items-center gap-1.5">
+                                        <Check size={10} className={config.text} />
+                                        <span>{tier.perks.privateMessageLimit?.toLocaleString()} messages/month</span>
+                                      </div>
+                                      {tier.perks.canChangeUsername && (
+                                        <div className="flex items-center gap-1.5">
+                                          <Check size={10} className={config.text} />
+                                          <span>Change username anytime</span>
+                                        </div>
+                                      )}
+                                      {tier.perks.priorityRequests && (
+                                        <div className="flex items-center gap-1.5">
+                                          <Check size={10} className={config.text} />
+                                          <span>Priority support</span>
+                                        </div>
+                                      )}
+                                      {tier.perks.verifiedBadge && (
+                                        <div className="flex items-center gap-1.5">
+                                          <Check size={10} className={config.text} />
+                                          <span>Verified badge</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {!isCurrentTier && tier.price > 0 && (
+                                    <div className="flex gap-2 mt-3">
+                                      <button
+                                        onClick={() => handlePurchaseTierXRP(name)}
+                                        disabled={purchaseLoading === name}
+                                        className={cn('flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1.5', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/10 border border-white/[0.08]' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200', 'disabled:opacity-50')}
+                                      >
+                                        <Coins size={12} />
+                                        {purchaseLoading === name ? 'Loading...' : 'XRP'}
+                                      </button>
+                                      <button
+                                        onClick={() => handlePurchaseTierStripe(name)}
+                                        disabled={purchaseLoading === name}
+                                        className={cn('flex-1 py-2 rounded-lg text-[11px] font-semibold text-white transition-all bg-gradient-to-r disabled:opacity-50', config.gradient)}
+                                      >
+                                        {purchaseLoading === name ? 'Loading...' : 'Upgrade'}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <span className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}>
-                                {tier.price ? `€${tier.price}` : 'Free'}
-                                {tier.billing && <span className={cn('text-[10px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>/{tier.billing}</span>}
-                              </span>
                             </div>
-
-                            {tier.perks && (
-                              <div className={cn('text-[10px] mb-2 space-y-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                {tier.perks.privateMessageLimit && <p>PM Limit: {tier.perks.privateMessageLimit.toLocaleString()}</p>}
-                                {tier.perks.canChangeUsername && <p>Can change username</p>}
-                                {tier.perks.noDailyPostLimits && <p>No daily post limits</p>}
-                                {tier.perks.priorityRequests && <p>Priority requests</p>}
-                                {tier.perks.verifiedBadge && <p>Verified badge</p>}
-                              </div>
-                            )}
-
-                            {!isCurrentTier && tier.price > 0 && (
-                              <div className="flex gap-2 mt-2">
-                                <button
-                                  onClick={() => handlePurchaseTierXRP(name)}
-                                  disabled={purchaseLoading === name}
-                                  className={cn('flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200', 'disabled:opacity-50')}
-                                >
-                                  {purchaseLoading === name ? 'Loading...' : 'Pay with XRP'}
-                                </button>
-                                <button
-                                  onClick={() => handlePurchaseTierStripe(name)}
-                                  disabled={purchaseLoading === name}
-                                  className="flex-1 py-1.5 rounded-lg text-[10px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50"
-                                >
-                                  Pay with Card
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
