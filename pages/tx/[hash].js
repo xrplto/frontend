@@ -1563,13 +1563,17 @@ const getTransactionDescription = (txData) => {
       };
 
     case 'AMMCreate':
+      const tradingFeePercent = txData.TradingFee ? `${txData.TradingFee / 1000}%` : '0%';
+      const deposit1 = Amount ? formatAmount(Amount) : null;
+      const deposit2 = Amount2 ? formatAmount(Amount2) : null;
       return {
         title: 'AMM Pool Created',
-        description: `${formatAccount(Account)} created a new Automated Market Maker pool. This enables decentralized token swaps between two assets.`,
+        description: `${formatAccount(Account)} created a new Automated Market Maker pool${deposit1 && deposit2 ? ` with ${deposit1} and ${deposit2}` : ''}${tradingFeePercent !== '0%' ? ` (${tradingFeePercent} trading fee)` : ''}. This enables decentralized token swaps between two assets.`,
         details: [
           `Pool creator: ${formatAccount(Account)}`,
-          Amount ? `Initial deposit: ${formatAmount(Amount)}` : null,
-          Amount2 ? `Second asset: ${formatAmount(Amount2)}` : null,
+          deposit1 ? `Initial deposit: ${deposit1}` : null,
+          deposit2 ? `Second deposit: ${deposit2}` : null,
+          `Trading fee: ${tradingFeePercent}`,
           `Network fee: ${dropsToXrp(Fee)} XRP`,
           isSuccess ? 'AMM pool created successfully' : 'AMM pool creation failed'
         ].filter(Boolean)
@@ -2533,6 +2537,32 @@ const TransactionDetails = ({ txData }) => {
     return { balanceChanges: finalChanges, exchanges };
   };
 
+  // Extract AMMCreate details from metadata
+  const getAMMCreateDetails = () => {
+    if (!meta || !meta.AffectedNodes) return null;
+    if (TransactionType !== 'AMMCreate') return null;
+
+    let lpTokenBalance = null;
+    let ammAccount = null;
+
+    // Find the created AMM node to get LP token balance
+    for (const affectedNode of meta.AffectedNodes) {
+      if (affectedNode.CreatedNode?.LedgerEntryType === 'AMM') {
+        const newFields = affectedNode.CreatedNode.NewFields;
+        if (newFields?.LPTokenBalance) {
+          lpTokenBalance = newFields.LPTokenBalance;
+          ammAccount = newFields.Account;
+          break;
+        }
+      }
+    }
+
+    return {
+      lpTokenBalance,
+      ammAccount
+    };
+  };
+
   // Extract AMM withdrawal/deposit details from metadata
   const getAMMChanges = () => {
     if (!meta || !meta.AffectedNodes) return null;
@@ -2649,6 +2679,7 @@ const TransactionDetails = ({ txData }) => {
   };
 
   const ammChanges = (TransactionType === 'AMMWithdraw' || TransactionType === 'AMMDeposit') ? getAMMChanges() : null;
+  const ammCreateDetails = TransactionType === 'AMMCreate' ? getAMMCreateDetails() : null;
 
   const getCancelledOfferDetails = () => {
     if (TransactionType !== 'OfferCancel' || !meta || !meta.AffectedNodes) {
@@ -4377,27 +4408,133 @@ const TransactionDetails = ({ txData }) => {
             {/* AMM Create Details */}
             {TransactionType === 'AMMCreate' && (
               <>
+                <DetailRow label="Initiated by">
+                  <Link href={`/address/${Account}`}>
+                    <span className="text-primary text-[13px] font-mono hover:underline">
+                      {Account}
+                    </span>
+                  </Link>
+                </DetailRow>
+                {/* Show deposited assets */}
+                {(Amount || Amount2) && (
+                  <DetailRow label="Deposited">
+                    <div className="flex flex-wrap gap-2">
+                      {Amount && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                          style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            color: '#ef4444'
+                          }}
+                        >
+                          -{typeof Amount === 'string' ? (
+                            <>
+                              {dropsToXrp(Amount)}
+                              <XrpDisplay variant="body2" showText={true} />
+                            </>
+                          ) : (
+                            <>
+                              {formatDecimal(new Decimal(Amount.value))}
+                              <TokenDisplay
+                                slug={`${Amount.issuer}-${Amount.currency}`}
+                                currency={normalizeCurrencyCode(Amount.currency)}
+                                rawCurrency={Amount.currency}
+                                variant="body2"
+                              />
+                            </>
+                          )}
+                        </span>
+                      )}
+                      {Amount2 && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                          style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            color: '#ef4444'
+                          }}
+                        >
+                          -{typeof Amount2 === 'string' ? (
+                            <>
+                              {dropsToXrp(Amount2)}
+                              <XrpDisplay variant="body2" showText={true} />
+                            </>
+                          ) : (
+                            <>
+                              {formatDecimal(new Decimal(Amount2.value))}
+                              <TokenDisplay
+                                slug={`${Amount2.issuer}-${Amount2.currency}`}
+                                currency={normalizeCurrencyCode(Amount2.currency)}
+                                rawCurrency={Amount2.currency}
+                                variant="body2"
+                              />
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </DetailRow>
+                )}
+                {/* Show LP tokens received from metadata */}
+                {ammCreateDetails?.lpTokenBalance && (
+                  <DetailRow label="Received">
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[13px]"
+                      style={{
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                        color: '#10b981'
+                      }}
+                    >
+                      +{formatDecimal(new Decimal(ammCreateDetails.lpTokenBalance.value))}
+                      {(() => {
+                        // Derive LP token name from the deposited assets
+                        const asset1Name = typeof Amount === 'string' ? 'XRP' : normalizeCurrencyCode(Amount?.currency);
+                        const asset2Name = typeof Amount2 === 'string' ? 'XRP' : normalizeCurrencyCode(Amount2?.currency);
+                        const lpTokenName = asset1Name && asset2Name ? `${asset1Name}/${asset2Name} LP` : 'LP Token';
+                        return (
+                          <Link href={`/token/${ammCreateDetails.lpTokenBalance.issuer}-${ammCreateDetails.lpTokenBalance.currency}`}>
+                            <span className="text-primary hover:underline ml-1">
+                              {lpTokenName}
+                            </span>
+                          </Link>
+                        );
+                      })()}
+                      <span className={cn('text-[11px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                        ({ammCreateDetails.lpTokenBalance.issuer.slice(0, 6)}...{ammCreateDetails.lpTokenBalance.issuer.slice(-6)})
+                      </span>
+                    </span>
+                  </DetailRow>
+                )}
                 {txData.TradingFee !== undefined && (
-                  <DetailRow label="Trading Fee">
-                    <Typography variant="body1">{txData.TradingFee / 1000}%</Typography>
+                  <DetailRow label="Trading fee">
+                    <span className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                      {txData.TradingFee / 1000}%
+                    </span>
                   </DetailRow>
                 )}
-                {Asset && (
-                  <DetailRow label="Asset 1">
-                    <Typography variant="body1">
-                      {Asset.currency === 'XRP'
-                        ? 'XRP'
-                        : `${normalizeCurrencyCode(Asset.currency)} (${Asset.issuer?.slice(0, 8)}...)`}
-                    </Typography>
-                  </DetailRow>
-                )}
-                {Asset2 && (
-                  <DetailRow label="Asset 2">
-                    <Typography variant="body1">
-                      {Asset2.currency === 'XRP'
-                        ? 'XRP'
-                        : `${normalizeCurrencyCode(Asset2.currency)} (${Asset2.issuer?.slice(0, 8)}...)`}
-                    </Typography>
+                {/* Show specification of what was instructed */}
+                {(Amount || Amount2) && (
+                  <DetailRow label="Specification">
+                    <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                      It was instructed to deposit maximum{' '}
+                      {Amount && (
+                        <>
+                          {typeof Amount === 'string' ? dropsToXrp(Amount) : formatDecimal(new Decimal(Amount.value))}{' '}
+                          {typeof Amount === 'string' ? 'XRP' : normalizeCurrencyCode(Amount.currency)}
+                          {Amount.issuer && ` (${Amount.issuer.slice(0, 6)}...${Amount.issuer.slice(-6)})`}
+                        </>
+                      )}
+                      {Amount && Amount2 && ' and '}
+                      {Amount2 && (
+                        <>
+                          {typeof Amount2 === 'string' ? dropsToXrp(Amount2) : formatDecimal(new Decimal(Amount2.value))}{' '}
+                          {typeof Amount2 === 'string' ? 'XRP' : normalizeCurrencyCode(Amount2.currency)}
+                          {Amount2.issuer && ` (${Amount2.issuer.slice(0, 6)}...${Amount2.issuer.slice(-6)})`}
+                        </>
+                      )}
+                    </span>
                   </DetailRow>
                 )}
               </>
