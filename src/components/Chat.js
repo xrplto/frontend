@@ -296,6 +296,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
           }
           break;
         case 'online':
+        case 'userCount':
           setOnlineCount(data.count);
           break;
         case 'registered':
@@ -496,7 +497,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
     setAttachedToken(null);
   };
 
-  const baseClasses = isDark ? 'bg-black text-white border-white/10' : 'bg-white text-black border-black/10';
+  const baseClasses = isDark ? 'bg-[#0a0a0a] text-white border-white/10' : 'bg-[#fafafa] text-black border-black/10';
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -519,11 +520,11 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
         <div
           ref={containerRef}
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
-          className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl transition-opacity duration-200 ${isFocused ? 'opacity-100' : 'opacity-80 hover:opacity-95'}`}
+          className={`w-[480px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-inherit">
-            <div className="flex items-center gap-3">
-              <span className="font-semibold">Shoutbox</span>
+          <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">Shoutbox</span>
               {onlineCount > 0 && (
                 <span className="flex items-center gap-1.5 text-xs">
                   <span className="w-2 h-2 rounded-full bg-[#08AA09] animate-pulse" />
@@ -571,17 +572,17 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
           </div>
 
           {!accountProfile?.account ? (
-            <div className="h-[330px] flex items-center justify-center">
+            <div className="h-[280px] flex items-center justify-center">
               <div className="text-center opacity-50">
-                <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
-                <p>Connect wallet to chat</p>
+                <MessageCircle size={28} className="mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Connect wallet to chat</p>
               </div>
             </div>
           ) : !registered ? (
-            <div className="h-[330px] flex items-center justify-center">
+            <div className="h-[280px] flex items-center justify-center">
               <div className="text-center opacity-50">
-                <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p>Connecting...</p>
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <p className="text-sm">Connecting...</p>
               </div>
             </div>
           ) : (
@@ -594,10 +595,10 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
 
                 return (
                   <>
-                    <div className="flex gap-1 px-3 py-2 border-b border-inherit overflow-x-auto">
+                    <div className="flex gap-1 px-2 py-1.5 border-b border-inherit overflow-x-auto">
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
-                        className={`px-3 py-1 text-xs rounded-lg shrink-0 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'opacity-60 hover:opacity-100'}`}
+                        className={`px-2 py-0.5 text-[11px] rounded shrink-0 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'opacity-60 hover:opacity-100'}`}
                       >
                         General
                       </button>
@@ -609,14 +610,14 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                         <button
                           key={user}
                           onClick={() => openDmTab(user)}
-                          className={`px-3 py-1 text-xs rounded-lg shrink-0 flex items-center gap-1 ${activeTab === user ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}
+                          className={`px-2 py-0.5 text-[11px] rounded shrink-0 flex items-center gap-1 ${activeTab === user ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}
                         >
                           {user.slice(0, 6)}...{user.slice(-4)}
-                          <span onClick={(e) => closeDmTab(user, e)} className="hover:text-red-400 ml-1">×</span>
+                          <span onClick={(e) => closeDmTab(user, e)} className="hover:text-red-400">×</span>
                         </button>
                       ))}
                     </div>
-                    <div className="h-[330px] overflow-y-auto px-3 py-2 space-y-1 scroll-smooth">
+                    <div className="h-[280px] overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth">
                       {filtered.map((msg, i) => {
                         const isOwn = msg.username === accountProfile?.account;
                         const shortName = msg.username?.length > 12
@@ -624,21 +625,16 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                           : msg.username;
 
                         return (
-                          <div key={msg._id || i} className="flex items-start py-0.5">
-                            <span className="text-[9px] opacity-40 w-12 shrink-0 font-mono">
-                              {timeAgo(msg.timestamp)}
-                            </span>
-                            <div className="min-w-0">
-                              <button
-                                onClick={() => { if (!isOwn) openDmTab(msg.username); }}
-                                className={`text-sm font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                                title={isOwn ? 'You' : `DM ${msg.username}`}
-                              >
-                                {isOwn ? 'You' : shortName}
-                              </button>
-                              <span className="opacity-50">: </span>
-                              <span className="break-words">{renderMessage(msg.message)}</span>
-                            </div>
+                          <div key={msg._id || i} className="flex items-baseline gap-1.5 py-0.5 text-[13px] leading-relaxed">
+                            <span className="text-[10px] opacity-30 shrink-0">{timeAgo(msg.timestamp)}</span>
+                            <button
+                              onClick={() => { if (!isOwn) openDmTab(msg.username); }}
+                              className={`font-medium shrink-0 hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                              title={isOwn ? 'You' : `DM ${msg.username}`}
+                            >
+                              {isOwn ? 'You' : shortName}:
+                            </button>
+                            <span className="break-words min-w-0">{renderMessage(msg.message)}</span>
                           </div>
                         );
                       })}
@@ -647,7 +643,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                   </>
                 );
               })()}
-              <div className="p-3 border-t border-inherit">
+              <div className="p-2 border-t border-inherit">
                 {(attachedNft || attachedToken) && (
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {attachedToken && (
@@ -668,29 +664,20 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                     )}
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <input
-                      ref={inputRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value.slice(0, 256))}
-                      placeholder={activeTab === 'general' ? 'Message everyone...' : `DM ${activeTab.slice(0, 6)}...`}
-                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                      className={`w-full px-4 py-2.5 pr-12 rounded-xl border-[1.5px] ${baseClasses} outline-none focus:border-[#137DFE] transition-colors`}
-                    />
-                    {input.length > 200 && (
-                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 256 ? 'text-red-500' : 'opacity-50'}`}>
-                        {256 - input.length}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={sendMessage}
-                    disabled={!input.trim() && !attachedNft && !attachedToken}
-                    className="px-4 py-2.5 bg-[#137DFE] text-white rounded-xl hover:bg-[#137DFE]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Send size={18} />
-                  </button>
+                <div className="relative">
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value.slice(0, 256))}
+                    placeholder={activeTab === 'general' ? 'Message everyone...' : `DM ${activeTab.slice(0, 6)}...`}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    className={`w-full px-3 py-2 border-t border-b shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] outline-none text-sm ${isDark ? 'bg-[#1a1410]/90 text-[#d4b896] placeholder-[#6b5a45] border-[#3d3225] focus:border-[#8b7355]' : 'bg-[#f5ebe0] text-[#3d2b1f] placeholder-[#a08060] border-[#c9b896] focus:border-[#8b7355]'}`}
+                  />
+                  {input.length > 200 && (
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 256 ? 'text-red-500' : isDark ? 'text-[#6b5a45]' : 'text-[#a08060]'}`}>
+                      {256 - input.length}
+                    </span>
+                  )}
                 </div>
               </div>
             </>

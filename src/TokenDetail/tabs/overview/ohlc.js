@@ -227,7 +227,8 @@ const PriceChartAdvanced = memo(({ token }) => {
             tokenAmount: e.a || 0,
             xrpAmount: e.x || 0,
             hash: e.h,
-            color: colors[e.s] || '#9ca3af'
+            color: colors[e.s] || '#9ca3af',
+            currency: e.n || e.c || ''
           })).sort((a, b) => a.time - b.time));
       })
       .catch(() => setCreatorEvents([]));
@@ -1421,7 +1422,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             const d = Math.floor((Date.now() - t) / 1000);
             const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
             const isXrpType = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
-            const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) : '';
+            const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
             return (
               <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}>
                 <span style={{ color: e.color, fontWeight: 600, fontSize: '10px' }}>{e.type.replace('CHECK ','✓').replace('OTHER ','')}</span>

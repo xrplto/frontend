@@ -2985,20 +2985,6 @@ export default function WalletPage() {
                             <option value="name">Sort by Name</option>
                             <option value="change">Sort by 24h Change</option>
                           </select>
-                          <button
-                            onClick={() => setHideZeroBalance(!hideZeroBalance)}
-                            className={cn(
-                              'p-2.5 rounded-lg transition-colors duration-150',
-                              hideZeroBalance
-                                ? 'bg-[#137DFE] text-white'
-                                : isDark
-                                  ? 'bg-white/[0.04] text-white/50 hover:bg-[#137DFE]/5 hover:text-[#137DFE]'
-                                  : 'bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600'
-                            )}
-                            title={hideZeroBalance ? 'Show zero balances' : 'Hide zero balances'}
-                          >
-                            {hideZeroBalance ? <EyeOff size={16} /> : <Eye size={16} />}
-                          </button>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 mt-3">
