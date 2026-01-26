@@ -52,7 +52,6 @@ const formatMcap = (v) => {
 
 const Card = styled.div`
   width: 100%;
-  height: 100%;
   padding: ${(p) => (p.isMobile ? '10px' : '14px')};
   background: transparent;
   border: 1.5px solid ${(p) => (p.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
@@ -543,7 +542,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 570);
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 420 : 650);
     const containerWidth = chartContainerRef.current.clientWidth || 600;
     const chart = createChart(chartContainerRef.current, {
       width: containerWidth,
@@ -999,7 +998,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (!chartContainerRef.current || !chartRef.current) return;
 
     const container = chartContainerRef.current;
-    const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 360 : 570;
+    const newHeight = isFullscreen ? window.innerHeight - 100 : isMobile ? 400 : 620;
     const newWidth = container.clientWidth;
 
     // Use only applyOptions (resize is redundant)
@@ -1109,7 +1108,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   };
 
   return (
-    <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} style={{ flex: 1 }}>
       <div
         style={{
           display: 'flex',
@@ -1354,7 +1354,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       <div
         style={{
           position: 'relative',
-          height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '360px' : '570px',
+          height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '420px' : '650px',
           borderRadius: '8px',
           overflow: 'hidden'
         }}
@@ -1413,28 +1413,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           )}
       </div>
 
-      {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '11px' }}>
-          <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Creator</span>
-          {creatorEvents.slice(0, 12).map((e, i) => {
-            const f = (n) => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
-            const t = e.time > 1e12 ? e.time : e.time * 1000;
-            const d = Math.floor((Date.now() - t) / 1000);
-            const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
-            const isXrpType = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
-            const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-            return (
-              <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}>
-                <span style={{ color: e.color, fontWeight: 600, fontSize: '10px' }}>{e.type.replace('CHECK ','✓').replace('OTHER ','')}</span>
-                {val && <span style={{ fontFamily: 'var(--font-mono)' }}>{val}</span>}
-                <span style={{ opacity: 0.4 }}>{ago}</span>
-              </a>
-            );
-          })}
-          {creatorEvents.length > 12 && <span style={{ opacity: 0.4 }}>+{creatorEvents.length - 12}</span>}
-        </div>
-      )}
-
       {isFullscreen &&
         typeof document !== 'undefined' &&
         createPortal(
@@ -1464,6 +1442,29 @@ const PriceChartAdvanced = memo(({ token }) => {
           document.body
         )}
     </Card>
+
+    {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
+      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '11px', padding: isMobile ? '0 2px' : '0 4px' }}>
+        <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Creator</span>
+        {creatorEvents.slice(0, 12).map((e, i) => {
+          const f = (n) => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
+          const t = e.time > 1e12 ? e.time : e.time * 1000;
+          const d = Math.floor((Date.now() - t) / 1000);
+          const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
+          const isXrpType = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
+          const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
+          return (
+            <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}>
+              <span style={{ color: e.color, fontWeight: 600, fontSize: '10px' }}>{e.type.replace('CHECK ','✓').replace('OTHER ','')}</span>
+              {val && <span style={{ fontFamily: 'var(--font-mono)' }}>{val}</span>}
+              <span style={{ opacity: 0.4 }}>{ago}</span>
+            </a>
+          );
+        })}
+        {creatorEvents.length > 12 && <span style={{ opacity: 0.4 }}>+{creatorEvents.length - 12}</span>}
+      </div>
+    )}
+    </div>
   );
 });
 

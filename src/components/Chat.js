@@ -520,7 +520,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
         <div
           ref={containerRef}
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
-          className={`w-[480px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}
+          className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}
         >
           <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
             <div className="flex items-center gap-2">
@@ -572,14 +572,14 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
           </div>
 
           {!accountProfile?.account ? (
-            <div className="h-[280px] flex items-center justify-center">
+            <div className="h-[400px] flex items-center justify-center">
               <div className="text-center opacity-50">
                 <MessageCircle size={28} className="mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Connect wallet to chat</p>
               </div>
             </div>
           ) : !registered ? (
-            <div className="h-[280px] flex items-center justify-center">
+            <div className="h-[400px] flex items-center justify-center">
               <div className="text-center opacity-50">
                 <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                 <p className="text-sm">Connecting...</p>
@@ -617,7 +617,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                         </button>
                       ))}
                     </div>
-                    <div className="h-[280px] overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth">
+                    <div className="h-[400px] overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth">
                       {filtered.map((msg, i) => {
                         const isOwn = msg.username === accountProfile?.account;
                         const shortName = msg.username?.length > 12
