@@ -334,7 +334,7 @@ const DashboardPage = () => {
   const adminAddCredits = async () => {
     if (!isAdmin) return;
 
-    const { wallet, credits: creditAmount } = adminFormData;
+    const { wallet, credits: creditAmount, reason } = adminFormData;
     if (!wallet || !creditAmount) {
       setError('Wallet and credits amount are required');
       return;
@@ -345,10 +345,9 @@ const DashboardPage = () => {
 
     setAdminLoading(true);
     try {
-      await axios.post(`${BASE_URL}/keys/admin/add-credits`, {
-        wallet,
-        credits: parseInt(creditAmount, 10)
-      }, { headers });
+      const payload = { wallet, credits: parseInt(creditAmount, 10) };
+      if (reason) payload.reason = reason;
+      await axios.post(`${BASE_URL}/keys/admin/add-credits`, payload, { headers });
 
       setShowAdminAddCredits(false);
       setAdminFormData({});
@@ -1453,6 +1452,7 @@ const DashboardPage = () => {
             <div className="space-y-3">
               <input type="text" placeholder="Wallet address (rXXX...)" value={adminFormData.wallet || ''} onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <input type="number" placeholder="Credits amount (-1 for unlimited)" value={adminFormData.credits || ''} onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
+              <input type="text" placeholder="Reason (optional, e.g., promo)" value={adminFormData.reason || ''} onChange={(e) => setAdminFormData({ ...adminFormData, reason: e.target.value })} className={cn('w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]', isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200')} />
               <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Use -1 for unlimited credits</p>
             </div>
             <div className="flex gap-3 mt-4">
