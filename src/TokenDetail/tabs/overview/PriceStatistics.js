@@ -1719,7 +1719,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                             textTransform: 'uppercase'
                           }}
                         >
-                          {creatorLastAction.side || creatorLastAction.type}
+                          {(creatorLastAction.side || creatorLastAction.type || '').replace(/^other_/, '')}
                         </Typography>
                         {creatorLastAction.xrp >= 0.001 && (
                             <Typography
@@ -2685,7 +2685,7 @@ export const CompactSocialLinks = memo(
       switch (platform) {
         case 'twitter':
         case 'x':
-          return <Twitter size={iconSize} color={color} />;
+          return <X size={iconSize} color={color} />;
         case 'telegram':
           return <Send size={iconSize} color={color} />;
         case 'discord':
@@ -2705,7 +2705,7 @@ export const CompactSocialLinks = memo(
       switch (platform) {
         case 'twitter':
         case 'x':
-          return 'Twitter';
+          return 'X';
         case 'telegram':
           return 'Telegram';
         case 'discord':

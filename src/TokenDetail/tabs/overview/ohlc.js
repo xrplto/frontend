@@ -228,7 +228,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             hash: e.h,
             color: colors[e.s] || '#9ca3af',
             currency: e.n || e.c || ''
-          })).sort((a, b) => a.time - b.time));
+          })).sort((a, b) => b.time - a.time));
       })
       .catch(() => setCreatorEvents([]));
     return () => ctrl.abort();

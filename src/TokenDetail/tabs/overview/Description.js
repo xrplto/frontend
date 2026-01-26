@@ -173,7 +173,7 @@ export default function Description({
     setShowEditor(!showEditor);
   };
 
-  const hasSocial = token.social && Object.keys(token.social).some((k) => token.social[k]);
+  const hasSocial = token.domain || (token.social && Object.keys(token.social).some((k) => token.social[k]));
   const tags = token.tags || [];
   const hasTags = tags.length > 0;
   if (!description && !showEditor && !isAdmin && !hasSocial && !hasTags) return null;
@@ -233,7 +233,7 @@ export default function Description({
           }}
         >
           {hasSocial && (
-            <CompactSocialLinks social={token.social} isDark={effectiveIsDark} fullWidth />
+            <CompactSocialLinks social={{ ...token.social, website: token.domain }} isDark={effectiveIsDark} fullWidth />
           )}
           {hasSocial && hasTags && (
             <div
