@@ -262,6 +262,10 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const dmTabsRef = useRef(dmTabs);
+  const authUserRef = useRef(null);
+  useEffect(() => { dmTabsRef.current = dmTabs; }, [dmTabs]);
+  useEffect(() => { authUserRef.current = authUser; }, [authUser]);
   const [showInbox, setShowInbox] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
@@ -281,19 +285,26 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
   }, [messages, authUser?.wallet]);
 
   const connect = useCallback(() => {
+    const t0 = Date.now();
+    console.log('[Chat] connect() called');
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
+    ws.onopen = () => console.log('[Chat] ws.onopen', Date.now() - t0, 'ms');
+    ws.onerror = (e) => console.log('[Chat] ws.onerror', Date.now() - t0, 'ms', e);
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log('[Chat] msg:', data.type, Date.now() - t0, 'ms');
       if (data.users !== undefined) setOnlineCount(data.users);
       switch (data.type) {
         case 'authenticated':
+          console.log('[Chat] setRegistered(true)', Date.now() - t0, 'ms');
           setRegistered(true);
           setAuthUser({ wallet: data.wallet, username: data.username, tier: data.tier });
           // Fetch inbox and DM history
           ws.send(JSON.stringify({ type: 'inbox' }));
-          dmTabs.forEach(user => {
+          dmTabsRef.current.forEach(user => {
             ws.send(JSON.stringify({ type: 'history', with: user }));
           });
           break;
@@ -305,11 +316,12 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
           break;
         case 'inbox':
           if (data.conversations?.length) {
-            // Add users to DM tabs (except closed ones)
+            // Add users to DM tabs (except closed ones and self)
             const closed = JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
-            const newUsers = data.conversations.map(c => c.wallet).filter(u => !dmTabs.includes(u) && !closed.includes(u));
+            const myWallet = authUserRef.current?.wallet;
+            const newUsers = data.conversations.map(c => c.wallet).filter(u => u && u !== myWallet && !dmTabsRef.current.includes(u) && !closed.includes(u));
             if (newUsers.length) {
-              const newTabs = [...dmTabs, ...newUsers];
+              const newTabs = [...dmTabsRef.current, ...newUsers];
               setDmTabs(newTabs);
               localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
             }
@@ -336,9 +348,10 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
           });
           // Auto-open tab for incoming DM
           const senderWallet = data.wallet || data.address || data.username;
-          const dmUser = senderWallet === authUser?.wallet ? (data.recipientWallet || data.recipient) : senderWallet;
-          if (dmUser && !dmTabs.includes(dmUser)) {
-            const newTabs = [...dmTabs, dmUser];
+          const myWallet2 = authUserRef.current?.wallet;
+          const dmUser = senderWallet === myWallet2 ? (data.recipientWallet || data.recipient) : senderWallet;
+          if (dmUser && dmUser !== myWallet2 && !dmTabsRef.current.includes(dmUser)) {
+            const newTabs = [...dmTabsRef.current, dmUser];
             setDmTabs(newTabs);
             localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
           }
@@ -358,16 +371,19 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
       }
     };
 
-    ws.onclose = () => {
+    ws.onclose = (e) => {
+      console.log('[Chat] ws.onclose', e.code, e.reason);
       setRegistered(false);
       setAuthUser(null);
       setTimeout(connect, 3000);
     };
 
     return ws;
-  }, [wsUrl, dmTabs]);
+  }, [wsUrl]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    console.log('[Chat] opened, calling connect()');
     const ws = connect();
     const pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -376,10 +392,11 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUI
     }, 30000);
 
     return () => {
+      console.log('[Chat] cleanup, closing ws');
       clearInterval(pingInterval);
       ws.close();
     };
-  }, [connect]);
+  }, [isOpen, connect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
