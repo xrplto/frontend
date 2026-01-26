@@ -1101,26 +1101,51 @@ const DashboardPage = () => {
                   <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Monitor your API usage and limits</p>
                 </div>
 
-                {usage?.usage?.[0] && (
-                  <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Today's Usage</h3>
-                      <span className={cn('text-[12px] px-2 py-1 rounded-full', tiers.find(t => t.id === (usage.usage[0].tier || 'free'))?.color, isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                        {(usage.usage[0].tier || 'free').toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <div className={cn('h-3 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min((usage.usage[0].today?.used / usage.usage[0].today?.limit) * 100, 100)}%` }} />
-                        </div>
+                {usage?.usage?.[0] && (() => {
+                  const tierData = usage.usage[0];
+                  const isUnlimited = !tierData.today?.limit || tierData.today?.limit === -1 || tierData.tier === 'god';
+                  const usedCount = tierData.today?.used || 0;
+                  const tierInfo = tiers.find(t => t.id === (tierData.tier || 'free'));
+
+                  return (
+                    <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Today's Usage</h3>
+                        <span className={cn('text-[12px] px-2 py-1 rounded-full', tierInfo?.color, isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                          {(tierData.tier || 'free').toUpperCase()}
+                        </span>
                       </div>
-                      <span className={cn('text-[13px] font-mono', isDark ? 'text-white/60' : 'text-gray-600')}>
-                        {usage.usage[0].today?.used?.toLocaleString()} / {usage.usage[0].today?.limit?.toLocaleString()}
-                      </span>
+
+                      {isUnlimited ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Infinity size={24} className="text-primary" />
+                            <div>
+                              <div className={cn('text-2xl font-semibold', isDark ? 'text-white' : 'text-gray-900')}>
+                                {usedCount.toLocaleString()}
+                              </div>
+                              <div className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-500')}>requests today</div>
+                            </div>
+                          </div>
+                          <div className={cn('text-[13px] px-3 py-1.5 rounded-lg', isDark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary')}>
+                            Unlimited
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1">
+                            <div className={cn('h-3 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min((usedCount / tierData.today?.limit) * 100, 100)}%` }} />
+                            </div>
+                          </div>
+                          <span className={cn('text-[13px] font-mono', isDark ? 'text-white/60' : 'text-gray-600')}>
+                            {usedCount.toLocaleString()} / {tierData.today?.limit?.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {credits?.billingCycle && (
                   <div className={cn('p-5 rounded-xl border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white')}>

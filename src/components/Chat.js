@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { MessageCircle, X, Send, Inbox } from 'lucide-react';
+import { X, Inbox } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 const timeAgo = (ts) => {
@@ -229,8 +229,8 @@ const renderMessage = (text) => {
   return parts;
 };
 
-const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
-  const { themeName, accountProfile } = useContext(AppContext);
+const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta' }) => {
+  const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -239,6 +239,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
     } catch { return false; }
   });
   const [registered, setRegistered] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [input, setInput] = useState('');
@@ -265,16 +266,19 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
 
+  const getWallet = (m) => m.wallet || m.address || m.username;
+  const getRecipient = (m) => m.recipientWallet || m.recipient;
+
   const conversations = useMemo(() => {
     const convos = {};
     messages.filter(m => m.isPrivate || m.type === 'private').forEach(m => {
-      const other = m.username === accountProfile?.account ? m.recipient : m.username;
+      const other = getWallet(m) === authUser?.wallet ? getRecipient(m) : getWallet(m);
       if (other && (!convos[other] || m.timestamp > convos[other].timestamp)) {
-        convos[other] = { ...m, unread: !convos[other]?.read && m.username !== accountProfile?.account };
+        convos[other] = { ...m, unread: !convos[other]?.read && getWallet(m) !== authUser?.wallet };
       }
     });
     return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
-  }, [messages, accountProfile?.account]);
+  }, [messages, authUser?.wallet]);
 
   const connect = useCallback(() => {
     const ws = new WebSocket(wsUrl);
@@ -284,36 +288,26 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
       const data = JSON.parse(event.data);
       if (data.users !== undefined) setOnlineCount(data.users);
       switch (data.type) {
-        case 'init':
-          setMessages(data.messages || []);
-          // Auto-register after init
-          if (accountProfile?.account) {
-            ws.send(JSON.stringify({
-              type: 'register',
-              username: accountProfile.username || accountProfile.account,
-              address: accountProfile.account
-            }));
-          }
-          break;
-        case 'online':
-        case 'userCount':
-          setOnlineCount(data.count);
-          break;
-        case 'registered':
+        case 'authenticated':
           setRegistered(true);
-          if (data.users !== undefined) setOnlineCount(data.users);
-          // Fetch inbox conversations
+          setAuthUser({ wallet: data.wallet, username: data.username, tier: data.tier });
+          // Fetch inbox and DM history
           ws.send(JSON.stringify({ type: 'inbox' }));
-          // Fetch history for saved DM tabs
           dmTabs.forEach(user => {
             ws.send(JSON.stringify({ type: 'history', with: user }));
           });
+          break;
+        case 'init':
+          setMessages(data.messages || []);
+          break;
+        case 'userCount':
+          setOnlineCount(data.count);
           break;
         case 'inbox':
           if (data.conversations?.length) {
             // Add users to DM tabs (except closed ones)
             const closed = JSON.parse(localStorage.getItem('chat_closed_dms') || '[]');
-            const newUsers = data.conversations.map(c => c.user).filter(u => !dmTabs.includes(u) && !closed.includes(u));
+            const newUsers = data.conversations.map(c => c.wallet).filter(u => !dmTabs.includes(u) && !closed.includes(u));
             if (newUsers.length) {
               const newTabs = [...dmTabs, ...newUsers];
               setDmTabs(newTabs);
@@ -341,7 +335,8 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
             return [...prev, data];
           });
           // Auto-open tab for incoming DM
-          const dmUser = data.username === accountProfile?.account ? data.recipient : data.username;
+          const senderWallet = data.wallet || data.address || data.username;
+          const dmUser = senderWallet === authUser?.wallet ? (data.recipientWallet || data.recipient) : senderWallet;
           if (dmUser && !dmTabs.includes(dmUser)) {
             const newTabs = [...dmTabs, dmUser];
             setDmTabs(newTabs);
@@ -365,11 +360,12 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
 
     ws.onclose = () => {
       setRegistered(false);
+      setAuthUser(null);
       setTimeout(connect, 3000);
     };
 
     return ws;
-  }, [wsUrl, accountProfile?.account]);
+  }, [wsUrl, dmTabs]);
 
   useEffect(() => {
     const ws = connect();
@@ -419,7 +415,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
   useEffect(() => {
     const handleOpenDm = (e) => {
       const { user, nftId, tokenMd5 } = e.detail || {};
-      if (user && user !== accountProfile?.account) {
+      if (user && user !== authUser?.wallet) {
         setIsOpen(true);
         setTimeout(() => {
           openDmTab(user);
@@ -430,10 +426,10 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
     };
     window.addEventListener('openDm', handleOpenDm);
     return () => window.removeEventListener('openDm', handleOpenDm);
-  }, [accountProfile?.account]);
+  }, [authUser?.wallet]);
 
   const openDmTab = (user) => {
-    if (user && user !== accountProfile?.account && !dmTabs.includes(user)) {
+    if (user && user !== authUser?.wallet && !dmTabs.includes(user)) {
       const newTabs = [...dmTabs, user];
       setDmTabs(newTabs);
       localStorage.setItem('chat_dm_tabs', JSON.stringify(newTabs));
@@ -470,16 +466,6 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
     }
   };
 
-  // Auto-register when connected and logged in
-  useEffect(() => {
-    if (accountProfile?.account && wsRef.current?.readyState === WebSocket.OPEN && !registered) {
-      wsRef.current.send(JSON.stringify({
-        type: 'register',
-        username: accountProfile.account,
-        address: accountProfile.account
-      }));
-    }
-  }, [accountProfile?.account, registered]);
 
   const sendMessage = () => {
     if ((!input && !attachedNft && !attachedToken) || wsRef.current?.readyState !== WebSocket.OPEN) return;
@@ -571,14 +557,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
             </div>
           </div>
 
-          {!accountProfile?.account ? (
-            <div className="h-[400px] flex items-center justify-center">
-              <div className="text-center opacity-50">
-                <MessageCircle size={28} className="mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Connect wallet to chat</p>
-              </div>
-            </div>
-          ) : !registered ? (
+          {!registered ? (
             <div className="h-[400px] flex items-center justify-center">
               <div className="text-center opacity-50">
                 <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -591,7 +570,7 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                 const filtered = activeTab === 'general'
                   ? messages.filter(m => !m.isPrivate && m.type !== 'private')
                   : messages.filter(m => (m.isPrivate || m.type === 'private') &&
-                      (m.username === activeTab || m.recipient === activeTab));
+                      (getWallet(m) === activeTab || getRecipient(m) === activeTab));
 
                 return (
                   <>
@@ -619,18 +598,20 @@ const Chat = ({ wsUrl = 'wss://api.xrpl.to/ws/chat' }) => {
                     </div>
                     <div className="h-[400px] overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth">
                       {filtered.map((msg, i) => {
-                        const isOwn = msg.username === accountProfile?.account;
-                        const shortName = msg.username?.length > 12
-                          ? `${msg.username.slice(0, 6)}...${msg.username.slice(-4)}`
-                          : msg.username;
+                        const msgWallet = getWallet(msg);
+                        const isOwn = msgWallet === authUser?.wallet;
+                        const displayName = msg.username || msgWallet;
+                        const shortName = displayName?.length > 12
+                          ? `${displayName.slice(0, 6)}...${displayName.slice(-4)}`
+                          : displayName;
 
                         return (
                           <div key={msg._id || i} className="flex items-baseline gap-1.5 py-0.5 text-[13px] leading-relaxed">
                             <span className="text-[10px] opacity-30 shrink-0">{timeAgo(msg.timestamp)}</span>
                             <button
-                              onClick={() => { if (!isOwn) openDmTab(msg.username); }}
+                              onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
                               className={`font-medium shrink-0 hover:underline ${isOwn ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                              title={isOwn ? 'You' : `DM ${msg.username}`}
+                              title={isOwn ? 'You' : `DM ${msgWallet}`}
                             >
                               {isOwn ? 'You' : shortName}:
                             </button>

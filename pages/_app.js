@@ -353,7 +353,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <TransactionAlert />
             <Wallet />
             <BridgeTracker />
-            <Chat wsUrl="wss://api.xrpl.to/ws/chat" />
+            <Chat />
           </ThemeProvider>
         </ContextProvider>
       </div>
