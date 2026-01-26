@@ -8,18 +8,22 @@ import {
   Plus,
   Copy,
   Trash2,
-  Eye,
-  EyeOff,
   CheckCircle,
   AlertCircle,
   Loader2,
   RefreshCw,
   CreditCard,
-  Lock,
   Coins,
   Zap,
   X,
-  Calendar
+  Calendar,
+  Shield,
+  BarChart3,
+  DollarSign,
+  MessageSquare,
+  Settings,
+  Search,
+  Infinity
 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
@@ -51,6 +55,20 @@ const DashboardPage = () => {
   const [txHash, setTxHash] = useState('');
   const [paymentStatus, setPaymentStatus] = useState(null); // 'signing' | 'submitting' | 'verifying'
   const [billingPeriod, setBillingPeriod] = useState('monthly'); // 'monthly' | 'yearly'
+
+  // Admin state
+  const [adminTab, setAdminTab] = useState('usage'); // 'usage' | 'credits' | 'revenue' | 'keys' | 'chat'
+  const [adminUsage, setAdminUsage] = useState(null);
+  const [adminCredits, setAdminCredits] = useState(null);
+  const [adminRevenue, setAdminRevenue] = useState(null);
+  const [adminChatKeys, setAdminChatKeys] = useState(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [showAdminCreateKey, setShowAdminCreateKey] = useState(false);
+  const [showAdminAddCredits, setShowAdminAddCredits] = useState(false);
+  const [showAdminChatAccess, setShowAdminChatAccess] = useState(false);
+  const [showAdminPlatformKey, setShowAdminPlatformKey] = useState(false);
+  const [adminFormData, setAdminFormData] = useState({});
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
 
   const router = useRouter();
 
@@ -104,77 +122,7 @@ const DashboardPage = () => {
   ];
 
   const walletAddress = accountProfile?.account;
-  const [debugInfo, setDebugInfo] = useState(null);
-
-  // Debug: Log account profile and fetch seed
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) return;
-
-      let walletKeyId =
-        accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id
-          ? `${accountProfile.provider}_${accountProfile.provider_id}`
-          : null);
-
-      let seed = accountProfile.seed || null;
-
-      // If no seed in profile, try to fetch from storage
-      if (
-        !seed &&
-        (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')
-      ) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(
-              accountProfile.account,
-              storedPassword
-            );
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      // Handle device wallets
-      if (!seed && accountProfile.wallet_type === 'device') {
-        try {
-          const { EncryptedWalletStorage, deviceFingerprint } =
-            await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const deviceKeyId = await deviceFingerprint.getDeviceId();
-          walletKeyId = deviceKeyId;
-          if (deviceKeyId) {
-            const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
-            if (storedPassword) {
-              const walletData = await walletStorage.getWallet(
-                accountProfile.account,
-                storedPassword
-              );
-              seed = walletData?.seed || 'encrypted';
-            }
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId: walletKeyId,
-        accountIndex: accountProfile.accountIndex,
-        seed: seed || 'N/A'
-      });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Detect algorithm from seed prefix
   const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
@@ -201,7 +149,13 @@ const DashboardPage = () => {
         if (storedPassword) {
           const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
           if (walletData?.seed) {
-            return Wallet.fromSeed(walletData.seed, { algorithm: getAlgorithmFromSeed(walletData.seed) });
+            const wallet = Wallet.fromSeed(walletData.seed, { algorithm: getAlgorithmFromSeed(walletData.seed) });
+            // Verify derived wallet matches expected address
+            if (wallet.address !== accountProfile.account) {
+              console.error('Wallet mismatch:', { derived: wallet.address, expected: accountProfile.account });
+              return null;
+            }
+            return wallet;
           }
         }
         return null;
@@ -294,10 +248,176 @@ const DashboardPage = () => {
       ]);
       setCredits(creditsRes.data);
       if (subRes?.data) setSubscription(subRes.data);
+      // Check admin status from API response
+      if (creditsRes.data?.isAdmin || creditsRes.data?.admin) {
+        setIsAdmin(true);
+      }
     } catch (err) {
       console.error('Failed to fetch credits:', err);
     }
   }, [walletAddress]);
+
+  // Admin fetch functions
+  const fetchAdminData = useCallback(async (tab) => {
+    if (!isAdmin) return;
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    setAdminLoading(true);
+    try {
+      switch (tab) {
+        case 'usage':
+          const usageRes = await axios.get(`${BASE_URL}/keys/admin/usage`, { headers });
+          setAdminUsage(usageRes.data);
+          break;
+        case 'credits':
+          const creditsRes = await axios.get(`${BASE_URL}/keys/admin/credits`, { headers });
+          setAdminCredits(creditsRes.data);
+          break;
+        case 'revenue':
+          const revenueRes = await axios.get(`${BASE_URL}/keys/admin/revenue`, { headers });
+          setAdminRevenue(revenueRes.data);
+          break;
+        case 'chat':
+          const chatRes = await axios.get(`${BASE_URL}/keys/admin/chat-keys`, { headers });
+          setAdminChatKeys(chatRes.data);
+          break;
+      }
+    } catch (err) {
+      console.error(`Failed to fetch admin ${tab}:`, err);
+      setError(err.response?.data?.message || err.response?.data?.error || `Failed to load admin ${tab}`);
+    } finally {
+      setAdminLoading(false);
+    }
+  }, [isAdmin, getAuthHeaders]);
+
+  // Admin action: Create partner key
+  const adminCreateKey = async () => {
+    if (!isAdmin) return;
+
+    const { wallet, name, tier } = adminFormData;
+    if (!wallet || !name) {
+      setError('Wallet and name are required');
+      return;
+    }
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    setAdminLoading(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/keys/admin/create-key`, {
+        wallet,
+        name,
+        tier: tier || 'free'
+      }, { headers });
+
+      setNewKey(res.data.apiKey);
+      setShowAdminCreateKey(false);
+      setAdminFormData({});
+      fetchAdminData('usage');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create partner key');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // Admin action: Add credits
+  const adminAddCredits = async () => {
+    if (!isAdmin) return;
+
+    const { wallet, credits: creditAmount } = adminFormData;
+    if (!wallet || !creditAmount) {
+      setError('Wallet and credits amount are required');
+      return;
+    }
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    setAdminLoading(true);
+    try {
+      await axios.post(`${BASE_URL}/keys/admin/add-credits`, {
+        wallet,
+        credits: parseInt(creditAmount, 10)
+      }, { headers });
+
+      setShowAdminAddCredits(false);
+      setAdminFormData({});
+      fetchAdminData('credits');
+      setStripeSuccess({ message: `Added ${parseInt(creditAmount, 10).toLocaleString()} credits to ${wallet}` });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add credits');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // Admin action: Grant/revoke chat access
+  const adminSetChatAccess = async () => {
+    if (!isAdmin) return;
+
+    const { wallet, chatAccess, platform } = adminFormData;
+    if (!wallet) {
+      setError('Wallet is required');
+      return;
+    }
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    setAdminLoading(true);
+    try {
+      await axios.post(`${BASE_URL}/keys/admin/chat-access`, {
+        wallet,
+        chatAccess: chatAccess !== false,
+        platform: platform || ''
+      }, { headers });
+
+      setShowAdminChatAccess(false);
+      setAdminFormData({});
+      fetchAdminData('chat');
+      setStripeSuccess({ message: `Chat access ${chatAccess !== false ? 'granted' : 'revoked'} for ${wallet}` });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update chat access');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // Admin action: Create platform key
+  const adminCreatePlatformKey = async () => {
+    if (!isAdmin) return;
+
+    const { wallet, platform, tier } = adminFormData;
+    if (!wallet || !platform) {
+      setError('Wallet and platform are required');
+      return;
+    }
+
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+
+    setAdminLoading(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/keys/admin/platform-key`, {
+        wallet,
+        platform,
+        tier: tier || 'developer'
+      }, { headers });
+
+      setNewKey(res.data.apiKey);
+      setShowAdminPlatformKey(false);
+      setAdminFormData({});
+      fetchAdminData('usage');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create platform key');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (accountProfile?.account) {
@@ -305,8 +425,16 @@ const DashboardPage = () => {
       fetchCredits();
     } else {
       setLoading(false);
+      setIsAdmin(false);
     }
   }, [accountProfile, fetchApiKeys, fetchCredits]);
+
+  // Auto-fetch admin data when admin status is confirmed
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminData('usage');
+    }
+  }, [isAdmin, fetchAdminData]);
 
   // Handle Stripe return
   useEffect(() => {
@@ -601,6 +729,29 @@ const DashboardPage = () => {
     });
   };
 
+  const formatCredits = (balance) => {
+    if (balance === -1) return 'Unlimited';
+    if (typeof balance === 'number') return balance.toLocaleString();
+    return balance || '0';
+  };
+
+  // Helper to extract array from various API response structures
+  const getDataArray = (data, ...keys) => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    for (const key of keys) {
+      if (Array.isArray(data[key])) return data[key];
+    }
+    // If it's an object with entries, try to convert
+    if (typeof data === 'object' && !Array.isArray(data)) {
+      const values = Object.values(data);
+      if (values.length > 0 && typeof values[0] === 'object') {
+        return values;
+      }
+    }
+    return [];
+  };
+
   if (!accountProfile?.account) {
     return (
       <div className="flex-1">
@@ -666,40 +817,6 @@ const DashboardPage = () => {
               Create Key
             </button>
           </div>
-
-          {/* Debug Panel */}
-          {debugInfo && (
-            <div
-              className={cn(
-                'mb-6 p-4 rounded-xl border-[1.5px] font-mono text-[11px]',
-                isDark ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-yellow-200 bg-yellow-50'
-              )}
-            >
-              <div className="font-medium mb-2 text-yellow-600">Debug Info:</div>
-              <div className="space-y-1">
-                <div>
-                  wallet_type:{' '}
-                  <span className="text-primary">{debugInfo.wallet_type || 'undefined'}</span>
-                </div>
-                <div>
-                  account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-                </div>
-                <div>
-                  walletKeyId:{' '}
-                  <span className={debugInfo.walletKeyId ? 'text-green-500' : 'text-red-500'}>
-                    {debugInfo.walletKeyId || 'undefined'}
-                  </span>
-                </div>
-                <div>
-                  accountIndex:{' '}
-                  <span className="opacity-70">{debugInfo.accountIndex ?? 'undefined'}</span>
-                </div>
-                <div>
-                  seed: <span className="text-green-500 break-all">{debugInfo.seed}</span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Error */}
           {error && (
@@ -797,6 +914,610 @@ const DashboardPage = () => {
             </div>
           )}
 
+          {/* Admin Panel */}
+          {isAdmin && (
+            <div
+              className={cn(
+                'mb-6 rounded-xl border-[1.5px] overflow-hidden',
+                isDark ? 'border-primary/30 bg-primary/5' : 'border-primary/20 bg-primary/5'
+              )}
+            >
+              {/* Admin Header */}
+              <div
+                className={cn(
+                  'px-5 py-4 border-b flex items-center justify-between',
+                  isDark ? 'border-primary/20' : 'border-primary/10'
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Shield size={20} className="text-primary" />
+                  </div>
+                  <div>
+                    <h2 className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                      Admin Panel
+                    </h2>
+                    <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+                      Manage all API keys, credits, and subscriptions
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowAdminCreateKey(true)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
+                      'bg-primary text-white hover:bg-primary/90'
+                    )}
+                  >
+                    <Key size={14} />
+                    Create Key
+                  </button>
+                  <button
+                    onClick={() => setShowAdminAddCredits(true)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
+                      'bg-emerald-500 text-white hover:bg-emerald-600'
+                    )}
+                  >
+                    <Coins size={14} />
+                    Add Credits
+                  </button>
+                  <button
+                    onClick={() => setShowAdminChatAccess(true)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
+                      isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
+                    )}
+                  >
+                    <MessageSquare size={14} />
+                    Chat Access
+                  </button>
+                  <button
+                    onClick={() => setShowAdminPlatformKey(true)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5',
+                      isDark ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'
+                    )}
+                  >
+                    <Settings size={14} />
+                    Platform Key
+                  </button>
+                </div>
+              </div>
+
+              {/* Admin Tabs */}
+              <div className={cn('flex border-b', isDark ? 'border-primary/20' : 'border-primary/10')}>
+                {[
+                  { id: 'usage', label: 'API Usage', icon: BarChart3 },
+                  { id: 'credits', label: 'All Credits', icon: Coins },
+                  { id: 'revenue', label: 'Revenue', icon: DollarSign },
+                  { id: 'chat', label: 'Chat Keys', icon: MessageSquare }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setAdminTab(tab.id);
+                      fetchAdminData(tab.id);
+                    }}
+                    className={cn(
+                      'flex-1 px-4 py-3 text-[13px] font-medium flex items-center justify-center gap-2 transition-colors',
+                      adminTab === tab.id
+                        ? 'text-primary border-b-2 border-primary'
+                        : isDark
+                          ? 'text-white/60 hover:text-white'
+                          : 'text-gray-600 hover:text-gray-900'
+                    )}
+                  >
+                    <tab.icon size={16} />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Admin Content */}
+              <div className="p-5">
+                {/* Search */}
+                <div className="mb-4">
+                  <div
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 rounded-lg border-[1.5px]',
+                      isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'
+                    )}
+                  >
+                    <Search size={16} className="opacity-40" />
+                    <input
+                      type="text"
+                      placeholder="Search by wallet address..."
+                      value={adminSearchQuery}
+                      onChange={(e) => setAdminSearchQuery(e.target.value)}
+                      className="flex-1 bg-transparent text-[13px] outline-none placeholder:opacity-40"
+                    />
+                  </div>
+                </div>
+
+                {adminLoading ? (
+                  <div className="py-12 text-center">
+                    <Loader2 size={24} className="mx-auto animate-spin opacity-40" />
+                  </div>
+                ) : (
+                  <>
+                    {/* Usage Tab */}
+                    {adminTab === 'usage' && adminUsage && (
+                      <div className="space-y-3">
+                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          Total: {adminUsage.summary?.totalUsers || getDataArray(adminUsage, 'users', 'keys', 'data').length} users
+                        </div>
+                        <div className="max-h-[400px] overflow-y-auto space-y-2">
+                          {getDataArray(adminUsage, 'users', 'keys', 'data')
+                            .filter((k) =>
+                              !adminSearchQuery ||
+                              k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
+                              k.name?.toLowerCase().includes(adminSearchQuery.toLowerCase())
+                            )
+                            .map((key, idx) => (
+                              <div
+                                key={key.id || key._id || idx}
+                                className={cn(
+                                  'p-3 rounded-lg flex items-center justify-between',
+                                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                                )}
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                                      {key.name || 'Unnamed'}
+                                    </span>
+                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                                      {key.tier || 'free'}
+                                    </span>
+                                  </div>
+                                  <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                    {key.wallet}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                                    {key.usage?.today?.toLocaleString() || 0} today
+                                  </div>
+                                  <div className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                    {key.usage?.total?.toLocaleString() || 0} total
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Credits Tab */}
+                    {adminTab === 'credits' && adminCredits && (
+                      <div className="space-y-3">
+                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          Total: {adminCredits.summary?.totalAccounts || getDataArray(adminCredits, 'accounts', 'wallets', 'data').length} accounts
+                        </div>
+                        <div className="max-h-[400px] overflow-y-auto space-y-2">
+                          {getDataArray(adminCredits, 'accounts', 'wallets', 'data')
+                            .filter((w) =>
+                              !adminSearchQuery ||
+                              w.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase())
+                            )
+                            .map((wallet, idx) => (
+                              <div
+                                key={wallet.wallet || idx}
+                                className={cn(
+                                  'p-3 rounded-lg flex items-center justify-between',
+                                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                                )}
+                              >
+                                <div className="font-mono text-[12px]">{wallet.wallet}</div>
+                                <div className="flex items-center gap-3">
+                                  <div className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                                    {wallet.balance === -1 ? (
+                                      <span className="flex items-center gap-1 text-primary">
+                                        <Infinity size={16} />
+                                        Unlimited
+                                      </span>
+                                    ) : (
+                                      formatCredits(wallet.balance)
+                                    )}
+                                  </div>
+                                  {wallet.tier && (
+                                    <span className={cn('text-[11px] px-2 py-0.5 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                                      {wallet.tier}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Revenue Tab */}
+                    {adminTab === 'revenue' && adminRevenue && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              Total Payments
+                            </div>
+                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                              {adminRevenue.totalPayments || 0}
+                            </div>
+                          </div>
+                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              Total XRP
+                            </div>
+                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                              {(adminRevenue.totalXRP || 0).toLocaleString()} XRP
+                            </div>
+                          </div>
+                          <div className={cn('p-4 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                            <div className={cn('text-[11px] uppercase tracking-wide mb-1', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              Total USD
+                            </div>
+                            <div className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                              ${(adminRevenue.totalUSD || adminRevenue.total?.usd || 0).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        {adminRevenue.recentPayments?.length > 0 && (
+                          <div>
+                            <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
+                              Recent Payments
+                            </div>
+                            <div className="space-y-2">
+                              {adminRevenue.recentPayments.map((p, idx) => (
+                                <div
+                                  key={p.txHash || idx}
+                                  className={cn('p-3 rounded-lg flex items-center justify-between', isDark ? 'bg-white/5' : 'bg-gray-50')}
+                                >
+                                  <div className="font-mono text-[11px]">{p.wallet?.slice(0, 12)}...</div>
+                                  <div className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                                    {p.amount} {p.currency || 'XRP'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Chat Keys Tab */}
+                    {adminTab === 'chat' && adminChatKeys && (
+                      <div className="space-y-3">
+                        <div className={cn('text-[12px] mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>
+                          Total: {adminChatKeys.count || getDataArray(adminChatKeys, 'keys', 'data').length} chat-enabled keys
+                        </div>
+                        <div className="max-h-[400px] overflow-y-auto space-y-2">
+                          {getDataArray(adminChatKeys, 'keys', 'data', 'chatKeys')
+                            .filter((k) =>
+                              !adminSearchQuery ||
+                              k.wallet?.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
+                              k.platform?.toLowerCase().includes(adminSearchQuery.toLowerCase())
+                            )
+                            .map((key, idx) => (
+                              <div
+                                key={key.id || key._id || idx}
+                                className={cn(
+                                  'p-3 rounded-lg flex items-center justify-between',
+                                  isDark ? 'bg-white/5' : 'bg-gray-50'
+                                )}
+                              >
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <MessageSquare size={14} className="text-primary" />
+                                    <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                                      {key.platform || 'Default'}
+                                    </span>
+                                  </div>
+                                  <div className={cn('text-[11px] font-mono mt-0.5', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                    {key.wallet}
+                                  </div>
+                                </div>
+                                <div className={cn('text-[11px]', key.chatAccess ? 'text-emerald-500' : 'text-red-500')}>
+                                  {key.chatAccess ? 'Active' : 'Revoked'}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Admin Create Key Modal */}
+          {showAdminCreateKey && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
+                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
+                  Create Partner API Key
+                </h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Wallet address (rXXX...)"
+                    value={adminFormData.wallet || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Key name"
+                    value={adminFormData.name || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <select
+                    value={adminFormData.tier || 'free'}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  >
+                    <option value="free">Free</option>
+                    <option value="developer">Developer</option>
+                    <option value="business">Business</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowAdminCreateKey(false);
+                      setAdminFormData({});
+                    }}
+                    className={cn(
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
+                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                    )}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={adminCreateKey}
+                    disabled={adminLoading}
+                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Key'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Add Credits Modal */}
+          {showAdminAddCredits && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
+                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
+                  Add Credits to Wallet
+                </h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Wallet address (rXXX...)"
+                    value={adminFormData.wallet || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Credits amount (-1 for unlimited)"
+                    value={adminFormData.credits || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, credits: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                    Use -1 for unlimited credits
+                  </p>
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowAdminAddCredits(false);
+                      setAdminFormData({});
+                    }}
+                    className={cn(
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
+                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                    )}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={adminAddCredits}
+                    disabled={adminLoading}
+                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+                  >
+                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Add Credits'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Chat Access Modal */}
+          {showAdminChatAccess && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
+                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
+                  Manage Chat Access
+                </h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Wallet address (rXXX...)"
+                    value={adminFormData.wallet || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Platform (optional)"
+                    value={adminFormData.platform || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="chatAccess"
+                        checked={adminFormData.chatAccess !== false}
+                        onChange={() => setAdminFormData({ ...adminFormData, chatAccess: true })}
+                        className="accent-primary"
+                      />
+                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Grant Access</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="chatAccess"
+                        checked={adminFormData.chatAccess === false}
+                        onChange={() => setAdminFormData({ ...adminFormData, chatAccess: false })}
+                        className="accent-red-500"
+                      />
+                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>Revoke Access</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowAdminChatAccess(false);
+                      setAdminFormData({});
+                    }}
+                    className={cn(
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
+                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                    )}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={adminSetChatAccess}
+                    disabled={adminLoading}
+                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Update Access'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Platform Key Modal */}
+          {showAdminPlatformKey && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div
+                className={cn(
+                  'w-full max-w-md mx-4 p-6 rounded-xl border-[1.5px]',
+                  isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+                )}
+              >
+                <h3 className={cn('text-lg font-medium mb-4', isDark ? 'text-white' : 'text-gray-900')}>
+                  Create Platform API Key
+                </h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Wallet address (rXXX...)"
+                    value={adminFormData.wallet || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, wallet: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px] font-mono',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Platform name"
+                    value={adminFormData.platform || ''}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, platform: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  />
+                  <select
+                    value={adminFormData.tier || 'developer'}
+                    onChange={(e) => setAdminFormData({ ...adminFormData, tier: e.target.value })}
+                    className={cn(
+                      'w-full px-4 py-3 rounded-lg border-[1.5px] text-[14px]',
+                      isDark ? 'bg-white/[0.02] border-white/10' : 'bg-gray-50 border-gray-200'
+                    )}
+                  >
+                    <option value="developer">Developer</option>
+                    <option value="business">Business</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowAdminPlatformKey(false);
+                      setAdminFormData({});
+                    }}
+                    className={cn(
+                      'flex-1 py-2.5 rounded-lg text-[13px] font-medium border-[1.5px]',
+                      isDark ? 'border-white/10 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                    )}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={adminCreatePlatformKey}
+                    disabled={adminLoading}
+                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {adminLoading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Create Platform Key'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Credits & Billing */}
           {credits && (
             <div
@@ -820,9 +1541,16 @@ const DashboardPage = () => {
                       Credit Balance
                     </div>
                     <div
-                      className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}
+                      className={cn('text-xl font-medium flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}
                     >
-                      {(credits.balance || 0).toLocaleString()}
+                      {credits.balance === -1 ? (
+                        <>
+                          <Infinity size={20} className="text-primary" />
+                          <span>Unlimited</span>
+                        </>
+                      ) : (
+                        formatCredits(credits.balance)
+                      )}
                     </div>
                   </div>
                 </div>
