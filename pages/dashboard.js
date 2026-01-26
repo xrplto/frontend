@@ -176,6 +176,9 @@ const DashboardPage = () => {
     loadDebugInfo();
   }, [accountProfile]);
 
+  // Detect algorithm from seed prefix
+  const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+
   // Get wallet for signing based on wallet type
   const getDeviceWallet = useCallback(async () => {
     if (!accountProfile) return null;
@@ -185,18 +188,23 @@ const DashboardPage = () => {
 
       // If seed is directly available (OAuth wallets after login)
       if (accountProfile.seed) {
-        return Wallet.fromSeed(accountProfile.seed);
+        return Wallet.fromSeed(accountProfile.seed, { algorithm: getAlgorithmFromSeed(accountProfile.seed) });
       }
 
-      // Device/passkey wallet - derive from deviceKeyId
-      if (accountProfile.wallet_type === 'device' && accountProfile.deviceKeyId) {
-        const CryptoJS = (await import('crypto-js')).default;
-        const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex || 0}-`;
-        const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${accountProfile.deviceKeyId}`, {
-          keySize: 256 / 32,
-          iterations: 100000
-        }).toString();
-        return new Wallet(seedHash.substring(0, 64));
+      // Device wallet - retrieve from encrypted storage
+      if (accountProfile.wallet_type === 'device') {
+        const { UnifiedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new UnifiedWalletStorage();
+        const deviceKeyId = accountProfile.deviceKeyId || await deviceFingerprint.getDeviceId();
+        const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+
+        if (storedPassword) {
+          const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+          if (walletData?.seed) {
+            return Wallet.fromSeed(walletData.seed, { algorithm: getAlgorithmFromSeed(walletData.seed) });
+          }
+        }
+        return null;
       }
 
       // OAuth wallet - try to get from encrypted storage
@@ -213,7 +221,7 @@ const DashboardPage = () => {
             accountProfile.account || accountProfile.address
           );
           if (walletData?.seed) {
-            return Wallet.fromSeed(walletData.seed);
+            return Wallet.fromSeed(walletData.seed, { algorithm: getAlgorithmFromSeed(walletData.seed) });
           }
         }
       }
