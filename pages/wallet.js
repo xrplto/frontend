@@ -171,6 +171,14 @@ export default function WalletPage() {
   const [newLabelName, setNewLabelName] = useState('');
   const [deletingLabel, setDeletingLabel] = useState(null);
 
+  // Tier state
+  const [tiers, setTiers] = useState({});
+  const [userPerks, setUserPerks] = useState(null);
+  const [tiersLoading, setTiersLoading] = useState(false);
+  const [purchaseLoading, setPurchaseLoading] = useState(null);
+  const [xrpInvoice, setXrpInvoice] = useState(null);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -1489,6 +1497,90 @@ export default function WalletPage() {
       }
     } catch (e) {}
     setDeletingLabel(null);
+  };
+
+  // Fetch tiers and user perks
+  useEffect(() => {
+    if (activeTab !== 'profile') return;
+    const fetchTiers = async () => {
+      setTiersLoading(true);
+      try {
+        const [tiersRes, perksRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/user/tiers`),
+          address ? fetch(`${BASE_URL}/api/user/${address}/perks`) : Promise.resolve(null)
+        ]);
+        if (tiersRes.ok) {
+          const data = await tiersRes.json();
+          if (data.config) setTiers(data.config);
+        }
+        if (perksRes?.ok) {
+          const data = await perksRes.json();
+          setUserPerks({ tier: data.tier, perks: data.perks, expiry: data.expiry });
+        }
+      } catch (e) {}
+      setTiersLoading(false);
+    };
+    fetchTiers();
+  }, [activeTab, address]);
+
+  const handlePurchaseTierXRP = async (tierName) => {
+    if (!address) return;
+    setPurchaseLoading(tierName);
+    setProfileError('');
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/tier/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, tier: tierName })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create invoice');
+      setXrpInvoice(data);
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setPurchaseLoading(null);
+  };
+
+  const handleVerifyXrpPayment = async () => {
+    if (!xrpInvoice?.invoiceId) return;
+    setVerifyingPayment(true);
+    setProfileError('');
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/tier/verify/${xrpInvoice.invoiceId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Payment not verified');
+      if (data.success) {
+        setUserPerks(data.perks);
+        setProfileUser(u => u ? { ...u, tier: data.tier } : u);
+        setXrpInvoice(null);
+        toast.success(`Upgraded to ${data.tier}!`);
+      } else {
+        throw new Error('Payment not yet received');
+      }
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setVerifyingPayment(false);
+  };
+
+  const handlePurchaseTierStripe = async (tierName) => {
+    if (!address) return;
+    setPurchaseLoading(tierName);
+    setProfileError('');
+    try {
+      const res = await fetch(`${BASE_URL}/api/user/tier/stripe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, tier: tierName })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create checkout');
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      setProfileError(e.message);
+    }
+    setPurchaseLoading(null);
   };
 
   // Load NFTs for selected collection (using collection slug endpoint for full data with thumbnails)
@@ -4451,13 +4543,16 @@ export default function WalletPage() {
                     <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
                       <div className="flex items-center justify-between mb-2">
                         <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Username</p>
-                        {!editingUsername && (
+                        {!editingUsername && (!profileUser.username || userPerks?.perks?.canChangeUsername) && (
                           <button
                             onClick={() => { setEditingUsername(true); setNewUsername(profileUser.username || ''); }}
                             className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
                           >
                             Edit
                           </button>
+                        )}
+                        {!editingUsername && profileUser.username && !userPerks?.perks?.canChangeUsername && (
+                          <span className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}>VIP+ to change</span>
                         )}
                       </div>
                       {editingUsername ? (
@@ -4591,6 +4686,140 @@ export default function WalletPage() {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Membership Tiers Section */}
+                <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Membership</p>
+                    {userPerks && (
+                      <span className={cn('px-2 py-0.5 rounded text-[10px] font-medium',
+                        userPerks.tier === 'verified' ? 'bg-[#08AA09]/20 text-[#08AA09]' :
+                        userPerks.tier === 'diamond' ? 'bg-[#650CD4]/20 text-[#a855f7]' :
+                        userPerks.tier === 'nova' ? 'bg-[#F6AF01]/20 text-[#F6AF01]' :
+                        userPerks.tier === 'vip' ? 'bg-[#137DFE]/20 text-[#137DFE]' :
+                        isDark ? 'bg-white/10 text-white/50' : 'bg-gray-100 text-gray-500'
+                      )}>
+                        {userPerks.tier?.toUpperCase() || 'MEMBER'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* XRP Invoice Modal */}
+                  {xrpInvoice && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setXrpInvoice(null)}>
+                      <div className={cn('w-full max-w-sm rounded-xl p-5', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                          <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Pay with XRP</p>
+                          <button onClick={() => setXrpInvoice(null)} className={cn('p-1 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+                            <X size={16} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          </button>
+                        </div>
+                        <div className={cn('rounded-lg p-3 mb-3 text-center', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Amount</p>
+                          <p className={cn('text-2xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.amount} XRP</p>
+                        </div>
+                        <div className={cn('rounded-lg p-3 mb-3', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                          <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Send to</p>
+                          <p className={cn('text-[11px] font-mono break-all', isDark ? 'text-white/70' : 'text-gray-700')}>{xrpInvoice.destination}</p>
+                          {xrpInvoice.destinationTag && (
+                            <p className={cn('text-[11px] mt-1', isDark ? 'text-white/50' : 'text-gray-500')}>
+                              Tag: <span className="font-mono font-medium">{xrpInvoice.destinationTag}</span>
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleCopy(`${xrpInvoice.destination}${xrpInvoice.destinationTag ? `:${xrpInvoice.destinationTag}` : ''}`)}
+                          className={cn('w-full py-2 rounded-lg text-[11px] mb-2', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')}
+                        >
+                          Copy Address
+                        </button>
+                        <button
+                          onClick={handleVerifyXrpPayment}
+                          disabled={verifyingPayment}
+                          className="w-full py-2.5 rounded-lg text-[12px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50"
+                        >
+                          {verifyingPayment ? 'Verifying...' : 'I have paid'}
+                        </button>
+                        {profileError && (
+                          <p className={cn('text-[11px] mt-2 text-center', 'text-red-400')}>{profileError}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {tiersLoading ? (
+                    <p className={cn('text-[11px] text-center py-4', isDark ? 'text-white/30' : 'text-gray-400')}>Loading tiers...</p>
+                  ) : Object.keys(tiers).length === 0 ? (
+                    <p className={cn('text-[11px] text-center py-4', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {Object.entries(tiers).filter(([name]) => name !== 'member').map(([name, tier]) => {
+                        const isCurrentTier = userPerks?.tier === name;
+                        const tierColors = {
+                          vip: { bg: 'bg-[#137DFE]/10', border: 'border-[#137DFE]/30', text: 'text-[#137DFE]' },
+                          nova: { bg: 'bg-[#F6AF01]/10', border: 'border-[#F6AF01]/30', text: 'text-[#F6AF01]' },
+                          diamond: { bg: 'bg-[#650CD4]/10', border: 'border-[#650CD4]/30', text: 'text-[#a855f7]' },
+                          verified: { bg: 'bg-[#08AA09]/10', border: 'border-[#08AA09]/30', text: 'text-[#08AA09]' }
+                        };
+                        const colors = tierColors[name] || { bg: 'bg-white/5', border: 'border-white/10', text: 'text-white' };
+
+                        return (
+                          <div
+                            key={name}
+                            className={cn(
+                              'rounded-lg p-3 border transition-all',
+                              isCurrentTier ? `${colors.bg} ${colors.border}` : isDark ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/20' : 'bg-gray-50 border-gray-100 hover:border-gray-200'
+                            )}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className={cn('text-[13px] font-semibold capitalize', isCurrentTier ? colors.text : isDark ? 'text-white' : 'text-gray-900')}>
+                                  {name}
+                                </span>
+                                {isCurrentTier && (
+                                  <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', colors.bg, colors.text)}>Current</span>
+                                )}
+                              </div>
+                              <span className={cn('text-[12px] font-medium', isDark ? 'text-white/70' : 'text-gray-700')}>
+                                {tier.price ? `€${tier.price}` : 'Free'}
+                                {tier.billing && <span className={cn('text-[10px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>/{tier.billing}</span>}
+                              </span>
+                            </div>
+
+                            {tier.perks && (
+                              <div className={cn('text-[10px] mb-2 space-y-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                {tier.perks.privateMessageLimit && <p>PM Limit: {tier.perks.privateMessageLimit.toLocaleString()}</p>}
+                                {tier.perks.canChangeUsername && <p>Can change username</p>}
+                                {tier.perks.noDailyPostLimits && <p>No daily post limits</p>}
+                                {tier.perks.priorityRequests && <p>Priority requests</p>}
+                                {tier.perks.verifiedBadge && <p>Verified badge</p>}
+                              </div>
+                            )}
+
+                            {!isCurrentTier && tier.price > 0 && (
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handlePurchaseTierXRP(name)}
+                                  disabled={purchaseLoading === name}
+                                  className={cn('flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-colors', isDark ? 'bg-white/[0.05] text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-700 hover:bg-gray-200', 'disabled:opacity-50')}
+                                >
+                                  {purchaseLoading === name ? 'Loading...' : 'Pay with XRP'}
+                                </button>
+                                <button
+                                  onClick={() => handlePurchaseTierStripe(name)}
+                                  disabled={purchaseLoading === name}
+                                  className="flex-1 py-1.5 rounded-lg text-[10px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 disabled:opacity-50"
+                                >
+                                  Pay with Card
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

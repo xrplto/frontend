@@ -280,17 +280,11 @@ const Chat = () => {
   const authUserRef = useRef(null);
   useEffect(() => { dmTabsRef.current = dmTabs; }, [dmTabs]);
   useEffect(() => { authUserRef.current = authUser; }, [authUser]);
-  // Sync authUser wallet with localStorage and reconnect on change
+  // Sync authUser wallet with localStorage
   useEffect(() => {
     const handleStorage = () => {
       const acc = getLoggedInWallet();
-      if (acc && acc !== authUser?.wallet) {
-        setAuthUser(prev => ({ ...prev, wallet: acc }));
-        // Force reconnect with new wallet
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.close();
-        }
-      }
+      if (acc && acc !== authUser?.wallet) setAuthUser(prev => ({ ...prev, wallet: acc }));
     };
     window.addEventListener('storage', handleStorage);
     const interval = setInterval(handleStorage, 500);
@@ -312,8 +306,10 @@ const Chat = () => {
     if (!t) return null;
     const tier = t.toLowerCase();
     if (tier === 'god') return 'bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] text-black font-bold';
-    if (tier === 'vip') return 'bg-[#650CD4]/20 text-[#650CD4]';
-    if (tier === 'pro') return 'bg-[#F6AF01]/20 text-[#F6AF01]';
+    if (tier === 'developer') return 'bg-[#650CD4]/20 text-[#650CD4]';
+    if (tier === 'partner') return 'bg-[#650CD4]/20 text-[#650CD4]';
+    if (tier === 'business') return 'bg-[#F6AF01]/20 text-[#F6AF01]';
+    if (tier === 'professional') return 'bg-[#137DFE]/20 text-[#137DFE]';
     return 'bg-white/10 text-white/50';
   };
 
@@ -467,8 +463,9 @@ const Chat = () => {
       ws.removeEventListener('close', handleClose);
       clearInterval(pingInterval);
       ws.close();
+      setRegistered(false);
     };
-  }, [isOpen, connect]);
+  }, [isOpen, connect, authUser?.wallet]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -700,13 +697,26 @@ const Chat = () => {
                               {timeAgo(msg.timestamp)}
                               {getPlatformIcon(msg.platform)}
                             </span>
-                            <button
-                              onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
-                              className={`font-medium shrink-0 hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'vip' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'pro' ? 'text-[#F6AF01]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
-                              title={isOwn ? 'You' : `DM ${msgWallet}${msg.tier ? ` (${msg.tier})` : ''}`}
-                            >
-                              {isOwn ? 'You' : shortName}:
-                            </button>
+                            <span className="relative group shrink-0">
+                              <button
+                                onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
+                                className={`font-medium hover:underline ${isOwn ? 'text-[#137DFE]' : msg.tier?.toLowerCase() === 'god' ? 'inline-block bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent' : msg.tier?.toLowerCase() === 'developer' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'partner' ? 'text-[#650CD4]' : msg.tier?.toLowerCase() === 'business' ? 'text-[#F6AF01]' : msg.tier?.toLowerCase() === 'professional' ? 'text-[#137DFE]' : activeTab !== 'general' ? 'text-[#650CD4]' : 'text-[#08AA09]'}`}
+                              >
+                                {isOwn ? 'You' : shortName}:
+                              </button>
+                              {!isOwn && (
+                                <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-50">
+                                  <div className="px-2 py-1.5 rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl text-[10px] whitespace-nowrap">
+                                    <div className="text-white/90 font-mono mb-1">{msgWallet}</div>
+                                    <div className="flex gap-3 text-white/50">
+                                      {msg.tier && <span>Tier: <span className="text-white/80">{msg.tier}</span></span>}
+                                      {msg.platform && <span>Platform: <span className="text-white/80">{msg.platform}</span></span>}
+                                    </div>
+                                    <div className="text-[#650CD4] mt-1">Click to DM</div>
+                                  </div>
+                                </div>
+                              )}
+                            </span>
                             <span className="break-words min-w-0">{renderMessage(msg.message)}</span>
                           </div>
                         );
