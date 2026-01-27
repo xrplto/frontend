@@ -346,9 +346,16 @@ const Chat = () => {
       return profile?.account || null;
     } catch { return null; }
   };
-  const getWsUrl = () => {
+  const getWsUrl = async () => {
     const wallet = getLoggedInWallet();
-    return wallet ? `wss://api.xrpl.to/ws/chat?apiKey=xrpl_p3PKb-sf3JfGCtcUIdRS_UV8acyvQ1ta&wallet=${wallet}` : null;
+    if (!wallet) return null;
+    try {
+      const res = await fetch(`/api/chat/session?wallet=${wallet}`);
+      const data = await res.json();
+      return data.wsUrl || null;
+    } catch {
+      return null;
+    }
   };
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -434,30 +441,20 @@ const Chat = () => {
     return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
   }, [messages, authUser?.wallet]);
 
-  const connect = useCallback(() => {
-    const wsUrl = getWsUrl();
-    console.log('[Chat] connect() - wsUrl:', wsUrl);
-    console.log('[Chat] connect() - wallet:', getLoggedInWallet());
-    if (!wsUrl) {
-      console.log('[Chat] No wallet, skipping connect');
-      return null;
-    }
-    const t0 = Date.now();
-    console.log('[Chat] Creating WebSocket...');
+  const connect = useCallback(async () => {
+    const wsUrl = await getWsUrl();
+    if (!wsUrl) return null;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
-    console.log('[Chat] WebSocket created, readyState:', ws.readyState);
 
-    ws.onopen = () => console.log('[Chat] ws.onopen', Date.now() - t0, 'ms, readyState:', ws.readyState);
-    ws.onerror = (e) => console.log('[Chat] ws.onerror', Date.now() - t0, 'ms', e);
+    ws.onopen = () => {};
+    ws.onerror = () => {};
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('[Chat] msg:', data.type, Date.now() - t0, 'ms');
       if (data.users !== undefined) setOnlineCount(data.users);
       switch (data.type) {
         case 'authenticated':
-          console.log('[Chat] setRegistered(true)', Date.now() - t0, 'ms');
           setRegistered(true);
           // Use local wallet from localStorage, not server's (server may have stale data)
           const localWallet = getLoggedInWallet();
@@ -531,48 +528,37 @@ const Chat = () => {
       }
     };
 
-    ws.onclose = (e) => {
-      console.log('[Chat] ws.onclose code:', e.code, 'reason:', e.reason, 'wasClean:', e.wasClean);
-      console.log('[Chat] Setting registered=false');
-      setRegistered(false);
-    };
+    ws.onclose = () => setRegistered(false);
 
     return ws;
   }, []);
 
   useEffect(() => {
-    console.log('[Chat] useEffect - isOpen:', isOpen, 'registered:', registered);
-    if (!isOpen) {
-      console.log('[Chat] useEffect - not open, skipping');
-      return;
-    }
-    const wallet = getLoggedInWallet();
-    console.log('[Chat] useEffect - wallet:', wallet);
-    if (!wallet) {
-      console.log('[Chat] useEffect - no wallet, skipping');
-      return;
-    }
-    console.log('[Chat] useEffect - calling connect()');
-    const ws = connect();
-    console.log('[Chat] useEffect - connect() returned:', ws ? 'WebSocket' : 'null');
-    if (!ws) return;
+    if (!isOpen || !getLoggedInWallet()) return;
 
-    const pingInterval = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
-    }, 30000);
+    let ws = null;
+    let pingInterval = null;
 
-    // Reconnect on unexpected close
-    const handleClose = () => {
-      if (isOpen && getLoggedInWallet()) {
-        setTimeout(() => wsRef.current?.readyState !== WebSocket.OPEN && connect(), 3000);
-      }
+    const init = async () => {
+      ws = await connect();
+      if (!ws) return;
+
+      pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
+      }, 30000);
+
+      ws.addEventListener('close', () => {
+        if (isOpen && getLoggedInWallet()) {
+          setTimeout(() => wsRef.current?.readyState !== WebSocket.OPEN && connect(), 3000);
+        }
+      });
     };
-    ws.addEventListener('close', handleClose);
+
+    init();
 
     return () => {
-      ws.removeEventListener('close', handleClose);
-      clearInterval(pingInterval);
-      ws.close();
+      if (pingInterval) clearInterval(pingInterval);
+      if (ws) ws.close();
       setRegistered(false);
     };
   }, [isOpen, connect, authUser?.wallet]);
