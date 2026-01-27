@@ -757,6 +757,35 @@ const DashboardPage = () => {
     return [];
   };
 
+  // Helper to normalize and aggregate usage data from API response
+  // API returns: { usage: [{ tier, today: { requests }, month: { requests, total } }] }
+  const getUsageStats = (usageData) => {
+    if (!usageData) return null;
+
+    const usageArray = getDataArray(usageData, 'usage', 'keys', 'data');
+    if (usageArray.length === 0) return null;
+
+    // Aggregate usage across all keys
+    let totalToday = 0;
+    let totalMonth = 0;
+    let tier = subscription?.tier || 'free';
+
+    for (const item of usageArray) {
+      // Handle { today: { requests: N } } format (actual API response)
+      const todayCount = item.today?.requests ?? item.today?.used ?? 0;
+      const monthCount = item.month?.requests ?? item.month?.total ?? 0;
+      totalToday += todayCount;
+      totalMonth += monthCount;
+      if (item.tier) tier = item.tier;
+    }
+
+    return {
+      tier,
+      today: { used: totalToday, limit: -1 },
+      month: { used: totalMonth }
+    };
+  };
+
   // Sidebar navigation items
   const navItems = [
     { id: 'overview', label: 'Home', icon: Home },
@@ -819,7 +848,7 @@ const DashboardPage = () => {
           'w-52 shrink-0 border-r flex flex-col',
           isDark ? 'border-white/10 bg-[#0d0d0d]' : 'border-gray-200 bg-white'
         )}>
-          <div className="p-4 flex-1">
+          <div className="p-4">
             <div className="space-y-0.5">
               {navItems.filter(item => !item.id.startsWith('admin-')).map((item) => (
                 <button
@@ -864,7 +893,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Support & Docs */}
-          <div className={cn('px-4 py-3 border-t space-y-0.5', isDark ? 'border-white/10' : 'border-gray-200')}>
+          <div className={cn('px-4 py-3 border-t space-y-0.5 mt-auto', isDark ? 'border-white/10' : 'border-gray-200')}>
             <a href="/docs" className={cn('flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors', isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50')}>
               <FileText size={16} />Documentation
             </a>
@@ -964,7 +993,7 @@ const DashboardPage = () => {
                     <div className={cn('text-[12px] uppercase tracking-wide mb-2', isDark ? 'text-white/40' : 'text-gray-500')}>Credit Usage</div>
                     <div className={cn('text-3xl font-semibold mb-1 flex items-center gap-2', isDark ? 'text-white' : 'text-gray-900')}>
                       {credits?.balance === -1 ? <><Infinity size={28} className="text-primary" />Unlimited</> : (
-                        <>{formatCredits(usage?.usage?.[0]?.today?.used || 0)} <span className={cn('text-lg', isDark ? 'text-white/40' : 'text-gray-400')}>/ {formatCredits(credits?.balance || 0)}</span></>
+                        <>{formatCredits(getUsageStats(usage)?.today?.used || 0)} <span className={cn('text-lg', isDark ? 'text-white/40' : 'text-gray-400')}>/ {formatCredits(credits?.balance || 0)}</span></>
                       )}
                     </div>
                     <div className={cn('text-[12px] mb-4', isDark ? 'text-white/40' : 'text-gray-500')}>Credits used / Total credits</div>
@@ -1101,8 +1130,9 @@ const DashboardPage = () => {
                   <p className={cn('text-[14px]', isDark ? 'text-white/60' : 'text-gray-600')}>Monitor your API usage and limits</p>
                 </div>
 
-                {usage?.usage?.[0] && (() => {
-                  const tierData = usage.usage[0];
+                {(() => {
+                  const tierData = getUsageStats(usage);
+                  if (!tierData) return null;
                   const isUnlimited = !tierData.today?.limit || tierData.today?.limit === -1 || tierData.tier === 'god';
                   const usedCount = tierData.today?.used || 0;
                   const tierInfo = tiers.find(t => t.id === (tierData.tier || 'free'));
@@ -1211,7 +1241,7 @@ const DashboardPage = () => {
                   <div className="grid grid-cols-4 gap-4">
                     {tiers.map((tier) => {
                       const price = billingPeriod === 'yearly' ? tier.yearly : tier.monthly;
-                      const isCurrentPlan = usage?.usage?.[0]?.tier === tier.id;
+                      const isCurrentPlan = getUsageStats(usage)?.tier === tier.id;
                       return (
                         <div key={tier.id} className={cn('p-5 rounded-xl border-[1.5px]', isCurrentPlan ? 'border-primary bg-primary/5' : isDark ? 'border-white/10 bg-white/[0.02] hover:border-white/20' : 'border-gray-200 bg-white hover:border-gray-300')}>
                           <div className={cn('text-[13px] font-medium mb-1', tier.color)}>{tier.name}</div>
