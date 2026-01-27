@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Monitor, Smartphone, Globe, Ban, VolumeX, Shield } from 'lucide-react';
+import { X, Inbox, Monitor, Smartphone, Globe, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -338,6 +338,300 @@ const renderMessage = (text) => {
   return parts;
 };
 
+// Support Ticket Components
+const SUPPORT_TIERS = ['vip', 'nova', 'diamond', 'verified', 'god', 'developer', 'partner', 'business', 'professional'];
+const BASE_URL = 'https://api.xrpl.to';
+
+const SupportTickets = ({ wallet, isStaff, tier, isDark, onBack }) => {
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [filter, setFilter] = useState('open');
+
+  const canAccess = SUPPORT_TIERS.includes(tier?.toLowerCase());
+
+  const fetchTickets = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ action: 'list', limit: '50' });
+      if (filter !== 'all') params.set('status', filter);
+      if (wallet) params.set('wallet', wallet);
+      const res = await fetch(`/api/chat/support?${params}`);
+      const data = await res.json();
+      if (data.success) setTickets(data.tickets || []);
+    } catch (e) { console.error('Support fetch error:', e); }
+    finally { setLoading(false); }
+  }, [filter, wallet]);
+
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+
+  if (!canAccess) {
+    return (
+      <div className="h-[400px] flex flex-col items-center justify-center text-center px-6">
+        <HelpCircle size={32} className="opacity-20 mb-3" />
+        <p className="text-sm opacity-60">Support tickets require VIP, Nova, Diamond, or Verified tier</p>
+        <button onClick={onBack} className="mt-4 px-4 py-1.5 text-xs rounded-lg bg-white/10 hover:bg-white/20">Back to Chat</button>
+      </div>
+    );
+  }
+
+  if (selectedTicket) {
+    return <TicketDetail ticketId={selectedTicket} wallet={wallet} isStaff={isStaff} isDark={isDark} onBack={() => { setSelectedTicket(null); fetchTickets(); }} />;
+  }
+
+  if (showCreate) {
+    return <CreateTicket wallet={wallet} isDark={isDark} onBack={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); fetchTickets(); }} />;
+  }
+
+  return (
+    <div className="h-[400px] flex flex-col">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
+        <div className="flex items-center gap-2">
+          <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
+          <span className="text-sm font-medium">Support Tickets</span>
+        </div>
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-[#137DFE] text-white hover:bg-[#137DFE]/80">
+          <Plus size={12} /> New
+        </button>
+      </div>
+      <div className="flex gap-1 px-2 py-1.5 border-b border-inherit">
+        {['open', 'in_progress', 'resolved', 'all'].map(s => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-2 py-0.5 text-[10px] rounded capitalize ${filter === s ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}>
+            {s.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full"><Loader2 size={20} className="animate-spin opacity-40" /></div>
+        ) : tickets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full opacity-40">
+            <HelpCircle size={24} className="mb-2" />
+            <p className="text-xs">No tickets found</p>
+          </div>
+        ) : (
+          tickets.map(t => (
+            <button key={t._id} onClick={() => setSelectedTicket(t._id)} className="w-full text-left px-3 py-2.5 hover:bg-white/5 border-b border-inherit last:border-b-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-sm truncate flex-1">{t.subject}</span>
+                <TicketStatus status={t.status} />
+              </div>
+              <div className="flex items-center gap-2 mt-1 text-[10px] opacity-50">
+                <span>{t.username || t.wallet?.slice(0, 8)}</span>
+                <span>{timeAgo(t.createdAt)}</span>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const TicketStatus = ({ status }) => {
+  const config = {
+    open: { icon: AlertCircle, color: 'text-[#F6AF01]', bg: 'bg-[#F6AF01]/10' },
+    in_progress: { icon: Clock, color: 'text-[#137DFE]', bg: 'bg-[#137DFE]/10' },
+    resolved: { icon: CheckCircle, color: 'text-[#08AA09]', bg: 'bg-[#08AA09]/10' },
+    closed: { icon: X, color: 'text-white/40', bg: 'bg-white/5' }
+  }[status] || { icon: AlertCircle, color: 'text-white/40', bg: 'bg-white/5' };
+  const Icon = config.icon;
+  return (
+    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] ${config.color} ${config.bg}`}>
+      <Icon size={10} /> {status?.replace('_', ' ')}
+    </span>
+  );
+};
+
+const CreateTicket = ({ wallet, isDark, onBack, onCreated }) => {
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const submit = async () => {
+    if (subject.length < 3 || message.length < 10) {
+      setError('Subject (3+ chars) and message (10+ chars) required');
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ action: 'create' });
+      if (wallet) params.set('wallet', wallet);
+      const res = await fetch(`/api/chat/support?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, message })
+      });
+      const data = await res.json();
+      if (data.success) onCreated();
+      else setError(data.error || 'Failed to create ticket');
+    } catch { setError('Network error'); }
+    finally { setSubmitting(false); }
+  };
+
+  return (
+    <div className="h-[400px] flex flex-col">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-inherit">
+        <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
+        <span className="text-sm font-medium">New Ticket</span>
+      </div>
+      <div className="flex-1 p-3 space-y-3 overflow-y-auto">
+        {error && <div className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs">{error}</div>}
+        <div>
+          <label className="text-[10px] uppercase opacity-50 mb-1 block">Subject</label>
+          <input
+            value={subject}
+            onChange={e => setSubject(e.target.value.slice(0, 100))}
+            placeholder="Brief description..."
+            className={`w-full px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          />
+          <span className="text-[10px] opacity-40 mt-0.5 block text-right">{subject.length}/100</span>
+        </div>
+        <div>
+          <label className="text-[10px] uppercase opacity-50 mb-1 block">Message</label>
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value.slice(0, 2000))}
+            placeholder="Describe your issue in detail..."
+            rows={6}
+            className={`w-full px-3 py-2 rounded-lg border text-sm resize-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          />
+          <span className="text-[10px] opacity-40 mt-0.5 block text-right">{message.length}/2000</span>
+        </div>
+      </div>
+      <div className="p-3 border-t border-inherit">
+        <button
+          onClick={submit}
+          disabled={submitting || subject.length < 3 || message.length < 10}
+          className="w-full py-2 rounded-lg bg-[#137DFE] text-white text-sm font-medium disabled:opacity-40 flex items-center justify-center gap-2"
+        >
+          {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          Submit Ticket
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
+  const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [reply, setReply] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const messagesEnd = useRef(null);
+
+  const buildParams = useCallback((action) => {
+    const params = new URLSearchParams({ action, ticketId });
+    if (wallet) params.set('wallet', wallet);
+    return params.toString();
+  }, [ticketId, wallet]);
+
+  const fetchTicket = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat/support?${buildParams('get')}`);
+      const data = await res.json();
+      if (data.success) setTicket(data.ticket);
+    } catch {} finally { setLoading(false); }
+  }, [buildParams]);
+
+  useEffect(() => { fetchTicket(); }, [fetchTicket]);
+  useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [ticket?.replies]);
+
+  const sendReply = async () => {
+    if (!reply.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/chat/support?${buildParams('reply')}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: reply })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReply('');
+        fetchTicket();
+      }
+    } catch {} finally { setSubmitting(false); }
+  };
+
+  const updateStatus = async (status) => {
+    try {
+      await fetch(`/api/chat/support?${buildParams('status')}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      fetchTicket();
+    } catch {}
+  };
+
+  if (loading) return <div className="h-[400px] flex items-center justify-center"><Loader2 size={20} className="animate-spin opacity-40" /></div>;
+  if (!ticket) return <div className="h-[400px] flex items-center justify-center opacity-40">Ticket not found</div>;
+
+  const canReply = ticket.status !== 'closed';
+
+  return (
+    <div className="h-[400px] flex flex-col">
+      <div className="px-3 py-2 border-b border-inherit">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button onClick={onBack} className="p-1 hover:bg-white/10 rounded"><ChevronLeft size={16} /></button>
+            <span className="text-sm font-medium truncate max-w-[200px]">{ticket.subject}</span>
+          </div>
+          <TicketStatus status={ticket.status} />
+        </div>
+        {isStaff && ticket.status !== 'closed' && (
+          <div className="flex gap-1 mt-2 pl-7">
+            {['open', 'in_progress', 'resolved', 'closed'].filter(s => s !== ticket.status).map(s => (
+              <button key={s} onClick={() => updateStatus(s)} className="px-2 py-0.5 text-[10px] rounded bg-white/10 hover:bg-white/20 capitalize">
+                {s.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+        <div className={`p-3 rounded-lg ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+          <div className="flex items-center justify-between text-[10px] opacity-50 mb-1">
+            <span>{ticket.username || ticket.wallet?.slice(0, 8)}</span>
+            <span>{timeAgo(ticket.createdAt)}</span>
+          </div>
+          <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
+        </div>
+        {ticket.replies?.map((r, i) => (
+          <div key={i} className={`p-3 rounded-lg ${r.isStaff ? 'bg-[#650CD4]/10 border border-[#650CD4]/20' : isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className={r.isStaff ? 'text-[#650CD4]' : 'opacity-50'}>
+                {r.username || r.wallet?.slice(0, 8)} {r.isStaff && <span className="opacity-60">(Staff)</span>}
+              </span>
+              <span className="opacity-50">{timeAgo(r.timestamp)}</span>
+            </div>
+            <p className="text-sm whitespace-pre-wrap">{r.message}</p>
+          </div>
+        ))}
+        <div ref={messagesEnd} />
+      </div>
+      {canReply && (
+        <div className="p-2 border-t border-inherit flex gap-2">
+          <input
+            value={reply}
+            onChange={e => setReply(e.target.value.slice(0, 2000))}
+            placeholder="Type your reply..."
+            onKeyDown={e => e.key === 'Enter' && sendReply()}
+            className={`flex-1 px-3 py-2 rounded-lg border text-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          />
+          <button onClick={sendReply} disabled={!reply.trim() || submitting} className="px-3 py-2 rounded-lg bg-[#137DFE] text-white disabled:opacity-40">
+            {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Chat = () => {
   const getLoggedInWallet = () => {
     if (typeof window === 'undefined') return null;
@@ -411,6 +705,8 @@ const Chat = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [modLevel, setModLevel] = useState(null); // 'admin' | 'verified' | null
   const [modError, setModError] = useState(null);
+  const [showSupport, setShowSupport] = useState(false);
+  const [supportNotif, setSupportNotif] = useState(0);
   const containerRef = useRef(null);
 
   const getWallet = (m) => m.wallet || m.address || m.username;
@@ -607,6 +903,12 @@ const Chat = () => {
           setRegistered(false);
           setModLevel(null);
           break;
+        case 'support_ticket':
+          // Handle support ticket notifications
+          if (data.action === 'new' || data.action === 'reply') {
+            setSupportNotif(n => n + 1);
+          }
+          break;
         default:
           break;
       }
@@ -798,6 +1100,12 @@ const Chat = () => {
                   <Shield size={14} />
                 </span>
               )}
+              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-1.5 rounded-lg transition-colors ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10'}`} title="Support Tickets">
+                <HelpCircle size={18} />
+                {supportNotif > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{supportNotif}</span>
+                )}
+              </button>
               <div className="relative inbox-dropdown">
                 <button onClick={() => setShowInbox(!showInbox)} className={`p-1.5 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
                   <Inbox size={18} />
@@ -849,6 +1157,14 @@ const Chat = () => {
                 <p className="text-sm">Connecting...</p>
               </div>
             </div>
+          ) : showSupport ? (
+            <SupportTickets
+              wallet={authUser?.wallet}
+              isStaff={modLevel === 'admin'}
+              tier={authUser?.tier}
+              isDark={isDark}
+              onBack={() => setShowSupport(false)}
+            />
           ) : (
             <>
               {(() => {
