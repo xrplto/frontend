@@ -37,7 +37,11 @@ import {
   Code2,
   Sparkles,
   Tag,
-  Trash2
+  Trash2,
+  Shield,
+  Star,
+  Gem,
+  User
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import CryptoJS from 'crypto-js';
@@ -267,6 +271,9 @@ const OverView = ({ account }) => {
   const [labelInput, setLabelInput] = useState('');
   const [labelSaving, setLabelSaving] = useState(false);
 
+  // User perks
+  const [userPerks, setUserPerks] = useState(null);
+
   // Set XRP price from holdings data
   useEffect(() => {
     if (holdings?.xrp?.usd) {
@@ -297,6 +304,7 @@ const OverView = ({ account }) => {
     setNftHistory([]);
     setAncestry(null);
     setWalletLabel(null);
+    setUserPerks(null);
 
     const fetchData = async () => {
       try {
@@ -368,6 +376,18 @@ const OverView = ({ account }) => {
     };
     fetchLabel();
   }, [account, accountProfile?.account, isOwnAccount]);
+
+  // Fetch user perks
+  useEffect(() => {
+    if (!account) return;
+    const fetchPerks = async () => {
+      try {
+        const res = await axios.get(`https://api.xrpl.to/api/user/${account}/perks`);
+        if (res.data) setUserPerks(res.data);
+      } catch (e) {}
+    };
+    fetchPerks();
+  }, [account]);
 
   const handleSaveLabel = async () => {
     if (!accountProfile?.account || !labelInput.trim()) return;
@@ -876,6 +896,24 @@ const OverView = ({ account }) => {
                       AMM
                     </span>
                   )}
+                  {userPerks?.groups?.map(group => {
+                    const groupConfig = {
+                      member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
+                      admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+                      verified: { icon: Check, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                      diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                      nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                      vip: { icon: Sparkles, bg: 'bg-[#137DFE]/10', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20' }
+                    };
+                    const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                    const Icon = config.icon;
+                    return (
+                      <div key={group} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border', config.bg, config.text, config.border)}>
+                        {Icon && <Icon size={13} />}
+                        <span>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+                      </div>
+                    );
+                  })}
                   {isBlackholed && (
                     <div className="relative group/blackhole">
                       <span className="text-[11px] h-5 px-2 rounded bg-red-500/10 text-red-400 font-normal flex items-center cursor-help">

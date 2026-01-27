@@ -47,7 +47,8 @@ import {
   Share2,
   Trophy,
   Info,
-  User
+  User,
+  Shield
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -1515,7 +1516,7 @@ export default function WalletPage() {
         }
         if (perksRes?.ok) {
           const data = await perksRes.json();
-          setUserPerks({ tier: data.tier, perks: data.perks, expiry: data.expiry });
+          setUserPerks({ tier: data.tier, perks: data.perks, expiry: data.expiry, roles: data.roles, groups: data.groups, contentAccess: data.contentAccess });
         }
       } catch (e) {}
       setTiersLoading(false);
@@ -4698,20 +4699,27 @@ export default function WalletPage() {
                         <Trophy size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
                         <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Membership</p>
                       </div>
-                      {userPerks && (
-                        <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide flex items-center gap-1.5',
-                          userPerks.tier === 'verified' ? 'bg-gradient-to-r from-[#08AA09]/20 to-[#08AA09]/10 text-[#08AA09] border border-[#08AA09]/20' :
-                          userPerks.tier === 'diamond' ? 'bg-gradient-to-r from-[#650CD4]/20 to-[#a855f7]/10 text-[#a855f7] border border-[#650CD4]/20' :
-                          userPerks.tier === 'nova' ? 'bg-gradient-to-r from-[#F6AF01]/20 to-[#F6AF01]/10 text-[#F6AF01] border border-[#F6AF01]/20' :
-                          userPerks.tier === 'vip' ? 'bg-gradient-to-r from-[#137DFE]/20 to-[#137DFE]/10 text-[#137DFE] border border-[#137DFE]/20' :
-                          isDark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                        )}>
-                          {userPerks.tier === 'verified' && <Check size={10} />}
-                          {userPerks.tier === 'diamond' && <Gem size={10} />}
-                          {userPerks.tier === 'nova' && <Star size={10} />}
-                          {userPerks.tier === 'vip' && <Sparkles size={10} />}
-                          {userPerks.tier?.toUpperCase() || 'MEMBER'}
-                        </span>
+                      {userPerks?.groups?.length > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          {userPerks.groups.map(group => {
+                            const groupConfig = {
+                              member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
+                              admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
+                              verified: { icon: Check, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                              diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                              nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                              vip: { icon: Sparkles, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20' }
+                            };
+                            const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const Icon = config.icon;
+                            return (
+                              <span key={group} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.text, config.border)}>
+                                {Icon && <Icon size={9} />}
+                                {group.toUpperCase()}
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
