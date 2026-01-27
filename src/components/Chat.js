@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -885,9 +885,23 @@ const Chat = () => {
         case 'history':
           setMessages((prev) => {
             const ids = new Set(prev.map(m => m._id));
-            const newMsgs = (data.messages || []).filter(m => !ids.has(m._id));
+            const newMsgs = (data.messages || []).map(m => ({
+              ...m,
+              readAt: m.wallet === authUserRef.current?.wallet && data.theirLastRead && m.timestamp < data.theirLastRead ? data.theirLastRead : null
+            })).filter(m => !ids.has(m._id));
             return [...newMsgs, ...prev].sort((a, b) => a.timestamp - b.timestamp);
           });
+          break;
+        case 'read_receipt':
+          // Mark all my messages to this user before timestamp as read
+          setMessages((prev) => prev.map(m =>
+            (m.isPrivate || m.type === 'private') &&
+            m.wallet === authUserRef.current?.wallet &&
+            (m.recipientWallet === data.by || m.recipient === data.by) &&
+            m.timestamp <= data.at
+              ? { ...m, readAt: data.at }
+              : m
+          ));
           break;
         case 'error':
           console.error('Chat error:', data.message);
@@ -1015,9 +1029,10 @@ const Chat = () => {
     setActiveTab(user);
     setPrivateTo(user);
     inputRef.current?.focus();
-    // Request DM history
+    // Request DM history and mark as read
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'history', with: user }));
+      wsRef.current.send(JSON.stringify({ type: 'read', with: user }));
     }
   };
 
@@ -1269,6 +1284,16 @@ const Chat = () => {
                               )}
                             </span>
                             <span className="break-words min-w-0">{renderMessage(msg.message)}</span>
+                            {isOwn && (msg.isPrivate || msg.type === 'private') && (
+                              msg.readAt ? (
+                                <div className="relative group/read shrink-0 ml-1">
+                                  <CheckCheck size={12} className="text-[#137DFE]" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/read:block z-50 px-2 py-1 rounded bg-[#1a1a1a] border border-white/10 text-[10px] text-white/80 whitespace-nowrap">
+                                    Read {new Date(msg.readAt).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                              ) : <Check size={12} className="opacity-30 shrink-0 ml-1" />
+                            )}
                           </div>
                         );
                       })}
