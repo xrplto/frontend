@@ -408,6 +408,7 @@ const Chat = () => {
   }, [authUser?.wallet]);
   const [showInbox, setShowInbox] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const containerRef = useRef(null);
 
   const getWallet = (m) => m.wallet || m.address || m.username;
@@ -440,6 +441,26 @@ const Chat = () => {
     });
     return Object.entries(convos).sort((a, b) => b[1].timestamp - a[1].timestamp);
   }, [messages, authUser?.wallet]);
+
+  // Poll status when chat is closed
+  useEffect(() => {
+    if (isOpen) return;
+    const fetchStatus = async () => {
+      try {
+        const wallet = getLoggedInWallet();
+        const url = wallet
+          ? `https://api.xrpl.to/v1/chat/status?wallet=${wallet}`
+          : 'https://api.xrpl.to/v1/chat/status';
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.online !== undefined) setOnlineCount(data.online);
+        if (data.unread !== undefined) setUnreadCount(data.unread);
+      } catch {}
+    };
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 30000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   const connect = useCallback(async () => {
     const wsUrl = await getWsUrl();
@@ -535,6 +556,13 @@ const Chat = () => {
 
   useEffect(() => {
     if (!isOpen || !getLoggedInWallet()) return;
+
+    // Mark chat as read
+    fetch('https://api.xrpl.to/v1/chat/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet: getLoggedInWallet() })
+    }).catch(() => {});
 
     let ws = null;
     let pingInterval = null;
@@ -676,10 +704,10 @@ const Chat = () => {
         >
           <span className="text-white font-medium">Shoutbox</span>
           <span className="text-[#08AA09] text-sm">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
-          {conversations.length > 0 && (
+          {unreadCount > 0 && (
             <span className="flex items-center gap-1 text-[#650CD4] text-sm">
               <Inbox size={14} />
-              {conversations.length}
+              {unreadCount}
             </span>
           )}
           <span className="px-3 py-1 rounded-lg border-[1.5px] border-white/20 text-white text-sm">Send</span>
