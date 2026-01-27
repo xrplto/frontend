@@ -48,7 +48,15 @@ import {
   Trophy,
   Info,
   User,
-  Shield
+  Shield,
+  Award,
+  Zap,
+  Target,
+  Users,
+  Gift,
+  Medal,
+  Swords,
+  Crown
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -145,6 +153,7 @@ export default function WalletPage() {
 
   // Referral state
   const [referralUser, setReferralUser] = useState(null);
+  const [referralStats, setReferralStats] = useState(null);
   const [referralLoading, setReferralLoading] = useState(false);
   const [referralForm, setReferralForm] = useState({ referralCode: '', referredBy: '' });
   const [referralError, setReferralError] = useState('');
@@ -1289,10 +1298,17 @@ export default function WalletPage() {
     const fetchReferral = async () => {
       setReferralLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/referral/${address}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.referral) setReferralUser(data.referral);
+        const [profileRes, statsRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/referral/${address}`),
+          fetch(`${BASE_URL}/api/referral/${address}/stats`)
+        ]);
+        if (profileRes.ok) {
+          const data = await profileRes.json();
+          if (data.success && data.profile) setReferralUser(data.profile);
+        }
+        if (statsRes.ok) {
+          const data = await statsRes.json();
+          if (data.success && data.stats) setReferralStats(data.stats);
         }
       } catch (e) {}
       setReferralLoading(false);
@@ -1320,7 +1336,34 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Registration failed');
-      setReferralUser({ _id: address, referralCode: data.referralCode, referrer: data.referrer, referrals: 0 });
+      // Fetch full profile after registration
+      const profileRes = await fetch(`${BASE_URL}/api/referral/${address}`);
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        if (profileData.success && profileData.profile) {
+          setReferralUser(profileData.profile);
+        } else {
+          setReferralUser({
+            address,
+            referralCode: data.referralCode,
+            referrer: data.referrer,
+            tier: 'Recruit',
+            tiers: ['Recruit'],
+            share: data.benefits?.feeRebate || 0.2,
+            recruits: 0
+          });
+        }
+      } else {
+        setReferralUser({
+          address,
+          referralCode: data.referralCode,
+          referrer: data.referrer,
+          tier: 'Recruit',
+          tiers: ['Recruit'],
+          share: data.benefits?.feeRebate || 0.2,
+          recruits: 0
+        });
+      }
       setReferralForm({ referralCode: '', referredBy: '' });
     } catch (e) {
       setReferralError(e.message);
@@ -1348,6 +1391,7 @@ export default function WalletPage() {
     }
     setReferralLoading(false);
   };
+
 
   // Fetch profile data
   useEffect(() => {
@@ -1729,7 +1773,7 @@ export default function WalletPage() {
     { id: 'offers', label: 'Offers', icon: RotateCcw },
     { id: 'trades', label: 'History', icon: TrendingUp },
     { id: 'withdrawals', label: 'Withdrawals', icon: Building2 },
-    { id: 'referral', label: 'Referral', icon: Share2 },
+    { id: 'referral', label: 'Referral', icon: Swords },
     { id: 'profile', label: 'Profile', icon: User }
   ];
 
@@ -4331,126 +4375,284 @@ export default function WalletPage() {
               </div>
             )}
 
-            {/* Referral Tab */}
+            {/* XRP Army Referral Tab */}
             {activeTab === 'referral' && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {referralLoading ? (
                   <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
                     <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : referralUser ? (
-                  // Registered user - show stats
-                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
-                        {address?.[1]?.toUpperCase() || '?'}
+                  <>
+                    {/* Tier & Rank Card */}
+                    <div className={cn('rounded-xl p-5', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20' : 'bg-purple-50')}>
+                            {['supreme_commander', 'general', 'brigadier'].includes(referralUser.tierData?.id) || ['Supreme Commander', 'General', 'Brigadier'].includes(referralUser.tier) ? <Crown size={20} className="text-[#F6AF01]" /> :
+                             ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={20} className="text-[#650CD4]" /> :
+                             ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={20} className="text-[#137DFE]" /> :
+                             <Swords size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />}
+                          </div>
+                          <div>
+                            <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Tier</p>
+                            <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.activeTier || referralUser.tier || 'Recruit'}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Recruits</p>
+                          <p className={cn('text-[22px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.recruits || 0}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className={cn('text-[11px] font-mono', isDark ? 'text-white/60' : 'text-gray-600')}>{address?.slice(0, 10)}...{address?.slice(-8)}</p>
+                      {/* Next Tier Progress */}
+                      {referralUser.nextTier && (
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                              {referralUser.tierData?.name || referralUser.tier || 'Recruit'}
+                            </p>
+                            <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                              {referralUser.nextTier.needed} more to {referralUser.nextTier.name}
+                            </p>
+                          </div>
+                          <div className={cn('h-2 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                            <div
+                              className="h-full bg-gradient-to-r from-[#137DFE] to-[#650CD4] rounded-full transition-all"
+                              style={{ width: `${Math.min(100, ((referralUser.recruits || 0) / (referralUser.nextTier.min || 1)) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {/* Share % - use share which includes badge bonuses */}
+                      <div className={cn('flex items-center justify-between py-2.5 px-3 rounded-lg', isDark ? 'bg-[#08AA09]/10' : 'bg-green-50')}>
+                        <span className={cn('text-[11px] font-medium', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Revenue Share</span>
+                        <span className={cn('text-[14px] font-bold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>{((referralUser.share || 0.2) * 100).toFixed(0)}%</span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Total Referrals</p>
-                        <p className={cn('text-2xl font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.referrals || 0}</p>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <Users size={16} className={cn('mx-auto mb-1', isDark ? 'text-white/40' : 'text-gray-400')} />
+                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.total || referralUser.recruits || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Recruits</p>
                       </div>
-                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Your Code</p>
-                          {!editingCode && (
-                            <button
-                              onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }}
-                              className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
-                            >
-                              Edit
-                            </button>
+                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <Zap size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-500')} />
+                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Streak</p>
+                      </div>
+                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <Gem size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#137DFE]' : 'text-blue-500')} />
+                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Whales</p>
+                      </div>
+                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <Target size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#650CD4]' : 'text-purple-500')} />
+                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2</p>
+                      </div>
+                    </div>
+
+                    {/* Streak Status */}
+                    <div className={cn('rounded-xl p-4 flex items-center justify-between', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center', isDark ? 'bg-[#F6AF01]/10' : 'bg-amber-50')}>
+                          <Flame size={18} className="text-[#F6AF01]" />
+                        </div>
+                        <div>
+                          <p className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                            {referralStats?.streaks?.current || referralUser.streak || 0} Day Streak
+                          </p>
+                          <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
+                            {referralUser.streakStatus?.label || 'Recruit daily to maintain'}
+                          </p>
+                        </div>
+                      </div>
+                      {referralUser.streakStatus?.tier && referralUser.streakStatus.tier !== 'none' && (
+                        <span className={cn('text-[10px] px-2.5 py-1 rounded-lg font-medium',
+                          referralUser.streakStatus.tier === 'legendary' ? 'bg-[#650CD4]/15 text-[#a855f7]' :
+                          referralUser.streakStatus.tier === 'gold' ? 'bg-[#F6AF01]/15 text-[#F6AF01]' :
+                          referralUser.streakStatus.tier === 'silver' ? 'bg-white/10 text-white/60' :
+                          referralUser.streakStatus.tier === 'bronze' ? 'bg-[#CD7F32]/15 text-[#CD7F32]' :
+                          referralUser.streakStatus.tier === 'starter' ? 'bg-[#08AA09]/15 text-[#08AA09]' :
+                          'bg-white/5 text-white/40'
+                        )}>
+                          {referralUser.streakStatus.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Earnings */}
+                    {(referralUser.earnings > 0 || referralUser.volume > 0) && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className={cn('rounded-xl p-3', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                          <p className={cn('text-[9px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Total Earnings</p>
+                          <p className={cn('text-[16px] font-semibold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>${(referralUser.earnings || 0).toLocaleString()}</p>
+                        </div>
+                        <div className={cn('rounded-xl p-3', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                          <p className={cn('text-[9px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Referral Volume</p>
+                          <p className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>${(referralUser.volume || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Badges */}
+                    {(referralStats?.badges || referralUser.badges) && (
+                      <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                        <div className="flex items-center justify-between mb-3">
+                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Badges Earned</p>
+                          {referralStats?.badges && (
+                            <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                              {referralStats.badges.done}/{referralStats.badges.total}
+                            </p>
                           )}
                         </div>
-                        {editingCode ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={newReferralCode}
-                              onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20))}
-                              className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15]' : 'bg-white text-gray-900 border border-gray-200')}
-                            />
-                            <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
-                            <button onClick={() => { setEditingCode(false); setReferralError(''); }} className={cn('px-2 py-1 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
+                        {(referralStats?.badges?.list || referralUser.badges || []).length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {(referralStats?.badges?.list || referralUser.badges || []).map((badge, i) => {
+                              const badgeConfig = {
+                                // Bronze tier
+                                first_recruit: { icon: Users, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
+                                squad_leader: { icon: Swords, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
+                                daily_duty: { icon: Flame, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
+                                // Silver tier (+1%)
+                                platoon_leader: { icon: Medal, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
+                                whale_spotter: { icon: Gem, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
+                                dedicated: { icon: Zap, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
+                                // Gold tier (+1.5%)
+                                battalion_leader: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                                chain_of_command: { icon: Users, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                                iron_will: { icon: Flame, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                                whale_hunter: { icon: Gem, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                                // Diamond tier (+2%)
+                                army_commander: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                                war_hero: { icon: Award, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                                supreme: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
+                              };
+                              const config = badgeConfig[badge] || { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                              const Icon = config.icon;
+                              return (
+                                <div key={i} className={cn('px-2.5 py-1.5 rounded-lg text-[10px] font-medium flex items-center gap-1.5 border', config.bg, config.text, config.border)}>
+                                  <Icon size={12} />
+                                  {badge.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                </div>
+                              );
+                            })}
                           </div>
-                        ) : (
-                          <p className={cn('text-lg font-mono font-medium', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralUser.referralCode}</p>
+                        )}
+                        {/* Badge Progress - only show incomplete badges */}
+                        {referralStats?.badges?.progress && Object.keys(referralStats.badges.progress).filter(id => !referralStats.badges.progress[id].done).length > 0 && (
+                          <div className="space-y-2.5">
+                            {Object.entries(referralStats.badges.progress)
+                              .filter(([, prog]) => !prog.done)
+                              .slice(0, 3)
+                              .map(([badgeId, prog]) => (
+                              <div key={badgeId}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <p className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                    {badgeId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                  </p>
+                                  <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                    {prog.cur}/{prog.req}
+                                  </p>
+                                </div>
+                                <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                                  <div className="h-full bg-[#137DFE] rounded-full transition-all" style={{ width: `${prog.pct || 0}%` }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                    </div>
+                    )}
 
-                    <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                      <p className={cn('text-[10px] uppercase tracking-wider mb-2', isDark ? 'text-white/30' : 'text-gray-400')}>Share Your Link</p>
+                    {/* Your Code & Share Link */}
+                    <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Your Code</p>
+                        {!editingCode && (
+                          <button onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }} className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>Edit</button>
+                        )}
+                      </div>
+                      {editingCode ? (
+                        <div className="flex items-center gap-2 mb-3">
+                          <input type="text" value={newReferralCode} onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))} className={cn('flex-1 px-3 py-2 rounded-lg text-[13px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15]' : 'bg-white text-gray-900 border border-gray-200')} />
+                          <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="px-3 py-2 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
+                          <button onClick={() => { setEditingCode(false); setReferralError(''); }} className={cn('px-3 py-2 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
+                        </div>
+                      ) : (
+                        <p className={cn('text-[16px] font-mono font-semibold mb-3', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralUser.referralCode}</p>
+                      )}
                       <div className="flex items-center gap-2">
-                        <input
-                          readOnly
-                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/signup?ref=${referralUser.referralCode}`}
-                          className={cn('flex-1 px-3 py-2 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white/70 border border-white/[0.1]' : 'bg-white text-gray-600 border border-gray-200')}
-                        />
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`);
-                            setReferralCopied(true);
-                            setTimeout(() => setReferralCopied(false), 2000);
-                          }}
-                          className={cn('px-4 py-2 rounded-lg text-[12px] font-medium transition-colors flex items-center gap-1.5', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90')}
-                        >
-                          {referralCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                        <input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/signup?ref=${referralUser.referralCode}`} className={cn('flex-1 px-3 py-2 rounded-lg text-[11px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-50 text-gray-500 border border-gray-200')} />
+                        <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }} className={cn('px-4 py-2 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1.5', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90')}>
+                          {referralCopied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
                         </button>
                       </div>
                     </div>
 
                     {referralError && (
-                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px] mt-4', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
                         <AlertTriangle size={14} />
                         {referralError}
                       </div>
                     )}
 
                     {referralUser.referrer && (
-                      <p className={cn('text-[11px] mt-4', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      <p className={cn('text-[10px] px-1', isDark ? 'text-white/30' : 'text-gray-400')}>
                         Referred by: <span className="font-mono">{referralUser.referrer.slice(0, 8)}...</span>
+                        {referralUser.benefits?.welcome?.expires && referralUser.benefits.welcome.expires > Date.now() && (
+                          <span className="ml-2 text-[#08AA09]">
+                            (50% rebate active)
+                          </span>
+                        )}
                       </p>
                     )}
-                  </div>
+                  </>
                 ) : (
-                  // Not registered - show registration form
+                  // Enlistment Form
                   <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
                     <div className="flex items-center gap-3 mb-5">
-                      <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
-                        <Share2 size={18} className="text-[#137DFE]" />
+                      <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20' : 'bg-purple-50')}>
+                        <Swords size={20} className="text-[#650CD4]" />
                       </div>
                       <div>
-                        <h3 className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Join Referral Program</h3>
-                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Earn rewards by inviting friends</p>
+                        <h3 className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Join Referral Program</h3>
+                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Earn up to 50% revenue share</p>
                       </div>
+                    </div>
+
+                    <div className={cn('rounded-lg p-3 mb-4 space-y-1.5', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Starting tier</span>
+                        <span className={isDark ? 'text-white' : 'text-gray-900'}>Recruit (20% share)</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Max share</span>
+                        <span className={isDark ? 'text-white' : 'text-gray-900'}>50% (Supreme Commander)</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Level up by</span>
+                        <span className={isDark ? 'text-white' : 'text-gray-900'}>Recruiting members</span>
+                      </div>
+                      {referralForm.referredBy && (
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Welcome bonus</span>
+                          <span className="text-[#08AA09]">50% fee rebate (30 days)</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-3">
                       <div>
-                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Code <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
-                        <input
-                          type="text"
-                          value={referralForm.referralCode}
-                          onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20) }))}
-                          placeholder="Auto-generates if empty"
-                          className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
-                        />
+                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Your Code <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
+                        <input type="text" value={referralForm.referralCode} onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))} placeholder="Auto-generated if empty" className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')} />
                       </div>
                       {referralForm.referredBy && (
                         <div>
                           <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referred By</label>
-                          <input
-                            type="text"
-                            value={referralForm.referredBy}
-                            readOnly
-                            className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-100 text-gray-500 border border-gray-200')}
-                          />
+                          <input type="text" value={referralForm.referredBy} readOnly className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-100 text-gray-500 border border-gray-200')} />
                         </div>
                       )}
 
@@ -4461,12 +4663,8 @@ export default function WalletPage() {
                         </div>
                       )}
 
-                      <button
-                        onClick={handleReferralRegister}
-                        disabled={referralLoading}
-                        className="w-full py-3 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {referralLoading ? 'Registering...' : 'Join Program'}
+                      <button onClick={handleReferralRegister} disabled={referralLoading} className="w-full py-3 rounded-xl text-[13px] font-semibold bg-[#650CD4] text-white hover:bg-[#650CD4]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {referralLoading ? 'Enlisting...' : 'Enlist Now'}
                       </button>
                     </div>
                   </div>
@@ -4585,7 +4783,7 @@ export default function WalletPage() {
                           <input
                             type="text"
                             value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 14))}
+                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
                             placeholder="2-14 characters"
                             className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                           />
@@ -4633,7 +4831,7 @@ export default function WalletPage() {
                         <input
                           type="text"
                           value={newUsername}
-                          onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 14))}
+                          onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
                           placeholder="2-14 characters"
                           className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')}
                         />
@@ -4725,22 +4923,23 @@ export default function WalletPage() {
                       </div>
                       {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
                         <div className="flex items-center gap-1.5">
-                          {[...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(badge => {
-                            const badgeConfig = {
+                          {[...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(tierName => {
+                            const tierConfig = {
                               member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
                               admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
                               moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
                               verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
                               diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                               nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
+                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                              private: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
                             };
-                            const config = badgeConfig[badge] || { icon: null, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const config = tierConfig[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                             const Icon = config.icon;
                             return (
-                              <span key={badge} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
-                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
-                                <span className={config.text}>{badge.toUpperCase()}</span>
+                              <span key={tierName} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
+                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                <span className={config.text}>{tierName.toUpperCase()}</span>
                               </span>
                             );
                           })}
@@ -4749,29 +4948,33 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  {/* Display Badge Selector */}
-                  {displayBadges.available.length > 1 && (
+                  {/* Display Tier Selector - only tier badges are selectable */}
+                  {displayBadges.available.filter(b => b.startsWith('tier:')).length > 1 && (
                     <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                       <div className="flex items-center justify-between">
-                        <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>Display Badge</p>
-                        <div className="flex items-center gap-1.5">
-                          {displayBadges.available.map(badge => {
-                            const badgeConfig = {
+                        <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>Display Tier</p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {displayBadges.available.filter(b => b.startsWith('tier:')).map(badgeId => {
+                            const name = badgeId.split(':')[1];
+                            const tierConfig = {
                               member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
                               admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
                               moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
                               verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
                               diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                               nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
+                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                              private: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
                             };
-                            const config = badgeConfig[badge] || { icon: Star, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const defaultConfig = { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const config = tierConfig[name] || defaultConfig;
                             const Icon = config.icon;
-                            const isSelected = displayBadges.current === badge;
+                            const isSelected = displayBadges.current === badgeId;
+
                             return (
                               <button
-                                key={badge}
-                                onClick={() => handleSetDisplayBadge(badge)}
+                                key={badgeId}
+                                onClick={() => handleSetDisplayBadge(badgeId)}
                                 disabled={settingBadge}
                                 className={cn(
                                   'px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border transition-all',
@@ -4780,9 +4983,53 @@ export default function WalletPage() {
                                   settingBadge && 'cursor-wait'
                                 )}
                               >
-                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : ''} />}
-                                <span className={config.text}>{badge.toUpperCase()}</span>
+                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                <span className={config.text}>{name.toUpperCase()}</span>
                               </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Achievement Badges - earned badges, not selectable */}
+                  {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
+                    <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Award size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
+                          <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Badges</p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
+                            const name = badgeId.split(':')[1];
+                            const achievementConfig = {
+                              first_recruit: { icon: Users, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'First Recruit' },
+                              squad_leader: { icon: Swords, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'Squad Leader' },
+                              early_adopter: { icon: Zap, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Early Adopter' },
+                              top_trader: { icon: TrendingUp, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'Top Trader' },
+                              whale: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Whale' },
+                              og: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'OG' },
+                              contributor: { icon: Gift, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Contributor' },
+                              army_general: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Army General' }
+                            };
+                            const defaultConfig = { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const config = achievementConfig[name] || defaultConfig;
+                            const Icon = config.icon;
+                            const displayLabel = config.label || name.replace(/_/g, ' ').toUpperCase();
+
+                            return (
+                              <span
+                                key={badgeId}
+                                className={cn(
+                                  'px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border',
+                                  config.bg, config.border
+                                )}
+                              >
+                                {Icon && <Icon size={9} className={config.text} />}
+                                <span className={config.text}>{displayLabel}</span>
+                              </span>
                             );
                           })}
                         </div>

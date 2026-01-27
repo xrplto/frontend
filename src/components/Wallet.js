@@ -2535,6 +2535,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         provider: w.provider,
         provider_id: w.provider_id,
         deviceKeyId: w.wallet_type === 'device' ? w.deviceKeyId || deviceKeyId : w.deviceKeyId,
+        walletKeyId: w.walletKeyId || (w.wallet_type === 'device' ? w.deviceKeyId || deviceKeyId : null),
         accountIndex: w.accountIndex ?? index,
         createdAt: w.createdAt || Date.now(),
         tokenCreatedAt: Date.now()
@@ -2596,6 +2597,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         publicKey: wallet.publicKey,
         wallet_type: 'device',
         deviceKeyId: deviceKeyId,
+        walletKeyId: deviceKeyId,
         xrp: '0',
         createdAt: Date.now(),
         seed: wallet.seed
@@ -2611,6 +2613,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         publicKey: wallet.publicKey,
         wallet_type: 'device',
         deviceKeyId: deviceKeyId,
+        walletKeyId: deviceKeyId,
         accountIndex: 0,
         createdAt: Date.now(),
         tokenCreatedAt: Date.now()
@@ -3193,6 +3196,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       const walletData = {
         deviceKeyId: accountProfile.deviceKeyId,
+        walletKeyId: accountProfile.walletKeyId || accountProfile.deviceKeyId,
         accountIndex: profiles.length,
         account: wallet.address,
         address: wallet.address,
@@ -3214,8 +3218,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, newAccountPassword);
       }
 
-      // Update profiles
-      const allProfiles = [...profiles, { ...walletData, tokenCreatedAt: Date.now() }];
+      // Update profiles (strip seed - seeds only go in encrypted IndexedDB)
+      const { seed: _seed, ...profileData } = walletData;
+      const allProfiles = [...profiles, { ...profileData, tokenCreatedAt: Date.now() }];
       setProfiles(allProfiles);
       await syncProfilesToIndexedDB(allProfiles);
 
