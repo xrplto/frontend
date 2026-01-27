@@ -1449,24 +1449,24 @@ const PriceChartAdvanced = memo(({ token }) => {
     </Card>
 
     {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
-      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '11px', padding: isMobile ? '0 2px' : '0 4px' }}>
-        <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Creator</span>
-        {creatorEvents.slice(0, 12).map((e, i) => {
-          const f = (n) => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
+      <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', overflow: 'hidden' }}>
+        <span style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', flexShrink: 0, fontSize: '11px' }}>Creator</span>
+        {creatorEvents.slice(0, 10).map((e, i) => {
+          const f = (n) => n >= 9.995e5 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
           const t = e.time > 1e12 ? e.time : e.time * 1000;
           const d = Math.floor((Date.now() - t) / 1000);
           const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
-          const isXrpType = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
-          const val = isXrpType && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
+          const isXrp = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
+          const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
+          const short = { SELL: 'S', BUY: 'B', SEND: 'OUT', RECEIVE: 'IN', 'TRANSFER OUT': 'OUT', WITHDRAW: 'W', DEPOSIT: 'D' }[e.type] || e.type.slice(0,3);
           return (
-            <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}>
-              <span style={{ color: e.color, fontWeight: 600, fontSize: '10px' }}>{e.type.replace('CHECK ','✓').replace('OTHER ','')}</span>
-              {val && <span style={{ fontFamily: 'var(--font-mono)' }}>{val}</span>}
+            <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" title={`${e.type} - ${ago} ago`} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 6px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.2)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              <span style={{ color: e.color, fontWeight: 600 }}>{short}</span>
+              {amt && <span style={{ fontFamily: 'var(--font-mono)' }}>{amt}</span>}
               <span style={{ opacity: 0.4 }}>{ago}</span>
             </a>
           );
         })}
-        {creatorEvents.length > 12 && <span style={{ opacity: 0.4 }}>+{creatorEvents.length - 12}</span>}
       </div>
     )}
     </div>
