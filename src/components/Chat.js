@@ -75,15 +75,16 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
   if (!show || !filtered.length) return null;
 
   return (
-    <div ref={pickerRef} className="absolute bottom-full left-0 mb-1 w-64 max-h-48 overflow-y-auto rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl z-50">
+    <div ref={pickerRef} className="absolute bottom-full left-0 mb-2 w-72 max-h-52 overflow-y-auto rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl z-50 p-1">
+      <div className="px-2 py-1.5 text-[10px] uppercase tracking-wide opacity-40 font-medium">Emotes</div>
       {filtered.map((e, i) => (
         <button
           key={e.name}
           onClick={() => insertEmote(e)}
-          className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-white/10 ${i === selectedIdx ? 'bg-white/10' : ''}`}
+          className={`w-full flex items-center gap-3 px-2 py-2 text-left text-sm rounded-lg transition-colors ${i === selectedIdx ? 'bg-[#137DFE]/20 text-white' : 'hover:bg-white/5 text-white/80'}`}
         >
-          <img src={e.url} alt={e.name} className="w-6 h-6 object-contain" loading="lazy" />
-          <span className="text-white/80">{e.name}</span>
+          <img src={e.url} alt={e.name} className="w-7 h-7 object-contain" loading="lazy" />
+          <span className="font-medium">{e.name}</span>
         </button>
       ))}
     </div>
@@ -1061,17 +1062,22 @@ const Chat = () => {
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="relative flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[#1a1a1a] border-[1.5px] border-white/10 hover:border-white/20"
+          className="relative flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#0a0a0a] border-[1.5px] border-white/10 hover:border-white/20 transition-colors shadow-xl"
         >
-          <span className="text-white font-medium">Shoutbox</span>
-          <span className="text-[#08AA09] text-sm">{onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}</span>
+          <span className="text-white font-semibold">Shoutbox</span>
+          <span className="flex items-center gap-1.5 text-[#08AA09] text-sm">
+            <span className="w-2 h-2 rounded-full bg-[#08AA09] animate-pulse" />
+            {onlineCount >= 1000 ? `${(onlineCount / 1000).toFixed(1)}K` : onlineCount}
+          </span>
           {unreadCount > 0 && (
-            <span className="flex items-center gap-1 text-[#650CD4] text-sm">
-              <Inbox size={14} />
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#650CD4]/20 text-[#650CD4] text-xs font-medium">
+              <Inbox size={12} />
               {unreadCount}
             </span>
           )}
-          <span className="px-3 py-1 rounded-lg border-[1.5px] border-white/20 text-white text-sm">Send</span>
+          <span className="px-3 py-1.5 rounded-lg bg-[#137DFE] text-white text-sm font-medium">
+            <Send size={14} />
+          </span>
         </button>
       ) : (
         <div
@@ -1079,53 +1085,68 @@ const Chat = () => {
           onClick={() => { if (!isFocused) inputRef.current?.focus(); }}
           className={`w-[560px] rounded-xl border-[1.5px] ${baseClasses} overflow-hidden shadow-2xl`}
         >
-          <div className="flex items-center justify-between px-3 py-2 border-b border-inherit">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">Shoutbox</span>
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-inherit">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-sm">Shoutbox</span>
               {onlineCount > 0 && (
-                <span className="flex items-center gap-1.5 text-xs">
-                  <span className="w-2 h-2 rounded-full bg-[#08AA09] animate-pulse" />
-                  <span className="text-[#08AA09]">{onlineCount}</span>
+                <span className="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full bg-[#08AA09]/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#08AA09] animate-pulse" />
+                  <span className="text-[#08AA09] font-medium">{onlineCount}</span>
+                </span>
+              )}
+              {modLevel && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#650CD4]/10 text-[10px] text-[#650CD4] font-medium" title={modLevel === 'admin' ? 'Moderator' : 'Verified'}>
+                  <Shield size={12} />
+                  {modLevel === 'admin' ? 'Mod' : 'Verified'}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1">
-              {modLevel && (
-                <span className="flex items-center gap-1 text-[10px] text-[#650CD4]" title={modLevel === 'admin' ? 'Moderator' : 'Verified'}>
-                  <Shield size={14} />
-                </span>
-              )}
-              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-1.5 rounded-lg transition-colors ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10'}`} title="Support Tickets">
-                <HelpCircle size={18} />
+              <button onClick={() => { setShowSupport(true); setSupportNotif(0); }} className={`relative p-2 rounded-lg transition-colors ${showSupport ? 'bg-[#137DFE] text-white' : 'hover:bg-white/10'}`} title="Support Tickets">
+                <HelpCircle size={16} />
                 {supportNotif > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{supportNotif}</span>
                 )}
               </button>
               <div className="relative inbox-dropdown">
-                <button onClick={() => setShowInbox(!showInbox)} className={`p-1.5 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
-                  <Inbox size={18} />
+                <button onClick={() => setShowInbox(!showInbox)} className={`relative p-2 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
+                  <Inbox size={16} />
                   {conversations.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[10px] flex items-center justify-center">{conversations.length}</span>
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#650CD4] text-white text-[9px] font-medium flex items-center justify-center">{conversations.length}</span>
                   )}
                 </button>
                 {showInbox && (
-                  <div className={`absolute right-0 top-10 w-72 rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
-                    <div className="px-3 py-2 border-b border-inherit text-xs font-medium opacity-50">Messages</div>
+                  <div className={`absolute right-0 top-10 w-80 rounded-xl border-[1.5px] ${baseClasses} shadow-2xl z-50 overflow-hidden`}>
+                    <div className="px-3 py-2.5 border-b border-inherit flex items-center gap-2">
+                      <Inbox size={14} className="text-[#650CD4]" />
+                      <span className="text-xs font-semibold">Direct Messages</span>
+                      <span className="ml-auto text-[10px] opacity-40">{conversations.length}</span>
+                    </div>
                     {conversations.length === 0 ? (
-                      <div className="px-3 py-6 text-center text-sm opacity-40">No messages yet</div>
+                      <div className="px-4 py-8 text-center">
+                        <Inbox size={24} className="mx-auto mb-2 opacity-20" />
+                        <p className="text-sm opacity-40">No messages yet</p>
+                      </div>
                     ) : (
-                      <div className="max-h-64 overflow-y-auto">
+                      <div className="max-h-72 overflow-y-auto">
                         {conversations.map(([user, msg]) => (
                           <button
                             key={user}
                             onClick={() => { openDmTab(user); setShowInbox(false); }}
-                            className="w-full text-left px-3 py-2.5 hover:bg-white/5 border-b border-inherit last:border-b-0 transition-colors"
+                            className="w-full text-left px-3 py-3 hover:bg-white/5 border-b border-inherit last:border-b-0 transition-colors group"
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium text-sm text-[#650CD4]">{user.slice(0,6)}...{user.slice(-4)}</span>
-                              <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="w-8 h-8 rounded-full bg-[#650CD4]/20 flex items-center justify-center text-[10px] text-[#650CD4] font-medium shrink-0">
+                                {user.slice(1, 3).toUpperCase()}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium text-sm text-[#650CD4]">{user.slice(0,6)}...{user.slice(-4)}</span>
+                                  <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
+                                </div>
+                                <div className="text-xs opacity-50 truncate">{msg.message}</div>
+                              </div>
                             </div>
-                            <div className="text-xs opacity-50 truncate mt-0.5">{msg.message}</div>
                           </button>
                         ))}
                       </div>
@@ -1133,8 +1154,8 @@ const Chat = () => {
                   </div>
                 )}
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-                <X size={18} />
+              <button onClick={() => setIsOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                <X size={16} />
               </button>
             </div>
           </div>
@@ -1170,10 +1191,10 @@ const Chat = () => {
 
                 return (
                   <>
-                    <div className="flex gap-1 px-2 py-1.5 border-b border-inherit overflow-x-auto">
+                    <div className="flex gap-1 px-2 py-1.5 border-b border-inherit overflow-x-auto scrollbar-hide">
                       <button
                         onClick={() => { setActiveTab('general'); setPrivateTo(''); }}
-                        className={`px-2 py-0.5 text-[11px] rounded shrink-0 ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'opacity-60 hover:opacity-100'}`}
+                        className={`px-3 py-1 text-[11px] rounded-lg shrink-0 font-medium transition-all ${activeTab === 'general' ? 'bg-[#137DFE] text-white' : 'bg-white/5 hover:bg-white/10'}`}
                       >
                         General
                       </button>
@@ -1185,10 +1206,11 @@ const Chat = () => {
                         <button
                           key={user}
                           onClick={() => openDmTab(user)}
-                          className={`px-2 py-0.5 text-[11px] rounded shrink-0 flex items-center gap-1 ${activeTab === user ? 'bg-[#650CD4] text-white' : 'opacity-60 hover:opacity-100'}`}
+                          className={`group/tab px-2 py-1 text-[11px] rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all ${activeTab === user ? 'bg-[#650CD4] text-white' : 'bg-white/5 hover:bg-white/10'}`}
                         >
-                          {user.slice(0, 6)}...{user.slice(-4)}
-                          <span onClick={(e) => closeDmTab(user, e)} className="hover:text-red-400">×</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#650CD4]" />
+                          {user.slice(0, 4)}...{user.slice(-4)}
+                          <span onClick={(e) => closeDmTab(user, e)} className="opacity-50 hover:opacity-100 hover:text-red-400 ml-0.5">×</span>
                         </button>
                       ))}
                     </div>
@@ -1255,11 +1277,11 @@ const Chat = () => {
                   </>
                 );
               })()}
-              <div className="p-2 border-t border-inherit">
+              <div className="px-2 py-2 border-t border-inherit">
                 {(attachedNft || attachedToken) && (
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {attachedToken && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#137DFE]/10 border border-[#137DFE]/20">
                         <AttachedTokenPreview md5={attachedToken} />
                         <button onClick={() => setAttachedToken(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
                           <X size={12} />
@@ -1267,22 +1289,22 @@ const Chat = () => {
                       </div>
                     )}
                     {attachedNft && (
-                      <>
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#650CD4]/10 border border-[#650CD4]/20">
                         <NFTPreview nftId={attachedNft} />
                         <button onClick={() => setAttachedNft(null)} className="p-0.5 hover:bg-white/10 rounded text-white/40 hover:text-white">
                           <X size={12} />
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 )}
-                <div className="relative">
+                <div className="relative flex items-center gap-2">
                   <EmotePicker inputRef={inputRef} input={input} setInput={setInput} />
                   <input
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value.slice(0, 256))}
-                    placeholder={activeTab === 'general' ? 'Message everyone... (type : for emotes)' : `DM ${activeTab.slice(0, 6)}...`}
+                    placeholder={activeTab === 'general' ? 'Message... (type : for emotes)' : `DM ${activeTab.slice(0, 6)}...`}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) {
                         const whisperMatch = input.match(/^\/whisper\s+(r[a-zA-Z0-9]{24,34})\s*(.*)$/i);
@@ -1296,7 +1318,6 @@ const Chat = () => {
                           setInput('');
                           return;
                         }
-                        // Mod commands
                         const muteMatch = input.match(/^\/mute\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
                         if (muteMatch && canMute()) {
                           muteUser(muteMatch[1], parseInt(muteMatch[2]) || 30);
@@ -1324,10 +1345,17 @@ const Chat = () => {
                         sendMessage();
                       }
                     }}
-                    className={`w-full px-3 py-2 border-t border-b shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] outline-none text-sm ${isDark ? 'bg-[#1a1410]/90 text-[#d4b896] placeholder-[#6b5a45] border-[#3d3225] focus:border-[#8b7355]' : 'bg-[#f5ebe0] text-[#3d2b1f] placeholder-[#a08060] border-[#c9b896] focus:border-[#8b7355]'}`}
+                    className={`flex-1 px-3 py-2.5 rounded-xl outline-none text-sm transition-colors ${isDark ? 'bg-white/5 text-white placeholder-white/30 focus:bg-white/[0.07]' : 'bg-black/5 text-black placeholder-black/30 focus:bg-black/[0.07]'}`}
                   />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!input && !attachedNft && !attachedToken}
+                    className="p-2.5 rounded-xl bg-[#137DFE] text-white disabled:opacity-30 hover:bg-[#137DFE]/80 transition-colors shrink-0"
+                  >
+                    <Send size={16} />
+                  </button>
                   {input.length > 200 && (
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${input.length >= 256 ? 'text-red-500' : isDark ? 'text-[#6b5a45]' : 'text-[#a08060]'}`}>
+                    <span className={`absolute right-14 top-1/2 -translate-y-1/2 text-[10px] ${input.length >= 256 ? 'text-red-500' : 'opacity-40'}`}>
                       {256 - input.length}
                     </span>
                   )}
