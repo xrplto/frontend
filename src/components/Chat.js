@@ -317,7 +317,7 @@ const renderMessage = (text) => {
   if (allMatches.length === 0) {
     // No token/NFT matches, check for emotes in plain text
     return text.split(/(\s+)/).map((word, i) => {
-      if (/^[A-Za-z][A-Za-z0-9]{2,}$/.test(word) && emoteCache?.some(e => e.name.toLowerCase() === word.toLowerCase())) {
+      if (/^[A-Za-z][A-Za-z0-9_-]{1,}$/.test(word) && emoteCache?.some(e => e.name.toLowerCase() === word.toLowerCase())) {
         return <EmoteInMessage key={i} name={word} />;
       }
       return word;
@@ -865,7 +865,20 @@ const Chat = () => {
                     onChange={(e) => setInput(e.target.value.slice(0, 256))}
                     placeholder={activeTab === 'general' ? 'Message everyone... (type : for emotes)' : `DM ${activeTab.slice(0, 6)}...`}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) sendMessage();
+                      if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) {
+                        const whisperMatch = input.match(/^\/whisper\s+(r[a-zA-Z0-9]{24,34})\s*(.*)$/i);
+                        if (whisperMatch) {
+                          const [, target, msg] = whisperMatch;
+                          setPrivateTo(target);
+                          openDmTab(target);
+                          if (msg.trim()) {
+                            wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim() }));
+                          }
+                          setInput('');
+                          return;
+                        }
+                        sendMessage();
+                      }
                     }}
                     className={`w-full px-3 py-2 border-t border-b shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] outline-none text-sm ${isDark ? 'bg-[#1a1410]/90 text-[#d4b896] placeholder-[#6b5a45] border-[#3d3225] focus:border-[#8b7355]' : 'bg-[#f5ebe0] text-[#3d2b1f] placeholder-[#a08060] border-[#c9b896] focus:border-[#8b7355]'}`}
                   />
