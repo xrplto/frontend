@@ -63,6 +63,33 @@ const config = {
     ]
   },
   async headers() {
+    // CSP: relaxed for dev, strict for production
+    const cspDev = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https: http://localhost:*",
+      "font-src 'self' data:",
+      "connect-src 'self' https: wss: ws://localhost:* http://localhost:*",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'"
+    ].join('; ');
+
+    const cspProd = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for some charting libs
+      "style-src 'self' 'unsafe-inline'", // emotion/styled-jsx needs inline styles
+      "img-src 'self' data: blob: https://s1.xrpl.to https://xrpl.to https://s1.xrpnft.com https://ipfs.io https://ipfs.filebase.io https://*.googleusercontent.com",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.xrpl.to https://xrpl.to wss://api.xrpl.to wss://xrplcluster.com wss://s1.ripple.com wss://xrpl.ws",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+      "upgrade-insecure-requests"
+    ].join('; ');
+
     // Disable caching in development
     if (process.env.NODE_ENV === 'development') {
       return [
@@ -80,6 +107,10 @@ const config = {
             {
               key: 'Expires',
               value: '0'
+            },
+            {
+              key: 'Content-Security-Policy',
+              value: cspDev
             }
           ]
         }
@@ -100,7 +131,23 @@ const config = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
+            value: 'DENY'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: cspProd
           }
         ]
       },

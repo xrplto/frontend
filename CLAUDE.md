@@ -83,6 +83,40 @@ const isDark = themeName === 'XrplToDarkTheme';
 - `src/components/Wallet.js` - Auth UI & OAuth handlers
 - `pages/wallet-setup.js` - New user password setup
 
+### Secure Seed Access Pattern
+Seeds must NEVER be stored unencrypted. Use this pattern for all transaction signing:
+
+```javascript
+// 1. Import encrypted storage
+const { Wallet } = await import('xrpl');
+const { EncryptedWalletStorage, deviceFingerprint } = await import('src/utils/encryptedWalletStorage');
+
+// 2. Get device fingerprint (stable ID)
+const walletStorage = new EncryptedWalletStorage();
+const deviceKeyId = await deviceFingerprint.getDeviceId();
+
+// 3. Retrieve password from IndexedDB
+const storedPassword = await walletStorage.getWalletCredential(deviceKeyId);
+if (!storedPassword) throw new Error('Wallet locked');
+
+// 4. Decrypt seed from IndexedDB (memory only)
+const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+if (!walletData?.seed) throw new Error('Could not retrieve credentials');
+
+// 5. Create signing wallet in memory
+const algorithm = walletData.seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+const deviceWallet = Wallet.fromSeed(walletData.seed, { algorithm });
+
+// 6. Sign and submit
+const signed = deviceWallet.sign(preparedTx);
+```
+
+| Location | What's Stored |
+|----------|---------------|
+| IndexedDB (encrypted) | Seeds, passwords |
+| localStorage | Profiles (NO seeds), auth tokens |
+| Memory only | Decrypted seed during signing |
+
 ## XRPL Seed Detection
 
 ```javascript
