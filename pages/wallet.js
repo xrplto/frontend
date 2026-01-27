@@ -4706,17 +4706,17 @@ export default function WalletPage() {
                               member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
                               admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
                               moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
-                              verified: { icon: Check, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
                               diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                               nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                              vip: { icon: Sparkles, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20' }
+                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
                             };
                             const config = badgeConfig[badge] || { icon: null, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                             const Icon = config.icon;
                             return (
-                              <span key={badge} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.text, config.border)}>
-                                {Icon && <Icon size={9} />}
-                                {badge.toUpperCase()}
+                              <span key={badge} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
+                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
+                                <span className={config.text}>{badge.toUpperCase()}</span>
                               </span>
                             );
                           })}
@@ -4788,7 +4788,7 @@ export default function WalletPage() {
                             vip: { icon: Sparkles, gradient: 'from-[#137DFE] to-[#0066DD]', bg: 'bg-[#137DFE]/5', border: 'border-[#137DFE]/20', text: 'text-[#137DFE]', glow: 'shadow-[#137DFE]/10' },
                             nova: { icon: Star, gradient: 'from-[#F6AF01] to-[#E09D00]', bg: 'bg-[#F6AF01]/5', border: 'border-[#F6AF01]/20', text: 'text-[#F6AF01]', glow: 'shadow-[#F6AF01]/10' },
                             diamond: { icon: Gem, gradient: 'from-[#650CD4] to-[#a855f7]', bg: 'bg-[#650CD4]/5', border: 'border-[#650CD4]/20', text: 'text-[#a855f7]', glow: 'shadow-[#650CD4]/10' },
-                            verified: { icon: Check, gradient: 'from-[#08AA09] to-[#06880A]', bg: 'bg-[#08AA09]/5', border: 'border-[#08AA09]/20', text: 'text-[#08AA09]', glow: 'shadow-[#08AA09]/10' }
+                            verified: { icon: Check, gradient: 'from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]', bg: 'bg-[#FFD700]/5', border: 'border-[#FFD700]/20', text: 'text-[#FFD700]', glow: 'shadow-[#FFD700]/10' }
                           };
                           const config = tierConfig[name] || { icon: Star, gradient: 'from-gray-500 to-gray-600', bg: 'bg-white/5', border: 'border-white/10', text: 'text-white', glow: '' };
                           const TierIcon = config.icon;
@@ -4875,6 +4875,20 @@ export default function WalletPage() {
                                       )}
                                     </div>
                                   )}
+
+                                  {/* Chat Name Preview */}
+                                  <div className={cn('flex items-center gap-2 mt-3 pt-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
+                                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>Chat name:</span>
+                                    <span className={cn('text-[12px] font-medium',
+                                      name === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' :
+                                      name === 'vip' ? 'text-[#08AA09]' :
+                                      name === 'nova' ? 'text-[#F6AF01]' :
+                                      name === 'diamond' ? 'text-[#a855f7]' : 'text-[#08AA09]'
+                                    )}>
+                                      {profileUser?.username || 'YourName'}:
+                                    </span>
+                                    <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Hello world!</span>
+                                  </div>
 
                                   {!isCurrentTier && tier.price > 0 && (
                                     <div className="flex gap-2 mt-3">

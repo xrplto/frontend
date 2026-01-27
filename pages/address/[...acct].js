@@ -934,17 +934,17 @@ const OverView = ({ account }) => {
                     const groupConfig = {
                       member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
                       admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-                      verified: { icon: Check, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
+                      verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
                       diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                       nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                      vip: { icon: Sparkles, bg: 'bg-[#137DFE]/10', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20' }
+                      vip: { icon: Sparkles, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
                     };
                     const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' };
                     const Icon = config.icon;
                     return (
-                      <div key={group} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border', config.bg, config.text, config.border)}>
-                        {Icon && <Icon size={13} />}
-                        <span>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+                      <div key={group} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border', config.bg, config.border)}>
+                        {Icon && <Icon size={13} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
+                        <span className={config.text}>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
                       </div>
                     );
                   })}
