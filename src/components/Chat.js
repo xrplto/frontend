@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Monitor, Smartphone, Globe, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -711,12 +711,6 @@ const Chat = () => {
 
   const getWallet = (m) => m.wallet || m.address || m.username;
   const getRecipient = (m) => m.recipientWallet || m.recipient;
-  const getPlatformIcon = (p) => {
-    if (!p) return null;
-    const pl = p.toLowerCase();
-    const Icon = pl.includes('mobile') || pl.includes('ios') || pl.includes('android') ? Smartphone : pl.includes('xrpl.to') || pl.includes('web') || pl.includes('desktop') ? Monitor : Globe;
-    return <span title={p}><Icon size={10} className="opacity-40 cursor-help" /></span>;
-  };
   const getTierStyle = (t) => {
     if (!t) return null;
     const tier = t.toLowerCase();
@@ -758,10 +752,11 @@ const Chat = () => {
   // Tiers that verified users can mute (per API: VIP, Nova, Diamond only)
   const MUTABLE_BY_VERIFIED = ['vip', 'nova', 'diamond'];
 
-  const canMute = (targetTier) => {
+  const canMute = (targetTier = null) => {
     if (!modLevel) return false;
     if (modLevel === 'admin') return true;
-    // Verified can only mute VIP/Nova/Diamond
+    // Verified can only mute VIP/Nova/Diamond (if tier provided), otherwise allow attempt
+    if (!targetTier) return modLevel === 'verified';
     const t = targetTier?.toLowerCase();
     return MUTABLE_BY_VERIFIED.includes(t);
   };
@@ -1208,9 +1203,8 @@ const Chat = () => {
 
                         return (
                           <div key={msg._id || i} className="flex items-baseline gap-1.5 py-0.5 text-[13px] leading-relaxed">
-                            <span className="flex items-center gap-1 text-[10px] opacity-30 shrink-0">
+                            <span className="text-[10px] opacity-30 shrink-0">
                               {timeAgo(msg.timestamp)}
-                              {getPlatformIcon(msg.platform)}
                             </span>
                             <span className="relative group shrink-0">
                               <button
@@ -1299,6 +1293,31 @@ const Chat = () => {
                           if (msg.trim()) {
                             wsRef.current?.send(JSON.stringify({ type: 'private', to: target, message: msg.trim() }));
                           }
+                          setInput('');
+                          return;
+                        }
+                        // Mod commands
+                        const muteMatch = input.match(/^\/mute\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
+                        if (muteMatch && canMute()) {
+                          muteUser(muteMatch[1], parseInt(muteMatch[2]) || 30);
+                          setInput('');
+                          return;
+                        }
+                        const unmuteMatch = input.match(/^\/unmute\s+(r[a-zA-Z0-9]{24,34})$/i);
+                        if (unmuteMatch && canMute()) {
+                          unmuteUser(unmuteMatch[1]);
+                          setInput('');
+                          return;
+                        }
+                        const banMatch = input.match(/^\/ban\s+(r[a-zA-Z0-9]{24,34})(?:\s+(\d+))?$/i);
+                        if (banMatch && canBan()) {
+                          banUser(banMatch[1], parseInt(banMatch[2]) || 60);
+                          setInput('');
+                          return;
+                        }
+                        const unbanMatch = input.match(/^\/unban\s+(r[a-zA-Z0-9]{24,34})$/i);
+                        if (unbanMatch && canBan()) {
+                          unbanUser(unbanMatch[1]);
                           setInput('');
                           return;
                         }
