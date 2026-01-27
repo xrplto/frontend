@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Monitor, Smartphone, Globe } from 'lucide-react';
+import { X, Inbox, Monitor, Smartphone, Globe, Ban, VolumeX, Shield } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -409,6 +409,8 @@ const Chat = () => {
   const [showInbox, setShowInbox] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [modLevel, setModLevel] = useState(null); // 'admin' | 'verified' | null
+  const [modError, setModError] = useState(null);
   const containerRef = useRef(null);
 
   const getWallet = (m) => m.wallet || m.address || m.username;
@@ -430,6 +432,50 @@ const Chat = () => {
     if (tier === 'professional') return 'bg-[#137DFE]/20 text-[#137DFE]';
     return 'bg-white/10 text-white/50';
   };
+
+  const getApiKey = () => {
+    try {
+      const profile = JSON.parse(localStorage.getItem('account_profile_2') || 'null');
+      return profile?.apiKey || null;
+    } catch { return null; }
+  };
+
+  const modAction = async (action, wallet, duration = null) => {
+    const apiKey = getApiKey();
+    if (!apiKey) { setModError('No API key'); return null; }
+    try {
+      const res = await fetch(`https://api.xrpl.to/v1/chat/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+        body: JSON.stringify({ wallet, duration })
+      });
+      const data = await res.json();
+      if (!data.success) setModError(data.error || data.message || 'Action failed');
+      else setModError(null);
+      return data;
+    } catch (e) {
+      setModError('Network error');
+      return null;
+    }
+  };
+
+  // Tiers that verified users can mute (per API: VIP, Nova, Diamond only)
+  const MUTABLE_BY_VERIFIED = ['vip', 'nova', 'diamond'];
+
+  const canMute = (targetTier) => {
+    if (!modLevel) return false;
+    if (modLevel === 'admin') return true;
+    // Verified can only mute VIP/Nova/Diamond
+    const t = targetTier?.toLowerCase();
+    return MUTABLE_BY_VERIFIED.includes(t);
+  };
+
+  const canBan = () => modLevel === 'admin';
+
+  const banUser = (wallet, duration = null) => modAction('ban', wallet, duration);
+  const unbanUser = (wallet) => modAction('unban', wallet);
+  const muteUser = (wallet, duration = 30) => modAction('mute', wallet, duration);
+  const unmuteUser = (wallet) => modAction('unmute', wallet);
 
   const conversations = useMemo(() => {
     const convos = {};
@@ -479,7 +525,17 @@ const Chat = () => {
           setRegistered(true);
           // Use local wallet from localStorage, not server's (server may have stale data)
           const localWallet = getLoggedInWallet();
-          setAuthUser({ wallet: localWallet || data.wallet, username: data.username, tier: data.tier });
+          setAuthUser({ wallet: localWallet || data.wallet, username: data.username, tier: data.tier, roles: data.roles });
+          // Check moderation level
+          const tier = data.tier?.toLowerCase();
+          const roles = data.roles || [];
+          if (roles.includes('admin') || roles.includes('moderator') || tier === 'god') {
+            setModLevel('admin');
+          } else if (tier === 'verified') {
+            setModLevel('verified');
+          } else {
+            setModLevel(null);
+          }
           // Fetch inbox and DM history
           ws.send(JSON.stringify({ type: 'inbox' }));
           dmTabsRef.current.forEach(user => {
@@ -543,13 +599,20 @@ const Chat = () => {
           break;
         case 'error':
           console.error('Chat error:', data.message);
+          if (data.code === 4030) setModError(`Banned: ${data.reason || data.message}`);
+          else if (data.code === 4031) setModError(`Muted: ${data.reason || data.message}`);
+          break;
+        case 'kicked':
+          setModError(`Kicked: ${data.reason}`);
+          setRegistered(false);
+          setModLevel(null);
           break;
         default:
           break;
       }
     };
 
-    ws.onclose = () => setRegistered(false);
+    ws.onclose = () => { setRegistered(false); setModLevel(null); };
 
     return ws;
   }, []);
@@ -588,6 +651,7 @@ const Chat = () => {
       if (pingInterval) clearInterval(pingInterval);
       if (ws) ws.close();
       setRegistered(false);
+      setModLevel(null);
     };
   }, [isOpen, connect, authUser?.wallet]);
 
@@ -729,6 +793,11 @@ const Chat = () => {
               )}
             </div>
             <div className="flex items-center gap-1">
+              {modLevel && (
+                <span className="flex items-center gap-1 text-[10px] text-[#650CD4]" title={modLevel === 'admin' ? 'Moderator' : 'Verified'}>
+                  <Shield size={14} />
+                </span>
+              )}
               <div className="relative inbox-dropdown">
                 <button onClick={() => setShowInbox(!showInbox)} className={`p-1.5 rounded-lg transition-colors ${showInbox ? 'bg-[#650CD4] text-white' : 'hover:bg-white/10'}`}>
                   <Inbox size={18} />
@@ -767,6 +836,12 @@ const Chat = () => {
             </div>
           </div>
 
+          {modError && (
+            <div className="px-3 py-2 bg-red-500/10 border-b border-red-500/20 text-red-400 text-xs flex items-center justify-between">
+              <span>{modError}</span>
+              <button onClick={() => setModError(null)} className="hover:text-red-300"><X size={14} /></button>
+            </div>
+          )}
           {!registered ? (
             <div className="h-[400px] flex items-center justify-center">
               <div className="text-center opacity-50">
@@ -837,6 +912,26 @@ const Chat = () => {
                                       {msg.platform && <span>Platform: <span className="text-white/80">{msg.platform}</span></span>}
                                     </div>
                                     <div className="text-[#650CD4] mt-1">Click to DM</div>
+                                    {(canMute(msg.tier) || canBan()) && (
+                                      <div className="flex gap-2 mt-2 pt-2 border-t border-white/10">
+                                        {canMute(msg.tier) && (
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); muteUser(msgWallet, 30); }}
+                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#F6AF01]/20 text-[#F6AF01] hover:bg-[#F6AF01]/30"
+                                          >
+                                            <VolumeX size={10} /> Mute 30m
+                                          </button>
+                                        )}
+                                        {canBan() && (
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); banUser(msgWallet, 60); }}
+                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                                          >
+                                            <Ban size={10} /> Ban 1h
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
