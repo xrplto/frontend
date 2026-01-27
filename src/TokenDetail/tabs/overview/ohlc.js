@@ -24,6 +24,7 @@ import { AppContext } from 'src/context/AppContext';
 const SYMBOLS = { USD: '$', EUR: '€', JPY: '¥', CNH: '¥', XRP: '✕' };
 const BASE_URL = 'https://api.xrpl.to/v1';
 const WS_URL = 'wss://api.xrpl.to/ws/ohlc';
+const CREATOR_WS_URL = 'wss://api.xrpl.to/ws/creator';
 
 const processOhlc = (ohlc) => {
   const MAX = 90071992547409;
@@ -202,37 +203,41 @@ const PriceChartAdvanced = memo(({ token }) => {
     return { percentDown: pct, athMcap: token.athMarketcap };
   }, [token?.athMarketcap, token?.marketcap]);
 
-  // Creator events from API
+  // Creator events via WebSocket
   const [creatorEvents, setCreatorEvents] = useState([]);
+  const creatorWsRef = useRef(null);
   useEffect(() => {
-    if (!token?.creator || !token?.md5) return;
-    const ctrl = new AbortController();
-    const creatorUrl = `${BASE_URL.replace('/v1', '')}/v1/creators/${token.creator}?limit=10&md5=${token.md5}&stream=true`;
-    const t0 = performance.now();
-    console.log('[OHLC] Fetching creator events:', creatorUrl);
-    axios.get(creatorUrl, { signal: ctrl.signal })
-      .then(res => {
-        const events = res.data?.events || res.data || [];
-        console.log(`[OHLC] Creator events done in ${(performance.now() - t0).toFixed(0)}ms, ${events.length} events`);
-        if (!events.length) return setCreatorEvents([]);
-        const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
-        const priority = { sell: 1, buy: 1, transfer_out: 2, other_send: 2, check_create: 3, check_cash: 3, check_receive: 3, withdraw: 4, deposit: 4, receive: 5, other_receive: 5 };
-        setCreatorEvents(events
-          .sort((a, b) => (priority[a.s] || 9) - (priority[b.s] || 9) || b.t - a.t)
-          .slice(0, 20)
-          .map(e => ({
-            time: e.t,
-            type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
-            tokenAmount: e.a || 0,
-            xrpAmount: e.x || 0,
-            hash: e.h,
-            color: colors[e.s] || '#9ca3af',
-            currency: e.n || e.c || ''
-          })).sort((a, b) => b.time - a.time));
-      })
-      .catch(() => setCreatorEvents([]));
-    return () => ctrl.abort();
-  }, [token?.creator, token?.md5]);
+    if (!token?.md5) return;
+    const colors = { sell: '#ef4444', buy: '#22c55e', withdraw: '#f59e0b', deposit: '#8b5cf6', transfer_out: '#f97316', other_send: '#f97316', check_create: '#ec4899', check_cash: '#ec4899', check_receive: '#ec4899', receive: '#06b6d4', other_receive: '#06b6d4' };
+    const mapEvent = (e) => ({
+      time: e.t,
+      type: (e.s || '').toUpperCase().replace('_', ' ').replace('OTHER ', ''),
+      tokenAmount: e.a || 0,
+      xrpAmount: e.x || 0,
+      hash: e.h,
+      color: colors[e.s] || '#9ca3af',
+      currency: e.n || e.c || ''
+    });
+
+    let mounted = true;
+    const connect = () => {
+      if (!mounted) return;
+      const ws = new WebSocket(`${CREATOR_WS_URL}/${token.md5}`);
+      creatorWsRef.current = ws;
+      ws.onmessage = (e) => {
+        if (!mounted) return;
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'initial' && msg.events?.length) {
+          setCreatorEvents(msg.events.map(mapEvent));
+        } else if (msg.type === 'activity') {
+          setCreatorEvents((prev) => [mapEvent(msg), ...prev].slice(0, 10));
+        }
+      };
+      ws.onclose = (ev) => mounted && ev.code !== 1000 && setTimeout(connect, 5000);
+    };
+    connect();
+    return () => { mounted = false; creatorWsRef.current?.close(); };
+  }, [token?.md5]);
 
   // Keep refs in sync
   useEffect(() => {
