@@ -179,6 +179,8 @@ export default function WalletPage() {
   const [purchaseLoading, setPurchaseLoading] = useState(null);
   const [xrpInvoice, setXrpInvoice] = useState(null);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [displayBadges, setDisplayBadges] = useState({ current: null, available: [] });
+  const [settingBadge, setSettingBadge] = useState(false);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -1506,9 +1508,10 @@ export default function WalletPage() {
     const fetchTiers = async () => {
       setTiersLoading(true);
       try {
-        const [tiersRes, perksRes] = await Promise.all([
+        const [tiersRes, perksRes, badgesRes] = await Promise.all([
           fetch(`${BASE_URL}/api/user/tiers`),
-          address ? fetch(`${BASE_URL}/api/user/${address}/perks`) : Promise.resolve(null)
+          address ? fetch(`${BASE_URL}/api/user/${address}/perks`) : Promise.resolve(null),
+          address ? fetch(`${BASE_URL}/v1/user/${address}/badges`) : Promise.resolve(null)
         ]);
         if (tiersRes.ok) {
           const data = await tiersRes.json();
@@ -1517,6 +1520,10 @@ export default function WalletPage() {
         if (perksRes?.ok) {
           const data = await perksRes.json();
           setUserPerks({ tier: data.tier, perks: data.perks, expiry: data.expiry, roles: data.roles, groups: data.groups, contentAccess: data.contentAccess });
+        }
+        if (badgesRes?.ok) {
+          const data = await badgesRes.json();
+          setDisplayBadges({ current: data.current, available: data.available || [] });
         }
       } catch (e) {}
       setTiersLoading(false);
@@ -1563,6 +1570,23 @@ export default function WalletPage() {
       setProfileError(e.message);
     }
     setVerifyingPayment(false);
+  };
+
+  const handleSetDisplayBadge = async (badge) => {
+    if (!address || settingBadge) return;
+    setSettingBadge(true);
+    try {
+      const res = await fetch(`${BASE_URL}/v1/user/${address}/display-badge`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ badge })
+      });
+      if (res.ok) {
+        setDisplayBadges(prev => ({ ...prev, current: badge }));
+        window.dispatchEvent(new CustomEvent('badgeChanged', { detail: { badge } }));
+      }
+    } catch (e) {}
+    setSettingBadge(false);
   };
 
   const handlePurchaseTierStripe = async (tierName) => {
@@ -4701,7 +4725,7 @@ export default function WalletPage() {
                       </div>
                       {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
                         <div className="flex items-center gap-1.5">
-                          {[...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])].map(badge => {
+                          {[...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(badge => {
                             const badgeConfig = {
                               member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
                               admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
@@ -4724,6 +4748,47 @@ export default function WalletPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Display Badge Selector */}
+                  {displayBadges.available.length > 1 && (
+                    <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
+                      <div className="flex items-center justify-between">
+                        <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>Display Badge</p>
+                        <div className="flex items-center gap-1.5">
+                          {displayBadges.available.map(badge => {
+                            const badgeConfig = {
+                              member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
+                              admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
+                              moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
+                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
+                              diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                              nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
+                            };
+                            const config = badgeConfig[badge] || { icon: Star, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const Icon = config.icon;
+                            const isSelected = displayBadges.current === badge;
+                            return (
+                              <button
+                                key={badge}
+                                onClick={() => handleSetDisplayBadge(badge)}
+                                disabled={settingBadge}
+                                className={cn(
+                                  'px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border transition-all',
+                                  config.bg, config.border,
+                                  isSelected ? 'ring-1 ring-offset-1 ring-offset-black ring-white/30' : 'opacity-50 hover:opacity-100',
+                                  settingBadge && 'cursor-wait'
+                                )}
+                              >
+                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : ''} />}
+                                <span className={config.text}>{badge.toUpperCase()}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* XRP Invoice Modal */}
                   {xrpInvoice && (

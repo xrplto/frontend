@@ -997,6 +997,20 @@ const Chat = () => {
     return () => document.removeEventListener('click', close);
   }, [showInbox]);
 
+  // Listen for badge changes from wallet settings
+  useEffect(() => {
+    const handleBadgeChange = (e) => {
+      const { badge } = e.detail || {};
+      if (badge) {
+        setAuthUser(prev => prev ? { ...prev, tier: badge } : prev);
+        // Reconnect WebSocket to sync new badge with server
+        if (wsRef.current) wsRef.current.close();
+      }
+    };
+    window.addEventListener('badgeChanged', handleBadgeChange);
+    return () => window.removeEventListener('badgeChanged', handleBadgeChange);
+  }, []);
+
   // Listen for external DM requests
   useEffect(() => {
     const handleOpenDm = (e) => {
