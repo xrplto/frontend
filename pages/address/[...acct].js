@@ -229,8 +229,12 @@ const OverView = ({ account }) => {
   const [expandedTx, setExpandedTx] = useState(null);
   const [aiExplanation, setAiExplanation] = useState({});
   const [aiLoading, setAiLoading] = useState({});
-  const [showAllTokens, setShowAllTokens] = useState(false);
   const [tokenSearch, setTokenSearch] = useState('');
+  // Trading performance pagination (server-side)
+  const [tradingPerfOffset, setTradingPerfOffset] = useState(0);
+  const [tradingPerfSort, setTradingPerfSort] = useState('volume');
+  const [tradingPerfLoading, setTradingPerfLoading] = useState(false);
+  const TRADING_PERF_LIMIT = 20;
   const [hideZeroHoldings, setHideZeroHoldings] = useState(true);
   const [txSearch, setTxSearch] = useState('');
   const [activeTab, setActiveTab] = useState('tokens');
@@ -293,6 +297,8 @@ const OverView = ({ account }) => {
     setTxSearch('');
     setTxFilter('all');
     setLoading(true);
+    setTradingPerfOffset(0);
+    setTradingPerfSort('volume');
     setAccountAI(null);
     setAccountAILoading(false);
     setNftStats(null);
@@ -309,21 +315,27 @@ const OverView = ({ account }) => {
     const fetchData = async () => {
       try {
         // Fetch profile data, holdings, and NFT stats
+        const timedFetch = async (name, fn) => {
+          const start = performance.now();
+          const result = await fn();
+          console.log(`[PERF] ${name}: ${(performance.now() - start).toFixed(0)}ms`);
+          return result;
+        };
         const [profileRes, holdingsRes, nftRes, balanceRes, liveRes] = await Promise.all([
-          axios.get(`https://api.xrpl.to/v1/traders/${account}`).catch(() => ({ data: null })),
-          axios
+          timedFetch('traders', () => axios.get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=0&sortTokensBy=volume`).catch(() => ({ data: null }))),
+          timedFetch('trustlines', () => axios
             .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0&format=full`)
             .catch(() => axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0`))
-            .catch(() => ({ data: null })),
-          axios
+            .catch(() => ({ data: null }))),
+          timedFetch('nft-analytics', () => axios
             .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`)
-            .catch(() => ({ data: null })),
-          axios
+            .catch(() => ({ data: null }))),
+          timedFetch('balance', () => axios
             .get(`https://api.xrpl.to/v1/account/balance/${account}?rank=true`)
-            .catch(() => ({ data: null })),
-          axios
+            .catch(() => ({ data: null }))),
+          timedFetch('account-info', () => axios
             .get(`https://api.xrpl.to/v1/account/info/${account}`)
-            .catch(() => ({ data: null }))
+            .catch(() => ({ data: null })))
         ]);
 
         const profile = profileRes.data || {};
@@ -429,6 +441,28 @@ const OverView = ({ account }) => {
       .then((res) => setHoldings(res.data))
       .catch((err) => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
+
+  // Fetch trading performance when offset or sort changes
+  useEffect(() => {
+    if (!account || loading) return;
+    const isInitialLoad = tradingPerfOffset === 0 && tradingPerfSort === 'volume';
+    if (isInitialLoad) return;
+
+    setTradingPerfLoading(true);
+    axios
+      .get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=${tradingPerfOffset}&sortTokensBy=${tradingPerfSort}`)
+      .then((res) => {
+        if (res.data && !res.data.error) {
+          setData(prev => ({
+            ...prev,
+            tokenPerformance: res.data.tokenPerformance || [],
+            pagination: res.data.pagination
+          }));
+        }
+      })
+      .catch((err) => console.error('Failed to fetch trading performance:', err))
+      .finally(() => setTradingPerfLoading(false));
+  }, [tradingPerfOffset, tradingPerfSort]);
 
   // Fetch NFT collections when tab changes to 'nfts'
   useEffect(() => {
@@ -2153,35 +2187,28 @@ const OverView = ({ account }) => {
                 )}
 
                 {/* Trading Performance */}
-                {data?.tokenPerformance?.length > 0 &&
+                {(data?.tokenPerformance?.length > 0 || tradingPerfLoading) &&
                   (() => {
-                    const filteredTokens = data.tokenPerformance.filter(
+                    const filteredTokens = (data?.tokenPerformance || []).filter(
                       (t) =>
                         !tokenSearch || t.name?.toLowerCase().includes(tokenSearch.toLowerCase())
                     );
-                    const displayTokens = showAllTokens
-                      ? filteredTokens
-                      : filteredTokens.slice(0, 10);
-                    const totalCount = data.totalTokensTraded || data.tokenPerformance.length;
-                    const maxRoi = Math.max(
-                      ...filteredTokens.map((t) => Math.abs(t.roi || 0)),
-                      100
-                    );
-                    const maxProfit = Math.max(
-                      ...filteredTokens.map((t) => Math.abs(t.profit || 0)),
-                      1
-                    );
+                    const displayTokens = filteredTokens;
+                    const totalCount = data?.pagination?.totalTokens || data?.totalTokensTraded || data?.tokenPerformance?.length || 0;
+                    const currentPage = Math.floor(tradingPerfOffset / TRADING_PERF_LIMIT);
+                    const totalPages = Math.ceil(totalCount / TRADING_PERF_LIMIT);
+                    const hasMore = data?.pagination?.hasMore ?? (tradingPerfOffset + TRADING_PERF_LIMIT < totalCount);
 
                     return (
                       <div
                         className={cn(
-                          'rounded-xl border-[1.5px] mb-4 overflow-hidden',
+                          'rounded-xl border-[1.5px] mb-4 overflow-hidden relative',
                           isDark ? 'border-white/10' : 'border-gray-200'
                         )}
                       >
                         <div
                           className={cn(
-                            'flex items-center justify-between px-3 py-2.5',
+                            'flex items-center justify-between px-3 py-2.5 gap-2 flex-wrap',
                             isDark ? 'border-b border-white/10' : 'border-b border-gray-100'
                           )}
                         >
@@ -2201,24 +2228,45 @@ const OverView = ({ account }) => {
                               {totalCount}
                             </span>
                           </span>
-                          <div
-                            className={cn(
-                              'flex items-center rounded-md overflow-hidden',
-                              isDark ? 'bg-white/[0.04]' : 'bg-gray-100'
-                            )}
-                          >
-                            <input
-                              type="text"
-                              placeholder="Search tokens..."
-                              value={tokenSearch}
-                              onChange={(e) => setTokenSearch(e.target.value)}
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={tradingPerfSort}
+                              onChange={(e) => {
+                                setTradingPerfSort(e.target.value);
+                                setTradingPerfOffset(0);
+                              }}
                               className={cn(
-                                'text-[11px] px-2.5 py-1.5 bg-transparent border-none outline-none w-32',
+                                'text-[11px] px-2 py-1.5 rounded-md border-none outline-none cursor-pointer',
                                 isDark
-                                  ? 'text-white/70 placeholder:text-white/30'
-                                  : 'text-gray-600 placeholder:text-gray-400'
+                                  ? 'bg-white/[0.04] text-white/70'
+                                  : 'bg-gray-100 text-gray-600'
                               )}
-                            />
+                            >
+                              <option value="volume">Sort: Volume</option>
+                              <option value="profit">Sort: PNL</option>
+                              <option value="roi">Sort: ROI</option>
+                              <option value="trades">Sort: Trades</option>
+                              <option value="lastTradeDate">Sort: Recent</option>
+                            </select>
+                            <div
+                              className={cn(
+                                'flex items-center rounded-md overflow-hidden',
+                                isDark ? 'bg-white/[0.04]' : 'bg-gray-100'
+                              )}
+                            >
+                              <input
+                                type="text"
+                                placeholder="Search..."
+                                value={tokenSearch}
+                                onChange={(e) => setTokenSearch(e.target.value)}
+                                className={cn(
+                                  'text-[11px] px-2.5 py-1.5 bg-transparent border-none outline-none w-24',
+                                  isDark
+                                    ? 'text-white/70 placeholder:text-white/30'
+                                    : 'text-gray-600 placeholder:text-gray-400'
+                                )}
+                              />
+                            </div>
                           </div>
                         </div>
                         {/* Table */}
@@ -2280,6 +2328,16 @@ const OverView = ({ account }) => {
                                   className={cn(
                                     'py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider',
                                     isDark
+                                      ? 'text-blue-400/60 bg-white/[0.02]'
+                                      : 'text-blue-600/70 bg-gray-50'
+                                  )}
+                                >
+                                  Holding
+                                </th>
+                                <th
+                                  className={cn(
+                                    'py-2 px-2 text-right text-[9px] font-medium uppercase tracking-wider',
+                                    isDark
                                       ? 'text-white/40 bg-white/[0.02]'
                                       : 'text-gray-500 bg-gray-50'
                                   )}
@@ -2310,10 +2368,12 @@ const OverView = ({ account }) => {
                             </thead>
                             <tbody>
                               {displayTokens.map((token, idx) => {
-                                const roi = token.roi || 0;
-                                const profit = token.profit || 0;
+                                const roi = token.totalRoi ?? token.roi ?? 0;
+                                const profit = token.totalPnl ?? token.profit ?? 0;
                                 const bought = token.xrpBought || 0;
                                 const sold = token.xrpSold || 0;
+                                const holdingValue = token.holdingValue || 0;
+                                const unrealizedPnl = token.unrealizedPnl || 0;
                                 return (
                                   <tr
                                     key={idx}
@@ -2409,6 +2469,27 @@ const OverView = ({ account }) => {
                                       )}
                                     </td>
                                     <td className="py-2.5 px-2 text-right">
+                                      {holdingValue > 0 ? (
+                                        <div className="flex flex-col items-end">
+                                          <span className="text-[11px] tabular-nums font-medium text-blue-400">
+                                            {fCurrency5(holdingValue)}
+                                          </span>
+                                          {unrealizedPnl !== 0 && (
+                                            <span
+                                              className={cn(
+                                                'text-[8px] tabular-nums',
+                                                unrealizedPnl >= 0 ? 'text-emerald-400/70' : 'text-red-400/70'
+                                              )}
+                                            >
+                                              {unrealizedPnl >= 0 ? '+' : ''}{fCurrency5(unrealizedPnl)}
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <span className={cn('text-[11px]', isDark ? 'text-white/20' : 'text-gray-300')}>—</span>
+                                      )}
+                                    </td>
+                                    <td className="py-2.5 px-2 text-right">
                                       <span
                                         className={cn(
                                           'text-[10px] tabular-nums font-medium px-1.5 py-0.5 rounded',
@@ -2468,20 +2549,56 @@ const OverView = ({ account }) => {
                             </tbody>
                           </table>
                         </div>
-                        {filteredTokens.length > 10 && (
-                          <button
-                            onClick={() => setShowAllTokens(!showAllTokens)}
+                        {/* Pagination */}
+                        {totalCount > TRADING_PERF_LIMIT && (
+                          <div
                             className={cn(
-                              'w-full text-center py-2.5 text-[11px] font-medium border-t transition-all duration-200',
-                              isDark
-                                ? 'border-white/[0.08] text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
-                                : 'border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                              'flex items-center justify-between px-3 py-2 border-t',
+                              isDark ? 'border-white/[0.08]' : 'border-gray-100'
                             )}
                           >
-                            {showAllTokens
-                              ? 'Show less'
-                              : `Show all ${filteredTokens.length} tokens`}
-                          </button>
+                            <span className={cn('text-[10px] tabular-nums', isDark ? 'text-white/30' : 'text-gray-400')}>
+                              {tradingPerfOffset + 1}-{Math.min(tradingPerfOffset + TRADING_PERF_LIMIT, totalCount)} of {totalCount}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setTradingPerfOffset(Math.max(0, tradingPerfOffset - TRADING_PERF_LIMIT))}
+                                disabled={tradingPerfOffset === 0 || tradingPerfLoading}
+                                className={cn(
+                                  'p-1 rounded transition-colors',
+                                  tradingPerfOffset === 0 || tradingPerfLoading
+                                    ? isDark ? 'text-white/10 cursor-not-allowed' : 'text-gray-200 cursor-not-allowed'
+                                    : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                )}
+                              >
+                                <ChevronLeft className="w-4 h-4" />
+                              </button>
+                              <span className={cn('text-[10px] tabular-nums min-w-[60px] text-center', isDark ? 'text-white/40' : 'text-gray-500')}>
+                                {currentPage + 1} / {totalPages}
+                              </span>
+                              <button
+                                onClick={() => setTradingPerfOffset(tradingPerfOffset + TRADING_PERF_LIMIT)}
+                                disabled={!hasMore || tradingPerfLoading}
+                                className={cn(
+                                  'p-1 rounded transition-colors',
+                                  !hasMore || tradingPerfLoading
+                                    ? isDark ? 'text-white/10 cursor-not-allowed' : 'text-gray-200 cursor-not-allowed'
+                                    : isDark ? 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                )}
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {/* Loading overlay */}
+                        {tradingPerfLoading && (
+                          <div className={cn(
+                            'absolute inset-0 flex items-center justify-center',
+                            isDark ? 'bg-black/40' : 'bg-white/60'
+                          )}>
+                            <div className="w-5 h-5 border-2 border-[#137DFE] border-t-transparent rounded-full animate-spin" />
+                          </div>
                         )}
                       </div>
                     );
