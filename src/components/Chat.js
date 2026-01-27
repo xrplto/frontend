@@ -2,6 +2,94 @@ import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } 
 import { X, Inbox, Monitor, Smartphone, Globe } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
+// Local emotes from /emotes/
+const EMOTES = [
+  'sussy.gif','evilpepe.png','moyai-the-rock.png','crythumbsup.png','pepe-yes.png','handrub.gif','kekw.png','kek.png',
+  'basedcigar.gif','pepesadhug.gif','pog.png','thinkingpepe.png','pepe-pizza.gif','catlaugh.gif','twerk.gif','chadgif.gif',
+  'kappa.png','sadcat.png','peepocomfy.gif','lookfish.png','sla.gif','peposweg.png','rickroll.gif','kekwait.png',
+  'cathumpdance.gif','ezpepe.png','pepescam.gif','galaxybrainmeme.gif','geckodance.gif','pepegagun.gif','doggodance.gif',
+  'what.gif','pepewheelchair.png','dingdong.gif','yeah.gif','peepoheart.png','muskf.gif','pepecookie.png','pepeangel.png',
+  'pokesleep.png','vibing.gif','fancytroll.png','awkward_monke.png','dance.gif','rollsafe.png','bigbrain.png','pepe-hmmm.png',
+  'thinkink.png','pepe-salami.gif','kermitsip.png','pepegifboxing.gif','fax.gif','pepegaak47.gif','pepeshoot.gif','duck.gif',
+  'pepeclap.gif','eatvibe.gif','peepogermany.gif','cum.gif','nah.gif','coffee.gif','pepesip.gif','peeposex.gif','pepecry.png',
+  'aintnowway.gif','pepehabibi.gif','pepeduck.gif','doge.png','takingshower.gif','wine.gif','kebab.gif','sadgepray.png',
+  'vibepepe.png','memes.gif','ghost-mw2.png','worryshy.png','peepolove.gif','grenouillevertet.png','leocheers.png',
+  'peepoturkey.gif','pepefight.gif','pepesleep.png','cheemssayitback.png','pepeno.png','ayo-what.png','cute.png','chatting.gif',
+  'gatoxd.gif','sadnigga.gif','fullgaykiss.png','anibanned.gif','excusemewtf.gif','hitting.gif','money-bag.gif','pepeok.png',
+  'skull.svg','stfu.png','worried_monkey.gif','shrug.png','catdespair.png','cum2.gif','pain.gif','peeporussia.gif',
+  'pepepray.png','peperich.gif','pepestabby.gif','uzi.gif','verycat.gif','onemili.png','aintnoway.gif','haram.gif','huh.gif',
+  'kissahomie.gif','mwah.gif','pepeFat.gif','pepemusic.gif','xd.gif','jew.gif','bruh.png','exit.png','flip.png','gamba.gif',
+  'love.gif','money.gif','sheep.gif','maam.gif','kappo.png','whatever.png','sus.gif','weed.gif','snoop.gif','sure.gif',
+  'police.gif','pepebeer.webp','awkward_black.gif','face_with_open_eyes_and_hand_over_mouth.webp','scream.webp',
+  'wilted_rose.svg','sob.svg','pensob.webp','clown.svg','grinning.svg','grimacing.svg','cold_face.svg','shushing_face.svg',
+  'yawning_face.svg','broken_heart.svg'
+].map(f => ({ name: f.replace(/\.(png|gif|webp|svg)(\?.*)?$/, ''), url: `/emotes/${f}` }));
+
+let emoteCache = EMOTES;
+const fetchGlobalEmotes = async () => emoteCache;
+
+const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
+  const [emotes, setEmotes] = useState([]);
+  const [query, setQuery] = useState('');
+  const [show, setShow] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const pickerRef = useRef(null);
+
+  useEffect(() => { fetchGlobalEmotes().then(setEmotes); }, []);
+
+  useEffect(() => {
+    const match = input.match(/:(\w{2,})$/);
+    if (match) {
+      setQuery(match[1].toLowerCase());
+      setShow(true);
+      setSelectedIdx(0);
+    } else {
+      setShow(false);
+    }
+  }, [input]);
+
+  const filtered = useMemo(() =>
+    query ? emotes.filter(e => e.name.toLowerCase().includes(query)).slice(0, 8) : [],
+  [emotes, query]);
+
+  const insertEmote = (emote) => {
+    setInput(input.replace(/:(\w{2,})$/, emote.name + ' '));
+    setShow(false);
+    inputRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!show) return;
+    const handleKey = (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIdx(i => Math.min(i + 1, filtered.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIdx(i => Math.max(i - 1, 0)); }
+      else if (e.key === 'Tab' || e.key === 'Enter') {
+        if (filtered[selectedIdx]) { e.preventDefault(); insertEmote(filtered[selectedIdx]); }
+      }
+      else if (e.key === 'Escape') setShow(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [show, filtered, selectedIdx]);
+
+  if (!show || !filtered.length) return null;
+
+  return (
+    <div ref={pickerRef} className="absolute bottom-full left-0 mb-1 w-64 max-h-48 overflow-y-auto rounded-lg bg-[#1a1a1a] border border-white/10 shadow-xl z-50">
+      {filtered.map((e, i) => (
+        <button
+          key={e.name}
+          onClick={() => insertEmote(e)}
+          className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-white/10 ${i === selectedIdx ? 'bg-white/10' : ''}`}
+        >
+          <img src={e.url} alt={e.name} className="w-6 h-6 object-contain" loading="lazy" />
+          <span className="text-white/80">{e.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const timeAgo = (ts) => {
   if (!ts) return '';
   const sec = Math.floor((Date.now() - ts) / 1000);
@@ -200,10 +288,23 @@ const NFTPreview = ({ nftId }) => {
   );
 };
 
+const EmoteInMessage = ({ name }) => {
+  const [emote, setEmote] = useState(null);
+  useEffect(() => {
+    fetchGlobalEmotes().then(emotes => {
+      const found = emotes.find(e => e.name.toLowerCase() === name.toLowerCase());
+      if (found) setEmote(found);
+    });
+  }, [name]);
+  if (!emote) return <span>{name}</span>;
+  return <img src={emote.url} alt={name} title={name} className="inline-block w-5 h-5 align-middle mx-0.5" />;
+};
+
 const renderMessage = (text) => {
   if (!text || typeof text !== 'string') return text;
   const tokenRegex = /(?:https?:\/\/xrpl\.to)?\/token\/([a-fA-F0-9]{32}|[a-zA-Z0-9]+-[A-Fa-f0-9]+)|https?:\/\/firstledger\.net\/token(?:-v2)?\/([a-zA-Z0-9]+)\/([A-Fa-f0-9]+)|https?:\/\/xpmarket\.com\/token\/([a-zA-Z0-9]+)-([a-zA-Z0-9]+)|\b([a-fA-F0-9]{32})\b/g;
   const nftRegex = /(?:https?:\/\/xrpl\.to\/nft\/)?([A-Fa-f0-9]{64})/g;
+  const emoteRegex = /\b([A-Za-z][A-Za-z0-9]{2,}(?:[A-Z][a-z0-9]*)*)\b/g;
 
   const parts = [];
   let last = 0;
@@ -213,7 +314,15 @@ const renderMessage = (text) => {
   const tokenMatches = [...text.matchAll(tokenRegex)];
   const allMatches = [...nftMatches.map(m => ({ ...m, type: 'nft' })), ...tokenMatches.map(m => ({ ...m, type: 'token' }))].sort((a, b) => a.index - b.index);
 
-  if (allMatches.length === 0) return text;
+  if (allMatches.length === 0) {
+    // No token/NFT matches, check for emotes in plain text
+    return text.split(/(\s+)/).map((word, i) => {
+      if (/^[A-Za-z][A-Za-z0-9]{2,}$/.test(word) && emoteCache?.some(e => e.name.toLowerCase() === word.toLowerCase())) {
+        return <EmoteInMessage key={i} name={word} />;
+      }
+      return word;
+    });
+  }
 
   for (const m of allMatches) {
     if (m.index > last) parts.push(text.slice(last, m.index));
@@ -749,12 +858,15 @@ const Chat = () => {
                   </div>
                 )}
                 <div className="relative">
+                  <EmotePicker inputRef={inputRef} input={input} setInput={setInput} />
                   <input
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value.slice(0, 256))}
-                    placeholder={activeTab === 'general' ? 'Message everyone...' : `DM ${activeTab.slice(0, 6)}...`}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder={activeTab === 'general' ? 'Message everyone... (type : for emotes)' : `DM ${activeTab.slice(0, 6)}...`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !input.match(/:(\w{2,})$/)) sendMessage();
+                    }}
                     className={`w-full px-3 py-2 border-t border-b shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] outline-none text-sm ${isDark ? 'bg-[#1a1410]/90 text-[#d4b896] placeholder-[#6b5a45] border-[#3d3225] focus:border-[#8b7355]' : 'bg-[#f5ebe0] text-[#3d2b1f] placeholder-[#a08060] border-[#c9b896] focus:border-[#8b7355]'}`}
                   />
                   {input.length > 200 && (
