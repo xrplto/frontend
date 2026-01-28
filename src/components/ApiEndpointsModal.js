@@ -11,32 +11,35 @@ import {
   Zap,
   ExternalLink,
   Play,
-  Loader2
+  Loader2,
+  Terminal,
+  Layers
 } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 import { cn } from 'src/utils/cn';
 import axios from 'axios';
 
 // JSON syntax highlighter
-const JsonHighlight = ({ data, maxLen = 500 }) => {
+const JsonHighlight = ({ data, maxLen = 800 }) => {
   const str = JSON.stringify(data, null, 2);
   const truncated = str.slice(0, maxLen);
   const parts = truncated.split(/("(?:[^"\\]|\\.)*"|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g);
+
   return (
-    <>
+    <span className="font-mono leading-relaxed">
       {parts.map((part, i) => {
         if (!part) return null;
         if (/^".*":?$/.test(part)) {
           const isKey = part.endsWith(':') || (parts[i + 1] && parts[i + 1].trim().startsWith(':'));
-          return <span key={i} style={{ color: isKey ? '#60a5fa' : '#22c55e' }}>{part}</span>;
+          return <span key={i} className={isKey ? 'text-blue-400' : 'text-emerald-400'}>{part}</span>;
         }
-        if (/^(true|false)$/.test(part)) return <span key={i} style={{ color: '#f59e0b' }}>{part}</span>;
-        if (/^null$/.test(part)) return <span key={i} style={{ color: '#ef4444' }}>{part}</span>;
-        if (/^-?\d/.test(part)) return <span key={i} style={{ color: '#a78bfa' }}>{part}</span>;
+        if (/^(true|false)$/.test(part)) return <span key={i} className="text-orange-400">{part}</span>;
+        if (/^null$/.test(part)) return <span key={i} className="text-red-400">{part}</span>;
+        if (/^-?\d/.test(part)) return <span key={i} className="text-purple-400">{part}</span>;
         return <span key={i}>{part}</span>;
       })}
-      {str.length > maxLen && '...'}
-    </>
+      {str.length > maxLen && <span className="text-white/30 italic"> ... continued</span>}
+    </span>
   );
 };
 
@@ -415,6 +418,28 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
   const [copiedResponse, setCopiedResponse] = useState(null);
   const [responsePreview, setResponsePreview] = useState(null);
   const [copiedField, setCopiedField] = useState(null);
+  const [copiedCurl, setCopiedCurl] = useState(null);
+
+  const getFullUrl = (path) => {
+    let url = path;
+    if (path.includes(':') && token) {
+      url = url
+        .replace(':md5', token.md5 || '')
+        .replace(':id', token.md5 || '')
+        .replace(':address', token.issuer || '')
+        .replace(':account', token.issuer || '')
+        .replace(':slug', token.slug || token.md5 || '');
+    }
+    return `https://api.xrpl.to/v1${url}`;
+  };
+
+  const copyCurl = (ep) => {
+    const fullUrl = getFullUrl(ep.path);
+    const curl = `curl -X ${ep.method} "${fullUrl}"`;
+    navigator.clipboard.writeText(curl);
+    setCopiedCurl(ep.path);
+    setTimeout(() => setCopiedCurl(null), 1500);
+  };
 
   const copyField = (value, field) => {
     navigator.clipboard.writeText(value);
@@ -551,116 +576,151 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
         {/* Header */}
         <div
           className={cn(
-            'px-4 py-3 border-b shrink-0',
+            'px-4 py-4 border-b shrink-0 relative',
             isDark ? 'border-white/10' : 'border-gray-100'
           )}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Code2 size={14} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
-              <span
-                className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-              >
-                API Reference
-              </span>
-              <span className="px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wider rounded bg-amber-500/15 text-amber-500">
-                {getTotalEndpointCount()} endpoints
-              </span>
+          {isDark && (
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#3f96fe]/50 to-transparent shadow-[0_0_15px_#3f96fe/30]" />
+          )}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className={cn(
+                'p-1.5 rounded-lg',
+                isDark ? 'bg-[#3f96fe]/20' : 'bg-cyan-50'
+              )}>
+                <Code2 size={16} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
+              </div>
+              <div className="flex flex-col">
+                <span className={cn('text-sm font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                  Developer API
+                </span>
+                <span className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+                  Interact with real-time XRPL data
+                </span>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              className={cn('p-1.5 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}
-            >
-              <X size={14} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                {getTotalEndpointCount()} Core Endpoints
+              </span>
+              <button
+                onClick={onClose}
+                className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'hover:bg-white/10 text-white/40 hover:text-white' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-900')}
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Tab Toggle */}
-          <div className={cn('flex mt-3 p-0.5 rounded-lg', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+          <div className={cn('flex p-1 rounded-xl', isDark ? 'bg-white/5 border border-white/5' : 'bg-gray-100')}>
             <button
               onClick={() => setView('detected')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[11px] font-medium transition-colors',
+                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-300',
                 view === 'detected'
                   ? isDark
-                    ? 'bg-[#3f96fe] text-white'
+                    ? 'bg-[#3f96fe] text-white shadow-[0_0_15px_rgba(63,150,254,0.3)]'
                     : 'bg-white text-gray-900 shadow-sm'
                   : isDark
-                    ? 'text-white/50 hover:text-white/70'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               )}
             >
-              <Zap size={11} />
-              This Page ({pageEndpointDetails.length})
+              <Zap size={12} className={cn(view === 'detected' && 'animate-pulse')} />
+              Current View
+              <span className={cn(
+                'ml-1 px-1.5 py-0.5 rounded-full text-[9px]',
+                view === 'detected' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/40'
+              )}>
+                {pageEndpointDetails.length}
+              </span>
             </button>
             <button
               onClick={() => setView('all')}
               className={cn(
-                'flex-1 py-1.5 rounded-md text-[11px] font-medium transition-colors',
+                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-300',
                 view === 'all'
                   ? isDark
-                    ? 'bg-[#3f96fe] text-white'
+                    ? 'bg-[#3f96fe] text-white shadow-[0_0_15px_rgba(63,150,254,0.3)]'
                     : 'bg-white text-gray-900 shadow-sm'
                   : isDark
-                    ? 'text-white/50 hover:text-white/70'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               )}
             >
+              <Layers size={12} />
               All Endpoints
             </button>
           </div>
 
-          {/* Search (only in all view) */}
-          {view === 'all' && (
+          {/* Search */}
+          <div className="relative mt-3">
             <input
               type="text"
-              placeholder="Search endpoints..."
+              placeholder="Search by path, name, or description..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (e.target.value.trim() && view === 'detected') setView('all');
+              }}
               className={cn(
-                'w-full mt-2 px-3 py-1.5 rounded-lg text-[11px] border outline-none',
+                'w-full pl-3 pr-10 py-2 rounded-xl text-[11px] border outline-none transition-all duration-300 focus:ring-1',
                 isDark
-                  ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                  ? 'bg-black/40 border-white/10 text-white placeholder:text-white/20 focus:border-[#3f96fe]/50 focus:ring-[#3f96fe]/20'
+                  : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:ring-cyan-500/20'
               )}
             />
-          )}
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/10"
+              >
+                <X size={12} className={isDark ? 'text-white/30' : 'text-gray-400'} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Token Info Section */}
         {token && (
-          <div className={cn('px-3 py-2 border-b', isDark ? 'border-white/10' : 'border-gray-100')}>
-            <div className={cn('text-[9px] uppercase tracking-wider mb-1.5', isDark ? 'text-white/40' : 'text-gray-400')}>
-              Token Data
+          <div className={cn(
+            'mx-4 mt-3 mb-2 p-3 rounded-xl border flex flex-col gap-2.5 transition-all duration-300',
+            isDark ? 'bg-white/[0.03] border-white/10 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]' : 'bg-gray-50 border-gray-100'
+          )}>
+            <div className="flex items-center justify-between">
+              <span className={cn('text-[10px] font-bold uppercase tracking-[0.1em]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                Active Context
+              </span>
+              <div className="flex items-center gap-1.5 grayscale opacity-50">
+                <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-medium text-emerald-500">Auto-injecting Params</span>
+              </div>
             </div>
-            <div className="space-y-1">
+
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'md5', value: token.md5 },
-                { label: 'issuer', value: token.issuer },
-                { label: 'currency', value: token.currency },
-                ...(token.creator ? [{ label: 'creator', value: token.creator }] : []),
-                ...(token.AMM ? [{ label: 'amm', value: token.AMM }] : [])
-              ].filter(item => item.value).map((item) => (
+                { label: 'MD5', value: token.md5, field: 'md5' },
+                { label: 'Issue', value: token.issuer, field: 'issuer' }
+              ].map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => copyField(item.value, item.label)}
+                  onClick={() => copyField(item.value, item.field)}
                   className={cn(
-                    'group w-full flex items-center gap-2 px-2 py-1 rounded text-left',
-                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                    'group relative p-2 rounded-lg border text-left transition-all duration-300',
+                    isDark ? 'bg-black/40 border-white/5 hover:border-[#3f96fe]/50' : 'bg-white border-gray-200 hover:border-cyan-500'
                   )}
                 >
-                  <span className={cn('text-[9px] w-12 flex-shrink-0', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  <div className={cn('text-[8px] font-bold mb-0.5', isDark ? 'text-white/30' : 'text-gray-400')}>
                     {item.label}
-                  </span>
-                  <span className={cn('font-mono text-[10px] truncate flex-1', isDark ? 'text-white/70' : 'text-gray-600')}>
+                  </div>
+                  <div className={cn('font-mono text-[10px] truncate', isDark ? 'text-[#3f96fe]' : 'text-cyan-600')}>
                     {item.value}
-                  </span>
-                  <span className={cn(
-                    'flex-shrink-0',
-                    copiedField === item.label ? 'text-green-500' : isDark ? 'text-white/20 group-hover:text-white/40' : 'text-gray-300 group-hover:text-gray-400'
-                  )}>
-                    {copiedField === item.label ? <Check size={10} /> : <Copy size={10} />}
-                  </span>
+                  </div>
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {copiedField === item.field ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} className={isDark ? 'text-white/20' : 'text-gray-300'} />}
+                  </div>
                 </button>
               ))}
             </div>
@@ -682,33 +742,51 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                     key={ep.path}
                     className={cn('rounded-lg group', isDark ? 'bg-white/5' : 'bg-gray-50')}
                   >
-                    <div className="p-2.5">
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="flex items-center gap-2">
-                          <span
+                    <div className="p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={cn(
+                                'px-1.5 py-0.5 text-[8px] font-bold rounded ring-1 ring-inset',
+                                ep.method === 'GET'
+                                  ? 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20'
+                                  : 'bg-amber-500/10 text-amber-500 ring-amber-500/20'
+                              )}
+                            >
+                              {ep.method}
+                            </span>
+                            <code
+                              className={cn(
+                                'text-[10px] font-mono font-medium truncate',
+                                isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
+                              )}
+                            >
+                              {ep.path}
+                            </code>
+                          </div>
+                          <div
                             className={cn(
-                              'px-1.5 py-0.5 text-[9px] font-medium rounded',
-                              ep.method === 'GET'
-                                ? 'bg-emerald-500/15 text-emerald-500'
-                                : 'bg-amber-500/15 text-amber-500'
+                              'text-[10px] line-clamp-1',
+                              isDark ? 'text-white/50' : 'text-gray-500'
                             )}
                           >
-                            {ep.method}
-                          </span>
+                            {ep.desc}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-0.5">
+                        <div className="flex items-center gap-1 ml-2 shrink-0">
                           {canTry(ep) && (
                             <button
                               onClick={() => tryAndCopy(ep)}
                               className={cn(
-                                'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+                                'p-1.5 rounded-lg transition-all',
                                 copiedResponse === ep.path
-                                  ? 'text-emerald-500 opacity-100'
+                                  ? 'text-emerald-500 bg-emerald-500/10'
                                   : isDark
-                                    ? 'text-white/40'
-                                    : 'text-gray-400'
+                                    ? 'text-white/40 hover:text-white hover:bg-white/10'
+                                    : 'text-gray-400 hover:text-gray-900 hover:bg-gray-200'
                               )}
-                              title="Try & copy response"
+                              title="Fetch Example JSON"
                             >
                               {loadingPath === ep.path ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -720,36 +798,34 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
                             </button>
                           )}
                           <button
+                            onClick={() => copyCurl(ep)}
+                            className={cn(
+                              'p-1.5 rounded-lg transition-all',
+                              copiedCurl === ep.path
+                                ? 'text-[#3f96fe] bg-[#3f96fe]/10'
+                                : isDark
+                                  ? 'text-white/40 hover:text-[#3f96fe] hover:bg-white/10'
+                                  : 'text-gray-400 hover:text-cyan-600 hover:bg-gray-200'
+                            )}
+                            title="Copy cURL"
+                          >
+                            {copiedCurl === ep.path ? <Check size={12} /> : <Terminal size={12} />}
+                          </button>
+                          <button
                             onClick={() => handleCopy(ep.path)}
                             className={cn(
-                              'p-1 opacity-0 group-hover:opacity-100 transition-opacity',
+                              'p-1.5 rounded-lg transition-all',
                               copiedPath === ep.path
-                                ? 'text-emerald-500 opacity-100'
+                                ? 'text-emerald-500 bg-emerald-500/10'
                                 : isDark
-                                  ? 'text-white/40 hover:text-white/60'
-                                  : 'text-gray-400 hover:text-gray-600'
+                                  ? 'text-white/40 hover:text-white hover:bg-white/10'
+                                  : 'text-gray-400 hover:text-gray-900 hover:bg-gray-200'
                             )}
-                            title="Copy URL"
+                            title="Copy API URL"
                           >
                             {copiedPath === ep.path ? <Check size={12} /> : <Copy size={12} />}
                           </button>
                         </div>
-                      </div>
-                      <code
-                        className={cn(
-                          'text-[10px] break-all block',
-                          isDark ? 'text-[#3f96fe]' : 'text-cyan-600'
-                        )}
-                      >
-                        {ep.path}
-                      </code>
-                      <div
-                        className={cn(
-                          'text-[10px] mt-1',
-                          isDark ? 'text-white/40' : 'text-gray-500'
-                        )}
-                      >
-                        {ep.desc}
                       </div>
                     </div>
                     {responsePreview?.url === ep.path && (
@@ -1031,12 +1107,17 @@ export const ApiButton = memo(({ className = '', token = null }) => {
       >
         {isDark && (
           <>
-            <span className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/20 to-blue-400/20 animate-[shimmer_3s_ease-in-out_infinite]" />
-            <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.15),transparent_50%)]" />
+            <span className="absolute inset-0 bg-gradient-to-r from-[#3f96fe]/20 via-[#3f96fe]/10 to-[#3f96fe]/20 animate-pulse" />
+            <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(63,150,254,0.2),transparent_70%)]" />
           </>
         )}
-        <Code2 size={12} className="relative z-10" />
-        <span className="relative z-10">API</span>
+        <div className={cn(
+          "relative z-10 p-1 rounded-md",
+          isDark ? "bg-[#3f96fe]/20 text-[#3f96fe]" : "bg-blue-100 text-blue-600"
+        )}>
+          <Code2 size={12} />
+        </div>
+        <span className="relative z-10 uppercase tracking-widest font-bold">API</span>
       </button>
       <ApiEndpointsModal open={open} onClose={() => setOpen(false)} token={token} />
     </>
