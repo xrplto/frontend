@@ -3618,7 +3618,9 @@ export default function WalletPage() {
                     {/* Bottom Section: Badges & Links */}
                     <div className="grid md:grid-cols-2 gap-4">
                       {/* Badges Column */}
-                      <div className={cn('rounded-2xl p-5', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                      <div className={cn('rounded-2xl p-5 relative overflow-hidden', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                        {/* Background Accent */}
+                        <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                         <div className="flex items-center justify-between mb-4">
                           <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Badges</h4>
                           {referralStats?.badges && (
@@ -3650,7 +3652,9 @@ export default function WalletPage() {
                       </div>
 
                       {/* Referral Code Column */}
-                      <div className={cn('rounded-2xl p-5 flex flex-col justify-between', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                      <div className={cn('rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                        {/* Background Accent */}
+                        <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Link</h4>

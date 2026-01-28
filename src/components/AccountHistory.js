@@ -20,7 +20,6 @@ import {
   Code2,
   Coins,
   Activity,
-  History,
   Images,
   Image
 } from 'lucide-react';
@@ -343,27 +342,20 @@ const AccountHistory = ({ account }) => {
       {historyView === 'onchain' && (
         <div
           className={cn(
-            'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl',
-            isDark ? 'bg-[#0a0a0a]/40 border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+            'rounded-xl overflow-hidden transition-all duration-300',
+            isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
           )}
         >
           {/* Header */}
           <div
             className={cn(
-              'px-6 py-5 flex flex-wrap items-center justify-between gap-4 border-b',
-              isDark ? 'border-white/[0.06]' : 'border-gray-100'
+              'px-4 py-3 flex flex-wrap items-center justify-between gap-4 border-b',
+              isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
             )}
           >
-            <div className="flex items-center gap-3.5">
-              <div className={cn('p-2.5 rounded-xl shadow-inner', isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-500/5 text-blue-600')}>
-                <Activity size={20} />
-              </div>
-              <div>
-                <h3 className={cn('text-[15px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Transaction History</h3>
-                <p className={cn('text-[10px] font-bold uppercase tracking-wider opacity-40 mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
-                  On-chain Ledger Activities
-                </p>
-              </div>
+            <div className="flex items-center gap-2">
+              <Activity size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+              <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Transactions</p>
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -474,7 +466,7 @@ const AccountHistory = ({ account }) => {
                             )}
                             <div className="flex flex-col">
                               <span className={cn('text-[13px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
-                                {parsed.tokenCurrency || (parsed.nftTokenId ? 'NFT' : 'XRP')}
+                                {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
                               </span>
                               {parsed.tokenIssuer && (
                                 <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
@@ -534,7 +526,7 @@ const AccountHistory = ({ account }) => {
                               <span className="opacity-20 text-[13px]">{'\u2014'}</span>
                             )}
                             <span className={cn('text-[10px] font-medium opacity-40 uppercase', isDark ? 'text-white' : 'text-gray-500')}>
-                              {parsed.tokenCurrency || (parsed.nftTokenId ? 'NFT' : 'XRP')}
+                              {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
                             </span>
                           </div>
                         </td>
@@ -587,27 +579,20 @@ const AccountHistory = ({ account }) => {
           return (
             <div
               className={cn(
-                'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl mt-6',
-                isDark ? 'bg-[#0a0a0a]/40 border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                'rounded-xl overflow-hidden transition-all duration-300 mt-6',
+                isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
               )}
             >
               {/* Header with filters */}
               <div
                 className={cn(
-                  'px-6 py-5 flex flex-wrap items-center justify-between gap-4 border-b',
-                  isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                  'px-4 py-3 flex flex-wrap items-center justify-between gap-4 border-b',
+                  isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
                 )}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className={cn('p-2.5 rounded-xl shadow-inner', isDark ? 'bg-orange-500/10 text-orange-400' : 'bg-orange-500/5 text-orange-600')}>
-                    <History size={20} />
-                  </div>
-                  <div>
-                    <h3 className={cn('text-[15px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Token Trade History</h3>
-                    <p className={cn('text-[10px] font-bold uppercase tracking-wider opacity-40 mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
-                      Decentralized Exchange Activity
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Coins size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                  <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Token Trades</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -852,26 +837,19 @@ const AccountHistory = ({ account }) => {
           return (
             <div
               className={cn(
-                'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl mt-6',
-                isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                'rounded-xl overflow-hidden transition-all duration-300 mt-6',
+                isDark ? 'bg-black/40 backdrop-blur-sm border border-gray-500/20' : 'bg-white border border-gray-200'
               )}
             >
               <div
                 className={cn(
-                  'px-6 py-5 flex flex-wrap items-center justify-between gap-4 border-b',
-                  isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                  'p-4 border-b border-gray-500/20 flex flex-wrap items-center justify-between gap-4'
                 )}
               >
-                <div className="flex items-center gap-3.5">
-                  <div className={cn('p-2.5 rounded-xl shadow-inner', isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-500/5 text-pink-600')}>
-                    <Images size={20} />
-                  </div>
-                  <div>
-                    <h3 className={cn('text-[15px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>NFT Trade History</h3>
-                    <p className={cn('text-[10px] font-bold uppercase tracking-wider opacity-40 mt-0.5', isDark ? 'text-white' : 'text-gray-500')}>
-                      Marketplace Activities
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Images size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                  <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>NFT Trades</p>
+                  <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftTrades.length}</span>
                 </div>
               </div>
               <div className="overflow-x-auto">

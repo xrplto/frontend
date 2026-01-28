@@ -1230,10 +1230,12 @@ const OverView = ({ account }) => {
                 {/* Token Trading */}
                 <div
                   className={cn(
-                    'p-5 rounded-2xl border transition-all duration-300 h-full flex flex-col',
+                    'p-5 rounded-2xl border transition-all duration-300 h-full flex flex-col relative overflow-hidden',
                     isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
                   )}
                 >
+                  {/* Background Accent */}
+                  <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                   {data && !data.error ? (
                     <>
                       <div className="flex items-center justify-between mb-4">
@@ -1334,10 +1336,12 @@ const OverView = ({ account }) => {
                 {/* NFT Trading */}
                 <div
                   className={cn(
-                    'p-5 rounded-2xl border transition-all duration-300 h-full flex flex-col',
+                    'p-5 rounded-2xl border transition-all duration-300 h-full flex flex-col relative overflow-hidden',
                     isDark ? 'bg-white/[0.03] border-white/10 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
                   )}
                 >
+                  {/* Background Accent */}
+                  <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
                   {nftStats && (nftStats.totalVolume > 0 || nftStats.holdingsCount > 0) ? (
                     <>
                       <div className="flex items-center justify-between mb-4">
@@ -1501,23 +1505,20 @@ const OverView = ({ account }) => {
                     {/* Main Holdings Container */}
                     <div
                       className={cn(
-                        'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl',
-                        isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                        'rounded-xl overflow-hidden transition-all duration-300',
+                        isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
                       )}
                     >
                       <div
                         className={cn(
-                          'px-5 py-4 flex items-center justify-between border-b',
-                          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                          'px-4 py-3 flex items-center justify-between border-b',
+                          isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
                         )}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={cn('p-2 rounded-xl', isDark ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary')}>
-                            <Wallet size={18} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className={cn('text-[14px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Token Portfolio</h3>
+                        <div className="flex items-center gap-2">
+                          <Wallet size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          <div className="flex items-center gap-2">
+                            <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Token Portfolio</p>
                               {zeroCount > 0 && (
                                 <button
                                   onClick={() => setHideZeroHoldings(!hideZeroHoldings)}
@@ -1533,10 +1534,9 @@ const OverView = ({ account }) => {
                                   {hideZeroHoldings ? `+${zeroCount} hidden` : 'Hide empty'}
                                 </button>
                               )}
-                            </div>
-                            <p className={cn('text-[10px] font-medium opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
-                              {(holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)} Managed Assets
-                            </p>
+                            <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>
+                              {(holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)}
+                            </span>
                           </div>
                         </div>
                         {(totalValue > 0 || (holdings.accountData?.total > 0 || holdings.xrp?.value > 0)) && (
@@ -1763,26 +1763,20 @@ const OverView = ({ account }) => {
               {holdings?.issued?.length > 0 && (
                 <div
                   className={cn(
-                    'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl mb-6',
-                    isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                    'rounded-xl overflow-hidden transition-all duration-300 mb-6',
+                    isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
                   )}
                 >
                   <div
                     className={cn(
-                      'px-5 py-4 flex items-center justify-between border-b',
-                      isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                      'px-4 py-3 flex items-center justify-between border-b',
+                      isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={cn('p-2 rounded-xl', isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-500/5 text-amber-500')}>
-                        <Zap size={18} />
-                      </div>
-                      <div>
-                        <h3 className={cn('text-[14px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Issued Tokens</h3>
-                        <p className={cn('text-[10px] font-medium opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
-                          {holdings.issued.length} Assets Created
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <Zap size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                      <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Issued Tokens</p>
+                      <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{holdings.issued.length}</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
@@ -1867,26 +1861,20 @@ const OverView = ({ account }) => {
 
                     <div
                       className={cn(
-                        'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl mb-6',
-                        isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                        'rounded-xl overflow-hidden transition-all duration-300 mb-6',
+                        isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
                       )}
                     >
                       <div
                         className={cn(
-                          'px-5 py-4 flex items-center justify-between border-b gap-2 flex-wrap',
-                          isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                          'px-4 py-3 flex items-center justify-between border-b gap-2 flex-wrap',
+                          isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
                         )}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={cn('p-2 rounded-xl', isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-500/5 text-emerald-500')}>
-                            <TrendingUp size={18} />
-                          </div>
-                          <div>
-                            <h3 className={cn('text-[14px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Trading Performance</h3>
-                            <p className={cn('text-[10px] font-medium opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
-                              {totalCount} Tokens Traded
-                            </p>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Trading Performance</p>
+                          <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{totalCount}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -2184,10 +2172,10 @@ const OverView = ({ account }) => {
           {activeTab === 'nfts' && (
             <div
               className={cn(
-                'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl',
+                'rounded-xl overflow-hidden transition-all duration-300',
                 isDark
-                  ? 'bg-white/[0.02] border-white/10 shadow-black/20'
-                  : 'bg-white border-gray-200 shadow-sm'
+                  ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
+                  : 'bg-white border border-gray-200'
               )}
             >
               {selectedNftCollection ? (
@@ -2532,26 +2520,20 @@ const OverView = ({ account }) => {
               {nftCollectionStats.length > 0 && !selectedNftCollection && (
                 <div
                   className={cn(
-                    'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl mt-6',
-                    isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+                    'rounded-xl overflow-hidden transition-all duration-300 mt-6',
+                    isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
                   )}
                 >
                   <div
                     className={cn(
-                      'px-5 py-4 flex items-center justify-between border-b',
-                      isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                      'px-4 py-3 flex items-center justify-between border-b',
+                      isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={cn('p-2 rounded-xl', isDark ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-500/5 text-indigo-500')}>
-                        <BarChart2 size={18} />
-                      </div>
-                      <div>
-                        <h3 className={cn('text-[14px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Trading Stats by Collection</h3>
-                        <p className={cn('text-[10px] font-medium opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
-                          Top 15 Collections
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <BarChart2 size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                      <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Trading Stats by Collection</p>
+                      <span className={cn('text-[9px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide', isDark ? 'bg-white/5 text-white/50 border border-white/[0.15]' : 'bg-gray-100 text-gray-500')}>{nftCollectionStats.length}</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
@@ -2644,8 +2626,8 @@ const OverView = ({ account }) => {
           {/* Ancestry Tab */}
           {activeTab === 'ancestry' && (
             <div className={cn(
-              'rounded-2xl border transition-all duration-300 overflow-hidden shadow-2xl backdrop-blur-3xl',
-              isDark ? 'bg-white/[0.02] border-white/10 shadow-black/20' : 'bg-white border-gray-200 shadow-sm'
+              'rounded-xl overflow-hidden transition-all duration-300',
+              isDark ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]' : 'bg-white border border-gray-200'
             )}>
               {ancestryLoading ? (
                 <div className="flex items-center justify-center py-20">
@@ -2661,18 +2643,11 @@ const OverView = ({ account }) => {
               ) : (
                 <>
                   {/* Stats Header */}
-                  <div className={cn('px-5 py-4', isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100')}>
+                  <div className={cn('px-4 py-3', isDark ? 'border-b border-white/[0.08]' : 'border-b border-gray-100')}>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={cn('p-2 rounded-xl', isDark ? 'bg-purple-500/10 text-purple-500' : 'bg-purple-500/5 text-purple-500')}>
-                          <GitBranch size={18} />
-                        </div>
-                        <div>
-                          <h3 className={cn('text-[14px] font-bold tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Account Ancestry</h3>
-                          <p className={cn('text-[10px] font-medium opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
-                            Activation Chain & Offspring
-                          </p>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <GitBranch size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                        <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Account Ancestry</p>
                       </div>
                       <div className="flex items-center gap-4">
                         {ancestry.stats?.ancestorDepth > 0 && (

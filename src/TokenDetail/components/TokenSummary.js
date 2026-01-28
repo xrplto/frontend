@@ -582,12 +582,15 @@ const TokenSummary = memo(({ token }) => {
   return (
     <div
       className={cn(
-        'rounded-2xl border transition-all duration-200 p-4',
+        'rounded-2xl border transition-all duration-200 p-4 relative overflow-hidden',
         isDark
           ? 'border-white/[0.08] bg-[#0a0a0a]/50 backdrop-blur-sm'
           : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
       )}
     >
+      {/* Background Accent */}
+      <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+
       <div className="flex items-start justify-between gap-4">
         {/* Left: Token Image + Info */}
         <div className="flex items-center gap-3.5 min-w-0 flex-1">
