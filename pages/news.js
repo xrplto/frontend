@@ -9,39 +9,30 @@ import { ApiButton, registerApiCalls } from 'src/components/ApiEndpointsModal';
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
 
+import {
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight
+} from 'lucide-react';
+
 const SENTIMENT_COLORS = {
   bullish: '#10B981',
   bearish: '#EF4444',
   neutral: '#F59E0B',
   default: '#9CA3AF'
 };
-const getSentimentColor = (s) => SENTIMENT_COLORS[s?.toLowerCase()] || SENTIMENT_COLORS.default;
 
-const ChevronLeft = () => (
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-);
-const ChevronRight = () => (
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-);
-const SearchIcon = () => (
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={2}
-    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-  />
-);
-const CloseIcon = () => (
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-);
+const getSentimentColor = (s) => SENTIMENT_COLORS[s?.toLowerCase()] || SENTIMENT_COLORS.default;
 
 const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, isDark }) => {
   if (!data?.labels?.length) return null;
 
   const maxVal = Math.max(...data.bullish, ...data.bearish, 1);
-  const w = 100,
-    h = 40,
-    pts = data.labels.length;
+  const w = 1000, h = 200, pts = data.labels.length;
   const step = w / Math.max(pts - 1, 1);
   const getY = (val) => h - (val / maxVal) * h;
 
@@ -52,122 +43,121 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
   const totalBear = data.bearish.reduce((a, b) => a + b, 0);
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <span
-          className={cn(
-            'text-[11px] font-medium uppercase tracking-wide',
-            isDark ? 'text-gray-500' : 'text-gray-400'
-          )}
-        >
-          Sentiment
-        </span>
-        <div className="flex items-center gap-1">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 className={cn("text-[13px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-black")}>
+            Market Sentiment
+          </h3>
+          <p className={cn("text-[11px] font-bold opacity-30", isDark ? "text-white" : "text-black")}>
+            Social & algorithmic pulse
+          </p>
+        </div>
+        <div className={cn(
+          "flex items-center p-1 rounded-xl border",
+          isDark ? "bg-white/[0.03] border-white/10" : "bg-black/[0.02] border-black/[0.05]"
+        )}>
           {[7, 30, 90, 'all'].map((p) => (
             <button
               key={p}
               onClick={() => onPeriodChange(p)}
               className={cn(
-                'rounded-lg px-2 py-0.5 text-[10px] font-medium border-[1.5px] transition-all',
+                'rounded-lg px-3 py-1.5 text-[11px] font-black transition-all',
                 period === p
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : isDark
-                    ? 'text-gray-500 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-                    : 'text-gray-400 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+                    ? 'text-gray-500 hover:text-white'
+                    : 'text-gray-400 hover:text-black'
               )}
             >
-              {p === 'all' ? 'All' : `${p}D`}
+              {p === 'all' ? 'ALL' : `${p}D`}
             </button>
           ))}
         </div>
       </div>
-      <div className="flex items-end gap-4">
-        <div className="relative flex-1">
-          <svg
-            viewBox={`0 0 ${w} ${h}`}
-            className="w-full h-[60px]"
-            preserveAspectRatio="none"
-            onMouseLeave={() => onHover(null)}
-          >
-            <path d={getArea(data.bullish)} fill="#10B981" fillOpacity="0.15" />
-            <path d={getArea(data.bearish)} fill="#EF4444" fillOpacity="0.1" />
-            <path
-              d={getPath(data.bullish)}
-              fill="none"
-              stroke="#10B981"
+
+      <div className="relative overflow-hidden rounded-xl">
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          className="w-full h-[120px] overflow-visible"
+          preserveAspectRatio="none"
+          onMouseLeave={() => onHover(null)}
+        >
+          <path d={getArea(data.bullish)} fill="#10B981" fillOpacity="0.05" />
+          <path d={getArea(data.bearish)} fill="#EF4444" fillOpacity="0.05" />
+
+          <path
+            d={getPath(data.bullish)}
+            fill="none"
+            stroke="#10B981"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={getPath(data.bearish)}
+            fill="none"
+            stroke="#EF4444"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+
+          {data.labels.map((_, i) => (
+            <rect
+              key={i}
+              x={i * step - step / 2}
+              y="0"
+              width={step}
+              height={h}
+              fill="transparent"
+              className="cursor-crosshair"
+              onMouseEnter={() => onHover(i)}
+            />
+          ))}
+
+          {hoverIdx !== null && (
+            <line
+              x1={hoverIdx * step}
+              y1="0"
+              x2={hoverIdx * step}
+              y2={h}
+              stroke={isDark ? '#fff' : '#000'}
+              strokeOpacity="0.1"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
-            <path
-              d={getPath(data.bearish)}
-              fill="none"
-              stroke="#EF4444"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
-            {data.labels.map((_, i) => (
-              <rect
-                key={i}
-                x={i * step - step / 2}
-                y="0"
-                width={step}
-                height={h}
-                fill="transparent"
-                onMouseEnter={() => onHover(i)}
-              />
-            ))}
-            {hoverIdx !== null && (
-              <line
-                x1={hoverIdx * step}
-                y1="0"
-                x2={hoverIdx * step}
-                y2={h}
-                stroke={isDark ? '#fff' : '#000'}
-                strokeOpacity="0.2"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
-          </svg>
-          {hoverIdx !== null && data.labels[hoverIdx] && (
-            <div
-              className={cn(
-                'absolute top-0 -translate-y-full -translate-x-1/2 mb-1 px-2 py-1 rounded text-[10px] whitespace-nowrap pointer-events-none z-10',
-                isDark ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
-              )}
-              style={{ left: `${(hoverIdx / (pts - 1)) * 100}%` }}
-            >
-              <div className="font-medium">{data.labels[hoverIdx]}</div>
-              <div className="flex gap-2">
-                <span className="text-green-400">{data.bullish[hoverIdx]}</span>
-                <span className="text-red-400">{data.bearish[hoverIdx]}</span>
-                <span className="text-yellow-400">{data.neutral?.[hoverIdx] || 0}</span>
-              </div>
-            </div>
           )}
+        </svg>
+
+        {hoverIdx !== null && data.labels[hoverIdx] && (
+          <div
+            className={cn(
+              'absolute top-0 -translate-y-full -translate-x-1/2 mb-4 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
+              isDark ? 'bg-black/80 border-white/10' : 'bg-white/80 border-black/10'
+            )}
+            style={{ left: `${(hoverIdx / (pts - 1)) * 100}%` }}
+          >
+            <div className="text-[10px] font-black opacity-40 mb-1">{data.labels[hoverIdx]}</div>
+            <div className="flex gap-4">
+              <span className="text-[11px] font-black text-green-500">{data.bullish[hoverIdx]}</span>
+              <span className="text-[11px] font-black text-red-500">{data.bearish[hoverIdx]}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-8 justify-center pt-2">
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>BULLISH</span>
+          <span className="text-sm font-black text-green-500 tabular-nums">{totalBull.toLocaleString()}</span>
         </div>
-        <div className="shrink-0 flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
-            <span className={cn('text-[10px]', isDark ? 'text-gray-500' : 'text-gray-400')}>
-              Bullish
-            </span>
-            <span className="text-[11px] text-green-500 tabular-nums font-medium">
-              {totalBull.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-red-500" />
-            <span className={cn('text-[10px]', isDark ? 'text-gray-500' : 'text-gray-400')}>
-              Bearish
-            </span>
-            <span className="text-[11px] text-red-500 tabular-nums font-medium">
-              {totalBear.toLocaleString()}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+          <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>BEARISH</span>
+          <span className="text-sm font-black text-red-500 tabular-nums">{totalBear.toLocaleString()}</span>
         </div>
       </div>
-    </>
+    </div>
   );
 });
 SentimentChart.displayName = 'SentimentChart';
@@ -178,54 +168,48 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
     () => Object.entries(sources).sort(([, a], [, b]) => b.count - a.count),
     [sources]
   );
-  const displayLimit = isMobile ? 8 : 14;
+  const displayLimit = isMobile ? 6 : 14;
   const displayedSources = showAll ? sortedSources : sortedSources.slice(0, displayLimit);
   const hiddenCount = sortedSources.length - displayLimit;
 
   return (
-    <div className="mb-4">
-      <div className="flex flex-wrap items-center gap-1.5">
+    <div className="mb-8">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => onSourceSelect(null)}
           className={cn(
-            'rounded-xl px-2 py-1 text-[11px] font-medium border-[1.5px] transition-all',
+            'rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all',
             !selectedSource
-              ? 'bg-primary text-white border-primary'
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : isDark
-                ? 'text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-                : 'text-gray-500 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+                ? 'text-gray-500 bg-white/5 hover:bg-white/10'
+                : 'text-gray-400 bg-black/5 hover:bg-black/10'
           )}
         >
-          All Sources
+          All
         </button>
         {displayedSources.map(([source, data]) => {
-          const bull = data.sentiment?.Bullish || 0;
           const isSelected = selectedSource === source;
           return (
             <button
               key={source}
               onClick={() => onSourceSelect(source)}
               className={cn(
-                'group relative flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] border-[1.5px] transition-all',
+                'group flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-bold transition-all',
                 isSelected
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : isDark
-                    ? 'text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-                    : 'text-gray-600 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+                    ? 'text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white'
+                    : 'text-gray-500 bg-black/5 hover:bg-black/10 hover:text-black'
               )}
             >
-              <span className="font-medium">{source}</span>
-              <span className={cn('tabular-nums', isSelected ? 'opacity-70' : 'opacity-40')}>
+              {source}
+              <span className={cn(
+                'tabular-nums opacity-30',
+                isSelected && 'opacity-70'
+              )}>
                 {data.count}
               </span>
-              {bull > 0 && !isSelected && (
-                <span
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full',
-                    bull > 60 ? 'bg-green-500' : bull < 40 ? 'bg-red-500' : 'bg-yellow-500'
-                  )}
-                />
-              )}
             </button>
           );
         })}
@@ -233,13 +217,11 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
           <button
             onClick={() => setShowAll(!showAll)}
             className={cn(
-              'rounded-xl px-2 py-1 text-[11px] border-[1.5px] transition-all',
-              isDark
-                ? 'text-gray-500 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-                : 'text-gray-400 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+              'px-4 py-2 text-[11px] font-bold opacity-40 hover:opacity-100 transition-opacity',
+              isDark ? 'text-white' : 'text-black'
             )}
           >
-            {showAll ? 'Less' : `+${hiddenCount}`}
+            {showAll ? 'LESS' : `+${hiddenCount} MORE`}
           </button>
         )}
       </div>
@@ -254,60 +236,50 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      'group flex gap-4 rounded-xl border-[1.5px] p-4 transition-all',
+      'group relative flex flex-col gap-3 rounded-[20px] p-5 transition-all duration-300',
       isDark
-        ? 'border-white/10 bg-transparent hover:border-white/[0.15] hover:bg-white/[0.02]'
-        : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+        ? 'bg-white/[0.02] hover:bg-white/[0.04] border border-white/5'
+        : 'bg-[#fcfcfc] border border-black/[0.03] hover:border-primary/20'
     )}
   >
-    <div
-      className="w-1 shrink-0 rounded-full"
-      style={{ backgroundColor: getSentimentColor(article.sentiment) }}
-    />
-    <div className="min-w-0 flex-1">
-      <div className="mb-1.5 flex items-center gap-2">
-        <span className={cn('text-[11px] font-medium', isDark ? 'text-gray-400' : 'text-gray-500')}>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        <span className={cn('text-[12px] font-black uppercase tracking-wider', isDark ? 'text-white/40' : 'text-black/30')}>
           {article.sourceName}
         </span>
-        <span className={cn('text-[10px]', isDark ? 'text-gray-600' : 'text-gray-400')}>
+        <div className={cn('h-1 w-1 rounded-full', isDark ? 'bg-white/10' : 'bg-black/5')} />
+        <span className={cn('text-[10px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
           {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
         </span>
-        <span
-          className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[9px] font-medium uppercase"
-          style={{
-            color: getSentimentColor(article.sentiment),
-            backgroundColor: `${getSentimentColor(article.sentiment)}15`
-          }}
-        >
-          {article.sentiment || 'N/A'}
-        </span>
       </div>
-      <h3
-        className={cn(
-          'mb-1 text-[14px] font-medium leading-snug transition-colors group-hover:text-primary',
-          isDark ? 'text-white' : 'text-gray-900'
-        )}
+
+      <span
+        className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md"
+        style={{
+          color: getSentimentColor(article.sentiment),
+          backgroundColor: `${getSentimentColor(article.sentiment)}15`
+        }}
       >
-        {extractTitle(article.title)}
-      </h3>
-      <p
-        className={cn(
-          'line-clamp-1 text-[12px] leading-relaxed',
-          isDark ? 'text-gray-500' : 'text-gray-500'
-        )}
-      >
-        {article.summary}
-      </p>
+        {article.sentiment || 'NEUTRAL'}
+      </span>
     </div>
-    <div
-      className={cn(
-        'flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100',
-        isDark ? 'text-gray-500' : 'text-gray-400'
-      )}
-    >
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <ChevronRight />
-      </svg>
+
+    <h3 className={cn(
+      'text-[15px] font-bold leading-tight transition-colors group-hover:text-primary',
+      isDark ? 'text-white' : 'text-black'
+    )}>
+      {extractTitle(article.title)}
+    </h3>
+
+    <p className={cn(
+      'line-clamp-2 text-[13px] leading-relaxed opacity-50',
+      isDark ? 'text-white' : 'text-black'
+    )}>
+      {article.summary}
+    </p>
+
+    <div className="pt-2 flex items-center gap-1.5 text-[11px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+      Read Story <ArrowRight size={14} />
     </div>
   </a>
 ));
@@ -325,26 +297,24 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
   }, [currentPage, totalPages]);
 
   return (
-    <div className="mt-6 flex items-center justify-center gap-1">
+    <div className="mt-8 flex items-center justify-center gap-1.5">
       <button
         onClick={() => onPageChange(null, currentPage - 1)}
         disabled={currentPage === 1}
         className={cn(
-          'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-all disabled:opacity-30',
+          'flex h-9 w-9 items-center justify-center rounded-xl border transition-all disabled:opacity-30',
           isDark
-            ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-            : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+            ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
+            : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
         )}
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <ChevronLeft />
-        </svg>
+        <ChevronLeft size={16} className={isDark ? "text-white" : "text-black"} />
       </button>
       {pages.map((p, i) =>
         p === '...' ? (
           <span
             key={`e${i}`}
-            className={cn('px-1 text-[12px]', isDark ? 'text-gray-600' : 'text-gray-400')}
+            className={cn('px-2 text-[12px] font-bold opacity-30', isDark ? 'text-white' : 'text-black')}
           >
             ...
           </span>
@@ -353,12 +323,12 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
             key={p}
             onClick={() => onPageChange(null, p)}
             className={cn(
-              'flex h-8 min-w-[32px] items-center justify-center rounded-xl text-[12px] tabular-nums border-[1.5px] transition-all',
+              'flex h-9 min-w-[36px] items-center justify-center rounded-xl text-[12px] font-bold tabular-nums border transition-all duration-300',
               p === currentPage
-                ? 'bg-primary text-white border-primary'
+                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105'
                 : isDark
-                  ? 'text-gray-400 border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-                  : 'text-gray-600 border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+                  ? 'text-gray-400 bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
+                  : 'text-gray-600 bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
             )}
           >
             {p}
@@ -369,21 +339,14 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, isDark }) => {
         onClick={() => onPageChange(null, currentPage + 1)}
         disabled={currentPage === totalPages}
         className={cn(
-          'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-all disabled:opacity-30',
+          'flex h-9 w-9 items-center justify-center rounded-xl border transition-all disabled:opacity-30',
           isDark
-            ? 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.02]'
-            : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+            ? 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/10'
+            : 'bg-white border-black/[0.05] hover:border-black/20 hover:bg-black/[0.02]'
         )}
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <ChevronRight />
-        </svg>
+        <ChevronRight size={16} className={isDark ? "text-white" : "text-black"} />
       </button>
-      <span
-        className={cn('ml-2 text-[11px] tabular-nums', isDark ? 'text-gray-600' : 'text-gray-400')}
-      >
-        {currentPage}/{totalPages}
-      </span>
     </div>
   );
 });
@@ -556,7 +519,7 @@ function NewsPage({
           `https://api.xrpl.to/v1/news/sentiment-chart?days=${chartPeriod === 'all' ? 9999 : chartPeriod}`
         );
         if (res.ok) setChartData(await res.json());
-      } catch {}
+      } catch { }
     };
     fetchChart();
     const interval = setInterval(fetchChart, 60000);
@@ -580,144 +543,128 @@ function NewsPage({
           <p className="py-8 text-center text-red-500">Error: {error}</p>
         ) : (
           <>
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <h2
-                  className={cn('text-[17px] font-medium', isDark ? 'text-white' : 'text-gray-900')}
-                >
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h1 className={cn('text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
                   News
-                </h2>
-                <span
-                  className={cn(
-                    'rounded px-1.5 py-0.5 text-[11px] tabular-nums',
-                    isDark ? 'bg-white/10 text-gray-400' : 'bg-black/[0.04] text-gray-500'
-                  )}
-                >
-                  {totalCount.toLocaleString()}
-                </span>
+                </h1>
+                <p className={cn('text-[12px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
+                  Discover the latest pulse of the XRP Ledger ecosystem
+                </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <form
                   onSubmit={handleSearch}
                   className={cn(
-                    'flex h-9 items-center gap-2 rounded-xl border-[1.5px] px-3 transition-all',
+                    'group relative flex h-11 items-center gap-3 rounded-[16px] border px-4 transition-all duration-300 w-full sm:w-[320px]',
                     isDark
-                      ? 'border-white/10 bg-transparent focus-within:border-white/[0.15]'
-                      : 'border-black/[0.06] focus-within:border-black/10'
+                      ? 'bg-white/[0.02] border-white/10 focus-within:border-primary focus-within:bg-white/[0.05]'
+                      : 'bg-white border-black/[0.05] focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.08)]'
                   )}
                 >
-                  <svg
-                    className={cn('h-4 w-4 shrink-0', isDark ? 'text-gray-500' : 'text-gray-400')}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <SearchIcon />
-                  </svg>
+                  <Search size={18} className={cn('shrink-0 opacity-30 transition-opacity group-focus-within:opacity-100', isDark ? 'text-white' : 'text-black')} />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Search keywords..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className={cn(
-                      'w-full min-w-[180px] bg-transparent text-[13px] focus:outline-none sm:w-[240px]',
-                      isDark
-                        ? 'text-white placeholder:text-gray-500'
-                        : 'text-gray-900 placeholder:text-gray-400'
+                      'w-full bg-transparent text-[13px] font-bold focus:outline-none',
+                      isDark ? 'text-white placeholder:text-white/20' : 'text-black placeholder:text-black/20'
                     )}
                   />
                   {searchInput && (
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className={cn(
-                        'shrink-0 rounded p-0.5',
-                        isDark ? 'hover:bg-white/[0.08]' : 'hover:bg-black/[0.06]'
-                      )}
+                      className="opacity-40 hover:opacity-100 transition-opacity"
                     >
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <CloseIcon />
-                      </svg>
+                      <X size={16} />
                     </button>
                   )}
                 </form>
-                <ApiButton />
+                <div className="hidden sm:block">
+                  <ApiButton />
+                </div>
               </div>
             </div>
 
             <div
               className={cn(
-                'mb-4 rounded-xl border-[1.5px] p-3 transition-all',
+                'mb-10 overflow-hidden rounded-[24px] border transition-all',
                 isDark
-                  ? 'border-white/10 bg-transparent hover:border-white/[0.15] hover:bg-white/[0.02]'
-                  : 'border-black/[0.06] hover:border-black/10 hover:bg-black/[0.01]'
+                  ? 'bg-[#0a0a0a] border-white/5'
+                  : 'bg-white border-black/[0.03]'
               )}
             >
-              <SentimentChart
-                data={chartData}
-                period={chartPeriod}
-                onPeriodChange={setChartPeriod}
-                onHover={setChartHover}
-                hoverIdx={chartHover}
-                isDark={isDark}
-              />
-              <div
-                className={cn(
-                  'flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 pt-3 border-t',
-                  isDark ? 'border-white/[0.06]' : 'border-black/[0.04]'
-                )}
-              >
+              <div className="p-8">
+                <SentimentChart
+                  data={chartData}
+                  period={chartPeriod}
+                  onPeriodChange={setChartPeriod}
+                  onHover={setChartHover}
+                  hoverIdx={chartHover}
+                  isDark={isDark}
+                />
+              </div>
+
+              <div className={cn(
+                'grid grid-cols-2 lg:grid-cols-4 border-t',
+                isDark ? 'border-white/5' : 'border-black/[0.03]'
+              )}>
                 {[
                   { period: '24H', stats: sentimentStats.last24h },
                   { period: '7D', stats: sentimentStats.last7d },
                   { period: '30D', stats: sentimentStats.last30d },
                   { period: 'ALL', stats: sentimentStats.all }
                 ].map((item) => (
-                  <div key={item.period} className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'w-7 text-[10px] font-medium',
-                        isDark ? 'text-gray-500' : 'text-gray-400'
-                      )}
-                    >
+                  <div key={item.period} className={cn(
+                    "p-6 flex flex-col gap-3 group transition-colors",
+                    isDark ? "hover:bg-white/[0.02]" : "hover:bg-black/[0.01]",
+                    "border-l first:border-l-0",
+                    isDark ? "border-white/5" : "border-black/[0.03]",
+                    "max-sm:border-l-0 max-sm:even:border-l max-sm:[&:nth-child(n+3)]:border-t"
+                  )}>
+                    <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-30', isDark ? 'text-white' : 'text-black')}>
                       {item.period}
                     </span>
-                    <div
-                      className={cn(
-                        'flex h-1.5 w-20 overflow-hidden rounded-full',
-                        isDark ? 'bg-white/10' : 'bg-black/[0.06]'
-                      )}
-                    >
-                      <div
-                        style={{ width: `${item.stats?.bullish || 0}%` }}
-                        className="bg-green-500"
-                      />
-                      <div
-                        style={{ width: `${item.stats?.bearish || 0}%` }}
-                        className="bg-red-500"
-                      />
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-black">
+                        <span className="text-green-500">{item.stats?.bullish || 0}%</span>
+                        <span className="text-red-500">{item.stats?.bearish || 0}%</span>
+                      </div>
+                      <div className={cn(
+                        'flex h-1 w-full overflow-hidden rounded-full',
+                        isDark ? 'bg-white/5' : 'bg-black/[0.05]'
+                      )}>
+                        <div
+                          style={{ width: `${item.stats?.bullish || 0}%` }}
+                          className="bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                        />
+                        <div
+                          style={{ width: `${item.stats?.bearish || 0}%` }}
+                          className="bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)]"
+                        />
+                      </div>
                     </div>
-                    <span className="w-8 text-[10px] tabular-nums text-green-500">
-                      {item.stats?.bullish || 0}%
-                    </span>
                   </div>
                 ))}
-                {searchQuery && searchSentimentScore !== null && (
-                  <span
-                    className={cn(
-                      'ml-auto text-[11px] tabular-nums',
-                      isDark ? 'text-gray-400' : 'text-gray-500'
-                    )}
-                  >
-                    Score: {searchSentimentScore}
-                  </span>
-                )}
               </div>
+
+              {searchQuery && searchSentimentScore !== null && (
+                <div className={cn(
+                  "px-8 py-3 border-t flex items-center justify-between",
+                  isDark ? "bg-primary/5 border-white/5" : "bg-primary/[0.01] border-black/[0.03]"
+                )}>
+                  <span className={cn("text-[11px] font-bold opacity-40", isDark ? "text-white" : "text-black")}>
+                    Search Sentiment Score for <span className="text-primary italic">"{searchQuery}"</span>
+                  </span>
+                  <span className="text-sm font-black text-primary tabular-nums">
+                    {searchSentimentScore}
+                  </span>
+                </div>
+              )}
             </div>
 
             <SourcesMenu
@@ -728,46 +675,24 @@ function NewsPage({
               isDark={isDark}
             />
 
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
               {news.length === 0 ? (
-                <div className="py-16 text-center">
-                  <div className="relative w-14 h-14 mx-auto mb-4">
-                    <div className={cn('absolute -top-1 left-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                      <div className={cn('absolute top-1 left-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                    </div>
-                    <div className={cn('absolute -top-1 right-0 w-5 h-5 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                      <div className={cn('absolute top-1 right-1 w-3 h-3 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')} />
-                    </div>
-                    <div className={cn('absolute top-2 left-1/2 -translate-x-1/2 w-12 h-11 rounded-full', isDark ? 'bg-white/15' : 'bg-gray-200')}>
-                      <div className="absolute inset-0 rounded-full overflow-hidden">
-                        {[...Array(5)].map((_, i) => (
-                          <div key={i} className={cn('h-[2px] w-full', isDark ? 'bg-white/15' : 'bg-gray-300/50')} style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                        ))}
-                      </div>
-                      <div className="absolute top-3 left-2 w-3 h-3 flex items-center justify-center">
-                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                      </div>
-                      <div className="absolute top-3 right-2 w-3 h-3 flex items-center justify-center">
-                        <div className={cn('absolute w-2.5 h-[2px] rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                        <div className={cn('absolute w-2.5 h-[2px] -rotate-45', isDark ? 'bg-white/40' : 'bg-gray-400')} />
-                      </div>
-                      <div className={cn('absolute bottom-1.5 left-1/2 -translate-x-1/2 w-6 h-4 rounded-full', isDark ? 'bg-white/10' : 'bg-gray-100')}>
-                        <div className={cn('absolute top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 rounded-full', isDark ? 'bg-white/25' : 'bg-gray-300')} />
-                      </div>
-                    </div>
-                  </div>
-                  <p
-                    className={cn(
-                      'text-sm font-medium tracking-widest mb-1',
-                      isDark ? 'text-white/80' : 'text-gray-600'
-                    )}
+                <div className={cn(
+                  "col-span-full py-24 rounded-[32px] border border-dashed flex flex-col items-center justify-center text-center",
+                  isDark ? "border-white/10 bg-white/[0.01]" : "border-black/10 bg-black/[0.01]"
+                )}>
+                  <h3 className={cn("text-xl font-black mb-2 uppercase tracking-tighter", isDark ? "text-white" : "text-black")}>
+                    No Updates Found
+                  </h3>
+                  <p className={cn("text-[12px] font-bold max-w-xs px-4 opacity-30", isDark ? "text-white" : "text-black")}>
+                    Try adjusting your search keywords or clearing the source filters.
+                  </p>
+                  <button
+                    onClick={handleClearSearch}
+                    className="mt-8 text-[11px] font-black uppercase tracking-widest text-primary hover:opacity-70 transition-opacity"
                   >
-                    NO NEWS FOUND
-                  </p>
-                  <p className={cn('text-xs', isDark ? 'text-white/30' : 'text-gray-400')}>
-                    Try adjusting your search or filters
-                  </p>
+                    Clear Search
+                  </button>
                 </div>
               ) : (
                 news.map((article) => (
@@ -843,9 +768,9 @@ export async function getServerSideProps({ query }) {
     const sources = Array.isArray(newsData)
       ? {}
       : newsData.sources?.reduce(
-          (acc, s) => ({ ...acc, [s.name]: { count: s.count, sentiment: s.sentiment } }),
-          {}
-        ) || {};
+        (acc, s) => ({ ...acc, [s.name]: { count: s.count, sentiment: s.sentiment } }),
+        {}
+      ) || {};
 
     return {
       props: {
@@ -854,11 +779,11 @@ export async function getServerSideProps({ query }) {
         initialSources: sources,
         initialSentiment: newsData.sentiment
           ? {
-              last24h: parse(newsData.sentiment['24h']),
-              last7d: parse(newsData.sentiment['7d']),
-              last30d: parse(newsData.sentiment['30d']),
-              all: parse(newsData.sentiment['all'])
-            }
+            last24h: parse(newsData.sentiment['24h']),
+            last7d: parse(newsData.sentiment['7d']),
+            last30d: parse(newsData.sentiment['30d']),
+            all: parse(newsData.sentiment['all'])
+          }
           : { last24h: {}, last7d: {}, last30d: {}, all: {} },
         initialChart: chartData,
         initialQuery: { page, limit, source: source || null, q: q || null },
