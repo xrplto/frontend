@@ -4,29 +4,42 @@ import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
 const EMOTES = [
-  'sussy.gif','evilpepe.png','moyai-the-rock.png','crythumbsup.png','pepe-yes.png','handrub.gif','kekw.png','kek.png',
-  'basedcigar.gif','pepesadhug.gif','pog.png','thinkingpepe.png','pepe-pizza.gif','catlaugh.gif','twerk.gif','chadgif.gif',
-  'kappa.png','sadcat.png','peepocomfy.gif','lookfish.png','sla.gif','peposweg.png','rickroll.gif','kekwait.png',
-  'cathumpdance.gif','ezpepe.png','pepescam.gif','galaxybrainmeme.gif','geckodance.gif','pepegagun.gif','doggodance.gif',
-  'what.gif','pepewheelchair.png','dingdong.gif','yeah.gif','peepoheart.png','muskf.gif','pepecookie.png','pepeangel.png',
-  'pokesleep.png','vibing.gif','fancytroll.png','awkward_monke.png','dance.gif','rollsafe.png','bigbrain.png','pepe-hmmm.png',
-  'thinkink.png','pepe-salami.gif','kermitsip.png','pepegifboxing.gif','fax.gif','pepegaak47.gif','pepeshoot.gif','duck.gif',
-  'pepeclap.gif','eatvibe.gif','peepogermany.gif','cum.gif','nah.gif','coffee.gif','pepesip.gif','peeposex.gif','pepecry.png',
-  'aintnowway.gif','pepehabibi.gif','pepeduck.gif','doge.png','takingshower.gif','wine.gif','kebab.gif','sadgepray.png',
-  'vibepepe.png','memes.gif','ghost-mw2.png','worryshy.png','peepolove.gif','grenouillevertet.png','leocheers.png',
-  'peepoturkey.gif','pepefight.gif','pepesleep.png','cheemssayitback.png','pepeno.png','ayo-what.png','cute.png','chatting.gif',
-  'gatoxd.gif','sadnigga.gif','fullgaykiss.png','anibanned.gif','excusemewtf.gif','hitting.gif','money-bag.gif','pepeok.png',
-  'skull.svg','stfu.png','worried_monkey.gif','shrug.png','catdespair.png','cum2.gif','pain.gif','peeporussia.gif',
-  'pepepray.png','peperich.gif','pepestabby.gif','uzi.gif','verycat.gif','onemili.png','aintnoway.gif','haram.gif','huh.gif',
-  'kissahomie.gif','mwah.gif','pepeFat.gif','pepemusic.gif','xd.gif','jew.gif','bruh.png','exit.png','flip.png','gamba.gif',
-  'love.gif','money.gif','sheep.gif','maam.gif','kappo.png','whatever.png','sus.gif','weed.gif','snoop.gif','sure.gif',
-  'police.gif','pepebeer.webp','awkward_black.gif','face_with_open_eyes_and_hand_over_mouth.webp','scream.webp',
-  'wilted_rose.svg','sob.svg','pensob.webp','clown.svg','grinning.svg','grimacing.svg','cold_face.svg','shushing_face.svg',
-  'yawning_face.svg','broken_heart.svg'
+  'sussy.gif', 'evilpepe.png', 'moyai-the-rock.png', 'crythumbsup.png', 'pepe-yes.png', 'handrub.gif', 'kekw.png', 'kek.png',
+  'basedcigar.gif', 'pepesadhug.gif', 'pog.png', 'thinkingpepe.png', 'pepe-pizza.gif', 'catlaugh.gif', 'twerk.gif', 'chadgif.gif',
+  'kappa.png', 'sadcat.png', 'peepocomfy.gif', 'lookfish.png', 'sla.gif', 'peposweg.png', 'rickroll.gif', 'kekwait.png',
+  'cathumpdance.gif', 'ezpepe.png', 'pepescam.gif', 'galaxybrainmeme.gif', 'geckodance.gif', 'pepegagun.gif', 'doggodance.gif',
+  'what.gif', 'pepewheelchair.png', 'dingdong.gif', 'yeah.gif', 'peepoheart.png', 'muskf.gif', 'pepecookie.png', 'pepeangel.png',
+  'pokesleep.png', 'vibing.gif', 'fancytroll.png', 'awkward_monke.png', 'dance.gif', 'rollsafe.png', 'bigbrain.png', 'pepe-hmmm.png',
+  'thinkink.png', 'pepe-salami.gif', 'kermitsip.png', 'pepegifboxing.gif', 'fax.gif', 'pepegaak47.gif', 'pepeshoot.gif', 'duck.gif',
+  'pepeclap.gif', 'eatvibe.gif', 'peepogermany.gif', 'cum.gif', 'nah.gif', 'coffee.gif', 'pepesip.gif', 'peeposex.gif', 'pepecry.png',
+  'aintnowway.gif', 'pepehabibi.gif', 'pepeduck.gif', 'doge.png', 'takingshower.gif', 'wine.gif', 'kebab.gif', 'sadgepray.png',
+  'vibepepe.png', 'memes.gif', 'ghost-mw2.png', 'worryshy.png', 'peepolove.gif', 'grenouillevertet.png', 'leocheers.png',
+  'peepoturkey.gif', 'pepefight.gif', 'pepesleep.png', 'cheemssayitback.png', 'pepeno.png', 'ayo-what.png', 'cute.png', 'chatting.gif',
+  'gatoxd.gif', 'sadnigga.gif', 'fullgaykiss.png', 'anibanned.gif', 'excusemewtf.gif', 'hitting.gif', 'money-bag.gif', 'pepeok.png',
+  'skull.svg', 'stfu.png', 'worried_monkey.gif', 'shrug.png', 'catdespair.png', 'cum2.gif', 'pain.gif', 'peeporussia.gif',
+  'pepepray.png', 'peperich.gif', 'pepestabby.gif', 'uzi.gif', 'verycat.gif', 'onemili.png', 'aintnoway.gif', 'haram.gif', 'huh.gif',
+  'kissahomie.gif', 'mwah.gif', 'pepeFat.gif', 'pepemusic.gif', 'xd.gif', 'jew.gif', 'bruh.png', 'exit.png', 'flip.png', 'gamba.gif',
+  'love.gif', 'money.gif', 'sheep.gif', 'maam.gif', 'kappo.png', 'whatever.png', 'sus.gif', 'weed.gif', 'snoop.gif', 'sure.gif',
+  'police.gif', 'pepebeer.webp', 'awkward_black.gif', 'face_with_open_eyes_and_hand_over_mouth.webp', 'scream.webp',
+  'wilted_rose.svg', 'sob.svg', 'pensob.webp', 'clown.svg', 'grinning.svg', 'grimacing.svg', 'cold_face.svg', 'shushing_face.svg',
+  'yawning_face.svg', 'broken_heart.svg'
 ].map(f => ({ name: f.replace(/\.(png|gif|webp|svg)(\?.*)?$/, ''), url: `/emotes/${f}` }));
 
 let emoteCache = EMOTES;
 const fetchGlobalEmotes = async () => emoteCache;
+
+// User avatar cache
+const userAvatarCache = {};
+const fetchUserAvatar = async (wallet) => {
+  if (!wallet || userAvatarCache[wallet] !== undefined) return userAvatarCache[wallet];
+  userAvatarCache[wallet] = null; // Mark as fetching
+  try {
+    const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+    const data = await res.json();
+    userAvatarCache[wallet] = data?.user?.avatar || null;
+  } catch { userAvatarCache[wallet] = null; }
+  return userAvatarCache[wallet];
+};
 
 const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
   const [emotes, setEmotes] = useState([]);
@@ -50,7 +63,7 @@ const EmotePicker = ({ onSelect, inputRef, input, setInput }) => {
 
   const filtered = useMemo(() =>
     query ? emotes.filter(e => e.name.toLowerCase().includes(query)).slice(0, 8) : [],
-  [emotes, query]);
+    [emotes, query]);
 
   const insertEmote = (emote) => {
     setInput(input.replace(/:(\w{2,})$/, emote.name + ' '));
@@ -102,6 +115,55 @@ const timeAgo = (ts) => {
   return Math.floor(sec / 31536000) + 'y ago';
 };
 
+// Chat avatar component with tooltip
+const ChatAvatar = ({ wallet }) => {
+  const cached = userAvatarCache[wallet];
+  const [avatar, setAvatar] = useState(cached?.avatar);
+  const [nftId, setNftId] = useState(cached?.nftId);
+  const [nftData, setNftData] = useState(null);
+  const [showTip, setShowTip] = useState(false);
+
+  useEffect(() => {
+    if (!wallet || userAvatarCache[wallet]) return;
+    (async () => {
+      try {
+        const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+        const data = await res.json();
+        const url = data?.user?.avatar;
+        const id = data?.user?.avatarNftId;
+        userAvatarCache[wallet] = { avatar: url, nftId: id };
+        setAvatar(url);
+        setNftId(id);
+      } catch { userAvatarCache[wallet] = { avatar: null, nftId: null }; }
+    })();
+  }, [wallet]);
+
+  const handleHover = async () => {
+    setShowTip(true);
+    if (!nftId || nftData) return;
+    try {
+      const res = await fetch(`https://api.xrpl.to/v1/nft/${nftId}`);
+      setNftData(await res.json());
+    } catch { }
+  };
+
+  if (!avatar) return null;
+  return (
+    <span className="relative">
+      <a href={nftId ? `/nft/${nftId}` : '#'} onClick={e => e.stopPropagation()}>
+        <img src={avatar} alt="" className="w-3.5 h-3.5 rounded object-cover shrink-0 cursor-pointer" onMouseEnter={handleHover} onMouseLeave={() => setShowTip(false)} />
+      </a>
+      {showTip && (
+        <div className="absolute bottom-full left-0 mb-1 px-2 py-1 rounded bg-black/95 border border-white/10 text-[10px] whitespace-nowrap z-50">
+          {nftData ? (
+            <><span className="text-white font-medium">{nftData.name || 'NFT'}</span>{nftData.collection && <span className="text-white/50 ml-1">• {nftData.collection}</span>}</>
+          ) : <span className="text-white/50">Loading...</span>}
+        </div>
+      )}
+    </span>
+  );
+};
+
 const TokenPreview = ({ match }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -113,7 +175,7 @@ const TokenPreview = ({ match }) => {
     fetch(`https://api.xrpl.to/v1/token/${match}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [match]);
 
@@ -178,7 +240,7 @@ const AttachedTokenPreview = ({ md5 }) => {
     fetch(`https://api.xrpl.to/v1/token/${md5}`)
       .then(r => r.json())
       .then(d => { if (d.token) setToken(d.token); })
-      .catch(() => {});
+      .catch(() => { });
   }, [md5]);
 
   if (!token) return <span className="text-[#137DFE] text-xs">loading...</span>;
@@ -241,7 +303,7 @@ const NFTPreview = ({ nftId }) => {
     fetch(`https://api.xrpl.to/v1/nft/${nftId}`)
       .then(r => r.json())
       .then(d => { setNft(d.nft || d); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [nftId]);
 
@@ -260,7 +322,7 @@ const NFTPreview = ({ nftId }) => {
   const rank = nft?.rarity_rank;
   const total = nft?.total;
   const created = nft?.created;
-  const formatXrp = (p) => p >= 1e6 ? (p/1e6).toFixed(2)+'M' : p >= 1e3 ? (p/1e3).toFixed(1)+'K' : p?.toLocaleString();
+  const formatXrp = (p) => p >= 1e6 ? (p / 1e6).toFixed(2) + 'M' : p >= 1e3 ? (p / 1e3).toFixed(1) + 'K' : p?.toLocaleString();
 
   return (
     <span className="relative inline-block" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
@@ -535,7 +597,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
       const res = await fetch(`/api/chat/support?${buildParams('get')}`);
       const data = await res.json();
       if (data.success) setTicket(data.ticket);
-    } catch {} finally { setLoading(false); }
+    } catch { } finally { setLoading(false); }
   }, [buildParams]);
 
   useEffect(() => { fetchTicket(); }, [fetchTicket]);
@@ -555,7 +617,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         setReply('');
         fetchTicket();
       }
-    } catch {} finally { setSubmitting(false); }
+    } catch { } finally { setSubmitting(false); }
   };
 
   const updateStatus = async (status) => {
@@ -566,7 +628,7 @@ const TicketDetail = ({ ticketId, wallet, isStaff, isDark, onBack }) => {
         body: JSON.stringify({ status })
       });
       fetchTicket();
-    } catch {}
+    } catch { }
   };
 
   if (loading) return <div className="h-[400px] flex items-center justify-center"><Loader2 size={20} className="animate-spin opacity-40" /></div>;
@@ -793,7 +855,7 @@ const Chat = () => {
         const data = await res.json();
         if (data.online !== undefined) setOnlineCount(data.online);
         if (data.unread !== undefined) setUnreadCount(data.unread);
-      } catch {}
+      } catch { }
     };
     fetchStatus();
     const interval = setInterval(fetchStatus, 30000);
@@ -806,8 +868,8 @@ const Chat = () => {
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => {};
-    ws.onerror = () => {};
+    ws.onopen = () => { };
+    ws.onerror = () => { };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -896,9 +958,9 @@ const Chat = () => {
           // Mark all my messages to this user before timestamp as read
           setMessages((prev) => prev.map(m =>
             (m.isPrivate || m.type === 'private') &&
-            m.wallet === authUserRef.current?.wallet &&
-            (m.recipientWallet === data.by || m.recipient === data.by) &&
-            m.timestamp <= data.at
+              m.wallet === authUserRef.current?.wallet &&
+              (m.recipientWallet === data.by || m.recipient === data.by) &&
+              m.timestamp <= data.at
               ? { ...m, readAt: data.at }
               : m
           ));
@@ -937,7 +999,7 @@ const Chat = () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ wallet: getLoggedInWallet() })
-    }).catch(() => {});
+    }).catch(() => { });
 
     let ws = null;
     let pingInterval = null;
@@ -972,7 +1034,7 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    try { localStorage.setItem('chat_open', isOpen); } catch {}
+    try { localStorage.setItem('chat_open', isOpen); } catch { }
   }, [isOpen]);
 
   useEffect(() => {
@@ -1170,7 +1232,7 @@ const Chat = () => {
                               </span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium text-sm text-[#650CD4]">{user.slice(0,6)}...{user.slice(-4)}</span>
+                                  <span className="font-medium text-sm text-[#650CD4]">{user.slice(0, 6)}...{user.slice(-4)}</span>
                                   <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
                                 </div>
                                 <div className="text-xs opacity-50 truncate">{msg.message}</div>
@@ -1216,7 +1278,7 @@ const Chat = () => {
                 const filtered = activeTab === 'general'
                   ? messages.filter(m => !m.isPrivate && m.type !== 'private')
                   : messages.filter(m => (m.isPrivate || m.type === 'private') &&
-                      (getWallet(m) === activeTab || getRecipient(m) === activeTab));
+                    (getWallet(m) === activeTab || getRecipient(m) === activeTab));
 
                 return (
                   <>
@@ -1257,6 +1319,7 @@ const Chat = () => {
                             <span className="text-[10px] opacity-30 shrink-0">
                               {timeAgo(msg.timestamp)}
                             </span>
+                            <ChatAvatar wallet={msgWallet} />
                             <span className="relative group shrink-0">
                               <button
                                 onClick={() => { if (!isOwn) openDmTab(msgWallet); }}
