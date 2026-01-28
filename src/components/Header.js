@@ -826,17 +826,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <a
                   href="/"
                   className={cn(
-                    'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200',
                     isTokensActive
                       ? isDark
-                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,10'
+                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
                         : 'text-blue-600 bg-blue-50'
                       : isDark
-                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,5'
+                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
                         : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
                   )}
                 >
-                  Tokens
+                  <span>Tokens</span>
+                  <ChevronDown
+                    size={12}
+                    className={cn(
+                      'transition-transform duration-200',
+                      tokensMenuOpen && 'rotate-180',
+                      isTokensActive ? 'opacity-100' : 'opacity-40'
+                    )}
+                  />
                 </a>
 
                 {tokensMenuOpen && (
@@ -844,17 +852,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onMouseEnter={handleTokensOpen}
                     onMouseLeave={handleTokensClose}
                     className={cn(
-                      'absolute left-0 top-full z-[2147483647] mt-2 w-[520px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                      'absolute left-0 top-full z-[2147483647] mt-1 w-[260px] overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-200',
+                      isDark
+                        ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
+                        : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
                     )}
                   >
-                    <div className="grid grid-cols-2 gap-1 p-3">
+                    <div className="flex flex-col p-1.5">
                       {tokenMenuItems.map((item) => (
                         <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
+                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
                             isActive(item.path)
                               ? isDark
                                 ? 'bg-white/10'
@@ -866,16 +876,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         >
                           <div
                             className={cn(
-                              'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
+                              'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110',
                               isDark ? 'bg-white/5' : 'bg-gray-100'
                             )}
                           >
                             {item.icon}
                           </div>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col min-w-0">
                             <span
                               className={cn(
-                                'text-[14px] font-medium',
+                                'text-[13px] font-semibold truncate',
                                 isDark ? 'text-white' : 'text-gray-900'
                               )}
                             >
@@ -883,8 +893,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </span>
                             <span
                               className={cn(
-                                'text-[12px]',
-                                isDark ? 'text-white/50' : 'text-gray-500'
+                                'text-[11px] truncate opacity-50 font-medium',
+                                isDark ? 'text-white' : 'text-gray-500'
                               )}
                             >
                               {item.desc}
@@ -907,17 +917,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <a
                   href="/nfts"
                   className={cn(
-                    'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                    'mr-1 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-all duration-200',
                     isNftsActive
                       ? isDark
-                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,10'
+                        ? 'text-[#3f96fe] bg-[rgba(63,150,254,0.1)]'
                         : 'text-blue-600 bg-blue-50'
                       : isDark
-                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,5'
+                        ? 'text-white/70 hover:text-[#3f96fe] hover:bg-[rgba(63,150,254,0.05)]'
                         : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
                   )}
                 >
-                  NFTs
+                  <span>NFTs</span>
+                  <ChevronDown
+                    size={12}
+                    className={cn(
+                      'transition-transform duration-200',
+                      nftsMenuOpen && 'rotate-180',
+                      isNftsActive ? 'opacity-100' : 'opacity-40'
+                    )}
+                  />
                 </a>
 
                 {nftsMenuOpen && (
@@ -925,17 +943,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     onMouseEnter={handleNftsOpen}
                     onMouseLeave={handleNftsClose}
                     className={cn(
-                      'absolute left-0 top-full z-[2147483647] mt-2 w-[520px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                      'absolute left-0 top-full z-[2147483647] mt-1 w-[260px] overflow-hidden rounded-2xl border animate-in fade-in slide-in-from-top-1 duration-200',
+                      isDark
+                        ? 'bg-black/80 backdrop-blur-xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]'
+                        : 'bg-white/90 backdrop-blur-xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
                     )}
                   >
-                    <div className="grid grid-cols-2 gap-1 p-3">
+                    <div className="flex flex-col p-1.5">
                       {nftMenuItemsRight.map((item) => (
                         <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
+                            'group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
                             isActive(item.path)
                               ? isDark
                                 ? 'bg-white/10'
@@ -947,16 +967,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         >
                           <div
                             className={cn(
-                              'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
+                              'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110',
                               isDark ? 'bg-white/5' : 'bg-gray-100'
                             )}
                           >
                             {item.icon}
                           </div>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col min-w-0">
                             <span
                               className={cn(
-                                'text-[14px] font-medium',
+                                'text-[13px] font-semibold truncate',
                                 isDark ? 'text-white' : 'text-gray-900'
                               )}
                             >
@@ -964,8 +984,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             </span>
                             <span
                               className={cn(
-                                'text-[12px]',
-                                isDark ? 'text-white/50' : 'text-gray-500'
+                                'text-[11px] truncate opacity-50 font-medium',
+                                isDark ? 'text-white' : 'text-gray-500'
                               )}
                             >
                               {item.desc}
@@ -2617,40 +2637,35 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </button>
 
                 {tokensExpanded && (
-                  <div
-                    className={cn(
-                      'ml-2 space-y-1 border-l pl-2',
-                      isDark ? 'border-white/10' : 'border-gray-200'
-                    )}
-                  >
+                  <div className="mx-1 mt-1 flex flex-col gap-0.5">
                     {tokenMenuItems.map((item) => (
                       <a
                         key={item.path}
                         href={item.path}
                         onClick={() => toggleDrawer(false)}
                         className={cn(
-                          'flex items-start gap-3 rounded-lg px-2 py-2 transition-colors duration-100',
+                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
                           isActive(item.path)
                             ? isDark
-                              ? 'bg-white/[0.08]'
-                              : 'bg-primary/10'
+                              ? 'bg-white/10'
+                              : 'bg-blue-50'
                             : isDark
-                              ? 'hover:bg-white/[0.05]'
+                              ? 'hover:bg-white/5'
                               : 'hover:bg-gray-50'
                         )}
                       >
                         <div
                           className={cn(
-                            'mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg',
+                            'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
                             isDark ? 'bg-white/5' : 'bg-gray-100'
                           )}
                         >
                           {item.icon}
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0">
                           <span
                             className={cn(
-                              'text-[13px] font-medium',
+                              'text-[13px] font-semibold truncate',
                               isDark ? 'text-white' : 'text-gray-900'
                             )}
                           >
@@ -2658,8 +2673,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </span>
                           <span
                             className={cn(
-                              'text-[11px]',
-                              isDark ? 'text-white/50' : 'text-gray-500'
+                              'text-[11px] truncate opacity-50 font-medium',
+                              isDark ? 'text-white' : 'text-gray-500'
                             )}
                           >
                             {item.desc}
@@ -2696,40 +2711,35 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </button>
 
                 {nftsExpanded && (
-                  <div
-                    className={cn(
-                      'ml-2 space-y-1 border-l pl-2',
-                      isDark ? 'border-white/10' : 'border-gray-200'
-                    )}
-                  >
+                  <div className="mx-1 mt-1 flex flex-col gap-0.5">
                     {nftMenuItems.map((item) => (
                       <a
                         key={item.path}
                         href={item.path}
                         onClick={() => toggleDrawer(false)}
                         className={cn(
-                          'flex items-start gap-3 rounded-lg px-2 py-2 transition-colors duration-100',
+                          'flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200',
                           isActive(item.path)
                             ? isDark
-                              ? 'bg-white/[0.08]'
-                              : 'bg-primary/10'
+                              ? 'bg-white/10'
+                              : 'bg-blue-50'
                             : isDark
-                              ? 'hover:bg-white/[0.05]'
+                              ? 'hover:bg-white/5'
                               : 'hover:bg-gray-50'
                         )}
                       >
                         <div
                           className={cn(
-                            'mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg',
+                            'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
                             isDark ? 'bg-white/5' : 'bg-gray-100'
                           )}
                         >
                           {item.icon}
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0">
                           <span
                             className={cn(
-                              'text-[13px] font-medium',
+                              'text-[13px] font-semibold truncate',
                               isDark ? 'text-white' : 'text-gray-900'
                             )}
                           >
@@ -2737,8 +2747,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </span>
                           <span
                             className={cn(
-                              'text-[11px]',
-                              isDark ? 'text-white/50' : 'text-gray-500'
+                              'text-[11px] truncate opacity-50 font-medium',
+                              isDark ? 'text-white' : 'text-gray-500'
                             )}
                           >
                             {item.desc}

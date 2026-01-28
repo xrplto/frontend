@@ -208,7 +208,12 @@ function TokenListComponent({
     }
     return initialOrderBy || 'vol24hxrp';
   });
-  const [sync, setSync] = useState(tokens?.length > 0 ? 0 : 1);
+  const [sync, setSync] = useState(() => {
+    if (!tokens?.length) return 1;
+    // If saved sort differs from default, force a re-fetch
+    if (typeof window !== 'undefined' && localStorage.getItem('tokenListSortBy') && localStorage.getItem('tokenListSortBy') !== (initialOrderBy || 'vol24hxrp')) return 1;
+    return 0;
+  });
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [rows, setRows] = useState(() => {
