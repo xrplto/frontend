@@ -223,12 +223,12 @@ const Button = styled.button`
   font-weight: 400;
   border: 1px solid
     ${(props) => {
-      if (props.variant === 'outlined')
-        return (
-          props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
-        );
-      return 'transparent';
-    }};
+    if (props.variant === 'outlined')
+      return (
+        props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
+      );
+    return 'transparent';
+  }};
   background: ${(props) => {
     if (props.variant === 'outlined') return props.sx?.backgroundColor || 'transparent';
     if (props.variant === 'text') return 'transparent';
@@ -250,40 +250,40 @@ const Button = styled.button`
   transition: all 0.15s ease;
   &:hover {
     background: ${(props) => {
-      if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
-      if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.05)';
-      return '#2563eb';
-    }};
+    if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
+    if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.05)';
+    return '#2563eb';
+  }};
     border-color: ${(props) => {
-      if (props.disabled)
-        return props.variant === 'outlined'
-          ? props.isDark
-            ? 'rgba(255,255,255,0.1)'
-            : 'rgba(0,0,0,0.1)'
-          : 'transparent';
-      if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.4)';
-      return 'transparent';
-    }};
+    if (props.disabled)
+      return props.variant === 'outlined'
+        ? props.isDark
+          ? 'rgba(255,255,255,0.1)'
+          : 'rgba(0,0,0,0.1)'
+        : 'transparent';
+    if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.4)';
+    return 'transparent';
+  }};
   }
   @media (min-width: 600px) {
     font-size: ${(props) => {
-      if (props.sx?.fontSize && typeof props.sx.fontSize === 'object') {
-        return props.sx.fontSize.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.fontSize && typeof props.sx.fontSize === 'object') {
+      return props.sx.fontSize.sm;
+    }
+    return null;
+  }};
     height: ${(props) => {
-      if (props.sx?.height && typeof props.sx.height === 'object') {
-        return props.sx.height.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.height && typeof props.sx.height === 'object') {
+      return props.sx.height.sm;
+    }
+    return null;
+  }};
     padding: ${(props) => {
-      if (props.sx?.px && props.sx?.py && typeof props.sx.px === 'object') {
-        return `${props.sx.py.sm * 8}px ${props.sx.px.sm * 8}px`;
-      }
-      return null;
-    }};
+    if (props.sx?.px && props.sx?.py && typeof props.sx.px === 'object') {
+      return `${props.sx.py.sm * 8}px ${props.sx.px.sm * 8}px`;
+    }
+    return null;
+  }};
   }
 `;
 
@@ -316,11 +316,11 @@ const Input = styled.input`
   }
   @media (min-width: 600px) {
     font-size: ${(props) => {
-      if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
-        return props.sx.input.fontSize.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
+      return props.sx.input.fontSize.sm;
+    }
+    return null;
+  }};
   }
 `;
 
@@ -358,29 +358,29 @@ const IconButton = styled.button`
   transition: all 0.15s ease;
   &:hover {
     background: ${(props) =>
-      props.sx?.['&:hover']?.backgroundColor ||
-      (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+    props.sx?.['&:hover']?.backgroundColor ||
+    (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
     color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)')};
   }
   @media (min-width: 600px) {
     padding: ${(props) => {
-      if (props.sx?.padding && typeof props.sx.padding === 'object') {
-        return props.sx.padding.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.padding && typeof props.sx.padding === 'object') {
+      return props.sx.padding.sm;
+    }
+    return null;
+  }};
     width: ${(props) => {
-      if (props.sx?.width && typeof props.sx.width === 'object') {
-        return props.sx.width.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.width && typeof props.sx.width === 'object') {
+      return props.sx.width.sm;
+    }
+    return null;
+  }};
     height: ${(props) => {
-      if (props.sx?.height && typeof props.sx.height === 'object') {
-        return props.sx.height.sm;
-      }
-      return null;
-    }};
+    if (props.sx?.height && typeof props.sx.height === 'object') {
+      return props.sx.height.sm;
+    }
+    return null;
+  }};
   }
 `;
 
@@ -389,10 +389,10 @@ const Alert = styled.div`
   border-radius: 8px;
   border: 1px solid
     ${(props) => {
-      if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
-      if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
-      return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    }};
+    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.15)';
+    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.15)';
+    return props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  }};
   background: ${(props) => {
     if (props.severity === 'error') return 'rgba(239, 68, 68, 0.04)';
     if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.04)';
@@ -415,13 +415,13 @@ const Tab = styled.button`
   background: transparent;
   border: 1px solid
     ${(props) =>
-      props.isActive
-        ? props.isDark
-          ? 'rgba(255,255,255,0.2)'
-          : 'rgba(0,0,0,0.2)'
-        : props.isDark
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.1)'};
+    props.isActive
+      ? props.isDark
+        ? 'rgba(255,255,255,0.2)'
+        : 'rgba(0,0,0,0.2)'
+      : props.isDark
+        ? 'rgba(255,255,255,0.1)'
+        : 'rgba(0,0,0,0.1)'};
   border-radius: 6px;
   color: ${(props) =>
     props.isActive
@@ -539,15 +539,17 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   min-width: 0;
-  background: transparent;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+  background: ${(props) => (props.isDark ? 'rgba(10, 10, 10, 0.5)' : 'rgba(255, 255, 255, 0.5)')};
+  backdrop-filter: blur(8px);
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
+  transition: all 0.2s ease;
   @media (max-width: 600px) {
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 10px;
   }
 `;
@@ -562,6 +564,9 @@ const ConverterFrame = styled.div`
 
 const AmountRows = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `;
 
 const ToggleContent = styled.div`
@@ -570,15 +575,17 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : '#fff')};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff')};
   border-radius: 50%;
   padding: 8px;
-  z-index: 1;
-  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')};
-  transition: all 0.15s ease;
+  z-index: 2;
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)')};
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
-    border-color: ${(props) => (props.isDark ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.4)')};
-    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)')};
+    border-color: #3b82f6;
+    background: ${(props) => (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.05)')};
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
     svg {
       color: #3b82f6 !important;
     }
@@ -589,32 +596,34 @@ const ExchangeButton = styled(Button)`
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #3b82f6;
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 700;
   border: none;
-  padding: 12px 16px;
+  padding: 14px 16px;
   font-size: 14px;
-  text-transform: none;
-  margin: 0;
-  letter-spacing: 0;
-  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 
   &:hover {
     background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   &:disabled {
     background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
-    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')};
+    color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
     border: none;
-  }
-
-  @media (max-width: 600px) {
-    padding: 14px 16px;
-    font-size: 15px;
-    border-radius: 10px;
+    box-shadow: none;
   }
 `;
 
@@ -926,7 +935,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         }
         return ascii.toUpperCase() || currency;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return currency;
   };
@@ -1067,9 +1076,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       price_impact:
         Math.abs(impactPct) > 0.01
           ? {
-              percent: `${impactPct.toFixed(2)}%`,
-              xrp: `${((inputAmt * Math.abs(impactPct)) / 100).toFixed(4)} XRP`
-            }
+            percent: `${impactPct.toFixed(2)}%`,
+            xrp: `${((inputAmt * Math.abs(impactPct)) / 100).toFixed(4)} XRP`
+          }
           : null,
       amm_pool_fee: ammFeeXrp > 0.000001 ? `${ammFeeXrp.toFixed(4)} XRP` : null,
       execution_rate: (outputAmt / inputAmt).toFixed(6)
@@ -1709,7 +1718,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             toast.error('Swap failed', { id: toastId, description: txResult });
           }
         } catch (clientErr) {
-          await client.disconnect().catch(() => {});
+          await client.disconnect().catch(() => { });
           throw clientErr;
         }
       } else {
@@ -2208,8 +2217,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       >
                         {accountPairBalance?.curr1.value
                           ? new Decimal(accountPairBalance.curr1.value)
-                              .toFixed(6)
-                              .replace(/\.?0+$/, '')
+                            .toFixed(6)
+                            .replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
                     </Typography>
@@ -2330,8 +2339,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       >
                         {accountPairBalance?.curr2.value
                           ? new Decimal(accountPairBalance.curr2.value)
-                              .toFixed(6)
-                              .replace(/\.?0+$/, '')
+                            .toFixed(6)
+                            .replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
                     </Typography>

@@ -588,7 +588,6 @@ const TokenSummary = memo(({ token }) => {
           : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
       )}
     >
-      {/* Row 1: Token Info + Price */}
       <div className="flex items-start justify-between gap-4">
         {/* Left: Token Image + Info */}
         <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -604,7 +603,7 @@ const TokenSummary = memo(({ token }) => {
               priority
               unoptimized
               className={cn(
-                'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-transform group-hover:scale-105',
+                'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg',
                 isDark ? 'border-white/10 shadow-black/20' : 'border-black/[0.08] shadow-gray-200'
               )}
               onError={(e) => {
@@ -617,7 +616,7 @@ const TokenSummary = memo(({ token }) => {
               </div>
             )}
           </div>
-          <div className="min-w-0 flex-1 py-0.5">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
               <span
                 className={cn(
@@ -627,12 +626,12 @@ const TokenSummary = memo(({ token }) => {
               >
                 {name}
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 uppercase">
                 {id && (
                   <span
                     className={cn(
-                      'px-1.5 py-0.5 rounded-md text-[10px] font-medium font-mono',
-                      isDark ? 'bg-white/[0.06] text-white/50' : 'bg-black/[0.04] text-gray-500'
+                      'px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono tracking-wider',
+                      isDark ? 'bg-white/[0.08] text-white/60' : 'bg-black/[0.06] text-gray-500'
                     )}
                   >
                     #{id}
@@ -640,8 +639,8 @@ const TokenSummary = memo(({ token }) => {
                 )}
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium',
-                    isDark ? 'bg-white/[0.04] text-white/50' : 'bg-black/[0.03] text-gray-500'
+                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider',
+                    isDark ? 'bg-white/[0.06] text-white/60' : 'bg-black/[0.04] text-gray-500'
                   )}
                 >
                   <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
@@ -651,7 +650,7 @@ const TokenSummary = memo(({ token }) => {
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={cn('text-[11px] font-medium truncate', isDark ? 'text-white/40' : 'text-gray-500')}
+                className={cn('text-[11px] font-semibold truncate tracking-wide', isDark ? 'text-white/40' : 'text-gray-500')}
               >
                 {user || name}
               </span>
@@ -674,49 +673,55 @@ const TokenSummary = memo(({ token }) => {
         </div>
 
         {/* Right: Price */}
-        <div className="flex flex-col items-end flex-shrink-0 pt-0.5">
-          <span
-            className={cn(
-              'text-[28px] font-bold tracking-tighter leading-none',
-              priceColor ? '' : isDark ? 'text-white' : 'text-gray-900'
-            )}
-            style={priceColor ? { color: priceColor } : undefined}
-          >
-            {priceDisplay.isCompact ? (
-              <>
-                {priceDisplay.symbol}0.0<sub className="text-[0.6em] opacity-80">{priceDisplay.zeros}</sub>
-                {priceDisplay.significant}
-              </>
+        <div className="flex flex-col items-end flex-shrink-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span
+              className={cn(
+                'text-[28px] font-black tracking-tighter leading-none',
+                priceColor ? '' : isDark ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]' : 'text-gray-900'
+              )}
+              style={priceColor ? { color: priceColor } : undefined}
+            >
+              {priceDisplay.isCompact ? (
+                <>
+                  {priceDisplay.symbol}0.0<sub className="text-[0.6em] opacity-80 bottom-0">{priceDisplay.zeros}</sub>
+                  {priceDisplay.significant}
+                </>
+              ) : (
+                <>
+                  {priceDisplay.symbol}
+                  {priceDisplay.price}
+                </>
+              )}
+            </span>
+          </div>
+          <div className={cn(
+            'text-[10px] font-bold opacity-50 uppercase tracking-widest',
+            isDark ? 'text-white' : 'text-black'
+          )}>
+            {activeFiatCurrency === 'XRP' ? (
+              `≈ $${fNumber(exch / (metrics.USD || 1))}`
             ) : (
-              <>
-                {priceDisplay.symbol}
-                {priceDisplay.price}
-              </>
+              `≈ ✕ ${fNumber(exch)}`
             )}
-          </span>
+          </div>
         </div>
       </div>
 
       {/* Row 2: Stats Grid */}
-      {/* Row 2: Stats & Changes Combined */}
-      <div className={cn(
-        'grid grid-cols-4 gap-2 mt-4',
-      )}>
+      <div className="grid grid-cols-4 gap-2 mt-5">
         {[
           {
             label: 'MCAP',
             value: formatValue(convertedMarketCap),
-            subValue: null
           },
           {
             label: 'VOL 24H',
             value: formatValue(convertedVolume),
-            subValue: null
           },
           {
             label: 'TVL',
             value: formatValue(convertedTvl),
-            subValue: null
           },
           {
             label: 'HOLDERS',
@@ -727,16 +732,16 @@ const TokenSummary = memo(({ token }) => {
           <div
             key={stat.label}
             className={cn(
-              'flex flex-col items-center justify-center py-2.5 rounded-xl border',
+              'flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all duration-200',
               isDark
-                ? 'bg-white/[0.03] border-white/[0.04]'
-                : 'bg-gray-50/50 border-black/[0.03]'
+                ? 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.08]'
+                : 'bg-gray-50/50 border-black/[0.03] hover:bg-gray-100/50 hover:border-black/[0.06]'
             )}
           >
-            <div className={cn('text-[10px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/40' : 'text-gray-400')}>
+            <div className={cn('text-[9px] font-bold uppercase tracking-widest mb-0.5 opacity-40', isDark ? 'text-white' : 'text-black')}>
               {stat.label}
             </div>
-            <div className={cn('text-[13px] font-bold', isDark ? 'text-white/90' : 'text-gray-800')}>
+            <div className={cn('text-[13px] font-black tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
               {stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}
               {stat.value}
             </div>
@@ -744,24 +749,24 @@ const TokenSummary = memo(({ token }) => {
         ))}
       </div>
 
-      {/* Time Intervals */}
-      <div className='grid grid-cols-4 gap-2 mt-2'>
+      {/* Row 3: Time Intervals */}
+      <div className="grid grid-cols-4 gap-2 mt-2">
         {priceChanges.map((item) => (
           <div
             key={item.label}
             className={cn(
-              'flex flex-col items-center justify-center py-1.5 rounded-lg border',
+              'flex flex-col items-center justify-center py-1.5 rounded-lg border transition-all duration-200',
               isDark
-                ? 'bg-white/[0.015] border-white/[0.02]'
-                : 'bg-white border-black/[0.02]'
+                ? 'bg-white/[0.015] border-white/[0.02] hover:bg-white/[0.03]'
+                : 'bg-white border-black/[0.02] hover:bg-gray-50 shadow-sm shadow-black/[0.01]'
             )}
           >
-            <span className={cn('text-[9px] uppercase font-bold opacity-40 mb-0.5', isDark ? 'text-white' : 'text-black')}>
+            <span className={cn('text-[9px] uppercase font-bold opacity-40 mb-0.5 tracking-wider', isDark ? 'text-white' : 'text-black')}>
               {item.label}
             </span>
             <span
               className={cn(
-                'text-[11px] font-bold',
+                'text-[11px] font-black',
                 item.value == null
                   ? isDark ? 'text-white/20' : 'text-gray-300'
                   : item.value >= 0 ? 'text-green-500' : 'text-red-500'
@@ -774,17 +779,17 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Row 4: 24h Range */}
-      {/* Row 4: 24h Range */}
       {range24h && (
         <div
           className={cn(
-            'mt-4 pt-3 border-t',
+            'mt-4 pt-4 border-t',
             isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
           )}
         >
-          <div className="flex items-center justify-between text-[10px] font-medium mb-1.5">
-            <span className="text-red-500/80">
-              Low: {currencySymbols[activeFiatCurrency]}
+          <div className="flex items-center justify-between text-[10px] font-bold mb-2 uppercase tracking-wide">
+            <span className="text-red-500/90 flex items-center gap-1">
+              <span className="opacity-50 font-bold">LOW</span>
+              {currencySymbols[activeFiatCurrency]}
               {(() => {
                 const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
                 const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate;
@@ -792,50 +797,44 @@ const TokenSummary = memo(({ token }) => {
                 return p?.compact ? <>0.0<sub>{p.zeros}</sub>{p.significant}</> : p;
               })()}
             </span>
-            <span className={cn('text-[9px] uppercase tracking-widest font-bold', isDark ? 'text-white/20' : 'text-gray-300')}>
-              24H Range
-            </span>
-            <span className="text-green-500/80">
-              High: {currencySymbols[activeFiatCurrency]}
+            <span className="opacity-40 font-black">24H RANGE</span>
+            <span className="text-green-500 flex items-center gap-1 text-right">
+              {currencySymbols[activeFiatCurrency]}
               {(() => {
                 const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
                 const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate;
                 const p = formatPrice(v);
                 return p?.compact ? <>0.0<sub>{p.zeros}</sub>{p.significant}</> : p;
               })()}
+              <span className="opacity-50 font-bold">HIGH</span>
             </span>
           </div>
-
-          <div className="relative h-2 rounded-full overflow-hidden bg-gradient-to-r from-red-500/5 via-transparent to-green-500/5 w-full">
+          <div className={cn(
+            'h-1.5 w-full rounded-full overflow-hidden relative',
+            isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
+          )}>
             <div
-              className={cn('absolute inset-0', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
+              className="absolute inset-y-0 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 opacity-20 w-full"
             />
             <div
-              className="absolute top-0 bottom-0 rounded-full opacity-60"
+              className="absolute top-0 bottom-0 bg-gradient-to-r from-red-500 via-blue-500 to-green-500 transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(59,130,246,0.5)]"
               style={{
                 left: '0%',
-                right: '0%',
-                background: isDark
-                  ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.4) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(34, 197, 94, 0.4) 100%)'
-                  : 'linear-gradient(90deg, rgba(239, 68, 68, 0.3) 0%, rgba(200, 200, 200, 0.2) 50%, rgba(34, 197, 94, 0.3) 100%)'
+                width: `${range24h.percent}%`,
+                filter: 'brightness(1.2) saturate(1.2)'
               }}
             />
             <div
-              className="absolute top-0 bottom-0 w-1 bg-current z-10 shadow-[0_0_8px_rgba(0,0,0,0.5)] transform -translate-x-1/2 transition-all duration-1000 ease-out"
-              style={{
-                left: `${range24h.percent}%`,
-                backgroundColor: isDark ? '#fff' : '#000'
-              }}
+              className="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] z-10"
+              style={{ left: `calc(${range24h.percent}% - 2px)` }}
             />
           </div>
         </div>
       )}
-
-      {/* Row 5: Actions */}
       {/* Row 5: Actions */}
       <div
         className={cn(
-          'grid grid-cols-2 gap-2 mt-4 pt-3 border-t',
+          'grid grid-cols-2 gap-2 mt-4 pt-4 border-t',
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
@@ -844,10 +843,10 @@ const TokenSummary = memo(({ token }) => {
           disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT}
           title={isMPT ? 'MPT tokens do not require trustlines' : undefined}
           className={cn(
-            'col-span-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm',
+            'col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm overflow-hidden relative group',
             isRemove
               ? isDark
-                ? 'bg-red-500/10 text-red-100 hover:bg-red-500/20 border border-red-500/20'
+                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 shadow-red-900/10'
                 : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
               : isDark
                 ? 'bg-green-600 text-white hover:bg-green-500 border border-green-500/50 shadow-green-900/20'
@@ -855,32 +854,47 @@ const TokenSummary = memo(({ token }) => {
             (CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT) && 'opacity-50 cursor-not-allowed grayscale'
           )}
         >
-          {isRemove ? (
-            <Unlink2 size={16} />
-          ) : (
-            <Link2 size={16} />
-          )}
-          {isRemove ? 'Remove Trustline' : 'Set Trustline'}
+          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          {isRemove ? <Unlink2 size={16} strokeWidth={2.5} /> : <Link2 size={16} strokeWidth={2.5} />}
+          <span>{isRemove ? 'Remove Trustline' : 'Set Trustline'}</span>
         </button>
 
         <div className="col-span-2 flex gap-2">
           <div className="flex-1">
-            <ApiButton token={token} className="w-full justify-center" />
+            <ApiButton
+              token={token}
+              className={cn(
+                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
+              )}
+            />
           </div>
           <div className="flex-1">
-            <Watch token={token} className="w-full justify-center" />
+            <Watch
+              token={token}
+              className={cn(
+                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
+              )}
+            />
           </div>
           <div className="flex-1">
-            <Share token={token} className="w-full justify-center" />
+            <Share
+              token={token}
+              className={cn(
+                "w-full h-10 flex items-center justify-center gap-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                isDark ? "bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08]" : "bg-gray-50 border border-black/[0.04] hover:bg-gray-100"
+              )}
+            />
           </div>
           {accountProfile?.admin && (
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-3 py-2 rounded-xl border text-[11px] font-medium transition-all flex items-center justify-center',
+                'px-3 h-10 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center',
                 isDark
-                  ? 'border-amber-500/20 text-amber-400 hover:bg-amber-500/10'
-                  : 'border-amber-200 text-amber-600 hover:bg-amber-50'
+                  ? 'border-amber-500/20 text-amber-500 hover:bg-amber-500/10'
+                  : 'border-amber-200 text-amber-600 hover:bg-amber-50 shadow-sm'
               )}
             >
               Edit
@@ -890,219 +904,225 @@ const TokenSummary = memo(({ token }) => {
       </div>
 
       {/* Debug Panel */}
-      {debugInfo && (
-        <div
-          className={cn(
-            'mt-2 p-2 rounded-lg border font-mono text-[9px]',
-            isDark
-              ? 'border-yellow-500/20 bg-yellow-500/[0.06]'
-              : 'border-yellow-200 bg-yellow-50/50'
-          )}
-        >
+      {
+        debugInfo && (
           <div
             className={cn(
-              'font-medium mb-1 text-[10px]',
-              isDark ? 'text-yellow-400/80' : 'text-yellow-600'
-            )}
-          >
-            Debug:
-          </div>
-          <div className="space-y-0.5">
-            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-              wallet_type:{' '}
-              <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-              account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-              walletKeyId:{' '}
-              <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
-                {debugInfo.walletKeyId || 'undefined'}
-              </span>
-            </div>
-            <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
-              seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Technical Info Modal */}
-      {showInfo && (
-        <div
-          className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
-            isDark ? 'bg-black/70' : 'bg-white/60'
-          )}
-          onClick={() => setShowInfo(false)}
-        >
-          <div
-            className={cn(
-              'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden',
+              'mt-2 p-2 rounded-lg border font-mono text-[9px]',
               isDark
-                ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
-                : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+                ? 'border-yellow-500/20 bg-yellow-500/[0.06]'
+                : 'border-yellow-200 bg-yellow-50/50'
             )}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div
               className={cn(
-                'flex items-center justify-between px-4 py-3 border-b',
-                isDark ? 'border-white/[0.06]' : 'border-gray-100'
+                'font-medium mb-1 text-[10px]',
+                isDark ? 'text-yellow-400/80' : 'text-yellow-600'
               )}
             >
-              <div className="flex items-center gap-3 flex-1">
-                <span
-                  className={cn(
-                    'text-[10px] font-semibold uppercase tracking-widest',
-                    isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
-                  )}
-                >
-                  Token Details
-                </span>
-                <div
-                  className="flex-1 h-[14px]"
-                  style={{
-                    backgroundImage: isDark
-                      ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                      : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                    backgroundSize: '8px 5px',
-                    WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                    maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                  }}
-                />
-              </div>
-              <button
-                onClick={() => setShowInfo(false)}
-                className={cn(
-                  'p-1 rounded-md',
-                  isDark ? 'hover:bg-white/[0.06] text-white/40' : 'hover:bg-gray-100 text-gray-400'
-                )}
-              >
-                <X size={14} />
-              </button>
+              Debug:
             </div>
-
-            {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
-              {/* Token Info */}
-              <div className="p-3 space-y-1">
-                {[
-                  { label: 'Issuer', value: issuer },
-                  ...(isMPT
-                    ? [{ label: 'MPT Issuance ID', value: mptIssuanceID }]
-                    : [{ label: 'Currency', value: currency }]),
-                  ...(AMM ? [{ label: 'AMM', value: AMM }] : []),
-                  ...(creator ? [{ label: 'Creator', value: creator }] : []),
-                  { label: 'MD5', value: md5 }
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      navigator.clipboard.writeText(item.value);
-                      setCopiedField(item.label);
-                      setTimeout(() => setCopiedField(null), 1200);
-                    }}
-                    className={cn(
-                      'group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left',
-                      isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'text-[10px] w-14 flex-shrink-0',
-                        isDark ? 'text-white/40' : 'text-gray-400'
-                      )}
-                    >
-                      {item.label}
-                    </span>
-                    <span
-                      className={cn(
-                        'font-mono text-[11px] truncate flex-1',
-                        isDark ? 'text-white/70' : 'text-gray-600'
-                      )}
-                    >
-                      {item.value}
-                    </span>
-                    <span
-                      className={cn(
-                        'flex-shrink-0',
-                        copiedField === item.label
-                          ? 'text-green-500'
-                          : isDark
-                            ? 'text-white/20 group-hover:text-white/40'
-                            : 'text-gray-300 group-hover:text-gray-400'
-                      )}
-                    >
-                      {copiedField === item.label ? <Check size={12} /> : <Copy size={12} />}
-                    </span>
-                  </button>
-                ))}
+            <div className="space-y-0.5">
+              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+                wallet_type:{' '}
+                <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span>
+              </div>
+              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+                account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
+              </div>
+              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+                walletKeyId:{' '}
+                <span className={debugInfo.walletKeyId ? 'text-green-400' : 'text-red-400'}>
+                  {debugInfo.walletKeyId || 'undefined'}
+                </span>
+              </div>
+              <div className={isDark ? 'text-white/50' : 'text-gray-600'}>
+                seed: <span className="text-green-400 break-all">{debugInfo.seed}</span>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {/* Dust Confirmation Modal */}
-      {dustConfirm && (
-        <div
-          className={cn(
-            'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
-            isDark ? 'bg-black/70' : 'bg-white/60'
-          )}
-          onClick={() => setDustConfirm(null)}
-        >
+      {/* Technical Info Modal */}
+      {
+        showInfo && (
           <div
             className={cn(
-              'w-full max-w-sm rounded-2xl border-[1.5px] p-5',
-              isDark ? 'bg-black/90 border-white/10' : 'bg-white border-gray-200'
+              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+              isDark ? 'bg-black/70' : 'bg-white/60'
             )}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setShowInfo(false)}
           >
-            <div className={cn('text-[15px] font-semibold mb-2', isDark ? 'text-white' : 'text-gray-900')}>
-              {dustConfirm === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
-            </div>
-            <p className={cn('text-[12px] mb-4', isDark ? 'text-white/50' : 'text-gray-500')}>
-              {dustConfirm === 'dex'
-                ? 'This will create a sell order on the DEX to clear your tiny balance.'
-                : 'DEX sell failed. Send tokens back to issuer to burn them?'}
-            </p>
-            <div className={cn('rounded-lg p-2.5 mb-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-              <span className={cn('font-mono text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
-                {new Decimal(trustlineBalance).toFixed(15).replace(/0+$/, '').replace(/\.$/, '')} {name}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setDustConfirm(null)}
+            <div
+              className={cn(
+                'w-full max-w-md rounded-2xl border-[1.5px] max-h-[85vh] overflow-hidden',
+                isDark
+                  ? 'bg-black/80 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/50'
+                  : 'bg-white/80 backdrop-blur-2xl border-gray-200/60 shadow-2xl shadow-gray-300/30'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div
                 className={cn(
-                  'flex-1 py-2 rounded-lg text-[12px] font-medium',
-                  isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  'flex items-center justify-between px-4 py-3 border-b',
+                  isDark ? 'border-white/[0.06]' : 'border-gray-100'
                 )}
               >
-                Cancel
-              </button>
-              <button
-                onClick={() => executeDustClear(dustConfirm)}
-                className={cn(
-                  'flex-1 py-2 rounded-lg text-[12px] font-medium',
-                  dustConfirm === 'dex'
-                    ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90'
-                    : 'bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90'
-                )}
-              >
-                {dustConfirm === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
-              </button>
+                <div className="flex items-center gap-3 flex-1">
+                  <span
+                    className={cn(
+                      'text-[10px] font-semibold uppercase tracking-widest',
+                      isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                    )}
+                  >
+                    Token Details
+                  </span>
+                  <div
+                    className="flex-1 h-[14px]"
+                    style={{
+                      backgroundImage: isDark
+                        ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
+                        : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
+                      backgroundSize: '8px 5px',
+                      WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
+                      maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => setShowInfo(false)}
+                  className={cn(
+                    'p-1 rounded-md',
+                    isDark ? 'hover:bg-white/[0.06] text-white/40' : 'hover:bg-gray-100 text-gray-400'
+                  )}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
+                {/* Token Info */}
+                <div className="p-3 space-y-1">
+                  {[
+                    { label: 'Issuer', value: issuer },
+                    ...(isMPT
+                      ? [{ label: 'MPT Issuance ID', value: mptIssuanceID }]
+                      : [{ label: 'Currency', value: currency }]),
+                    ...(AMM ? [{ label: 'AMM', value: AMM }] : []),
+                    ...(creator ? [{ label: 'Creator', value: creator }] : []),
+                    { label: 'MD5', value: md5 }
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        navigator.clipboard.writeText(item.value);
+                        setCopiedField(item.label);
+                        setTimeout(() => setCopiedField(null), 1200);
+                      }}
+                      className={cn(
+                        'group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left',
+                        isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'text-[10px] w-14 flex-shrink-0',
+                          isDark ? 'text-white/40' : 'text-gray-400'
+                        )}
+                      >
+                        {item.label}
+                      </span>
+                      <span
+                        className={cn(
+                          'font-mono text-[11px] truncate flex-1',
+                          isDark ? 'text-white/70' : 'text-gray-600'
+                        )}
+                      >
+                        {item.value}
+                      </span>
+                      <span
+                        className={cn(
+                          'flex-shrink-0',
+                          copiedField === item.label
+                            ? 'text-green-500'
+                            : isDark
+                              ? 'text-white/20 group-hover:text-white/40'
+                              : 'text-gray-300 group-hover:text-gray-400'
+                        )}
+                      >
+                        {copiedField === item.label ? <Check size={12} /> : <Copy size={12} />}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
+
+      {/* Dust Confirmation Modal */}
+      {
+        dustConfirm && (
+          <div
+            className={cn(
+              'fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md',
+              isDark ? 'bg-black/70' : 'bg-white/60'
+            )}
+            onClick={() => setDustConfirm(null)}
+          >
+            <div
+              className={cn(
+                'w-full max-w-sm rounded-2xl border-[1.5px] p-5',
+                isDark ? 'bg-black/90 border-white/10' : 'bg-white border-gray-200'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={cn('text-[15px] font-semibold mb-2', isDark ? 'text-white' : 'text-gray-900')}>
+                {dustConfirm === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
+              </div>
+              <p className={cn('text-[12px] mb-4', isDark ? 'text-white/50' : 'text-gray-500')}>
+                {dustConfirm === 'dex'
+                  ? 'This will create a sell order on the DEX to clear your tiny balance.'
+                  : 'DEX sell failed. Send tokens back to issuer to burn them?'}
+              </p>
+              <div className={cn('rounded-lg p-2.5 mb-4', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                <span className={cn('font-mono text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>
+                  {new Decimal(trustlineBalance).toFixed(15).replace(/0+$/, '').replace(/\.$/, '')} {name}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDustConfirm(null)}
+                  className={cn(
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                    isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  )}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => executeDustClear(dustConfirm)}
+                  className={cn(
+                    'flex-1 py-2 rounded-lg text-[12px] font-medium',
+                    dustConfirm === 'dex'
+                      ? 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90'
+                      : 'bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90'
+                  )}
+                >
+                  {dustConfirm === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
 
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
-    </div>
+    </div >
   );
 });
 

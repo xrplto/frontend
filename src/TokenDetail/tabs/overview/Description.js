@@ -8,25 +8,41 @@ import { CompactSocialLinks, CompactTags } from './PriceStatistics';
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
 const Card = styled.div`
-  border-radius: 12px;
-  background: transparent;
-  border: 1.5px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+  border-radius: 16px;
+  background: ${(props) => (props.isDark ? 'rgba(10, 10, 10, 0.5)' : 'rgba(255, 255, 255, 0.5)')};
+  backdrop-filter: blur(8px);
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
   width: 100%;
+  transition: all 0.2s ease;
+  overflow: hidden;
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px 6px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)')};
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)')};
 `;
 
 const Title = styled.div`
   font-size: 11px;
-  font-weight: 500;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)')};
+  font-weight: 700;
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &:before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+  }
 `;
 
 const Actions = styled.div`
