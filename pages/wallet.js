@@ -3600,58 +3600,50 @@ export default function WalletPage() {
 
                         {(() => {
                           const allBadges = {
-                            first_recruit: { label: 'First Recruit', color: '#CD7F32', desc: 'Recruit your first member' },
-                            squad_leader: { label: 'Squad Leader', color: '#137DFE', desc: 'Build a small squad' },
-                            daily_duty: { label: 'Daily Duty', color: '#F6AF01', desc: '5-day recruit streak' },
-                            platoon_leader: { label: 'Platoon Leader', color: '#C0C0C0', desc: 'Reach 100 recruits' },
-                            whale_spotter: { label: 'Whale Spotter', color: '#137DFE', desc: 'Recruit 5 whales' },
-                            dedicated: { label: 'Dedicated', color: '#F6AF01', desc: '21-day streak' },
-                            battalion_leader: { label: 'Battalion Leader', color: '#F6AF01', desc: 'Reach 500 recruits' },
-                            chain_of_command: { label: 'Chain of Command', color: '#650CD4', desc: '10 tier-2 recruits' },
-                            iron_will: { label: 'Iron Will', color: '#08AA09', desc: '45-day streak' },
-                            whale_hunter: { label: 'Whale Hunter', color: '#650CD4', desc: 'Recruit 25 whales' },
-                            army_commander: { label: 'Army Commander', color: '#650CD4', desc: 'Reach 2,500 recruits' },
-                            war_hero: { label: 'War Hero', color: '#F6AF01', desc: 'Reach 10,000 recruits' },
-                            supreme: { label: 'Supreme', color: '#F6AF01', desc: 'Reach 25,000 recruits' },
+                            first_recruit: { icon: Users, label: 'First Recruit', color: '#CD7F32' },
+                            squad_leader: { icon: Users, label: 'Squad Leader', color: '#137DFE' },
+                            daily_duty: { icon: Zap, label: 'Daily Duty', color: '#F6AF01' },
+                            platoon_leader: { icon: Medal, label: 'Platoon Leader', color: '#C0C0C0' },
+                            whale_spotter: { icon: Gem, label: 'Whale Spotter', color: '#137DFE' },
+                            dedicated: { icon: Flame, label: 'Dedicated', color: '#F6AF01' },
+                            battalion_leader: { icon: Medal, label: 'Battalion Leader', color: '#F6AF01' },
+                            chain_of_command: { icon: Target, label: 'Chain of Command', color: '#650CD4' },
+                            iron_will: { icon: Shield, label: 'Iron Will', color: '#08AA09' },
+                            whale_hunter: { icon: Gem, label: 'Whale Hunter', color: '#650CD4' },
+                            army_commander: { icon: Crown, label: 'Army Commander', color: '#650CD4' },
+                            war_hero: { icon: Swords, label: 'War Hero', color: '#F6AF01' },
+                            supreme: { icon: Crown, label: 'Supreme', color: '#F6AF01' },
                           };
                           const progress = referralStats?.badges?.progress || {};
                           const earned = referralStats?.badges?.list || referralUser.badges || [];
                           const badgeKeys = Object.keys(progress).length > 0 ? Object.keys(progress) : earned;
-                          const earnedKeys = badgeKeys.filter(k => progress[k]?.done ?? earned.includes(k));
-                          const unearnedKeys = badgeKeys.filter(k => !(progress[k]?.done ?? earned.includes(k)));
-                          const sortedKeys = [...earnedKeys, ...unearnedKeys];
 
-                          return sortedKeys.length > 0 ? (
-                            <div className="max-h-[340px] overflow-y-auto space-y-1.5 pr-1" style={{ scrollbarWidth: 'thin' }}>
-                              {sortedKeys.map((key) => {
-                                const cfg = allBadges[key] || { label: key.replace(/_/g, ' '), color: '#888', desc: '' };
+                          return badgeKeys.length > 0 ? (
+                            <div className="space-y-2">
+                              {badgeKeys.map((key) => {
+                                const cfg = allBadges[key] || { icon: Award, label: key.replace(/_/g, ' '), color: '#888' };
+                                const Icon = cfg.icon;
                                 const done = progress[key]?.done ?? earned.includes(key);
                                 const pct = progress[key]?.pct || (done ? 100 : 0);
                                 return (
-                                  <div key={key} className={cn('flex items-center gap-3 p-2 rounded-lg transition-colors', done ? (isDark ? 'bg-white/[0.03]' : 'bg-gray-50') : '')}>
-                                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-black',
-                                      done ? '' : isDark ? 'border-[1.5px] border-white/10' : 'border-[1.5px] border-gray-200'
-                                    )} style={{ backgroundColor: done ? `${cfg.color}20` : isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb', color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-                                      {done ? <Check size={14} style={{ color: cfg.color }} /> : <span style={{ fontSize: '10px', opacity: 0.4 }}>?</span>}
+                                  <div key={key} className="flex items-center gap-2.5">
+                                    <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-[1.5px]',
+                                      done ? 'border-transparent' : isDark ? 'border-white/10' : 'border-gray-200'
+                                    )} style={{ backgroundColor: done ? `${cfg.color}20` : isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb' }}>
+                                      <Icon size={13} style={{ color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center justify-between mb-0.5">
-                                        <span className={cn('text-[11px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
+                                        <span className={cn('text-[10px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
                                         {!done && progress[key]?.req && (
-                                          <span className={cn('text-[10px] font-mono shrink-0 ml-2 tabular-nums', isDark ? 'text-white/20' : 'text-gray-300')}>{progress[key].cur}/{progress[key].req}</span>
+                                          <span className={cn('text-[9px] font-mono shrink-0 ml-2', isDark ? 'text-white/20' : 'text-gray-300')}>{progress[key].cur}/{progress[key].req}</span>
                                         )}
+                                        {done && <Check size={10} style={{ color: cfg.color }} />}
                                       </div>
-                                      {!done ? (
-                                        <div className="space-y-1">
-                                          <p className={cn('text-[9px]', isDark ? 'text-white/15' : 'text-gray-300')}>{cfg.desc}</p>
-                                          {progress[key]?.req && (
-                                            <div className={cn('h-1 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
-                                              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: cfg.color }} />
-                                            </div>
-                                          )}
+                                      {!done && (
+                                        <div className={cn('h-1 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cfg.color }} />
                                         </div>
-                                      ) : (
-                                        <p className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-400')}>{cfg.desc}</p>
                                       )}
                                     </div>
                                   </div>

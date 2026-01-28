@@ -200,6 +200,23 @@ const ITEMS_PER_PAGE = 10;
 
 const COMPACT_LIMIT = 10;
 
+// Helper: relative time (e.g. "1h ago", "3d ago")
+const timeAgo = (ts) => {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  return `${Math.floor(mo / 12)}y ago`;
+};
+
 const AccountHistory = ({ account, compact = false }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -363,16 +380,13 @@ const AccountHistory = ({ account, compact = false }) => {
                     {parsed.type === 'failed' ? <AlertTriangle size={13} /> :
                       parsed.type === 'in' ? <ArrowDownLeft size={13} /> : <ArrowUpRight size={13} />}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={cn('text-[12px] font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
                       {parsed.type === 'failed' && <span className="text-[9px] font-bold text-amber-500 uppercase">Failed</span>}
                     </div>
-                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>
-                      {parsed.time ? new Date(parsed.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
-                      {parsed.time ? ` ${new Date(parsed.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
-                    </span>
                   </div>
+                  <div className="flex-1" />
                   <div className="text-right flex-shrink-0">
                     {parsed.amount ? (
                       <span className={cn(
@@ -392,6 +406,9 @@ const AccountHistory = ({ account, compact = false }) => {
                         <span className="text-[11px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]}</span>
                       </div>
                     ) : null}
+                    <span className={cn('block text-[10px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      {timeAgo(parsed.time)}
+                    </span>
                   </div>
                 </div>
               );

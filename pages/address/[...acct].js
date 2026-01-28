@@ -42,7 +42,14 @@ import {
   Zap,
   BarChart2,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  Users,
+  Swords,
+  Medal,
+  Gift,
+  Crown,
+  Award,
+  Trophy
 } from 'lucide-react';
 import { ApiButton } from 'src/components/ApiEndpointsModal';
 import AccountHistory from 'src/components/AccountHistory';
@@ -272,6 +279,7 @@ const OverView = ({ account }) => {
 
   // User profile (for avatar)
   const [userProfile, setUserProfile] = useState(null);
+  const [displayBadges, setDisplayBadges] = useState({ current: null, available: [] });
 
   // Set XRP price from holdings data
   useEffect(() => {
@@ -312,8 +320,8 @@ const OverView = ({ account }) => {
         const [profileRes, holdingsRes, nftRes, balanceRes, liveRes] = await Promise.all([
           timedFetch('traders', () => axios.get(`https://api.xrpl.to/v1/traders/${account}?limit=${TRADING_PERF_LIMIT}&offset=0&sortTokensBy=volume`).catch(() => ({ data: null }))),
           timedFetch('trustlines', () => axios
-            .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0&format=full`)
-            .catch(() => axios.get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=0`))
+            .get(`https://api.xrpl.to/api/trustlines/${account}?format=full&sortByValue=true&includeZero=true&limit=10&offset=0`)
+            .catch(() => axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&includeZero=true&limit=10&offset=0`))
             .catch(() => ({ data: null }))),
           timedFetch('nft-analytics', () => axios
             .get(`https://api.xrpl.to/v1/nft/analytics/trader/${account}`)
@@ -392,8 +400,18 @@ const OverView = ({ account }) => {
         if (res.data?.success && res.data.user) setUserProfile(res.data.user);
       } catch (e) { }
     };
+    const fetchBadges = async () => {
+      try {
+        const res = await fetch(`https://api.xrpl.to/v1/user/${account}/badges`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) setDisplayBadges({ current: data.current || null, available: Array.isArray(data.available) ? data.available : [] });
+        }
+      } catch (e) { }
+    };
     fetchPerks();
     fetchProfile();
+    fetchBadges();
   }, [account]);
 
   const handleSaveLabel = async () => {
@@ -432,7 +450,7 @@ const OverView = ({ account }) => {
     if (isInitialLoad) return;
 
     axios
-      .get(`https://api.xrpl.to/v1/trustlines/${account}?limit=20&offset=${holdingsPage * 20}&format=full`)
+      .get(`https://api.xrpl.to/api/trustlines/${account}?format=full&sortByValue=true&includeZero=true&limit=10&offset=${holdingsPage * 10}`)
       .then((res) => setHoldings(res.data))
       .catch((err) => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
@@ -668,20 +686,25 @@ const OverView = ({ account }) => {
             <div className="mb-6">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
-                  {userProfile?.avatar ? (
-                    <AvatarWithTooltip
-                      avatarUrl={userProfile.avatar}
-                      nftId={userProfile.avatarNftId}
-                      className="w-24 h-24 rounded-2xl object-cover border border-white/10 cursor-pointer hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className={cn(
-                      'p-3 rounded-2xl border',
-                      isDark ? 'bg-white/[0.03] border-white/10 text-white/70' : 'bg-gray-50 border-gray-200 text-gray-400'
-                    )}>
-                      <User size={24} />
-                    </div>
-                  )}
+                  <div className="relative shrink-0">
+                    {userProfile?.avatar ? (
+                      <AvatarWithTooltip
+                        avatarUrl={userProfile.avatar}
+                        nftId={userProfile.avatarNftId}
+                        className="w-24 h-24 rounded-2xl object-cover border border-white/10 cursor-pointer hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className={cn(
+                        'p-3 rounded-2xl border',
+                        isDark ? 'bg-white/[0.03] border-white/10 text-white/70' : 'bg-gray-50 border-gray-200 text-gray-400'
+                      )}>
+                        <User size={24} />
+                      </div>
+                    )}
+                    {userProfile?.tier && (
+                      <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', userProfile.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : userProfile.tier === 'diamond' ? 'bg-violet-500' : userProfile.tier === 'nova' ? 'bg-amber-500' : userProfile.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
+                    )}
+                  </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h2
@@ -756,9 +779,9 @@ const OverView = ({ account }) => {
                       {isOwnAccount && (
                         <button
                           onClick={() => setOpenWalletModal(true)}
-                          className="flex items-center gap-2 text-[12px] font-bold px-4 py-2 rounded-xl bg-primary text-white hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
+                          className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-primary text-white hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
                         >
-                          <Wallet size={15} />
+                          <Wallet size={12} />
                           Manage
                         </button>
                       )}
@@ -766,105 +789,150 @@ const OverView = ({ account }) => {
                     <AccountInfoDetails accountInfo={accountInfo} isDark={isDark} />
                   </div>
                 </div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  {typeof data?.washTradingScore === 'number' && (
-                    <div
-                      className={cn(
-                        'flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold border backdrop-blur-md',
-                        data.washTradingScore > 50
-                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-lg shadow-amber-500/10'
-                          : isDark
-                            ? 'bg-white/[0.03] text-white/50 border-white/10'
-                            : 'bg-gray-50 text-gray-500 border-gray-200'
-                      )}
-                      title="Wash Trading Score"
-                    >
-                      {data.washTradingScore > 50 && <AlertTriangle size={14} className="animate-pulse" />}
-                      <span>Wash {data.washTradingScore}</span>
-                    </div>
-                  )}
-                  {data?.isAMM && (
-                    <span className="text-[11px] h-6 px-3 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold flex items-center shadow-lg shadow-blue-500/5">
-                      AMM
-                    </span>
-                  )}
-                  {userPerks?.groups?.map(group => {
-                    const groupConfig = {
-                      member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
-                      admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-                      verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
-                      diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                      nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                      vip: { icon: Sparkles, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
-                    };
-                    const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                    const Icon = config.icon;
-                    return (
-                      <div key={group} className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold border', config.bg, config.border)}>
-                        {Icon && <Icon size={14} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
-                        <span className={config.text}>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
-                      </div>
-                    );
-                  })}
-                  {isBlackholed && (
-                    <div className="relative group/blackhole">
-                      <span className="text-[11px] h-6 px-3 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-bold flex items-center cursor-help">
-                        Blackholed
-                      </span>
-                      <div className={cn(
-                        'pointer-events-none absolute right-0 top-full mt-2 p-3.5 rounded-2xl text-[11px] w-64 opacity-0 invisible group-hover/blackhole:opacity-100 group-hover/blackhole:visible transition-all duration-200 z-50 shadow-2xl backdrop-blur-xl',
-                        isDark ? 'bg-black/95 border border-white/10' : 'bg-white border border-gray-200 shadow-xl'
-                      )}>
-                        <div className="font-bold text-red-500 text-[13px] mb-1.5 flex items-center gap-2">
-                          <AlertTriangle size={14} />
-                          Blackholed Account
-                        </div>
-                        <div className={cn('leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>
-                          This account is permanently locked. Master key is disabled and no valid regular key exists.
-                        </div>
-                        {accountInfo && (
-                          <div className={cn('mt-3 pt-3 border-t space-y-2', isDark ? 'border-white/10' : 'border-gray-100')}>
-                            <div className="flex justify-between items-center">
-                              <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Current Balance</span>
-                              <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{accountInfo.total?.toLocaleString()} XRP</span>
-                            </div>
-                            {accountInfo.rank && (
-                              <div className="flex justify-between items-center">
-                                <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Global Rank</span>
-                                <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>#{accountInfo.rank.toLocaleString()}</span>
-                              </div>
-                            )}
-                          </div>
+                <div className="flex flex-col gap-2.5">
+                  {/* Tiers & Account Tags */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {typeof data?.washTradingScore === 'number' && (
+                      <div
+                        className={cn(
+                          'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold border backdrop-blur-md',
+                          data.washTradingScore > 50
+                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-lg shadow-amber-500/10'
+                            : isDark
+                              ? 'bg-white/[0.03] text-white/50 border-white/10'
+                              : 'bg-gray-50 text-gray-500 border-gray-200'
                         )}
+                        title="Wash Trading Score"
+                      >
+                        {data.washTradingScore > 50 && <AlertTriangle size={13} className="animate-pulse" />}
+                        <span>Wash {data.washTradingScore}</span>
                       </div>
+                    )}
+                    {data?.isAMM && (
+                      <span className="text-[11px] px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold flex items-center shadow-lg shadow-blue-500/5">
+                        AMM
+                      </span>
+                    )}
+                    {userPerks?.groups?.map(group => {
+                      const groupConfig = {
+                        member: { icon: User, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' },
+                        admin: { icon: Shield, bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+                        verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
+                        diamond: { icon: Gem, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
+                        nova: { icon: Star, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                        vip: { icon: Sparkles, bg: 'bg-[#08AA09]/10', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' }
+                      };
+                      const config = groupConfig[group] || { icon: null, bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-100', text: isDark ? 'text-white/60' : 'text-gray-600', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                      const Icon = config.icon;
+                      return (
+                        <div key={group} className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold border', config.bg, config.border)}>
+                          {Icon && <Icon size={13} className={config.gradient ? 'text-[#FFD700]' : ''} style={!config.gradient ? { color: 'inherit' } : {}} />}
+                          <span className={config.text}>{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+                        </div>
+                      );
+                    })}
+                    {userProfile?.armyRank && (() => {
+                      const rankConfig = {
+                        recruit: { icon: Swords, color: 'text-gray-400', bg: isDark ? 'bg-white/[0.03]' : 'bg-gray-50', border: isDark ? 'border-white/10' : 'border-gray-200' },
+                        private: { icon: Shield, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' },
+                        corporal: { icon: Shield, color: 'text-[#137DFE]', bg: 'bg-[#137DFE]/10', border: 'border-[#137DFE]/20' },
+                        sergeant: { icon: Star, color: 'text-[#08AA09]', bg: 'bg-[#08AA09]/10', border: 'border-[#08AA09]/20' },
+                        lieutenant: { icon: Star, color: 'text-[#F6AF01]', bg: 'bg-[#F6AF01]/10', border: 'border-[#F6AF01]/20' },
+                        captain: { icon: Medal, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
+                        major: { icon: Award, color: 'text-[#a855f7]', bg: 'bg-[#650CD4]/10', border: 'border-[#650CD4]/20' },
+                        colonel: { icon: Crown, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+                        general: { icon: Crown, color: 'text-[#FFD700]', bg: 'bg-[#FFD700]/10', border: 'border-[#FFD700]/20' }
+                      };
+                      const key = userProfile.armyRank.toLowerCase();
+                      const rc = rankConfig[key] || rankConfig.recruit;
+                      const RankIcon = rc.icon;
+                      return (
+                        <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold border', rc.bg, rc.border)}>
+                          <RankIcon size={13} className={rc.color} />
+                          <span className={isDark ? 'text-white/30' : 'text-gray-400'}>Rank</span>
+                          <span className={rc.color}>{userProfile.armyRank}</span>
+                        </div>
+                      );
+                    })()}
+                    {isBlackholed && (
+                      <div className="relative group/blackhole">
+                        <span className="text-[11px] px-3 py-1.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-bold flex items-center cursor-help">
+                          Blackholed
+                        </span>
+                        <div className={cn(
+                          'pointer-events-none absolute right-0 top-full mt-2 p-3.5 rounded-2xl text-[11px] w-64 opacity-0 invisible group-hover/blackhole:opacity-100 group-hover/blackhole:visible transition-all duration-200 z-50 shadow-2xl backdrop-blur-xl',
+                          isDark ? 'bg-black/95 border border-white/10' : 'bg-white border border-gray-200 shadow-xl'
+                        )}>
+                          <div className="font-bold text-red-500 text-[13px] mb-1.5 flex items-center gap-2">
+                            <AlertTriangle size={14} />
+                            Blackholed Account
+                          </div>
+                          <div className={cn('leading-relaxed', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            This account is permanently locked. Master key is disabled and no valid regular key exists.
+                          </div>
+                          {accountInfo && (
+                            <div className={cn('mt-3 pt-3 border-t space-y-2', isDark ? 'border-white/10' : 'border-gray-100')}>
+                              <div className="flex justify-between items-center">
+                                <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Current Balance</span>
+                                <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>{accountInfo.total?.toLocaleString()} XRP</span>
+                              </div>
+                              {accountInfo.rank && (
+                                <div className="flex justify-between items-center">
+                                  <span className={cn('text-[10px] uppercase font-bold', isDark ? 'text-white/30' : 'text-gray-400')}>Global Rank</span>
+                                  <span className={cn('font-bold tabular-nums', isDark ? 'text-white' : 'text-gray-900')}>#{accountInfo.rank.toLocaleString()}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {!accountAI && !accountAILoading && (
+                      <button
+                        onClick={handleAccountAI}
+                        className={cn(
+                          'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all duration-300 shadow-lg shadow-purple-500/10 active:scale-95',
+                          isDark
+                            ? 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300'
+                            : 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/5 hover:bg-purple-500/10 text-purple-600'
+                        )}
+                      >
+                        <Sparkles size={13} className="animate-pulse" />
+                        Activity AI
+                      </button>
+                    )}
+                    {accountAILoading && (
+                      <span
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[11px] font-bold',
+                          isDark
+                            ? 'border-purple-500/25 bg-purple-500/10 text-purple-300'
+                            : 'border-purple-500/30 bg-purple-500/5 text-purple-600'
+                        )}
+                      >
+                        <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Analyzing...
+                      </span>
+                    )}
+                  </div>
+                  {/* Badges */}
+                  {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn('text-[9px] uppercase tracking-[0.15em] font-bold', isDark ? 'text-white/20' : 'text-gray-300')}>Badges</span>
+                      {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
+                        const name = badgeId.split(':')[1];
+                        const badgeConfig = { first_recruit: { icon: Users, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'First Recruit' }, squad_leader: { icon: Swords, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'Squad Leader' }, early_adopter: { icon: Zap, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Early Adopter' }, top_trader: { icon: TrendingUp, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'Top Trader' }, whale: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Whale' }, og: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'OG' }, contributor: { icon: Gift, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Contributor' }, army_general: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Army General' } };
+                        const defaultCfg = { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                        const config = badgeConfig[name] || defaultCfg;
+                        const Icon = config.icon;
+                        return (
+                          <span key={badgeId} className={cn('px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide flex items-center gap-1.5 border', config.bg, config.border)}>
+                            {Icon && <Icon size={11} className={config.text} />}
+                            <span className={config.text}>{config.label || name.replace(/_/g, ' ').toUpperCase()}</span>
+                          </span>
+                        );
+                      })}
                     </div>
-                  )}
-                  {!accountAI && !accountAILoading && (
-                    <button
-                      onClick={handleAccountAI}
-                      className={cn(
-                        'flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-bold transition-all duration-300 shadow-lg shadow-purple-500/10 active:scale-95',
-                        isDark
-                          ? 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300'
-                          : 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/5 hover:bg-purple-500/10 text-purple-600'
-                      )}
-                    >
-                      <Sparkles size={15} className="animate-pulse" />
-                      Activity AI
-                    </button>
-                  )}
-                  {accountAILoading && (
-                    <span
-                      className={cn(
-                        'flex items-center gap-2.5 px-4 py-2 rounded-xl border text-[12px] font-bold',
-                        isDark
-                          ? 'border-purple-500/25 bg-purple-500/10 text-purple-300'
-                          : 'border-purple-500/30 bg-purple-500/5 text-purple-600'
-                      )}
-                    >
-                      <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Analyzing...
-                    </span>
                   )}
                 </div>
               </div>
@@ -1718,7 +1786,7 @@ const OverView = ({ account }) => {
                             )}
                           >
                             <p className={cn('text-[10px] font-bold opacity-30 uppercase tracking-widest', isDark ? 'text-white' : 'text-gray-500')}>
-                              Page {holdingsPage + 1} of {Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 20)}
+                              Page {holdingsPage + 1} of {Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10)}
                             </p>
                             <div className="flex items-center gap-2">
                               <button
@@ -1737,10 +1805,10 @@ const OverView = ({ account }) => {
                               </button>
                               <button
                                 onClick={() => setHoldingsPage(holdingsPage + 1)}
-                                disabled={holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 20) - 1}
+                                disabled={holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10) - 1}
                                 className={cn(
                                   'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300',
-                                  holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 20) - 1
+                                  holdingsPage >= Math.ceil(((holdings.total || holdings.lines?.length || 0) + ((holdings.accountData?.total > 0 || holdings.xrp?.value > 0) ? 1 : 0)) / 10) - 1
                                     ? 'opacity-20 cursor-not-allowed'
                                     : isDark
                                       ? 'bg-white/5 text-white hover:bg-white/10'
