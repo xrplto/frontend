@@ -4388,294 +4388,221 @@ export default function WalletPage() {
 
             {/* XRP Army Referral Tab */}
             {activeTab === 'referral' && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {referralLoading ? (
-                  <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
+                  <div className={cn('rounded-2xl p-12 text-center', isDark ? 'bg-black/50 border border-white/10' : 'bg-white border border-gray-100')}>
                     <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : referralUser ? (
-                  <>
-                    {/* Tier & Rank Card */}
-                    <div className={cn('rounded-xl p-5', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20' : 'bg-purple-50')}>
-                            {['supreme_commander', 'general', 'brigadier'].includes(referralUser.tierData?.id) || ['Supreme Commander', 'General', 'Brigadier'].includes(referralUser.tier) ? <Crown size={20} className="text-[#F6AF01]" /> :
-                              ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={20} className="text-[#650CD4]" /> :
-                                ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={20} className="text-[#137DFE]" /> :
-                                  <Swords size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />}
+                  <div className="space-y-4">
+                    {/* Main Card: Tier & Key Stats */}
+                    <div className={cn('rounded-2xl p-5 relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                      <div className={cn('absolute -top-12 -right-12 w-32 h-32 rounded-full blur-[60px] opacity-20', isDark ? 'bg-[#650CD4]' : 'bg-purple-400')} />
+
+                      <div className="relative flex flex-col sm:flex-row items-center justify-between gap-5 mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3', isDark ? 'bg-gradient-to-br from-[#650CD4]/30 to-[#650CD4]/10 border border-white/10' : 'bg-purple-50 border border-purple-100')}>
+                            {['supreme_commander', 'general', 'brigadier'].includes(referralUser.tierData?.id) || ['Supreme Commander', 'General', 'Brigadier'].includes(referralUser.tier) ? <Crown size={22} className="text-[#F6AF01]" /> :
+                              ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={22} className="text-[#650CD4]" /> :
+                                ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={22} className="text-[#137DFE]" /> :
+                                  <Swords size={22} className={isDark ? 'text-white/60' : 'text-gray-600'} />}
                           </div>
                           <div>
-                            <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Tier</p>
-                            <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.activeTier || referralUser.tier || 'Recruit'}</p>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <h3 className={cn('text-[16px] font-bold leading-none', isDark ? 'text-white' : 'text-gray-900')}>
+                                {referralUser.activeTier || referralUser.tier || 'Recruit'}
+                              </h3>
+                              <div className={cn('px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider', isDark ? 'bg-[#08AA09]/20 text-[#08AA09]' : 'bg-green-100 text-green-700')}>
+                                {((referralUser.share || 0.2) * 100).toFixed(0)}% Share
+                              </div>
+                            </div>
+                            <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Current Rank Status</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Recruits</p>
-                          <p className={cn('text-[22px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.recruits || 0}</p>
+
+                        <div className="flex gap-4">
+                          <div className="text-center sm:text-right">
+                            <p className={cn('text-[20px] font-black leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralUser.recruits || 0}</p>
+                            <p className={cn('text-[9px] uppercase tracking-[0.1em] font-semibold', isDark ? 'text-[#137DFE]' : 'text-[#137DFE]')}>Recruits</p>
+                          </div>
+                          <div className="text-center sm:text-right">
+                            <p className={cn('text-[20px] font-black leading-none mb-1', isDark ? 'text-[#08AA09]' : 'text-green-600')}>${(referralUser.earnings || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            <p className={cn('text-[9px] uppercase tracking-[0.1em] font-semibold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Earned</p>
+                          </div>
                         </div>
                       </div>
+
                       {/* Next Tier Progress */}
                       {referralUser.nextTier && (
-                        <div className="mb-3">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                              {referralUser.tierData?.name || referralUser.tier || 'Recruit'}
-                            </p>
-                            <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                              {referralUser.nextTier.needed} more to {referralUser.nextTier.name}
-                            </p>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[10px] font-medium">
+                            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Progress to {referralUser.nextTier.name}</span>
+                            <span className={isDark ? 'text-white/60' : 'text-gray-600'}>{referralUser.nextTier.needed} more to go</span>
                           </div>
-                          <div className={cn('h-2 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                          <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                             <div
-                              className="h-full bg-gradient-to-r from-[#137DFE] to-[#650CD4] rounded-full transition-all"
+                              className="h-full bg-gradient-to-r from-[#137DFE] via-[#650CD4] to-[#F6AF01] rounded-full transition-all duration-1000"
                               style={{ width: `${Math.min(100, ((referralUser.recruits || 0) / (referralUser.nextTier.min || 1)) * 100)}%` }}
                             />
                           </div>
                         </div>
                       )}
-                      {/* Share % - use share which includes badge bonuses */}
-                      <div className={cn('flex items-center justify-between py-2.5 px-3 rounded-lg', isDark ? 'bg-[#08AA09]/10' : 'bg-green-50')}>
-                        <span className={cn('text-[11px] font-medium', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Revenue Share</span>
-                        <span className={cn('text-[14px] font-bold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>{((referralUser.share || 0.2) * 100).toFixed(0)}%</span>
+                    </div>
+
+                    {/* Secondary Stats Row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
+                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#F6AF01]/10' : 'bg-amber-50')}>
+                          <Zap size={16} className="text-[#F6AF01]" />
+                        </div>
+                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Day Streak</p>
+                      </div>
+                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
+                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
+                          <Gem size={16} className="text-[#137DFE]" />
+                        </div>
+                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Whales</p>
+                      </div>
+                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
+                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#650CD4]/10' : 'bg-purple-50')}>
+                          <Target size={16} className="text-[#650CD4]" />
+                        </div>
+                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2</p>
                       </div>
                     </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-4 gap-2">
-                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                        <Users size={16} className={cn('mx-auto mb-1', isDark ? 'text-white/40' : 'text-gray-400')} />
-                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.total || referralUser.recruits || 0}</p>
-                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Recruits</p>
-                      </div>
-                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                        <Zap size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-500')} />
-                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
-                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Streak</p>
-                      </div>
-                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                        <Gem size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#137DFE]' : 'text-blue-500')} />
-                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
-                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Whales</p>
-                      </div>
-                      <div className={cn('rounded-xl p-3 text-center', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                        <Target size={16} className={cn('mx-auto mb-1', isDark ? 'text-[#650CD4]' : 'text-purple-500')} />
-                        <p className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
-                        <p className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2</p>
-                      </div>
-                    </div>
-
-                    {/* Streak Status */}
-                    <div className={cn('rounded-xl p-4 flex items-center justify-between', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                      <div className="flex items-center gap-3">
-                        <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center', isDark ? 'bg-[#F6AF01]/10' : 'bg-amber-50')}>
-                          <Flame size={18} className="text-[#F6AF01]" />
-                        </div>
-                        <div>
-                          <p className={cn('text-[12px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                            {referralStats?.streaks?.current || referralUser.streak || 0} Day Streak
-                          </p>
-                          <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                            {referralUser.streakStatus?.label || 'Recruit daily to maintain'}
-                          </p>
-                        </div>
-                      </div>
-                      {referralUser.streakStatus?.tier && referralUser.streakStatus.tier !== 'none' && (
-                        <span className={cn('text-[10px] px-2.5 py-1 rounded-lg font-medium',
-                          referralUser.streakStatus.tier === 'legendary' ? 'bg-[#650CD4]/15 text-[#a855f7]' :
-                            referralUser.streakStatus.tier === 'gold' ? 'bg-[#F6AF01]/15 text-[#F6AF01]' :
-                              referralUser.streakStatus.tier === 'silver' ? 'bg-white/10 text-white/60' :
-                                referralUser.streakStatus.tier === 'bronze' ? 'bg-[#CD7F32]/15 text-[#CD7F32]' :
-                                  referralUser.streakStatus.tier === 'starter' ? 'bg-[#08AA09]/15 text-[#08AA09]' :
-                                    'bg-white/5 text-white/40'
-                        )}>
-                          {referralUser.streakStatus.label}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Earnings */}
-                    {(referralUser.earnings > 0 || referralUser.volume > 0) && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className={cn('rounded-xl p-3', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                          <p className={cn('text-[9px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Total Earnings</p>
-                          <p className={cn('text-[16px] font-semibold', isDark ? 'text-[#08AA09]' : 'text-green-600')}>${(referralUser.earnings || 0).toLocaleString()}</p>
-                        </div>
-                        <div className={cn('rounded-xl p-3', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                          <p className={cn('text-[9px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Referral Volume</p>
-                          <p className={cn('text-[16px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>${(referralUser.volume || 0).toLocaleString()}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Badges */}
-                    {(referralStats?.badges || referralUser.badges) && (
-                      <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                        <div className="flex items-center justify-between mb-3">
-                          <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Badges Earned</p>
+                    {/* Bottom Section: Badges & Links */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* Badges Column */}
+                      <div className={cn('rounded-2xl p-5', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Badges</h4>
                           {referralStats?.badges && (
-                            <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                              {referralStats.badges.done}/{referralStats.badges.total}
-                            </p>
+                            <span className={cn('text-[10px] font-mono', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralStats.badges.done}/{referralStats.badges.total}</span>
                           )}
                         </div>
-                        {(referralStats?.badges?.list || referralUser.badges || []).length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {(referralStats?.badges?.list || referralUser.badges || []).map((badge, i) => {
+
+                        {(referralStats?.badges?.list || referralUser.badges || []).length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {(referralStats?.badges?.list || referralUser.badges || []).slice(0, 8).map((badge, i) => {
                               const badgeConfig = {
-                                // Bronze tier
-                                first_recruit: { icon: Users, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
-                                squad_leader: { icon: Swords, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
-                                daily_duty: { icon: Flame, bg: 'bg-[#CD7F32]/15', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
-                                // Silver tier (+1%)
+                                first_recruit: { icon: Users, bg: 'bg-[#CD7F32]/10', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
                                 platoon_leader: { icon: Medal, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
-                                whale_spotter: { icon: Gem, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
-                                dedicated: { icon: Zap, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
-                                // Gold tier (+1.5%)
-                                battalion_leader: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                                chain_of_command: { icon: Users, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                                iron_will: { icon: Flame, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                                whale_hunter: { icon: Gem, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                                // Diamond tier (+2%)
-                                army_commander: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                                war_hero: { icon: Award, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                                supreme: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
+                                battalion_leader: { icon: Medal, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
+                                army_commander: { icon: Crown, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
                               };
                               const config = badgeConfig[badge] || { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                               const Icon = config.icon;
                               return (
-                                <div key={i} className={cn('px-2.5 py-1.5 rounded-lg text-[10px] font-medium flex items-center gap-1.5 border', config.bg, config.text, config.border)}>
-                                  <Icon size={12} />
-                                  {badge.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                <div key={i} className={cn('p-1.5 rounded-lg border transition-transform hover:scale-105', config.bg, config.text, config.border)} title={badge.replace(/_/g, ' ')}>
+                                  <Icon size={14} />
                                 </div>
                               );
                             })}
                           </div>
+                        ) : (
+                          <p className={cn('text-[11px] italic', isDark ? 'text-white/20' : 'text-gray-400')}>No badges yet</p>
                         )}
-                        {/* Badge Progress - only show incomplete badges */}
-                        {referralStats?.badges?.progress && Object.keys(referralStats.badges.progress).filter(id => !referralStats.badges.progress[id].done).length > 0 && (
-                          <div className="space-y-2.5">
-                            {Object.entries(referralStats.badges.progress)
-                              .filter(([, prog]) => !prog.done)
-                              .slice(0, 3)
-                              .map(([badgeId, prog]) => (
-                                <div key={badgeId}>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <p className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                      {badgeId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                                    </p>
-                                    <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                      {prog.cur}/{prog.req}
-                                    </p>
-                                  </div>
-                                  <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                                    <div className="h-full bg-[#137DFE] rounded-full transition-all" style={{ width: `${prog.pct || 0}%` }} />
-                                  </div>
-                                </div>
-                              ))}
+                      </div>
+
+                      {/* Referral Code Column */}
+                      <div className={cn('rounded-2xl p-5 flex flex-col justify-between', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Link</h4>
+                            <button onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }} className={cn('text-[10px] font-medium hover:underline', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>Settings</button>
+                          </div>
+
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={cn('flex-1 px-3 py-2 rounded-xl text-[12px] font-mono truncate border', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-gray-50 border-gray-100 text-gray-500')}>
+                              {`${window.location.origin}/signup?ref=${referralUser.referralCode}`}
+                            </div>
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
+                              className={cn('w-9 h-9 flex items-center justify-center rounded-xl transition-all', referralCopied ? 'bg-[#08AA09] text-white' : isDark ? 'bg-[#137DFE] text-white' : 'bg-[#137DFE] text-white')}
+                            >
+                              {referralCopied ? <Check size={14} /> : <Copy size={14} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {referralUser.referrer && (
+                          <div className={cn('mt-2 text-[10px] flex items-center gap-1.5 opacity-60', isDark ? 'text-white/50' : 'text-gray-500')}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#08AA09]" />
+                            Referred by {referralUser.referrer.slice(0, 6)}...{referralUser.referrer.slice(-4)}
                           </div>
                         )}
                       </div>
-                    )}
-
-                    {/* Your Code & Share Link */}
-                    <div className={cn('rounded-xl p-4', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Your Code</p>
-                        {!editingCode && (
-                          <button onClick={() => { setEditingCode(true); setNewReferralCode(referralUser.referralCode); }} className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}>Edit</button>
-                        )}
-                      </div>
-                      {editingCode ? (
-                        <div className="flex items-center gap-2 mb-3">
-                          <input type="text" value={newReferralCode} onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))} className={cn('flex-1 px-3 py-2 rounded-lg text-[13px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15]' : 'bg-white text-gray-900 border border-gray-200')} />
-                          <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="px-3 py-2 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
-                          <button onClick={() => { setEditingCode(false); setReferralError(''); }} className={cn('px-3 py-2 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
-                        </div>
-                      ) : (
-                        <p className={cn('text-[16px] font-mono font-semibold mb-3', isDark ? 'text-[#137DFE]' : 'text-blue-600')}>{referralUser.referralCode}</p>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/signup?ref=${referralUser.referralCode}`} className={cn('flex-1 px-3 py-2 rounded-lg text-[11px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-50 text-gray-500 border border-gray-200')} />
-                        <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralUser.referralCode}`); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }} className={cn('px-4 py-2 rounded-lg text-[11px] font-medium transition-colors flex items-center gap-1.5', referralCopied ? 'bg-[#08AA09] text-white' : 'bg-[#137DFE] text-white hover:bg-[#137DFE]/90')}>
-                          {referralCopied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
-                        </button>
-                      </div>
                     </div>
 
-                    {referralError && (
-                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
-                        <AlertTriangle size={14} />
-                        {referralError}
+                    {/* Code Edit Overlay */}
+                    {editingCode && (
+                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingCode(false)}>
+                        <div className={cn('w-full max-w-sm rounded-2xl p-6 shadow-2xl', isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-gray-200')} onClick={e => e.stopPropagation()}>
+                          <h3 className={cn('text-[16px] font-bold mb-4', isDark ? 'text-white' : 'text-gray-900')}>Referral Settings</h3>
+                          <div className="space-y-4">
+                            <div>
+                              <label className={cn('text-[11px] font-bold uppercase tracking-wider mb-2 block', isDark ? 'text-white/40' : 'text-gray-500')}>Custom Suffix</label>
+                              <input
+                                type="text"
+                                value={newReferralCode}
+                                onChange={(e) => setNewReferralCode(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))}
+                                className={cn('w-full px-4 py-3 rounded-xl text-[14px] font-mono outline-none border transition-all', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500')}
+                              />
+                            </div>
+                            {referralError && <p className="text-[11px] text-red-400">{referralError}</p>}
+                            <div className="flex gap-3">
+                              <button onClick={() => setEditingCode(false)} className={cn('flex-1 py-3 rounded-xl text-[13px] font-medium transition-colors', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>Cancel</button>
+                              <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-lg shadow-blue-500/20">Save Changes</button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
-
-                    {referralUser.referrer && (
-                      <p className={cn('text-[10px] px-1', isDark ? 'text-white/30' : 'text-gray-400')}>
-                        Referred by: <span className="font-mono">{referralUser.referrer.slice(0, 8)}...</span>
-                        {referralUser.benefits?.welcome?.expires && referralUser.benefits.welcome.expires > Date.now() && (
-                          <span className="ml-2 text-[#08AA09]">
-                            (50% rebate active)
-                          </span>
-                        )}
-                      </p>
-                    )}
-                  </>
+                  </div>
                 ) : (
-                  // Enlistment Form
-                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20' : 'bg-purple-50')}>
-                        <Swords size={20} className="text-[#650CD4]" />
+                  <div className={cn('rounded-2xl p-8 text-center relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10' : 'bg-white border border-gray-100 shadow-xl')}>
+                    <div className={cn('absolute -top-24 -left-24 w-64 h-64 rounded-full blur-[100px] opacity-10 bg-[#650CD4]')} />
+
+                    <div className={cn('w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 transform -rotate-6 shadow-2xl', isDark ? 'bg-gradient-to-br from-[#650CD4] to-[#137DFE]' : 'bg-purple-600')}>
+                      <Swords size={40} className="text-white" />
+                    </div>
+
+                    <h3 className={cn('text-2xl font-black mb-2 tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Join the XRP Army</h3>
+                    <p className={cn('text-[14px] mb-8 max-w-xs mx-auto', isDark ? 'text-white/40' : 'text-gray-500')}>Recruit new members and earn up to 50% revenue share from every trade they make.</p>
+
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      <div className={cn('p-4 rounded-2xl border text-left', isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100')}>
+                        <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Start</p>
+                        <p className={cn('text-[15px] font-black', isDark ? 'text-white' : 'text-gray-900')}>20% Share</p>
                       </div>
-                      <div>
-                        <h3 className={cn('text-[15px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>Join Referral Program</h3>
-                        <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Earn up to 50% revenue share</p>
+                      <div className={cn('p-4 rounded-2xl border text-left', isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100')}>
+                        <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-600')}>Max</p>
+                        <p className={cn('text-[15px] font-black', isDark ? 'text-white' : 'text-gray-900')}>50% Share</p>
                       </div>
                     </div>
 
-                    <div className={cn('rounded-lg p-3 mb-4 space-y-1.5', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Starting tier</span>
-                        <span className={isDark ? 'text-white' : 'text-gray-900'}>Recruit (20% share)</span>
+                    <div className="space-y-4 max-w-sm mx-auto">
+                      <div className="relative">
+                        <label className={cn('absolute -top-2 left-3 px-1.5 text-[9px] font-bold uppercase tracking-widest z-10', isDark ? 'bg-[#0a0a0a] text-white/40' : 'bg-white text-gray-400')}>Your Custom Code</label>
+                        <input
+                          type="text"
+                          value={referralForm.referralCode}
+                          onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))}
+                          placeholder="Leave empty for auto-gen"
+                          className={cn('w-full px-4 py-4 rounded-2xl text-[14px] font-mono outline-none border transition-all text-center', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#650CD4]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-purple-500')}
+                        />
                       </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Max share</span>
-                        <span className={isDark ? 'text-white' : 'text-gray-900'}>50% (Supreme Commander)</span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Level up by</span>
-                        <span className={isDark ? 'text-white' : 'text-gray-900'}>Recruiting members</span>
-                      </div>
-                      {referralForm.referredBy && (
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className={isDark ? 'text-white/50' : 'text-gray-500'}>Welcome bonus</span>
-                          <span className="text-[#08AA09]">50% fee rebate (30 days)</span>
-                        </div>
-                      )}
-                    </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Your Code <span className={isDark ? 'text-white/20' : 'text-gray-300'}>(optional)</span></label>
-                        <input type="text" value={referralForm.referralCode} onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))} placeholder="Auto-generated if empty" className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none transition-colors', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25 focus:border-[#137DFE]/40' : 'bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:border-[#137DFE]')} />
-                      </div>
-                      {referralForm.referredBy && (
-                        <div>
-                          <label className={cn('text-[10px] uppercase tracking-wider mb-1.5 block', isDark ? 'text-white/40' : 'text-gray-500')}>Referred By</label>
-                          <input type="text" value={referralForm.referredBy} readOnly className={cn('w-full px-4 py-3 rounded-xl text-[13px] outline-none', isDark ? 'bg-white/[0.04] text-white/60 border border-white/[0.1]' : 'bg-gray-100 text-gray-500 border border-gray-200')} />
-                        </div>
-                      )}
-
-                      {referralError && (
-                        <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px]', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
-                          <AlertTriangle size={14} />
-                          {referralError}
-                        </div>
-                      )}
-
-                      <button onClick={handleReferralRegister} disabled={referralLoading} className="w-full py-3 rounded-xl text-[13px] font-semibold bg-[#650CD4] text-white hover:bg-[#650CD4]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        {referralLoading ? 'Enlisting...' : 'Enlist Now'}
+                      <button
+                        onClick={handleReferralRegister}
+                        disabled={referralLoading}
+                        className="w-full py-4 rounded-2xl text-[15px] font-black bg-gradient-to-r from-[#650CD4] to-[#137DFE] text-white shadow-xl shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                      >
+                        {referralLoading ? 'ENLISTING...' : 'ENLIST NOW'}
                       </button>
                     </div>
                   </div>
@@ -4691,79 +4618,188 @@ export default function WalletPage() {
                     <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : profileUser ? (
-                  <div className={cn('rounded-xl p-6', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                    <div className="flex items-center gap-3 mb-6">
+                  <div className={cn('rounded-2xl p-6 relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl' : 'bg-white border border-gray-100 shadow-xl')}>
+                    {/* Background Accent */}
+                    <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+
+                    <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6">
+                      {/* Avatar Wrapper */}
                       <button
                         onClick={() => setShowAvatarPicker(true)}
-                        className="relative group"
+                        className="relative group shrink-0"
                         title="Change avatar"
                       >
-                        {profileUser.avatar ? (
-                          <img
-                            src={profileUser.avatar}
-                            alt="Avatar"
-                            className="w-12 h-12 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
-                            {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
+                        <div className={cn(
+                          'w-24 h-24 rounded-2xl p-1 transition-all duration-500 group-hover:rotate-3 shadow-lg',
+                          isDark ? 'bg-gradient-to-br from-white/10 to-white/5 border border-white/10' : 'bg-white border border-gray-200'
+                        )}>
+                          {profileUser.avatar ? (
+                            <img
+                              src={profileUser.avatar}
+                              alt="Avatar"
+                              className="w-full h-full rounded-xl object-cover"
+                            />
+                          ) : (
+                            <div className={cn(
+                              'w-full h-full rounded-xl flex items-center justify-center text-3xl font-bold bg-gradient-to-br',
+                              isDark ? 'from-[#137DFE]/20 to-[#650CD4]/20 text-[#137DFE]' : 'from-blue-50 to-indigo-50 text-blue-600'
+                            )}>
+                              {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
+                            </div>
+                          )}
+                        </div>
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-2 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/40 backdrop-blur-sm">
+                          <Image size={24} className="text-white" />
+                        </div>
+                        {/* Status Indicator */}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-[#0a0a0a] bg-emerald-500 shadow-md" />
+                      </button>
+
+                      {/* Profile Info */}
+                      <div className="flex-1 min-w-0 text-center md:text-left pt-2">
+                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+                          {editingUsername ? (
+                            <div className="flex items-center gap-2 max-w-sm mx-auto md:mx-0">
+                              <input
+                                type="text"
+                                value={newUsername}
+                                onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
+                                placeholder="2-14 characters"
+                                autoFocus
+                                className={cn(
+                                  'flex-1 px-3 py-1.5 rounded-xl text-[14px] font-medium outline-none border transition-all',
+                                  isDark
+                                    ? 'bg-white/5 border-white/10 text-white focus:border-[#137DFE]/50'
+                                    : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-blue-500'
+                                )}
+                              />
+                              <button
+                                onClick={handleUpdateUsername}
+                                disabled={profileLoading || newUsername.length < 2}
+                                className="p-2 rounded-xl bg-[#137DFE] text-white hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => { setEditingUsername(false); setProfileError(''); }}
+                                className={cn('p-2 rounded-xl transition-colors', isDark ? 'bg-white/5 hover:bg-white/10 text-white/50' : 'bg-gray-100 hover:bg-gray-200 text-gray-500')}
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center md:justify-start gap-2">
+                              <h2 className={cn('text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>
+                                {profileUser.username || 'Anonymous User'}
+                              </h2>
+                              {(!profileUser.username || userPerks?.perks?.canChangeUsername) && (
+                                <button
+                                  onClick={() => { setEditingUsername(true); setNewUsername(profileUser.username || ''); }}
+                                  className={cn('p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all', isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')}
+                                >
+                                  <Plus size={14} className="rotate-45" /> {/* Edit icon visual */}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                          <button
+                            onClick={() => handleCopy(address)}
+                            className={cn(
+                              'flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono transition-all',
+                              isDark ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                            )}
+                          >
+                            <Wallet size={12} />
+                            {address?.slice(0, 12)}...{address?.slice(-8)}
+                            <Copy size={10} className="ml-1 opacity-40" />
+                          </button>
+
+                          <div className={cn('px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2', isDark ? 'bg-white/5 text-white/40' : 'bg-gray-50 text-gray-500')}>
+                            <Clock size={12} />
+                            Joined {profileUser.createdAt ? formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true }) : 'Recently'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Header Actions */}
+                      <div className="md:absolute md:top-0 md:right-0">
+                        {profileUser.username && !userPerks?.perks?.canChangeUsername && !editingUsername && (
+                          <div className={cn('px-3 py-1 rounded-full text-[9px] font-bold tracking-wider border', isDark ? 'bg-amber-500/5 text-amber-500/60 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100')}>
+                            XRP VIP+ REQUIRED TO RENAME
                           </div>
                         )}
-                        <div className={cn('absolute inset-0 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'bg-black/60' : 'bg-white/60')}>
-                          <Image size={16} className={isDark ? 'text-white' : 'text-gray-700'} />
-                        </div>
-                      </button>
-                      <div>
-                        <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{profileUser.username || 'No username'}</p>
-                        <p className={cn('text-[11px] font-mono', isDark ? 'text-white/40' : 'text-gray-500')}>{address?.slice(0, 10)}...{address?.slice(-8)}</p>
                       </div>
                     </div>
 
-                    {/* Avatar Picker Modal */}
+                    {/* Stats Grid - Concise Footer */}
+                    <div className={cn('grid grid-cols-2 gap-4 mt-8 pt-6 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                      <div className="text-center md:text-left">
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Activity Status</p>
+                        <p className={cn('text-[13px] font-medium', isDark ? 'text-emerald-400' : 'text-emerald-600')}>Online Now</p>
+                      </div>
+                      <div className="text-center md:text-right">
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Last Profile Update</p>
+                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : 'Never'}</p>
+                      </div>
+                    </div>
+
+                    {/* Avatar Picker Modal - Moved inside for better scoping or logic flow */}
                     {showAvatarPicker && (
-                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAvatarPicker(false)}>
+                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setShowAvatarPicker(false)}>
                         <div
-                          className={cn('w-full max-w-md rounded-xl p-4', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')}
+                          className={cn('w-full max-w-md rounded-2xl p-5 shadow-2xl transition-all duration-300 transform scale-100', isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-gray-200')}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex items-center justify-between mb-4">
-                            <p className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Select NFT Avatar</p>
-                            <button onClick={() => setShowAvatarPicker(false)} className={cn('p-1 rounded-lg', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
-                              <X size={16} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+                          <div className="flex items-center justify-between mb-5">
+                            <div>
+                              <h3 className={cn('text-lg font-bold', isDark ? 'text-white' : 'text-gray-900')}>Select NFT Avatar</h3>
+                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>Choose an NFT from your wallet</p>
+                            </div>
+                            <button onClick={() => setShowAvatarPicker(false)} className={cn('p-2 rounded-xl transition-colors', isDark ? 'hover:bg-white/10 text-white/50' : 'hover:bg-gray-100 text-gray-500')}>
+                              <X size={20} />
                             </button>
                           </div>
+
                           {avatarNftsLoading ? (
-                            <div className="py-8 text-center">
-                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading NFTs...</p>
+                            <div className="py-12 text-center animate-pulse">
+                              <div className={cn('w-12 h-12 rounded-full mx-auto mb-4 bg-white/5')} />
+                              <p className={cn('text-[11px] font-medium', isDark ? 'text-white/40' : 'text-gray-400')}>Loading your NFTs...</p>
                             </div>
                           ) : avatarNfts.length === 0 ? (
-                            <div className="py-8 text-center">
-                              <Image size={24} className={cn('mx-auto mb-2', isDark ? 'text-white/20' : 'text-gray-300')} />
-                              <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>No NFTs found</p>
+                            <div className="py-12 text-center">
+                              <Image size={32} className={cn('mx-auto mb-3 opacity-20', isDark ? 'text-white' : 'text-gray-300')} />
+                              <p className={cn('text-[11px] font-medium mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>No NFTs Available</p>
+                              <p className={cn('text-[9px]', isDark ? 'text-white/30' : 'text-gray-400')}>Own an NFT to set it as your profile image</p>
                             </div>
                           ) : (
-                            <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+                            <div className="grid grid-cols-4 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                               {avatarNfts.map((nft) => (
                                 <button
                                   key={nft.NFTokenID}
                                   onClick={() => handleSetAvatar(nft.NFTokenID)}
                                   disabled={settingAvatar || !nft.files?.[0]?.thumbnail?.large}
                                   className={cn(
-                                    'relative aspect-square rounded-lg overflow-hidden border-2 transition-all',
+                                    'relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 group/item',
                                     profileUser.avatarNftId === nft.NFTokenID
-                                      ? 'border-[#137DFE]'
-                                      : isDark ? 'border-white/10 hover:border-white/30' : 'border-gray-200 hover:border-gray-400',
-                                    (settingAvatar || !nft.files?.[0]?.thumbnail?.large) && 'opacity-50'
+                                      ? 'border-[#137DFE] scale-95 shadow-lg shadow-[#137DFE]/20'
+                                      : isDark ? 'border-white/5 hover:border-white/20' : 'border-transparent hover:border-gray-200',
+                                    (settingAvatar || !nft.files?.[0]?.thumbnail?.large) && 'opacity-50 grayscale'
                                   )}
                                 >
                                   <img
                                     src={nft.files?.[0]?.thumbnail?.large ? `https://s1.xrpl.to/nft/${nft.files[0].thumbnail.large}` : getNftCoverUrl(nft.meta, nft.url)}
                                     alt={nft.meta?.name || 'NFT'}
-                                    className="w-full h-full aspect-square object-cover rounded-lg"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-110"
                                   />
                                   {profileUser.avatarNftId === nft.NFTokenID && (
-                                    <div className="absolute inset-0 bg-[#137DFE]/20 flex items-center justify-center">
-                                      <Check size={16} className="text-[#137DFE]" />
+                                    <div className="absolute inset-0 bg-[#137DFE]/30 backdrop-blur-[2px] flex items-center justify-center">
+                                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                        <Check size={16} className="text-[#137DFE]" />
+                                      </div>
                                     </div>
                                   )}
                                 </button>
@@ -4774,52 +4810,9 @@ export default function WalletPage() {
                       </div>
                     )}
 
-                    <div className={cn('rounded-xl p-4 mb-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Username</p>
-                        {!editingUsername && (!profileUser.username || userPerks?.perks?.canChangeUsername) && (
-                          <button
-                            onClick={() => { setEditingUsername(true); setNewUsername(profileUser.username || ''); }}
-                            className={cn('text-[10px]', isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600')}
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {!editingUsername && profileUser.username && !userPerks?.perks?.canChangeUsername && (
-                          <span className={cn('text-[9px]', isDark ? 'text-white/20' : 'text-gray-300')}>VIP+ to change</span>
-                        )}
-                      </div>
-                      {editingUsername ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={newUsername}
-                            onChange={(e) => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase().slice(0, 14))}
-                            placeholder="2-14 characters"
-                            className={cn('flex-1 px-2 py-1 rounded-lg text-[14px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
-                          />
-                          <button onClick={handleUpdateUsername} disabled={profileLoading || newUsername.length < 2} className="px-2 py-1 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50">Save</button>
-                          <button onClick={() => { setEditingUsername(false); setProfileError(''); }} className={cn('px-2 py-1 rounded-lg text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Cancel</button>
-                        </div>
-                      ) : (
-                        <p className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>{profileUser.username || <span className={isDark ? 'text-white/30' : 'text-gray-300'}>Not set</span>}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Created</p>
-                        <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>{profileUser.createdAt ? formatDistanceToNow(new Date(profileUser.createdAt), { addSuffix: true }) : '-'}</p>
-                      </div>
-                      <div className={cn('rounded-xl p-4', isDark ? 'bg-white/[0.03] border border-white/[0.08]' : 'bg-gray-50 border border-gray-100')}>
-                        <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/30' : 'text-gray-400')}>Updated</p>
-                        <p className={cn('text-[13px]', isDark ? 'text-white/70' : 'text-gray-700')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : '-'}</p>
-                      </div>
-                    </div>
-
                     {profileError && (
-                      <div className={cn('flex items-center gap-2 p-3 rounded-lg text-[11px] mt-4', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
-                        <AlertTriangle size={14} />
+                      <div className={cn('flex items-center gap-2 p-3 rounded-xl text-[11px] mt-4 animate-in fade-in slide-in-from-top-2', isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100')}>
+                        <AlertTriangle size={14} className="shrink-0" />
                         {profileError}
                       </div>
                     )}
@@ -5725,663 +5718,674 @@ export default function WalletPage() {
                 )}
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </div >
+        </div >
+      )
+      }
 
       {/* Debug Info */}
-      {debugInfo && (
-        <div
-          className={cn(
-            'max-w-5xl mx-auto px-4 py-4 mb-4 rounded-xl text-[11px] font-mono',
-            isDark ? 'bg-white/[0.02] border border-white/[0.15]' : 'bg-gray-50 border border-gray-200'
-          )}
-        >
-          <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-            wallet_type:{' '}
-            <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span>
+      {
+        debugInfo && (
+          <div
+            className={cn(
+              'max-w-5xl mx-auto px-4 py-4 mb-4 rounded-xl text-[11px] font-mono',
+              isDark ? 'bg-white/[0.02] border border-white/[0.15]' : 'bg-gray-50 border border-gray-200'
+            )}
+          >
+            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
+              wallet_type:{' '}
+              <span className="text-[#137DFE]">{debugInfo.wallet_type || 'undefined'}</span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
+              account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
+              walletKeyId:{' '}
+              <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>
+                {debugInfo.walletKeyId || 'undefined'}
+              </span>
+            </div>
+            <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
+              seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span>
+            </div>
           </div>
-          <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-            account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span>
-          </div>
-          <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-            walletKeyId:{' '}
-            <span className={debugInfo.walletKeyId ? 'text-[#08AA09]' : 'text-red-400'}>
-              {debugInfo.walletKeyId || 'undefined'}
-            </span>
-          </div>
-          <div className={isDark ? 'text-white/50' : 'text-gray-500'}>
-            seed: <span className="text-[#08AA09] break-all">{debugInfo.seed}</span>
-          </div>
-        </div>
-      )}
+        )
+      }
 
       {/* P/L Card Modal */}
-      {showPLCard && (accountInfo || nftStats) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setShowPLCard(false)}>
-          <div onClick={e => e.stopPropagation()} className="relative w-[400px]">
-            {/* Card for display and capture */}
-            <div
-              ref={plCardRef}
-              className={cn("w-full p-6 rounded-2xl", isDark ? "bg-black border border-white/10" : "bg-white border border-gray-200")}
-            >
-              {/* Header with logo */}
-              <div className="flex items-center justify-between mb-4">
-                <img src={isDark ? "/logo/xrpl-to-logo-white.svg" : "/logo/xrpl-to-logo-black.svg"} alt="XRPL.to" className="h-5" />
-                <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
-                  {plType === 'token' ? 'Token Stats' : plType === 'nft' ? 'NFT Stats' : 'Trading Stats'}
-                </span>
-              </div>
+      {
+        showPLCard && (accountInfo || nftStats) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setShowPLCard(false)}>
+            <div onClick={e => e.stopPropagation()} className="relative w-[400px]">
+              {/* Card for display and capture */}
+              <div
+                ref={plCardRef}
+                className={cn("w-full p-6 rounded-2xl", isDark ? "bg-black border border-white/10" : "bg-white border border-gray-200")}
+              >
+                {/* Header with logo */}
+                <div className="flex items-center justify-between mb-4">
+                  <img src={isDark ? "/logo/xrpl-to-logo-white.svg" : "/logo/xrpl-to-logo-black.svg"} alt="XRPL.to" className="h-5" />
+                  <span className={cn("text-[10px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
+                    {plType === 'token' ? 'Token Stats' : plType === 'nft' ? 'NFT Stats' : 'Trading Stats'}
+                  </span>
+                </div>
 
-              {/* Type Toggle - Inside card */}
-              {(accountInfo?.totalTrades > 0 || nftStats?.totalTrades > 0) && (
-                <div className={cn("flex items-center gap-1 p-1 rounded-lg mb-5", isDark ? "bg-white/5" : "bg-gray-100")}>
+                {/* Type Toggle - Inside card */}
+                {(accountInfo?.totalTrades > 0 || nftStats?.totalTrades > 0) && (
+                  <div className={cn("flex items-center gap-1 p-1 rounded-lg mb-5", isDark ? "bg-white/5" : "bg-gray-100")}>
+                    {[
+                      { id: 'token', label: 'Token', icon: Coins, show: accountInfo?.totalTrades > 0 },
+                      { id: 'nft', label: 'NFT', icon: Image, show: nftStats?.totalTrades > 0 },
+                      { id: 'combined', label: 'All', icon: Layers, show: accountInfo?.totalTrades > 0 && nftStats?.totalTrades > 0 }
+                    ].filter(opt => opt.show).map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setPlType(opt.id)}
+                        className={cn(
+                          "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[11px] font-medium transition-all",
+                          plType === opt.id
+                            ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
+                            : isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700"
+                        )}
+                      >
+                        <opt.icon size={11} />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Address */}
+                <div className="mb-5">
+                  <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Wallet</div>
+                  <div className={cn("text-xs font-mono", isDark ? "text-white/60" : "text-gray-600")}>{address?.slice(0, 12)}...{address?.slice(-8)}</div>
+                </div>
+
+                {/* Main P/L - Dynamic based on plType */}
+                {(() => {
+                  const tokenPnl = accountInfo?.pnl || 0;
+                  const tokenRoi = accountInfo?.roi || 0;
+                  const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                  const nftRoi = nftStats?.roi || 0;
+                  const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                  const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                  return (
+                    <div className="mb-5">
+                      <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Total P/L</div>
+                      <div className={cn('text-3xl font-bold tabular-nums', pnl >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
+                        {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                      </div>
+                      <div className={cn('text-sm tabular-nums', roi >= 0 ? 'text-[#08AA09]/60' : 'text-red-400/60')}>
+                        {roi >= 0 ? '+' : ''}{roi.toFixed(1)}% ROI
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Stats Grid - Dynamic based on plType */}
+                <div className="grid grid-cols-3 gap-3 mb-5">
                   {[
-                    { id: 'token', label: 'Token', icon: Coins, show: accountInfo?.totalTrades > 0 },
-                    { id: 'nft', label: 'NFT', icon: Image, show: nftStats?.totalTrades > 0 },
-                    { id: 'combined', label: 'All', icon: Layers, show: accountInfo?.totalTrades > 0 && nftStats?.totalTrades > 0 }
-                  ].filter(opt => opt.show).map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setPlType(opt.id)}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[11px] font-medium transition-all",
-                        plType === opt.id
-                          ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
-                          : isDark ? "text-white/40 hover:text-white/60" : "text-gray-500 hover:text-gray-700"
-                      )}
-                    >
-                      <opt.icon size={11} />
-                      {opt.label}
-                    </button>
+                    { label: 'Trades', value: plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0)) },
+                    { label: 'Win Rate', value: `${(plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1))).toFixed(0)}%` },
+                    { label: plType === 'nft' ? 'NFTs' : plType === 'token' ? 'Tokens' : 'Assets', value: plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0)) }
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center">
+                      <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
+                      <div className={cn("text-lg font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>{stat.value}</div>
+                    </div>
                   ))}
                 </div>
-              )}
 
-              {/* Address */}
-              <div className="mb-5">
-                <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Wallet</div>
-                <div className={cn("text-xs font-mono", isDark ? "text-white/60" : "text-gray-600")}>{address?.slice(0, 12)}...{address?.slice(-8)}</div>
-              </div>
-
-              {/* Main P/L - Dynamic based on plType */}
-              {(() => {
-                const tokenPnl = accountInfo?.pnl || 0;
-                const tokenRoi = accountInfo?.roi || 0;
-                const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
-                const nftRoi = nftStats?.roi || 0;
-                const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
-                const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
-                return (
-                  <div className="mb-5">
-                    <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Total P/L</div>
-                    <div className={cn('text-3xl font-bold tabular-nums', pnl >= 0 ? 'text-[#08AA09]' : 'text-red-400')}>
-                      {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
-                    </div>
-                    <div className={cn('text-sm tabular-nums', roi >= 0 ? 'text-[#08AA09]/60' : 'text-red-400/60')}>
-                      {roi >= 0 ? '+' : ''}{roi.toFixed(1)}% ROI
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Stats Grid - Dynamic based on plType */}
-              <div className="grid grid-cols-3 gap-3 mb-5">
-                {[
-                  { label: 'Trades', value: plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0)) },
-                  { label: 'Win Rate', value: `${(plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1))).toFixed(0)}%` },
-                  { label: plType === 'nft' ? 'NFTs' : plType === 'token' ? 'Tokens' : 'Assets', value: plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0)) }
-                ].map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
-                    <div className={cn("text-lg font-semibold tabular-nums", isDark ? "text-white" : "text-gray-900")}>{stat.value}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Win/Loss or NFT-specific stats */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {plType === 'nft' ? (
-                  <>
-                    <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Realized</div>
-                      <div className={cn("font-semibold tabular-nums", (nftStats?.profit || 0) >= 0 ? "text-[#08AA09]" : "text-red-400")}>
-                        {(nftStats?.profit || 0) >= 0 ? '+' : ''}{(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                {/* Win/Loss or NFT-specific stats */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {plType === 'nft' ? (
+                    <>
+                      <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Realized</div>
+                        <div className={cn("font-semibold tabular-nums", (nftStats?.profit || 0) >= 0 ? "text-[#08AA09]" : "text-red-400")}>
+                          {(nftStats?.profit || 0) >= 0 ? '+' : ''}{(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                        </div>
                       </div>
-                    </div>
-                    <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Unrealized</div>
-                      <div className={cn("font-semibold tabular-nums", (nftStats?.unrealizedProfit || 0) >= 0 ? "text-[#08AA09]" : "text-amber-400")}>
-                        {(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}{(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                      <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div className={cn("text-[9px] uppercase tracking-wider mb-1", isDark ? "text-white/30" : "text-gray-400")}>Unrealized</div>
+                        <div className={cn("font-semibold tabular-nums", (nftStats?.unrealizedProfit || 0) >= 0 ? "text-[#08AA09]" : "text-amber-400")}>
+                          {(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}{(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                        </div>
                       </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <div className="text-[#08AA09]/50 text-[9px] uppercase tracking-wider mb-1">Best Trade</div>
-                      <div className="text-[#08AA09] font-semibold tabular-nums">+{(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
-                    </div>
-                    <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
-                      <div className="text-red-400/50 text-[9px] uppercase tracking-wider mb-1">Worst Trade</div>
-                      <div className="text-red-400 font-semibold tabular-nums">{(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
-                    </div>
-                  </>
+                    </>
+                  ) : (
+                    <>
+                      <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div className="text-[#08AA09]/50 text-[9px] uppercase tracking-wider mb-1">Best Trade</div>
+                        <div className="text-[#08AA09] font-semibold tabular-nums">+{(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                      </div>
+                      <div className={cn("rounded-xl p-3 text-center", isDark ? "bg-white/5" : "bg-gray-50")}>
+                        <div className="text-red-400/50 text-[9px] uppercase tracking-wider mb-1">Worst Trade</div>
+                        <div className="text-red-400 font-semibold tabular-nums">{(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Ranking / NFT extras */}
+                {accountInfo?.tradingRank && plType !== 'nft' && (
+                  <div className="flex items-center justify-center gap-2 text-[#F6AF01]/70 pt-2">
+                    <Trophy size={13} />
+                    <span className="text-xs">Trading Rank #{accountInfo.tradingRank.toLocaleString()}</span>
+                  </div>
+                )}
+                {plType === 'nft' && nftStats?.flips > 0 && (
+                  <div className={cn("flex items-center justify-center gap-4 text-[11px] pt-2", isDark ? "text-white/40" : "text-gray-500")}>
+                    <span>{nftStats.flips} flips</span>
+                    <span>{(nftStats.avgHoldingDays || 0).toFixed(0)}d avg hold</span>
+                  </div>
                 )}
               </div>
 
-              {/* Ranking / NFT extras */}
-              {accountInfo?.tradingRank && plType !== 'nft' && (
-                <div className="flex items-center justify-center gap-2 text-[#F6AF01]/70 pt-2">
-                  <Trophy size={13} />
-                  <span className="text-xs">Trading Rank #{accountInfo.tradingRank.toLocaleString()}</span>
-                </div>
-              )}
-              {plType === 'nft' && nftStats?.flips > 0 && (
-                <div className={cn("flex items-center justify-center gap-4 text-[11px] pt-2", isDark ? "text-white/40" : "text-gray-500")}>
-                  <span>{nftStats.flips} flips</span>
-                  <span>{(nftStats.avgHoldingDays || 0).toFixed(0)}d avg hold</span>
-                </div>
-              )}
-            </div>
+              {/* Actions */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={async () => {
+                    const tokenPnl = accountInfo?.pnl || 0;
+                    const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                    const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                    const tokenRoi = accountInfo?.roi || 0;
+                    const nftRoi = nftStats?.roi || 0;
+                    const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                    const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
+                    const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
+                    const typeLabel = plType === 'token' ? 'Token' : plType === 'nft' ? 'NFT' : 'XRPL';
+                    const text = `My ${typeLabel} Trading Stats\n\n${pnl >= 0 ? '📈' : '📉'} P/L: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP (${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%)\n🎯 ${trades} trades | ${winRate.toFixed(0)}% win rate\n\nTrack your trading at @xrplto\nhttps://xrpl.to/address/${address}`;
 
-            {/* Actions */}
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={async () => {
-                  const tokenPnl = accountInfo?.pnl || 0;
-                  const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
-                  const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
-                  const tokenRoi = accountInfo?.roi || 0;
-                  const nftRoi = nftStats?.roi || 0;
-                  const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
-                  const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
-                  const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
-                  const typeLabel = plType === 'token' ? 'Token' : plType === 'nft' ? 'NFT' : 'XRPL';
-                  const text = `My ${typeLabel} Trading Stats\n\n${pnl >= 0 ? '📈' : '📉'} P/L: ${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP (${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%)\n🎯 ${trades} trades | ${winRate.toFixed(0)}% win rate\n\nTrack your trading at @xrplto\nhttps://xrpl.to/address/${address}`;
+                    // Generate PNG for sharing
+                    const canvas = document.createElement('canvas');
+                    const scale = 2;
+                    canvas.width = 400 * scale;
+                    canvas.height = 288 * scale;
+                    const ctx = canvas.getContext('2d');
+                    const bgColor = isDark ? '#000' : '#fff';
+                    const textColor = isDark ? '#fff' : '#111';
+                    const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                    const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+                    const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+                    const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
 
-                  // Generate PNG for sharing
-                  const canvas = document.createElement('canvas');
-                  const scale = 2;
-                  canvas.width = 400 * scale;
-                  canvas.height = 288 * scale;
-                  const ctx = canvas.getContext('2d');
-                  const bgColor = isDark ? '#000' : '#fff';
-                  const textColor = isDark ? '#fff' : '#111';
-                  const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
-                  const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
-                  const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-                  const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                  ctx.fillStyle = bgColor;
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
+                      ctx.fillStyle = color;
+                      ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                      ctx.textAlign = align;
+                      ctx.fillText(t, x * scale, y * scale);
+                    };
 
-                  const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
-                    ctx.fillStyle = color;
-                    ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
-                    ctx.textAlign = align;
-                    ctx.fillText(t, x * scale, y * scale);
-                  };
-
-                  // Load and draw logo
-                  const logoSrc = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
-                  const logo = new window.Image();
-                  logo.src = logoSrc;
-                  await new Promise((resolve) => {
-                    logo.onload = resolve;
-                    logo.onerror = resolve;
-                  });
-                  if (logo.complete && logo.naturalWidth > 0) {
-                    const logoHeight = 22 * scale;
-                    const logoWidth = (logo.naturalWidth / logo.naturalHeight) * logoHeight;
-                    ctx.drawImage(logo, 24 * scale, 16 * scale, logoWidth, logoHeight);
-                  }
-
-                  const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
-                  const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
-                  const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
-
-                  drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
-                  if (plType !== 'nft' && accountInfo?.tradingRank) {
-                    drawText(`#${accountInfo.tradingRank.toLocaleString()}`, 376, 52, { size: 10, color: '#137DFE', align: 'right', weight: '600' });
-                  }
-                  drawText('TOTAL P/L', 24, 72, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 106, { size: 28, weight: '700', color: pnlColor });
-                  drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 128, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
-                  const statsY = 158;
-                  drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
-                  drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
-                  drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
-                  const boxY = 208;
-                  ctx.fillStyle = boxBgColor;
-                  ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
-                  ctx.fill();
-                  ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
-                  ctx.fill();
-                  if (plType === 'nft') {
-                    drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                    drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
-                    drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
-                    drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
-                  } else {
-                    drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                    drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
-                    drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
-                    drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
-                  }
-
-                  // Try Web Share API with image
-                  try {
-                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-                    const file = new File([blob], 'xrpl-pl.png', { type: 'image/png' });
-                    if (navigator.canShare?.({ files: [file] })) {
-                      await navigator.share({ text, files: [file] });
-                      return;
+                    // Load and draw logo
+                    const logoSrc = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
+                    const logo = new window.Image();
+                    logo.src = logoSrc;
+                    await new Promise((resolve) => {
+                      logo.onload = resolve;
+                      logo.onerror = resolve;
+                    });
+                    if (logo.complete && logo.naturalWidth > 0) {
+                      const logoHeight = 22 * scale;
+                      const logoWidth = (logo.naturalWidth / logo.naturalHeight) * logoHeight;
+                      ctx.drawImage(logo, 24 * scale, 16 * scale, logoWidth, logoHeight);
                     }
-                  } catch { }
-                  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-                }}
-                className={cn("flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800")}
-              >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                Post
-              </button>
-              <button
-                onClick={async () => {
-                  const tokenPnl = accountInfo?.pnl || 0;
-                  const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
-                  const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
-                  const tokenRoi = accountInfo?.roi || 0;
-                  const nftRoi = nftStats?.roi || 0;
-                  const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
-                  const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
-                  const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
 
-                  const canvas = document.createElement('canvas');
-                  const scale = 2;
-                  canvas.width = 400 * scale;
-                  canvas.height = 288 * scale;
-                  const ctx = canvas.getContext('2d');
-                  const bgColor = isDark ? '#000' : '#fff';
-                  const textColor = isDark ? '#fff' : '#111';
-                  const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
-                  const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
-                  const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-                  const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
+                    const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
+                    const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
+                    const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
 
-                  ctx.fillStyle = bgColor;
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                    if (plType !== 'nft' && accountInfo?.tradingRank) {
+                      drawText(`#${accountInfo.tradingRank.toLocaleString()}`, 376, 52, { size: 10, color: '#137DFE', align: 'right', weight: '600' });
+                    }
+                    drawText('TOTAL P/L', 24, 72, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 106, { size: 28, weight: '700', color: pnlColor });
+                    drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 128, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
+                    const statsY = 158;
+                    drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
+                    drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                    drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
+                    const boxY = 208;
+                    ctx.fillStyle = boxBgColor;
+                    ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                    ctx.fill();
+                    ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                    ctx.fill();
+                    if (plType === 'nft') {
+                      drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                      drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
+                      drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
+                      drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
+                    } else {
+                      drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                      drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                      drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                      drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                    }
 
-                  const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
-                    ctx.fillStyle = color;
-                    ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
-                    ctx.textAlign = align;
-                    ctx.fillText(t, x * scale, y * scale);
-                  };
+                    // Try Web Share API with image
+                    try {
+                      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                      const file = new File([blob], 'xrpl-pl.png', { type: 'image/png' });
+                      if (navigator.canShare?.({ files: [file] })) {
+                        await navigator.share({ text, files: [file] });
+                        return;
+                      }
+                    } catch { }
+                    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className={cn("flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800")}
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                  Post
+                </button>
+                <button
+                  onClick={async () => {
+                    const tokenPnl = accountInfo?.pnl || 0;
+                    const nftPnl = (nftStats?.profit || 0) + (nftStats?.unrealizedProfit || 0);
+                    const pnl = plType === 'token' ? tokenPnl : plType === 'nft' ? nftPnl : tokenPnl + nftPnl;
+                    const tokenRoi = accountInfo?.roi || 0;
+                    const nftRoi = nftStats?.roi || 0;
+                    const roi = plType === 'token' ? tokenRoi : plType === 'nft' ? nftRoi : (tokenPnl + nftPnl) !== 0 ? ((tokenRoi * Math.abs(tokenPnl) + nftRoi * Math.abs(nftPnl)) / (Math.abs(tokenPnl) + Math.abs(nftPnl))) : 0;
+                    const trades = plType === 'token' ? (accountInfo?.totalTrades || 0) : plType === 'nft' ? (nftStats?.totalTrades || 0) : ((accountInfo?.totalTrades || 0) + (nftStats?.totalTrades || 0));
+                    const winRate = plType === 'token' ? (accountInfo?.winRate || 0) : plType === 'nft' ? (nftStats?.winRate || 0) : (((accountInfo?.winRate || 0) + (nftStats?.winRate || 0)) / ((accountInfo?.totalTrades ? 1 : 0) + (nftStats?.totalTrades ? 1 : 0) || 1));
 
-                  // Load and draw logo
-                  const logoSrc = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
-                  const logo = new window.Image();
-                  logo.src = logoSrc;
-                  await new Promise((resolve) => {
-                    logo.onload = resolve;
-                    logo.onerror = resolve;
-                  });
-                  if (logo.complete && logo.naturalWidth > 0) {
-                    const logoHeight = 22 * scale;
-                    const logoWidth = (logo.naturalWidth / logo.naturalHeight) * logoHeight;
-                    ctx.drawImage(logo, 24 * scale, 16 * scale, logoWidth, logoHeight);
-                  }
+                    const canvas = document.createElement('canvas');
+                    const scale = 2;
+                    canvas.width = 400 * scale;
+                    canvas.height = 288 * scale;
+                    const ctx = canvas.getContext('2d');
+                    const bgColor = isDark ? '#000' : '#fff';
+                    const textColor = isDark ? '#fff' : '#111';
+                    const mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                    const addressColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+                    const boxBgColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+                    const pnlColor = pnl >= 0 ? '#34d399' : '#f87171';
 
-                  const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
-                  const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
-                  const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                  drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
-                  if (plType !== 'nft' && accountInfo?.tradingRank) {
-                    drawText(`#${accountInfo.tradingRank.toLocaleString()}`, 376, 52, { size: 10, color: '#137DFE', align: 'right', weight: '600' });
-                  }
-                  drawText('TOTAL P/L', 24, 72, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 106, { size: 28, weight: '700', color: pnlColor });
-                  drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 128, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
-                  const statsY = 158;
-                  drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
-                  drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
-                  drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
-                  drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
-                  const boxY = 208;
-                  ctx.fillStyle = boxBgColor;
-                  ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
-                  ctx.fill();
-                  ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
-                  ctx.fill();
-                  if (plType === 'nft') {
-                    drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                    drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
-                    drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
-                    drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
-                  } else {
-                    drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
-                    drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
-                    drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
-                    drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
-                  }
+                    const drawText = (t, x, y, { color = textColor, size = 14, weight = '400', align = 'left' } = {}) => {
+                      ctx.fillStyle = color;
+                      ctx.font = `${weight} ${size * scale}px Inter, system-ui, sans-serif`;
+                      ctx.textAlign = align;
+                      ctx.fillText(t, x * scale, y * scale);
+                    };
 
-                  const link = document.createElement('a');
-                  const typeLabel = plType === 'token' ? 'token' : plType === 'nft' ? 'nft' : 'combined';
-                  link.download = `xrpl-to-${typeLabel}-pl-${address?.slice(0, 8)}.png`;
-                  link.href = canvas.toDataURL('image/png');
-                  link.click();
-                }}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#137DFE] hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
-              >
-                <Download size={16} />
-                Save
-              </button>
-              <button
-                onClick={() => setShowPLCard(false)}
-                className={cn("p-3 rounded-xl transition-colors", isDark ? "bg-white/10 hover:bg-white/20 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-600")}
-              >
-                <X size={18} />
-              </button>
+                    // Load and draw logo
+                    const logoSrc = isDark ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
+                    const logo = new window.Image();
+                    logo.src = logoSrc;
+                    await new Promise((resolve) => {
+                      logo.onload = resolve;
+                      logo.onerror = resolve;
+                    });
+                    if (logo.complete && logo.naturalWidth > 0) {
+                      const logoHeight = 22 * scale;
+                      const logoWidth = (logo.naturalWidth / logo.naturalHeight) * logoHeight;
+                      ctx.drawImage(logo, 24 * scale, 16 * scale, logoWidth, logoHeight);
+                    }
+
+                    const statsLabel = plType === 'token' ? 'Token Trading Stats' : plType === 'nft' ? 'NFT Trading Stats' : 'Trading Stats';
+                    const assets = plType === 'token' ? (accountInfo?.totalTokensTraded || 0) : plType === 'nft' ? (nftStats?.holdingsCount || 0) : ((accountInfo?.totalTokensTraded || 0) + (nftStats?.holdingsCount || 0));
+                    const assetsLabel = plType === 'nft' ? 'NFTS' : plType === 'token' ? 'TOKENS' : 'ASSETS';
+
+                    drawText(statsLabel, 376, 36, { size: 11, color: mutedColor, align: 'right' });
+                    if (plType !== 'nft' && accountInfo?.tradingRank) {
+                      drawText(`#${accountInfo.tradingRank.toLocaleString()}`, 376, 52, { size: 10, color: '#137DFE', align: 'right', weight: '600' });
+                    }
+                    drawText('TOTAL P/L', 24, 72, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(`${pnl >= 0 ? '+' : ''}${pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 24, 106, { size: 28, weight: '700', color: pnlColor });
+                    drawText(`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% ROI`, 24, 128, { size: 13, color: pnl >= 0 ? 'rgba(52,211,153,0.7)' : 'rgba(248,113,113,0.7)' });
+                    const statsY = 158;
+                    drawText('TRADES', 24, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(String(trades), 24, statsY + 24, { size: 18, weight: '600' });
+                    drawText('WIN RATE', 150, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(`${winRate.toFixed(0)}%`, 150, statsY + 24, { size: 18, weight: '600' });
+                    drawText(assetsLabel, 276, statsY, { size: 9, color: mutedColor, weight: '500' });
+                    drawText(String(assets), 276, statsY + 24, { size: 18, weight: '600' });
+                    const boxY = 208;
+                    ctx.fillStyle = boxBgColor;
+                    ctx.roundRect(24 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                    ctx.fill();
+                    ctx.roundRect(208 * scale, boxY * scale, 168 * scale, 52 * scale, 8 * scale);
+                    ctx.fill();
+                    if (plType === 'nft') {
+                      drawText('REALIZED', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                      drawText(`${(nftStats?.profit || 0) >= 0 ? '+' : ''}${(nftStats?.profit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: (nftStats?.profit || 0) >= 0 ? '#34d399' : '#f87171' });
+                      drawText('UNREALIZED', 220, boxY + 18, { size: 9, color: 'rgba(251,191,36,0.6)', weight: '500' });
+                      drawText(`${(nftStats?.unrealizedProfit || 0) >= 0 ? '+' : ''}${(nftStats?.unrealizedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: (nftStats?.unrealizedProfit || 0) >= 0 ? '#34d399' : '#fbbf24' });
+                    } else {
+                      drawText('BEST TRADE', 36, boxY + 18, { size: 9, color: 'rgba(52,211,153,0.6)', weight: '500' });
+                      drawText(`+${(accountInfo?.maxProfitTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 36, boxY + 38, { size: 13, weight: '600', color: '#34d399' });
+                      drawText('WORST TRADE', 220, boxY + 18, { size: 9, color: 'rgba(248,113,113,0.6)', weight: '500' });
+                      drawText(`${(accountInfo?.maxLossTrade || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`, 220, boxY + 38, { size: 13, weight: '600', color: '#f87171' });
+                    }
+
+                    const link = document.createElement('a');
+                    const typeLabel = plType === 'token' ? 'token' : plType === 'nft' ? 'nft' : 'combined';
+                    link.download = `xrpl-to-${typeLabel}-pl-${address?.slice(0, 8)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#137DFE] hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
+                >
+                  <Download size={16} />
+                  Save
+                </button>
+                <button
+                  onClick={() => setShowPLCard(false)}
+                  className={cn("p-3 rounded-xl transition-colors", isDark ? "bg-white/10 hover:bg-white/20 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-600")}
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Burn Modal */}
-      {burnModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBurnModal(null)} />
-          <div className={cn(
-            "relative w-full max-w-sm rounded-2xl border p-6",
-            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
-          )}>
-            <div className="flex flex-col items-center text-center">
-              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 relative", isDark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200")}>
-                {burnModal.md5 ? (
-                  <img src={`https://s1.xrpl.to/token/${burnModal.md5}`} alt="" className="w-8 h-8 rounded-full" />
-                ) : (
-                  <Flame size={26} className="text-orange-500" />
-                )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
-                  <Flame size={10} className="text-white" />
+      {
+        burnModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setBurnModal(null)} />
+            <div className={cn(
+              "relative w-full max-w-sm rounded-2xl border p-6",
+              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+            )}>
+              <div className="flex flex-col items-center text-center">
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 relative", isDark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200")}>
+                  {burnModal.md5 ? (
+                    <img src={`https://s1.xrpl.to/token/${burnModal.md5}`} alt="" className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <Flame size={26} className="text-orange-500" />
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+                    <Flame size={10} className="text-white" />
+                  </div>
                 </div>
-              </div>
-              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>Burn {burnModal.symbol}</h3>
-              <p className={cn("text-[12px] mb-4", isDark ? "text-white/40" : "text-gray-500")}>
-                Permanently destroy tokens
-              </p>
-              <div className={cn("w-full mb-3", isDark ? "text-white/50" : "text-gray-500")}>
-                <div className="flex justify-between items-center mb-1">
-                  <p className="text-[10px]">Amount to burn</p>
-                  <p className="text-[10px]">Balance: <span className={isDark ? "text-white/70" : "text-gray-700"}>{burnModal.amount}</span></p>
+                <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>Burn {burnModal.symbol}</h3>
+                <p className={cn("text-[12px] mb-4", isDark ? "text-white/40" : "text-gray-500")}>
+                  Permanently destroy tokens
+                </p>
+                <div className={cn("w-full mb-3", isDark ? "text-white/50" : "text-gray-500")}>
+                  <div className="flex justify-between items-center mb-1">
+                    <p className="text-[10px]">Amount to burn</p>
+                    <p className="text-[10px]">Balance: <span className={isDark ? "text-white/70" : "text-gray-700"}>{burnModal.amount}</span></p>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={burnAmount}
+                      onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                      placeholder="0.00"
+                      className={cn(
+                        "w-full px-3 py-2.5 rounded-xl text-[14px] font-mono outline-none border transition-colors",
+                        parseFloat(burnAmount) > burnModal.rawAmount
+                          ? "border-red-500 focus:border-red-500"
+                          : isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orange-500/50" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500"
+                      )}
+                    />
+                    <button onClick={() => setBurnAmount(String(burnModal.rawAmount))} className={cn("absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-medium px-2 py-1 rounded-md", isDark ? "text-orange-400 hover:bg-orange-400/10" : "text-orange-600 hover:bg-orange-50")}>
+                      MAX
+                    </button>
+                  </div>
+                  {parseFloat(burnAmount) > burnModal.rawAmount && (
+                    <p className="text-[10px] mt-1.5 text-right text-red-400">Exceeds balance</p>
+                  )}
+                  {burnAmount && parseFloat(burnAmount) > 0 && parseFloat(burnAmount) <= burnModal.rawAmount && (
+                    <div className="flex justify-between mt-1.5">
+                      {burnModal.price > 0 && (
+                        <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
+                          ≈ {(parseFloat(burnAmount) * burnModal.price).toFixed(2)} XRP
+                        </p>
+                      )}
+                      {burnModal.percentOwned > 0 && (
+                        <p className={cn("text-[10px]", isDark ? "text-orange-400/70" : "text-orange-600")}>
+                          {(() => {
+                            const pct = (parseFloat(burnAmount) / burnModal.rawAmount) * burnModal.percentOwned;
+                            return pct >= 0.01 ? pct.toFixed(2) : pct >= 0.0001 ? pct.toFixed(4) : pct.toExponential(2);
+                          })()}% of supply
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={burnAmount}
-                    onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                    placeholder="0.00"
-                    className={cn(
-                      "w-full px-3 py-2.5 rounded-xl text-[14px] font-mono outline-none border transition-colors",
-                      parseFloat(burnAmount) > burnModal.rawAmount
-                        ? "border-red-500 focus:border-red-500"
-                        : isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-orange-500/50" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-orange-500"
-                    )}
-                  />
-                  <button onClick={() => setBurnAmount(String(burnModal.rawAmount))} className={cn("absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-medium px-2 py-1 rounded-md", isDark ? "text-orange-400 hover:bg-orange-400/10" : "text-orange-600 hover:bg-orange-50")}>
-                    MAX
+                <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
+                  <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
+                  <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone. Tokens sent to issuer are permanently destroyed.</p>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setBurnModal(null)}
+                    className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleBurnTokens(burnModal, burnAmount)}
+                    disabled={!burnAmount || parseFloat(burnAmount) <= 0 || parseFloat(burnAmount) > burnModal.rawAmount}
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Burn
                   </button>
                 </div>
-                {parseFloat(burnAmount) > burnModal.rawAmount && (
-                  <p className="text-[10px] mt-1.5 text-right text-red-400">Exceeds balance</p>
-                )}
-                {burnAmount && parseFloat(burnAmount) > 0 && parseFloat(burnAmount) <= burnModal.rawAmount && (
-                  <div className="flex justify-between mt-1.5">
-                    {burnModal.price > 0 && (
-                      <p className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
-                        ≈ {(parseFloat(burnAmount) * burnModal.price).toFixed(2)} XRP
-                      </p>
-                    )}
-                    {burnModal.percentOwned > 0 && (
-                      <p className={cn("text-[10px]", isDark ? "text-orange-400/70" : "text-orange-600")}>
-                        {(() => {
-                          const pct = (parseFloat(burnAmount) / burnModal.rawAmount) * burnModal.percentOwned;
-                          return pct >= 0.01 ? pct.toFixed(2) : pct >= 0.0001 ? pct.toFixed(4) : pct.toExponential(2);
-                        })()}% of supply
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
-                <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
-                <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone. Tokens sent to issuer are permanently destroyed.</p>
-              </div>
-              <div className="flex gap-3 w-full">
-                <button
-                  onClick={() => setBurnModal(null)}
-                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleBurnTokens(burnModal, burnAmount)}
-                  disabled={!burnAmount || parseFloat(burnAmount) <= 0 || parseFloat(burnAmount) > burnModal.rawAmount}
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Burn
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Trade Modal */}
-      {tradeModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTradeModal(null)} />
-          <div className={cn(
-            "relative w-full max-w-[340px] rounded-2xl border p-5",
-            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
-          )}>
-            <div className="flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2.5">
-                  {tradeModal.md5 ? (
-                    <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-9 h-9 rounded-full" />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-[#137DFE]/20 flex items-center justify-center text-[#137DFE] text-sm font-bold">{tradeModal.symbol?.[0]}</div>
-                  )}
-                  <div>
-                    <h3 className={cn("text-[14px] font-semibold leading-tight", isDark ? "text-white" : "text-gray-900")}>{tradeModal.symbol}</h3>
-                    <p className={cn("text-[11px] font-mono", isDark ? "text-white/40" : "text-gray-400")}>
-                      {(() => { const p = tradeModal.price || 0; return p >= 1 ? p.toFixed(4) : p >= 0.0001 ? p.toFixed(6) : p >= 0.00000001 ? p.toFixed(10) : p.toFixed(15); })()} XRP
-                    </p>
-                  </div>
-                </div>
-                <button onClick={() => setTradeModal(null)} className={cn("p-1.5 rounded-lg -mr-1", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
-                  <X size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
-                </button>
-              </div>
-
-              {/* Direction Toggle */}
-              <div className={cn("flex rounded-lg p-0.5 mb-4", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
-                <button onClick={() => setTradeDirection('sell')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'sell' ? "bg-red-500/15 text-red-400" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
-                  Sell
-                </button>
-                <button onClick={() => setTradeDirection('buy')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'buy' ? "bg-[#08AA09]/15 text-[#08AA09]" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
-                  Buy
-                </button>
-              </div>
-
-              {/* Amount Input */}
-              <div className="mb-3">
-                <div className={cn("flex justify-between items-center mb-1.5 text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
-                  <span>{tradeDirection === 'sell' ? 'You sell' : 'You pay'}</span>
-                  {tradeDirection === 'sell' && (
-                    <button onClick={() => setTradeAmount(String(tradeModal.rawAmount))} className="hover:underline">
-                      Bal: <span className={isDark ? "text-white/60" : "text-gray-600"}>{tradeModal.rawAmount >= 1000000 ? `${(tradeModal.rawAmount / 1000000).toFixed(2)}M` : tradeModal.rawAmount >= 1000 ? `${(tradeModal.rawAmount / 1000).toFixed(2)}K` : tradeModal.rawAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                    </button>
-                  )}
-                </div>
-                <div className={cn("flex items-center rounded-xl border transition-colors", isDark ? "bg-white/[0.03] border-white/10 focus-within:border-[#137DFE]/40" : "bg-gray-50 border-gray-200 focus-within:border-[#137DFE]")}>
-                  <input
-                    type="text"
-                    value={tradeAmount}
-                    onChange={(e) => setTradeAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                    placeholder="0"
-                    className={cn(
-                      "flex-1 px-3 py-2.5 bg-transparent text-[16px] font-mono outline-none",
-                      isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300"
+      {
+        tradeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTradeModal(null)} />
+            <div className={cn(
+              "relative w-full max-w-[340px] rounded-2xl border p-5",
+              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+            )}>
+              <div className="flex flex-col">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2.5">
+                    {tradeModal.md5 ? (
+                      <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-9 h-9 rounded-full" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-[#137DFE]/20 flex items-center justify-center text-[#137DFE] text-sm font-bold">{tradeModal.symbol?.[0]}</div>
                     )}
-                  />
-                  <div className={cn("flex items-center gap-1.5 pr-3", isDark ? "text-white/50" : "text-gray-500")}>
-                    {tradeDirection === 'sell' && tradeModal.md5 && <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-4 h-4 rounded-full" />}
-                    <span className="text-[11px] font-medium">{tradeDirection === 'sell' ? tradeModal.symbol : 'XRP'}</span>
+                    <div>
+                      <h3 className={cn("text-[14px] font-semibold leading-tight", isDark ? "text-white" : "text-gray-900")}>{tradeModal.symbol}</h3>
+                      <p className={cn("text-[11px] font-mono", isDark ? "text-white/40" : "text-gray-400")}>
+                        {(() => { const p = tradeModal.price || 0; return p >= 1 ? p.toFixed(4) : p >= 0.0001 ? p.toFixed(6) : p >= 0.00000001 ? p.toFixed(10) : p.toFixed(15); })()} XRP
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => setTradeModal(null)} className={cn("p-1.5 rounded-lg -mr-1", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                    <X size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+                  </button>
+                </div>
+
+                {/* Direction Toggle */}
+                <div className={cn("flex rounded-lg p-0.5 mb-4", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                  <button onClick={() => setTradeDirection('sell')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'sell' ? "bg-red-500/15 text-red-400" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
+                    Sell
+                  </button>
+                  <button onClick={() => setTradeDirection('buy')} className={cn("flex-1 py-1.5 rounded-md text-[11px] font-medium transition-all", tradeDirection === 'buy' ? "bg-[#08AA09]/15 text-[#08AA09]" : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"))}>
+                    Buy
+                  </button>
+                </div>
+
+                {/* Amount Input */}
+                <div className="mb-3">
+                  <div className={cn("flex justify-between items-center mb-1.5 text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>
+                    <span>{tradeDirection === 'sell' ? 'You sell' : 'You pay'}</span>
+                    {tradeDirection === 'sell' && (
+                      <button onClick={() => setTradeAmount(String(tradeModal.rawAmount))} className="hover:underline">
+                        Bal: <span className={isDark ? "text-white/60" : "text-gray-600"}>{tradeModal.rawAmount >= 1000000 ? `${(tradeModal.rawAmount / 1000000).toFixed(2)}M` : tradeModal.rawAmount >= 1000 ? `${(tradeModal.rawAmount / 1000).toFixed(2)}K` : tradeModal.rawAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className={cn("flex items-center rounded-xl border transition-colors", isDark ? "bg-white/[0.03] border-white/10 focus-within:border-[#137DFE]/40" : "bg-gray-50 border-gray-200 focus-within:border-[#137DFE]")}>
+                    <input
+                      type="text"
+                      value={tradeAmount}
+                      onChange={(e) => setTradeAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                      placeholder="0"
+                      className={cn(
+                        "flex-1 px-3 py-2.5 bg-transparent text-[16px] font-mono outline-none",
+                        isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300"
+                      )}
+                    />
+                    <div className={cn("flex items-center gap-1.5 pr-3", isDark ? "text-white/50" : "text-gray-500")}>
+                      {tradeDirection === 'sell' && tradeModal.md5 && <img src={`https://s1.xrpl.to/token/${tradeModal.md5}`} alt="" className="w-4 h-4 rounded-full" />}
+                      <span className="text-[11px] font-medium">{tradeDirection === 'sell' ? tradeModal.symbol : 'XRP'}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Quote Results */}
-              {tradeAmount && parseFloat(tradeAmount) > 0 && (
-                <div className={cn("rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-                  {quoteLoading ? (
-                    <div className={cn("text-[11px] animate-pulse", isDark ? "text-white/40" : "text-gray-400")}>Getting quote...</div>
-                  ) : tradeQuote?.error ? (
-                    <div className="text-[11px] text-red-400">{tradeQuote.error}</div>
-                  ) : tradeQuote ? (
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You receive</span>
-                        <span className={cn("text-[13px] font-mono font-medium", isDark ? "text-[#08AA09]" : "text-green-600")}>
-                          {(() => {
-                            const val = parseFloat(tradeDirection === 'sell' ? tradeQuote.source_amount?.value : tradeQuote.destination_amount?.value) || 0;
-                            const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
-                            return `${val.toFixed(decimals)} ${tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}`;
-                          })()}
-                        </span>
-                      </div>
-                      <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
-                        <span>Min received ({tradeSlippage}% slip)</span>
-                        <span className="font-mono">{(() => {
-                          const val = parseFloat(tradeQuote.minimum_received) || 0;
-                          const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
-                          return val.toFixed(decimals);
-                        })()} {tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}</span>
-                      </div>
-                      {tradeQuote.price_impact && (
-                        <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
-                          <span>Price impact</span>
-                          <span className={parseFloat(tradeQuote.price_impact.percent) > 1 ? 'text-red-400' : 'font-mono'}>{tradeQuote.price_impact.percent}</span>
+                {/* Quote Results */}
+                {tradeAmount && parseFloat(tradeAmount) > 0 && (
+                  <div className={cn("rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                    {quoteLoading ? (
+                      <div className={cn("text-[11px] animate-pulse", isDark ? "text-white/40" : "text-gray-400")}>Getting quote...</div>
+                    ) : tradeQuote?.error ? (
+                      <div className="text-[11px] text-red-400">{tradeQuote.error}</div>
+                    ) : tradeQuote ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className={cn("text-[10px]", isDark ? "text-white/40" : "text-gray-400")}>You receive</span>
+                          <span className={cn("text-[13px] font-mono font-medium", isDark ? "text-[#08AA09]" : "text-green-600")}>
+                            {(() => {
+                              const val = parseFloat(tradeDirection === 'sell' ? tradeQuote.source_amount?.value : tradeQuote.destination_amount?.value) || 0;
+                              const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
+                              return `${val.toFixed(decimals)} ${tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}`;
+                            })()}
+                          </span>
                         </div>
-                      )}
-                      {tradeQuote.fallback && <div className="text-[9px] text-amber-400/80">⚡ Estimate via DEX orderbook</div>}
-                    </div>
-                  ) : null}
-                </div>
-              )}
+                        <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                          <span>Min received ({tradeSlippage}% slip)</span>
+                          <span className="font-mono">{(() => {
+                            const val = parseFloat(tradeQuote.minimum_received) || 0;
+                            const decimals = val >= 1 ? 4 : val >= 0.0001 ? 6 : val >= 0.00000001 ? 10 : 15;
+                            return val.toFixed(decimals);
+                          })()} {tradeDirection === 'sell' ? 'XRP' : tradeModal.symbol}</span>
+                        </div>
+                        {tradeQuote.price_impact && (
+                          <div className={cn("flex justify-between text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>
+                            <span>Price impact</span>
+                            <span className={parseFloat(tradeQuote.price_impact.percent) > 1 ? 'text-red-400' : 'font-mono'}>{tradeQuote.price_impact.percent}</span>
+                          </div>
+                        )}
+                        {tradeQuote.fallback && <div className="text-[9px] text-amber-400/80">⚡ Estimate via DEX orderbook</div>}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
 
-              {/* Slippage */}
-              <div className="mb-4">
-                <div className={cn("flex items-center justify-between mb-2", isDark ? "text-white/40" : "text-gray-400")}>
-                  <span className="text-[10px]">Slippage tolerance</span>
-                  <span className={cn("text-[10px] font-mono", isDark ? "text-white/60" : "text-gray-500")}>{tradeSlippage}%</span>
+                {/* Slippage */}
+                <div className="mb-4">
+                  <div className={cn("flex items-center justify-between mb-2", isDark ? "text-white/40" : "text-gray-400")}>
+                    <span className="text-[10px]">Slippage tolerance</span>
+                    <span className={cn("text-[10px] font-mono", isDark ? "text-white/60" : "text-gray-500")}>{tradeSlippage}%</span>
+                  </div>
+                  <div className={cn("flex rounded-lg p-0.5", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
+                    {[0.5, 1, 2, 'custom'].map(v => (
+                      <button
+                        key={v}
+                        onClick={() => v !== 'custom' && setTradeSlippage(v)}
+                        className={cn(
+                          "flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all",
+                          (v === 'custom' ? ![0.5, 1, 2].includes(tradeSlippage) : tradeSlippage === v)
+                            ? (isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm")
+                            : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
+                        )}
+                      >
+                        {v === 'custom' ? (
+                          <input
+                            type="text"
+                            value={![0.5, 1, 2].includes(tradeSlippage) ? tradeSlippage : ''}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9.]/g, '');
+                              if (val === '') return;
+                              setTradeSlippage(Math.max(0.1, Math.min(50, parseFloat(val) || 0.5)));
+                            }}
+                            placeholder="Custom"
+                            className={cn("w-full text-center bg-transparent outline-none text-[10px] font-medium", isDark ? "placeholder:text-white/30" : "placeholder:text-gray-400")}
+                          />
+                        ) : `${v}%`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className={cn("flex rounded-lg p-0.5", isDark ? "bg-white/[0.04]" : "bg-gray-100")}>
-                  {[0.5, 1, 2, 'custom'].map(v => (
-                    <button
-                      key={v}
-                      onClick={() => v !== 'custom' && setTradeSlippage(v)}
-                      className={cn(
-                        "flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all",
-                        (v === 'custom' ? ![0.5, 1, 2].includes(tradeSlippage) : tradeSlippage === v)
-                          ? (isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm")
-                          : (isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")
-                      )}
-                    >
-                      {v === 'custom' ? (
-                        <input
-                          type="text"
-                          value={![0.5, 1, 2].includes(tradeSlippage) ? tradeSlippage : ''}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9.]/g, '');
-                            if (val === '') return;
-                            setTradeSlippage(Math.max(0.1, Math.min(50, parseFloat(val) || 0.5)));
-                          }}
-                          placeholder="Custom"
-                          className={cn("w-full text-center bg-transparent outline-none text-[10px] font-medium", isDark ? "placeholder:text-white/30" : "placeholder:text-gray-400")}
-                        />
-                      ) : `${v}%`}
-                    </button>
-                  ))}
-                </div>
+
+                <button
+                  onClick={handleTrade}
+                  disabled={trading || !tradeQuote || tradeQuote.error || quoteLoading || (tradeDirection === 'sell' && parseFloat(tradeAmount) > tradeModal.rawAmount)}
+                  className="w-full py-2.5 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {trading ? 'Trading...' : quoteLoading ? 'Getting quote...' : tradeDirection === 'sell' ? `Sell ${tradeModal.symbol}` : `Buy ${tradeModal.symbol}`}
+                </button>
               </div>
-
-              <button
-                onClick={handleTrade}
-                disabled={trading || !tradeQuote || tradeQuote.error || quoteLoading || (tradeDirection === 'sell' && parseFloat(tradeAmount) > tradeModal.rawAmount)}
-                className="w-full py-2.5 rounded-xl text-[13px] font-medium bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {trading ? 'Trading...' : quoteLoading ? 'Getting quote...' : tradeDirection === 'sell' ? `Sell ${tradeModal.symbol}` : `Buy ${tradeModal.symbol}`}
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Dust Confirmation Modal */}
-      {dustConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDustConfirm(null)} />
-          <div className={cn(
-            "relative w-full max-w-sm rounded-2xl border p-6",
-            isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
-          )}>
-            <div className="flex flex-col items-center text-center">
-              <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4", dustConfirm.step === 'dex' ? (isDark ? "bg-[#137DFE]/10 border border-[#137DFE]/20" : "bg-blue-50 border border-blue-200") : (isDark ? "bg-[#F6AF01]/10 border border-[#F6AF01]/20" : "bg-amber-50 border border-amber-200"))}>
-                {dustConfirm.step === 'dex' ? <ArrowRightLeft size={26} className="text-[#137DFE]" /> : <Sparkles size={26} className="text-[#F6AF01]" />}
-              </div>
-              <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>
-                {dustConfirm.step === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
-              </h3>
-              <p className={cn("text-[12px] mb-3", isDark ? "text-white/40" : "text-gray-500")}>
-                {dustConfirm.step === 'dex' ? 'Create a sell order to clear your tiny balance' : 'DEX sell failed. Send tokens back to issuer?'}
-              </p>
-              <div className={cn("w-full rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-                <p className={cn("font-mono text-[15px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{dustConfirm.token.amount} {dustConfirm.token.symbol}</p>
-                <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/30" : "text-gray-400")}>Value: &lt; 0.01 XRP</p>
-              </div>
-              <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
-                <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
-                <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone.</p>
-              </div>
-              <div className="flex gap-3 w-full">
-                <button
-                  onClick={() => setDustConfirm(null)}
-                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => executeDustClear(dustConfirm.token, dustConfirm.step)}
-                  className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", dustConfirm.step === 'dex' ? "bg-[#137DFE] text-white hover:bg-[#137DFE]/90" : "bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90")}
-                >
-                  {dustConfirm.step === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
-                </button>
+      {
+        dustConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDustConfirm(null)} />
+            <div className={cn(
+              "relative w-full max-w-sm rounded-2xl border p-6",
+              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-gray-200"
+            )}>
+              <div className="flex flex-col items-center text-center">
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4", dustConfirm.step === 'dex' ? (isDark ? "bg-[#137DFE]/10 border border-[#137DFE]/20" : "bg-blue-50 border border-blue-200") : (isDark ? "bg-[#F6AF01]/10 border border-[#F6AF01]/20" : "bg-amber-50 border border-amber-200"))}>
+                  {dustConfirm.step === 'dex' ? <ArrowRightLeft size={26} className="text-[#137DFE]" /> : <Sparkles size={26} className="text-[#F6AF01]" />}
+                </div>
+                <h3 className={cn("text-[16px] font-semibold mb-1", isDark ? "text-white" : "text-gray-900")}>
+                  {dustConfirm.step === 'dex' ? 'Sell Dust on DEX?' : 'Burn by Sending to Issuer?'}
+                </h3>
+                <p className={cn("text-[12px] mb-3", isDark ? "text-white/40" : "text-gray-500")}>
+                  {dustConfirm.step === 'dex' ? 'Create a sell order to clear your tiny balance' : 'DEX sell failed. Send tokens back to issuer?'}
+                </p>
+                <div className={cn("w-full rounded-xl p-3 mb-3", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                  <p className={cn("font-mono text-[15px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{dustConfirm.token.amount} {dustConfirm.token.symbol}</p>
+                  <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/30" : "text-gray-400")}>Value: &lt; 0.01 XRP</p>
+                </div>
+                <div className={cn("w-full flex items-start gap-2 rounded-lg p-2.5 mb-4 text-left", isDark ? "bg-red-500/10 border border-red-500/20" : "bg-red-50 border border-red-100")}>
+                  <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
+                  <p className={cn("text-[10px]", isDark ? "text-red-400/80" : "text-red-600")}>This action cannot be undone.</p>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setDustConfirm(null)}
+                    className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => executeDustClear(dustConfirm.token, dustConfirm.step)}
+                    className={cn("flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-colors", dustConfirm.step === 'dex' ? "bg-[#137DFE] text-white hover:bg-[#137DFE]/90" : "bg-[#F6AF01] text-black hover:bg-[#F6AF01]/90")}
+                  >
+                    {dustConfirm.step === 'dex' ? 'Sell on DEX' : 'Burn Tokens'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <Footer />
     </>
