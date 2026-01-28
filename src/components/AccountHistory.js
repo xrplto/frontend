@@ -194,7 +194,9 @@ const getTokenMd5 = (t) =>
 const TX_TYPES = ['all', 'Payment', 'OfferCreate', 'OfferCancel', 'TrustSet', 'AMMDeposit', 'AMMWithdraw', 'NFTokenMint', 'NFTokenAcceptOffer', 'NFTokenCreateOffer', 'NFTokenBurn', 'CheckCreate', 'CheckCash', 'EscrowCreate', 'EscrowFinish', 'AccountSet'];
 const ITEMS_PER_PAGE = 10;
 
-const AccountHistory = ({ account }) => {
+const COMPACT_LIMIT = 10;
+
+const AccountHistory = ({ account, compact = false }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -253,15 +255,17 @@ const AccountHistory = ({ account }) => {
     }
   };
 
-  // Auto-fetch onchain when view is onchain
+  // Auto-fetch onchain when view is onchain (or always in compact mode)
   useEffect(() => {
-    if (historyView !== 'onchain' || !account) return;
+    if (!compact && historyView !== 'onchain') return;
+    if (!account) return;
     if (txHistory.length > 0) return;
     fetchTxHistory();
-  }, [historyView, account, txHistory.length]);
+  }, [historyView, account, txHistory.length, compact]);
 
-  // Fetch NFT trades
+  // Fetch NFT trades (skip in compact mode)
   useEffect(() => {
+    if (compact) return;
     if (!account || nftTrades.length > 0) return;
     setNftTradesLoading(true);
     axios
@@ -269,7 +273,7 @@ const AccountHistory = ({ account }) => {
       .then((res) => setNftTrades(res.data?.trades || []))
       .catch(() => setNftTrades([]))
       .finally(() => setNftTradesLoading(false));
-  }, [account]);
+  }, [account, compact]);
 
   // Build token history URL with filters
   const buildTokenHistoryUrl = (cursor = null) => {
@@ -280,8 +284,9 @@ const AccountHistory = ({ account }) => {
     return url;
   };
 
-  // Fetch token history when tokens view selected or filters change
+  // Fetch token history when tokens view selected or filters change (skip in compact mode)
   useEffect(() => {
+    if (compact) return;
     if (historyView !== 'tokens' || !account) return;
     setTokenHistoryLoading(true);
     axios
@@ -308,6 +313,90 @@ const AccountHistory = ({ account }) => {
       .catch((err) => console.error('Failed to fetch more token history:', err))
       .finally(() => setTokenHistoryLoading(false));
   };
+
+  // Compact mode: brief summary for Overview tab
+  if (compact) {
+    const recentTxs = txHistory.slice(0, COMPACT_LIMIT);
+    return (
+      <div
+        className={cn(
+          'rounded-xl overflow-hidden border',
+          isDark ? 'bg-black/50 backdrop-blur-sm border-white/[0.15]' : 'bg-white border-gray-200'
+        )}
+      >
+        <div className={cn(
+          'px-4 py-3 flex items-center justify-between border-b',
+          isDark ? 'border-b-white/[0.08]' : 'border-b-gray-100'
+        )}>
+          <div className="flex items-center gap-2">
+            <Activity size={14} className={isDark ? 'text-white/50' : 'text-gray-500'} />
+            <p className={cn('text-[11px] font-semibold uppercase tracking-[0.15em]', isDark ? 'text-white/50' : 'text-gray-500')}>Recent Activity</p>
+          </div>
+        </div>
+        {txLoading && recentTxs.length === 0 ? (
+          <div className={cn('p-10 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>
+            <p className="text-[13px] font-medium">Loading...</p>
+          </div>
+        ) : recentTxs.length === 0 ? (
+          <div className={cn('p-10 text-center', isDark ? 'text-white/20' : 'text-gray-300')}>
+            <p className="text-[13px] font-medium">No recent activity</p>
+          </div>
+        ) : (
+          <div className={cn('divide-y', isDark ? 'divide-white/[0.04]' : 'divide-gray-50')}>
+            {recentTxs.map((tx) => {
+              const parsed = parseTx(tx);
+              return (
+                <div
+                  key={parsed.id}
+                  className={cn('flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors', isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-gray-50')}
+                  onClick={() => window.open(`/tx/${parsed.hash}`, '_blank')}
+                >
+                  <div className={cn(
+                    'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0',
+                    parsed.type === 'failed' ? 'bg-amber-500/10 text-amber-500' :
+                      parsed.type === 'in' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                  )}>
+                    {parsed.type === 'failed' ? <AlertTriangle size={13} /> :
+                      parsed.type === 'in' ? <ArrowDownLeft size={13} /> : <ArrowUpRight size={13} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn('text-[12px] font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>{parsed.label}</span>
+                      {parsed.type === 'failed' && <span className="text-[9px] font-bold text-amber-500 uppercase">Failed</span>}
+                    </div>
+                    <span className={cn('text-[10px] font-medium', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      {parsed.time ? new Date(parsed.time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                      {parsed.time ? ` ${new Date(parsed.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+                    </span>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    {parsed.amount ? (
+                      <span className={cn(
+                        'text-[12px] font-bold tabular-nums',
+                        parsed.type === 'failed' ? 'text-amber-500' :
+                          parsed.type === 'in' ? 'text-emerald-500' : 'text-red-500'
+                      )}>
+                        {parsed.type !== 'failed' && (parsed.type === 'in' ? '+' : '-')}{parsed.amount.replace(' XRP', '').replace(' NFT', '')}
+                        <span className={cn('text-[10px] font-medium ml-1 opacity-50', isDark ? 'text-white' : 'text-gray-500')}>
+                          {parsed.tokenCurrency ? decodeCurrency(parsed.tokenCurrency) : (parsed.nftTokenId ? 'NFT' : 'XRP')}
+                        </span>
+                      </span>
+                    ) : parsed.fromAmount && parsed.toAmount ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-bold tabular-nums text-red-500">{parsed.fromAmount.split(' ')[0]}</span>
+                        <ArrowRight size={9} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                        <span className="text-[11px] font-bold tabular-nums text-emerald-500">{parsed.toAmount.split(' ')[0]}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <>

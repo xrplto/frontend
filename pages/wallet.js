@@ -56,7 +56,8 @@ import {
   Gift,
   Medal,
   Swords,
-  Crown
+  Crown,
+  Pencil
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -1251,12 +1252,18 @@ export default function WalletPage() {
         const res = await fetch(`${BASE_URL}/api/user/${address}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.user) setProfileUser(data.user);
+          if (data.success && data.user && typeof data.user === 'object' && data.user._id === address) {
+            setProfileUser(data.user);
+          } else {
+            setProfileUser(null);
+          }
         } else if (res.status === 404) {
           setProfileUser(null);
+        } else {
+          throw new Error(`Server error (${res.status})`);
         }
       } catch (e) {
-        setProfileError('Failed to load profile');
+        setProfileError(e.message || 'Failed to load profile');
       }
       setProfileLoading(false);
     };
@@ -1275,6 +1282,8 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create profile');
+      if (!data.user || typeof data.user !== 'object') throw new Error('Invalid profile response');
+      if (data.user._id !== address) throw new Error('Profile address mismatch');
       setProfileUser(data.user);
       setNewUsername('');
     } catch (e) {
@@ -1295,6 +1304,7 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Update failed');
+      if (typeof data.username !== 'string') throw new Error('Invalid username response');
       setProfileUser(u => ({ ...u, username: data.username, updatedAt: data.updatedAt }));
       setEditingUsername(false);
       setNewUsername('');
@@ -1313,7 +1323,7 @@ export default function WalletPage() {
         const res = await fetch(`${BASE_URL}/api/user/${address}/nfts?limit=50&offset=0`);
         if (res.ok) {
           const data = await res.json();
-          if (data.nfts) setAvatarNfts(data.nfts);
+          if (data.success && Array.isArray(data.nfts)) setAvatarNfts(data.nfts);
         }
       } catch (e) {
         console.error('Failed to fetch NFTs for avatar:', e);
@@ -1335,6 +1345,7 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to set avatar');
+      if (!data.avatar || !data.avatarNftId) throw new Error('Invalid avatar response');
       setProfileUser(u => ({ ...u, avatar: data.avatar, avatarNftId: data.avatarNftId }));
       setShowAvatarPicker(false);
       toast.success('Avatar updated');
@@ -1407,15 +1418,17 @@ export default function WalletPage() {
         ]);
         if (tiersRes.ok) {
           const data = await tiersRes.json();
-          if (data.config) setTiers(data.config);
+          if (data.success && data.config && typeof data.config === 'object') setTiers(data.config);
         }
         if (perksRes?.ok) {
           const data = await perksRes.json();
-          setUserPerks({ tier: data.tier, perks: data.perks, expiry: data.expiry, roles: data.roles, groups: data.groups, contentAccess: data.contentAccess });
+          if (data.success && data.tier) {
+            setUserPerks({ tier: data.tier, perks: data.perks || {}, expiry: data.expiry ?? null, roles: data.roles || [], groups: data.groups || [], contentAccess: data.contentAccess ?? 0 });
+          }
         }
         if (badgesRes?.ok) {
           const data = await badgesRes.json();
-          setDisplayBadges({ current: data.current, available: data.available || [] });
+          if (data.success) setDisplayBadges({ current: data.current || null, available: Array.isArray(data.available) ? data.available : [] });
         }
       } catch (e) { }
       setTiersLoading(false);
@@ -1435,7 +1448,17 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create invoice');
-      setXrpInvoice(data);
+      if (!data.invoiceId || !data.payment?.destination || !data.payment?.xrpAmount) throw new Error('Invalid invoice response');
+      setXrpInvoice({
+        invoiceId: data.invoiceId,
+        amount: data.payment.xrpAmount,
+        destination: data.payment.destination,
+        destinationTag: data.payment.destinationTag || null,
+        tier: data.tier,
+        usdPrice: data.payment.usdPrice,
+        billing: data.payment.billing,
+        expiresIn: data.expiresIn
+      });
     } catch (e) {
       setProfileError(e.message);
     }
@@ -1450,14 +1473,12 @@ export default function WalletPage() {
       const res = await fetch(`${BASE_URL}/api/user/tier/verify/${xrpInvoice.invoiceId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Payment not verified');
-      if (data.success) {
-        setUserPerks(data.perks);
-        setProfileUser(u => u ? { ...u, tier: data.tier } : u);
-        setXrpInvoice(null);
-        toast.success(`Upgraded to ${data.tier}!`);
-      } else {
-        throw new Error('Payment not yet received');
-      }
+      if (data.status === 'pending') throw new Error('Payment not yet received. Please send the XRP and try again.');
+      if (data.status !== 'paid' && !data.tier) throw new Error('Payment not yet confirmed');
+      if (data.perks && typeof data.perks === 'object') setUserPerks(data.perks);
+      if (data.tier) setProfileUser(u => u ? { ...u, tier: data.tier } : u);
+      setXrpInvoice(null);
+      toast.success(`Upgraded to ${data.tier || 'new tier'}!`);
     } catch (e) {
       setProfileError(e.message);
     }
@@ -1473,11 +1494,15 @@ export default function WalletPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ badge })
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to set badge');
+      if (data.success) {
         setDisplayBadges(prev => ({ ...prev, current: badge }));
         window.dispatchEvent(new CustomEvent('badgeChanged', { detail: { badge } }));
       }
-    } catch (e) { }
+    } catch (e) {
+      setProfileError(e.message);
+    }
     setSettingBadge(false);
   };
 
@@ -1493,7 +1518,8 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create checkout');
-      if (data.url) window.location.href = data.url;
+      if (!data.checkoutUrl || typeof data.checkoutUrl !== 'string') throw new Error('Invalid checkout response');
+      window.location.href = data.checkoutUrl;
     } catch (e) {
       setProfileError(e.message);
     }
@@ -2377,108 +2403,79 @@ export default function WalletPage() {
                     {/* Token Holdings */}
                     <div
                       className={cn(
-                        'rounded-xl h-full flex flex-col transition-all duration-300',
+                        'rounded-xl h-full flex flex-col',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
-                          : 'bg-white border border-gray-200 shadow-sm'
+                          ? 'bg-black/40 border border-white/[0.12]'
+                          : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
-                        <div className="flex items-center gap-2">
-                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
-                          <p
-                            className={cn(
-                              'text-[11px] font-bold uppercase tracking-wider',
-                              isDark ? 'text-white/70' : 'text-gray-600'
-                            )}
-                          >
+                      <div className={cn("flex items-center justify-between px-3 py-2 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                        <div className="flex items-center gap-1.5">
+                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
+                          <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
                             Top Assets
                           </p>
-                          <span
-                            className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-bold',
-                              isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
-                            )}
-                          >
+                          <span className={cn('text-[9px] px-1 py-px rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
                             {allTokens.length}
                           </span>
                         </div>
                         <button
                           onClick={() => handleTabChange('tokens')}
-                          className={cn(
-                            'text-[10px] font-semibold uppercase tracking-wide transition-all hover:scale-105 active:scale-95',
-                            isDark
-                              ? 'text-[#137DFE] hover:text-blue-400'
-                              : 'text-[#137DFE] hover:text-blue-600'
-                          )}
+                          className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
                         >
                           View All
                         </button>
                       </div>
                       {tokensLoading ? (
-                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>
+                        <div className={cn('flex-1 flex items-center justify-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                           <div className="animate-pulse flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
                             <span className="text-[10px] uppercase tracking-widest font-medium">Loading Assets</span>
                           </div>
                         </div>
                       ) : allTokens.length === 0 ? (
-                        <div className={cn('p-8 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <div className={cn("w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-                            <Coins size={20} className={cn(isDark ? "text-white/20" : "text-gray-300")} />
-                          </div>
-                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
-                          <p className={cn('text-[10px] mb-4 opacity-70', isDark ? 'text-white/40' : 'text-gray-400')}>Start building your portfolio</p>
-                          <a href="/" className={cn("inline-flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95", isDark ? "text-white bg-[#137DFE] hover:bg-blue-600" : "text-white bg-[#137DFE] hover:bg-blue-600")}>
-                            Browse Market
-                          </a>
+                        <div className={cn('p-6 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
+                          <Coins size={18} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
+                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
+                          <a href="/" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Browse Market</a>
                         </div>
                       ) : (
                         <>
-                          {/* Table Header */}
-                          <div className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_40px] gap-2 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_28px] gap-1.5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Asset</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Value</span>
                             <span className="text-right">24h</span>
                             <span></span>
                           </div>
-                          {/* Table Body */}
                           <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {allTokens.slice(0, 5).map((token) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_40px] gap-2 items-center px-4 py-2.5 transition-all duration-200", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
-                                {/* Token */}
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <div className="relative shrink-0">
-                                    <img
-                                      src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
-                                      alt=""
-                                      className="w-7 h-7 rounded-full object-cover bg-white/10 ring-1 ring-white/10 shadow-sm"
-                                      onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
-                                    />
-                                  </div>
-                                  <p className={cn("text-xs font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{token.symbol}</p>
+                              <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_28px] gap-1.5 items-center px-3 py-1.5 transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
+                                    alt=""
+                                    className="w-5.5 h-5.5 rounded-full object-cover bg-white/10 ring-1 ring-white/10 shrink-0"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                  />
+                                  <p className={cn("text-[11px] font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{token.symbol}</p>
                                 </div>
-                                {/* Balance */}
-                                <p className={cn("text-[11px] tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
-                                {/* Value */}
-                                <p className={cn("text-[11px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
+                                <p className={cn("text-[10px] tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
+                                <p className={cn("text-[10px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
                                   {activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
                                 </p>
-                                {/* 24h Change */}
                                 <p className={cn("text-[10px] tabular-nums text-right font-bold", token.positive ? "text-[#08AA09]" : "text-red-400")}>
                                   {token.change}
                                 </p>
-                                {/* Send */}
                                 <button
                                   onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }}
                                   className={cn(
-                                    "flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:scale-110 active:scale-90 justify-self-end",
-                                    isDark ? "bg-white/[0.05] text-[#137DFE] hover:bg-white/[0.1] hover:text-blue-400" : "bg-blue-50 text-[#137DFE] hover:bg-blue-100"
+                                    "flex items-center justify-center w-6 h-6 rounded-lg transition-colors justify-self-end",
+                                    isDark ? "text-[#137DFE] hover:bg-white/[0.08]" : "text-[#137DFE] hover:bg-blue-50"
                                   )}
                                   title="Send Asset"
                                 >
-                                  <Send size={12} />
+                                  <Send size={11} />
                                 </button>
                               </div>
                             ))}
@@ -2493,93 +2490,71 @@ export default function WalletPage() {
                     {/* NFT Collections */}
                     <div
                       className={cn(
-                        'rounded-xl h-full flex flex-col transition-all duration-300',
+                        'rounded-xl h-full flex flex-col',
                         isDark
-                          ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
-                          : 'bg-white border border-gray-200 shadow-sm'
+                          ? 'bg-black/40 border border-white/[0.12]'
+                          : 'bg-white border border-gray-200'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
-                        <div className="flex items-center gap-2">
-                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
-                          <p
-                            className={cn(
-                              'text-[11px] font-bold uppercase tracking-wider',
-                              isDark ? 'text-white/70' : 'text-gray-600'
-                            )}
-                          >
+                      <div className={cn("flex items-center justify-between px-3 py-2 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                        <div className="flex items-center gap-1.5">
+                          <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
+                          <p className={cn('text-[10px] font-bold uppercase tracking-wider', isDark ? 'text-white/70' : 'text-gray-600')}>
                             NFT Collections
                           </p>
-                          <span
-                            className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-bold',
-                              isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
-                            )}
-                          >
+                          <span className={cn('text-[9px] px-1 py-px rounded font-bold leading-none', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>
                             {collections.length}
                           </span>
                         </div>
                         <button
                           onClick={() => handleTabChange('nfts')}
-                          className={cn(
-                            'text-[10px] font-semibold uppercase tracking-wide transition-all hover:scale-105 active:scale-95',
-                            isDark
-                              ? 'text-[#137DFE] hover:text-blue-400'
-                              : 'text-[#137DFE] hover:text-blue-600'
-                          )}
+                          className={cn('text-[10px] font-semibold uppercase tracking-wide', isDark ? 'text-[#137DFE] hover:text-blue-400' : 'text-[#137DFE] hover:text-blue-600')}
                         >
                           View All
                         </button>
                       </div>
                       {collectionsLoading ? (
-                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>
+                        <div className={cn('flex-1 flex items-center justify-center py-8', isDark ? 'text-white/40' : 'text-gray-400')}>
                           <div className="animate-pulse flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
                             <span className="text-[10px] uppercase tracking-widest font-medium">Loading Collections</span>
                           </div>
                         </div>
                       ) : collections.length === 0 ? (
-                        <div className={cn('flex-1 flex flex-col items-center justify-center py-10')}>
-                          <div className={cn("w-12 h-12 mb-3 rounded-2xl flex items-center justify-center", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
-                            <Image size={20} className={cn(isDark ? "text-white/20" : "text-gray-300")} />
-                          </div>
-                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>NO NFTS FOUND</p>
-                          <p className={cn('text-[10px] mb-4 opacity-70', isDark ? 'text-white/40' : 'text-gray-400')}>Start your NFT collection</p>
-                          <a href="/nfts" className={cn("inline-flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95", isDark ? "text-white bg-[#137DFE] hover:bg-blue-600" : "text-white bg-[#137DFE] hover:bg-blue-600")}>
-                            Explore NFTs
-                          </a>
+                        <div className={cn('p-6 text-center')}>
+                          <Image size={18} className={cn("mx-auto mb-2", isDark ? "text-white/20" : "text-gray-300")} />
+                          <p className={cn('text-[10px] font-semibold mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No NFTs Found</p>
+                          <a href="/nfts" className="text-[10px] font-bold text-[#137DFE] hover:text-blue-400">Explore NFTs</a>
                         </div>
                       ) : (
                         <>
-                          {/* Table Header */}
-                          <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                          <div className={cn("grid grid-cols-[2fr_0.8fr_1fr_1fr] gap-1.5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
                             <span className="text-right">Value</span>
                           </div>
-                          {/* Table Body */}
                           <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {collections.slice(0, 5).map((col) => (
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 items-center px-4 py-3 text-left transition-all duration-200", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
+                                className={cn("w-full grid grid-cols-[2fr_0.8fr_1fr_1fr] gap-1.5 items-center px-3 py-1.5 text-left transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
                               >
-                                <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="flex items-center gap-2 min-w-0">
                                   {col.logo ? (
-                                    <img src={col.logo} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0 ring-1 ring-white/10 shadow-sm" />
+                                    <img src={col.logo} alt="" className="w-5.5 h-5.5 rounded-md object-cover shrink-0 ring-1 ring-white/10" />
                                   ) : (
-                                    <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[9px] shrink-0", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
+                                    <div className={cn("w-5.5 h-5.5 rounded-md flex items-center justify-center text-[8px] shrink-0", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
                                   )}
-                                  <p className={cn("text-xs font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
+                                  <p className={cn("text-[11px] font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
                                 </div>
-                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
-                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>
-                                  {col.floor} <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-400")}>XRP</span>
+                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
+                                <p className={cn("text-[10px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>
+                                  {col.floor} <span className={cn("text-[8px]", isDark ? "text-white/20" : "text-gray-400")}>XRP</span>
                                 </p>
-                                <p className={cn("text-[11px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
-                                  {col.value.toLocaleString()} <span className={cn("text-[9px] font-normal", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                                <p className={cn("text-[10px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
+                                  {col.value.toLocaleString()} <span className={cn("text-[8px] font-normal", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
                                 </p>
                               </button>
                             ))}
@@ -2592,7 +2567,7 @@ export default function WalletPage() {
 
                 {/* Recent Activity */}
                 <div className="mt-4">
-                  <AccountHistory account={address} />
+                  <AccountHistory account={address} compact />
                 </div>
               </div>
             )}
@@ -3763,9 +3738,7 @@ export default function WalletPage() {
                     <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : profileUser ? (
-                  <div className={cn('rounded-2xl p-6 relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl' : 'bg-white border border-gray-100 shadow-xl')}>
-                    {/* Background Accent */}
-                    <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+                  <div className={cn('rounded-xl p-6 relative', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
 
                     <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6">
                       {/* Avatar Wrapper */}
@@ -3775,8 +3748,8 @@ export default function WalletPage() {
                         title="Change avatar"
                       >
                         <div className={cn(
-                          'w-24 h-24 rounded-2xl p-1 transition-all duration-500 group-hover:rotate-3 shadow-lg',
-                          isDark ? 'bg-gradient-to-br from-white/10 to-white/5 border border-white/10' : 'bg-white border border-gray-200'
+                          'w-24 h-24 rounded-xl p-1',
+                          isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-gray-50 border-[1.5px] border-gray-200'
                         )}>
                           {profileUser.avatar ? (
                             <img
@@ -3786,8 +3759,8 @@ export default function WalletPage() {
                             />
                           ) : (
                             <div className={cn(
-                              'w-full h-full rounded-xl flex items-center justify-center text-3xl font-bold bg-gradient-to-br',
-                              isDark ? 'from-[#137DFE]/20 to-[#650CD4]/20 text-[#137DFE]' : 'from-blue-50 to-indigo-50 text-blue-600'
+                              'w-full h-full rounded-xl flex items-center justify-center text-3xl font-bold',
+                              isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600'
                             )}>
                               {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
                             </div>
@@ -3797,8 +3770,8 @@ export default function WalletPage() {
                         <div className="absolute inset-2 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/40 backdrop-blur-sm">
                           <Image size={24} className="text-white" />
                         </div>
-                        {/* Status Indicator */}
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-[#0a0a0a] bg-emerald-500 shadow-md" />
+                        {/* Tier Indicator */}
+                        <div className={cn('absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4', isDark ? 'border-[#0a0a0a]' : 'border-white', profileUser.tier === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]' : profileUser.tier === 'diamond' ? 'bg-violet-500' : profileUser.tier === 'nova' ? 'bg-amber-500' : profileUser.tier === 'vip' ? 'bg-emerald-500' : 'bg-gray-400')} />
                       </button>
 
                       {/* Profile Info */}
@@ -3841,9 +3814,9 @@ export default function WalletPage() {
                               {(!profileUser.username || userPerks?.perks?.canChangeUsername) && (
                                 <button
                                   onClick={() => { setEditingUsername(true); setNewUsername(profileUser.username || ''); }}
-                                  className={cn('p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all', isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')}
+                                  className={cn('p-1.5 rounded-lg transition-colors', isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100')}
                                 >
-                                  <Plus size={14} className="rotate-45" /> {/* Edit icon visual */}
+                                  <Pencil size={14} />
                                 </button>
                               )}
                             </div>
@@ -3870,24 +3843,53 @@ export default function WalletPage() {
                         </div>
                       </div>
 
-                      {/* Header Actions */}
-                      <div className="md:absolute md:top-0 md:right-0">
-                        {profileUser.username && !userPerks?.perks?.canChangeUsername && !editingUsername && (
-                          <div className={cn('px-3 py-1 rounded-full text-[9px] font-bold tracking-wider border', isDark ? 'bg-amber-500/5 text-amber-500/60 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100')}>
-                            XRP VIP+ REQUIRED TO RENAME
-                          </div>
+                      {/* Memberships & Badges */}
+                      <div className="md:absolute md:top-0 md:right-0 flex flex-wrap items-center justify-center md:justify-end gap-1.5">
+                        {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
+                          [...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(tierName => {
+                            const tc = { admin: { icon: Shield, bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' }, moderator: { icon: Shield, bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' }, verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'text-white', border: 'border-[#FFD700]/30', gradient: true }, diamond: { icon: Gem, bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' }, nova: { icon: Star, bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' }, vip: { icon: Sparkles, bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }, private: { icon: Crown, bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' } };
+                            const config = tc[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                            const Icon = config.icon;
+                            return (
+                              <span key={tierName} className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
+                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>{tierName.toUpperCase()}</span>
+                              </span>
+                            );
+                          })
                         )}
+                        {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
+                          const name = badgeId.split(':')[1];
+                          const ac = { first_recruit: { icon: Users, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'First Recruit' }, squad_leader: { icon: Swords, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'Squad Leader' }, early_adopter: { icon: Zap, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Early Adopter' }, top_trader: { icon: TrendingUp, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'Top Trader' }, whale: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Whale' }, og: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'OG' }, contributor: { icon: Gift, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Contributor' }, army_general: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Army General' } };
+                          const defaultCfg = { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
+                          const config = ac[name] || defaultCfg;
+                          const Icon = config.icon;
+                          return (
+                            <span key={badgeId} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
+                              {Icon && <Icon size={9} className={config.text} />}
+                              <span className={config.text}>{config.label || name.replace(/_/g, ' ').toUpperCase()}</span>
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {/* Stats Grid - Concise Footer */}
-                    <div className={cn('grid grid-cols-2 gap-4 mt-8 pt-6 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+                    {/* Stats Grid */}
+                    <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
                       <div className="text-center md:text-left">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Activity Status</p>
-                        <p className={cn('text-[13px] font-medium', isDark ? 'text-emerald-400' : 'text-emerald-600')}>Online Now</p>
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Membership</p>
+                        <p className={cn('text-[13px] font-medium capitalize', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.tier || userPerks?.tier || 'Member'}</p>
                       </div>
-                      <div className="text-center md:text-right">
-                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Last Profile Update</p>
+                      <div className="text-center md:text-left">
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Army Rank</p>
+                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRank || 'Unranked'}</p>
+                      </div>
+                      <div className="text-center md:text-left">
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Recruits</p>
+                        <p className={cn('text-[13px] font-medium', isDark ? 'text-white/80' : 'text-gray-700')}>{profileUser.armyRecruits ?? 0}</p>
+                      </div>
+                      <div className="text-center md:text-left">
+                        <p className={cn('text-[10px] uppercase tracking-[0.1em] font-bold mb-1', isDark ? 'text-white/20' : 'text-gray-400')}>Last Update</p>
                         <p className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-600')}>{profileUser.updatedAt ? formatDistanceToNow(new Date(profileUser.updatedAt), { addSuffix: true }) : 'Never'}</p>
                       </div>
                     </div>
@@ -3896,7 +3898,7 @@ export default function WalletPage() {
                     {showAvatarPicker && (
                       <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setShowAvatarPicker(false)}>
                         <div
-                          className={cn('w-full max-w-md rounded-2xl p-5 shadow-2xl transition-all duration-300 transform scale-100', isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-gray-200')}
+                          className={cn('w-full max-w-md rounded-xl p-5', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center justify-between mb-5">
@@ -3930,7 +3932,7 @@ export default function WalletPage() {
                                   className={cn(
                                     'relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 group/item',
                                     profileUser.avatarNftId === nft.NFTokenID
-                                      ? 'border-[#137DFE] scale-95 shadow-lg shadow-[#137DFE]/20'
+                                      ? 'border-[#137DFE] scale-95'
                                       : isDark ? 'border-white/5 hover:border-white/20' : 'border-transparent hover:border-gray-200',
                                     (settingAvatar || !nft.files?.[0]?.thumbnail?.large) && 'opacity-50 grayscale'
                                   )}
@@ -3942,7 +3944,7 @@ export default function WalletPage() {
                                   />
                                   {profileUser.avatarNftId === nft.NFTokenID && (
                                     <div className="absolute inset-0 bg-[#137DFE]/30 backdrop-blur-[2px] flex items-center justify-center">
-                                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
                                         <Check size={16} className="text-[#137DFE]" />
                                       </div>
                                     </div>
@@ -4009,7 +4011,7 @@ export default function WalletPage() {
                   <p className={cn('text-[10px] uppercase tracking-wider mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Wallet Labels</p>
 
                   {/* Add new label */}
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex flex-col sm:flex-row gap-2 mb-3">
                     <input
                       type="text"
                       value={newLabelWallet}
@@ -4018,22 +4020,24 @@ export default function WalletPage() {
                         if (val === '' || /^r[a-zA-Z0-9]*$/.test(val)) setNewLabelWallet(val.slice(0, 35));
                       }}
                       placeholder="rAddress..."
-                      className={cn('flex-1 px-2 py-1.5 rounded-lg text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                      className={cn('flex-1 px-3 py-2 rounded-xl text-[12px] font-mono outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
                     />
-                    <input
-                      type="text"
-                      value={newLabelName}
-                      onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
-                      placeholder="Label"
-                      className={cn('w-28 px-2 py-1.5 rounded-lg text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
-                    />
-                    <button
-                      onClick={handleAddLabel}
-                      disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50"
-                    >
-                      <Plus size={14} />
-                    </button>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newLabelName}
+                        onChange={(e) => setNewLabelName(e.target.value.slice(0, 30))}
+                        placeholder="Label"
+                        className={cn('flex-1 sm:w-36 px-3 py-2 rounded-xl text-[12px] outline-none', isDark ? 'bg-white/[0.04] text-white border border-white/[0.15] placeholder:text-white/25' : 'bg-white text-gray-900 border border-gray-200 placeholder:text-gray-400')}
+                      />
+                      <button
+                        onClick={handleAddLabel}
+                        disabled={labelsLoading || !newLabelWallet || newLabelWallet.length < 25 || !newLabelName}
+                        className="px-3 py-2 rounded-xl text-[11px] font-medium bg-[#137DFE] text-white disabled:opacity-50 transition-colors hover:bg-[#137DFE]/90"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Labels list */}
@@ -4064,40 +4068,6 @@ export default function WalletPage() {
 
                 {/* Membership Tiers Section */}
                 <div className={cn('rounded-xl overflow-hidden', isDark ? 'bg-black/50 border border-white/[0.15]' : 'bg-white border border-gray-200')}>
-                  <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Trophy size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
-                        <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Membership</p>
-                      </div>
-                      {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                          {[...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(tierName => {
-                            const tierConfig = {
-                              admin: { icon: Shield, bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
-                              moderator: { icon: Shield, bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
-                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'text-white', border: 'border-[#FFD700]/30', gradient: true, gradientFrom: '#FFD700' },
-                              diamond: { icon: Gem, bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
-                              nova: { icon: Star, bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-                              vip: { icon: Sparkles, bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-                              private: { icon: Crown, bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' }
-                            };
-                            const config = tierConfig[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                            const Icon = config.icon;
-                            return (
-                              <span key={tierName} className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
-                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
-                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>
-                                  {tierName.toUpperCase()}
-                                </span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Display Tier Selector - only tier badges are selectable */}
                   {displayBadges.available.filter(b => b.startsWith('tier:')).length > 1 && (
                     <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
@@ -4124,7 +4094,7 @@ export default function WalletPage() {
                                 className={cn(
                                   'px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border transition-all duration-300',
                                   isSelected
-                                    ? cn(config.bg, config.border, 'ring-1 ring-white/20 shadow-lg shadow-black/20 scale-105')
+                                    ? cn(config.bg, config.border, 'ring-1 ring-white/20 scale-105')
                                     : 'bg-transparent border-transparent opacity-40 hover:opacity-100 grayscale hover:grayscale-0',
                                   settingBadge && 'cursor-wait'
                                 )}
@@ -4141,54 +4111,10 @@ export default function WalletPage() {
                     </div>
                   )}
 
-                  {/* Achievement Badges - earned badges, not selectable */}
-                  {displayBadges.available.filter(b => b.startsWith('badge:')).length > 0 && (
-                    <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Award size={14} className={cn(isDark ? 'text-white/40' : 'text-gray-400')} />
-                          <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Badges</p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {displayBadges.available.filter(b => b.startsWith('badge:')).map(badgeId => {
-                            const name = badgeId.split(':')[1];
-                            const achievementConfig = {
-                              first_recruit: { icon: Users, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'First Recruit' },
-                              squad_leader: { icon: Swords, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'Squad Leader' },
-                              early_adopter: { icon: Zap, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Early Adopter' },
-                              top_trader: { icon: TrendingUp, bg: 'bg-[#137DFE]/15', text: 'text-[#137DFE]', border: 'border-[#137DFE]/20', label: 'Top Trader' },
-                              whale: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Whale' },
-                              og: { icon: Medal, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20', label: 'OG' },
-                              contributor: { icon: Gift, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20', label: 'Contributor' },
-                              army_general: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20', label: 'Army General' }
-                            };
-                            const defaultConfig = { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                            const config = achievementConfig[name] || defaultConfig;
-                            const Icon = config.icon;
-                            const displayLabel = config.label || name.replace(/_/g, ' ').toUpperCase();
-
-                            return (
-                              <span
-                                key={badgeId}
-                                className={cn(
-                                  'px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border',
-                                  config.bg, config.border
-                                )}
-                              >
-                                {Icon && <Icon size={9} className={config.text} />}
-                                <span className={config.text}>{displayLabel}</span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* XRP Invoice Modal */}
                   {xrpInvoice && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setXrpInvoice(null)}>
-                      <div className={cn('w-full max-w-sm rounded-2xl p-6', isDark ? 'bg-[#0a0a0a] border border-white/[0.15]' : 'bg-white border border-gray-200')} onClick={(e) => e.stopPropagation()}>
+                      <div className={cn('w-full max-w-sm rounded-xl p-6', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')} onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-5">
                           <div className="flex items-center gap-2">
                             <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
@@ -4200,7 +4126,7 @@ export default function WalletPage() {
                             <X size={18} className={isDark ? 'text-white/50' : 'text-gray-500'} />
                           </button>
                         </div>
-                        <div className={cn('rounded-xl p-4 mb-4 text-center', isDark ? 'bg-gradient-to-b from-[#137DFE]/10 to-transparent border border-[#137DFE]/20' : 'bg-gradient-to-b from-blue-50 to-white border border-blue-100')}>
+                        <div className={cn('rounded-xl p-4 mb-4 text-center', isDark ? 'bg-[#137DFE]/5 border border-[#137DFE]/20' : 'bg-blue-50 border border-blue-100')}>
                           <p className={cn('text-[10px] uppercase tracking-wider mb-1', isDark ? 'text-white/40' : 'text-gray-400')}>Amount Due</p>
                           <p className={cn('text-3xl font-bold', isDark ? 'text-white' : 'text-gray-900')}>{xrpInvoice.amount} <span className="text-[#137DFE]">XRP</span></p>
                         </div>
@@ -4257,10 +4183,10 @@ export default function WalletPage() {
                             <div
                               key={name}
                               className={cn(
-                                'rounded-2xl p-4 border transition-all duration-500 relative overflow-hidden group',
+                                'rounded-xl p-4 border-[1.5px] relative overflow-hidden group transition-colors',
                                 isCurrentTier
-                                  ? `${isDark ? config.bg : 'bg-white'} ${config.border} shadow-xl ${config.glow}`
-                                  : isDark ? 'bg-white/[0.01] border-white/[0.06] hover:bg-white/[0.03] hover:border-white/20' : 'bg-gray-50/50 border-gray-100 hover:bg-white hover:border-gray-300 shadow-sm hover:shadow-md'
+                                  ? `${isDark ? config.bg : 'bg-white'} ${config.border}`
+                                  : isDark ? 'bg-white/[0.01] border-white/[0.06] hover:bg-white/[0.03] hover:border-white/20' : 'bg-gray-50/50 border-gray-100 hover:bg-white hover:border-gray-300'
                               )}
                             >
                               {isCurrentTier && (
@@ -4271,7 +4197,7 @@ export default function WalletPage() {
 
                               <div className="flex flex-col h-full">
                                 <div className="flex items-center gap-3 mb-4">
-                                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300', isCurrentTier ? `bg-gradient-to-br ${config.gradient} shadow-lg shadow-black/20` : isDark ? 'bg-white/[0.05]' : 'bg-white shadow-sm border border-gray-100')}>
+                                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', isCurrentTier ? `bg-gradient-to-br ${config.gradient}` : isDark ? 'bg-white/[0.05]' : 'bg-white border border-gray-100')}>
                                     <TierIcon size={20} className={isCurrentTier ? 'text-white' : config.text} />
                                   </div>
                                   <div className="flex-1">
@@ -4338,7 +4264,7 @@ export default function WalletPage() {
                                     <button
                                       onClick={() => handlePurchaseTierStripe(name)}
                                       disabled={purchaseLoading === name}
-                                      className={cn('flex-2 py-2.5 px-4 rounded-xl text-[11px] font-bold text-white transition-all shadow-lg active:scale-95 bg-gradient-to-r', config.gradient)}
+                                      className={cn('flex-1 py-2.5 px-4 rounded-xl text-[11px] font-bold text-white transition-colors active:scale-95 bg-gradient-to-r', config.gradient)}
                                     >
                                       {purchaseLoading === name ? '...' : 'Upgrade'}
                                     </button>
