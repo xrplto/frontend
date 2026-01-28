@@ -4933,24 +4933,25 @@ export default function WalletPage() {
                         <p className={cn('text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>Membership</p>
                       </div>
                       {(userPerks?.groups?.length > 0 || userPerks?.roles?.length > 0) && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                           {[...new Set([...(userPerks.roles || []).filter(r => r !== 'member'), ...(userPerks.groups || [])])].map(tierName => {
                             const tierConfig = {
-                              member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
-                              admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
-                              moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
-                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
-                              diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                              nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
-                              private: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
+                              admin: { icon: Shield, bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+                              moderator: { icon: Shield, bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
+                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'text-white', border: 'border-[#FFD700]/30', gradient: true, gradientFrom: '#FFD700' },
+                              diamond: { icon: Gem, bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
+                              nova: { icon: Star, bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+                              vip: { icon: Sparkles, bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+                              private: { icon: Crown, bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' }
                             };
                             const config = tierConfig[tierName] || { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                             const Icon = config.icon;
                             return (
-                              <span key={tierName} className={cn('px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border', config.bg, config.border)}>
-                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
-                                <span className={config.text}>{tierName.toUpperCase()}</span>
+                              <span key={tierName} className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border backdrop-blur-md whitespace-nowrap', config.bg, config.border)}>
+                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>
+                                  {tierName.toUpperCase()}
+                                </span>
                               </span>
                             );
                           })}
@@ -4963,22 +4964,17 @@ export default function WalletPage() {
                   {displayBadges.available.filter(b => b.startsWith('tier:')).length > 1 && (
                     <div className={cn('px-4 py-3 border-b', isDark ? 'border-white/[0.08]' : 'border-gray-100')}>
                       <div className="flex items-center justify-between">
-                        <p className={cn('text-[10px]', isDark ? 'text-white/40' : 'text-gray-400')}>Display Tier</p>
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        <p className={cn('text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/30' : 'text-gray-400')}>Active Badge</p>
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
                           {displayBadges.available.filter(b => b.startsWith('tier:')).map(badgeId => {
                             const name = badgeId.split(':')[1];
                             const tierConfig = {
-                              member: { icon: User, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' },
-                              admin: { icon: Shield, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
-                              moderator: { icon: Shield, bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/20' },
-                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/15 via-[#FF6B9D]/15 to-[#00FFFF]/15', text: 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent', border: 'border-[#FFD700]/30', gradient: true },
-                              diamond: { icon: Gem, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                              nova: { icon: Star, bg: 'bg-[#F6AF01]/15', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                              vip: { icon: Sparkles, bg: 'bg-[#08AA09]/15', text: 'text-[#08AA09]', border: 'border-[#08AA09]/20' },
-                              private: { icon: Crown, bg: 'bg-[#650CD4]/15', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' }
+                              verified: { icon: Check, bg: 'bg-gradient-to-r from-[#FFD700]/10 via-[#FF6B9D]/10 to-[#00FFFF]/10', text: 'text-white', border: 'border-[#FFD700]/30', gradient: true },
+                              diamond: { icon: Gem, bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
+                              nova: { icon: Star, bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+                              vip: { icon: Sparkles, bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }
                             };
-                            const defaultConfig = { icon: Trophy, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                            const config = tierConfig[name] || defaultConfig;
+                            const config = tierConfig[name] || { icon: Star, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
                             const Icon = config.icon;
                             const isSelected = displayBadges.current === badgeId;
 
@@ -4988,14 +4984,17 @@ export default function WalletPage() {
                                 onClick={() => handleSetDisplayBadge(badgeId)}
                                 disabled={settingBadge}
                                 className={cn(
-                                  'px-2 py-0.5 rounded text-[9px] font-semibold tracking-wide flex items-center gap-1 border transition-all',
-                                  config.bg, config.border,
-                                  isSelected ? 'ring-1 ring-offset-1 ring-offset-black ring-white/30' : 'opacity-50 hover:opacity-100',
+                                  'px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight flex items-center gap-1.5 border transition-all duration-300',
+                                  isSelected
+                                    ? cn(config.bg, config.border, 'ring-1 ring-white/20 shadow-lg shadow-black/20 scale-105')
+                                    : 'bg-transparent border-transparent opacity-40 hover:opacity-100 grayscale hover:grayscale-0',
                                   settingBadge && 'cursor-wait'
                                 )}
                               >
-                                {Icon && <Icon size={9} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
-                                <span className={config.text}>{name.toUpperCase()}</span>
+                                {Icon && <Icon size={10} className={config.gradient ? 'text-[#FFD700]' : config.text} />}
+                                <span className={cn(config.gradient ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' : config.text)}>
+                                  {name.toUpperCase()}
+                                </span>
                               </button>
                             );
                           })}
@@ -5104,14 +5103,14 @@ export default function WalletPage() {
                     ) : Object.keys(tiers).length === 0 ? (
                       <p className={cn('text-[11px] text-center py-6', isDark ? 'text-white/30' : 'text-gray-400')}>No tiers available</p>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {Object.entries(tiers).filter(([name]) => name !== 'member').map(([name, tier]) => {
                           const isCurrentTier = userPerks?.tier === name;
                           const tierConfig = {
-                            vip: { icon: Sparkles, gradient: 'from-[#137DFE] to-[#0066DD]', bg: 'bg-[#137DFE]/5', border: 'border-[#137DFE]/20', text: 'text-[#137DFE]', glow: 'shadow-[#137DFE]/10' },
-                            nova: { icon: Star, gradient: 'from-[#F6AF01] to-[#E09D00]', bg: 'bg-[#F6AF01]/5', border: 'border-[#F6AF01]/20', text: 'text-[#F6AF01]', glow: 'shadow-[#F6AF01]/10' },
-                            diamond: { icon: Gem, gradient: 'from-[#650CD4] to-[#a855f7]', bg: 'bg-[#650CD4]/5', border: 'border-[#650CD4]/20', text: 'text-[#a855f7]', glow: 'shadow-[#650CD4]/10' },
-                            verified: { icon: Check, gradient: 'from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]', bg: 'bg-[#FFD700]/5', border: 'border-[#FFD700]/20', text: 'text-[#FFD700]', glow: 'shadow-[#FFD700]/10' }
+                            vip: { icon: Sparkles, gradient: 'from-emerald-500 to-emerald-700', bg: 'bg-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'shadow-emerald-500/10' },
+                            nova: { icon: Star, gradient: 'from-amber-500 to-amber-700', bg: 'bg-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-400', glow: 'shadow-amber-500/10' },
+                            diamond: { icon: Gem, gradient: 'from-violet-500 to-violet-700', bg: 'bg-violet-500/5', border: 'border-violet-500/20', text: 'text-violet-400', glow: 'shadow-violet-500/10' },
+                            verified: { icon: Check, gradient: 'from-[#FFD700] via-[#FF6B9D] to-[#00FFFF]', bg: 'bg-white/5', border: 'border-white/10', text: 'text-white', glow: 'shadow-white/5' }
                           };
                           const config = tierConfig[name] || { icon: Star, gradient: 'from-gray-500 to-gray-600', bg: 'bg-white/5', border: 'border-white/10', text: 'text-white', glow: '' };
                           const TierIcon = config.icon;
@@ -5120,119 +5119,93 @@ export default function WalletPage() {
                             <div
                               key={name}
                               className={cn(
-                                'rounded-xl p-4 border transition-all relative overflow-hidden',
+                                'rounded-2xl p-4 border transition-all duration-500 relative overflow-hidden group',
                                 isCurrentTier
-                                  ? `${config.bg} ${config.border} shadow-lg ${config.glow}`
-                                  : isDark ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/15 hover:bg-white/[0.03]' : 'bg-gray-50/50 border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                  ? `${isDark ? config.bg : 'bg-white'} ${config.border} shadow-xl ${config.glow}`
+                                  : isDark ? 'bg-white/[0.01] border-white/[0.06] hover:bg-white/[0.03] hover:border-white/20' : 'bg-gray-50/50 border-gray-100 hover:bg-white hover:border-gray-300 shadow-sm hover:shadow-md'
                               )}
                             >
                               {isCurrentTier && (
-                                <div className={cn('absolute top-0 right-0 px-2 py-0.5 text-[9px] font-semibold rounded-bl-lg bg-gradient-to-r text-white', config.gradient)}>
-                                  ACTIVE
+                                <div className={cn('absolute top-0 right-0 px-2.5 py-1 text-[9px] font-bold rounded-bl-xl bg-gradient-to-r text-white z-10', config.gradient)}>
+                                  CURRENT
                                 </div>
                               )}
 
-                              <div className="flex items-start gap-3">
-                                <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCurrentTier ? `bg-gradient-to-br ${config.gradient}` : isDark ? 'bg-white/[0.05]' : 'bg-gray-100')}>
-                                  <TierIcon size={18} className={isCurrentTier ? 'text-white' : config.text} />
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className={cn('text-[14px] font-bold capitalize', isCurrentTier ? config.text : isDark ? 'text-white' : 'text-gray-900')}>
+                              <div className="flex flex-col h-full">
+                                <div className="flex items-center gap-3 mb-4">
+                                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300', isCurrentTier ? `bg-gradient-to-br ${config.gradient} shadow-lg shadow-black/20` : isDark ? 'bg-white/[0.05]' : 'bg-white shadow-sm border border-gray-100')}>
+                                    <TierIcon size={20} className={isCurrentTier ? 'text-white' : config.text} />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className={cn('text-[15px] font-bold capitalize', isDark ? 'text-white' : 'text-gray-900')}>
                                       {name}
-                                    </span>
-                                    <div className="text-right">
-                                      <span className={cn('text-[15px] font-bold', isDark ? 'text-white' : 'text-gray-900')}>
+                                    </h4>
+                                    <div className="flex items-baseline gap-1">
+                                      <span className={cn('text-lg font-black', isDark ? 'text-white/90' : 'text-gray-900')}>
                                         €{tier.price}
                                       </span>
                                       {tier.billing && (
-                                        <span className={cn('text-[10px] ml-1', isDark ? 'text-white/40' : 'text-gray-400')}>
+                                        <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
                                           {tier.billing === 'lifetime' ? 'once' : '/' + tier.billing}
                                         </span>
                                       )}
                                     </div>
                                   </div>
-
-                                  {tier.perks && (
-                                    <div className={cn('text-[11px] space-y-1 mt-2', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check size={10} className={config.text} />
-                                        <span>{tier.perks.privateMessageLimit?.toLocaleString()} messages/month</span>
-                                      </div>
-                                      {tier.perks.canChangeUsername && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Change username anytime</span>
-                                        </div>
-                                      )}
-                                      {tier.perks.priorityRequests && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Priority support</span>
-                                        </div>
-                                      )}
-                                      {tier.perks.verifiedBadge && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Verified badge</span>
-                                        </div>
-                                      )}
-                                      {tier.perks.moderateChat && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Chat moderation</span>
-                                        </div>
-                                      )}
-                                      {tier.perks.canMute && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Mute users{Array.isArray(tier.perks.canMute) ? ` (${tier.perks.canMute.join(', ')})` : ''}</span>
-                                        </div>
-                                      )}
-                                      {tier.perks.canBan && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Check size={10} className={config.text} />
-                                          <span>Ban users</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Chat Name Preview */}
-                                  <div className={cn('flex items-center gap-2 mt-3 pt-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
-                                    <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>Chat name:</span>
-                                    <span className={cn('text-[12px] font-medium',
-                                      name === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' :
-                                        name === 'vip' ? 'text-[#08AA09]' :
-                                          name === 'nova' ? 'text-[#F6AF01]' :
-                                            name === 'diamond' ? 'text-[#a855f7]' : 'text-[#08AA09]'
-                                    )}>
-                                      {profileUser?.username || 'YourName'}:
-                                    </span>
-                                    <span className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>Hello world!</span>
-                                  </div>
-
-                                  {!isCurrentTier && tier.price > 0 && (
-                                    <div className="flex gap-2 mt-3">
-                                      <button
-                                        onClick={() => handlePurchaseTierXRP(name)}
-                                        disabled={purchaseLoading === name}
-                                        className={cn('flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1.5', isDark ? 'bg-white/[0.05] text-white/80 hover:bg-white/10 border border-white/[0.08]' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200', 'disabled:opacity-50')}
-                                      >
-                                        <Coins size={12} />
-                                        {purchaseLoading === name ? 'Loading...' : 'XRP'}
-                                      </button>
-                                      <button
-                                        onClick={() => handlePurchaseTierStripe(name)}
-                                        disabled={purchaseLoading === name}
-                                        className={cn('flex-1 py-2 rounded-lg text-[11px] font-semibold text-white transition-all bg-gradient-to-r disabled:opacity-50', config.gradient)}
-                                      >
-                                        {purchaseLoading === name ? 'Loading...' : 'Upgrade'}
-                                      </button>
-                                    </div>
-                                  )}
                                 </div>
+
+                                {tier.perks && (
+                                  <div className="space-y-2 mb-6 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                      <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>{tier.perks.privateMessageLimit?.toLocaleString()} messages</span>
+                                    </div>
+                                    {tier.perks.canChangeUsername && (
+                                      <div className="flex items-center gap-2">
+                                        <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Custom username</span>
+                                      </div>
+                                    )}
+                                    {tier.perks.verifiedBadge && (
+                                      <div className="flex items-center gap-2">
+                                        <div className={cn('w-1 h-1 rounded-full', isCurrentTier ? 'bg-white' : config.text)} />
+                                        <span className={cn('text-[11px] font-medium', isDark ? 'text-white/50' : 'text-gray-500')}>Verified badge</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Chat Name Preview */}
+                                <div className={cn('flex items-center gap-2 mb-4 p-2 rounded-lg', isDark ? 'bg-black/20' : 'bg-gray-100/50')}>
+                                  <span className={cn('text-[10px] font-bold uppercase truncate max-w-[80px]',
+                                    name === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' :
+                                      name === 'vip' ? 'text-emerald-400' :
+                                        name === 'nova' ? 'text-amber-400' :
+                                          name === 'diamond' ? 'text-violet-400' : 'text-emerald-400'
+                                  )}>
+                                    {profileUser?.username || 'User'}
+                                  </span>
+                                  <span className={cn('text-[10px] opacity-40 italic', isDark ? 'text-white' : 'text-gray-500')}>Chat preview</span>
+                                </div>
+
+                                {!isCurrentTier && tier.price > 0 && (
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handlePurchaseTierXRP(name)}
+                                      disabled={purchaseLoading === name}
+                                      className={cn('flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 backdrop-blur-md', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm')}
+                                    >
+                                      <Coins size={12} />
+                                      XRP
+                                    </button>
+                                    <button
+                                      onClick={() => handlePurchaseTierStripe(name)}
+                                      disabled={purchaseLoading === name}
+                                      className={cn('flex-2 py-2.5 px-4 rounded-xl text-[11px] font-bold text-white transition-all shadow-lg active:scale-95 bg-gradient-to-r', config.gradient)}
+                                    >
+                                      {purchaseLoading === name ? '...' : 'Upgrade'}
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
