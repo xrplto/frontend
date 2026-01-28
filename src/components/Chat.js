@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
-import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck } from 'lucide-react';
+import { X, Inbox, Ban, VolumeX, Shield, HelpCircle, Send, ChevronLeft, ChevronDown, Plus, Clock, CheckCircle, AlertCircle, Loader2, Check, CheckCheck } from 'lucide-react';
 import { AppContext } from 'src/context/AppContext';
 
 // Local emotes from /emotes/
@@ -22,7 +22,7 @@ const EMOTES = [
   'love.gif', 'money.gif', 'sheep.gif', 'maam.gif', 'kappo.png', 'whatever.png', 'sus.gif', 'weed.gif', 'snoop.gif', 'sure.gif',
   'police.gif', 'pepebeer.webp', 'awkward_black.gif', 'face_with_open_eyes_and_hand_over_mouth.webp', 'scream.webp',
   'wilted_rose.svg', 'sob.svg', 'pensob.webp', 'clown.svg', 'grinning.svg', 'grimacing.svg', 'cold_face.svg', 'shushing_face.svg',
-  'yawning_face.svg', 'broken_heart.svg'
+  'yawning_face.svg', 'broken_heart.svg', 'fuzzybear.png'
 ].map(f => ({ name: f.replace(/\.(png|gif|webp|svg)(\?.*)?$/, ''), url: `/emotes/${f}` }));
 
 let emoteCache = EMOTES;
@@ -160,6 +160,35 @@ const ChatAvatar = ({ wallet }) => {
           ) : <span className="text-white/50">Loading...</span>}
         </div>
       )}
+    </span>
+  );
+};
+
+const DmAvatar = ({ wallet, size = 'sm' }) => {
+  const cached = userAvatarCache[wallet];
+  const [avatar, setAvatar] = useState(cached?.avatar || null);
+
+  useEffect(() => {
+    if (!wallet) return;
+    if (userAvatarCache[wallet]) { setAvatar(userAvatarCache[wallet].avatar); return; }
+    (async () => {
+      try {
+        const res = await fetch(`https://api.xrpl.to/api/user/${wallet}`);
+        const data = await res.json();
+        const url = data?.user?.avatar || null;
+        userAvatarCache[wallet] = { avatar: url, nftId: data?.user?.avatarNftId || null };
+        setAvatar(url);
+      } catch { userAvatarCache[wallet] = { avatar: null, nftId: null }; }
+    })();
+  }, [wallet]);
+
+  const s = size === 'sm' ? 'w-4 h-4' : 'w-8 h-8';
+  const t = size === 'sm' ? 'text-[7px]' : 'text-[10px]';
+
+  if (avatar) return <img src={avatar} alt="" className={`${s} rounded-full object-cover shrink-0`} />;
+  return (
+    <span className={`${s} rounded-full bg-[#650CD4]/20 flex items-center justify-center ${t} text-[#650CD4] font-medium shrink-0`}>
+      {wallet?.slice(1, 3).toUpperCase()}
     </span>
   );
 };
@@ -771,6 +800,9 @@ const Chat = () => {
   const [showSupport, setShowSupport] = useState(false);
   const [supportNotif, setSupportNotif] = useState(0);
   const containerRef = useRef(null);
+  const isNearBottomRef = useRef(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [newMsgCount, setNewMsgCount] = useState(0);
 
   const getWallet = (m) => m.wallet || m.address || m.username;
   const getRecipient = (m) => m.recipientWallet || m.recipient;
@@ -784,6 +816,40 @@ const Chat = () => {
     if (tier === 'business') return 'bg-[#F6AF01]/20 text-[#F6AF01]';
     if (tier === 'professional') return 'bg-[#137DFE]/20 text-[#137DFE]';
     return 'bg-white/10 text-white/50';
+  };
+
+  const getTierTextColor = (tier) => {
+    const t = tier?.toLowerCase();
+    if (t === 'god') return 'inline-block bg-gradient-to-r from-[#F6AF01] to-[#ff6b6b] bg-clip-text text-transparent';
+    if (t === 'verified') return 'inline-block bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent';
+    if (t === 'developer' || t === 'partner') return 'text-[#650CD4]';
+    if (t === 'business' || t === 'nova') return 'text-[#F6AF01]';
+    if (t === 'professional') return 'text-[#137DFE]';
+    if (t === 'vip') return 'text-[#08AA09]';
+    if (t === 'diamond') return 'text-[#a855f7]';
+    if (t === 'member') return 'text-white/50';
+    return 'text-[#650CD4]';
+  };
+
+  const getUserTier = (wallet) => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (getWallet(messages[i]) === wallet && messages[i].tier) return messages[i].tier;
+    }
+    return null;
+  };
+
+  const handleMessagesScroll = useCallback((e) => {
+    const el = e.target;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    isNearBottomRef.current = nearBottom;
+    setShowScrollBtn(!nearBottom);
+    if (nearBottom) setNewMsgCount(0);
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setNewMsgCount(0);
+    setShowScrollBtn(false);
   };
 
   const getApiKey = () => {
@@ -1030,7 +1096,11 @@ const Chat = () => {
   }, [isOpen, connect, authUser?.wallet]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      setNewMsgCount(c => c + 1);
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -1227,12 +1297,10 @@ const Chat = () => {
                             className="w-full text-left px-3 py-3 hover:bg-white/5 border-b border-inherit last:border-b-0 transition-colors group"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="w-8 h-8 rounded-full bg-[#650CD4]/20 flex items-center justify-center text-[10px] text-[#650CD4] font-medium shrink-0">
-                                {user.slice(1, 3).toUpperCase()}
-                              </span>
+                              <DmAvatar wallet={user} size="lg" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium text-sm text-[#650CD4]">{user.slice(0, 6)}...{user.slice(-4)}</span>
+                                  <span className={`font-medium text-sm ${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 6)}...{user.slice(-4)}</span>
                                   <span className="text-[10px] opacity-40">{timeAgo(msg.timestamp)}</span>
                                 </div>
                                 <div className="text-xs opacity-50 truncate">{msg.message}</div>
@@ -1293,19 +1361,31 @@ const Chat = () => {
                         const aMsg = conversations.find(([u]) => u === a)?.[1]?.timestamp || 0;
                         const bMsg = conversations.find(([u]) => u === b)?.[1]?.timestamp || 0;
                         return bMsg - aMsg;
-                      }).map(user => (
+                      }).map(user => {
+                        const hasUnread = activeTab !== user && messages.some(m => (m.isPrivate || m.type === 'private') && getWallet(m) === user && !m.readAt);
+                        return (
                         <button
                           key={user}
                           onClick={() => openDmTab(user)}
-                          className={`group/tab px-2 py-1 text-[11px] rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all ${activeTab === user ? 'bg-[#650CD4] text-white' : 'bg-white/5 hover:bg-white/10'}`}
+                          className={`group/tab px-2 py-1 text-[11px] rounded-lg shrink-0 flex items-center gap-1.5 font-medium transition-all ${activeTab === user ? 'bg-[#650CD4] text-white' : hasUnread ? 'bg-[#F6AF01]/10 hover:bg-[#F6AF01]/20' : 'bg-white/5 hover:bg-white/10'}`}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#650CD4]" />
-                          {user.slice(0, 4)}...{user.slice(-4)}
+                          <span className="relative">
+                            <DmAvatar wallet={user} size="sm" />
+                            {hasUnread && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#F6AF01] animate-pulse" />}
+                          </span>
+                          <span className={`${getTierTextColor(getUserTier(user))}`}>{user.slice(0, 4)}...{user.slice(-4)}</span>
                           <span onClick={(e) => closeDmTab(user, e)} className="opacity-50 hover:opacity-100 hover:text-red-400 ml-0.5">×</span>
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
-                    <div className="h-[400px] overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth">
+                    <div className="relative h-[400px]">
+                    <div className="h-full overflow-y-auto px-3 py-2 space-y-0.5 scroll-smooth" onScroll={handleMessagesScroll}>
+                      {filtered.length === 0 && (
+                        <div className="h-full flex items-center justify-center opacity-30 text-sm">
+                          {activeTab === 'general' ? 'No messages yet' : 'Start a conversation'}
+                        </div>
+                      )}
                       {filtered.map((msg, i) => {
                         const msgWallet = getWallet(msg);
                         const isOwn = msgWallet === authUser?.wallet;
@@ -1375,6 +1455,13 @@ const Chat = () => {
                         );
                       })}
                       <div ref={messagesEndRef} />
+                    </div>
+                    {showScrollBtn && (
+                      <button onClick={scrollToBottom} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#137DFE] text-white text-xs font-medium shadow-lg hover:bg-[#137DFE]/90 transition-colors z-10">
+                        <ChevronDown size={14} />
+                        {newMsgCount > 0 ? `${newMsgCount} new` : 'Latest'}
+                      </button>
+                    )}
                     </div>
                   </>
                 );

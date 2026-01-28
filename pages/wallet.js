@@ -4311,7 +4311,7 @@ export default function WalletPage() {
                                     </h4>
                                     <div className="flex items-baseline gap-1">
                                       <span className={cn('text-lg font-black', isDark ? 'text-white/90' : 'text-gray-900')}>
-                                        €{tier.price}
+                                        ${tier.price}
                                       </span>
                                       {tier.billing && (
                                         <span className={cn('text-[10px] font-medium opacity-40', isDark ? 'text-white' : 'text-gray-500')}>
