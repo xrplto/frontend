@@ -257,6 +257,89 @@ const NftImage = ({ nftTokenId, className, fallback }) => {
   );
 };
 
+// Avatar with NFT tooltip on hover
+const AvatarWithTooltip = ({ avatarUrl, nftId, className }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [nftData, setNftData] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const [loading, setLoading] = useState(false);
+
+  const handleMouseEnter = async (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 });
+    setShowTooltip(true);
+
+    if (!nftId || nftData) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`https://api.xrpl.to/v1/nft/${nftId}`);
+      setNftData(res.data);
+    } catch (e) { }
+    setLoading(false);
+  };
+
+  const largeImageUrl = nftData ? (getNftCoverUrl(nftData, 'medium', 'image') || avatarUrl) : avatarUrl;
+
+  return (
+    <>
+      <Link href={nftId ? `/nft/${nftId}` : '#'}>
+        <img
+          src={avatarUrl}
+          alt="Avatar"
+          className={className}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={() => setShowTooltip(false)}
+        />
+      </Link>
+      {showTooltip && nftId && typeof window !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: tooltipPos.top,
+            left: tooltipPos.left,
+            transform: 'translateX(-50%)',
+            zIndex: 99999
+          }}
+          className={cn(
+            'rounded-2xl overflow-hidden shadow-2xl border backdrop-blur-2xl',
+            isDark ? 'bg-black/95 border-white/10 shadow-black' : 'bg-white/95 border-gray-200 shadow-xl'
+          )}
+        >
+          {loading ? (
+            <div className="flex items-center justify-center p-6">
+              <div className={cn('w-5 h-5 border-2 rounded-full animate-spin', isDark ? 'border-white/20 border-t-white/60' : 'border-gray-200 border-t-gray-600')} />
+            </div>
+          ) : nftData ? (
+            <div className="flex flex-col">
+              <img src={largeImageUrl} alt="" className="w-[180px] h-[180px] object-cover" />
+              <div className="p-3">
+                <p className={cn('text-[13px] font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>
+                  {nftData.name || nftData.meta?.name || 'Unnamed'}
+                </p>
+                {nftData.collection && (
+                  <p className={cn('text-[11px] truncate mt-0.5', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    {nftData.collection}
+                  </p>
+                )}
+                {nftData.rarity_rank > 0 && (
+                  <p className="text-[10px] text-purple-400 font-medium mt-1">
+                    Rank #{nftData.rarity_rank}{nftData.total ? ` of ${nftData.total.toLocaleString()}` : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className={cn('text-[11px] p-4', isDark ? 'text-white/40' : 'text-gray-400')}>NFT Avatar</p>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
+
 const OverView = ({ account }) => {
   const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -326,6 +409,9 @@ const OverView = ({ account }) => {
 
   // User perks
   const [userPerks, setUserPerks] = useState(null);
+
+  // User profile (for avatar)
+  const [userProfile, setUserProfile] = useState(null);
 
   // Set XRP price from holdings data
   useEffect(() => {
@@ -438,7 +524,7 @@ const OverView = ({ account }) => {
     fetchLabel();
   }, [account, accountProfile?.account, isOwnAccount]);
 
-  // Fetch user perks
+  // Fetch user perks and profile
   useEffect(() => {
     if (!account) return;
     const fetchPerks = async () => {
@@ -447,7 +533,14 @@ const OverView = ({ account }) => {
         if (res.data) setUserPerks(res.data);
       } catch (e) { }
     };
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`https://api.xrpl.to/api/user/${account}`);
+        if (res.data?.success && res.data.user) setUserProfile(res.data.user);
+      } catch (e) { }
+    };
     fetchPerks();
+    fetchProfile();
   }, [account]);
 
   const handleSaveLabel = async () => {
@@ -882,12 +975,20 @@ const OverView = ({ account }) => {
             <div className="mb-6">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
-                  <div className={cn(
-                    'p-3 rounded-2xl border',
-                    isDark ? 'bg-white/[0.03] border-white/10 text-white/70' : 'bg-gray-50 border-gray-200 text-gray-400'
-                  )}>
-                    <User size={24} />
-                  </div>
+                  {userProfile?.avatar ? (
+                    <AvatarWithTooltip
+                      avatarUrl={userProfile.avatar}
+                      nftId={userProfile.avatarNftId}
+                      className="w-24 h-24 rounded-2xl object-cover border border-white/10 cursor-pointer hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <div className={cn(
+                      'p-3 rounded-2xl border',
+                      isDark ? 'bg-white/[0.03] border-white/10 text-white/70' : 'bg-gray-50 border-gray-200 text-gray-400'
+                    )}>
+                      <User size={24} />
+                    </div>
+                  )}
                   <div className="flex flex-col">
                     <div className="flex items-center gap-3 flex-wrap">
                       <h2
