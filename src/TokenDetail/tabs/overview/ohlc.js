@@ -30,7 +30,7 @@ const processOhlc = (ohlc) => {
   const MAX = 90071992547409;
   return ohlc
     .filter((c) => c[1] < MAX && c[2] < MAX && c[3] < MAX && c[4] < MAX)
-    .filter((c) => c[1] > 0 && c[4] > 0) // Filter out zero-value candles (incomplete/no trades)
+    .filter((c) => c[1] > 0 && c[4] > 0)
     .map((c) => ({
       time: Math.floor(c[0] / 1000),
       open: c[1] || 0,
@@ -394,7 +394,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             series.volume.update({
               time: candle.time,
               value: candle.volume,
-              color: candle.close >= candle.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
+              color: candle.close >= candle.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
             });
           }
 
@@ -646,10 +646,10 @@ const PriceChartAdvanced = memo(({ token }) => {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,
-        barSpacing: isMobile ? 10 : 14,
-        minBarSpacing: isMobile ? 5 : 8,
-        fixLeftEdge: true, // Prevent scrolling past oldest data
-        fixRightEdge: true, // Prevent scrolling past newest data
+        barSpacing: isMobile ? 3 : 4,
+        minBarSpacing: isMobile ? 1 : 2,
+        fixLeftEdge: true,
+        fixRightEdge: true,
         rightBarStaysOnScroll: true,
         lockVisibleTimeRangeOnResize: true,
         shiftVisibleRangeOnNewBar: true,
@@ -953,7 +953,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         priceLineVisible: false,
         lastValueVisible: false
       });
-      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.7, bottom: 0 } });
+      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.88, bottom: 0 } });
     }
 
     let resizeTimeout;
@@ -1044,7 +1044,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         data.map((d) => ({
           time: d.time,
           value: d.volume || 0,
-          color: d.close >= d.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'
+          color: d.close >= d.open ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'
         }))
       );
     }
@@ -1053,20 +1053,22 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (isNew) {
       const len = chartData.length;
       const visMap = {
-        '1d': isMobile ? 120 : 240,
-        '5d': isMobile ? 200 : 400,
-        '1m': isMobile ? 100 : 200,
-        '3m': isMobile ? 120 : 240,
+        '1d': isMobile ? 60 : 100,
+        '5d': isMobile ? 80 : 120,
+        '1m': isMobile ? 60 : 100,
+        '3m': isMobile ? 80 : 120,
         '1y': isMobile ? 30 : 52,
-        '5y': isMobile ? 100 : 200,
-        all: len
+        '5y': isMobile ? 80 : 120,
+        all: isMobile ? 100 : 150
       };
-      const vis = Math.min(visMap[timeRange] || 192, len);
+      // Ensure minimum visible slots so candles don't get too wide with sparse data
+      const minSlots = isMobile ? 40 : 60;
+      const vis = Math.max(minSlots, Math.min(visMap[timeRange] || 100, len));
       // Use requestAnimationFrame to set range after render to prevent layout shift
       requestAnimationFrame(() => {
         if (chartRef.current) {
           chartRef.current.timeScale().setVisibleLogicalRange({
-            from: Math.max(0, len - vis),
+            from: len - vis,
             to: len + 5
           });
         }
