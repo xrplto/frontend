@@ -440,6 +440,17 @@ const TokenSummary = memo(({ token }) => {
   );
 
   const range24h = useMemo(() => {
+    if (maxMin24h && Array.isArray(maxMin24h) && maxMin24h.length >= 2) {
+      const min = Math.min(maxMin24h[0], maxMin24h[1]);
+      const max = Math.max(maxMin24h[0], maxMin24h[1]);
+      const delta = max - min;
+      const currentPrice = exch || usd;
+      let percent =
+        delta > 0 && currentPrice
+          ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100))
+          : 50;
+      return { min, max, percent };
+    }
     if (pro24h !== null && pro24h !== undefined) {
       const currentPrice = exch || 1;
       const variation = Math.abs(pro24h) / 100;
@@ -450,16 +461,7 @@ const TokenSummary = memo(({ token }) => {
         delta > 0 ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100)) : 50;
       return { min, max, percent };
     }
-    if (!maxMin24h || !Array.isArray(maxMin24h) || maxMin24h.length < 2) return null;
-    const min = Math.min(maxMin24h[0], maxMin24h[1]);
-    const max = Math.max(maxMin24h[0], maxMin24h[1]);
-    const delta = max - min;
-    const currentPrice = exch || usd;
-    let percent =
-      delta > 0 && currentPrice
-        ? Math.max(0, Math.min(100, ((currentPrice - min) / delta) * 100))
-        : 50;
-    return { min, max, percent };
+    return null;
   }, [maxMin24h, exch, usd, pro24h]);
 
   const formatValue = (v) => {
