@@ -3506,18 +3506,16 @@ export default function WalletPage() {
             {activeTab === 'referral' && (
               <div className="space-y-4">
                 {referralLoading ? (
-                  <div className={cn('rounded-2xl p-12 text-center', isDark ? 'bg-black/50 border border-white/10' : 'bg-white border border-gray-100')}>
+                  <div className={cn('rounded-xl p-12 text-center', isDark ? 'bg-black/50 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                     <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</p>
                   </div>
                 ) : referralUser ? (
                   <div className="space-y-4">
                     {/* Main Card: Tier & Key Stats */}
-                    <div className={cn('rounded-2xl p-5 relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
-                      <div className={cn('absolute -top-12 -right-12 w-32 h-32 rounded-full blur-[60px] opacity-20', isDark ? 'bg-[#650CD4]' : 'bg-purple-400')} />
-
-                      <div className="relative flex flex-col sm:flex-row items-center justify-between gap-5 mb-6">
+                    <div className={cn('rounded-xl p-5', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-5 mb-6">
                         <div className="flex items-center gap-4">
-                          <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3', isDark ? 'bg-gradient-to-br from-[#650CD4]/30 to-[#650CD4]/10 border border-white/10' : 'bg-purple-50 border border-purple-100')}>
+                          <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20 border-[1.5px] border-white/10' : 'bg-purple-50 border-[1.5px] border-purple-100')}>
                             {['supreme_commander', 'general', 'brigadier'].includes(referralUser.tierData?.id) || ['Supreme Commander', 'General', 'Brigadier'].includes(referralUser.tier) ? <Crown size={22} className="text-[#F6AF01]" /> :
                               ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={22} className="text-[#650CD4]" /> :
                                 ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={22} className="text-[#137DFE]" /> :
@@ -3526,7 +3524,7 @@ export default function WalletPage() {
                           <div>
                             <div className="flex items-center gap-2 mb-0.5">
                               <h3 className={cn('text-[16px] font-bold leading-none', isDark ? 'text-white' : 'text-gray-900')}>
-                                {referralUser.activeTier || referralUser.tier || 'Recruit'}
+                                {referralUser.tier || 'Recruit'}
                               </h3>
                               <div className={cn('px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider', isDark ? 'bg-[#08AA09]/20 text-[#08AA09]' : 'bg-green-100 text-green-700')}>
                                 {((referralUser.share || 0.2) * 100).toFixed(0)}% Share
@@ -3557,7 +3555,7 @@ export default function WalletPage() {
                           </div>
                           <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
                             <div
-                              className="h-full bg-gradient-to-r from-[#137DFE] via-[#650CD4] to-[#F6AF01] rounded-full transition-all duration-1000"
+                              className="h-full bg-[#137DFE] rounded-full transition-all duration-1000"
                               style={{ width: `${Math.min(100, ((referralUser.recruits || 0) / (referralUser.nextTier.min || 1)) * 100)}%` }}
                             />
                           </div>
@@ -3566,36 +3564,30 @@ export default function WalletPage() {
                     </div>
 
                     {/* Secondary Stats Row */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
-                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#F6AF01]/10' : 'bg-amber-50')}>
-                          <Zap size={16} className="text-[#F6AF01]" />
-                        </div>
-                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className={cn('rounded-xl p-4 text-center', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.streaks?.current || referralUser.streak || 0}</p>
                         <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Day Streak</p>
+                        <p className={cn('text-[9px] mt-1', isDark ? 'text-white/20' : 'text-gray-300')}>Best: {referralStats?.streaks?.max || referralUser.maxStreak || 0}</p>
                       </div>
-                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
-                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#137DFE]/10' : 'bg-blue-50')}>
-                          <Gem size={16} className="text-[#137DFE]" />
-                        </div>
-                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
+                      <div className={cn('rounded-xl p-4 text-center', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.whales || referralUser.whales || 0}</p>
                         <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Whales</p>
                       </div>
-                      <div className={cn('rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all', isDark ? 'bg-white/5 border border-white/5 hover:bg-white/[0.08]' : 'bg-white border border-gray-100 shadow-sm')}>
-                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDark ? 'bg-[#650CD4]/10' : 'bg-purple-50')}>
-                          <Target size={16} className="text-[#650CD4]" />
-                        </div>
-                        <p className={cn('text-[18px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
+                      <div className={cn('rounded-xl p-4 text-center', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.recruits?.tier2 || referralUser.tier2 || 0}</p>
                         <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Tier 2</p>
+                      </div>
+                      <div className={cn('rounded-xl p-4 text-center', isDark ? 'bg-white/5 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                        <p className={cn('text-[20px] font-bold leading-none mb-1', isDark ? 'text-white' : 'text-gray-900')}>{referralStats?.season?.recruits || referralUser.seasonRecruits || 0}</p>
+                        <p className={cn('text-[9px] uppercase tracking-wider font-semibold', isDark ? 'text-white/30' : 'text-gray-400')}>Season</p>
                       </div>
                     </div>
 
                     {/* Bottom Section: Badges & Links */}
                     <div className="grid md:grid-cols-2 gap-4">
                       {/* Badges Column */}
-                      <div className={cn('rounded-2xl p-5 relative overflow-hidden', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
-                        {/* Background Accent */}
-                        <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+                      <div className={cn('rounded-xl p-5', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                         <div className="flex items-center justify-between mb-4">
                           <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Badges</h4>
                           {referralStats?.badges && (
@@ -3603,33 +3595,66 @@ export default function WalletPage() {
                           )}
                         </div>
 
-                        {(referralStats?.badges?.list || referralUser.badges || []).length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {(referralStats?.badges?.list || referralUser.badges || []).slice(0, 8).map((badge, i) => {
-                              const badgeConfig = {
-                                first_recruit: { icon: Users, bg: 'bg-[#CD7F32]/10', text: 'text-[#CD7F32]', border: 'border-[#CD7F32]/20' },
-                                platoon_leader: { icon: Medal, bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
-                                battalion_leader: { icon: Medal, bg: 'bg-[#F6AF01]/10', text: 'text-[#F6AF01]', border: 'border-[#F6AF01]/20' },
-                                army_commander: { icon: Crown, bg: 'bg-[#650CD4]/10', text: 'text-[#a855f7]', border: 'border-[#650CD4]/20' },
-                              };
-                              const config = badgeConfig[badge] || { icon: Award, bg: isDark ? 'bg-white/5' : 'bg-gray-100', text: isDark ? 'text-white/50' : 'text-gray-500', border: isDark ? 'border-white/10' : 'border-gray-200' };
-                              const Icon = config.icon;
-                              return (
-                                <div key={i} className={cn('p-1.5 rounded-lg border transition-transform hover:scale-105', config.bg, config.text, config.border)} title={badge.replace(/_/g, ' ')}>
-                                  <Icon size={14} />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className={cn('text-[11px] italic', isDark ? 'text-white/20' : 'text-gray-400')}>No badges yet</p>
-                        )}
+                        {(() => {
+                          const allBadges = {
+                            first_recruit: { icon: Users, label: 'First Recruit', color: '#CD7F32' },
+                            squad_leader: { icon: Users, label: 'Squad Leader', color: '#137DFE' },
+                            daily_duty: { icon: Zap, label: 'Daily Duty', color: '#F6AF01' },
+                            platoon_leader: { icon: Medal, label: 'Platoon Leader', color: '#C0C0C0' },
+                            whale_spotter: { icon: Gem, label: 'Whale Spotter', color: '#137DFE' },
+                            dedicated: { icon: Flame, label: 'Dedicated', color: '#F6AF01' },
+                            battalion_leader: { icon: Medal, label: 'Battalion Leader', color: '#F6AF01' },
+                            chain_of_command: { icon: Target, label: 'Chain of Command', color: '#650CD4' },
+                            iron_will: { icon: Shield, label: 'Iron Will', color: '#08AA09' },
+                            whale_hunter: { icon: Gem, label: 'Whale Hunter', color: '#650CD4' },
+                            army_commander: { icon: Crown, label: 'Army Commander', color: '#650CD4' },
+                            war_hero: { icon: Swords, label: 'War Hero', color: '#F6AF01' },
+                            supreme: { icon: Crown, label: 'Supreme', color: '#F6AF01' },
+                          };
+                          const progress = referralStats?.badges?.progress || {};
+                          const earned = referralStats?.badges?.list || referralUser.badges || [];
+                          const badgeKeys = Object.keys(progress).length > 0 ? Object.keys(progress) : earned;
+
+                          return badgeKeys.length > 0 ? (
+                            <div className="space-y-2">
+                              {badgeKeys.map((key) => {
+                                const cfg = allBadges[key] || { icon: Award, label: key.replace(/_/g, ' '), color: '#888' };
+                                const Icon = cfg.icon;
+                                const done = progress[key]?.done ?? earned.includes(key);
+                                const pct = progress[key]?.pct || (done ? 100 : 0);
+                                return (
+                                  <div key={key} className="flex items-center gap-2.5">
+                                    <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-[1.5px]',
+                                      done ? 'border-transparent' : isDark ? 'border-white/10' : 'border-gray-200'
+                                    )} style={{ backgroundColor: done ? `${cfg.color}20` : isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb' }}>
+                                      <Icon size={13} style={{ color: done ? cfg.color : isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between mb-0.5">
+                                        <span className={cn('text-[10px] font-semibold capitalize truncate', done ? (isDark ? 'text-white' : 'text-gray-900') : isDark ? 'text-white/30' : 'text-gray-400')}>{cfg.label}</span>
+                                        {!done && progress[key]?.req && (
+                                          <span className={cn('text-[9px] font-mono shrink-0 ml-2', isDark ? 'text-white/20' : 'text-gray-300')}>{progress[key].cur}/{progress[key].req}</span>
+                                        )}
+                                        {done && <Check size={10} style={{ color: cfg.color }} />}
+                                      </div>
+                                      {!done && (
+                                        <div className={cn('h-1 rounded-full overflow-hidden', isDark ? 'bg-white/5' : 'bg-gray-100')}>
+                                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cfg.color }} />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className={cn('text-[11px] italic', isDark ? 'text-white/20' : 'text-gray-400')}>No badges yet</p>
+                          );
+                        })()}
                       </div>
 
                       {/* Referral Code Column */}
-                      <div className={cn('rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden', isDark ? 'bg-black/40 border border-white/10' : 'bg-white border border-gray-200 shadow-sm')}>
-                        {/* Background Accent */}
-                        <div className={cn('absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[100px] opacity-20', isDark ? 'bg-[#137DFE]' : 'bg-blue-400')} />
+                      <div className={cn('rounded-xl p-5 flex flex-col justify-between', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <h4 className={cn('text-[11px] font-bold uppercase tracking-widest', isDark ? 'text-white/40' : 'text-gray-500')}>Referral Link</h4>
@@ -3637,7 +3662,7 @@ export default function WalletPage() {
                           </div>
 
                           <div className="flex items-center gap-2 mb-2">
-                            <div className={cn('flex-1 px-3 py-2 rounded-xl text-[12px] font-mono truncate border', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-gray-50 border-gray-100 text-gray-500')}>
+                            <div className={cn('flex-1 px-3 py-2 rounded-xl text-[12px] font-mono truncate border-[1.5px]', isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-gray-50 border-gray-200 text-gray-500')}>
                               {`${window.location.origin}/signup?ref=${referralUser.referralCode}`}
                             </div>
                             <button
@@ -3661,7 +3686,7 @@ export default function WalletPage() {
                     {/* Code Edit Overlay */}
                     {editingCode && (
                       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingCode(false)}>
-                        <div className={cn('w-full max-w-sm rounded-2xl p-6 shadow-2xl', isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-gray-200')} onClick={e => e.stopPropagation()}>
+                        <div className={cn('w-full max-w-sm rounded-xl p-6', isDark ? 'bg-[#0a0a0a] border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')} onClick={e => e.stopPropagation()}>
                           <h3 className={cn('text-[16px] font-bold mb-4', isDark ? 'text-white' : 'text-gray-900')}>Referral Settings</h3>
                           <div className="space-y-4">
                             <div>
@@ -3676,7 +3701,7 @@ export default function WalletPage() {
                             {referralError && <p className="text-[11px] text-red-400">{referralError}</p>}
                             <div className="flex gap-3">
                               <button onClick={() => setEditingCode(false)} className={cn('flex-1 py-3 rounded-xl text-[13px] font-medium transition-colors', isDark ? 'bg-white/5 text-white/70 hover:bg-white/10' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>Cancel</button>
-                              <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-lg shadow-blue-500/20">Save Changes</button>
+                              <button onClick={handleUpdateReferralCode} disabled={referralLoading || newReferralCode.length < 3} className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50">Save Changes</button>
                             </div>
                           </div>
                         </div>
@@ -3684,22 +3709,20 @@ export default function WalletPage() {
                     )}
                   </div>
                 ) : (
-                  <div className={cn('rounded-2xl p-8 text-center relative overflow-hidden', isDark ? 'bg-black/40 backdrop-blur-xl border border-white/10' : 'bg-white border border-gray-100 shadow-xl')}>
-                    <div className={cn('absolute -top-24 -left-24 w-64 h-64 rounded-full blur-[100px] opacity-10 bg-[#650CD4]')} />
-
-                    <div className={cn('w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 transform -rotate-6 shadow-2xl', isDark ? 'bg-gradient-to-br from-[#650CD4] to-[#137DFE]' : 'bg-purple-600')}>
-                      <Swords size={40} className="text-white" />
+                  <div className={cn('rounded-xl p-8 text-center', isDark ? 'bg-black/40 border-[1.5px] border-white/10' : 'bg-white border-[1.5px] border-gray-200')}>
+                    <div className={cn('w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6', isDark ? 'bg-[#650CD4]/20 border-[1.5px] border-white/10' : 'bg-purple-50 border-[1.5px] border-purple-100')}>
+                      <Swords size={40} className={isDark ? 'text-white' : 'text-[#650CD4]'} />
                     </div>
 
                     <h3 className={cn('text-2xl font-black mb-2 tracking-tight', isDark ? 'text-white' : 'text-gray-900')}>Join the XRP Army</h3>
                     <p className={cn('text-[14px] mb-8 max-w-xs mx-auto', isDark ? 'text-white/40' : 'text-gray-500')}>Recruit new members and earn up to 50% revenue share from every trade they make.</p>
 
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                      <div className={cn('p-4 rounded-2xl border text-left', isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100')}>
+                      <div className={cn('p-4 rounded-xl border-[1.5px] text-left', isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200')}>
                         <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#08AA09]' : 'text-green-600')}>Start</p>
                         <p className={cn('text-[15px] font-black', isDark ? 'text-white' : 'text-gray-900')}>20% Share</p>
                       </div>
-                      <div className={cn('p-4 rounded-2xl border text-left', isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100')}>
+                      <div className={cn('p-4 rounded-xl border-[1.5px] text-left', isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200')}>
                         <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', isDark ? 'text-[#F6AF01]' : 'text-amber-600')}>Max</p>
                         <p className={cn('text-[15px] font-black', isDark ? 'text-white' : 'text-gray-900')}>50% Share</p>
                       </div>
@@ -3713,14 +3736,14 @@ export default function WalletPage() {
                           value={referralForm.referralCode}
                           onChange={(e) => setReferralForm(f => ({ ...f, referralCode: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) }))}
                           placeholder="Leave empty for auto-gen"
-                          className={cn('w-full px-4 py-4 rounded-2xl text-[14px] font-mono outline-none border transition-all text-center', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#650CD4]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-purple-500')}
+                          className={cn('w-full px-4 py-4 rounded-xl text-[14px] font-mono outline-none border-[1.5px] transition-all text-center', isDark ? 'bg-white/5 border-white/10 text-white focus:border-[#650CD4]/50' : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-purple-500')}
                         />
                       </div>
 
                       <button
                         onClick={handleReferralRegister}
                         disabled={referralLoading}
-                        className="w-full py-4 rounded-2xl text-[15px] font-black bg-gradient-to-r from-[#650CD4] to-[#137DFE] text-white shadow-xl shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                        className="w-full py-4 rounded-xl text-[15px] font-black bg-[#137DFE] text-white hover:bg-blue-600 transition-colors disabled:opacity-50"
                       >
                         {referralLoading ? 'ENLISTING...' : 'ENLIST NOW'}
                       </button>

@@ -191,6 +191,10 @@ const getTokenMd5 = (t) =>
       ? CryptoJS.MD5(`${t.issuer}_${t.currency}`).toString()
       : null;
 
+const WS_ENDPOINTS = ['wss://s1.ripple.com', 'wss://xrplcluster.com'];
+let wsEndpointIndex = 0;
+const getNextEndpoint = () => WS_ENDPOINTS[wsEndpointIndex++ % WS_ENDPOINTS.length];
+
 const TX_TYPES = ['all', 'Payment', 'OfferCreate', 'OfferCancel', 'TrustSet', 'AMMDeposit', 'AMMWithdraw', 'NFTokenMint', 'NFTokenAcceptOffer', 'NFTokenCreateOffer', 'NFTokenBurn', 'CheckCreate', 'CheckCash', 'EscrowCreate', 'EscrowFinish', 'AccountSet'];
 const ITEMS_PER_PAGE = 10;
 
@@ -231,7 +235,7 @@ const AccountHistory = ({ account, compact = false }) => {
   const fetchTxHistory = async (marker = null) => {
     if (!account) return;
     setTxLoading(true);
-    const client = new Client('wss://s1.ripple.com');
+    const client = new Client(getNextEndpoint());
     try {
       await client.connect();
       const request = {
