@@ -1652,12 +1652,12 @@ const OverView = ({ account }) => {
           </div>
 
           {/* Tabs */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-start mb-6">
             <div className={cn(
-              'flex items-center gap-1 p-1.5 rounded-2xl border backdrop-blur-3xl shadow-sm',
+              'flex items-center gap-0.5 p-1 rounded-xl border backdrop-blur-md',
               isDark
-                ? 'bg-[#0a0a0a]/60 border-white/[0.08]'
-                : 'bg-white/80 border-gray-200'
+                ? 'bg-white/[0.03] border-white/[0.06]'
+                : 'bg-gray-100/80 border-gray-200'
             )}>
               {[
                 { id: 'tokens', label: 'Holdings', icon: Coins, count: (holdings?.total || holdings?.lines?.length || 0) + ((holdings?.accountData?.total > 0 || holdings?.xrp?.value > 0) ? 1 : 0) },
@@ -1669,29 +1669,21 @@ const OverView = ({ account }) => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-5 py-2.5 text-[12px] font-bold tracking-wide rounded-xl transition-all duration-300 relative group outline-none',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200',
                     activeTab === tab.id
-                      ? cn(isDark ? 'bg-primary/20 text-primary shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]' : 'bg-primary/10 text-primary')
-                      : cn(
-                        isDark
-                          ? 'text-white/40 hover:text-white/80 hover:bg-white/[0.04]'
-                          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-                      )
+                      ? cn(isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-sm')
+                      : cn(isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
                   )}
                 >
-                  <div className={cn('transition-transform duration-300', activeTab === tab.id ? 'scale-110' : 'group-hover:scale-110')}>
-                    <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-                  </div>
+                  <tab.icon size={13} />
                   <span>{tab.label}</span>
                   {tab.count !== undefined && tab.count !== '' && (
-                    <span
-                      className={cn(
-                        'text-[9px] px-1.5 py-0.5 rounded-md font-black min-w-[18px] text-center transition-colors',
-                        activeTab === tab.id
-                          ? isDark ? 'bg-primary/20 text-primary' : 'bg-primary/20 text-primary'
-                          : isDark ? 'bg-white/5 text-white/20' : 'bg-gray-200/50 text-gray-400'
-                      )}
-                    >
+                    <span className={cn(
+                      'text-[9px] px-1 py-0.5 rounded font-bold min-w-[16px] text-center',
+                      activeTab === tab.id
+                        ? isDark ? 'bg-white/10 text-white/70' : 'bg-gray-200 text-gray-600'
+                        : isDark ? 'bg-white/5 text-white/30' : 'bg-gray-200/50 text-gray-400'
+                    )}>
                       {tab.count}
                     </span>
                   )}
@@ -2852,11 +2844,11 @@ const OverView = ({ account }) => {
 
           {activeTab === 'activity' && (
             <>
-              {/* History View Toggle - Premium Segment Control */}
-              <div className="flex justify-center mb-6">
+              {/* History View Toggle */}
+              <div className="flex justify-start mb-4">
                 <div className={cn(
-                  'flex items-center p-1 rounded-xl border backdrop-blur-md',
-                  isDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-100/80 border-gray-200'
+                  'flex items-center gap-0.5 p-1 rounded-lg border',
+                  isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-gray-50 border-gray-200'
                 )}>
                   {[
                     { id: 'onchain', label: 'Onchain', icon: Code2 },
@@ -2866,13 +2858,13 @@ const OverView = ({ account }) => {
                       key={view.id}
                       onClick={() => setHistoryView(view.id)}
                       className={cn(
-                        'flex items-center gap-2 px-6 py-2 rounded-lg text-[12px] font-bold tracking-wide transition-all duration-300',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all',
                         historyView === view.id
-                          ? cn(isDark ? 'bg-white/10 text-white shadow-lg shadow-black/10' : 'bg-white text-gray-900 shadow-sm')
-                          : cn(isDark ? 'text-white/40 hover:text-white/80' : 'text-gray-500 hover:text-gray-800')
+                          ? cn(isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-sm')
+                          : cn(isDark ? 'text-white/40 hover:text-white/70' : 'text-gray-500 hover:text-gray-700')
                       )}
                     >
-                      <view.icon size={14} />
+                      <view.icon size={12} />
                       {view.label}
                     </button>
                   ))}
