@@ -327,17 +327,17 @@ export default function WalletPage() {
         const amt = parseFloat(tradeAmount);
         const body = tradeDirection === 'sell'
           ? {
-              source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
-              destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt) },
-              source_currencies: [{ currency: 'XRP' }],
-              slippage: tradeSlippage / 100
-            }
+            source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+            destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt) },
+            source_currencies: [{ currency: 'XRP' }],
+            slippage: tradeSlippage / 100
+          }
           : {
-              source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
-              destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt / price) },
-              source_currencies: [{ currency: 'XRP' }],
-              slippage: tradeSlippage / 100
-            };
+            source_account: address || 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+            destination_amount: { currency: tradeModal.currency, issuer: tradeModal.issuer, value: String(amt / price) },
+            source_currencies: [{ currency: 'XRP' }],
+            slippage: tradeSlippage / 100
+          };
         const res = await axios.post('https://api.xrpl.to/api/dex/quote', body);
         if (res.data?.status === 'success' && res.data.quote) {
           setTradeQuote(res.data.quote);
@@ -1310,7 +1310,7 @@ export default function WalletPage() {
           const data = await statsRes.json();
           if (data.success && data.stats) setReferralStats(data.stats);
         }
-      } catch (e) {}
+      } catch (e) { }
       setReferralLoading(false);
     };
     fetchReferral();
@@ -1507,7 +1507,7 @@ export default function WalletPage() {
           const data = await res.json();
           if (data.labels) setWalletLabels(data.labels);
         }
-      } catch (e) {}
+      } catch (e) { }
       setLabelsLoading(false);
     };
     fetchLabels();
@@ -1542,7 +1542,7 @@ export default function WalletPage() {
       if (res.ok) {
         setWalletLabels(prev => prev.filter(l => l.wallet !== wallet));
       }
-    } catch (e) {}
+    } catch (e) { }
     setDeletingLabel(null);
   };
 
@@ -1569,7 +1569,7 @@ export default function WalletPage() {
           const data = await badgesRes.json();
           setDisplayBadges({ current: data.current, available: data.available || [] });
         }
-      } catch (e) {}
+      } catch (e) { }
       setTiersLoading(false);
     };
     fetchTiers();
@@ -1629,7 +1629,7 @@ export default function WalletPage() {
         setDisplayBadges(prev => ({ ...prev, current: badge }));
         window.dispatchEvent(new CustomEvent('badgeChanged', { detail: { badge } }));
       }
-    } catch (e) {}
+    } catch (e) { }
     setSettingBadge(false);
   };
 
@@ -1733,29 +1733,29 @@ export default function WalletPage() {
   // Computed tokens list with XRP at top
   const xrpToken = xrpData
     ? (() => {
-        const x = xrpData.xrp || {};
-        const bal = parseFloat(x.balance || xrpData.balance || 0);
-        const change = x.pro24h ?? 0;
-        return {
-          symbol: 'XRP',
-          name: 'XRP',
-          amount: bal.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 6
-          }),
-          rawAmount: bal,
-          value: `${bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} XRP`,
-          rawValue: x.value || bal,
-          change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '',
-          positive: change >= 0,
-          color: '#23292F',
-          icon: '◎',
-          slug: 'xrpl-xrp',
-          md5: x.md5 || '84e5efeb89c4eae8f68188982dc290d8',
-          vol24h: x.vol24hxrp || 0,
-          holders: x.holders || 0
-        };
-      })()
+      const x = xrpData.xrp || {};
+      const bal = parseFloat(x.balance || xrpData.balance || 0);
+      const change = x.pro24h ?? 0;
+      return {
+        symbol: 'XRP',
+        name: 'XRP',
+        amount: bal.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 6
+        }),
+        rawAmount: bal,
+        value: `${bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} XRP`,
+        rawValue: x.value || bal,
+        change: change ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '',
+        positive: change >= 0,
+        color: '#23292F',
+        icon: '◎',
+        slug: 'xrpl-xrp',
+        md5: x.md5 || '84e5efeb89c4eae8f68188982dc290d8',
+        vol24h: x.vol24hxrp || 0,
+        holders: x.holders || 0
+      };
+    })()
     : null;
   const allTokens = xrpToken ? [xrpToken, ...tokens] : tokens;
   const totalValue = allTokens.reduce((sum, t) => sum + (t.rawValue || 0), 0);
@@ -1893,10 +1893,10 @@ export default function WalletPage() {
                     activeTab === tab.id
                       ? cn(isDark ? 'border-white/20 text-white' : 'border-gray-300 text-gray-900')
                       : cn(
-                          isDark
-                            ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
-                            : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        )
+                        isDark
+                          ? 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/15'
+                          : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      )
                   )}
                 >
                   <tab.icon size={13} strokeWidth={1.5} />
@@ -2899,7 +2899,7 @@ export default function WalletPage() {
                                         <span key={i} className={cn(
                                           "text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md",
                                           tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                          i === 0 ? "text-red-400 bg-red-500/10" : "text-[#08AA09] bg-emerald-500/10"
+                                            i === 0 ? "text-red-400 bg-red-500/10" : "text-[#08AA09] bg-emerald-500/10"
                                         )}>
                                           {tx.type !== 'failed' && (i === 0 ? '-' : '+')}{part.trim()}
                                         </span>
@@ -2909,7 +2909,7 @@ export default function WalletPage() {
                                     <span className={cn(
                                       "text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md",
                                       tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                      tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                        tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
                                     )}>
                                       {tx.type !== 'failed' && (tx.type === 'in' ? '+' : '-')}{tx.amount}
                                     </span>
@@ -3245,7 +3245,7 @@ export default function WalletPage() {
                               {/* 24h */}
                               <p className={cn("text-[11px] tabular-nums text-right font-medium", token.positive ? "text-[#08AA09]" : "text-red-400")}>{token.change}</p>
                               {/* Vol 24h */}
-                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? (activeFiatCurrency === 'XRP' ? <>{token.vol24h >= 1000000 ? `${(token.vol24h/1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h/1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{(() => { const v = token.vol24h * xrpUsdPrice; return v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(1)}K` : v.toFixed(0); })()} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : '—'}</p>
+                              <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.vol24h > 0 ? (activeFiatCurrency === 'XRP' ? <>{token.vol24h >= 1000000 ? `${(token.vol24h / 1000000).toFixed(1)}M` : token.vol24h >= 1000 ? `${(token.vol24h / 1000).toFixed(1)}K` : token.vol24h.toFixed(0)} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></> : <>{currencySymbols[activeFiatCurrency]}{(() => { const v = token.vol24h * xrpUsdPrice; return v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0); })()} <span className={isDark ? "text-white/25" : "text-gray-400"}>{activeFiatCurrency}</span></>) : '—'}</p>
                               {/* Holders */}
                               <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/40" : "text-gray-500")}>{token.holders > 0 ? token.holders.toLocaleString() : '—'}</p>
                               {/* Actions */}
@@ -3692,7 +3692,7 @@ export default function WalletPage() {
                             tokenHistoryType === type
                               ? type === 'buy' ? 'bg-emerald-500/10 text-[#08AA09]'
                                 : type === 'sell' ? 'bg-red-500/10 text-red-400'
-                                : isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-[#137DFE]'
+                                  : isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-[#137DFE]'
                               : isDark ? 'text-white/40 hover:text-white/60' : 'text-gray-400 hover:text-gray-600'
                           )}
                         >
@@ -3744,13 +3744,13 @@ export default function WalletPage() {
                                   <span className={cn('text-[12px] font-medium truncate', isDark ? 'text-white/90' : 'text-gray-900')}>{tokenName}</span>
                                 </div>
                                 <p className={cn('text-[11px] tabular-nums text-right', isBuy ? 'text-[#08AA09]' : 'text-red-400')}>
-                                  {isBuy ? '+' : '-'}{tokenAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}
+                                  {isBuy ? '+' : '-'}{tokenAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                 </p>
                                 <p className={cn('text-[11px] tabular-nums text-right', isDark ? 'text-white/60' : 'text-gray-600')}>
                                   {price > 0 ? price.toFixed(6) : '—'} XRP
                                 </p>
                                 <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
-                                  {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
+                                  {trade.time ? new Date(trade.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                                 </p>
                                 <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-[#137DFE]' : 'text-gray-400 hover:text-[#137DFE]')}>
                                   <ExternalLink size={12} />
@@ -3816,7 +3816,7 @@ export default function WalletPage() {
                                 {trade.price ? `${parseFloat(trade.price).toLocaleString()} XRP` : '—'}
                               </p>
                               <p className={cn('text-[10px] tabular-nums text-right', isDark ? 'text-white/40' : 'text-gray-400')}>
-                                {trade.time ? new Date(trade.time).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '—'}
+                                {trade.time ? new Date(trade.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                               </p>
                               <a href={`/tx/${trade.hash}`} target="_blank" rel="noopener noreferrer" className={cn('p-1 rounded transition-colors', isDark ? 'text-white/30 hover:text-[#137DFE]' : 'text-gray-400 hover:text-[#137DFE]')}>
                                 <ExternalLink size={12} />
@@ -3937,7 +3937,7 @@ export default function WalletPage() {
                                         <span key={i} className={cn(
                                           'text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md',
                                           tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                          i === 0 ? 'text-red-400 bg-red-500/10' : 'text-[#08AA09] bg-emerald-500/10'
+                                            i === 0 ? 'text-red-400 bg-red-500/10' : 'text-[#08AA09] bg-emerald-500/10'
                                         )}>
                                           {tx.type !== 'failed' && (i === 0 ? '-' : '+')}{part.trim()}
                                         </span>
@@ -3947,7 +3947,7 @@ export default function WalletPage() {
                                     <span className={cn(
                                       'text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md',
                                       tx.type === 'failed' ? 'text-[#F6AF01] bg-amber-500/10' :
-                                      tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
+                                        tx.type === 'in' ? 'text-[#08AA09] bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
                                     )}>
                                       {tx.type !== 'failed' && (tx.type === 'in' ? '+' : '-')}{tx.amount}
                                     </span>
@@ -4390,9 +4390,9 @@ export default function WalletPage() {
                         <div className="flex items-center gap-3">
                           <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isDark ? 'bg-[#650CD4]/20' : 'bg-purple-50')}>
                             {['supreme_commander', 'general', 'brigadier'].includes(referralUser.tierData?.id) || ['Supreme Commander', 'General', 'Brigadier'].includes(referralUser.tier) ? <Crown size={20} className="text-[#F6AF01]" /> :
-                             ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={20} className="text-[#650CD4]" /> :
-                             ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={20} className="text-[#137DFE]" /> :
-                             <Swords size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />}
+                              ['colonel', 'major', 'captain', 'lieutenant'].includes(referralUser.tierData?.id) || ['Colonel', 'Major', 'Captain', 'Lieutenant'].includes(referralUser.tier) ? <Medal size={20} className="text-[#650CD4]" /> :
+                                ['master_sergeant', 'staff_sergeant', 'sergeant', 'corporal'].includes(referralUser.tierData?.id) || ['Master Sergeant', 'Staff Sergeant', 'Sergeant', 'Corporal'].includes(referralUser.tier) ? <Award size={20} className="text-[#137DFE]" /> :
+                                  <Swords size={20} className={isDark ? 'text-white/60' : 'text-gray-600'} />}
                           </div>
                           <div>
                             <p className={cn('text-[10px] uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Tier</p>
@@ -4472,11 +4472,11 @@ export default function WalletPage() {
                       {referralUser.streakStatus?.tier && referralUser.streakStatus.tier !== 'none' && (
                         <span className={cn('text-[10px] px-2.5 py-1 rounded-lg font-medium',
                           referralUser.streakStatus.tier === 'legendary' ? 'bg-[#650CD4]/15 text-[#a855f7]' :
-                          referralUser.streakStatus.tier === 'gold' ? 'bg-[#F6AF01]/15 text-[#F6AF01]' :
-                          referralUser.streakStatus.tier === 'silver' ? 'bg-white/10 text-white/60' :
-                          referralUser.streakStatus.tier === 'bronze' ? 'bg-[#CD7F32]/15 text-[#CD7F32]' :
-                          referralUser.streakStatus.tier === 'starter' ? 'bg-[#08AA09]/15 text-[#08AA09]' :
-                          'bg-white/5 text-white/40'
+                            referralUser.streakStatus.tier === 'gold' ? 'bg-[#F6AF01]/15 text-[#F6AF01]' :
+                              referralUser.streakStatus.tier === 'silver' ? 'bg-white/10 text-white/60' :
+                                referralUser.streakStatus.tier === 'bronze' ? 'bg-[#CD7F32]/15 text-[#CD7F32]' :
+                                  referralUser.streakStatus.tier === 'starter' ? 'bg-[#08AA09]/15 text-[#08AA09]' :
+                                    'bg-white/5 text-white/40'
                         )}>
                           {referralUser.streakStatus.label}
                         </span>
@@ -4548,20 +4548,20 @@ export default function WalletPage() {
                               .filter(([, prog]) => !prog.done)
                               .slice(0, 3)
                               .map(([badgeId, prog]) => (
-                              <div key={badgeId}>
-                                <div className="flex items-center justify-between mb-1">
-                                  <p className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-gray-500')}>
-                                    {badgeId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                                  </p>
-                                  <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
-                                    {prog.cur}/{prog.req}
-                                  </p>
+                                <div key={badgeId}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <p className={cn('text-[10px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                                      {badgeId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                    </p>
+                                    <p className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                                      {prog.cur}/{prog.req}
+                                    </p>
+                                  </div>
+                                  <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                                    <div className="h-full bg-[#137DFE] rounded-full transition-all" style={{ width: `${prog.pct || 0}%` }} />
+                                  </div>
                                 </div>
-                                <div className={cn('h-1.5 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-                                  <div className="h-full bg-[#137DFE] rounded-full transition-all" style={{ width: `${prog.pct || 0}%` }} />
-                                </div>
-                              </div>
-                            ))}
+                              ))}
                           </div>
                         )}
                       </div>
@@ -4691,14 +4691,14 @@ export default function WalletPage() {
                           <img
                             src={profileUser.avatar}
                             alt="Avatar"
-                            className="w-12 h-12 rounded-full object-cover"
+                            className="w-12 h-12 rounded-xl object-cover"
                           />
                         ) : (
-                          <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
+                          <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold', isDark ? 'bg-[#137DFE]/10 text-[#137DFE]' : 'bg-blue-50 text-blue-600')}>
                             {profileUser.username?.[0]?.toUpperCase() || address?.[1]?.toUpperCase() || '?'}
                           </div>
                         )}
-                        <div className={cn('absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'bg-black/60' : 'bg-white/60')}>
+                        <div className={cn('absolute inset-0 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity', isDark ? 'bg-black/60' : 'bg-white/60')}>
                           <Image size={16} className={isDark ? 'text-white' : 'text-gray-700'} />
                         </div>
                       </button>
@@ -4748,7 +4748,7 @@ export default function WalletPage() {
                                   <img
                                     src={nft.files?.[0]?.thumbnail?.large ? `https://s1.xrpl.to/nft/${nft.files[0].thumbnail.large}` : getNftCoverUrl(nft.meta, nft.url)}
                                     alt={nft.meta?.name || 'NFT'}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full aspect-square object-cover rounded-lg"
                                   />
                                   {profileUser.avatarNftId === nft.NFTokenID && (
                                     <div className="absolute inset-0 bg-[#137DFE]/20 flex items-center justify-center">
@@ -5193,9 +5193,9 @@ export default function WalletPage() {
                                     <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>Chat name:</span>
                                     <span className={cn('text-[12px] font-medium',
                                       name === 'verified' ? 'bg-gradient-to-r from-[#FFD700] via-[#FF6B9D] to-[#00FFFF] bg-clip-text text-transparent' :
-                                      name === 'vip' ? 'text-[#08AA09]' :
-                                      name === 'nova' ? 'text-[#F6AF01]' :
-                                      name === 'diamond' ? 'text-[#a855f7]' : 'text-[#08AA09]'
+                                        name === 'vip' ? 'text-[#08AA09]' :
+                                          name === 'nova' ? 'text-[#F6AF01]' :
+                                            name === 'diamond' ? 'text-[#a855f7]' : 'text-[#08AA09]'
                                     )}>
                                       {profileUser?.username || 'YourName'}:
                                     </span>
@@ -5993,12 +5993,12 @@ export default function WalletPage() {
                       await navigator.share({ text, files: [file] });
                       return;
                     }
-                  } catch {}
+                  } catch { }
                   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
                 }}
                 className={cn("flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-colors", isDark ? "bg-white text-black hover:bg-white/90" : "bg-gray-900 text-white hover:bg-gray-800")}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                 Post
               </button>
               <button
@@ -6241,7 +6241,7 @@ export default function WalletPage() {
                   <span>{tradeDirection === 'sell' ? 'You sell' : 'You pay'}</span>
                   {tradeDirection === 'sell' && (
                     <button onClick={() => setTradeAmount(String(tradeModal.rawAmount))} className="hover:underline">
-                      Bal: <span className={isDark ? "text-white/60" : "text-gray-600"}>{tradeModal.rawAmount >= 1000000 ? `${(tradeModal.rawAmount/1000000).toFixed(2)}M` : tradeModal.rawAmount >= 1000 ? `${(tradeModal.rawAmount/1000).toFixed(2)}K` : tradeModal.rawAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                      Bal: <span className={isDark ? "text-white/60" : "text-gray-600"}>{tradeModal.rawAmount >= 1000000 ? `${(tradeModal.rawAmount / 1000000).toFixed(2)}M` : tradeModal.rawAmount >= 1000 ? `${(tradeModal.rawAmount / 1000).toFixed(2)}K` : tradeModal.rawAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                     </button>
                   )}
                 </div>
