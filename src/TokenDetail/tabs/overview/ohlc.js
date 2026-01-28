@@ -8,7 +8,8 @@ import {
   Maximize,
   Minimize,
   Loader2,
-  Droplets
+  Droplets,
+  Sparkles
 } from 'lucide-react';
 import {
   createChart,
@@ -47,56 +48,83 @@ const formatMcap = (v) => {
   if (v >= 1e12) return (v / 1e12).toFixed(2) + 'T';
   if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B';
   if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
-  if (v >= 1e3) return (v / 1e3).toFixed(2) + 'K';
-  return v.toFixed(2);
+  if (v >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+  return v < 1 ? v.toFixed(2) : Math.round(v).toString();
 };
 
 const Card = styled.div`
   width: 100%;
-  padding: ${(p) => (p.isMobile ? '10px' : '14px')};
-  background: transparent;
-  border: 1.5px solid ${(p) => (p.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')};
+  padding: ${(p) => (p.isMobile ? '12px' : '16px')};
+  background: ${(p) => (p.isDark ? 'rgba(255,255,255,0.01)' : '#fff')};
+  border: 1px solid ${(p) => (p.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)')};
   border-radius: 12px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   ${(p) =>
     p.isFullscreen &&
-    `position:fixed;inset:0;z-index:99999;border-radius:0;background:${p.isDark ? '#0a0f16' : '#fff'};border:none;padding:16px 20px;`}
+    `position:fixed;inset:0;z-index:99999;border-radius:0;background:${p.isDark ? '#06090e' : '#fff'};border:none;padding:16px 20px;`}
 `;
 
-const Btn = styled.button`
-  padding: ${(p) => (p.isMobile ? '4px 6px' : '5px 10px')};
+const ChartHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const ToolGroup = styled.div`
+  display: flex;
+  background: ${(p) => (p.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
+  padding: 2px;
+  border-radius: 8px;
+  gap: 2px;
+`;
+
+const ToolBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: ${(p) => (p.isMobile ? '4px 8px' : '5px 10px')};
   font-size: ${(p) => (p.isMobile ? '10px' : '11px')};
-  min-width: ${(p) => p.minWidth || 'auto'};
-  height: ${(p) => (p.isMobile ? '24px' : '26px')};
+  font-weight: ${(p) => (p.isActive ? 600 : 500)};
   border-radius: 6px;
-  font-weight: ${(p) => (p.isActive ? 500 : 400)};
-  border: 1px solid
-    ${(p) =>
-      p.isActive
-        ? p.isDark
-          ? 'rgba(255,255,255,0.15)'
-          : 'rgba(0,0,0,0.1)'
-        : p.isDark
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.08)'};
-  background: ${(p) =>
-    p.isActive ? (p.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') : 'transparent'};
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: ${(p) => (p.isActive ? (p.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : 'transparent')};
   color: ${(p) =>
     p.isActive
       ? p.isDark
-        ? 'rgba(255,255,255,0.9)'
-        : 'rgba(0,0,0,0.8)'
+        ? '#fff'
+        : '#000'
       : p.isDark
-        ? 'rgba(255,255,255,0.5)'
-        : 'rgba(0,0,0,0.5)'};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+        ? 'rgba(255,255,255,0.45)'
+        : 'rgba(0,0,0,0.45)'};
+  box-shadow: ${(p) => (p.isActive && !p.isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none')};
+  
   & svg {
-    width: ${(p) => (p.isMobile ? '11px' : '12px')};
-    height: ${(p) => (p.isMobile ? '11px' : '12px')};
+    width: 14px;
+    height: 14px;
+    opacity: ${(p) => (p.isActive ? 1 : 0.6)};
+  }
+
+  &:hover {
+    color: ${(p) => (p.isDark ? '#fff' : '#000')};
+    background: ${(p) => (!p.isActive ? (p.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)') : '')};
   }
 `;
 
@@ -109,34 +137,51 @@ const Spinner = styled(Loader2)`
   }
 `;
 
-const BearEmptyState = ({ isDark }) => (
-  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
-        <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+const BearEmptyState = ({ isDark, message = 'No chart data' }) => (
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '48px 24px',
+    width: '100%',
+    height: '100%',
+    gap: '16px',
+    background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
+    border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+    borderRadius: '16px'
+  }}>
+    <div style={{ position: 'relative', width: 56, height: 56, opacity: 0.6 }}>
+      <div style={{ position: 'absolute', top: -4, left: 0, width: 18, height: 18, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3.5, left: 3.5, width: 11, height: 11, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: -4, right: 0, width: 18, height: 18, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+        <div style={{ position: 'absolute', top: 3.5, right: 3.5, width: 11, height: 11, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+      </div>
+      <div style={{ position: 'absolute', top: 7, left: '50%', transform: 'translateX(-50%)', width: 44, height: 40, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+        {[0, 1, 2, 3, 4].map(i => (
+          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 3 + 2 }} />
+        ))}
+        <div style={{ position: 'absolute', top: 11, left: 8, width: 12, height: 12 }}>
+          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 5 }} />
+          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 5 }} />
         </div>
-        <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
+        <div style={{ position: 'absolute', top: 11, right: 8, width: 12, height: 12 }}>
+          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 5 }} />
+          <div style={{ position: 'absolute', width: 10, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 5 }} />
         </div>
-        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
-          {[0,1,2,3,4].map(i => (
-            <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
-          ))}
-          <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
-          </div>
-          <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
-          </div>
-          <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-            <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
-          </div>
+        <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', width: 20, height: 14, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 9, height: 7, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
         </div>
       </div>
-      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>No chart data</span>
+    </div>
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a', marginBottom: '4px' }}>
+        No chart data available
+      </div>
+      <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+        {message}
+      </div>
     </div>
   </div>
 );
@@ -303,7 +348,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   const getWsInterval = (range) =>
     ({ '1d': '1m', '5d': '5m', '1m': '30m', '3m': '2h', '1y': '1w', '5y': '1w', all: '1d' })[
-      range
+    range
     ] || '5m';
 
   // Fetch OHLC data + WebSocket
@@ -534,7 +579,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (chartRef.current) {
       try {
         chartRef.current.remove();
-      } catch {}
+      } catch { }
       chartRef.current = null;
       seriesRefs.current = {
         candle: null,
@@ -574,16 +619,16 @@ const PriceChartAdvanced = memo(({ token }) => {
       crosshair: {
         mode: 0,
         vertLine: {
-          color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+          color: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
           width: 1,
           style: 3,
-          labelBackgroundColor: '#147DFE'
+          labelBackgroundColor: '#3b82f6'
         },
         horzLine: {
-          color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+          color: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
           width: 1,
           style: 3,
-          labelBackgroundColor: '#147DFE'
+          labelBackgroundColor: '#3b82f6'
         }
       },
       rightPriceScale: {
@@ -733,7 +778,22 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: ${isMobile ? '120px' : '140px'}; position: absolute; display: none; padding: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '9px' : '10px'}; z-index: 1000; top: 6px; left: 6px; pointer-events: none; border-radius: 8px; background: ${isDark ? 'rgba(10,15,22,0.95)' : 'rgba(255,255,255,0.95)'}; backdrop-filter: blur(8px); color: ${isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a'}; border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`;
+    toolTip.style = `
+      width: ${isMobile ? '120px' : '150px'}; 
+      position: absolute; 
+      display: none; 
+      padding: 10px; 
+      font-size: ${isMobile ? '10px' : '11px'}; 
+      z-index: 1000; 
+      pointer-events: none; 
+      border-radius: 10px; 
+      background: ${isDark ? 'rgba(12,18,28,0.95)' : 'rgba(255,255,255,0.98)'}; 
+      backdrop-filter: blur(12px); 
+      color: ${isDark ? '#fff' : '#1a1a1a'}; 
+      border: 1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'};
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      font-family: var(--font-sans);
+    `;
     chartContainerRef.current.appendChild(toolTip);
     toolTipRef.current = toolTip;
 
@@ -819,8 +879,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         };
 
         const row = (l, v, c) =>
-          `<div style="display:flex;justify-content:space-between;line-height:1.3;${c ? `color:${c}` : ''}"><span style="opacity:0.6">${l}</span><span>${v}</span></div>`;
-        const sep = `<div style="height:1px;background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};margin:3px 0"></div>`;
+          `<div style="display:flex;justify-content:space-between;line-height:1.5;margin-bottom:2px;${c ? `color:${c}` : ''}">
+            <span style="opacity:0.5;font-weight:500">${l}</span>
+            <span style="font-weight:600;font-family:var(--font-mono)">${v}</span>
+          </div>`;
+        const sep = `<div style="height:1px;background:${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};margin:6px 0"></div>`;
 
         let html = `<div style="opacity:0.6;margin-bottom:3px;font-size:9px">${dateStr}${ct !== 'holders' && ct !== 'liquidity' ? ' ' + timeStr : ''}</div>`;
         if (ct === 'candles') {
@@ -985,7 +1048,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (chartRef.current) {
         try {
           chartRef.current.remove();
-        } catch {}
+        } catch { }
         chartRef.current = null;
       }
       seriesRefs.current = {
@@ -1106,371 +1169,356 @@ const PriceChartAdvanced = memo(({ token }) => {
     holders: <Users />,
     liquidity: <Droplets />
   };
-  const btnGroupStyle = {
-    display: 'flex',
-    padding: '2px',
-    borderRadius: '8px',
-    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-    gap: '2px'
-  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-    <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} style={{ flex: 1 }}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          marginBottom: isMobile ? '6px' : '8px',
-          gap: isMobile ? '4px' : '6px'
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: isMobile ? '6px' : '8px',
-            flexWrap: 'wrap'
-          }}
-        >
-          <span
-            style={{
-              fontSize: '12px',
-              fontWeight: 400,
-              color: isDark ? 'rgba(255,255,255,0.9)' : '#1a1a1a'
-            }}
-          >
-            {token.name}{' '}
-            {chartType === 'holders'
-              ? 'Holders'
-              : chartType === 'liquidity'
-                ? 'TVL'
-                : `(${activeFiatCurrency})`}
-          </span>
-          {chartType === 'liquidity' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '3px',
-                    borderRadius: '1px',
-                    background: '#06b6d4'
-                  }}
-                />
-                XRP
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
+      <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen} style={{ flex: 1 }}>
+        <ChartHeader>
+          <HeaderSection>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: isDark ? '#fff' : '#1a1a1a'
+                }}
+              >
+                {token.name}{' '}
+                <span style={{ opacity: 0.5, fontWeight: 400 }}>
+                  {chartType === 'holders'
+                    ? 'Holders'
+                    : chartType === 'liquidity'
+                      ? 'TVL'
+                      : activeFiatCurrency}
+                </span>
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '3px',
-                    borderRadius: '1px',
-                    background: '#f59e0b'
-                  }}
-                />
-                Token
-              </span>
-            </div>
-          )}
-          {athData.athMcap > 0 &&
-            chartType !== 'holders' &&
-            chartType !== 'liquidity' &&
-            (() => {
-              const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
-              const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
-              return (
+
+              {lastUpdate && (
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.015)'
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                    height: isMobile ? '24px' : '26px'
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '9px',
-                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    ATH
-                  </span>
                   <div
                     style={{
-                      position: 'relative',
-                      width: isMobile ? '50px' : '70px',
-                      height: '4px',
-                      borderRadius: '2px',
-                      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
-                      overflow: 'hidden'
+                      width: '5px',
+                      height: '5px',
+                      borderRadius: '50%',
+                      background: isUserZoomed ? '#f59e0b' : '#22c55e',
+                      boxShadow: isUserZoomed ? 'none' : '0 0 6px rgba(34,197,94,0.4)'
                     }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        height: '100%',
-                        width: `${pct}%`,
-                        borderRadius: '2px',
-                        background: col
-                      }}
-                    />
-                  </div>
+                  />
                   <span
                     style={{
                       fontSize: '10px',
                       fontFamily: 'var(--font-mono)',
-                      color: col,
-                      minWidth: '40px',
-                      textAlign: 'right'
+                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                      fontWeight: 500
                     }}
                   >
-                    {athData.percentDown > 0 ? '+' : ''}
-                    {athData.percentDown}%
+                    {lastUpdate.toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      hour12: false
+                    })}
                   </span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                      fontFamily: 'var(--font-mono)',
-                      borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                      paddingLeft: '6px'
-                    }}
-                  >
-                    {SYMBOLS[activeFiatCurrency] || ''}
-                    {formatMcap(athData.athMcap)}
-                  </span>
+                  {isUserZoomed && (
+                    <span style={{ fontSize: '9px', color: '#f59e0b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      PAUSED
+                    </span>
+                  )}
                 </div>
-              );
-            })()}
-          {lastUpdate && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.5 }}>
-              <div
-                style={{
-                  width: '4px',
-                  height: '4px',
-                  borderRadius: '50%',
-                  background: isUserZoomed ? '#f59e0b' : '#22c55e'
-                }}
-              />
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  color: isDark ? '#fff' : '#1a1a1a'
-                }}
-              >
-                {lastUpdate.toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: false
-                })}
-              </span>
-              {isUserZoomed && (
-                <span style={{ fontSize: '10px', color: '#f59e0b', textTransform: 'uppercase' }}>
-                  paused
-                </span>
               )}
             </div>
-          )}
-        </div>
+
+            {chartType === 'liquidity' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', padding: '3px 8px', borderRadius: '6px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+                  <span style={{ width: '8px', height: '3px', borderRadius: '1.5px', background: '#06b6d4' }} />
+                  XRP
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+                  <span style={{ width: '8px', height: '3px', borderRadius: '1.5px', background: '#f59e0b' }} />
+                  Token
+                </span>
+              </div>
+            )}
+
+            {athData.athMcap > 0 &&
+              chartType !== 'holders' &&
+              chartType !== 'liquidity' &&
+              (() => {
+                const pct = Math.max(0, Math.min(100, 100 + parseFloat(athData.percentDown)));
+                const col = pct > 80 ? '#22c55e' : pct < 20 ? '#ef4444' : '#f59e0b';
+                return (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '2px 10px',
+                      borderRadius: '12px',
+                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                      height: isMobile ? '24px' : '26px'
+                    }}
+                  >
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ATH</span>
+                    <div style={{ position: 'relative', width: isMobile ? '30px' : '40px', height: '3px', borderRadius: '1.5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.1)' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, borderRadius: '1.5px', background: col }} />
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: col, fontFamily: 'var(--font-mono)' }}>
+                      {athData.percentDown}%
+                    </span>
+                    <div style={{ width: '1px', height: '10px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)', fontFamily: 'var(--font-mono)' }}>
+                      {SYMBOLS[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
+                    </span>
+                  </div>
+                );
+              })()}
+          </HeaderSection>
+
+          <HeaderSection>
+            <ToolGroup isDark={isDark}>
+              {Object.entries(chartIcons).map(([type, icon]) => (
+                <ToolBtn
+                  key={type}
+                  onClick={() => {
+                    const wasPrice = chartType === 'candles' || chartType === 'line';
+                    const isPrice = type === 'candles' || type === 'line';
+                    if (wasPrice && !isPrice) {
+                      priceTimeRangeRef.current = timeRange;
+                      setTimeRange('all');
+                    } else if (!wasPrice && isPrice) {
+                      setTimeRange(priceTimeRangeRef.current);
+                    }
+                    setChartType(type);
+                  }}
+                  isActive={chartType === type}
+                  isMobile={isMobile}
+                  isDark={isDark}
+                >
+                  {icon}
+                  {!isMobile && { holders: 'Holders', liquidity: 'Liquidity', candles: 'Price', line: 'Area' }[type]}
+                </ToolBtn>
+              ))}
+            </ToolGroup>
+
+            <ToolGroup isDark={isDark}>
+              {(isMobile
+                ? ['1d', '5d', '1m', '1y', 'all']
+                : ['1d', '5d', '1m', '3m', '1y', '5y', 'all']
+              ).map((r) => (
+                <ToolBtn
+                  key={r}
+                  onClick={() => {
+                    setTimeRange(r);
+                    setIsUserZoomed(false);
+                    if (chartType === 'candles' || chartType === 'line') {
+                      priceTimeRangeRef.current = r;
+                    }
+                  }}
+                  isActive={timeRange === r}
+                  isMobile={isMobile}
+                  isDark={isDark}
+                >
+                  {r.toUpperCase()}
+                </ToolBtn>
+              ))}
+            </ToolGroup>
+
+            <ToolBtn
+              onClick={handleFullscreen}
+              isDark={isDark}
+              isMobile={isMobile}
+              style={isFullscreen ? { background: '#ef4444', color: '#fff' } : {}}
+            >
+              {isFullscreen ? <Minimize /> : <Maximize />}
+              {!isMobile && (isFullscreen ? 'Exit' : 'Full')}
+            </ToolBtn>
+          </HeaderSection>
+        </ChartHeader>
 
         <div
           style={{
-            display: 'flex',
-            gap: isMobile ? '3px' : '4px',
-            flexWrap: 'wrap',
-            alignItems: 'center'
+            position: 'relative',
+            flex: 1,
+            minHeight: isMobile ? '400px' : '450px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: isDark ? 'rgba(0,0,0,0.1)' : 'transparent'
           }}
         >
-          <div style={btnGroupStyle}>
-            {Object.entries(chartIcons).map(([type, icon]) => (
-              <Btn
-                key={type}
-                onClick={() => {
-                  const wasPrice = chartType === 'candles' || chartType === 'line';
-                  const isPrice = type === 'candles' || type === 'line';
+          <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
 
-                  // Save current timeRange when leaving price charts
-                  if (wasPrice && !isPrice) {
-                    priceTimeRangeRef.current = timeRange;
-                    setTimeRange('all');
-                  }
-                  // Restore saved timeRange when returning to price charts
-                  else if (!wasPrice && isPrice) {
-                    setTimeRange(priceTimeRangeRef.current);
-                  }
-
-                  setChartType(type);
-                }}
-                isActive={chartType === type}
-                isMobile={isMobile}
-                isDark={isDark}
-              >
-                {icon}
-                {!isMobile &&
-                  { holders: 'Holders', liquidity: 'TVL', candles: 'Candles', line: 'Line' }[type]}
-              </Btn>
-            ))}
-          </div>
-          <div style={btnGroupStyle}>
-            {(isMobile
-              ? ['1d', '5d', '1m', '1y', 'all']
-              : ['1d', '5d', '1m', '3m', '1y', '5y', 'all']
-            ).map((r) => (
-              <Btn
-                key={r}
-                onClick={() => {
-                  setTimeRange(r);
-                  setIsUserZoomed(false);
-                  // Save timeRange for price charts so it persists after TVL/Holders
-                  if (chartType === 'candles' || chartType === 'line') {
-                    priceTimeRangeRef.current = r;
-                  }
-                }}
-                isActive={timeRange === r}
-                isMobile={isMobile}
-                isDark={isDark}
-                minWidth={isMobile ? '24px' : '28px'}
-              >
-                {r.toUpperCase()}
-              </Btn>
-            ))}
-          </div>
-          <Btn
-            onClick={handleFullscreen}
-            isDark={isDark}
-            isMobile={isMobile}
-            style={
-              isFullscreen ? { background: '#ef4444', borderColor: '#ef4444', color: '#fff' } : {}
-            }
-          >
-            {isFullscreen ? <Minimize /> : <Maximize />}
-            {isFullscreen && 'Exit'}
-          </Btn>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: 'relative',
-          height: isFullscreen ? 'calc(100vh - 80px)' : isMobile ? '420px' : '650px',
-          borderRadius: '8px',
-          overflow: 'hidden'
-        }}
-      >
-        <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
-        {loading && !chartRef.current && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Spinner size={20} />
-          </div>
-        )}
-        {isLoadingMore && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '12px',
-              transform: 'translateY(-50%)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              padding: '4px 8px',
-              borderRadius: '6px',
-              background: isDark ? 'rgba(10,15,22,0.9)' : 'rgba(255,255,255,0.95)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
-            }}
-          >
-            <Spinner size={11} />
-            <span style={{ fontSize: '10px', opacity: 0.6 }}>Loading...</span>
-          </div>
-        )}
-        {!loading &&
-          !(chartType === 'holders'
-            ? holderData?.length
-            : chartType === 'liquidity'
-              ? liquidityData?.length
-              : data?.length) && (
+          {loading && !chartRef.current && (
             <div
               style={{
                 position: 'absolute',
                 inset: 0,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                gap: '12px',
+                background: isDark ? 'rgba(6,9,14,0.4)' : 'rgba(255,255,255,0.4)',
+                backdropFilter: 'blur(4px)'
               }}
             >
-              <BearEmptyState isDark={isDark} />
+              <Spinner size={24} color="#3b82f6" />
+              <span style={{ fontSize: '11px', fontWeight: 500, opacity: 0.6 }}>Loading chart data...</span>
             </div>
           )}
-      </div>
 
-      {isFullscreen &&
-        typeof document !== 'undefined' &&
-        createPortal(
-          <button
-            onClick={handleFullscreen}
-            style={{
-              position: 'fixed',
-              top: 16,
-              right: 16,
-              zIndex: 999999,
-              padding: '8px 16px',
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '13px',
-              fontWeight: 500
-            }}
-          >
-            <Minimize size={16} />
-            Exit
-          </button>,
-          document.body
-        )}
-    </Card>
+          {isLoadingMore && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                background: isDark ? 'rgba(20,25,35,0.95)' : 'rgba(255,255,255,0.95)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                zIndex: 10
+              }}
+            >
+              <Spinner size={12} />
+              <span style={{ fontSize: '10px', fontWeight: 600, opacity: 0.8, letterSpacing: '0.02em' }}>Fetching history...</span>
+            </div>
+          )}
 
-    {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
-      <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', overflow: 'hidden' }}>
-        <span style={{ color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', flexShrink: 0, fontSize: '11px' }}>Creator</span>
-        {creatorEvents.slice(0, 10).map((e, i) => {
-          const f = (n) => n >= 9.995e5 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n < 1 ? n.toFixed(2) : Math.round(n);
-          const t = e.time > 1e12 ? e.time : e.time * 1000;
-          const d = Math.floor((Date.now() - t) / 1000);
-          const ago = d < 60 ? d+'s' : d < 3600 ? Math.floor(d/60)+'m' : d < 86400 ? Math.floor(d/3600)+'h' : Math.floor(d/86400)+'d';
-          const isXrp = ['SELL','BUY','WITHDRAW','DEPOSIT','SEND','RECEIVE'].includes(e.type);
-          const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
-          const short = { SELL: 'S', BUY: 'B', SEND: 'OUT', RECEIVE: 'IN', 'TRANSFER OUT': 'OUT', WITHDRAW: 'W', DEPOSIT: 'D' }[e.type] || e.type.slice(0,3);
-          return (
-            <a key={e.hash || i} href={`https://xrpl.to/tx/${e.hash}`} target="_blank" rel="noopener noreferrer" title={`${e.type} - ${ago} ago`} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 6px', borderRadius: '4px', background: e.type === 'SELL' ? 'rgba(239,68,68,0.2)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', textDecoration: 'none', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', flexShrink: 0, whiteSpace: 'nowrap' }}>
-              <span style={{ color: e.color, fontWeight: 600 }}>{short}</span>
-              {amt && <span style={{ fontFamily: 'var(--font-mono)' }}>{amt}</span>}
-              <span style={{ opacity: 0.4 }}>{ago}</span>
-            </a>
-          );
-        })}
-      </div>
-    )}
+          {!loading &&
+            !(chartType === 'holders'
+              ? holderData?.length
+              : chartType === 'liquidity'
+                ? liquidityData?.length
+                : data?.length) && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px'
+                }}
+              >
+                <BearEmptyState isDark={isDark} />
+              </div>
+            )}
+        </div>
+
+        {isFullscreen &&
+          typeof document !== 'undefined' &&
+          createPortal(
+            <button
+              onClick={handleFullscreen}
+              style={{
+                position: 'fixed',
+                top: 20,
+                right: 20,
+                zIndex: 999999,
+                padding: '10px 20px',
+                background: '#ef4444',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                boxShadow: '0 4px 20px rgba(239, 68, 68, 0.3)'
+              }}
+            >
+              <Minimize size={18} />
+              Exit Fullscreen
+            </button>,
+            document.body
+          )}
+      </Card>
+
+      {creatorEvents.length > 0 && chartType !== 'holders' && chartType !== 'liquidity' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 12px',
+            borderRadius: '12px',
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+            overflow: 'hidden',
+            minHeight: '28px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingRight: '8px', borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, flexShrink: 0 }}>
+            <Sparkles size={14} color="#f59e0b" />
+            <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Creator</span>
+          </div>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {creatorEvents.slice(0, 10).map((e, i) => {
+              const f = (n) => n >= 9.995e5 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : n < 1 ? n.toFixed(2) : Math.round(n);
+              const t = e.time > 1e12 ? e.time : e.time * 1000;
+              const d = Math.floor((Date.now() - t) / 1000);
+              const ago = d < 60 ? d + 's' : d < 3600 ? Math.floor(d / 60) + 'm' : d < 86400 ? Math.floor(d / 3600) + 'h' : Math.floor(d / 86400) + 'd';
+              const isXrp = ['SELL', 'BUY', 'WITHDRAW', 'DEPOSIT', 'SEND', 'RECEIVE'].includes(e.type);
+              const amt = isXrp && e.xrpAmount > 0.001 ? f(e.xrpAmount) + ' XRP' : e.tokenAmount > 0 ? f(e.tokenAmount) + (e.currency ? ' ' + e.currency : '') : '';
+              const short = { SELL: 'S', BUY: 'B', SEND: 'OUT', RECEIVE: 'IN', 'TRANSFER OUT': 'OUT', WITHDRAW: 'W', DEPOSIT: 'D' }[e.type] || e.type.slice(0, 3);
+              return (
+                <a
+                  key={e.hash || i}
+                  href={`https://xrpl.to/tx/${e.hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`${e.type} - ${ago} ago`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+                    textDecoration: 'none',
+                    color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                  }}
+                >
+                  <span style={{ color: e.color, fontWeight: 700, fontSize: '9px' }}>{short}</span>
+                  {amt && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 500 }}>{amt}</span>}
+                  <span style={{ opacity: 0.4, fontSize: '9px', fontWeight: 600 }}>{ago}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 });

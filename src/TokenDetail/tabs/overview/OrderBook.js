@@ -62,13 +62,14 @@ const Container = styled.div`
   min-height: 520px;
   display: flex;
   flex-direction: column;
+  background: ${(props) => (props.isDark ? 'transparent' : '#fff')};
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 12px 16px;
   background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
   border-bottom: 1px solid
     ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
@@ -77,10 +78,11 @@ const Header = styled.div`
 const Title = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : '#212B36')};
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${(props) => (props.isDark ? '#fff' : '#212B36')};
+  letter-spacing: 0.3px;
 `;
 
 const Content = styled.div`
@@ -98,72 +100,87 @@ const Side = styled.div`
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
-    display: none;
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+    border-radius: 10px;
   }
 `;
 
 const ColumnHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 4px 10px;
-  font-size: 9px;
+  padding: 6px 16px;
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   position: sticky;
   top: 0;
   z-index: 2;
   background: ${(props) => (props.isDark ? '#010815' : '#fafafa')};
   border-bottom: 1px solid
     ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
 `;
 
 const Row = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 16px;
   position: relative;
   cursor: pointer;
   font-size: 12px;
   font-family: var(--font-mono);
-  transition: background 0.1s;
+  transition: all 0.2s ease;
   &:hover {
     background: ${(props) =>
-      props.type === 'ask' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)'};
+    props.type === 'ask' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(34, 197, 94, 0.08)'};
   }
 `;
 
 const DepthBar = styled.div`
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 1px;
+  bottom: 1px;
   ${(props) => (props.type === 'bid' ? 'left: 0;' : 'right: 0;')}
   background: ${(props) =>
-    props.type === 'ask' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)'};
+    props.type === 'ask' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)'};
   width: ${(props) => props.width}%;
   pointer-events: none;
-  transition: width 0.2s ease-out;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const Price = styled.span`
-  color: ${(props) => (props.type === 'ask' ? '#ef4444' : '#22c55e')};
+  color: ${(props) => (props.type === 'ask' ? '#ff4d4f' : '#2ecc71')};
   position: relative;
   z-index: 1;
+  font-weight: 500;
 `;
 
 const Amount = styled.span`
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)')};
   position: relative;
   z-index: 1;
+  text-align: right;
+  flex: 1;
+  margin-right: 24px;
 `;
 
 const Maker = styled.span`
-  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  font-size: 9px;
+  color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)')};
+  font-size: 10px;
   position: relative;
   z-index: 1;
   cursor: pointer;
+  width: 50px;
+  text-align: right;
+  transition: color 0.2s;
   &:hover {
     color: #3b82f6;
   }
@@ -171,48 +188,43 @@ const Maker = styled.span`
 
 const SpreadBar = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)')};
+  padding: 10px 16px;
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)')};
   border-top: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   border-bottom: 1px solid
     ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font-mono);
   flex-shrink: 0;
+  backdrop-filter: blur(4px);
 `;
 
 const BearEmptyState = ({ isDark, message }) => (
-  <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', margin: '8px' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
-        <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
-        </div>
-        <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-          <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
-        </div>
-        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
-          {[0,1,2,3,4].map(i => (
-            <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
-          ))}
-          <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
-          </div>
-          <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
-          </div>
-          <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-            <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
-          </div>
-        </div>
-      </div>
-      <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', textAlign: 'center' }}>{message}</span>
-    </div>
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 20px',
+    margin: '12px',
+    borderRadius: '12px',
+    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+    border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+    gap: '12px'
+  }}>
+    <BookOpen size={24} style={{ opacity: 0.3 }} />
+    <span style={{
+      fontSize: '11px',
+      fontWeight: 500,
+      letterSpacing: '0.05em',
+      textTransform: 'uppercase',
+      textAlign: 'center'
+    }}>
+      {message}
+    </span>
   </div>
 );
 
@@ -253,7 +265,7 @@ const OrderBook = ({ token, onPriceClick }) => {
       fetchInFlight
         .get(rlusdKey)
         .then((token) => mounted && token && setRlusdToken(token))
-        .catch(() => {});
+        .catch(() => { });
       return () => {
         mounted = false;
       };
@@ -404,7 +416,7 @@ const OrderBook = ({ token, onPriceClick }) => {
           if (mountedRef.current && data) {
             processOrderbookData(data);
           }
-        } catch {}
+        } catch { }
         return;
       }
 
@@ -563,50 +575,47 @@ const OrderBook = ({ token, onPriceClick }) => {
   return (
     <Container isDark={isDark}>
       <Header isDark={isDark}>
-        <Title isDark={isDark}>
-          <BookOpen size={14} style={{ opacity: 0.7 }} />
-          {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
-        </Title>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', gap: '1px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '4px', padding: '2px' }}>
-            {['both', 'buy', 'sell'].map((mode) => (
+        <Title isDark={isDark} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', borderRadius: '6px', padding: '2px' }}>
+            {[
+              { id: 'both', label: 'Both' },
+              { id: 'buy', label: 'Buy' },
+              { id: 'sell', label: 'Sell' }
+            ].map((mode) => (
               <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                title={mode === 'both' ? 'Both sides' : mode === 'buy' ? 'Bids only' : 'Asks only'}
+                key={mode.id}
+                onClick={() => setViewMode(mode.id)}
                 style={{
-                  width: '22px',
-                  height: '18px',
-                  borderRadius: '3px',
+                  height: '24px',
+                  padding: '0 8px',
+                  borderRadius: '4px',
                   border: 'none',
                   cursor: 'pointer',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  background: viewMode === mode.id
+                    ? (isDark ? 'rgba(255,255,255,0.1)' : '#fff')
+                    : 'transparent',
+                  color: viewMode === mode.id
+                    ? (isDark ? '#fff' : '#000')
+                    : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
+                  boxShadow: viewMode === mode.id && !isDark ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2px',
-                  padding: '3px',
-                  background: viewMode === mode ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)') : 'transparent'
+                  gap: '4px'
                 }}
               >
-                {mode === 'both' && (
-                  <>
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
-                  </>
+                {mode.id === 'both' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5px' }}>
+                    <div style={{ width: '8px', height: '2px', background: '#ff4d4f', borderRadius: '1px' }} />
+                    <div style={{ width: '8px', height: '2px', background: '#2ecc71', borderRadius: '1px' }} />
+                  </div>
                 )}
-                {mode === 'sell' && (
-                  <>
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#ef4444' : isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.5)' }} />
-                  </>
-                )}
-                {mode === 'buy' && (
-                  <>
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
-                    <span style={{ width: '12px', height: '3px', borderRadius: '1px', background: viewMode === mode ? '#22c55e' : isDark ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.5)' }} />
-                  </>
-                )}
+                {mode.id === 'buy' && <div style={{ width: '8px', height: '6px', background: '#2ecc71', borderRadius: '1px' }} />}
+                {mode.id === 'sell' && <div style={{ width: '8px', height: '6px', background: '#ff4d4f', borderRadius: '1px' }} />}
+                {mode.label}
               </button>
             ))}
           </div>
@@ -614,25 +623,25 @@ const OrderBook = ({ token, onPriceClick }) => {
             value={precision}
             onChange={(e) => setPrecision(Number(e.target.value))}
             style={{
-              padding: '3px 6px',
-              borderRadius: '4px',
+              padding: '4px 24px 4px 10px',
+              borderRadius: '6px',
               border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-              fontSize: '9px',
-              background: isDark ? '#1a1f2e' : '#f5f5f5',
-              color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+              fontSize: '10px',
+              fontWeight: 500,
+              background: isDark ? '#1a1f2e' : '#f4f6f8',
+              color: isDark ? '#fff' : '#212B36',
               cursor: 'pointer',
               outline: 'none',
               appearance: 'none',
-              WebkitAppearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%23ffffff60' : '%2300000060'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='${isDark ? '%23ffffff' : '%232c3e50'}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
               backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 4px center',
-              paddingRight: '18px'
+              backgroundPosition: 'right 8px center',
+              transition: 'all 0.2s'
             }}
           >
-            <option value={4} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.0001</option>
-            <option value={6} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.000001</option>
-            <option value={8} style={{ background: isDark ? '#1a1f2e' : '#f5f5f5', color: isDark ? '#fff' : '#000' }}>0.00000001</option>
+            <option value={4} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>4 Decimals</option>
+            <option value={6} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>6 Decimals</option>
+            <option value={8} style={{ background: isDark ? '#1a1f2e' : '#fff', color: isDark ? '#fff' : '#000' }}>8 Decimals</option>
           </select>
         </div>
       </Header>
@@ -642,9 +651,9 @@ const OrderBook = ({ token, onPriceClick }) => {
         {(viewMode === 'both' || viewMode === 'sell') && (
           <Side ref={asksSideRef} type="asks">
             <ColumnHeader isDark={isDark}>
-              <span style={{ color: '#ef4444' }}>XRP</span>
-              <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
-              <span>By</span>
+              <span style={{ color: '#ff4d4f' }}>Price (XRP)</span>
+              <span>Size ({displayToken?.currency?.slice(0, 8) || 'Token'})</span>
+              <span>Maker</span>
             </ColumnHeader>
             {[...asks].reverse().map((ask, idx, arr) => {
               const acc = ask.account || ask.Account;
@@ -703,11 +712,17 @@ const OrderBook = ({ token, onPriceClick }) => {
         {/* Spread indicator */}
         {viewMode === 'both' && (
           <SpreadBar isDark={isDark}>
-            <span style={{ color: '#22c55e', fontSize: '9px' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
-            <span style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontSize: '9px' }}>
-              {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
-            </span>
-            <span style={{ color: '#ef4444', fontSize: '9px' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '10px' }}>SPREAD</span>
+              <span style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
+                {spreadPct != null ? `${spreadPct.toFixed(3)}%` : '—'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <span style={{ color: '#2ecc71' }}>{bestBid != null ? renderInlinePrice(bestBid) : '—'}</span>
+              <span style={{ color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>/</span>
+              <span style={{ color: '#ff4d4f' }}>{bestAsk != null ? renderInlinePrice(bestAsk) : '—'}</span>
+            </div>
           </SpreadBar>
         )}
 
@@ -715,9 +730,9 @@ const OrderBook = ({ token, onPriceClick }) => {
         {(viewMode === 'both' || viewMode === 'buy') && (
           <Side type="bids">
             <ColumnHeader isDark={isDark}>
-              <span style={{ color: '#22c55e' }}>XRP</span>
-              <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
-              <span>By</span>
+              <span style={{ color: '#2ecc71' }}>Price (XRP)</span>
+              <span>Size ({displayToken?.currency?.slice(0, 8) || 'Token'})</span>
+              <span>Maker</span>
             </ColumnHeader>
             {bids.map((bid, idx) => {
               const acc = bid.account || bid.Account;

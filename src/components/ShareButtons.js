@@ -1,4 +1,5 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from 'src/utils/cn';
 import {
   Twitter,
@@ -138,26 +139,35 @@ const getIcon = (platform, size = 20) => {
   }
 };
 
-const getIconColor = (platform, isDark = false) => {
-  switch (platform) {
-    case 'twitter':
-      return isDark ? '#FFFFFF' : '#000000';
-    case 'facebook':
-      return '#1877F2';
-    case 'telegram':
-      return '#229ED9';
-    case 'whatsapp':
-      return '#25D366';
-    case 'linkedin':
-      return '#0A66C2';
-    case 'reddit':
-      return '#FF5700';
-    case 'email':
-      return '#6B7280';
-    default:
-      return '#6B7280';
-  }
+const platformConfig = {
+  twitter: { color: '#000000', darkColor: '#FFFFFF', icon: XSocialIcon },
+  telegram: { color: '#229ED9', icon: Telegram },
+  whatsapp: { color: '#25D366', icon: WhatsApp },
+  facebook: { color: '#1877F2', icon: Facebook },
+  linkedin: { color: '#0A66C2', icon: Linkedin },
+  reddit: { color: '#FF5700', icon: Reddit },
+  email: { color: '#6B7280', icon: Mail },
+  copy: { color: '#3f96fe', icon: Copy }
 };
+
+const ModalAction = ({ icon: Icon, color, onClick, label, isDark }) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center gap-2 group transition-all"
+  >
+    <div
+      className={cn(
+        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 active:scale-95 group-hover:shadow-lg",
+        isDark ? "bg-white/[0.03] border border-white/[0.05] group-hover:bg-white/[0.08]" : "bg-gray-50 border border-gray-100 group-hover:bg-white"
+      )}
+    >
+      <Icon size={24} style={{ color: color }} />
+    </div>
+    <span className={cn("text-[10px] font-medium opacity-60 group-hover:opacity-100", isDark ? "text-white" : "text-gray-900")}>
+      {label}
+    </span>
+  </button>
+);
 
 const getBgColor = (isDark = true) => (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(59,130,246,0.05)');
 
@@ -386,165 +396,92 @@ export function TokenShareModal({ token, className }) {
   const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const { name, md5, exch } = token;
-  const user = token.user || name;
+  useEffect(() => setMounted(true), []);
+
+  const { name, md5, exch, user: tokenUser } = token;
+  const user = tokenUser || name;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-
-  const getCleanUrl = () => {
-    if (typeof window === 'undefined') return '';
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.delete('fromSearch');
-    return currentUrl.toString();
-  };
-
-  const url = getCleanUrl();
+  const url = typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
+  const price = fNumber(exch / (metrics[activeFiatCurrency] || 1));
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(url).then(() => {
-      openSnackbar('Link copied!', 'success');
-    });
+    navigator.clipboard.writeText(url).then(() => openSnackbar('Link copied!', 'success'));
   };
 
-  const socialPlatforms = [
-    { Component: TwitterShareButton, Icon: TwitterIcon, props: { title: `${user} ${name}`, url } },
-    { Component: FacebookShareButton, Icon: FacebookIcon, props: { url } },
-    {
-      Component: LinkedinShareButton,
-      Icon: LinkedinIcon,
-      props: { url, title: `${user} ${name}` }
-    },
-    {
-      Component: WhatsappShareButton,
-      Icon: WhatsappIcon,
-      props: { url, title: `${user} ${name}` }
-    },
-    {
-      Component: TelegramShareButton,
-      Icon: TelegramIcon,
-      props: { url, title: `${user} ${name}` }
-    },
-    { Component: RedditShareButton, Icon: RedditIcon, props: { url, title: `${user} ${name}` } },
-    {
-      Component: EmailShareButton,
-      Icon: EmailIcon,
-      props: { subject: `${user} ${name}`, body: `Check out: ${url}` }
-    }
+  const actions = [
+    { label: 'X', icon: platformConfig.twitter.icon, color: isDark ? '#fff' : '#000', onClick: () => window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(`${user} ${name}: ${url}`)}`, '_blank') },
+    { label: 'Telegram', icon: platformConfig.telegram.icon, color: platformConfig.telegram.color, onClick: () => window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`${user} ${name}`)}`, '_blank') },
+    { label: 'WhatsApp', icon: platformConfig.whatsapp.icon, color: platformConfig.whatsapp.color, onClick: () => window.open(`https://wa.me/?text=${encodeURIComponent(`${user} ${name} ${url}`)}`, '_blank') },
+    { label: 'Facebook', icon: platformConfig.facebook.icon, color: platformConfig.facebook.color, onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank') },
+    { label: 'LinkedIn', icon: platformConfig.linkedin.icon, color: platformConfig.linkedin.color, onClick: () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank') },
+    { label: 'Reddit', icon: platformConfig.reddit.icon, color: platformConfig.reddit.color, onClick: () => window.open(`https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(`${user} ${name}`)}`, '_blank') },
+    { label: 'Email', icon: platformConfig.email.icon, color: platformConfig.email.color, onClick: () => window.location.href = `mailto:?subject=${encodeURIComponent(`${user} ${name}`)}&body=${encodeURIComponent(url)}` },
+    { label: 'Copy', icon: platformConfig.copy.icon, color: platformConfig.copy.color, onClick: handleCopy },
   ];
+
+  const modal = open && mounted && createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setOpen(false)}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          'relative w-full max-w-[380px] rounded-3xl border shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden',
+          isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-100'
+        )}
+      >
+        <div className="flex items-center justify-between px-6 py-4">
+          <span className={cn('text-sm font-bold uppercase tracking-widest opacity-40', isDark ? 'text-white' : 'text-gray-900')}>Share Token</span>
+          <button onClick={() => setOpen(false)} className={cn("p-1.5 rounded-xl transition-colors", isDark ? "hover:bg-white/10 text-white/40" : "hover:bg-gray-100 text-gray-400")}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="px-8 pb-8 flex flex-col items-center">
+          <div className={cn(
+            "w-full p-4 rounded-2xl border flex items-center gap-4 mb-8",
+            isDark ? "bg-white/[0.03] border-white/[0.05]" : "bg-gray-50 border-gray-100"
+          )}>
+            <img src={imgUrl} alt={name} className="w-12 h-12 rounded-xl border border-inherit shadow-md" />
+            <div className="flex-1 min-w-0 text-left">
+              <p className={cn('text-sm font-bold truncate', isDark ? 'text-white' : 'text-gray-900')}>{name}</p>
+              <p className="text-[12px] font-medium opacity-50 truncate mb-1">{user}</p>
+              <p className="text-[13px] font-bold text-primary">
+                {currencySymbols[activeFiatCurrency]}{price}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-x-4 gap-y-6 w-full">
+            {actions.map((action, i) => (
+              <ModalAction key={i} {...action} isDark={isDark} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200',
-          isDark
-            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700',
+          'flex items-center justify-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200',
+          isDark ? 'border-white/10 hover:border-primary/50 bg-white/[0.03] hover:bg-primary/5 text-white/60 hover:text-primary' : 'border-gray-200 hover:border-primary/50 bg-gray-50 hover:bg-primary/5 text-gray-500 hover:text-primary',
           className
         )}
       >
-        <ShareIcon size={12} />
-        Share
+        <ShareIcon size={12} /> Share
       </button>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
-                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-              }`}
-          >
-            <div className="flex items-center justify-between px-4 py-3">
-              <span
-                className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}
-              >
-                Share {user}
-              </span>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/10">
-                <X size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
-              </button>
-            </div>
-
-            <div className="px-4 pb-4 flex flex-col items-center gap-4">
-              <img
-                src={imgUrl}
-                alt={name}
-                className={`w-16 h-16 rounded-xl border-2 ${isDark ? 'border-gray-600/40' : 'border-gray-200'}`}
-              />
-              <span
-                className={`text-[16px] font-medium text-center ${isDark ? 'text-white' : 'text-gray-900'}`}
-              >
-                {user} {name}
-              </span>
-
-              <div
-                className={`w-full p-3 rounded-lg border-[1.5px] text-center ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
-                  }`}
-              >
-                <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
-                  Current Price
-                </p>
-                <p className="text-[18px] font-medium text-primary">
-                  {currencySymbols[activeFiatCurrency]}
-                  {fNumber(exch / (metrics[activeFiatCurrency] || 1))}
-                </p>
-              </div>
-
-              <div className="w-full">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
-                  Share on
-                </p>
-                <div className="grid grid-cols-7 gap-2">
-                  {socialPlatforms.map(({ Component, Icon, props }, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-center rounded-lg overflow-hidden hover:scale-105 transition-transform"
-                    >
-                      <Component {...props}>
-                        <Icon size={40} round isDark={isDark} />
-                      </Component>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="w-full">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
-                  Copy Link
-                </p>
-                <div
-                  className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
-                    }`}
-                >
-                  <span
-                    className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}
-                  >
-                    {url}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${isDark
-                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-                      }`}
-                  >
-                    <Copy size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {modal}
     </>
   );
 }
+
+
 
 // NFT Collection Share Modal
 export function NFTShareModal({ name, imageUrl, url }) {
@@ -573,8 +510,8 @@ export function NFTShareModal({ name, imageUrl, url }) {
       <button
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
-            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+          ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+          : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
           }`}
       >
         <ShareIcon size={12} />
@@ -589,8 +526,8 @@ export function NFTShareModal({ name, imageUrl, url }) {
           <div
             onClick={(e) => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
-                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+              ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
               }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
@@ -639,8 +576,8 @@ export function NFTShareModal({ name, imageUrl, url }) {
                   <button
                     onClick={handleCopy}
                     className={`p-2 rounded-lg transition-colors ${isDark
-                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                      ? 'bg-white/10 hover:bg-white/15 text-white/60'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
                       }`}
                   >
                     <Copy size={14} />
@@ -685,8 +622,8 @@ export function TxShareModal({ hash, type }) {
       <button
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
-            ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+          ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
+          : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
           }`}
       >
         <ShareIcon size={12} />
@@ -701,8 +638,8 @@ export function TxShareModal({ hash, type }) {
           <div
             onClick={(e) => e.stopPropagation()}
             className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
-                ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+              ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
               }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
@@ -752,8 +689,8 @@ export function TxShareModal({ hash, type }) {
                   <button
                     onClick={handleCopy}
                     className={`p-2 rounded-lg transition-colors ${isDark
-                        ? 'bg-white/10 hover:bg-white/15 text-white/60'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                      ? 'bg-white/10 hover:bg-white/15 text-white/60'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
                       }`}
                   >
                     <Copy size={14} />

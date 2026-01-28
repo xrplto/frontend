@@ -310,7 +310,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       sessionStorage.setItem('oauth1_token_secret', data.oauth_token_secret);
       sessionStorage.setItem('oauth1_auth_start', Date.now().toString());
       window.location.href = data.auth_url.replace('api.twitter.com', 'api.x.com');
-    } catch {}
+    } catch { }
   };
 
   const handleDirectDiscordAuth = () => {
@@ -452,7 +452,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         setSuggestedTokens(res.data?.tokens?.slice(0, 4) || []);
         setSuggestedCollections(res.data?.collections?.slice(0, 3) || []);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [searchOpen, fullSearch]);
 
   // Search effect
@@ -707,10 +707,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   const filteredPages = commandQuery
     ? commandPages.filter(
-        (p) =>
-          p.name.toLowerCase().includes(commandQuery.toLowerCase()) ||
-          p.desc.toLowerCase().includes(commandQuery.toLowerCase())
-      )
+      (p) =>
+        p.name.toLowerCase().includes(commandQuery.toLowerCase()) ||
+        p.desc.toLowerCase().includes(commandQuery.toLowerCase())
+    )
     : commandPages;
 
   const handleFullSearch = useCallback(() => {
@@ -931,47 +931,47 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   >
                     <div className="grid grid-cols-2 gap-1 p-3">
                       {nftMenuItemsRight.map((item) => (
+                        <div
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          className={cn(
+                            'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
+                            isActive(item.path)
+                              ? isDark
+                                ? 'bg-white/10'
+                                : 'bg-blue-50'
+                              : isDark
+                                ? 'hover:bg-white/5'
+                                : 'hover:bg-gray-50'
+                          )}
+                        >
                           <div
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
                             className={cn(
-                              'flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 transition-colors duration-150',
-                              isActive(item.path)
-                                ? isDark
-                                  ? 'bg-white/10'
-                                  : 'bg-blue-50'
-                                : isDark
-                                  ? 'hover:bg-white/5'
-                                  : 'hover:bg-gray-50'
+                              'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
+                              isDark ? 'bg-white/5' : 'bg-gray-100'
                             )}
                           >
-                            <div
+                            {item.icon}
+                          </div>
+                          <div className="flex flex-col">
+                            <span
                               className={cn(
-                                'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg',
-                                isDark ? 'bg-white/5' : 'bg-gray-100'
+                                'text-[14px] font-medium',
+                                isDark ? 'text-white' : 'text-gray-900'
                               )}
                             >
-                              {item.icon}
-                            </div>
-                            <div className="flex flex-col">
-                              <span
-                                className={cn(
-                                  'text-[14px] font-medium',
-                                  isDark ? 'text-white' : 'text-gray-900'
-                                )}
-                              >
-                                {item.name}
-                              </span>
-                              <span
-                                className={cn(
-                                  'text-[12px]',
-                                  isDark ? 'text-white/50' : 'text-gray-500'
-                                )}
-                              >
-                                {item.desc}
-                              </span>
-                            </div>
+                              {item.name}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-[12px]',
+                                isDark ? 'text-white/50' : 'text-gray-500'
+                              )}
+                            >
+                              {item.desc}
+                            </span>
                           </div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -1016,65 +1016,74 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         {isDesktop && (
           <div
             ref={searchRef}
-            className="absolute left-1/2 -translate-x-1/2 w-full max-w-[600px] px-4"
+            className="absolute left-1/2 -translate-x-1/2 w-full max-w-[580px] px-4"
           >
             <div
               className={cn(
-                'flex items-center gap-3 px-4 h-[36px] w-full cursor-text rounded-lg transition-all duration-200',
+                'flex items-center gap-3 px-4 h-[38px] w-full cursor-text rounded-xl transition-all duration-300 border',
                 searchOpen
                   ? isDark
-                    ? 'bg-[rgba(63,150,254,10'
-                    : 'bg-blue-50'
+                    ? 'bg-blue-600/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+                    : 'bg-white border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
                   : isDark
-                    ? 'bg-white/[0.04] hover:bg-[rgba(63,150,254,5'
-                    : 'bg-gray-50 hover:bg-blue-50/50'
+                    ? 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20'
+                    : 'bg-gray-100/80 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
               )}
               onClick={openSearch}
             >
-              <Search size={16} className={isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'} />
+              <Search
+                size={17}
+                className={cn(
+                  'transition-colors duration-300',
+                  searchOpen
+                    ? isDark ? 'text-blue-400' : 'text-blue-600'
+                    : isDark ? 'text-white/40' : 'text-gray-400'
+                )}
+              />
               {searchOpen ? (
                 <input
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search tokens, NFTs, accounts, transactions..."
+                  placeholder="Search assets, NFTs, accounts..."
                   className={cn(
-                    'flex-1 bg-transparent text-[14px] outline-none',
+                    'flex-1 bg-transparent text-[14px] outline-none font-medium',
                     isDark
-                      ? 'text-white placeholder:text-white/40'
+                      ? 'text-white placeholder:text-white/30'
                       : 'text-gray-900 placeholder:text-gray-400'
                   )}
                 />
               ) : (
                 <span
-                  className={cn('flex-1 text-[14px]', isDark ? 'text-white/40' : 'text-gray-500')}
+                  className={cn(
+                    'flex-1 text-[13.5px] font-medium transition-colors duration-300',
+                    isDark ? 'text-white/30' : 'text-gray-400'
+                  )}
                 >
-                  Search tokens, NFTs, accounts, transactions...
+                  Search assets, NFTs, accounts...
                 </span>
               )}
               {!searchOpen && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 pointer-events-none">
                   <kbd
                     className={cn(
-                      'px-2 py-0.5 rounded text-[11px] font-sans',
-                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
+                      'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center min-w-[20px]',
+                      isDark
+                        ? 'bg-white/[0.05] border-white/10 text-white/40'
+                        : 'bg-white border-gray-200 text-gray-400 shadow-sm'
                     )}
                   >
                     /
                   </kbd>
                   <kbd
                     className={cn(
-                      'px-1.5 py-0.5 rounded text-[10px] font-sans cursor-pointer hover:opacity-80',
-                      isDark ? 'bg-white/[0.08] text-white/30' : 'bg-gray-200 text-gray-400'
+                      'px-1.5 py-0.5 rounded-md text-[10px] font-medium border flex items-center justify-center gap-1 min-w-[40px]',
+                      isDark
+                        ? 'bg-white/[0.05] border-white/10 text-white/40'
+                        : 'bg-white border-gray-200 text-gray-400 shadow-sm'
                     )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCommandPaletteOpen(true);
-                      setCommandQuery('');
-                      setTimeout(() => commandInputRef.current?.focus(), 50);
-                    }}
                   >
-                    {navigator?.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+                    {navigator?.platform?.includes('Mac') ? '⌘' : 'Ctrl'} K
                   </kbd>
                 </div>
               )}
@@ -1084,32 +1093,32 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             {searchOpen && (
               <div
                 className={cn(
-                  'absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[920px] mt-2 rounded-2xl border overflow-hidden z-[9999]',
+                  'absolute top-full left-1/2 -translate-x-1/2 w-full mt-2 rounded-2xl border overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200',
                   isDark
-                    ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                    : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    ? 'bg-black/95 backdrop-blur-2xl border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
+                    : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
                 )}
               >
                 {!searchQuery && recentSearches.length > 0 && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="px-4 py-3 border-b border-white/5">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span
                         className={cn(
-                          'text-[10px] uppercase tracking-wide',
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
                           isDark ? 'text-white/30' : 'text-gray-400'
                         )}
                       >
-                        Recent:
+                        Recent
                       </span>
                       {recentSearches.map((item, i) => (
                         <button
                           key={i}
                           onClick={() => handleSearchSelect(item, item.type)}
                           className={cn(
-                            'flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full transition-colors',
+                            'flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-lg transition-all border group',
                             isDark
-                              ? 'bg-white/5 hover:bg-white/10'
-                              : 'bg-gray-100 hover:bg-gray-200'
+                              ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:border-white/10'
+                              : 'bg-gray-50 border-gray-100 hover:bg-gray-100 hover:border-gray-200 shadow-sm'
                           )}
                         >
                           <img
@@ -1120,14 +1129,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             }
                             className={cn(
                               'w-5 h-5 object-cover',
-                              item.type === 'token' ? 'rounded-full' : 'rounded'
+                              item.type === 'token' ? 'rounded-full' : 'rounded-md'
                             )}
                             alt=""
                           />
                           <span
                             className={cn(
-                              'text-[12px]',
-                              isDark ? 'text-white/80' : 'text-gray-700'
+                              'text-[12px] font-medium transition-colors',
+                              isDark ? 'text-white/60 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-900'
                             )}
                           >
                             {item.type === 'token' ? `${item.name}/XRP` : item.user || item.name}
@@ -1137,13 +1146,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <button
                         onClick={clearRecentSearches}
                         className={cn(
-                          'text-[10px] ml-auto',
+                          'text-[11px] ml-auto font-medium transition-colors',
                           isDark
                             ? 'text-white/20 hover:text-white/40'
                             : 'text-gray-300 hover:text-gray-500'
                         )}
                       >
-                        ×
+                        Clear
                       </button>
                     </div>
                   </div>
@@ -1152,838 +1161,439 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   (suggestedTokens.length > 0 || suggestedCollections.length > 0) && (
                     <>
                       {suggestedTokens.length > 0 && (
-                        <div className="px-3 py-2">
-                          <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                        <div className="p-2">
+                          <div className="flex items-center gap-3 px-3 py-2">
                             <span
                               className={cn(
-                                'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                                isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                                'text-[10px] font-bold uppercase tracking-[0.1em]',
+                                isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                               )}
                             >
-                              Tokens
+                              Suggested Tokens
                             </span>
-                            <div
-                              className="flex-1 h-[14px]"
-                              style={{
-                                backgroundImage: isDark
-                                  ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                                  : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                                backgroundSize: '8px 5px',
-                                WebkitMaskImage:
-                                  'linear-gradient(90deg, black 0%, transparent 100%)',
-                                maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                              }}
-                            />
+                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                           </div>
-                          {suggestedTokens.map((token, i) => (
-                            <div
-                              key={i}
-                              onClick={() => handleSearchSelect(token, 'token')}
-                              className={cn(
-                                'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                                isDark
-                                  ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                              )}
-                            >
-                              <img
-                                src={`https://s1.xrpl.to/token/${token.md5}`}
-                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                alt=""
-                              />
-                              <div className="w-[200px] min-w-[200px]">
-                                <div className="flex items-center gap-1.5">
-                                  <span
-                                    className={cn(
-                                      'text-[14px] font-medium truncate',
-                                      isDark ? 'text-white/90' : 'text-gray-900'
-                                    )}
-                                  >
-                                    {token.user}
-                                  </span>
+                          <div className="grid grid-cols-1 gap-1">
+                            {suggestedTokens.map((token, i) => (
+                              <div
+                                key={i}
+                                onClick={() => handleSearchSelect(token, 'token')}
+                                className={cn(
+                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 group border border-transparent',
+                                  isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                                )}
+                              >
+                                <div className="relative">
+                                  <img
+                                    src={`https://s1.xrpl.to/token/${token.md5}`}
+                                    className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
+                                    alt=""
+                                  />
                                   {token.verified >= 1 && (
-                                    <span
-                                      className={cn(
-                                        'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                        isDark
-                                          ? 'bg-green-500/10 text-green-400'
-                                          : 'bg-green-50 text-green-600'
-                                      )}
-                                    >
-                                      Verified
-                                    </span>
+                                    <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                      <Check size={8} className="text-white" />
+                                    </div>
                                   )}
                                 </div>
-                                <span
-                                  className={cn(
-                                    'text-[12px] block',
-                                    isDark ? 'text-white/40' : 'text-gray-500'
-                                  )}
-                                >
-                                  ({token.name})
-                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                      {token.user}
+                                    </span>
+                                    <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
+                                      isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                      {token.name}
+                                    </span>
+                                  </div>
+                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                                    {truncateAccount(token.issuer, 8)}
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-end shrink-0 pl-4">
+                                  <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                                    {formatMcap(getMcap(token.marketcap))}
+                                  </span>
+                                  <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
+                                    Market Cap
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className={cn(
-                                    'text-[11px] font-mono truncate',
-                                    isDark ? 'text-white/25' : 'text-gray-400'
-                                  )}
-                                >
-                                  {token.issuer}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 w-[180px] justify-end">
-                                <span
-                                  className={cn(
-                                    'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                                    isDark
-                                      ? 'bg-white/5 text-white/50 border border-white/10'
-                                      : 'bg-gray-100 text-gray-500'
-                                  )}
-                                >
-                                  Token
-                                </span>
-                              </div>
-                              <div className="text-right w-[90px]">
-                                <span
-                                  className={cn(
-                                    'text-[13px] font-semibold tabular-nums block',
-                                    isDark ? 'text-white/80' : 'text-gray-700'
-                                  )}
-                                >
-                                  {formatMcap(getMcap(token.marketcap))}
-                                </span>
-                                <p
-                                  className={cn(
-                                    'text-[9px] uppercase tracking-wider',
-                                    isDark ? 'text-white/30' : 'text-gray-400'
-                                  )}
-                                >
-                                  Mkt Cap
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                       {suggestedCollections.length > 0 && (
-                        <div className="px-3 py-2">
-                          <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                        <div className="p-2 pt-0">
+                          <div className="flex items-center gap-3 px-3 py-2">
                             <span
                               className={cn(
-                                'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                                isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                                'text-[10px] font-bold uppercase tracking-[0.1em]',
+                                isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                               )}
                             >
-                              NFTs
+                              Suggested NFTs
                             </span>
-                            <div
-                              className="flex-1 h-[14px]"
-                              style={{
-                                backgroundImage: isDark
-                                  ? 'radial-gradient(circle, rgba(96,165,250,0.4) 1px, transparent 1px)'
-                                  : 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
-                                backgroundSize: '8px 5px',
-                                WebkitMaskImage:
-                                  'linear-gradient(90deg, black 0%, transparent 100%)',
-                                maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                              }}
-                            />
+                            <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                           </div>
-                          {suggestedCollections.map((col, i) => (
-                            <div
-                              key={i}
-                              onClick={() => handleSearchSelect(col, 'collection')}
-                              className={cn(
-                                'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                                isDark
-                                  ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                              )}
-                            >
-                              <img
-                                src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                                alt=""
-                              />
-                              <div className="w-[200px] min-w-[200px]">
-                                <div className="flex items-center gap-1.5">
-                                  <span
-                                    className={cn(
-                                      'text-[14px] font-medium truncate',
-                                      isDark ? 'text-white/90' : 'text-gray-900'
-                                    )}
-                                  >
-                                    {typeof col.name === 'object'
-                                      ? col.name?.collection_name || ''
-                                      : col.name || ''}
-                                  </span>
+                          <div className="grid grid-cols-1 gap-1">
+                            {suggestedCollections.map((col, i) => (
+                              <div
+                                key={i}
+                                onClick={() => handleSearchSelect(col, 'collection')}
+                                className={cn(
+                                  'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 group border border-transparent',
+                                  isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                                )}
+                              >
+                                <div className="relative">
+                                  <img
+                                    src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                                    className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
+                                    alt=""
+                                  />
                                   {col.verified >= 1 && (
-                                    <span
-                                      className={cn(
-                                        'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                        isDark
-                                          ? 'bg-green-500/10 text-green-400'
-                                          : 'bg-green-50 text-green-600'
-                                      )}
-                                    >
-                                      Verified
-                                    </span>
+                                    <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                      <Check size={8} className="text-white" />
+                                    </div>
                                   )}
                                 </div>
-                                <span
-                                  className={cn(
-                                    'text-[12px] block',
-                                    isDark ? 'text-white/40' : 'text-gray-500'
-                                  )}
-                                >
-                                  Collection
-                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                      {typeof col.name === 'object' ? col.name?.collection_name : col.name}
+                                    </span>
+                                  </div>
+                                  <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                                    {truncateAccount(col.account, 8)}
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-end shrink-0 pl-4">
+                                  <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                                    {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
+                                  </span>
+                                  <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                                    {getMcap(col.marketcap) ? 'Market Cap' : 'Items'}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className={cn(
-                                    'text-[11px] font-mono truncate',
-                                    isDark ? 'text-white/25' : 'text-gray-400'
-                                  )}
-                                >
-                                  {col.account}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 w-[180px] justify-end">
-                                <span
-                                  className={cn(
-                                    'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                                    isDark
-                                      ? 'bg-white/5 text-white/50 border border-white/10'
-                                      : 'bg-gray-100 text-gray-500'
-                                  )}
-                                >
-                                  NFT
-                                </span>
-                              </div>
-                              <div className="text-right w-[90px]">
-                                <span
-                                  className={cn(
-                                    'text-[13px] font-semibold tabular-nums block',
-                                    isDark ? 'text-white/80' : 'text-gray-700'
-                                  )}
-                                >
-                                  {getMcap(col.marketcap)
-                                    ? formatMcap(getMcap(col.marketcap))
-                                    : `${col.items?.toLocaleString() || 0}`}
-                                </span>
-                                <p
-                                  className={cn(
-                                    'text-[9px] uppercase tracking-wider',
-                                    isDark ? 'text-white/30' : 'text-gray-400'
-                                  )}
-                                >
-                                  {getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                     </>
                   )}
                 {searchQuery && searchResults.txHash && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Transaction
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
-                        'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.1)] border border-[rgba(63,150,254,0.2)]'
-                            : 'bg-blue-50'
-                        )}
-                      >
-                        <ArrowLeftRight
-                          size={18}
-                          className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'}
-                        />
-                      </div>
-                      <div className="w-[200px] min-w-[200px]">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white/90' : 'text-gray-900'
-                          )}
-                        >
-                          View Transaction
-                        </span>
-                        <span
-                          className={cn(
-                            'text-[12px] block',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          TX Hash
-                        </span>
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                      )}>
+                        <ArrowLeftRight size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                          View Transaction
+                        </span>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           {searchResults.txHash}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 w-[180px] justify-end">
-                        <span
-                          className={cn(
-                            'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                            isDark
-                              ? 'bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]'
-                              : 'bg-cyan-50 text-cyan-600'
-                          )}
-                        >
-                          Transaction
                         </span>
                       </div>
-                      <div className="w-[90px]" />
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          TX
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.nft && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-pink-400/80' : 'text-pink-600/80'
                         )}
                       >
                         NFT
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
-                        'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
                       {getNftImage(searchResults.nft) ? (
                         <img
                           src={getNftImage(searchResults.nft)}
                           alt=""
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          className="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm group-hover:scale-105 transition-transform"
                         />
                       ) : (
-                        <div
-                          className={cn(
-                            'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
-                            isDark ? 'bg-pink-500/10 border border-pink-500/20' : 'bg-pink-50'
-                          )}
-                        >
-                          <Sparkles
-                            size={18}
-                            className={isDark ? 'text-pink-400' : 'text-pink-500'}
-                          />
+                        <div className={cn(
+                          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600'
+                        )}>
+                          <Sparkles size={14} />
                         </div>
                       )}
-                      <div className="w-[200px] min-w-[200px]">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block truncate',
-                            isDark ? 'text-white/90' : 'text-gray-900'
-                          )}
-                        >
+                      <div className="flex-1 min-w-0">
+                        <span className={cn('text-[13.5px] font-semibold block truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
                           {searchResults.nft.name || 'View NFT'}
                         </span>
-                        <span
-                          className={cn(
-                            'text-[12px] block truncate',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          {typeof searchResults.nft.collection === 'string'
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                          {(typeof searchResults.nft.collection === 'string'
                             ? searchResults.nft.collection
-                            : searchResults.nft.collection?.name || 'NFT'}
+                            : searchResults.nft.collection?.name) || 'NFT Collection'}
                         </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
-                          {searchResults.nft._id}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 w-[180px] justify-end">
-                        <span
-                          className={cn(
-                            'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                            isDark
-                              ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20'
-                              : 'bg-pink-50 text-pink-600'
-                          )}
-                        >
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600')}>
                           NFT
                         </span>
                       </div>
-                      <div className="w-[90px]" />
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.address && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                         )}
                       >
                         Account
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
-                        'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark ? 'bg-purple-500/10 border border-purple-500/20' : 'bg-purple-50'
-                        )}
-                      >
-                        <Wallet
-                          size={18}
-                          className={isDark ? 'text-purple-400' : 'text-purple-500'}
-                        />
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-500'
+                      )}>
+                        <Wallet size={14} />
                       </div>
-                      <div className="w-[200px] min-w-[200px]">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white/90' : 'text-gray-900'
-                          )}
-                        >
+                      <div className="flex-1 min-w-0">
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
                           {searchResults.address.balance != null
                             ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`
                             : 'View Profile'}
                         </span>
-                        <span
-                          className={cn(
-                            'text-[12px] block',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          {searchResults.address.rank
-                            ? `Rank #${searchResults.address.rank.toLocaleString()}`
-                            : 'XRPL Account'}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           {searchResults.address.address}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 w-[180px] justify-end">
-                        <span
-                          className={cn(
-                            'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                            isDark
-                              ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                              : 'bg-purple-50 text-purple-600'
-                          )}
-                        >
-                          Account
                         </span>
                       </div>
-                      <div className="w-[90px]" />
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                          {searchResults.address.rank ? `#${searchResults.address.rank.toLocaleString()}` : ''}
+                        </span>
+                        <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                          {searchResults.address.rank ? 'Rank' : 'Account'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.ledger && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Ledger
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
-                        'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.1)] border border-[rgba(63,150,254,0.2)]'
-                            : 'bg-blue-50'
-                        )}
-                      >
-                        <Layers size={18} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
-                      </div>
-                      <div className="w-[200px] min-w-[200px]">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white/90' : 'text-gray-900'
-                          )}
-                        >
-                          View Ledger
-                        </span>
-                        <span
-                          className={cn(
-                            'text-[12px] block',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
-                          Ledger Index
-                        </span>
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                      )}>
+                        <Layers size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
+                          View Ledger
+                        </span>
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           #{searchResults.ledger}
-                        </p>
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 w-[180px] justify-end">
-                        <span
-                          className={cn(
-                            'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                            isDark
-                              ? 'bg-[rgba(63,150,254,0.1)] text-[#3f96fe] border border-[rgba(63,150,254,0.2)]'
-                              : 'bg-cyan-50 text-cyan-600'
-                          )}
-                        >
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
                           Ledger
                         </span>
                       </div>
-                      <div className="w-[90px]" />
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.tokens.length > 0 && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Tokens
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {searchResults.tokens.map((token, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(token, 'token')}
-                        className={cn(
-                          'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="w-[200px] min-w-[200px]">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium truncate',
-                                isDark ? 'text-white/90' : 'text-gray-900'
-                              )}
-                            >
-                              {token.user}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {searchResults.tokens.map((token, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(token, 'token')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/token/${token.md5}`}
+                              className="w-8 h-8 rounded-full object-cover group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {token.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
-                              </span>
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
                             )}
                           </div>
-                          <span
-                            className={cn(
-                              'text-[12px] block',
-                              isDark ? 'text-white/40' : 'text-gray-500'
-                            )}
-                          >
-                            ({token.name})
-                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {token.user}
+                              </span>
+                              <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
+                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                {token.name}
+                              </span>
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(token.issuer, 8)}
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                              {formatMcap(getMcap(token.marketcap))}
+                            </span>
+                            <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
+                              Market Cap
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {token.issuer}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 w-[180px] justify-end">
-                          <span
-                            className={cn(
-                              'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                              isDark
-                                ? 'bg-white/5 text-white/50 border border-white/10'
-                                : 'bg-gray-100 text-gray-500'
-                            )}
-                          >
-                            Token
-                          </span>
-                        </div>
-                        <div className="text-right w-[90px]">
-                          <span
-                            className={cn(
-                              'text-[13px] font-semibold tabular-nums block',
-                              isDark ? 'text-white/80' : 'text-gray-700'
-                            )}
-                          >
-                            {formatMcap(getMcap(token.marketcap))}
-                          </span>
-                          <p
-                            className={cn(
-                              'text-[9px] uppercase tracking-wider',
-                              isDark ? 'text-white/30' : 'text-gray-400'
-                            )}
-                          >
-                            Mkt Cap
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
                 {searchQuery && searchResults.collections.length > 0 && (
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3 px-1 py-2 mb-1">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[11px] font-semibold uppercase tracking-[0.15em] whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                         )}
                       >
                         NFTs
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage: isDark
-                            ? 'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)'
-                            : 'radial-gradient(circle, rgba(0,180,220,0.3) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px',
-                          WebkitMaskImage: 'linear-gradient(90deg, black 0%, transparent 100%)',
-                          maskImage: 'linear-gradient(90deg, black 0%, transparent 100%)'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {searchResults.collections.map((col, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(col, 'collection')}
-                        className={cn(
-                          'flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="w-[200px] min-w-[200px]">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium truncate',
-                                isDark ? 'text-white/90' : 'text-gray-900'
-                              )}
-                            >
-                              {typeof col.name === 'object'
-                                ? col.name?.collection_name || ''
-                                : col.name || ''}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {searchResults.collections.map((col, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(col, 'collection')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                              className="w-8 h-8 rounded-lg object-cover group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {col.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
-                              </span>
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
                             )}
                           </div>
-                          <span
-                            className={cn(
-                              'text-[12px] block',
-                              isDark ? 'text-white/40' : 'text-gray-500'
-                            )}
-                          >
-                            Collection
-                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {typeof col.name === 'object' ? col.name?.collection_name : col.name}
+                              </span>
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(col.account, 8)}
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                              {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
+                            </span>
+                            <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                              {getMcap(col.marketcap) ? 'Market Cap' : 'Items'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {col.account}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 w-[180px] justify-end">
-                          <span
-                            className={cn(
-                              'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md tracking-wide',
-                              isDark
-                                ? 'bg-white/5 text-white/50 border border-white/10'
-                                : 'bg-gray-100 text-gray-500'
-                            )}
-                          >
-                            NFT
-                          </span>
-                        </div>
-                        <div className="text-right w-[90px]">
-                          <span
-                            className={cn(
-                              'text-[13px] font-semibold tabular-nums block',
-                              isDark ? 'text-white/80' : 'text-gray-700'
-                            )}
-                          >
-                            {getMcap(col.marketcap)
-                              ? formatMcap(getMcap(col.marketcap))
-                              : `${col.items?.toLocaleString() || 0}`}
-                          </span>
-                          <p
-                            className={cn(
-                              'text-[9px] uppercase tracking-wider',
-                              isDark ? 'text-white/30' : 'text-gray-400'
-                            )}
-                          >
-                            {getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {searchQuery && searchLoading && (
+                  <div className="py-12 flex flex-col items-center justify-center gap-3">
+                    <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
+                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      Searching curated data...
+                    </span>
                   </div>
                 )}
                 {searchQuery &&
@@ -1994,9 +1604,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   !searchResults.ledger &&
                   searchResults.tokens.length === 0 &&
                   searchResults.collections.length === 0 && (
-                    <div className="py-6 text-center">
-                      <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        No results
+                    <div className="py-12 flex flex-col items-center justify-center gap-2">
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                        <Search size={20} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                      </div>
+                      <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        No results found
+                      </p>
+                      <p className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        Try searching for a different token, NFT or address
                       </p>
                     </div>
                   )}
@@ -2018,23 +1634,23 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 setSearchQuery('');
               }}
             />
-            <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-2" ref={searchRef}>
+            <div className="fixed inset-x-0 top-0 z-[9999] px-4 pt-4" ref={searchRef}>
               <div
                 className={cn(
-                  'flex items-center gap-2 rounded-xl px-4 h-11 border transition-all',
+                  'flex items-center gap-3 px-4 h-[42px] rounded-2xl border transition-all duration-300',
                   isDark
-                    ? 'bg-black/90 backdrop-blur-xl border-[#3f96fe]/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                    : 'bg-white/98 backdrop-blur-xl border-gray-200 shadow-[0_4px_16px_rgba(0,0,0,0.06)]'
+                    ? 'bg-black/80 backdrop-blur-2xl border-blue-500/30 shadow-[0_4px_30px_rgba(59,130,246,0.3)]'
+                    : 'bg-white/90 backdrop-blur-2xl border-blue-500/20 shadow-[0_4px_30px_rgba(59,130,246,0.1)]'
                 )}
               >
-                <Search size={18} className={isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'} />
+                <Search size={18} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
                 <input
                   autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder="Search assets, NFTs, accounts..."
                   className={cn(
-                    'flex-1 bg-transparent text-[15px] outline-none',
+                    'flex-1 bg-transparent text-[15px] font-medium outline-none',
                     isDark
                       ? 'text-white placeholder:text-white/40'
                       : 'text-gray-900 placeholder:text-gray-400'
@@ -2046,713 +1662,455 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     setSearchQuery('');
                   }}
                   className={cn(
-                    'p-1.5 rounded-lg',
-                    isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                    'p-1.5 rounded-lg transition-colors',
+                    isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                   )}
                 >
-                  <X size={18} className={isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'} />
+                  <X size={18} />
                 </button>
               </div>
 
               {/* Mobile Search Results */}
               <div
                 className={cn(
-                  'mt-2 rounded-2xl border overflow-hidden max-h-[calc(100vh-70px)] overflow-y-auto',
+                  'mt-3 rounded-2xl border overflow-hidden max-h-[calc(100vh-100px)] overflow-y-auto animate-in fade-in zoom-in-95 duration-300',
                   isDark
-                    ? 'bg-black/90 backdrop-blur-2xl border-[#3f96fe]/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
-                    : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
+                    ? 'bg-black/90 backdrop-blur-2xl border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
+                    : 'bg-white/98 backdrop-blur-2xl border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'
                 )}
               >
                 {!searchQuery && suggestedTokens.length > 0 && (
                   <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
-                        Tokens
+                        Suggested Tokens
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {suggestedTokens.map((token, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(token, 'token')}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium',
-                                isDark ? 'text-white' : 'text-gray-900'
-                              )}
-                            >
-                              {token.user}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {suggestedTokens.map((token, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(token, 'token')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/token/${token.md5}`}
+                              className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {token.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
-                              </span>
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
                             )}
-                            <span
-                              className={cn(
-                                'text-[12px]',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              ({token.name})
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[14px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {token.user}
+                              </span>
+                              <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
+                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                {token.name}
+                              </span>
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(token.issuer, 8)}
                             </span>
                           </div>
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {token.issuer}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span
-                              className={cn(
-                                'text-[13px] font-semibold tabular-nums',
-                                isDark ? 'text-white/70' : 'text-gray-600'
-                              )}
-                            >
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {formatMcap(getMcap(token.marketcap))}
                             </span>
-                            <p
-                              className={cn(
-                                'text-[8px] uppercase tracking-wide',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                            >
+                            <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
                               Mkt Cap
-                            </p>
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
                 {!searchQuery && suggestedCollections.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                         )}
                       >
-                        NFTs
+                        Suggested NFTs
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {suggestedCollections.map((col, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(col, 'collection')}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium',
-                                isDark ? 'text-white' : 'text-gray-900'
-                              )}
-                            >
-                              {typeof col.name === 'object'
-                                ? col.name?.collection_name || ''
-                                : col.name || ''}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {suggestedCollections.map((col, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(col, 'collection')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                              className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {col.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[14px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                               </span>
-                            )}
-                          </div>
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {col.account}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span
-                              className={cn(
-                                'text-[13px] font-semibold tabular-nums',
-                                isDark ? 'text-white/70' : 'text-gray-600'
-                              )}
-                            >
-                              {getMcap(col.marketcap)
-                                ? formatMcap(getMcap(col.marketcap))
-                                : `${col.items?.toLocaleString() || 0}`}
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(col.account, 8)}
                             </span>
-                            <p
-                              className={cn(
-                                'text-[8px] uppercase tracking-wide',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                            >
-                              {getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}
-                            </p>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                              {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
+                            </span>
+                            <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                              {getMcap(col.marketcap) ? 'Market Cap' : 'Items'}
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
                 {searchQuery && searchResults.txHash && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Transaction
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.txHash, 'tx')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.1)] border border-[rgba(63,150,254,0.2)]'
-                            : 'bg-blue-50'
-                        )}
-                      >
-                        <ArrowLeftRight
-                          size={18}
-                          className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'}
-                        />
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                      )}>
+                        <ArrowLeftRight size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
                           View Transaction
                         </span>
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           {searchResults.txHash}
-                        </p>
+                        </span>
                       </div>
-                      <span
-                        className={cn(
-                          'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe]'
-                            : 'bg-cyan-100 text-cyan-600'
-                        )}
-                      >
-                        TX
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          TX
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.nft && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-pink-400/80' : 'text-pink-600/80'
                         )}
                       >
                         NFT
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.nft, 'nft')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
                       {getNftImage(searchResults.nft) ? (
                         <img
                           src={getNftImage(searchResults.nft)}
                           alt=""
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          className="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm group-hover:scale-105 transition-transform"
                         />
                       ) : (
-                        <div
-                          className={cn(
-                            'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
-                            isDark ? 'bg-pink-500/10 border border-pink-500/20' : 'bg-pink-50'
-                          )}
-                        >
-                          <Sparkles
-                            size={18}
-                            className={isDark ? 'text-pink-400' : 'text-pink-500'}
-                          />
+                        <div className={cn(
+                          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600'
+                        )}>
+                          <Sparkles size={14} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
                           {searchResults.nft.name || 'View NFT'}
                         </span>
-                        <p
-                          className={cn(
-                            'text-[11px] truncate',
-                            isDark ? 'text-white/40' : 'text-gray-500'
-                          )}
-                        >
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           {(typeof searchResults.nft.collection === 'string'
                             ? searchResults.nft.collection
-                            : searchResults.nft.collection?.name) || searchResults.nft._id}
-                        </p>
+                            : searchResults.nft.collection?.name) || 'NFT Collection'}
+                        </span>
                       </div>
-                      <span
-                        className={cn(
-                          'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md',
-                          isDark
-                            ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20'
-                            : 'bg-pink-50 text-pink-600'
-                        )}
-                      >
-                        NFT
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-pink-500/10 text-pink-400' : 'bg-pink-50 text-pink-600')}>
+                          NFT
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.address && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                         )}
                       >
                         Account
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.address.address, 'address')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark ? 'bg-purple-500/10 border border-purple-500/20' : 'bg-purple-50'
-                        )}
-                      >
-                        <Wallet
-                          size={18}
-                          className={isDark ? 'text-purple-400' : 'text-purple-500'}
-                        />
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-500'
+                      )}>
+                        <Wallet size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
                           {searchResults.address.balance != null
                             ? `${Number(searchResults.address.balance).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP`
                             : 'View Profile'}
                         </span>
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
-                          {searchResults.address.rank
-                            ? `Rank #${searchResults.address.rank.toLocaleString()} · `
-                            : ''}
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           {searchResults.address.address}
-                        </p>
+                        </span>
                       </div>
-                      <span
-                        className={cn(
-                          'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md',
-                          isDark
-                            ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                            : 'bg-purple-50 text-purple-600'
-                        )}
-                      >
-                        Account
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                          {searchResults.address.rank ? `#${searchResults.address.rank.toLocaleString()}` : ''}
+                        </span>
+                        <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                          {searchResults.address.rank ? 'Rank' : 'Account'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.ledger && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Ledger
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
                     <div
                       onClick={() => handleSearchSelect(searchResults.ledger, 'ledger')}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                        isDark
-                          ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                        isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.1)] border border-[rgba(63,150,254,0.2)]'
-                            : 'bg-blue-50'
-                        )}
-                      >
-                        <Layers size={18} className={isDark ? 'text-[#3f96fe]' : 'text-cyan-600'} />
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105',
+                        isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+                      )}>
+                        <Layers size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span
-                          className={cn(
-                            'text-[14px] font-medium block',
-                            isDark ? 'text-white' : 'text-gray-900'
-                          )}
-                        >
+                        <span className={cn('text-[13.5px] font-semibold block', isDark ? 'text-white/90' : 'text-gray-900')}>
                           View Ledger
                         </span>
-                        <p
-                          className={cn(
-                            'text-[11px] font-mono truncate',
-                            isDark ? 'text-white/25' : 'text-gray-400'
-                          )}
-                        >
+                        <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
                           #{searchResults.ledger}
-                        </p>
+                        </span>
                       </div>
-                      <span
-                        className={cn(
-                          'px-2.5 py-1 text-[10px] font-semibold uppercase rounded-md',
-                          isDark
-                            ? 'bg-[rgba(63,150,254,0.15)] text-[#3f96fe]'
-                            : 'bg-cyan-100 text-cyan-600'
-                        )}
-                      >
-                        Ledger
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 pl-4">
+                        <span className={cn('text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')}>
+                          Ledger
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
                 {searchQuery && searchResults.tokens.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-blue-400/80' : 'text-blue-600/80'
                         )}
                       >
                         Tokens
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {searchResults.tokens.map((token, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(token, 'token')}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/token/${token.md5}`}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium',
-                                isDark ? 'text-white' : 'text-gray-900'
-                              )}
-                            >
-                              {token.user}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {searchResults.tokens.map((token, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(token, 'token')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/token/${token.md5}`}
+                              className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {token.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
-                              </span>
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
                             )}
-                            <span
-                              className={cn(
-                                'text-[12px]',
-                                isDark ? 'text-white/40' : 'text-gray-500'
-                              )}
-                            >
-                              ({token.name})
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {token.user}
+                              </span>
+                              <span className={cn('text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider',
+                                isDark ? 'bg-white/5 text-white/40' : 'bg-gray-100 text-gray-500')}>
+                                {token.name}
+                              </span>
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(token.issuer, 8)}
                             </span>
                           </div>
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {token.issuer}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span
-                              className={cn(
-                                'text-[13px] font-semibold tabular-nums',
-                                isDark ? 'text-white/70' : 'text-gray-600'
-                              )}
-                            >
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
                               {formatMcap(getMcap(token.marketcap))}
                             </span>
-                            <p
-                              className={cn(
-                                'text-[8px] uppercase tracking-wide',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                            >
-                              Mkt Cap
-                            </p>
+                            <span className={cn('text-[9px] font-bold uppercase text-blue-500/80 tracking-tighter')}>
+                              Market Cap
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
                 {searchQuery && searchResults.collections.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-2">
+                  <div className="p-2 pt-0">
+                    <div className="flex items-center gap-3 px-3 py-2">
                       <span
                         className={cn(
-                          'text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap',
-                          isDark ? 'text-[#3f96fe]/70' : 'text-cyan-600'
+                          'text-[10px] font-bold uppercase tracking-[0.1em]',
+                          isDark ? 'text-purple-400/80' : 'text-purple-600/80'
                         )}
                       >
                         NFTs
                       </span>
-                      <div
-                        className="flex-1 h-[14px]"
-                        style={{
-                          backgroundImage:
-                            'radial-gradient(circle, rgba(63,150,254,0.25) 1px, transparent 1px)',
-                          backgroundSize: '8px 5px'
-                        }}
-                      />
+                      <div className={cn('flex-1 h-px', isDark ? 'bg-white/5' : 'bg-gray-100')} />
                     </div>
-                    {searchResults.collections.map((col, i) => (
-                      <div
-                        key={i}
-                        onClick={() => handleSearchSelect(col, 'collection')}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200',
-                          isDark
-                            ? 'hover:bg-gray-800/50 border border-transparent hover:border-gray-600/30'
-                            : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                        )}
-                      >
-                        <img
-                          src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                          alt=""
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={cn(
-                                'text-[14px] font-medium',
-                                isDark ? 'text-white' : 'text-gray-900'
-                              )}
-                            >
-                              {typeof col.name === 'object'
-                                ? col.name?.collection_name || ''
-                                : col.name || ''}
-                            </span>
+                    <div className="grid grid-cols-1 gap-1">
+                      {searchResults.collections.map((col, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleSearchSelect(col, 'collection')}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 group border border-transparent',
+                            isDark ? 'hover:bg-white/5 hover:border-white/5' : 'hover:bg-gray-50 hover:border-gray-100'
+                          )}
+                        >
+                          <div className="relative">
+                            <img
+                              src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                              className="w-8 h-8 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform"
+                              alt=""
+                            />
                             {col.verified >= 1 && (
-                              <span
-                                className={cn(
-                                  'px-1.5 py-0.5 text-[9px] font-medium rounded flex-shrink-0',
-                                  isDark
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-green-50 text-green-600'
-                                )}
-                              >
-                                Verified
+                              <div className="absolute -right-0.5 -bottom-0.5 bg-blue-500 rounded-full border-2 border-black w-3.5 h-3.5 flex items-center justify-center">
+                                <Check size={8} className="text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-[13.5px] font-semibold truncate', isDark ? 'text-white/90' : 'text-gray-900')}>
+                                {typeof col.name === 'object' ? col.name?.collection_name : col.name}
                               </span>
-                            )}
-                          </div>
-                          <p
-                            className={cn(
-                              'text-[11px] font-mono truncate',
-                              isDark ? 'text-white/25' : 'text-gray-400'
-                            )}
-                          >
-                            {col.account}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="text-right">
-                            <span
-                              className={cn(
-                                'text-[13px] font-semibold tabular-nums',
-                                isDark ? 'text-white/70' : 'text-gray-600'
-                              )}
-                            >
-                              {getMcap(col.marketcap)
-                                ? formatMcap(getMcap(col.marketcap))
-                                : `${col.items?.toLocaleString() || 0}`}
+                            </div>
+                            <span className={cn('text-[11px] truncate block opacity-50 font-mono', isDark ? 'text-white' : 'text-gray-600')}>
+                              {truncateAccount(col.account, 8)}
                             </span>
-                            <p
-                              className={cn(
-                                'text-[8px] uppercase tracking-wide',
-                                isDark ? 'text-white/30' : 'text-gray-400'
-                              )}
-                            >
-                              {getMcap(col.marketcap) ? 'Mkt Cap' : 'Items'}
-                            </p>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0 pl-4">
+                            <span className={cn('text-[13px] font-bold tabular-nums', isDark ? 'text-white/80' : 'text-gray-900')}>
+                              {getMcap(col.marketcap) ? formatMcap(getMcap(col.marketcap)) : Number(col.items || 0).toLocaleString()}
+                            </span>
+                            <span className={cn('text-[9px] font-bold uppercase text-purple-500/80 tracking-tighter')}>
+                              {getMcap(col.marketcap) ? 'Market Cap' : 'Items'}
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {searchQuery && searchLoading && (
+                  <div className="py-12 flex flex-col items-center justify-center gap-3">
+                    <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
+                    <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                      Searching curated data...
+                    </span>
                   </div>
                 )}
                 {searchQuery &&
@@ -2763,19 +2121,26 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   !searchResults.ledger &&
                   searchResults.tokens.length === 0 &&
                   searchResults.collections.length === 0 && (
-                    <div className="py-6 text-center">
-                      <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        No results
+                    <div className="py-12 flex flex-col items-center justify-center gap-2">
+                      <div className={cn('w-12 h-12 rounded-full flex items-center justify-center mb-2', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+                        <Search size={20} className={isDark ? 'text-white/20' : 'text-gray-300'} />
+                      </div>
+                      <p className={cn('text-[14px] font-semibold', isDark ? 'text-white/90' : 'text-gray-900')}>
+                        No results found
+                      </p>
+                      <p className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        Try searching for a different token, NFT or address
                       </p>
                     </div>
                   )}
                 {!searchQuery &&
                   suggestedTokens.length === 0 &&
                   suggestedCollections.length === 0 && (
-                    <div className="py-6 text-center">
-                      <p className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        Loading...
-                      </p>
+                    <div className="py-12 flex flex-col items-center justify-center gap-3">
+                      <Loader2 size={24} className={cn('animate-spin', isDark ? 'text-blue-400/50' : 'text-blue-500/50')} />
+                      <span className={cn('text-[13px] font-medium animate-pulse', isDark ? 'text-white/30' : 'text-gray-400')}>
+                        Fetching suggestions...
+                      </span>
                     </div>
                   )}
               </div>

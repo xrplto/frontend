@@ -56,29 +56,29 @@ const BearEmptyState = ({ isDark, title, subtitle }) => (
   <div style={{ border: isDark ? '1.5px dashed rgba(255,255,255,0.1)' : '1.5px dashed rgba(0,0,0,0.1)', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 12 }}>
-      <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
-      </div>
-      <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
-        <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
-      </div>
-      <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
-        {[0,1,2,3,4].map(i => (
-          <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
-        ))}
-        <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        <div style={{ position: 'absolute', top: -3, left: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+          <div style={{ position: 'absolute', top: 3, left: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
         </div>
-        <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
-          <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+        <div style={{ position: 'absolute', top: -3, right: 0, width: 16, height: 16, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db' }}>
+          <div style={{ position: 'absolute', top: 3, right: 3, width: 10, height: 10, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }} />
         </div>
-        <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
-          <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', width: 40, height: 36, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db', overflow: 'hidden' }}>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{ height: 2, width: '100%', background: isDark ? 'rgba(255,255,255,0.15)' : '#e5e7eb', marginTop: i * 2.5 + 2 }} />
+          ))}
+          <div style={{ position: 'absolute', top: 10, left: 6, width: 10, height: 10 }}>
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          </div>
+          <div style={{ position: 'absolute', top: 10, right: 6, width: 10, height: 10 }}>
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(45deg)', top: 4 }} />
+            <div style={{ position: 'absolute', width: 8, height: 2, background: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280', transform: 'rotate(-45deg)', top: 4 }} />
+          </div>
+          <div style={{ position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)', width: 18, height: 12, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+            <div style={{ position: 'absolute', top: 2, left: '50%', transform: 'translateX(-50%)', width: 8, height: 6, borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af' }} />
+          </div>
         </div>
       </div>
-    </div>
       <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: 4 }}>{title}</span>
       <span style={{ fontSize: 10, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>{subtitle}</span>
     </div>
@@ -662,25 +662,30 @@ const highlightAnimation = (isDark) => `
 const LiveIndicator = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: ${(props) => (props.isDark ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)')};
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: ${(props) => (props.isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.05)')};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)')};
 `;
 
 const LiveCircle = styled.div`
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #22c55e;
-  animation: pulse 2s infinite;
-  @keyframes pulse {
-    0%,
-    100% {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @keyframes pulse-glow {
+    0%, 100% {
       opacity: 0.6;
+      transform: scale(0.95);
+      box-shadow: 0 0 4px rgba(34, 197, 94, 0.2);
     }
     50% {
       opacity: 1;
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
   }
 `;
@@ -688,12 +693,15 @@ const LiveCircle = styled.div`
 const Card = styled.div`
   background: transparent;
   border-bottom: 1px solid
-    ${(props) => (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+    ${(props) => (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
   position: relative;
   animation: ${(props) => (props.isNew ? 'highlight 0.8s ease-out' : 'none')};
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
+  &:last-child {
+    border-bottom: none;
+  }
   &:hover {
-    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
+    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
   }
   ${(props) => props.isNew && highlightAnimation(props.isDark)}
   @media (max-width: 640px) {
@@ -735,51 +743,54 @@ const BarCell = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  height: 26px;
+  height: 28px;
   padding: 0 10px;
+  border-radius: 6px;
+  overflow: hidden;
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 22px;
+    height: 80%;
     width: ${(props) => Math.min(100, Math.max(8, props.barWidth || 0))}%;
     background: ${(props) =>
-      props.isCreate
+    props.isCreate
+      ? props.isDark
+        ? 'linear-gradient(90deg, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0.05) 100%)'
+        : 'linear-gradient(90deg, rgba(20, 184, 166, 0.10) 0%, rgba(20, 184, 166, 0.03) 100%)'
+      : props.isLP
         ? props.isDark
-          ? 'linear-gradient(90deg, rgba(20, 184, 166, 0.10) 0%, rgba(20, 184, 166, 0.18) 100%)'
-          : 'linear-gradient(90deg, rgba(20, 184, 166, 0.06) 0%, rgba(20, 184, 166, 0.14) 100%)'
-        : props.isLP
+          ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)'
+          : 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.03) 100%)'
+        : props.isBuy
           ? props.isDark
-            ? 'linear-gradient(90deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.18) 100%)'
-            : 'linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(139, 92, 246, 0.14) 100%)'
-          : props.isBuy
-            ? props.isDark
-              ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.22) 100%)'
-              : 'linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.18) 100%)'
-            : props.isDark
-              ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.22) 100%)'
-              : 'linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.18) 100%)'};
-    border-radius: 4px;
-    border-left: 2px solid
+            ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.05) 100%)'
+            : 'linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.03) 100%)'
+          : props.isDark
+            ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.05) 100%)'
+            : 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.03) 100%)'};
+    border-radius: 2px;
+    border-left: 3px solid
       ${(props) =>
-        props.isCreate
-          ? 'rgba(20, 184, 166, 0.5)'
-          : props.isLP
-            ? 'rgba(139, 92, 246, 0.5)'
-            : props.isBuy
-              ? props.isDark
-                ? 'rgba(34, 197, 94, 0.6)'
-                : 'rgba(34, 197, 94, 0.5)'
-              : props.isDark
-                ? 'rgba(239, 68, 68, 0.6)'
-                : 'rgba(239, 68, 68, 0.5)'};
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    props.isCreate
+      ? 'rgba(20, 184, 166, 0.6)'
+      : props.isLP
+        ? 'rgba(139, 92, 246, 0.6)'
+        : props.isBuy
+          ? props.isDark
+            ? '#22c55e'
+            : '#16a34a'
+          : props.isDark
+            ? '#ef4444'
+            : '#dc2626'};
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
   & > span {
     position: relative;
     z-index: 1;
+    font-weight: 500;
   }
 `;
 
@@ -810,16 +821,19 @@ const PaginationButton = styled.button`
   align-items: center;
   justify-content: center;
   color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)')};
-  background: transparent;
-  border: none;
-  padding: 4px 6px;
+  background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)')};
+  border: 1px solid ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  border-radius: 8px;
+  padding: 6px;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: all 0.2s;
   &:hover:not(:disabled) {
+    background: ${(props) => (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')};
     color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.4);
   }
   &:disabled {
-    opacity: 0.2;
+    opacity: 0.25;
     cursor: default;
   }
 `;
@@ -967,19 +981,19 @@ const Tab = styled.button`
   background: transparent;
   border: 1px solid
     ${(props) =>
-      props.selected
-        ? props.isDark
-          ? 'rgba(255,255,255,0.2)'
-          : 'rgba(0,0,0,0.2)'
-        : props.isDark
-          ? 'rgba(255,255,255,0.1)'
-          : 'rgba(0,0,0,0.1)'};
+    props.selected
+      ? props.isDark
+        ? 'rgba(255,255,255,0.2)'
+        : 'rgba(0,0,0,0.2)'
+      : props.isDark
+        ? 'rgba(255,255,255,0.1)'
+        : 'rgba(0,0,0,0.1)'};
   border-radius: 6px;
   color: ${(props) =>
     props.selected
       ? props.isDark
-        ? 'rgba(255,255,255,0.9)'
-        : 'rgba(0,0,0,0.8)'
+        ? '#fff'
+        : '#1a1a1a'
       : props.isDark
         ? 'rgba(255,255,255,0.4)'
         : 'rgba(0,0,0,0.4)'};
@@ -988,7 +1002,7 @@ const Tab = styled.button`
   white-space: nowrap;
   flex-shrink: 0;
   text-transform: uppercase;
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')};
     color: ${(props) => (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')};
   }
@@ -1927,8 +1941,8 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
         .catch(() => null),
       account
         ? fetch(`https://api.xrpl.to/v1/account/info/${account}`)
-            .then((r) => r.json())
-            .catch(() => null)
+          .then((r) => r.json())
+          .catch(() => null)
         : Promise.resolve(null)
     ]).then(([tx, profile]) => {
       // Extract nested tx object from API response
@@ -1989,20 +2003,20 @@ const TradeDetails = ({ trade, account, isDark, onClose, walletLabel }) => {
               {(profileData?.balance ||
                 profileData?.Balance ||
                 profileData?.account_data?.Balance) && (
-                <div
-                  style={{
-                    fontSize: '10px',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-                  }}
-                >
-                  {dropsToXrp(
-                    profileData?.balance ||
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                    }}
+                  >
+                    {dropsToXrp(
+                      profileData?.balance ||
                       profileData?.Balance ||
                       profileData?.account_data?.Balance
-                  )}{' '}
-                  XRP
-                </div>
-              )}
+                    )}{' '}
+                    XRP
+                  </div>
+                )}
             </div>
           )}
           {/* TX Info */}
@@ -2330,7 +2344,7 @@ const TradingHistory = ({
           setWalletLabels(map);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [accountProfile?.account, accountProfile?.address]);
 
   const handleTxClick = (hash, tradeAccount) => {
@@ -3041,6 +3055,7 @@ const TradingHistory = ({
             key={trade._id || trade.id || index}
             isNew={newTradeIds.has(trade._id || trade.id)}
             isDark={isDark}
+            style={{ overflow: 'hidden' }}
           >
             <VolumeIndicator volume={volumePercentage} isDark={isDark} />
             <CardContent>
@@ -3049,18 +3064,19 @@ const TradingHistory = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '8px'
+                  gap: '10px'
                 }}
               >
                 {/* Left: Type + Time */}
                 <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '75px' }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '60px' }}
                 >
                   {isLiquidity ? (
                     <span
                       style={{
-                        fontSize: '11px',
-                        fontWeight: 500,
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
                         color:
                           trade.type === 'withdraw'
                             ? '#f59e0b'
@@ -3072,87 +3088,93 @@ const TradingHistory = ({
                       {getLiquidityLabel()}
                     </span>
                   ) : (
-                    <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>
-                      {isBuy ? 'BUY' : 'SELL'}
-                    </TradeTypeChip>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        color: isBuy ? '#22c55e' : '#ef4444'
+                      }}
+                    >
+                      {isBuy ? 'Buy' : 'Sell'}
+                    </span>
                   )}
                   <span
                     style={{
-                      fontSize: '11px',
-                      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.45)',
+                      fontVariantNumeric: 'tabular-nums'
                     }}
                   >
                     {formatRelativeTime(trade.time)}
                   </span>
                 </div>
-                {/* Center: Amount → Total with fiat value */}
+
+                {/* Center: Amount and Fiat */}
                 <div
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
                     flex: 1,
-                    justifyContent: 'flex-end'
+                    gap: '1px'
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '13px',
-                      fontFamily: 'var(--font-mono)',
-                      color: isDark ? '#fff' : '#1a1a1a'
-                    }}
-                  >
-                    {formatTradeDisplay(amountData.value)}{' '}
-                    <span style={{ opacity: 0.5, fontSize: '11px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-mono)',
+                        color: isDark ? '#fff' : '#1a1a1a'
+                      }}
+                    >
+                      {formatTradeDisplay(amountData.value)}
+                    </span>
+                    <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 600 }}>
                       {decodeCurrency(amountData.currency)}
                     </span>
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    →
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '13px',
-                      fontFamily: 'var(--font-mono)',
-                      color: isDark ? '#fff' : '#1a1a1a'
-                    }}
-                  >
-                    {formatTradeDisplay(totalData.value)}{' '}
-                    <span style={{ opacity: 0.5, fontSize: '11px' }}>
-                      {decodeCurrency(totalData.currency)}
+                  </div>
+                  {activeFiatCurrency !== 'XRP' && (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 500,
+                        color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)',
+                        fontFamily: 'var(--font-mono)'
+                      }}
+                    >
+                      {SYMBOLS[activeFiatCurrency]}
+                      {formatTradeDisplay(
+                        (xrpAmount > 0
+                          ? xrpAmount
+                          : parseFloat(amountData.value) * (token?.exch || 0)) / exchRate
+                      )}
                     </span>
-                    {activeFiatCurrency !== 'XRP' && (
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
-                          marginLeft: '4px'
-                        }}
-                      >
-                        ({SYMBOLS[activeFiatCurrency]}
-                        {formatTradeDisplay(
-                          (xrpAmount > 0
-                            ? xrpAmount
-                            : parseFloat(amountData.value) * (token?.exch || 0)) / exchRate
-                        )}
-                        )
-                      </span>
-                    )}
-                  </span>
+                  )}
                 </div>
-                {/* Right: Link */}
-                <IconButton
-                  onClick={() => handleTxClick(trade.hash, addressToShow)}
-                  isDark={isDark}
-                  style={{ padding: '4px' }}
-                >
-                  <ExternalLink size={16} />
-                </IconButton>
+
+                {/* Right: Price or Link */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {!isLiquidity && (
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '10px', opacity: 0.3, fontWeight: 700, textTransform: 'uppercase' }}>Price</span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatPrice(price)}</span>
+                    </div>
+                  )}
+                  <IconButton
+                    onClick={() => handleTxClick(trade.hash, addressToShow)}
+                    isDark={isDark}
+                    style={{
+                      padding: '8px',
+                      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                      borderRadius: '10px'
+                    }}
+                  >
+                    <ExternalLink size={14} />
+                  </IconButton>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -3187,8 +3209,10 @@ const TradingHistory = ({
               {/* Time */}
               <span
                 style={{
-                  fontSize: '12px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)',
+                  fontVariantNumeric: 'tabular-nums'
                 }}
               >
                 {formatRelativeTime(trade.time, true)}
@@ -3198,8 +3222,10 @@ const TradingHistory = ({
               {isLiquidity ? (
                 <span
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 500,
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
                     color:
                       trade.type === 'withdraw'
                         ? '#f59e0b'
@@ -3211,23 +3237,34 @@ const TradingHistory = ({
                   {getLiquidityLabel()}
                 </span>
               ) : (
-                <span
+                <div
                   style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: isBuy ? '#22c55e' : '#ef4444'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  {isBuy ? 'Buy' : 'Sell'}
-                </span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      color: isBuy ? '#22c55e' : '#ef4444'
+                    }}
+                  >
+                    {isBuy ? 'Buy' : 'Sell'}
+                  </span>
+                </div>
               )}
 
               {/* Price */}
               <span
                 style={{
                   fontSize: '12px',
+                  fontWeight: 600,
                   fontFamily: 'var(--font-mono)',
-                  color: isDark ? '#fff' : '#1a1a1a'
+                  color: isDark ? '#fff' : '#1a1a1a',
+                  letterSpacing: '-0.02em'
                 }}
               >
                 {isLiquidity ? '-' : formatPrice(price)}
@@ -3241,9 +3278,9 @@ const TradingHistory = ({
                 isCreate={trade.type === 'create'}
                 isDark={isDark}
               >
-                <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeDisplay(amountData.value)}{' '}
-                  <span style={{ opacity: 0.5, fontSize: '10px' }}>
+                  <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 400 }}>
                     {decodeCurrency(amountData.currency)}
                   </span>
                 </span>
@@ -3257,9 +3294,9 @@ const TradingHistory = ({
                 isCreate={trade.type === 'create'}
                 isDark={isDark}
               >
-                <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: isDark ? '#fff' : '#1a1a1a' }}>
                   {formatTradeDisplay(totalData.value)}{' '}
-                  <span style={{ opacity: 0.5, fontSize: '10px' }}>
+                  <span style={{ opacity: 0.4, fontSize: '10px', fontWeight: 400 }}>
                     {decodeCurrency(totalData.currency)}
                   </span>
                 </span>
@@ -3270,7 +3307,8 @@ const TradingHistory = ({
                 <span
                   style={{
                     fontSize: '11px',
-                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                    fontWeight: 500,
+                    color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                     textAlign: 'right',
                     fontFamily: 'var(--font-mono)'
                   }}
@@ -3290,51 +3328,37 @@ const TradingHistory = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
+                className={cn(
+                  'inline-flex items-center gap-2 px-2 py-1 rounded-md border transition-all duration-200',
+                  isDark
+                    ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/50 hover:text-white/80'
+                    : 'bg-black/[0.02] border-black/[0.04] hover:bg-black/[0.04] hover:border-black/[0.08] text-gray-500 hover:text-gray-900'
+                )}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
                   fontSize: '11px',
                   fontFamily: 'var(--font-mono)',
-                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                   textDecoration: 'none',
-                  padding: '3px 6px',
-                  borderRadius: '4px',
-                  background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                  transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   maxWidth: '95px'
                 }}
                 title={addressToShow}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#3b82f6';
-                  e.currentTarget.style.color = '#3b82f6';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = isDark
-                    ? 'rgba(255,255,255,0.08)'
-                    : 'rgba(0,0,0,0.06)';
-                  e.currentTarget.style.color = isDark
-                    ? 'rgba(255,255,255,0.7)'
-                    : 'rgba(0,0,0,0.7)';
-                }}
               >
                 {dotColor && (
                   <span
                     style={{
-                      width: '4px',
-                      height: '4px',
+                      width: '5px',
+                      height: '5px',
                       borderRadius: '50%',
                       background: dotColor,
+                      boxShadow: `0 0 6px ${dotColor}80`,
                       flexShrink: 0
                     }}
                   />
                 )}
                 {walletLabels[addressToShow] ? (
-                  <span style={{ color: '#3b82f6' }}>{walletLabels[addressToShow]}</span>
+                  <span style={{ fontWeight: 600, color: '#3b82f6' }}>{walletLabels[addressToShow]}</span>
                 ) : addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : '-'}
               </a>
 
@@ -3342,17 +3366,20 @@ const TradingHistory = ({
               <span
                 style={{
                   fontSize: '10px',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                  fontWeight: 500,
+                  color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em'
                 }}
               >
                 {getSourceTagName(trade.sourceTag) || (isLiquidity ? 'AMM' : '')}
               </span>
 
               {/* Animal tier icon */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.8 }}>
                 <TierIcon xrpValue={xrpAmount} isDark={isDark} />
               </div>
             </div>
@@ -3653,20 +3680,24 @@ const TradingHistory = ({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '70px 50px 90px 1fr 1fr 95px 70px 40px',
+                gridTemplateColumns: `70px 50px 90px 1fr 1fr ${activeFiatCurrency !== 'XRP' ? '70px ' : ''}95px 70px 40px`,
                 gap: '8px',
-                alignItems: 'center',
-                padding: '8px 0',
-                borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}`
+                padding: '12px 0',
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                background: isDark ? 'rgba(10,10,10,0.8)' : 'rgba(255,255,255,0.8)',
+                backdropFilter: 'blur(8px)',
+                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
               }}
             >
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px'
@@ -3679,68 +3710,82 @@ const TradingHistory = ({
               </div>
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                 }}
               >
                 Type
               </div>
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                 }}
               >
                 Price
               </div>
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  paddingLeft: '8px'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                  paddingLeft: '10px'
                 }}
               >
                 Amount
               </div>
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  paddingLeft: '8px'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                  paddingLeft: '10px'
                 }}
               >
                 Value
               </div>
+              {activeFiatCurrency !== 'XRP' && (
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                    textAlign: 'right'
+                  }}
+                >
+                  {activeFiatCurrency}
+                </div>
+              )}
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                 }}
               >
                 Trader
               </div>
               <div
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  letterSpacing: '0.08em',
+                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
                 }}
               >
                 Source
