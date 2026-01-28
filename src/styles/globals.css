@@ -55,7 +55,12 @@ body {
   background: #ffffff;
 }
 
-/* Theme backgrounds set by ThemeProvider.js */
+/* Dark mode backgrounds applied via CSS to prevent white flash */
+html.dark,
+html.dark body {
+  background: #000000;
+  color-scheme: dark;
+}
 
 /* Firefox focus fix */
 *::-moz-focus-inner { border: 0; padding: 0; outline: none; }
