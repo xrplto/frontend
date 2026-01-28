@@ -2529,14 +2529,15 @@ export default function WalletPage() {
                     {/* Token Holdings */}
                     <div
                       className={cn(
-                        'rounded-xl h-full flex flex-col',
+                        'rounded-xl h-full flex flex-col transition-all duration-300',
                         isDark
-                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                          : 'bg-white border border-gray-200'
+                          ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
+                          : 'bg-white border border-gray-200 shadow-sm'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                      <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                         <div className="flex items-center gap-2">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
                           <p
                             className={cn(
                               'text-[11px] font-bold uppercase tracking-wider',
@@ -2547,8 +2548,8 @@ export default function WalletPage() {
                           </p>
                           <span
                             className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-semibold',
-                              isDark ? 'bg-[#137DFE]/10 text-[#137DFE]/70' : 'bg-blue-50 text-[#137DFE]'
+                              'text-[9px] px-1.5 py-0.5 rounded font-bold',
+                              isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
                             )}
                           >
                             {allTokens.length}
@@ -2557,9 +2558,9 @@ export default function WalletPage() {
                         <button
                           onClick={() => handleTabChange('tokens')}
                           className={cn(
-                            'text-[10px] font-medium uppercase tracking-wide transition-colors',
+                            'text-[10px] font-semibold uppercase tracking-wide transition-all hover:scale-105 active:scale-95',
                             isDark
-                              ? 'text-[#137DFE] hover:text-blue-300'
+                              ? 'text-[#137DFE] hover:text-blue-400'
                               : 'text-[#137DFE] hover:text-blue-600'
                           )}
                         >
@@ -2567,48 +2568,68 @@ export default function WalletPage() {
                         </button>
                       </div>
                       {tokensLoading ? (
-                        <div className={cn('p-6 text-center', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          <div className="animate-pulse flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
+                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading Assets</span>
+                          </div>
+                        </div>
                       ) : allTokens.length === 0 ? (
                         <div className={cn('p-8 text-center', isDark ? 'text-white/35' : 'text-gray-400')}>
-                          <div className={cn("w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.04] border border-white/[0.08]" : "bg-gray-50 border border-gray-100")}>
-                            <Coins size={20} className={cn(isDark ? "text-[#137DFE]/50" : "text-[#137DFE]")} />
+                          <div className={cn("w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                            <Coins size={20} className={cn(isDark ? "text-white/20" : "text-gray-300")} />
                           </div>
                           <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>No Tokens Yet</p>
-                          <p className={cn('text-[10px] mb-3', isDark ? 'text-white/30' : 'text-gray-400')}>Start building your portfolio</p>
-                          <a href="/" className={cn("inline-flex items-center gap-1.5 text-[10px] font-medium px-3 py-1.5 rounded-lg transition-colors", isDark ? "text-[#137DFE] bg-[#137DFE]/10 hover:bg-[#137DFE]/20" : "text-[#137DFE] bg-blue-50 hover:bg-blue-100")}>Browse tokens</a>
+                          <p className={cn('text-[10px] mb-4 opacity-70', isDark ? 'text-white/40' : 'text-gray-400')}>Start building your portfolio</p>
+                          <a href="/" className={cn("inline-flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95", isDark ? "text-white bg-[#137DFE] hover:bg-blue-600" : "text-white bg-[#137DFE] hover:bg-blue-600")}>
+                            Browse Market
+                          </a>
                         </div>
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_56px] gap-3 px-3 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
-                            <span>Token</span>
+                          <div className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_40px] gap-2 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
+                            <span>Asset</span>
                             <span className="text-right">Balance</span>
                             <span className="text-right">Value</span>
                             <span className="text-right">24h</span>
                             <span></span>
                           </div>
                           {/* Table Body */}
-                          <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
+                          <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
                             {allTokens.slice(0, 5).map((token) => (
-                              <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_56px] gap-3 items-center px-3 py-2 transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}>
+                              <div key={token.symbol} className={cn("grid grid-cols-[1.5fr_1fr_1fr_0.6fr_40px] gap-2 items-center px-4 py-2.5 transition-all duration-200", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}>
                                 {/* Token */}
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <img
-                                    src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
-                                    alt=""
-                                    className="w-6 h-6 rounded-full object-cover shrink-0 bg-white/10"
-                                    onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
-                                  />
-                                  <p className={cn("text-[11px] font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{token.symbol}</p>
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="relative shrink-0">
+                                    <img
+                                      src={`https://s1.xrpl.to/token/${token.md5 || MD5(`${token.issuer}_${token.currency}`).toString()}`}
+                                      alt=""
+                                      className="w-7 h-7 rounded-full object-cover bg-white/10 ring-1 ring-white/10 shadow-sm"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = '/static/alt.webp'; }}
+                                    />
+                                  </div>
+                                  <p className={cn("text-xs font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{token.symbol}</p>
                                 </div>
                                 {/* Balance */}
                                 <p className={cn("text-[11px] tabular-nums text-right truncate", isDark ? "text-white/60" : "text-gray-600")}>{token.amount}</p>
                                 {/* Value */}
-                                <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}</p>
+                                <p className={cn("text-[11px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
+                                  {activeFiatCurrency === 'XRP' ? token.value : <>{currencySymbols[activeFiatCurrency]}{((token.rawValue || 0) * xrpUsdPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
+                                </p>
                                 {/* 24h Change */}
-                                <p className={cn("text-[10px] tabular-nums text-right font-medium", token.positive ? "text-[#08AA09]" : "text-red-400")}>{token.change}</p>
+                                <p className={cn("text-[10px] tabular-nums text-right font-bold", token.positive ? "text-[#08AA09]" : "text-red-400")}>
+                                  {token.change}
+                                </p>
                                 {/* Send */}
-                                <button onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }} className={cn("flex items-center justify-center w-7 h-7 rounded-md transition-all justify-self-end", isDark ? "text-[#137DFE] hover:bg-[#137DFE]/10" : "text-[#137DFE] hover:bg-blue-50")}>
+                                <button
+                                  onClick={() => { setSelectedToken(token.symbol); setShowPanel('send'); }}
+                                  className={cn(
+                                    "flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:scale-110 active:scale-90 justify-self-end",
+                                    isDark ? "bg-white/[0.05] text-[#137DFE] hover:bg-white/[0.1] hover:text-blue-400" : "bg-blue-50 text-[#137DFE] hover:bg-blue-100"
+                                  )}
+                                  title="Send Asset"
+                                >
                                   <Send size={12} />
                                 </button>
                               </div>
@@ -2624,14 +2645,15 @@ export default function WalletPage() {
                     {/* NFT Collections */}
                     <div
                       className={cn(
-                        'rounded-xl h-full flex flex-col',
+                        'rounded-xl h-full flex flex-col transition-all duration-300',
                         isDark
-                          ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                          : 'bg-white border border-gray-200'
+                          ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
+                          : 'bg-white border border-gray-200 shadow-sm'
                       )}
                     >
-                      <div className={cn("flex items-center justify-between px-4 py-3 border-b border-l-2 border-l-blue-500/50", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
+                      <div className={cn("flex items-center justify-between px-4 py-3 border-b", isDark ? "border-b-white/[0.08]" : "border-b-gray-100")}>
                         <div className="flex items-center gap-2">
+                          <div className={cn("w-1.5 h-1.5 rounded-full", isDark ? "bg-[#137DFE]" : "bg-blue-500")} />
                           <p
                             className={cn(
                               'text-[11px] font-bold uppercase tracking-wider',
@@ -2642,8 +2664,8 @@ export default function WalletPage() {
                           </p>
                           <span
                             className={cn(
-                              'text-[9px] px-1.5 py-0.5 rounded font-semibold',
-                              isDark ? 'bg-[#137DFE]/10 text-[#137DFE]/70' : 'bg-blue-50 text-[#137DFE]'
+                              'text-[9px] px-1.5 py-0.5 rounded font-bold',
+                              isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500'
                             )}
                           >
                             {collections.length}
@@ -2652,9 +2674,9 @@ export default function WalletPage() {
                         <button
                           onClick={() => handleTabChange('nfts')}
                           className={cn(
-                            'text-[10px] font-medium uppercase tracking-wide transition-colors',
+                            'text-[10px] font-semibold uppercase tracking-wide transition-all hover:scale-105 active:scale-95',
                             isDark
-                              ? 'text-[#137DFE] hover:text-blue-300'
+                              ? 'text-[#137DFE] hover:text-blue-400'
                               : 'text-[#137DFE] hover:text-blue-600'
                           )}
                         >
@@ -2662,66 +2684,55 @@ export default function WalletPage() {
                         </button>
                       </div>
                       {collectionsLoading ? (
-                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>Loading...</div>
+                        <div className={cn('flex-1 flex items-center justify-center py-12', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          <div className="animate-pulse flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#137DFE]" />
+                            <span className="text-[10px] uppercase tracking-widest font-medium">Loading Collections</span>
+                          </div>
+                        </div>
                       ) : collections.length === 0 ? (
                         <div className={cn('flex-1 flex flex-col items-center justify-center py-10')}>
-                          <div className="relative w-12 h-12 mb-2">
-                            <div className="absolute -top-0.5 left-0 w-4 h-4 rounded-full bg-white/15">
-                              <div className="absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute -top-0.5 right-0 w-4 h-4 rounded-full bg-white/15">
-                              <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white/10" />
-                            </div>
-                            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-9 rounded-full bg-white/15">
-                              <div className="absolute inset-0 rounded-full overflow-hidden">
-                                {[...Array(4)].map((_, i) => (
-                                  <div key={i} className="h-[2px] w-full bg-white/15" style={{ marginTop: i * 3 + 2, transform: `translateX(${i % 2 === 0 ? '1px' : '-1px'})` }} />
-                                ))}
-                              </div>
-                              <div className="absolute top-2.5 left-1.5 w-2.5 h-2.5 flex items-center justify-center">
-                                <div className="absolute w-2 h-[1.5px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2 h-[1.5px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute top-2.5 right-1.5 w-2.5 h-2.5 flex items-center justify-center">
-                                <div className="absolute w-2 h-[1.5px] bg-white/40 rotate-45" />
-                                <div className="absolute w-2 h-[1.5px] bg-white/40 -rotate-45" />
-                              </div>
-                              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-5 h-3 rounded-full bg-white/10">
-                                <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-2 h-1.5 rounded-full bg-white/25" />
-                              </div>
-                            </div>
+                          <div className={cn("w-12 h-12 mb-3 rounded-2xl flex items-center justify-center", isDark ? "bg-white/[0.03] border border-white/[0.06]" : "bg-gray-50 border border-gray-100")}>
+                            <Image size={20} className={cn(isDark ? "text-white/20" : "text-gray-300")} />
                           </div>
-                          <p className={cn('text-[10px] font-medium tracking-wider mb-1', isDark ? 'text-white/60' : 'text-gray-500')}>NO NFTS FOUND</p>
-                          <a href="/nfts" className="text-[9px] text-[#137DFE] hover:underline">Browse NFTs</a>
+                          <p className={cn('text-[11px] font-semibold tracking-wide mb-1', isDark ? 'text-white/50' : 'text-gray-500')}>NO NFTS FOUND</p>
+                          <p className={cn('text-[10px] mb-4 opacity-70', isDark ? 'text-white/40' : 'text-gray-400')}>Start your NFT collection</p>
+                          <a href="/nfts" className={cn("inline-flex items-center gap-2 text-[10px] font-bold px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95", isDark ? "text-white bg-[#137DFE] hover:bg-blue-600" : "text-white bg-[#137DFE] hover:bg-blue-600")}>
+                            Explore NFTs
+                          </a>
                         </div>
                       ) : (
                         <>
                           {/* Table Header */}
-                          <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr] gap-3 px-4 py-2 text-[9px] font-semibold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.08]" : "text-gray-400 border-b border-gray-100")}>
+                          <div className={cn("grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-2 text-[9px] font-bold uppercase tracking-wider", isDark ? "text-white/30 border-b border-white/[0.05]" : "text-gray-400 border-b border-gray-50")}>
                             <span>Collection</span>
                             <span className="text-right">Items</span>
                             <span className="text-right">Floor</span>
                             <span className="text-right">Value</span>
                           </div>
                           {/* Table Body */}
-                          <div className={cn("divide-y", isDark ? "divide-white/5" : "divide-gray-50")}>
-                            {collections.slice(0, 8).map((col) => (
+                          <div className={cn("divide-y", isDark ? "divide-white/[0.04]" : "divide-gray-50")}>
+                            {collections.slice(0, 5).map((col) => (
                               <button
                                 key={col.id}
                                 onClick={() => { setSelectedCollection(col.name); handleTabChange('nfts'); }}
-                                className={cn("w-full grid grid-cols-[2fr_1fr_1fr_1fr] gap-3 items-center px-4 py-2.5 text-left transition-colors", isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50")}
+                                className={cn("w-full grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 items-center px-4 py-3 text-left transition-all duration-200", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50/50")}
                               >
-                                <div className="flex items-center gap-2 min-w-0">
+                                <div className="flex items-center gap-2.5 min-w-0">
                                   {col.logo ? (
-                                    <img src={col.logo} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                                    <img src={col.logo} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0 ring-1 ring-white/10 shadow-sm" />
                                   ) : (
                                     <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-[9px] shrink-0", isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400")}>NFT</div>
                                   )}
-                                  <p className={cn("text-xs font-medium truncate", isDark ? "text-white/90" : "text-gray-900")}>{col.name}</p>
+                                  <p className={cn("text-xs font-semibold truncate", isDark ? "text-white/95" : "text-gray-900")}>{col.name}</p>
                                 </div>
                                 <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/60" : "text-gray-600")}>{col.count}</p>
-                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>{col.floor} <span className={isDark ? "text-white/25" : "text-gray-400"}>XRP</span></p>
-                                <p className={cn("text-[11px] font-medium tabular-nums text-right", isDark ? "text-white/80" : "text-gray-800")}>{col.value.toLocaleString()} <span className={cn("font-normal", isDark ? "text-white/25" : "text-gray-400")}>XRP</span></p>
+                                <p className={cn("text-[11px] tabular-nums text-right", isDark ? "text-white/50" : "text-gray-500")}>
+                                  {col.floor} <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-400")}>XRP</span>
+                                </p>
+                                <p className={cn("text-[11px] font-bold tabular-nums text-right", isDark ? "text-white/90" : "text-gray-900")}>
+                                  {col.value.toLocaleString()} <span className={cn("text-[9px] font-normal", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                                </p>
                               </button>
                             ))}
                           </div>
@@ -5581,15 +5592,15 @@ export default function WalletPage() {
                         </a>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
                         {collectionNfts.map((nft) => (
                           <div
                             key={nft.id}
                             className={cn(
-                              'rounded-xl overflow-hidden group',
+                              'rounded-xl overflow-hidden group transition-all duration-300',
                               isDark
-                                ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15]'
-                                : 'bg-white border border-gray-200'
+                                ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
+                                : 'bg-white border border-gray-200 shadow-sm'
                             )}
                           >
                             <div className="relative">
@@ -5605,7 +5616,7 @@ export default function WalletPage() {
                               ) : (
                                 <div
                                   className={cn(
-                                    'w-full aspect-square flex items-center justify-center text-[11px]',
+                                    'w-full aspect-square flex items-center justify-center text-[9px]',
                                     isDark
                                       ? 'bg-white/5 text-white/30'
                                       : 'bg-gray-100 text-gray-400'
@@ -5614,32 +5625,36 @@ export default function WalletPage() {
                                   No image
                                 </div>
                               )}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
                                 <Link
                                   href={`/nft/${nft.nftId}`}
-                                  className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                                  className="w-full py-1.5 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[9px] font-bold flex items-center justify-center gap-1 transition-all"
                                 >
-                                  <ExternalLink size={12} /> View
+                                  <ExternalLink size={10} /> View
                                 </Link>
-                                <button
-                                  onClick={() => setNftToTransfer(nft)}
-                                  className="p-2 rounded-lg bg-white/20 text-white hover:bg-white/30 text-[11px] font-medium flex items-center gap-1 transition-colors"
-                                >
-                                  <Send size={12} /> Send
-                                </button>
-                                <button
-                                  onClick={() => setNftToSell(nft)}
-                                  className="p-2 rounded-lg text-[11px] font-medium flex items-center gap-1 bg-[#137DFE] text-white hover:bg-[#137DFE]/90 transition-colors"
-                                >
-                                  <ArrowUpRight size={12} /> Sell
-                                </button>
+                                <div className="flex w-full gap-1.5">
+                                  <button
+                                    onClick={() => setNftToTransfer(nft)}
+                                    className="flex-1 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 text-[9px] font-bold flex items-center justify-center transition-all"
+                                    title="Send"
+                                  >
+                                    <Send size={10} />
+                                  </button>
+                                  <button
+                                    onClick={() => setNftToSell(nft)}
+                                    className="flex-1 py-1.5 rounded-lg bg-[#137DFE] text-white hover:bg-[#137DFE]/90 text-[9px] font-bold flex items-center justify-center transition-all"
+                                    title="Sell"
+                                  >
+                                    <ArrowUpRight size={10} />
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                            <div className="p-3">
+                            <div className="p-2">
                               <p
                                 className={cn(
-                                  'text-[13px] font-medium truncate',
-                                  isDark ? 'text-white/90' : 'text-gray-900'
+                                  'text-[11px] font-semibold truncate',
+                                  isDark ? 'text-white/95' : 'text-gray-900'
                                 )}
                               >
                                 {nft.name}
@@ -5647,8 +5662,8 @@ export default function WalletPage() {
                               {nft.rarity > 0 && (
                                 <p
                                   className={cn(
-                                    'text-[10px]',
-                                    isDark ? 'text-white/40' : 'text-gray-500'
+                                    'text-[9px] font-medium mt-0.5',
+                                    isDark ? 'text-[#137DFE]/70' : 'text-[#137DFE]'
                                   )}
                                 >
                                   Rank #{nft.rarity}
@@ -5680,16 +5695,16 @@ export default function WalletPage() {
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
                     {collections.map((col) => (
                       <button
                         key={col.id}
                         onClick={() => setSelectedCollection(col.name)}
                         className={cn(
-                          'rounded-xl overflow-hidden text-left group',
+                          'rounded-xl overflow-hidden text-left group transition-all duration-300',
                           isDark
-                            ? 'bg-black/50 backdrop-blur-sm border border-white/[0.15] hover:border-white/20'
-                            : 'bg-white border border-gray-200 hover:border-gray-300'
+                            ? 'bg-black/40 backdrop-blur-md border border-white/[0.12] hover:border-white/[0.18]'
+                            : 'bg-white border border-gray-200 shadow-sm hover:shadow-md'
                         )}
                       >
                         <div className="relative">
@@ -5697,7 +5712,7 @@ export default function WalletPage() {
                             <img
                               src={col.logo}
                               alt={col.name}
-                              className="w-full aspect-square object-cover"
+                              className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
                               onError={(e) => {
                                 e.target.style.display = 'none';
                               }}
@@ -5705,7 +5720,7 @@ export default function WalletPage() {
                           ) : (
                             <div
                               className={cn(
-                                'w-full aspect-square flex items-center justify-center text-[11px]',
+                                'w-full aspect-square flex items-center justify-center text-[9px]',
                                 isDark ? 'bg-white/5 text-white/30' : 'bg-gray-100 text-gray-400'
                               )}
                             >
@@ -5713,19 +5728,19 @@ export default function WalletPage() {
                             </div>
                           )}
                         </div>
-                        <div className="p-3">
+                        <div className="p-2">
                           <p
                             className={cn(
-                              'text-[13px] font-medium truncate',
-                              isDark ? 'text-white/90' : 'text-gray-900'
+                              'text-[11px] font-semibold truncate',
+                              isDark ? 'text-white/95' : 'text-gray-900'
                             )}
                           >
                             {col.name}
                           </p>
                           <p
                             className={cn(
-                              'text-[10px]',
-                              isDark ? 'text-white/40' : 'text-gray-500'
+                              'text-[9px] font-medium opacity-60 mt-0.5',
+                              isDark ? 'text-white' : 'text-gray-500'
                             )}
                           >
                             {col.count} item{col.count !== 1 ? 's' : ''}
