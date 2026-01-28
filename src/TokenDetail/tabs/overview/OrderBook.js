@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import axios from 'axios';
 import { AppContext } from 'src/context/AppContext';
 import { fNumber, fCurrency5 } from 'src/utils/formatters';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { Wifi, WifiOff } from 'lucide-react';
 
 // Format price with compact notation for small values (matches TokenSummary)
@@ -59,7 +60,7 @@ const fetchInFlight = new Map();
 const Container = styled.div`
   overflow: hidden;
   height: 100%;
-  min-height: 520px;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
   background: ${(props) => (props.isDark ? 'transparent' : '#fff')};
@@ -652,7 +653,7 @@ const OrderBook = ({ token, onPriceClick }) => {
           <Side ref={asksSideRef} type="asks">
             <ColumnHeader isDark={isDark}>
               <span style={{ color: '#ff4d4f' }}>Price (XRP)</span>
-              <span>Size ({displayToken?.currency?.slice(0, 8) || 'Token'})</span>
+              <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
             {[...asks].reverse().map((ask, idx, arr) => {
@@ -731,7 +732,7 @@ const OrderBook = ({ token, onPriceClick }) => {
           <Side type="bids">
             <ColumnHeader isDark={isDark}>
               <span style={{ color: '#2ecc71' }}>Price (XRP)</span>
-              <span>Size ({displayToken?.currency?.slice(0, 8) || 'Token'})</span>
+              <span>Size ({normalizeCurrencyCode(displayToken?.currency) || 'Token'})</span>
               <span>Maker</span>
             </ColumnHeader>
             {bids.map((bid, idx) => {
