@@ -441,11 +441,10 @@ const MAX_RECENT_SEARCHES = 6;
 const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  border: `1px solid ${
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.divider, 0.08)
-      : alpha(theme.palette.divider, 0.08)
-  }`
+  border: `1px solid ${theme.palette.mode === 'dark'
+    ? alpha(theme.palette.divider, 0.08)
+    : alpha(theme.palette.divider, 0.08)
+    }`
 }));
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
@@ -959,7 +958,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setAccountPairBalance(ret.pair);
           }
         })
-        .catch((err) => {});
+        .catch((err) => { });
 
       // Check trustlines
       axios
@@ -1086,7 +1085,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           setHasTrustline1(hasCurr1Trustline);
           setHasTrustline2(hasCurr2Trustline);
         })
-        .catch((err) => {});
+        .catch((err) => { });
     }
 
     getAccountInfo();
@@ -1113,7 +1112,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setTokenExch2(Number(ret.rate2) || 0);
           }
         })
-        .catch((err) => {});
+        .catch((err) => { });
     }
 
     // Only call if both tokens exist
@@ -1855,7 +1854,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             return foundToken;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // 2. Try xrpnft tokens endpoint (used by CurrencySearchModal)
       try {
@@ -1874,7 +1873,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             return foundToken;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // 3. Try direct token lookup by issuer_currency format
       try {
@@ -1883,7 +1882,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (directResponse.data && directResponse.data.token) {
           return directResponse.data.token;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // 4. Fallback - create basic token object
       return {
@@ -1954,7 +1953,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           curr2: token2Data
         });
       }
-    } catch (error) {}
+    } catch (error) { }
 
     setUrlParsed(true);
     setIsLoadingFromUrl(false);
@@ -2128,7 +2127,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               }
             });
           }
-        } catch (err) {}
+        } catch (err) { }
       }
 
       setFilteredTokens(filtered);
@@ -2333,42 +2332,43 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Modal Panel - Glassmorphism */}
       <div
         className={cn(
-          'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-2xl overflow-hidden max-h-[80vh] flex flex-col z-[1201]',
+          'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] rounded-[2rem] overflow-hidden max-h-[85vh] flex flex-col z-[1201]',
           darkMode
-            ? 'bg-black/80 backdrop-blur-2xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/50'
-            : 'bg-white/80 backdrop-blur-2xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-300/30'
+            ? 'bg-black/90 backdrop-blur-3xl border-[1.5px] border-white/[0.08] shadow-2xl shadow-black/80'
+            : 'bg-white/95 backdrop-blur-3xl border-[1.5px] border-gray-200/60 shadow-2xl shadow-gray-400/20'
         )}
       >
         {/* Search Header */}
         <div
           className={cn(
-            'flex items-center gap-3 px-4 h-[52px] border-b',
+            'flex items-center gap-4 px-6 h-[70px] border-b',
             darkMode ? 'border-white/[0.06]' : 'border-gray-200/60'
           )}
         >
-          <Search size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
+          <Search size={20} className={darkMode ? 'text-primary/60' : 'text-primary/60'} />
           <input
             ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tokens..."
+            placeholder="Search symbols or addresses..."
             className={cn(
-              'flex-1 bg-transparent text-[14px] outline-none',
+              'flex-1 bg-transparent text-[16px] font-medium outline-none',
               darkMode
-                ? 'text-white placeholder:text-white/40'
-                : 'text-gray-900 placeholder:text-gray-400'
+                ? 'text-white placeholder:text-white/20'
+                : 'text-gray-900 placeholder:text-gray-300'
             )}
           />
           <button
             onClick={onClose}
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+              'p-2 rounded-xl transition-all',
+              darkMode ? 'hover:bg-white/5 text-white/40' : 'hover:bg-gray-100 text-gray-400'
             )}
           >
-            <X size={16} className={darkMode ? 'text-white/40' : 'text-gray-400'} />
+            <X size={20} />
           </button>
         </div>
+
 
         {/* Category Filters */}
         <div
@@ -2528,9 +2528,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       {/* Swap UI */}
       {!showTokenSelector && (
         <div className="flex flex-col items-center gap-5 md:gap-8 mx-auto w-full max-w-[1000px] px-3 md:px-4 pt-2 md:pt-0">
-          {/* Header with Market/Limit Tabs - Futuristic */}
-          <div className="flex items-center justify-between w-full px-1">
-            <div className="flex gap-1.5">
+          {/* Header with Market/Limit Tabs - Futuristic & Sleek */}
+          <div className="flex items-center justify-between w-full px-2">
+            <div className={cn(
+              'flex p-1 rounded-xl backdrop-blur-md border-[1.5px]',
+              darkMode ? 'bg-white/5 border-white/[0.06]' : 'bg-gray-100 border-gray-200'
+            )}>
               <button
                 onClick={() => {
                   setOrderType('market');
@@ -2538,16 +2541,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   setShowOrderbook(false);
                 }}
                 className={cn(
-                  'px-5 py-2 rounded-lg text-[14px] font-medium transition-colors',
+                  'px-6 py-2 rounded-lg text-[13px] font-bold transition-all duration-300',
                   orderType === 'market'
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : darkMode
-                      ? 'text-primary/50 hover:bg-primary/10'
-                      : 'text-primary/50 hover:bg-primary/10'
+                      ? 'text-white/40 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-900'
                 )}
-                style={{
-                  border: `1.5px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
-                }}
               >
                 Market
               </button>
@@ -2557,138 +2557,150 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   setShowOrders(false);
                 }}
                 className={cn(
-                  'px-5 py-2 rounded-lg text-[14px] font-medium transition-colors',
+                  'px-6 py-2 rounded-lg text-[13px] font-bold transition-all duration-300',
                   orderType === 'limit'
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : darkMode
-                      ? 'text-primary/50 hover:bg-primary/10'
-                      : 'text-primary/50 hover:bg-primary/10'
+                      ? 'text-white/40 hover:text-white/70'
+                      : 'text-gray-500 hover:text-gray-900'
                 )}
-                style={{
-                  border: `1.5px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
-                }}
               >
                 Limit
               </button>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-colors',
+                  'flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all border-[1.5px]',
                   darkMode
-                    ? 'text-primary/50 hover:bg-primary/10'
-                    : 'text-primary/50 hover:bg-primary/10'
+                    ? 'bg-white/5 border-white/5 text-white/50 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
+                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:text-primary hover:border-primary/30'
                 )}
               >
-                <Settings size={14} />
+                <Settings size={14} className="opacity-70" />
                 <span>{slippage}%</span>
               </button>
               <button
                 onClick={handleShareUrl}
                 aria-label="Share swap URL"
                 className={cn(
-                  'px-3 py-2 rounded-lg transition-colors',
+                  'p-2.5 rounded-xl transition-all border-[1.5px]',
                   darkMode
-                    ? 'text-primary/50 hover:bg-primary/10'
-                    : 'text-primary/50 hover:bg-primary/10'
+                    ? 'bg-white/5 border-white/5 text-white/50 hover:text-primary hover:border-primary/30 hover:bg-primary/5'
+                    : 'bg-gray-50 border-gray-200 text-gray-500 hover:text-primary hover:border-primary/30'
                 )}
               >
-                <Share2 size={14} />
+                <Share2 size={14} className="opacity-70" />
               </button>
               <ApiButton />
             </div>
           </div>
+
 
           {/* Horizontal Two-Card Layout - Futuristic Style */}
           <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 w-full">
             {/* First Token Card - You Pay */}
             <div
               className={cn(
-                'flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]',
+                'flex-1 min-w-0 rounded-[2rem] p-6 md:p-10 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
                 focusTop
-                  ? 'border-primary'
+                  ? 'border-primary shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] shadow-primary/20'
                   : darkMode
-                    ? 'border-white/[0.06]'
-                    : 'border-gray-200/60',
-                darkMode ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+                    ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
+                    : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
               )}
             >
-              {/* Cyber corner accents - hidden on mobile */}
-              <div className="hidden md:block absolute top-0 left-0 w-16 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute top-0 left-0 h-16 w-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 right-0 w-16 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 right-0 h-16 w-[2px] bg-primary" />
-              {/* Token Display */}
-              <div className="flex flex-col items-center mb-5 md:mb-6 relative z-10">
+              {/* Animated Background Mesh */}
+              <div className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute -bottom-[20%] -right-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+              {/* Token Display - Futuristic Glow */}
+              <div className="flex flex-col items-start mb-6 relative z-10">
+                <span className={cn(
+                  'text-[10px] uppercase tracking-[0.2em] font-bold mb-4 opacity-50 px-1',
+                  darkMode ? 'text-primary' : 'text-primary'
+                )}>
+                  You Pay
+                </span>
                 <button
                   onClick={() => setPanel1Open(true)}
-                  className="flex items-center gap-4 md:gap-5 group"
+                  className="flex items-center gap-4 group relative"
                 >
                   <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all duration-500 scale-110" />
                     <img
                       src={
                         token1?.md5 ? `https://s1.xrpl.to/token/${token1.md5}` : '/static/alt.webp'
                       }
-                      width={72}
-                      height={72}
+                      width={64}
+                      height={64}
                       alt={token1?.name || 'Token'}
-                      className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      className="w-14 h-14 md:w-16 md:h-16 rounded-full border-[1.5px] border-primary/40 relative z-10 group-hover:border-primary group-hover:scale-105 transition-all duration-300 shadow-lg shadow-primary/20"
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
-                  <span
-                    className={cn(
-                      'text-2xl md:text-3xl font-normal tracking-wide',
-                      darkMode ? 'text-primary' : 'text-primary'
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        'text-2xl md:text-3xl font-bold tracking-tight',
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      )}>
+                        {token1?.name || token1?.currency || 'Select'}
+                      </span>
+                      <ChevronDown size={18} className="text-primary group-hover:translate-y-0.5 transition-transform" />
+                    </div>
+                    {token1?.issuer && (
+                      <span className="text-[10px] font-mono opacity-40 truncate max-w-[120px]">
+                        {token1.issuer}
+                      </span>
                     )}
-                  >
-                    {token1?.name || token1?.currency || 'Select'}
-                  </span>
+                  </div>
                 </button>
               </div>
 
-              {/* Amount Input */}
+
+              {/* Amount Input - Sleek Design */}
               <div
                 className={cn(
-                  'rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]',
-                  darkMode
-                    ? 'bg-white/[0.03] border-white/[0.06]'
-                    : 'bg-gray-100/50 border-gray-200/60'
+                  'rounded-2xl px-5 py-5 transition-all duration-300 relative z-10 border-[1.5px]',
+                  focusTop
+                    ? 'bg-primary/5 border-primary/30'
+                    : darkMode
+                      ? 'bg-black/40 border-white/[0.06]'
+                      : 'bg-white/60 border-gray-200/60'
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <input
-                    ref={amount1Ref}
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={amount1}
-                    onChange={handleChangeAmount1}
-                    onFocus={() => setFocusTop(true)}
-                    onBlur={() => setFocusTop(false)}
-                    className={cn(
-                      'flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono',
-                      darkMode
-                        ? 'text-white placeholder:text-white/30'
-                        : 'text-gray-900 placeholder:text-gray-400'
-                    )}
-                  />
-                  <button
-                    onClick={() => setPanel1Open(true)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0',
-                      darkMode
-                        ? 'bg-white/[0.06] text-white/80 hover:bg-white/10'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    )}
-                  >
-                    {token1?.name || token1?.currency || 'Select'}
-                    <ChevronDown size={14} className="opacity-50" />
-                  </button>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <input
+                      ref={amount1Ref}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      value={amount1}
+                      onChange={handleChangeAmount1}
+                      onFocus={() => setFocusTop(true)}
+                      onBlur={() => setFocusTop(false)}
+                      className={cn(
+                        'flex-1 min-w-0 text-left text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight',
+                        darkMode
+                          ? 'text-white placeholder:text-white/10'
+                          : 'text-gray-900 placeholder:text-gray-200'
+                      )}
+                    />
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={cn(
+                        'text-[12px] font-medium opacity-40',
+                        darkMode ? 'text-white' : 'text-black'
+                      )}>
+                        {token1?.name || token1?.currency}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
 
               {/* Balance */}
               <div className="flex items-center justify-end mt-3 relative z-10">
@@ -2727,113 +2739,131 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </div>
             </div>
 
-            {/* Swap Toggle Button - Center */}
-            <div className="flex items-center justify-center md:self-center relative py-2 md:py-0">
+            {/* Swap Toggle Button - Integrated & Dynamic */}
+            <div className="flex items-center justify-center md:self-center relative py-1 md:py-0 z-20">
+              <div className="absolute w-px h-12 bg-gradient-to-b from-transparent via-primary/30 to-transparent hidden md:block -top-12" />
+              <div className="absolute w-px h-12 bg-gradient-to-b from-primary/30 via-transparent to-transparent hidden md:block -bottom-12" />
               <button
                 onClick={onRevertExchange}
                 disabled={isSwitching}
                 title="Switch currencies (Alt + S)"
                 className={cn(
-                  'w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-all border-[1.5px]',
+                  'w-11 h-11 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-[1.5px]',
+                  'backdrop-blur-xl shadow-lg',
                   darkMode
-                    ? 'bg-white/[0.04] border-white/[0.08] hover:bg-primary/20 hover:border-primary'
-                    : 'bg-gray-100 border-gray-200 hover:bg-primary/10 hover:border-primary',
-                  isSwitching && 'rotate-180'
+                    ? 'bg-black/60 border-white/[0.08] hover:border-primary hover:shadow-primary/20 text-white/70 hover:text-white'
+                    : 'bg-white/80 border-gray-200/60 hover:border-primary hover:shadow-primary/10 text-gray-400 hover:text-primary',
+                  isSwitching && 'rotate-180 scale-90'
                 )}
               >
-                <ArrowLeftRight
-                  size={20}
-                  className={darkMode ? 'text-white/60' : 'text-gray-500'}
-                />
+                <div className="relative">
+                  <ArrowLeftRight size={22} className="relative z-10" />
+                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </button>
             </div>
+
 
             {/* Second Token Card - You Receive */}
             <div
               className={cn(
-                'flex-1 min-w-0 rounded-2xl p-5 md:p-8 transition-all relative overflow-hidden border-[1.5px]',
+                'flex-1 min-w-0 rounded-[2rem] p-6 md:p-10 transition-all duration-500 relative overflow-hidden backdrop-blur-3xl border-[1.5px]',
                 focusBottom
-                  ? 'border-primary'
+                  ? 'border-primary shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] shadow-primary/20'
                   : darkMode
-                    ? 'border-white/[0.06]'
-                    : 'border-gray-200/60',
-                darkMode ? 'bg-white/[0.02]' : 'bg-gray-50/50'
+                    ? 'border-white/[0.06] bg-white/[0.01] shadow-2xl shadow-black/40'
+                    : 'border-gray-200/80 bg-white/40 shadow-xl shadow-gray-200/20'
               )}
             >
-              {/* Cyber corner accents - hidden on mobile */}
-              <div className="hidden md:block absolute top-0 right-0 w-16 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute top-0 right-0 h-16 w-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 left-0 w-16 h-[2px] bg-primary" />
-              <div className="hidden md:block absolute bottom-0 left-0 h-16 w-[2px] bg-primary" />
-              {/* Token Display */}
-              <div className="flex flex-col items-center mb-5 md:mb-6 relative z-10">
+              {/* Animated Background Mesh */}
+              <div className="absolute -top-[20%] -right-[20%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute -bottom-[20%] -left-[20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+              {/* Token Display - Receive */}
+              <div className="flex flex-col items-start mb-6 relative z-10">
+                <span className={cn(
+                  'text-[10px] uppercase tracking-[0.2em] font-bold mb-4 opacity-50 px-1',
+                  darkMode ? 'text-primary' : 'text-primary'
+                )}>
+                  You Receive
+                </span>
                 <button
                   onClick={() => setPanel2Open(true)}
-                  className="flex items-center gap-4 md:gap-5 group"
+                  className="flex items-center gap-4 group relative"
                 >
                   <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all" />
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all duration-500 scale-110" />
                     <img
                       src={
                         token2?.md5 ? `https://s1.xrpl.to/token/${token2.md5}` : '/static/alt.webp'
                       }
-                      width={72}
-                      height={72}
+                      width={64}
+                      height={64}
                       alt={token2?.name || 'Token'}
-                      className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      className="w-14 h-14 md:w-16 md:h-16 rounded-full border-[1.5px] border-primary/40 relative z-10 group-hover:border-primary group-hover:scale-105 transition-all duration-300 shadow-lg shadow-primary/20"
                       onError={(e) => (e.target.src = '/static/alt.webp')}
                     />
                   </div>
-                  <span
-                    className={cn(
-                      'text-2xl md:text-3xl font-normal tracking-wide',
-                      darkMode ? 'text-primary' : 'text-primary'
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        'text-2xl md:text-3xl font-bold tracking-tight',
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      )}>
+                        {token2?.name || token2?.currency || 'Select'}
+                      </span>
+                      <ChevronDown size={18} className="text-primary group-hover:translate-y-0.5 transition-transform" />
+                    </div>
+                    {token2?.issuer && (
+                      <span className="text-[10px] font-mono opacity-40 truncate max-w-[120px]">
+                        {token2.issuer}
+                      </span>
                     )}
-                  >
-                    {token2?.name || token2?.currency || 'Select'}
-                  </span>
+                  </div>
                 </button>
               </div>
 
-              {/* Amount Input */}
+
+              {/* Amount Input - Receive */}
               <div
                 className={cn(
-                  'rounded-xl px-4 py-4 transition-colors relative z-10 border-[1.5px]',
-                  darkMode
-                    ? 'bg-white/[0.03] border-white/[0.06]'
-                    : 'bg-gray-100/50 border-gray-200/60'
+                  'rounded-2xl px-5 py-5 transition-all duration-300 relative z-10 border-[1.5px]',
+                  focusBottom
+                    ? 'bg-primary/5 border-primary/30'
+                    : darkMode
+                      ? 'bg-black/40 border-white/[0.06]'
+                      : 'bg-white/60 border-gray-200/60'
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={amount1 === '' ? '' : amount2}
-                    onChange={handleChangeAmount2}
-                    onFocus={() => setFocusBottom(true)}
-                    onBlur={() => setFocusBottom(false)}
-                    className={cn(
-                      'flex-1 min-w-0 text-left text-xl md:text-2xl font-normal bg-transparent border-none outline-none font-mono',
-                      darkMode
-                        ? 'text-white placeholder:text-white/30'
-                        : 'text-gray-900 placeholder:text-gray-400'
-                    )}
-                  />
-                  <button
-                    onClick={() => setPanel2Open(true)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors flex-shrink-0',
-                      darkMode
-                        ? 'bg-white/[0.06] text-white/80 hover:bg-white/10'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    )}
-                  >
-                    {token2?.name || token2?.currency || 'Select'}
-                    <ChevronDown size={14} className="opacity-50" />
-                  </button>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      value={amount1 === '' ? '' : amount2}
+                      onChange={handleChangeAmount2}
+                      onFocus={() => setFocusBottom(true)}
+                      onBlur={() => setFocusBottom(false)}
+                      className={cn(
+                        'flex-1 min-w-0 text-left text-2xl md:text-4xl font-bold bg-transparent border-none outline-none font-mono tracking-tight',
+                        darkMode
+                          ? 'text-white placeholder:text-white/10'
+                          : 'text-gray-900 placeholder:text-gray-200'
+                      )}
+                    />
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={cn(
+                        'text-[12px] font-medium opacity-40',
+                        darkMode ? 'text-white' : 'text-black'
+                      )}>
+                        {token2?.name || token2?.currency}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
 
               {/* Balance info */}
               <div className="flex items-center justify-end mt-3 relative z-10">
@@ -2916,13 +2946,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <button
                               key={val}
                               onClick={() => setSlippage(val)}
-                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
-                                slippage === val
-                                  ? 'bg-primary text-white border-primary'
-                                  : darkMode
-                                    ? 'border-white/10 text-white/60 hover:border-primary/50'
-                                    : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                              }`}
+                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${slippage === val
+                                ? 'bg-primary text-white border-primary'
+                                : darkMode
+                                  ? 'border-white/10 text-white/60 hover:border-primary/50'
+                                  : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                                }`}
                             >
                               {val}%
                             </button>
@@ -2990,13 +3019,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <button
                               key={val}
                               onClick={() => setTxFee(String(val))}
-                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${
-                                txFee === String(val)
-                                  ? 'bg-primary text-white border-primary'
-                                  : darkMode
-                                    ? 'border-white/10 text-white/60 hover:border-primary/50'
-                                    : 'border-gray-200 text-gray-600 hover:border-primary/50'
-                              }`}
+                              className={`flex-1 h-9 text-[13px] font-normal rounded-lg border-[1.5px] transition-colors ${txFee === String(val)
+                                ? 'bg-primary text-white border-primary'
+                                : darkMode
+                                  ? 'border-white/10 text-white/60 hover:border-primary/50'
+                                  : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                                }`}
                             >
                               {val}
                             </button>
@@ -3462,7 +3490,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   </div>
                 )}
 
-                {/* Action Button */}
+                {/* Action Button - Premium Futuristic */}
                 {accountProfile && accountProfile.account ? (
                   <button
                     onClick={handlePlaceOrder}
@@ -3472,21 +3500,33 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                     }
                     className={cn(
-                      'w-full py-3 rounded-xl text-[14px] font-medium transition-all',
+                      'w-full py-4 md:py-5 rounded-2xl text-[15px] font-bold transition-all duration-300 relative overflow-hidden group',
                       isProcessing === 1 ||
                         !isLoggedIn ||
                         (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                         ? darkMode
-                          ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-primary text-white hover:bg-primary/90'
+                          ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        : 'bg-primary text-white shadow-[0_0_30px_-5px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_-5px_rgba(59,130,246,0.6)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]'
                     )}
                   >
-                    {handleMsg()}
+                    {/* Glossy overlay effect */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-white/20 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      {isProcessing === 1 && <ClipLoader size={18} color="#fff" />}
+                      {handleMsg()}
+                    </span>
                   </button>
                 ) : (
-                  <ConnectWallet text="Connect Wallet" fullWidth />
+                  <ConnectWallet
+                    text="Connect Wallet"
+                    fullWidth
+                    className="!py-4 md:!py-5 !rounded-2xl !text-[15px] !font-bold !bg-primary !text-white !shadow-[0_0_30px_-5px_rgba(59,130,246,0.5)] hover:!shadow-[0_0_40px_-5px_rgba(59,130,246,0.6)] !transition-all !duration-300"
+                  />
                 )}
+
               </div>
             </div>
           </div>
