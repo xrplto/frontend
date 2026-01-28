@@ -478,12 +478,12 @@ const TokenSummary = memo(({ token }) => {
 
   const convertedMarketCap =
     marketcap &&
-    (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+      (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
       ? new Decimal(marketcap).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
       : marketcap || 0;
   const convertedVolume =
     vol24hxrp &&
-    (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+      (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
       ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
       : vol24hxrp || 0;
   const convertedTvl =
@@ -582,14 +582,16 @@ const TokenSummary = memo(({ token }) => {
   return (
     <div
       className={cn(
-        'rounded-xl border-[1.5px] p-3',
-        isDark ? 'border-white/10 bg-transparent' : 'border-black/[0.06] bg-transparent'
+        'rounded-2xl border transition-all duration-200 p-4',
+        isDark
+          ? 'border-white/[0.08] bg-[#0a0a0a]/50 backdrop-blur-sm'
+          : 'border-black/[0.06] bg-white/50 backdrop-blur-sm shadow-sm'
       )}
     >
       {/* Row 1: Token Info + Price */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         {/* Left: Token Image + Info */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div className="flex items-center gap-3.5 min-w-0 flex-1">
           <div
             className="relative group cursor-pointer flex-shrink-0"
             onClick={handleGoogleLensSearch}
@@ -597,62 +599,59 @@ const TokenSummary = memo(({ token }) => {
             <Image
               src={tokenImageUrl}
               alt={name}
-              width={44}
-              height={44}
+              width={52}
+              height={52}
               priority
               unoptimized
               className={cn(
-                'w-11 h-11 rounded-xl object-cover border',
-                isDark ? 'border-white/10' : 'border-black/[0.08]'
+                'w-[52px] h-[52px] rounded-2xl object-cover border shadow-sm transition-transform group-hover:scale-105',
+                isDark ? 'border-white/10 shadow-black/20' : 'border-black/[0.08] shadow-gray-200'
               )}
               onError={(e) => {
                 e.currentTarget.src = fallbackImageUrl;
               }}
             />
+            {verified >= 1 && (
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-[2px] rounded-full ring-2 ring-[#0a0a0a]">
+                <Check size={8} strokeWidth={3} />
+              </div>
+            )}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="min-w-0 flex-1 py-0.5">
+            <div className="flex items-center gap-2 mb-1">
               <span
                 className={cn(
-                  'text-[17px] font-semibold truncate',
+                  'text-lg font-bold truncate tracking-tight',
                   isDark ? 'text-white' : 'text-gray-900'
                 )}
               >
                 {name}
               </span>
-              {verified >= 1 && (
-                <span
-                  className={cn(
-                    'px-1.5 py-0.5 rounded text-[9px] font-normal',
-                    isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'
-                  )}
-                >
-                  Verified
-                </span>
-              )}
-              {id && (
-                <span
-                  className={cn(
-                    'px-1.5 py-0.5 rounded text-[9px] font-normal',
-                    isDark ? 'bg-white/[0.06] text-white/50' : 'bg-black/[0.04] text-gray-500'
-                  )}
-                >
-                  #{id}
-                </span>
-              )}
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-normal',
-                  isDark ? 'bg-white/[0.04] text-white/50' : 'bg-black/[0.03] text-gray-500'
+              <div className="flex items-center gap-1.5">
+                {id && (
+                  <span
+                    className={cn(
+                      'px-1.5 py-0.5 rounded-md text-[10px] font-medium font-mono',
+                      isDark ? 'bg-white/[0.06] text-white/50' : 'bg-black/[0.04] text-gray-500'
+                    )}
+                  >
+                    #{id}
+                  </span>
                 )}
-              >
-                <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
-                {origin || 'XRPL'}
-              </span>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium',
+                    isDark ? 'bg-white/[0.04] text-white/50' : 'bg-black/[0.03] text-gray-500'
+                  )}
+                >
+                  <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />
+                  {origin || 'XRPL'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-2">
               <span
-                className={cn('text-[10px] truncate', isDark ? 'text-white/40' : 'text-gray-400')}
+                className={cn('text-[11px] font-medium truncate', isDark ? 'text-white/40' : 'text-gray-500')}
               >
                 {user || name}
               </span>
@@ -660,32 +659,32 @@ const TokenSummary = memo(({ token }) => {
                 <button
                   onClick={copyIssuer}
                   className={cn(
-                    'flex items-center gap-0.5 text-[9px] font-mono',
+                    'flex items-center gap-1 text-[10px] font-mono transition-colors pl-2 border-l',
                     isDark
-                      ? 'text-white/30 hover:text-white/50'
-                      : 'text-gray-400 hover:text-gray-600'
+                      ? 'border-white/10 text-white/30 hover:text-white/60'
+                      : 'border-gray-200 text-gray-400 hover:text-gray-600'
                   )}
                 >
-                  {copied ? <Check size={9} className="text-green-500" /> : <Copy size={9} />}
                   {issuer.slice(0, 4)}...{issuer.slice(-4)}
+                  {copied ? <Check size={10} className="text-green-500" /> : <Copy size={10} />}
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right: Price + Change */}
-        <div className="flex flex-col items-end flex-shrink-0">
+        {/* Right: Price */}
+        <div className="flex flex-col items-end flex-shrink-0 pt-0.5">
           <span
             className={cn(
-              'text-2xl font-bold tracking-tight',
+              'text-[28px] font-bold tracking-tighter leading-none',
               priceColor ? '' : isDark ? 'text-white' : 'text-gray-900'
             )}
             style={priceColor ? { color: priceColor } : undefined}
           >
             {priceDisplay.isCompact ? (
               <>
-                {priceDisplay.symbol}0.0<sub className="text-[0.5em]">{priceDisplay.zeros}</sub>
+                {priceDisplay.symbol}0.0<sub className="text-[0.6em] opacity-80">{priceDisplay.zeros}</sub>
                 {priceDisplay.significant}
               </>
             ) : (
@@ -695,63 +694,49 @@ const TokenSummary = memo(({ token }) => {
               </>
             )}
           </span>
-          <span
-            className={cn(
-              'text-[11px] font-medium',
-              mainChange >= 0 ? 'text-green-500' : 'text-red-500'
-            )}
-          >
-            {formatPct(mainChange)}
-          </span>
         </div>
       </div>
 
       {/* Row 2: Stats Grid */}
-      <div
-        className={cn(
-          'grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t',
-          isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
-        )}
-      >
+      {/* Row 2: Stats & Changes Combined */}
+      <div className={cn(
+        'grid grid-cols-4 gap-2 mt-4',
+      )}>
         {[
           {
             label: 'MCAP',
             value: formatValue(convertedMarketCap),
-            color: isDark ? 'text-white/90' : 'text-gray-800'
+            subValue: null
           },
           {
             label: 'VOL 24H',
             value: formatValue(convertedVolume),
-            color: isDark ? 'text-white/90' : 'text-gray-800'
+            subValue: null
           },
           {
             label: 'TVL',
             value: formatValue(convertedTvl),
-            color: isDark ? 'text-white/90' : 'text-gray-800'
+            subValue: null
           },
           {
             label: 'HOLDERS',
             value: formatValue(holders || 0),
-            color: isDark ? 'text-white/90' : 'text-gray-800',
             noSymbol: true
           }
         ].map((stat) => (
           <div
             key={stat.label}
             className={cn(
-              'text-center py-1.5 px-1 rounded-lg',
-              isDark ? 'bg-white/[0.025]' : 'bg-black/[0.02]'
+              'flex flex-col items-center justify-center py-2.5 rounded-xl border',
+              isDark
+                ? 'bg-white/[0.03] border-white/[0.04]'
+                : 'bg-gray-50/50 border-black/[0.03]'
             )}
           >
-            <div
-              className={cn(
-                'text-[9px] uppercase tracking-wide mb-1',
-                isDark ? 'text-white/35' : 'text-gray-400'
-              )}
-            >
+            <div className={cn('text-[10px] font-medium uppercase tracking-wider mb-0.5', isDark ? 'text-white/40' : 'text-gray-400')}>
               {stat.label}
             </div>
-            <div className={cn('text-[13px] font-medium', stat.color)}>
+            <div className={cn('text-[13px] font-bold', isDark ? 'text-white/90' : 'text-gray-800')}>
               {stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}
               {stat.value}
             </div>
@@ -759,160 +744,140 @@ const TokenSummary = memo(({ token }) => {
         ))}
       </div>
 
-      {/* Row 3: Price Changes */}
-      <div className="grid grid-cols-4 gap-1.5 mt-1.5">
+      {/* Time Intervals */}
+      <div className='grid grid-cols-4 gap-2 mt-2'>
         {priceChanges.map((item) => (
           <div
             key={item.label}
             className={cn(
-              'text-center py-1.5 px-1 rounded-lg',
-              isDark ? 'bg-white/[0.025]' : 'bg-black/[0.02]'
+              'flex flex-col items-center justify-center py-1.5 rounded-lg border',
+              isDark
+                ? 'bg-white/[0.015] border-white/[0.02]'
+                : 'bg-white border-black/[0.02]'
             )}
           >
-            <div
-              className={cn(
-                'text-[9px] uppercase tracking-wide mb-1',
-                isDark ? 'text-white/35' : 'text-gray-400'
-              )}
-            >
+            <span className={cn('text-[9px] uppercase font-bold opacity-40 mb-0.5', isDark ? 'text-white' : 'text-black')}>
               {item.label}
-            </div>
-            <div
+            </span>
+            <span
               className={cn(
-                'text-[12px] font-medium',
+                'text-[11px] font-bold',
                 item.value == null
-                  ? isDark
-                    ? 'text-white/50'
-                    : 'text-gray-500'
-                  : item.value >= 0
-                    ? 'text-green-500'
-                    : 'text-red-500'
+                  ? isDark ? 'text-white/20' : 'text-gray-300'
+                  : item.value >= 0 ? 'text-green-500' : 'text-red-500'
               )}
             >
               {formatPct(item.value)}
-            </div>
+            </span>
           </div>
         ))}
       </div>
 
       {/* Row 4: 24h Range */}
+      {/* Row 4: 24h Range */}
       {range24h && (
         <div
           className={cn(
-            'flex items-center gap-2.5 mt-2 pt-2 border-t',
+            'mt-4 pt-3 border-t',
             isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
           )}
         >
-          <span
-            className={cn(
-              'text-[9px] uppercase tracking-wide flex-shrink-0',
-              isDark ? 'text-white/35' : 'text-gray-400'
-            )}
-          >
-            24H
-          </span>
-          <span className="text-[10px] text-green-500/80 flex-shrink-0">
-            {currencySymbols[activeFiatCurrency]}
-            {(() => {
-              const rate =
-                metrics[activeFiatCurrency] ||
-                (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ||
-                1;
-              const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate;
-              const p = formatPrice(v);
-              return p?.compact ? (
-                <>
-                  0.0<sub className="text-[8px]">{p.zeros}</sub>
-                  {p.significant}
-                </>
-              ) : (
-                p
-              );
-            })()}
-          </span>
-          <div className="flex-1 relative py-1.5">
-            <div
-              className={cn('h-1.5 rounded-full', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
-            >
-              <div
-                className={cn(
-                  'absolute inset-x-0 top-1.5 h-1.5 rounded-full',
-                  isDark
-                    ? 'bg-gradient-to-r from-green-500/20 via-white/10 to-red-500/20'
-                    : 'bg-gradient-to-r from-green-500/15 via-gray-200 to-red-500/15'
-                )}
-              />
-            </div>
-            <div
-              className="absolute top-1/2 -translate-y-1/2 z-10"
-              style={{ left: `clamp(0px, calc(${range24h.percent}% - 4px), calc(100% - 8px))` }}
-            >
-              <div className={cn('w-2 h-2 rounded-full', isDark ? 'bg-white/90' : 'bg-gray-700')} />
-            </div>
+          <div className="flex items-center justify-between text-[10px] font-medium mb-1.5">
+            <span className="text-red-500/80">
+              Low: {currencySymbols[activeFiatCurrency]}
+              {(() => {
+                const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+                const v = activeFiatCurrency === 'XRP' ? range24h.min : range24h.min / rate;
+                const p = formatPrice(v);
+                return p?.compact ? <>0.0<sub>{p.zeros}</sub>{p.significant}</> : p;
+              })()}
+            </span>
+            <span className={cn('text-[9px] uppercase tracking-widest font-bold', isDark ? 'text-white/20' : 'text-gray-300')}>
+              24H Range
+            </span>
+            <span className="text-green-500/80">
+              High: {currencySymbols[activeFiatCurrency]}
+              {(() => {
+                const rate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+                const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate;
+                const p = formatPrice(v);
+                return p?.compact ? <>0.0<sub>{p.zeros}</sub>{p.significant}</> : p;
+              })()}
+            </span>
           </div>
-          <span className="text-[10px] text-red-500/80 flex-shrink-0">
-            {currencySymbols[activeFiatCurrency]}
-            {(() => {
-              const rate =
-                metrics[activeFiatCurrency] ||
-                (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ||
-                1;
-              const v = activeFiatCurrency === 'XRP' ? range24h.max : range24h.max / rate;
-              const p = formatPrice(v);
-              return p?.compact ? (
-                <>
-                  0.0<sub className="text-[8px]">{p.zeros}</sub>
-                  {p.significant}
-                </>
-              ) : (
-                p
-              );
-            })()}
-          </span>
+
+          <div className="relative h-2 rounded-full overflow-hidden bg-gradient-to-r from-red-500/5 via-transparent to-green-500/5 w-full">
+            <div
+              className={cn('absolute inset-0', isDark ? 'bg-white/[0.06]' : 'bg-black/[0.04]')}
+            />
+            <div
+              className="absolute top-0 bottom-0 rounded-full opacity-60"
+              style={{
+                left: '0%',
+                right: '0%',
+                background: isDark
+                  ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.4) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(34, 197, 94, 0.4) 100%)'
+                  : 'linear-gradient(90deg, rgba(239, 68, 68, 0.3) 0%, rgba(200, 200, 200, 0.2) 50%, rgba(34, 197, 94, 0.3) 100%)'
+              }}
+            />
+            <div
+              className="absolute top-0 bottom-0 w-1 bg-current z-10 shadow-[0_0_8px_rgba(0,0,0,0.5)] transform -translate-x-1/2 transition-all duration-1000 ease-out"
+              style={{
+                left: `${range24h.percent}%`,
+                backgroundColor: isDark ? '#fff' : '#000'
+              }}
+            />
+          </div>
         </div>
       )}
 
       {/* Row 5: Actions */}
+      {/* Row 5: Actions */}
       <div
         className={cn(
-          'flex items-center justify-between gap-2 mt-2 pt-2 border-t',
+          'grid grid-cols-2 gap-2 mt-4 pt-3 border-t',
           isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'
         )}
       >
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={handleSetTrust}
-            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT}
-            title={isMPT ? 'MPT tokens do not require trustlines' : undefined}
-            className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border',
-              isRemove
-                ? isDark
-                  ? 'text-red-400 border-red-500/20 hover:bg-red-500/10 hover:border-red-500/30'
-                  : 'text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300'
-                : isDark
-                  ? 'text-green-400 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
-                  : 'text-green-500 border-green-200 hover:bg-green-50 hover:border-green-300',
-              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT) && 'opacity-40 cursor-not-allowed'
-            )}
-          >
-            {isRemove ? (
-              <Unlink2 size={13} />
-            ) : (
-              <Link2 size={13} />
-            )}
-            {isRemove ? 'Untrust' : 'Trust'}
-          </button>
-          <ApiButton token={token} />
-        </div>
-        <div className="flex items-center gap-1">
-          <Watch token={token} />
-          <Share token={token} />
+        <button
+          onClick={handleSetTrust}
+          disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT}
+          title={isMPT ? 'MPT tokens do not require trustlines' : undefined}
+          className={cn(
+            'col-span-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm',
+            isRemove
+              ? isDark
+                ? 'bg-red-500/10 text-red-100 hover:bg-red-500/20 border border-red-500/20'
+                : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+              : isDark
+                ? 'bg-green-600 text-white hover:bg-green-500 border border-green-500/50 shadow-green-900/20'
+                : 'bg-green-500 text-white hover:bg-green-600 border border-green-400 shadow-green-200',
+            (CURRENCY_ISSUERS?.XRP_MD5 === md5 || isMPT) && 'opacity-50 cursor-not-allowed grayscale'
+          )}
+        >
+          {isRemove ? (
+            <Unlink2 size={16} />
+          ) : (
+            <Link2 size={16} />
+          )}
+          {isRemove ? 'Remove Trustline' : 'Set Trustline'}
+        </button>
+
+        <div className="col-span-2 flex gap-2">
+          <div className="flex-1">
+            <ApiButton token={token} className="w-full justify-center" />
+          </div>
+          <div className="flex-1">
+            <Watch token={token} className="w-full justify-center" />
+          </div>
+          <div className="flex-1">
+            <Share token={token} className="w-full justify-center" />
+          </div>
           {accountProfile?.admin && (
             <button
               onClick={() => setEditToken(token)}
               className={cn(
-                'px-2 py-1 rounded-lg border text-[10px] font-normal transition-all',
+                'px-3 py-2 rounded-xl border text-[11px] font-medium transition-all flex items-center justify-center',
                 isDark
                   ? 'border-amber-500/20 text-amber-400 hover:bg-amber-500/10'
                   : 'border-amber-200 text-amber-600 hover:bg-amber-50'

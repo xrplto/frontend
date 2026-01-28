@@ -62,7 +62,7 @@ if (typeof window !== 'undefined') {
 const getApiCalls = () =>
   typeof window !== 'undefined' ? Array.from(window.__apiCallsStore || []) : [];
 const subscribe = (listener) => {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
   window.__apiListeners.push(listener);
   return () => {
     window.__apiListeners = window.__apiListeners.filter((l) => l !== listener);
@@ -528,14 +528,14 @@ const ApiEndpointsModal = memo(({ open, onClose, token = null }) => {
   // Filter endpoints by search
   const filteredReference = search.trim()
     ? Object.entries(API_REFERENCE).reduce((acc, [key, cat]) => {
-        const filtered = cat.endpoints.filter(
-          (ep) =>
-            ep.path.toLowerCase().includes(search.toLowerCase()) ||
-            ep.desc.toLowerCase().includes(search.toLowerCase())
-        );
-        if (filtered.length > 0) acc[key] = { ...cat, endpoints: filtered };
-        return acc;
-      }, {})
+      const filtered = cat.endpoints.filter(
+        (ep) =>
+          ep.path.toLowerCase().includes(search.toLowerCase()) ||
+          ep.desc.toLowerCase().includes(search.toLowerCase())
+      );
+      if (filtered.length > 0) acc[key] = { ...cat, endpoints: filtered };
+      return acc;
+    }, {})
     : API_REFERENCE;
 
   return createPortal(
@@ -1022,7 +1022,7 @@ export const ApiButton = memo(({ className = '', token = null }) => {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          'group relative flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium transition-all duration-300 overflow-hidden',
+          'group relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 overflow-hidden',
           isDark
             ? 'bg-[#0d0d1a] text-blue-300 border border-blue-500/30 hover:border-blue-400/50 hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]'
             : 'bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 border border-blue-200 hover:from-blue-100 hover:to-cyan-100 hover:border-blue-300',

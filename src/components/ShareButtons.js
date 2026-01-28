@@ -24,7 +24,7 @@ import { fNumber } from 'src/utils/formatters';
 // X (Twitter) Social Media Icon
 const XSocialIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 );
 
@@ -379,7 +379,7 @@ const currencySymbols = {
 };
 
 // Token Share Modal Component
-export function TokenShareModal({ token }) {
+export function TokenShareModal({ token, className }) {
   const { openSnackbar, themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
@@ -436,11 +436,13 @@ export function TokenShareModal({ token }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200',
           isDark
             ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
-            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-        }`}
+            : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700',
+          className
+        )}
       >
         <ShareIcon size={12} />
         Share
@@ -453,11 +455,10 @@ export function TokenShareModal({ token }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
-              isDark
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
                 ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                 : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
               <span
@@ -483,9 +484,8 @@ export function TokenShareModal({ token }) {
               </span>
 
               <div
-                className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
-                }`}
+                className={`w-full p-3 rounded-lg border-[1.5px] text-center ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-300 bg-gray-50/50'
+                  }`}
               >
                 <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
                   Current Price
@@ -519,9 +519,8 @@ export function TokenShareModal({ token }) {
                   Copy Link
                 </p>
                 <div
-                  className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
-                    isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
-                  }`}
+                  className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                    }`}
                 >
                   <span
                     className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}
@@ -530,11 +529,10 @@ export function TokenShareModal({ token }) {
                   </span>
                   <button
                     onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${
-                      isDark
+                    className={`p-2 rounded-lg transition-colors ${isDark
                         ? 'bg-white/10 hover:bg-white/15 text-white/60'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     <Copy size={14} />
                   </button>
@@ -574,11 +572,10 @@ export function NFTShareModal({ name, imageUrl, url }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
-          isDark
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
             ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
             : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-        }`}
+          }`}
       >
         <ShareIcon size={12} />
         Share
@@ -591,11 +588,10 @@ export function NFTShareModal({ name, imageUrl, url }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
-              isDark
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
                 ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                 : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
               <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -635,19 +631,17 @@ export function NFTShareModal({ name, imageUrl, url }) {
                 <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
                   Copy Link
                 </p>
-                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
-                }`}>
+                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                  }`}>
                   <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
                     {url}
                   </span>
                   <button
                     onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${
-                      isDark
+                    className={`p-2 rounded-lg transition-colors ${isDark
                         ? 'bg-white/10 hover:bg-white/15 text-white/60'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     <Copy size={14} />
                   </button>
@@ -690,11 +684,10 @@ export function TxShareModal({ hash, type }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${
-          isDark
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 ${isDark
             ? 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80'
             : 'border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-        }`}
+          }`}
       >
         <ShareIcon size={12} />
         Share
@@ -707,11 +700,10 @@ export function TxShareModal({ hash, type }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${
-              isDark
+            className={`w-[90%] max-w-[400px] rounded-2xl border overflow-hidden ${isDark
                 ? 'bg-black/90 backdrop-blur-2xl border-gray-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.6)]'
                 : 'bg-white/98 backdrop-blur-2xl border-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.08)]'
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between px-4 py-3">
               <span className={`text-[15px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -723,9 +715,8 @@ export function TxShareModal({ hash, type }) {
             </div>
 
             <div className="px-4 pb-4 flex flex-col items-center gap-4">
-              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${
-                isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
-              }`}>
+              <div className={`w-full p-3 rounded-lg border-[1.5px] text-center ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                }`}>
                 <p className={`text-[11px] mb-1 ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
                   Transaction Hash
                 </p>
@@ -753,19 +744,17 @@ export function TxShareModal({ hash, type }) {
                 <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>
                   Copy Link
                 </p>
-                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${
-                  isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
-                }`}>
+                <div className={`flex items-center gap-2 p-3 rounded-lg border-[1.5px] ${isDark ? 'border-gray-600/40 bg-white/[0.04]' : 'border-gray-200 bg-gray-50'
+                  }`}>
                   <span className={`flex-1 text-[12px] truncate ${isDark ? 'text-white/60' : 'text-gray-600'}`}>
                     {url}
                   </span>
                   <button
                     onClick={handleCopy}
-                    className={`p-2 rounded-lg transition-colors ${
-                      isDark
+                    className={`p-2 rounded-lg transition-colors ${isDark
                         ? 'bg-white/10 hover:bg-white/15 text-white/60'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     <Copy size={14} />
                   </button>
