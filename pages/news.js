@@ -16,7 +16,8 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 const SENTIMENT_COLORS = {
@@ -31,7 +32,7 @@ const getSentimentColor = (s) => SENTIMENT_COLORS[s?.toLowerCase()] || SENTIMENT
 const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, isDark }) => {
   if (!data?.labels?.length) return null;
 
-  const maxVal = Math.max(...data.bullish, ...data.bearish, 1);
+  const maxVal = Math.max(...data.bullish, ...data.bearish, ...(data.neutral || []), 1);
   const w = 1000, h = 200, pts = data.labels.length;
   const step = w / Math.max(pts - 1, 1);
   const getY = (val) => h - (val / maxVal) * h;
@@ -41,6 +42,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
 
   const totalBull = data.bullish.reduce((a, b) => a + b, 0);
   const totalBear = data.bearish.reduce((a, b) => a + b, 0);
+  const totalNeutral = (data.neutral || []).reduce((a, b) => a + b, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,9 +51,17 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
           <h3 className={cn("text-[13px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-black")}>
             Market Sentiment
           </h3>
-          <p className={cn("text-[11px] font-bold opacity-30", isDark ? "text-white" : "text-black")}>
-            Social & algorithmic pulse
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={cn(
+              "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest",
+              isDark
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-primary/5 text-primary border border-primary/10"
+            )}>
+              <Sparkles size={10} />
+              Powered by AI
+            </span>
+          </div>
         </div>
         <div className={cn(
           "flex items-center p-1 rounded-xl border",
@@ -76,7 +86,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="relative rounded-xl">
         <svg
           viewBox={`0 0 ${w} ${h}`}
           className="w-full h-[120px] overflow-visible"
@@ -85,6 +95,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         >
           <path d={getArea(data.bullish)} fill="#10B981" fillOpacity="0.05" />
           <path d={getArea(data.bearish)} fill="#EF4444" fillOpacity="0.05" />
+          {data.neutral && <path d={getArea(data.neutral)} fill="#F59E0B" fillOpacity="0.03" />}
 
           <path
             d={getPath(data.bullish)}
@@ -100,6 +111,17 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
             strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
           />
+          {data.neutral && (
+            <path
+              d={getPath(data.neutral)}
+              fill="none"
+              stroke="#F59E0B"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+              vectorEffect="non-scaling-stroke"
+              opacity="0.6"
+            />
+          )}
 
           {data.labels.map((_, i) => (
             <rect
@@ -131,7 +153,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
         {hoverIdx !== null && data.labels[hoverIdx] && (
           <div
             className={cn(
-              'absolute top-0 -translate-y-full -translate-x-1/2 mb-4 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
+              'absolute top-2 -translate-x-1/2 px-3 py-1.5 rounded-xl border backdrop-blur-md pointer-events-none z-20',
               isDark ? 'bg-black/80 border-white/10' : 'bg-white/80 border-black/10'
             )}
             style={{ left: `${(hoverIdx / (pts - 1)) * 100}%` }}
@@ -140,6 +162,7 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
             <div className="flex gap-4">
               <span className="text-[11px] font-black text-green-500">{data.bullish[hoverIdx]}</span>
               <span className="text-[11px] font-black text-red-500">{data.bearish[hoverIdx]}</span>
+              {data.neutral && <span className="text-[11px] font-black text-amber-500">{data.neutral[hoverIdx]}</span>}
             </div>
           </div>
         )}
@@ -156,6 +179,13 @@ const SentimentChart = memo(({ data, period, onPeriodChange, onHover, hoverIdx, 
           <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>BEARISH</span>
           <span className="text-sm font-black text-red-500 tabular-nums">{totalBear.toLocaleString()}</span>
         </div>
+        {totalNeutral > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+            <span className={cn('text-[11px] font-black tracking-widest opacity-40', isDark ? 'text-white' : 'text-black')}>NEUTRAL</span>
+            <span className="text-sm font-black text-amber-500 tabular-nums">{totalNeutral.toLocaleString()}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -203,6 +233,12 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, i
                     : 'text-gray-500 bg-black/5 hover:bg-black/10 hover:text-black'
               )}
             >
+              {data.sentiment && (() => {
+                const bull = parseFloat(data.sentiment.Bullish || 0);
+                const bear = parseFloat(data.sentiment.Bearish || 0);
+                const color = bull > bear ? 'bg-green-500' : bear > bull ? 'bg-red-500' : 'bg-amber-500';
+                return <div className={cn('h-1.5 w-1.5 rounded-full shrink-0', color)} />;
+              })()}
               {source}
               <span className={cn(
                 'tabular-nums opacity-30',
@@ -236,51 +272,64 @@ const NewsArticle = memo(({ article, isDark, extractTitle }) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      'group relative flex flex-col gap-3 rounded-[20px] p-5 transition-all duration-300',
+      'group relative flex gap-4 rounded-[20px] p-5 transition-all duration-300',
       isDark
         ? 'bg-white/[0.02] hover:bg-white/[0.04] border border-white/5'
         : 'bg-[#fcfcfc] border border-black/[0.03] hover:border-primary/20'
     )}
   >
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2">
-        <span className={cn('text-[12px] font-black uppercase tracking-wider', isDark ? 'text-white/40' : 'text-black/30')}>
-          {article.sourceName}
-        </span>
-        <div className={cn('h-1 w-1 rounded-full', isDark ? 'bg-white/10' : 'bg-black/5')} />
-        <span className={cn('text-[10px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
-          {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
+    <div className="flex flex-col gap-3 flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className={cn('text-[12px] font-black uppercase tracking-wider', isDark ? 'text-white/40' : 'text-black/30')}>
+            {article.sourceName}
+          </span>
+          <div className={cn('h-1 w-1 rounded-full', isDark ? 'bg-white/10' : 'bg-black/5')} />
+          <span className={cn('text-[10px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
+            {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
+          </span>
+        </div>
+
+        <span
+          className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0"
+          style={{
+            color: getSentimentColor(article.sentiment),
+            backgroundColor: `${getSentimentColor(article.sentiment)}15`
+          }}
+        >
+          {article.sentiment || 'NEUTRAL'}
         </span>
       </div>
 
-      <span
-        className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md"
-        style={{
-          color: getSentimentColor(article.sentiment),
-          backgroundColor: `${getSentimentColor(article.sentiment)}15`
-        }}
-      >
-        {article.sentiment || 'NEUTRAL'}
-      </span>
+      <h3 className={cn(
+        'text-[15px] font-bold leading-tight transition-colors group-hover:text-primary',
+        isDark ? 'text-white' : 'text-black'
+      )}>
+        {article.normalizedTitle || extractTitle(article.title)}
+      </h3>
+
+      <p className={cn(
+        'line-clamp-2 text-[13px] leading-relaxed opacity-50',
+        isDark ? 'text-white' : 'text-black'
+      )}>
+        {article.summary}
+      </p>
+
+      <div className="pt-2 flex items-center gap-1.5 text-[11px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+        Read Story <ArrowRight size={14} />
+      </div>
     </div>
 
-    <h3 className={cn(
-      'text-[15px] font-bold leading-tight transition-colors group-hover:text-primary',
-      isDark ? 'text-white' : 'text-black'
-    )}>
-      {extractTitle(article.title)}
-    </h3>
-
-    <p className={cn(
-      'line-clamp-2 text-[13px] leading-relaxed opacity-50',
-      isDark ? 'text-white' : 'text-black'
-    )}>
-      {article.summary}
-    </p>
-
-    <div className="pt-2 flex items-center gap-1.5 text-[11px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-      Read Story <ArrowRight size={14} />
-    </div>
+    {article.articleImage && (
+      <div className="hidden sm:block shrink-0 w-[140px] h-[100px] rounded-xl overflow-hidden self-center">
+        <img
+          src={article.articleImage}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    )}
   </a>
 ));
 NewsArticle.displayName = 'NewsArticle';
@@ -545,9 +594,14 @@ function NewsPage({
           <>
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className={cn('text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
-                  News
-                </h1>
+                <div className="flex items-baseline gap-3">
+                  <h1 className={cn('text-2xl font-black tracking-tight', isDark ? 'text-white' : 'text-black')}>
+                    News
+                  </h1>
+                  <span className={cn('text-[11px] font-black tabular-nums opacity-30', isDark ? 'text-white' : 'text-black')}>
+                    {totalCount.toLocaleString()} articles
+                  </span>
+                </div>
                 <p className={cn('text-[12px] font-bold opacity-40', isDark ? 'text-white' : 'text-black')}>
                   Discover the latest pulse of the XRP Ledger ecosystem
                 </p>
@@ -556,7 +610,7 @@ function NewsPage({
                 <form
                   onSubmit={handleSearch}
                   className={cn(
-                    'group relative flex h-11 items-center gap-3 rounded-[16px] border px-4 transition-all duration-300 w-full sm:w-[320px]',
+                    'group relative flex items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-all duration-300 w-full sm:w-[320px]',
                     isDark
                       ? 'bg-white/[0.02] border-white/10 focus-within:border-primary focus-within:bg-white/[0.05]'
                       : 'bg-white border-black/[0.05] focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(37,99,235,0.08)]'
@@ -632,6 +686,7 @@ function NewsPage({
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] font-black">
                         <span className="text-green-500">{item.stats?.bullish || 0}%</span>
+                        <span className="text-amber-500 opacity-60">{item.stats?.neutral || 0}%</span>
                         <span className="text-red-500">{item.stats?.bearish || 0}%</span>
                       </div>
                       <div className={cn(
@@ -641,6 +696,10 @@ function NewsPage({
                         <div
                           style={{ width: `${item.stats?.bullish || 0}%` }}
                           className="bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                        />
+                        <div
+                          style={{ width: `${item.stats?.neutral || 0}%` }}
+                          className="bg-amber-500 opacity-60"
                         />
                         <div
                           style={{ width: `${item.stats?.bearish || 0}%` }}

@@ -1715,7 +1715,7 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                           >
                             {(creatorLastAction.side || creatorLastAction.type || '').replace(/^other_/, '')}
                           </Typography>
-                          {creatorLastAction.xrp != null && (
+                          {creatorLastAction.xrp != null && creatorLastAction.xrp > 0 && (
                             <Typography
                               variant="caption"
                               style={{
@@ -1724,6 +1724,17 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                               }}
                             >
                               {fNumber(creatorLastAction.xrp)} XRP
+                            </Typography>
+                          )}
+                          {creatorLastAction.amountType === 'token' && creatorLastAction.token > 0 && (
+                            <Typography
+                              variant="caption"
+                              style={{
+                                color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)',
+                                fontSize: '11px'
+                              }}
+                            >
+                              {fNumber(creatorLastAction.token)} {name}
                             </Typography>
                           )}
                           <Typography
@@ -1758,9 +1769,11 @@ export default function PriceStatistics({ token, isDark = false, linkedCollectio
                         <AlertTriangle size={14} color="#ef4444" strokeWidth={1.5} />
                         <Typography style={{ color: '#ef4444', fontSize: '11px', fontWeight: 500 }}>
                           Creator sold{' '}
-                          {creatorLastAction.xrp != null
+                          {creatorLastAction.xrp != null && creatorLastAction.xrp > 0
                             ? `${fNumber(creatorLastAction.xrp)} XRP`
-                            : 'tokens'}{' '}
+                            : creatorLastAction.amountType === 'token' && creatorLastAction.token > 0
+                              ? `${fNumber(creatorLastAction.token)} ${name}`
+                              : 'tokens'}{' '}
                           {formatLastActionTime(creatorLastAction.time)}
                         </Typography>
                       </Stack>
